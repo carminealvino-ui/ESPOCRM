@@ -361,14 +361,6 @@
             "maxLength": 100,
             "options": [],
             "isCustom": true
-        },
-        "fornitorePartner": {
-            "type": "link",
-            "isCustom": true
-        },
-        "productBrand": {
-            "type": "link",
-            "isCustom": true
         }
     },
     "links": {
@@ -418,20 +410,6 @@
             "type": "hasMany",
             "foreign": "opportunita",
             "entity": "Task",
-            "audited": false,
-            "isCustom": true
-        },
-        "fornitorePartner": {
-            "type": "belongsTo",
-            "foreign": "opportunita",
-            "entity": "FornitorePartner",
-            "audited": false,
-            "isCustom": true
-        },
-        "productBrand": {
-            "type": "belongsTo",
-            "foreign": "opportunita",
-            "entity": "ProductBrand",
             "audited": false,
             "isCustom": true
         }

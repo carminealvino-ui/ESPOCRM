@@ -1,0 +1,45 @@
+{
+    "fields": {
+        "fornitorePartner": {
+            "type": "link",
+            "isCustom": true
+        }
+    },
+    "links": {
+        "fornitorePartner": {
+            "type": "belongsTo",
+            "foreign": "productBrands",
+            "entity": "FornitorePartner",
+            "audited": false,
+            "isCustom": true
+        },
+        "prospects": {
+            "type": "hasMany",
+            "foreign": "productBrand",
+            "entity": "Prospect",
+            "audited": false,
+            "isCustom": true
+        },
+        "appuntamenti": {
+            "type": "hasMany",
+            "foreign": "productBrand",
+            "entity": "Appuntamento",
+            "audited": false,
+            "isCustom": true
+        },
+        "leads": {
+            "type": "hasMany",
+            "foreign": "productBrand",
+            "entity": "Lead",
+            "audited": false,
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "hasMany",
+            "foreign": "productBrand",
+            "entity": "Opportunity",
+            "audited": false,
+            "isCustom": true
+        }
+    }
+}
