@@ -32,8 +32,13 @@
 -- ========================================
 -- PRODUCT BRAND -> FORNITORE PARTNER
 -- ========================================
+--
+-- Nota EspoCRM/Sales:
+-- l'entita ProductBrand usa la tabella reale `brand`.
+-- La tabella `product_brand` e' una tabella relazione dei prodotti,
+-- quindi NON va usata per i campi del brand.
 
-ALTER TABLE `product_brand`
+ALTER TABLE `brand`
     ADD COLUMN IF NOT EXISTS `fornitore_partner_id` VARCHAR(24) DEFAULT NULL,
     ADD COLUMN IF NOT EXISTS `fornitore_partner_name` VARCHAR(255) DEFAULT NULL;
 
@@ -87,7 +92,7 @@ SELECT
 FROM INFORMATION_SCHEMA.COLUMNS
 WHERE TABLE_SCHEMA = DATABASE()
   AND TABLE_NAME IN (
-      'product_brand',
+      'brand',
       'prospect',
       'appuntamento',
       'lead',
