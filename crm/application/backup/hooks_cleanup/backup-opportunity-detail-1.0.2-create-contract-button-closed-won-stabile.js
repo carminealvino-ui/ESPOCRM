@@ -1,8 +1,8 @@
 // ========================================
-// VERSIONE: 1.0.3
+// VERSIONE: 1.0.2
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + IA
-// FILE: custom/Espo/Custom/Resources/client/custom/src/views/opportunity/record/detail.js
+// FILE: custom/Espo/Custom/Resources/client/views/opportunity/record/detail.js
 // ========================================
 //
 // STORICO FIX
@@ -10,27 +10,18 @@
 // BASE: 1.0.1
 // Mostra bottone Crea Contratto solo su Opportunity.
 //
-// 1.0.2
+// FIX 1.0.2
 // Mostra bottone Crea Contratto solo se Opportunity.stage
 // e' Closed Won.
 //
-// 1.0.3
-// Fix percorso client corretto per vista:
-// custom:views/opportunity/record/detail
-//
-// OBIETTIVO:
-// Il pulsante Crea Contratto deve comparire solo quando
-// Opportunity.stage = Closed Won.
-// La mappatura Lead resta gestita da Appuntamento.sottostato.
-//
 // ROLLBACK:
 // crm/application/backup/hooks_cleanup/
-// backup-opportunity-detail-1.0.2-create-contract-button-closed-won-stabile.js
+// backup-opportunity-detail-1.0.1-create-contract-button-stabile.js
 // ========================================
 
 /* global define */
 
-define('custom:views/opportunity/record/detail', ['views/record/detail'], function (Dep) {
+define('custom:views/opportunity/record/detail', 'views/record/detail', function (Dep) {
 
     return Dep.extend({
 
@@ -46,15 +37,15 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
             }
 
             // ========================================
-            // SOLO CONCLUSA POSITIVAMENTE (1.0.3)
+            // SOLO OPPORTUNITY CONCLUSA POSITIVAMENTE (1.0.2)
             // ========================================
 
-            if (!this.isCreateContractAllowed()) {
+            if (this.model.get('stage') !== 'Closed Won') {
                 return;
             }
 
             // ========================================
-            // BUTTON (1.0.3)
+            // BUTTON (1.0.2)
             // ========================================
 
             this.addMenuItem('buttons', {
@@ -63,14 +54,6 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
                 style: 'primary',
                 action: 'createContract'
             });
-        },
-
-        // ========================================
-        // CONTROLLO VISIBILITA (1.0.3)
-        // ========================================
-
-        isCreateContractAllowed: function () {
-            return this.model.get('stage') === 'Closed Won';
         },
 
         // ========================================
