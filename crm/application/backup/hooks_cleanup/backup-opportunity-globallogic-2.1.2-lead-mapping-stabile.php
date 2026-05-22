@@ -1,7 +1,7 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.1.3
+// VERSIONE: 2.1.2
 // DATA: 2026-05-22
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
@@ -53,34 +53,6 @@
 // ripristinare il file stabile da:
 // crm/application/backup/hooks_cleanup/
 // backup-opportunity-globallogic-2.1.1-sync-appuntamento-stabile.php
-//
-// =====================================================
-//
-// FIX 2.1.3
-// -----------------------------------------------------
-// FIX PRODUZIONE MAPPING LEAD / CONTATTI
-//
-// Problema:
-//
-// se Appuntamento e' collegato a Lead tramite parent
-// (parentType = Lead, parentId valorizzato), Opportunity
-// non riceveva leadId perche' il codice leggeva solo leadId.
-// Inoltre telefono e WhatsApp non avevano fallback stabile da
-// Prospect / Lead.
-//
-// Fix:
-//
-// - fallback Lead da parentType/parentId
-// - telefono da Appuntamento, Prospect o Lead
-// - WhatsApp da Prospect
-// - nessuna creazione Lead
-// - nessun duplicato
-//
-// Rollback:
-//
-// ripristinare il file stabile da:
-// crm/application/backup/hooks_cleanup/
-// backup-opportunity-globallogic-2.1.2-lead-mapping-stabile.php
 //
 // =====================================================
 //
@@ -263,7 +235,7 @@ class GlobalLogic
 
         $entity->set(
             'hookVersion',
-            '2.1.3'
+            '2.1.2'
         );
 
 
@@ -358,41 +330,6 @@ class GlobalLogic
 
 
         // =====================================================
-        // RECUPERO PROSPECT / LEAD (2.1.3)
-        // =====================================================
-
-        $prospect = null;
-
-        if ($appuntamento->get('prospectId')) {
-
-            $prospect = $this->entityManager->getEntity(
-                'Prospect',
-                $appuntamento->get('prospectId')
-            );
-        }
-
-        $lead = null;
-
-        if ($appuntamento->get('leadId')) {
-
-            $lead = $this->entityManager->getEntity(
-                'Lead',
-                $appuntamento->get('leadId')
-            );
-
-        } elseif (
-            $appuntamento->get('parentType') === 'Lead' &&
-            $appuntamento->get('parentId')
-        ) {
-
-            $lead = $this->entityManager->getEntity(
-                'Lead',
-                $appuntamento->get('parentId')
-            );
-        }
-
-
-        // =====================================================
         // SYNC RELAZIONE APPUNTAMENTO
         // =====================================================
 
@@ -463,82 +400,45 @@ class GlobalLogic
 
 
         // =====================================================
-        // TELEFONO (2.1.3)
+        // TELEFONO
         // =====================================================
 
-        $telefono = $appuntamento->get('telefono');
-
-        if (!$telefono && $prospect) {
-
-            $telefono =
-                $prospect->get('phoneNumber')
-                ?: $prospect->get('telefono');
-        }
-
-        if (!$telefono && $lead) {
-            $telefono = $lead->get('phoneNumber');
-        }
-
-        if ($telefono) {
+        if ($appuntamento->get('telefono')) {
 
             $entity->set(
                 'telefono',
-                $telefono
+                $appuntamento->get('telefono')
             );
         }
 
 
         // =====================================================
-        // WHATSAPP (2.1.3)
+        // WHATSAPP
         // =====================================================
 
-        $whatsApp = null;
-
-        if ($prospect) {
-
-            $whatsApp =
-                $prospect->get('whatsApp')
-                ?: $prospect->get('whatsApp39');
-        }
-
-        if ($whatsApp) {
+        if ($appuntamento->get('whatsApp')) {
 
             $entity->set(
                 'whatsApp',
-                $whatsApp
+                $appuntamento->get('whatsApp')
             );
         }
 
 
         // =====================================================
-        // LEAD (2.1.3)
+        // LEAD
         // =====================================================
 
-        if ($lead) {
-
-            $leadName = $lead->get('name');
-
-            if (!$leadName) {
-
-                $leadName = trim(
-                    ($lead->get('firstName') ?: '') .
-                    ' ' .
-                    ($lead->get('lastName') ?: '')
-                );
-            }
-
-            if (!$leadName) {
-                $leadName = $lead->get('phoneNumber');
-            }
+        if ($appuntamento->get('leadId')) {
 
             $entity->set(
                 'leadId',
-                $lead->getId()
+                $appuntamento->get('leadId')
             );
 
             $entity->set(
                 'leadName',
-                $leadName
+                $appuntamento->get('leadName')
             );
         }
 
