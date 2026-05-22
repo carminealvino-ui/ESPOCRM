@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// VERSIONE: 1.6.3
+// VERSIONE: 1.6.2
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
@@ -69,17 +69,6 @@
 // backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.1-held-lead-stabile.php
 //
-// 1.6.3
-// ----------------------------------------
-// ✔ FIX PRODUZIONE DESCRIZIONE LEAD
-// ✔ Lead.description deve arrivare da Prospect.description
-// ✔ Non usa la description automatica dell'Appuntamento
-// ✔ Campo UI: Descrizione Attività
-//
-// ROLLBACK:
-// backup/hooks_cleanup/
-// backup-appuntamento-globallogic-1.6.2-description-prospect-stabile.php
-//
 // MAPPATURA:
 //
 // Appuntamento.sottostato
@@ -128,7 +117,7 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.6.3'
+                '1.6.2'
             );
 
             // ========================================
@@ -512,12 +501,6 @@ class GlobalLogic
 
                         'name' => $prospect->get('name'),
 
-                        // ========================================
-                        // FIX DESCRIZIONE LEAD (1.6.3)
-                        // ========================================
-
-                        'description' => $prospect->get('description'),
-
                         'phoneNumber' => $prospect->get('phoneNumber'),
 
                         'addressStreet' => $prospect->get('addressStreet'),
@@ -667,25 +650,6 @@ class GlobalLogic
         Entity $lead,
         Entity $prospect
     ): void {
-
-        // ========================================
-        // DESCRIZIONE ATTIVITA (1.6.3)
-        // ========================================
-        //
-        // Lead.description deve essere Prospect.description.
-        // Se Prospect.description e' valorizzata, viene sincronizzata
-        // anche se sul Lead era presente la descrizione automatica
-        // dell'Appuntamento.
-        //
-        // ========================================
-
-        if ($prospect->get('description')) {
-
-            $lead->set(
-                'description',
-                $prospect->get('description')
-            );
-        }
 
         $this->setLeadFieldIfEmpty(
             $lead,
