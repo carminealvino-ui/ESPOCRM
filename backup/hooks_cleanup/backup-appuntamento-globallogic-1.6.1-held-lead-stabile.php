@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// VERSIONE: 1.6.2
+// VERSIONE: 1.6.1
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
@@ -52,23 +52,6 @@
 // backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.0-prospect-lead-stabile.php
 //
-// 1.6.2
-// ----------------------------------------
-// ✔ REGOLA PRODUZIONE LEAD AUTOMATICO
-// ✔ Qualsiasi Appuntamento con status = Held genera/aggiorna Lead
-// ✔ Il sottostato NON blocca la creazione Lead
-// ✔ Il sottostato decide solo Lead.status
-//
-// MAPPATURA LEAD.status:
-// - sottostato Pending -> In Process
-// - sottostato Non Interessato -> Dead
-// - sottostato Chiuso Positivamente -> Assegnato
-// - altri sottostati Held -> In Process
-//
-// ROLLBACK:
-// backup/hooks_cleanup/
-// backup-appuntamento-globallogic-1.6.1-held-lead-stabile.php
-//
 // MAPPATURA:
 //
 // Appuntamento.sottostato
@@ -117,7 +100,7 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.6.2'
+                '1.6.1'
             );
 
             // ========================================
@@ -416,14 +399,7 @@ class GlobalLogic
             }
 
             // ========================================
-            // CREAZIONE LEAD AUTOMATICA (1.6.2)
-            // ========================================
-            //
-            // REGOLA PRODUZIONE:
-            // qualsiasi Appuntamento con status = Held genera
-            // o aggiorna Lead. Il sottostato serve solo per
-            // mappare Lead.status e NON blocca la creazione.
-            //
+            // CREAZIONE LEAD AUTOMATICA
             // ========================================
 
             if (
@@ -450,12 +426,7 @@ class GlobalLogic
                 $lead = $existingLead;
 
                 // ========================================
-                // MAPPING STATO LEAD (1.6.2)
-                // ========================================
-                //
-                // Default per tutti gli altri sottostati Held:
-                // In Process.
-                //
+                // MAPPING STATO LEAD
                 // ========================================
 
                 $leadStatus = 'In Process';
