@@ -1,31 +1,31 @@
 // ========================================
-// VERSIONE: 1.0.3
+// VERSIONE: 1.0.4
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + IA
-// FILE: custom/Espo/Custom/Resources/client/custom/src/views/opportunity/record/detail.js
+// FILE: client/custom/src/views/opportunity/record/detail.js
 // ========================================
 //
 // STORICO FIX
 // ----------------------------------------
-// BASE: 1.0.1
-// Mostra bottone Crea Contratto solo su Opportunity.
-//
-// 1.0.2
-// Mostra bottone Crea Contratto solo se Opportunity.stage
-// e' Closed Won.
-//
-// 1.0.3
-// Fix percorso client corretto per vista:
-// custom:views/opportunity/record/detail
-//
-// OBIETTIVO:
+// BASE: 1.0.3
 // Il pulsante Crea Contratto deve comparire solo quando
 // Opportunity.stage = Closed Won.
+//
+// FIX 1.0.4
+// Aggiunto file nel percorso runtime standard EspoCRM:
+// client/custom/src/views/opportunity/record/detail.js
+//
+// OBIETTIVO:
+// evitare che EspoCRM carichi una vecchia vista client che
+// mostrava sempre il pulsante Crea Contratto.
+//
+// NOTA:
 // La mappatura Lead resta gestita da Appuntamento.sottostato.
+// Questo file controlla solo il pulsante del contratto.
 //
 // ROLLBACK:
-// crm/application/backup/hooks_cleanup/
-// backup-opportunity-detail-1.0.2-create-contract-button-closed-won-stabile.js
+// eliminare questo file oppure ripristinare il backup server
+// se esisteva gia' un file nello stesso percorso.
 // ========================================
 
 /* global define */
@@ -37,25 +37,13 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
         setup: function () {
             Dep.prototype.setup.call(this);
 
-            // ========================================
-            // SOLO SU OPPORTUNITY (1.0.1) - STABILE
-            // ========================================
-
             if (this.model.entityType !== 'Opportunity') {
                 return;
             }
 
-            // ========================================
-            // SOLO CONCLUSA POSITIVAMENTE (1.0.3)
-            // ========================================
-
             if (!this.isCreateContractAllowed()) {
                 return;
             }
-
-            // ========================================
-            // BUTTON (1.0.3)
-            // ========================================
 
             this.addMenuItem('buttons', {
                 name: 'createContract',
@@ -65,17 +53,9 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
             });
         },
 
-        // ========================================
-        // CONTROLLO VISIBILITA (1.0.3)
-        // ========================================
-
         isCreateContractAllowed: function () {
             return this.model.get('stage') === 'Closed Won';
         },
-
-        // ========================================
-        // ACTION (STABILE)
-        // ========================================
 
         actionCreateContract: function () {
             console.log('Create Contract clicked');
