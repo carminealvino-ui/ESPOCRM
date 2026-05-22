@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// VERSIONE: 1.6.5
+// VERSIONE: 1.6.4
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
@@ -93,17 +93,6 @@
 // backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.3-brand-partner-sync-stabile.php
 //
-// 1.6.5
-// ----------------------------------------
-// ✔ FIX PRODUZIONE PRODUCT BRAND
-// ✔ Se productBrand manca, viene risolto dal vecchio campo azienda
-// ✔ Usa ProductBrand.name = azienda
-// ✔ Compila anche fornitorePartner dal brand
-//
-// ROLLBACK:
-// backup/hooks_cleanup/
-// backup-appuntamento-globallogic-1.6.4-brand-fallback-stabile.php
-//
 // MAPPATURA:
 //
 // Appuntamento.sottostato
@@ -152,7 +141,7 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.6.5'
+                '1.6.4'
             );
 
             // ========================================
@@ -291,11 +280,6 @@ class GlobalLogic
                 $this->syncBrandPartnerFromSource(
                     $entity,
                     $source
-                );
-
-                $this->resolveBrandPartnerFromAzienda(
-                    $entity,
-                    $source->get('azienda')
                 );
             }
 
@@ -832,11 +816,6 @@ class GlobalLogic
             'productBrandName',
             $prospect->get('productBrandName')
         );
-
-        $this->resolveBrandPartnerFromAzienda(
-            $lead,
-            $prospect->get('azienda')
-        );
     }
 
     // ========================================
@@ -864,58 +843,6 @@ class GlobalLogic
             $entity->set(
                 $field,
                 $source->get($field)
-            );
-        }
-    }
-
-    // ========================================
-    // FALLBACK BRAND DA AZIENDA (1.6.5)
-    // ========================================
-
-    private function resolveBrandPartnerFromAzienda(
-        Entity $entity,
-        ?string $azienda
-    ): void {
-
-        if ($entity->get('productBrandId')) {
-            return;
-        }
-
-        if (!$azienda) {
-            return;
-        }
-
-        $brand = $this->entityManager
-            ->getRepository('ProductBrand')
-            ->where([
-                'name' => $azienda
-            ])
-            ->findOne();
-
-        if (!$brand) {
-            return;
-        }
-
-        $entity->set(
-            'productBrandId',
-            $brand->getId()
-        );
-
-        $entity->set(
-            'productBrandName',
-            $brand->get('name')
-        );
-
-        if ($brand->get('fornitorePartnerId')) {
-
-            $entity->set(
-                'fornitorePartnerId',
-                $brand->get('fornitorePartnerId')
-            );
-
-            $entity->set(
-                'fornitorePartnerName',
-                $brand->get('fornitorePartnerName')
             );
         }
     }
