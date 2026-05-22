@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// VERSIONE: 1.6.4
+// VERSIONE: 1.6.3
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
@@ -80,19 +80,6 @@
 // backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.2-description-prospect-stabile.php
 //
-// 1.6.4
-// ----------------------------------------
-// ✔ FIX PRODUZIONE FORNITORE / BRAND
-// ✔ Sync fornitorePartner e productBrand
-//    Prospect/Lead -> Appuntamento
-// ✔ Sync fornitorePartner e productBrand
-//    Prospect -> Lead
-// ✔ NON sovrascrive dati manuali gia' presenti sul Lead
-//
-// ROLLBACK:
-// backup/hooks_cleanup/
-// backup-appuntamento-globallogic-1.6.3-brand-partner-sync-stabile.php
-//
 // MAPPATURA:
 //
 // Appuntamento.sottostato
@@ -141,7 +128,7 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.6.4'
+                '1.6.3'
             );
 
             // ========================================
@@ -268,18 +255,6 @@ class GlobalLogic
                 $entity->set(
                     'parentName',
                     $leadName
-                );
-            }
-
-            // ========================================
-            // SYNC FORNITORE / BRAND (1.6.4)
-            // ========================================
-
-            if ($source) {
-
-                $this->syncBrandPartnerFromSource(
-                    $entity,
-                    $source
                 );
             }
 
@@ -553,15 +528,6 @@ class GlobalLogic
 
                         'cAPId' => $prospect->get('cAPId'),
 
-                        // ========================================
-                        // FORNITORE / BRAND (1.6.4)
-                        // ========================================
-
-                        'fornitorePartnerId' => $prospect->get('fornitorePartnerId'),
-                        'fornitorePartnerName' => $prospect->get('fornitorePartnerName'),
-                        'productBrandId' => $prospect->get('productBrandId'),
-                        'productBrandName' => $prospect->get('productBrandName'),
-
                         'azienda' => $prospect->get('azienda'),
 
                         // ========================================
@@ -792,59 +758,6 @@ class GlobalLogic
             'azienda',
             $prospect->get('azienda')
         );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'fornitorePartnerId',
-            $prospect->get('fornitorePartnerId')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'fornitorePartnerName',
-            $prospect->get('fornitorePartnerName')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'productBrandId',
-            $prospect->get('productBrandId')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'productBrandName',
-            $prospect->get('productBrandName')
-        );
-    }
-
-    // ========================================
-    // SYNC FORNITORE / BRAND (1.6.4)
-    // ========================================
-
-    private function syncBrandPartnerFromSource(
-        Entity $entity,
-        Entity $source
-    ): void {
-
-        $fieldList = [
-            'fornitorePartnerId',
-            'fornitorePartnerName',
-            'productBrandId',
-            'productBrandName'
-        ];
-
-        foreach ($fieldList as $field) {
-
-            if (!$source->get($field)) {
-                continue;
-            }
-
-            $entity->set(
-                $field,
-                $source->get($field)
-            );
-        }
     }
 
     // ========================================

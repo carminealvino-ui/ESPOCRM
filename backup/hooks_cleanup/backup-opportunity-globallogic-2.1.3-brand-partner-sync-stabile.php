@@ -1,7 +1,7 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.1.4
+// VERSIONE: 2.1.3
 // DATA: 2026-05-22
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
@@ -81,28 +81,6 @@
 // ripristinare il file stabile da:
 // backup/hooks_cleanup/
 // backup-opportunity-globallogic-2.1.2-lead-mapping-stabile.php
-//
-// 2.1.4
-// -----------------------------------------------------
-// FIX PRODUZIONE FORNITORE / BRAND
-//
-// Obiettivo:
-//
-// sincronizzare su Opportunity:
-// - fornitorePartner
-// - productBrand
-//
-// Fonte primaria:
-// Appuntamento collegato.
-//
-// Fallback:
-// Lead o Prospect collegati.
-//
-// Rollback:
-//
-// ripristinare il file stabile da:
-// backup/hooks_cleanup/
-// backup-opportunity-globallogic-2.1.3-brand-partner-sync-stabile.php
 //
 // =====================================================
 //
@@ -285,7 +263,7 @@ class GlobalLogic
 
         $entity->set(
             'hookVersion',
-            '2.1.4'
+            '2.1.3'
         );
 
 
@@ -410,38 +388,6 @@ class GlobalLogic
             $lead = $this->entityManager->getEntity(
                 'Lead',
                 $appuntamento->get('parentId')
-            );
-        }
-
-
-        // =====================================================
-        // SYNC FORNITORE / BRAND (2.1.4)
-        // =====================================================
-
-        $this->syncBrandPartnerFromSource(
-            $entity,
-            $appuntamento
-        );
-
-        if (
-            (!$entity->get('fornitorePartnerId') || !$entity->get('productBrandId')) &&
-            $lead
-        ) {
-
-            $this->syncBrandPartnerFromSource(
-                $entity,
-                $lead
-            );
-        }
-
-        if (
-            (!$entity->get('fornitorePartnerId') || !$entity->get('productBrandId')) &&
-            $prospect
-        ) {
-
-            $this->syncBrandPartnerFromSource(
-                $entity,
-                $prospect
             );
         }
 
@@ -661,36 +607,6 @@ class GlobalLogic
         // Evita loop infinito.
         //
         // =====================================================
-    }
-
-
-    // =====================================================
-    // SYNC FORNITORE / BRAND (2.1.4)
-    // =====================================================
-
-    private function syncBrandPartnerFromSource(
-        Entity $entity,
-        Entity $source
-    ): void {
-
-        $fieldList = [
-            'fornitorePartnerId',
-            'fornitorePartnerName',
-            'productBrandId',
-            'productBrandName'
-        ];
-
-        foreach ($fieldList as $field) {
-
-            if (!$source->get($field)) {
-                continue;
-            }
-
-            $entity->set(
-                $field,
-                $source->get($field)
-            );
-        }
     }
 }
 
