@@ -51,7 +51,7 @@
 // Rollback:
 //
 // ripristinare il file stabile da:
-// crm/application/backup/hooks_cleanup/
+// backup/hooks_cleanup/
 // backup-opportunity-globallogic-2.1.1-sync-appuntamento-stabile.php
 //
 // =====================================================
@@ -79,7 +79,7 @@
 // Rollback:
 //
 // ripristinare il file stabile da:
-// crm/application/backup/hooks_cleanup/
+// backup/hooks_cleanup/
 // backup-opportunity-globallogic-2.1.2-lead-mapping-stabile.php
 //
 // =====================================================
