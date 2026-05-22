@@ -48,6 +48,8 @@ FROM prospect p
 INNER JOIN entity_phone_number epn
     ON epn.entity_id = p.id
    AND epn.entity_type = 'Prospect'
+   AND epn.deleted = 0
+   AND epn.`primary` = 1
 INNER JOIN phone_number pn
     ON pn.id = epn.phone_number_id
    AND pn.deleted = 0
@@ -68,6 +70,8 @@ UPDATE prospect p
 INNER JOIN entity_phone_number epn
     ON epn.entity_id = p.id
    AND epn.entity_type = 'Prospect'
+   AND epn.deleted = 0
+   AND epn.`primary` = 1
 INNER JOIN phone_number pn
     ON pn.id = epn.phone_number_id
    AND pn.deleted = 0
