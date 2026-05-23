@@ -1,0 +1,72 @@
+/**
+ * Allineamento globale menu a tendina (Selectize) - EspoCRM
+ * Corregge testo tagliato / spostato in alto nel box di selezione.
+ */
+
+.field .selectize-control.single .selectize-input,
+.record .selectize-control.single .selectize-input,
+.modal-body .selectize-control.single .selectize-input,
+.edit-row .selectize-control.single .selectize-input {
+    display: flex !important;
+    align-items: center !important;
+    flex-wrap: nowrap;
+    min-height: 34px;
+    padding: 7px 10px !important;
+    line-height: 1.35 !important;
+    box-sizing: border-box;
+}
+
+.field .selectize-control.single .selectize-input > .item,
+.record .selectize-control.single .selectize-input > .item,
+.modal-body .selectize-control.single .selectize-input > .item,
+.edit-row .selectize-control.single .selectize-input > .item {
+    display: inline-flex !important;
+    align-items: center !important;
+    align-self: center !important;
+    line-height: 1.35 !important;
+    padding: 3px 10px !important;
+    margin: 0 !important;
+    height: auto !important;
+    max-width: 100%;
+    overflow: visible;
+    vertical-align: middle;
+    position: static !important;
+    top: auto !important;
+    transform: none !important;
+}
+
+.field .selectize-control.single .selectize-input input,
+.record .selectize-control.single .selectize-input input,
+.modal-body .selectize-control.single .selectize-input input,
+.edit-row .selectize-control.single .selectize-input input {
+    line-height: 1.35 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    align-self: center;
+}
+
+.field .selectize-dropdown .option,
+.record .selectize-dropdown .option,
+.modal-body .selectize-dropdown .option,
+.edit-row .selectize-dropdown .option,
+.field .selectize-dropdown .option.active,
+.record .selectize-dropdown .option.active,
+.modal-body .selectize-dropdown .option.active {
+    display: flex;
+    align-items: center;
+    min-height: 30px;
+    line-height: 1.35;
+    padding: 6px 12px;
+}
+
+.field .label.label-state,
+.record .label.label-state,
+.field .label.label-md.label,
+.record .label.label-md.label {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.35;
+    padding: 4px 10px;
+    vertical-align: middle;
+}

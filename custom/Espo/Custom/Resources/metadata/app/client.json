@@ -1,6 +1,6 @@
 {
     "cssList": [
         "__APPEND__",
-        "client/custom/css/opportunity-stage-field.css"
+        "client/custom/css/selectize-dropdown-alignment.css"
     ]
 }
