@@ -1,13 +1,8 @@
 // ========================================
-// VERSIONE: 1.0.3
+// VERSIONE: 1.0.4
 // DATA: 2026-05-23
 // AUTORE: CARMINE ALVINO + IA
 // FILE: client/custom/src/action-handlers/opportunity/create-contratto.js
-// ========================================
-//
-// FIX 1.0.3
-// Handler minimale, senza initFunction.
-// La vista detail custom e' stata rimossa per evitare crash loader.
 // ========================================
 
 /* global define, Espo */
@@ -16,16 +11,40 @@ define('custom:action-handlers/opportunity/create-contratto', ['action-handler']
 
     return Dep.extend({
 
+        initCreateContratto: function () {
+            if (this.view && this.view.updateCreateContrattoButton) {
+                this.view.updateCreateContrattoButton();
+            }
+        },
+
         isCreateContrattoVisible: function () {
             if (!this.view || !this.view.model) {
                 return false;
             }
 
-            return this.view.model.get('stage') === 'Closed Won';
+            if (this.view.isClosedWon) {
+                return this.view.isClosedWon();
+            }
+
+            var stage = this.view.model.get('stage');
+
+            if (stage === 'Closed Won' || stage === 'Chiuso Positivamente') {
+                return true;
+            }
+
+            if (stage === 'Closed Lost' || stage === 'Chiusa persa' || stage === 'Chiuso Negativamente') {
+                return false;
+            }
+
+            var probability = this.view.model.get('probability');
+
+            return probability === 100 || probability === '100';
         },
 
         createContratto: function () {
             if (!this.isCreateContrattoVisible()) {
+                Espo.Ui.warning('Disponibile solo su opportunita concluse positivamente.');
+
                 return;
             }
 
