@@ -1,17 +1,16 @@
 // ========================================
-// VERSIONE: 1.0.9
+// VERSIONE: 1.1.0
 // DATA: 2026-05-23
 // AUTORE: CARMINE ALVINO + IA
 // FILE: client/custom/src/views/opportunity/record/detail.js
 // ========================================
 //
-// FIX 1.0.9
-// - Nessun getMenu (evita crash Espo 8+)
-// - Pulsante sempre nel menu, visibilita via show/hide DOM
-// - Riconosce Closed Won e label IT "Chiuso Positivamente"
+// RIPRISTINO LOGICA STABILE 1.0.2
+// addMenuItem solo su opportunita concluse positivamente.
+// Rimosso checkVisibilityFunction e hide DOM (non affidabili).
 // ========================================
 
-/* global define, $ */
+/* global define */
 
 define('custom:views/opportunity/record/detail', ['views/record/detail'], function (Dep) {
 
@@ -22,17 +21,11 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
                 Dep.prototype.setup.apply(this, arguments);
             }
 
+            this.manageCreateContrattoButton();
+
             this.listenTo(this.model, 'change:stage change:probability sync', function () {
-                this.updateCreateContrattoButton();
+                this.manageCreateContrattoButton();
             });
-        },
-
-        afterRender: function () {
-            if (Dep.prototype.afterRender) {
-                Dep.prototype.afterRender.apply(this, arguments);
-            }
-
-            this.updateCreateContrattoButton();
         },
 
         isClosedWon: function () {
@@ -51,35 +44,40 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
             return probability === 100 || probability === '100';
         },
 
-        updateCreateContrattoButton: function () {
-            var show = this.isClosedWon();
-            var names = ['createContratto', 'createContract'];
+        manageCreateContrattoButton: function () {
+            if (this.isClosedWon()) {
+                this.addCreateContrattoButtonIfNeeded();
 
-            names.forEach(function (name) {
-                var $btn = this.findMenuButton(name);
+                return;
+            }
 
-                if ($btn && $btn.length) {
-                    if (show) {
-                        $btn.show();
-                    } else {
-                        $btn.hide();
-                    }
-                }
-            }, this);
+            this.removeCreateContrattoButtonIfNeeded();
         },
 
-        findMenuButton: function (name) {
-            var selector = '[data-name="' + name + '"], [data-action="' + name + '"]';
-
-            if (this.$headerActionsContainer && this.$headerActionsContainer.length) {
-                return this.$headerActionsContainer.find(selector).closest('a, button, .btn');
+        addCreateContrattoButtonIfNeeded: function () {
+            if (this._createContrattoMenuAdded) {
+                return;
             }
 
-            if (this.$el) {
-                return this.$el.find(selector).closest('a, button, .btn');
+            this.addMenuItem('buttons', {
+                name: 'createContratto',
+                label: 'Crea Contratto',
+                style: 'primary',
+                handler: 'custom:action-handlers/opportunity/create-contratto',
+                actionFunction: 'createContratto'
+            });
+
+            this._createContrattoMenuAdded = true;
+        },
+
+        removeCreateContrattoButtonIfNeeded: function () {
+            if (!this.removeMenuItem) {
+                return;
             }
 
-            return $(selector).closest('a, button, .btn');
+            this.removeMenuItem('createContratto', false);
+            this.removeMenuItem('createContract', false);
+            this._createContrattoMenuAdded = false;
         }
     });
 });
