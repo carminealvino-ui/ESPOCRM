@@ -1,8 +1,8 @@
 <?php
 
 // ========================================
-// VERSIONE: 1.0.0
-// DATA: 2026-05-22
+// VERSIONE: 1.0.1
+// DATA: 2026-05-23
 // AUTORE: CARMINE ALVINO + IA
 // FILE:
 // tools/export-custom-for-github.php
@@ -13,7 +13,7 @@
 // su GitHub tra una sessione di sviluppo e la successiva.
 //
 // MODALITA SICURA:
-// - di default crea uno ZIP locale in backup/hooks_cleanup
+// - di default crea uno ZIP locale in tools/custom-exports
 // - non contiene password
 // - non contiene token GitHub
 // - non modifica i file EspoCRM
@@ -54,14 +54,14 @@ function main(array $argv): void
 
     $rootPath = findEspoRoot();
     $customPath = $rootPath . DIRECTORY_SEPARATOR . 'custom';
-    $backupPath = $rootPath . DIRECTORY_SEPARATOR . 'backup' . DIRECTORY_SEPARATOR . 'hooks_cleanup';
+    $exportPath = $rootPath . DIRECTORY_SEPARATOR . 'tools' . DIRECTORY_SEPARATOR . 'custom-exports';
 
     if (!is_dir($customPath)) {
         fail("Cartella custom non trovata: {$customPath}");
     }
 
-    if (!is_dir($backupPath) && !mkdir($backupPath, 0755, true) && !is_dir($backupPath)) {
-        fail("Impossibile creare cartella backup: {$backupPath}");
+    if (!is_dir($exportPath) && !mkdir($exportPath, 0755, true) && !is_dir($exportPath)) {
+        fail("Impossibile creare cartella export: {$exportPath}");
     }
 
     if (!class_exists('ZipArchive')) {
@@ -70,13 +70,13 @@ function main(array $argv): void
 
     $timestamp = date('Ymd-His');
     $zipFileName = "custom-export-{$timestamp}.zip";
-    $zipPath = $backupPath . DIRECTORY_SEPARATOR . $zipFileName;
+    $zipPath = $exportPath . DIRECTORY_SEPARATOR . $zipFileName;
 
     $fileCount = zipDirectory($customPath, $zipPath, $rootPath);
     $sha256 = hash_file('sha256', $zipPath);
 
     $manifest = [
-        'version' => '1.0.0',
+        'version' => '1.0.1',
         'generatedAt' => date('c'),
         'rootPath' => $rootPath,
         'sourcePath' => $customPath,
@@ -85,7 +85,7 @@ function main(array $argv): void
         'sha256' => $sha256,
     ];
 
-    $manifestPath = $backupPath . DIRECTORY_SEPARATOR . "custom-export-{$timestamp}.json";
+    $manifestPath = $exportPath . DIRECTORY_SEPARATOR . "custom-export-{$timestamp}.json";
     file_put_contents(
         $manifestPath,
         json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL
