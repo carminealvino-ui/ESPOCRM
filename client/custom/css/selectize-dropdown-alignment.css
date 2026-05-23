@@ -1,50 +1,24 @@
 /**
- * Allineamento testo nei menu a tendina (Selectize) - versione sicura
- *
- * NON modifica position/transform del dropdown (evita lista sovrapposta al campo).
- * Se il problema persiste: verificare file CSS core Espo non modificati a mano.
+ * Allineamento verticale testo nei menu Selectize (minimo).
+ * NON modifica padding/altezza del box ne' position del dropdown.
  */
-
-.field .selectize-control.single .selectize-input,
-.record .selectize-control.single .selectize-input,
-.modal-body .selectize-control.single .selectize-input,
-.edit .selectize-control.single .selectize-input {
-    line-height: 1.4 !important;
-    padding-top: 8px !important;
-    padding-bottom: 8px !important;
-    min-height: 36px;
-    box-sizing: border-box;
-}
 
 .field .selectize-control.single .selectize-input > .item,
 .record .selectize-control.single .selectize-input > .item,
 .modal-body .selectize-control.single .selectize-input > .item,
 .edit .selectize-control.single .selectize-input > .item {
-    line-height: 1.4 !important;
-    padding-top: 4px !important;
-    padding-bottom: 4px !important;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
+    line-height: 1.4;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin-top: 0;
+    margin-bottom: 0;
     vertical-align: middle;
-}
-
-.field .selectize-control.single .selectize-input input,
-.record .selectize-control.single .selectize-input input,
-.modal-body .selectize-control.single .selectize-input input {
-    line-height: 1.4 !important;
 }
 
 .field .selectize-dropdown .option,
 .record .selectize-dropdown .option,
 .modal-body .selectize-dropdown .option {
     line-height: 1.4;
-    padding-top: 7px;
-    padding-bottom: 7px;
-}
-
-.field .label.label-state,
-.record .label.label-state {
-    line-height: 1.4;
-    padding: 4px 10px;
-    vertical-align: middle;
+    padding-top: 6px;
+    padding-bottom: 6px;
 }
