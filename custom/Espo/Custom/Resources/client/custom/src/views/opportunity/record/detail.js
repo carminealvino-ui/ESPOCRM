@@ -1,5 +1,5 @@
 // ========================================
-// VERSIONE: 1.2.0
+// VERSIONE: 1.2.1
 // DATA: 2026-05-23
 // AUTORE: CARMINE ALVINO + IA
 // FILE: client/custom/src/views/opportunity/record/detail.js
@@ -23,6 +23,7 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
                 Dep.prototype.setup.apply(this, arguments);
             }
 
+            this.ensureCreateContrattoButtonRegistered();
             this.updateCreateContrattoButton();
 
             this.listenTo(this.model, 'change:stage change:probability sync', function () {
@@ -36,6 +37,29 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
             }
 
             this.updateCreateContrattoButton();
+        },
+
+
+        ensureCreateContrattoButtonRegistered: function () {
+            var found = false;
+
+            (this.buttonList || []).forEach(function (item) {
+                if (item.name === 'createContratto') {
+                    found = true;
+                }
+            });
+
+            if (found || !this.addButton) {
+                return;
+            }
+
+            this.addButton({
+                name: 'createContratto',
+                label: 'Crea Contratto',
+                style: 'primary',
+                action: 'createContratto',
+                hidden: true
+            });
         },
 
         isClosedWon: function () {
