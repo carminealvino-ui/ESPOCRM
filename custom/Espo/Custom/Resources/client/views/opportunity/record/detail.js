@@ -1,13 +1,14 @@
 // ========================================
-// VERSIONE: 1.1.0
+// VERSIONE: 1.1.1
 // DATA: 2026-05-23
 // AUTORE: CARMINE ALVINO + IA
 // FILE: client/custom/src/views/opportunity/record/detail.js
 // ========================================
 //
-// RIPRISTINO LOGICA STABILE 1.0.2
-// addMenuItem solo su opportunita concluse positivamente.
-// Rimosso checkVisibilityFunction e hide DOM (non affidabili).
+// FIX 1.1.1
+// Rimosso listenTo su change:stage/sync: re-render header bloccava
+// la selezione di "Chiuso Positivamente" nel menu stato.
+// Gestione pulsante solo in afterRender (dopo salvataggio/reload).
 // ========================================
 
 /* global define */
@@ -21,11 +22,15 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
                 Dep.prototype.setup.apply(this, arguments);
             }
 
-            this.manageCreateContrattoButton();
+            this._createContrattoMenuAdded = false;
+        },
 
-            this.listenTo(this.model, 'change:stage change:probability sync', function () {
-                this.manageCreateContrattoButton();
-            });
+        afterRender: function () {
+            if (Dep.prototype.afterRender) {
+                Dep.prototype.afterRender.apply(this, arguments);
+            }
+
+            this.manageCreateContrattoButton();
         },
 
         isClosedWon: function () {
@@ -65,9 +70,17 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
                 style: 'primary',
                 handler: 'custom:action-handlers/opportunity/create-contratto',
                 actionFunction: 'createContratto'
-            });
+            }, false, true);
 
             this._createContrattoMenuAdded = true;
+
+            if (typeof this.getHeaderView === 'function') {
+                var header = this.getHeaderView();
+
+                if (header && header.reRender) {
+                    header.reRender();
+                }
+            }
         },
 
         removeCreateContrattoButtonIfNeeded: function () {
@@ -75,8 +88,8 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
                 return;
             }
 
-            this.removeMenuItem('createContratto', false);
-            this.removeMenuItem('createContract', false);
+            this.removeMenuItem('createContratto', true);
+            this.removeMenuItem('createContract', true);
             this._createContrattoMenuAdded = false;
         }
     });
