@@ -1,12 +1,13 @@
 // ========================================
-// VERSIONE: 1.0.2
+// VERSIONE: 1.0.3
 // DATA: 2026-05-23
 // AUTORE: CARMINE ALVINO + IA
 // FILE: client/custom/src/action-handlers/opportunity/create-contratto.js
 // ========================================
 //
-// FIX 1.0.2
-// Sintassi Dep.extend (compatibile Espo 7/8), senza optional chaining.
+// FIX 1.0.3
+// Handler minimale, senza initFunction.
+// La vista detail custom e' stata rimossa per evitare crash loader.
 // ========================================
 
 /* global define, Espo */
@@ -15,30 +16,20 @@ define('custom:action-handlers/opportunity/create-contratto', ['action-handler']
 
     return Dep.extend({
 
-        initCreateContratto: function () {
-            this.listenTo(this.view.model, 'change:stage', function () {
-                var header = null;
-
-                if (this.view.getHeaderView) {
-                    header = this.view.getHeaderView();
-                }
-
-                if (header && header.reRender) {
-                    header.reRender();
-                }
-            });
-        },
-
         isCreateContrattoVisible: function () {
+            if (!this.view || !this.view.model) {
+                return false;
+            }
+
             return this.view.model.get('stage') === 'Closed Won';
         },
 
         createContratto: function () {
-            var self = this;
-
             if (!this.isCreateContrattoVisible()) {
                 return;
             }
+
+            var self = this;
 
             this.view.disableMenuItem('createContratto');
 
