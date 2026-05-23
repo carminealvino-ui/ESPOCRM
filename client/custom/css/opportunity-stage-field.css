@@ -1,0 +1,55 @@
+/**
+ * Allineamento campo Stato (stage) Opportunity
+ * - modifica inline / selectize
+ * - badge in lettura
+ */
+
+.record .cell[data-name="stage"] .selectize-control.single .selectize-input,
+.record .field[data-name="stage"] .selectize-control.single .selectize-input {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 34px;
+    padding: 7px 10px !important;
+    line-height: 1.35 !important;
+}
+
+.record .cell[data-name="stage"] .selectize-control.single .selectize-input > .item,
+.record .field[data-name="stage"] .selectize-control.single .selectize-input > .item {
+    display: inline-flex !important;
+    align-items: center !important;
+    line-height: 1.35 !important;
+    padding: 3px 10px !important;
+    margin: 0 !important;
+    max-width: 100%;
+    overflow: visible;
+    vertical-align: middle;
+}
+
+.record .cell[data-name="stage"] .selectize-control.single .selectize-input input,
+.record .field[data-name="stage"] .selectize-control.single .selectize-input input {
+    line-height: 1.35 !important;
+    height: auto !important;
+    min-height: 0 !important;
+}
+
+.record .cell[data-name="stage"] .label.label-state,
+.record .field[data-name="stage"] .label.label-state,
+.record .cell[data-name="stage"] .label.label-success,
+.record .field[data-name="stage"] .label.label-success {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.35;
+    padding: 4px 10px;
+    vertical-align: middle;
+}
+
+.record .cell[data-name="stage"] .selectize-dropdown .option,
+.record .field[data-name="stage"] .selectize-dropdown .option,
+.record .cell[data-name="stage"] .selectize-dropdown .option.active,
+.record .field[data-name="stage"] .selectize-dropdown .option.active {
+    display: flex;
+    align-items: center;
+    min-height: 30px;
+    line-height: 1.35;
+    padding: 6px 12px;
+}
