@@ -1,61 +1,62 @@
 // ========================================
-// VERSIONE: 1.0.1
+// VERSIONE: 1.0.2
 // DATA: 2026-05-23
 // AUTORE: CARMINE ALVINO + IA
 // FILE: client/custom/src/action-handlers/opportunity/create-contratto.js
 // ========================================
 //
-// OBIETTIVO:
-// Mostrare ed eseguire Crea Contratto solo quando
-// Opportunity.stage = Closed Won.
+// FIX 1.0.2
+// Sintassi Dep.extend (compatibile Espo 7/8), senza optional chaining.
 // ========================================
 
 /* global define, Espo */
 
 define('custom:action-handlers/opportunity/create-contratto', ['action-handler'], function (Dep) {
 
-    return class extends Dep {
+    return Dep.extend({
 
-        initCreateContratto() {
-            this.listenTo(this.view.model, 'change:stage', () => {
-                const header = this.view.getHeaderView?.();
+        initCreateContratto: function () {
+            this.listenTo(this.view.model, 'change:stage', function () {
+                var header = null;
 
-                if (header) {
+                if (this.view.getHeaderView) {
+                    header = this.view.getHeaderView();
+                }
+
+                if (header && header.reRender) {
                     header.reRender();
                 }
             });
-        }
+        },
 
-        isCreateContrattoVisible() {
+        isCreateContrattoVisible: function () {
             return this.view.model.get('stage') === 'Closed Won';
-        }
+        },
 
-        async createContratto() {
+        createContratto: function () {
+            var self = this;
+
             if (!this.isCreateContrattoVisible()) {
                 return;
             }
 
             this.view.disableMenuItem('createContratto');
 
-            let result;
+            Espo.Ajax.postRequest(
+                'Opportunity/action/createContratto',
+                {
+                    id: this.view.model.id
+                }
+            ).then(function (result) {
+                self.view.enableMenuItem('createContratto');
 
-            try {
-                result = await Espo.Ajax.postRequest(
-                    'Opportunity/action/createContratto',
-                    {
-                        id: this.view.model.id
-                    }
-                );
-            } catch (e) {
-                this.view.enableMenuItem('createContratto');
+                if (result && result.quoteId) {
+                    window.location.hash = '#Quote/view/' + result.quoteId;
+                }
+            }).catch(function (e) {
+                self.view.enableMenuItem('createContratto');
                 throw e;
-            }
-
-            this.view.enableMenuItem('createContratto');
-
-            if (result && result.quoteId) {
-                window.location.hash = '#Quote/view/' + result.quoteId;
-            }
+            });
         }
-    };
+    });
 });
