@@ -1,17 +1,18 @@
 // ========================================
-// VERSIONE: 1.1.1
+// VERSIONE: 1.2.0
 // DATA: 2026-05-23
 // AUTORE: CARMINE ALVINO + IA
 // FILE: client/custom/src/views/opportunity/record/detail.js
 // ========================================
 //
-// FIX 1.1.1
-// Rimosso listenTo su change:stage/sync: re-render header bloccava
-// la selezione di "Chiuso Positivamente" nel menu stato.
-// Gestione pulsante solo in afterRender (dopo salvataggio/reload).
+// FIX 1.2.0
+// I pulsanti header Opportunity sono su buttonList (addButton /
+// showActionItem), NON su addMenuItem del MainView.
+// clientDefs.buttonList registra il bottone; la vista lo mostra
+// solo su opportunita concluse positivamente.
 // ========================================
 
-/* global define */
+/* global define, Espo */
 
 define('custom:views/opportunity/record/detail', ['views/record/detail'], function (Dep) {
 
@@ -22,7 +23,11 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
                 Dep.prototype.setup.apply(this, arguments);
             }
 
-            this._createContrattoMenuAdded = false;
+            this.updateCreateContrattoButton();
+
+            this.listenTo(this.model, 'change:stage change:probability sync', function () {
+                this.updateCreateContrattoButton();
+            });
         },
 
         afterRender: function () {
@@ -30,7 +35,7 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
                 Dep.prototype.afterRender.apply(this, arguments);
             }
 
-            this.manageCreateContrattoButton();
+            this.updateCreateContrattoButton();
         },
 
         isClosedWon: function () {
@@ -49,48 +54,46 @@ define('custom:views/opportunity/record/detail', ['views/record/detail'], functi
             return probability === 100 || probability === '100';
         },
 
-        manageCreateContrattoButton: function () {
+        updateCreateContrattoButton: function () {
+            if (!this.showActionItem || !this.hideActionItem) {
+                return;
+            }
+
             if (this.isClosedWon()) {
-                this.addCreateContrattoButtonIfNeeded();
+                this.showActionItem('createContratto');
 
                 return;
             }
 
-            this.removeCreateContrattoButtonIfNeeded();
+            this.hideActionItem('createContratto');
         },
 
-        addCreateContrattoButtonIfNeeded: function () {
-            if (this._createContrattoMenuAdded) {
+        actionCreateContratto: function () {
+            if (!this.isClosedWon()) {
+                Espo.Ui.warning('Disponibile solo su opportunita concluse positivamente.');
+
                 return;
             }
 
-            this.addMenuItem('buttons', {
-                name: 'createContratto',
-                label: 'Crea Contratto',
-                style: 'primary',
-                handler: 'custom:action-handlers/opportunity/create-contratto',
-                actionFunction: 'createContratto'
-            }, false, true);
+            var self = this;
 
-            this._createContrattoMenuAdded = true;
+            this.disableActionItem('createContratto');
 
-            if (typeof this.getHeaderView === 'function') {
-                var header = this.getHeaderView();
-
-                if (header && header.reRender) {
-                    header.reRender();
+            Espo.Ajax.postRequest(
+                'Opportunity/action/createContratto',
+                {
+                    id: this.model.id
                 }
-            }
-        },
+            ).then(function (result) {
+                self.enableActionItem('createContratto');
 
-        removeCreateContrattoButtonIfNeeded: function () {
-            if (!this.removeMenuItem) {
-                return;
-            }
-
-            this.removeMenuItem('createContratto', true);
-            this.removeMenuItem('createContract', true);
-            this._createContrattoMenuAdded = false;
+                if (result && result.quoteId) {
+                    window.location.hash = '#Quote/view/' + result.quoteId;
+                }
+            }).catch(function (e) {
+                self.enableActionItem('createContratto');
+                throw e;
+            });
         }
     });
 });
