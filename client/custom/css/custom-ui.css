@@ -1,0 +1,41 @@
+/**
+ * M&C Group - UI preferita (upgrade-safe, solo client/custom/css)
+ *
+ * 1) Form record quasi tutta larghezza schermo
+ * 2) Testo ~80% (come zoom browser 80%)
+ *
+ * NON modificare client/css/espo/ (core Espo).
+ */
+
+:root {
+    --record-grid-max-width: min(96vw, 2600px);
+}
+
+html {
+    font-size: 80%;
+}
+
+/* Lista e contenuto usano più larghezza */
+.content,
+#content,
+.page.content {
+    max-width: 100% !important;
+}
+
+.list-container {
+    max-width: 100%;
+}
+
+/* Record: usa spazio orizzontale (mantiene colonna destra se presente) */
+.record .record-grid {
+    max-width: var(--record-grid-max-width) !important;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Preferenza utente "Larghezza contenuto: Ampia" in Espo 8+ */
+body.content-width-wide .record .record-grid,
+body[data-content-width="wide"] .record .record-grid {
+    max-width: min(98vw, 2800px) !important;
+}
