@@ -1,0 +1,10 @@
+{
+    "controller": "controllers/record",
+    "relationshipPanels": {
+        "provvigioni": {
+            "createDisabled": true,
+            "selectDisabled": false,
+            "unlinkDisabled": false
+        }
+    }
+}

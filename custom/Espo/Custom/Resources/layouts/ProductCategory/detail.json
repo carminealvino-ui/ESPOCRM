@@ -15,8 +15,14 @@
                     "name": "productBrand"
                 },
                 {
-                    "name": "gruppoProvvigione"
+                    "name": "regimeProvvigione"
                 }
+            ],
+            [
+                {
+                    "name": "gruppoProvvigione"
+                },
+                false
             ],
             [
                 {

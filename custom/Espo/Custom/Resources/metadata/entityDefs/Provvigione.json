@@ -1,0 +1,143 @@
+{
+    "fields": {
+        "statoProvvigione": {
+            "type": "enum",
+            "options": [
+                "Prevista",
+                "Consolidata",
+                "InInvito",
+                "Fatturata",
+                "Stornata"
+            ],
+            "style": {
+                "Prevista": "info",
+                "Consolidata": "primary",
+                "InInvito": "warning",
+                "Fatturata": "success",
+                "Stornata": "danger"
+            },
+            "default": "Consolidata",
+            "isCustom": true
+        },
+        "regimeProvvigione": {
+            "type": "enum",
+            "options": [
+                "",
+                "ARQUATI_PNC",
+                "ARIEL_2026",
+                "GFB_VODAFONE_COEFF",
+                "GFB_FASTWEB_POD",
+                "GFB_RS_BIMESTRE",
+                "SOLUTION_ENEL_GETTONE",
+                "GENERICO"
+            ],
+            "isCustom": true
+        },
+        "dataInstallazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataAttivazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataCompetenza": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataLiquidazionePrevista": {
+            "type": "date",
+            "readOnly": true,
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataLiquidazioneEffettiva": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "importoPrevisto": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoConsolidato": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "scostamentoImporto": {
+            "type": "currency",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "giorniLiquidazioneDaAttivazione": {
+            "type": "int",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "appuntamento": {
+            "type": "link",
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "link",
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "link",
+            "isCustom": true
+        },
+        "invitoAFatturare": {
+            "type": "link",
+            "isCustom": true
+        },
+        "fornitorePartner": {
+            "type": "link",
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "link",
+            "isCustom": true
+        }
+    },
+    "links": {
+        "appuntamento": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "Appuntamento",
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "Opportunity",
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "ProductCategory",
+            "isCustom": true
+        },
+        "invitoAFatturare": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "InvitoAFatturare",
+            "isCustom": true
+        },
+        "fornitorePartner": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "FornitorePartner",
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "ProductBrand",
+            "isCustom": true
+        }
+    }
+}

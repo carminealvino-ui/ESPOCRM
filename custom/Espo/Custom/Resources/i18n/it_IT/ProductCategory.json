@@ -1,7 +1,8 @@
 {
     "fields": {
         "productBrand": "Brand",
-        "gruppoProvvigione": "Gruppo provvigionale"
+        "gruppoProvvigione": "Gruppo provvigionale",
+        "regimeProvvigione": "Regime provvigionale"
     },
     "labels": {
         "Create ProductCategory": "Crea categoria prodotto"

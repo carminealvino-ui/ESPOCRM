@@ -1,0 +1,30 @@
+[
+    {
+        "name": "name",
+        "width": 22
+    },
+    {
+        "name": "stato",
+        "width": 12
+    },
+    {
+        "name": "consulente",
+        "width": 14
+    },
+    {
+        "name": "meseCompetenza",
+        "width": 12
+    },
+    {
+        "name": "dataInvito",
+        "width": 12
+    },
+    {
+        "name": "importoTotaleConsolidato",
+        "width": 14
+    },
+    {
+        "name": "assignedUser",
+        "width": 14
+    }
+]

@@ -489,6 +489,26 @@
             "type": "link",
             "view": "custom:views/fields/product-category-by-brand",
             "isCustom": true
+        },
+        "dataInstallazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataAttivazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true,
+            "tooltip": true,
+            "tooltipText": "Attivazione servizio (buon fine). Determina competenza e liquidazione per molti brand."
+        },
+        "importoImponibilePrevisto": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoTrattativa": {
+            "type": "currency",
+            "isCustom": true
         }
     },
     "links": {

@@ -1,0 +1,139 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "trim": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "numero": {
+            "type": "varchar",
+            "maxLength": 50,
+            "isCustom": true
+        },
+        "stato": {
+            "type": "enum",
+            "options": [
+                "Bozza",
+                "Emesso",
+                "Fatturato",
+                "Annullato"
+            ],
+            "style": {
+                "Bozza": "default",
+                "Emesso": "primary",
+                "Fatturato": "success",
+                "Annullato": "danger"
+            },
+            "default": "Bozza",
+            "isCustom": true
+        },
+        "meseCompetenza": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataInvito": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataScadenzaFatturazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "importoTotaleConsolidato": {
+            "type": "currency",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "importoTotalePrevisto": {
+            "type": "currency",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "scostamentoTotale": {
+            "type": "currency",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "consulente": {
+            "type": "link",
+            "view": "views/fields/user",
+            "isCustom": true
+        },
+        "fornitorePartner": {
+            "type": "link",
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "link",
+            "isCustom": true
+        },
+        "pagamentoProvvigionale": {
+            "type": "link",
+            "isCustom": true
+        }
+    },
+    "links": {
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "assignedUser": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "entityTeam",
+            "layoutRelationshipsDisabled": true
+        },
+        "consulente": {
+            "type": "belongsTo",
+            "foreign": "invitiAFatturare",
+            "entity": "User",
+            "isCustom": true
+        },
+        "fornitorePartner": {
+            "type": "belongsTo",
+            "foreign": "invitiAFatturare",
+            "entity": "FornitorePartner",
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "belongsTo",
+            "foreign": "invitiAFatturare",
+            "entity": "ProductBrand",
+            "isCustom": true
+        },
+        "provvigioni": {
+            "type": "hasMany",
+            "foreign": "invitoAFatturare",
+            "entity": "Provvigione",
+            "isCustom": true
+        },
+        "pagamentoProvvigionale": {
+            "type": "belongsTo",
+            "foreign": "invitoAFatturare",
+            "entity": "PagamentiProvvigionali",
+            "isCustom": true
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [
+            "name",
+            "numero"
+        ]
+    }
+}

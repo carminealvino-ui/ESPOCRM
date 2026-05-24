@@ -1,0 +1,30 @@
+{
+    "fields": {
+        "statoProvvigione": "Stato provvigione",
+        "regimeProvvigione": "Regime provvigionale",
+        "dataInstallazione": "Data installazione",
+        "dataAttivazione": "Data attivazione servizio",
+        "dataCompetenza": "Data competenza",
+        "dataLiquidazionePrevista": "Liquidazione prevista",
+        "dataLiquidazioneEffettiva": "Liquidazione effettiva",
+        "importoPrevisto": "Importo previsto",
+        "importoConsolidato": "Importo consolidato",
+        "scostamentoImporto": "Scostamento",
+        "giorniLiquidazioneDaAttivazione": "Giorni liquidazione da attivazione",
+        "appuntamento": "Appuntamento",
+        "opportunita": "Opportunita",
+        "productCategory": "Categoria prodotto",
+        "invitoAFatturare": "Invito a fatturare",
+        "fornitorePartner": "Fornitore / Partner",
+        "productBrand": "Brand"
+    },
+    "options": {
+        "statoProvvigione": {
+            "Prevista": "Prevista (forecast)",
+            "Consolidata": "Consolidata",
+            "InInvito": "In invito a fatturare",
+            "Fatturata": "Fatturata",
+            "Stornata": "Stornata"
+        }
+    }
+}

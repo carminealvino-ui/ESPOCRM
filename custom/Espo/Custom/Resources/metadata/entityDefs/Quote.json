@@ -16,6 +16,21 @@
             "isCustom": true,
             "tooltip": true,
             "tooltipText": "Categoria di riferimento dall'opportunita. Ogni riga articolo sul contratto puo avere categoria e regole provvigionali diverse."
+        },
+        "dataInstallazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataAttivazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataCompetenza": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
         }
     },
     "links": {

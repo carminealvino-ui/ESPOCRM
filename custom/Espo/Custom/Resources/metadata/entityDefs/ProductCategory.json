@@ -24,6 +24,22 @@
             "isCustom": true,
             "tooltip": true,
             "tooltipText": "Gruppo per le regole provvigionali (es. allegato ARQUATI PNC). Usato in sviluppi futuri sul calcolo provvigioni."
+        },
+        "regimeProvvigione": {
+            "type": "enum",
+            "options": [
+                "",
+                "ARQUATI_PNC",
+                "ARIEL_2026",
+                "GFB_VODAFONE_COEFF",
+                "GFB_FASTWEB_POD",
+                "GFB_RS_BIMESTRE",
+                "SOLUTION_ENEL_GETTONE",
+                "GENERICO"
+            ],
+            "isCustom": true,
+            "tooltip": true,
+            "tooltipText": "Motore di calcolo provvigionale e giorni liquidazione da attivazione."
         }
     },
     "links": {
