@@ -18,6 +18,12 @@
             ],
             [
                 {
+                    "name": "productCategory"
+                },
+                false
+            ],
+            [
+                {
                     "name": "accountName"
                 },
                 false

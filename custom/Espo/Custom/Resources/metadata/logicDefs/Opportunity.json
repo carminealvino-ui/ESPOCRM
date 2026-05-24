@@ -124,131 +124,16 @@
                     }
                 ]
             }
+        },
+        "lineaProdotto": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "productCategoryId"
+                    }
+                ]
+            }
         }
-    },
-    "options": {
-        "lineaProdotto": [
-            {
-                "optionList": [
-                    "Tende da Sole",
-                    "Pergole",
-                    "Vetrate",
-                    "Chiusure Verticali"
-                ],
-                "conditionGroup": [
-                    {
-                        "type": "has",
-                        "attribute": "azienda",
-                        "value": "ARQUATI"
-                    },
-                    {
-                        "type": "has",
-                        "attribute": "azienda",
-                        "value": "PROGETTO"
-                    },
-                    {
-                        "type": "has",
-                        "attribute": "azienda",
-                        "value": "RESOLE"
-                    }
-                ]
-            },
-            {
-                "optionList": [
-                    "Climatizzazione",
-                    "Caldaie",
-                    "Stufe",
-                    "Fotovoltaico"
-                ],
-                "conditionGroup": [
-                    {
-                        "type": "has",
-                        "attribute": "azienda",
-                        "value": "ARTEL"
-                    },
-                    {
-                        "type": "has",
-                        "attribute": "azienda",
-                        "value": "ARIEL"
-                    }
-                ]
-            },
-            {
-                "optionList": [
-                    "Tende da Sole",
-                    "Pergole",
-                    "Vetrate",
-                    "Chiusure Verticali",
-                    "Climatizzazione",
-                    "Caldaie",
-                    "Stufe",
-                    "Fotovoltaico",
-                    "TLC",
-                    "Energia",
-                    "Rental"
-                ],
-                "conditionGroup": [
-                    {
-                        "type": "has",
-                        "attribute": "azienda",
-                        "value": "GFB"
-                    }
-                ]
-            }
-        ],
-        "azienda": [
-            {
-                "optionList": [
-                    "ARQUATI",
-                    "PROGETTO"
-                ],
-                "conditionGroup": [
-                    {
-                        "type": "in",
-                        "attribute": "lineaProdotto",
-                        "value": [
-                            "Tende da Sole",
-                            "Pergole",
-                            "Vetrate",
-                            "Chiusure Verticali"
-                        ]
-                    }
-                ]
-            },
-            {
-                "optionList": [
-                    "GFB"
-                ],
-                "conditionGroup": [
-                    {
-                        "type": "in",
-                        "attribute": "lineaProdotto",
-                        "value": [
-                            "TLC",
-                            "Energia",
-                            "Rental"
-                        ]
-                    }
-                ]
-            },
-            {
-                "optionList": [
-                    "ARTEL",
-                    "ARIEL"
-                ],
-                "conditionGroup": [
-                    {
-                        "type": "in",
-                        "attribute": "lineaProdotto",
-                        "value": [
-                            "Climatizzazione",
-                            "Caldaie",
-                            "Stufe",
-                            "Fotovoltaico"
-                        ]
-                    }
-                ]
-            }
-        ]
     }
 }

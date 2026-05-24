@@ -299,6 +299,9 @@ class GlobalLogic
                 );
             }
 
+            $this->normalizeProductCascade($entity);
+
+
             // ========================================
             // FIX CAP
             // ========================================
@@ -833,6 +836,24 @@ class GlobalLogic
             $prospect->get('productBrandName')
         );
 
+        $this->setLeadFieldIfEmpty(
+            $lead,
+            'productCategoryId',
+            $prospect->get('productCategoryId')
+        );
+
+        $this->setLeadFieldIfEmpty(
+            $lead,
+            'productCategoryName',
+            $prospect->get('productCategoryName')
+        );
+
+        $this->setLeadFieldIfEmpty(
+            $lead,
+            'lineaProdotto',
+            $prospect->get('lineaProdotto')
+        );
+
         $this->resolveBrandPartnerFromAzienda(
             $lead,
             $prospect->get('azienda')
@@ -852,7 +873,10 @@ class GlobalLogic
             'fornitorePartnerId',
             'fornitorePartnerName',
             'productBrandId',
-            'productBrandName'
+            'productBrandName',
+            'productCategoryId',
+            'productCategoryName',
+            'lineaProdotto'
         ];
 
         foreach ($fieldList as $field) {
@@ -943,4 +967,77 @@ class GlobalLogic
             $value
         );
     }
+
+    // =====================================================
+    // CASCADE PARTNER / BRAND / CATEGORIA (2.2.0)
+    // =====================================================
+
+    private function normalizeProductCascade(Entity $entity): void
+    {
+        if ($entity->get('productBrandId') && !$entity->get('fornitorePartnerId')) {
+            $brand = $this->entityManager->getEntityById(
+                'ProductBrand',
+                $entity->get('productBrandId')
+            );
+
+            if ($brand && $brand->get('fornitorePartnerId')) {
+                $entity->set(
+                    'fornitorePartnerId',
+                    $brand->get('fornitorePartnerId')
+                );
+
+                $entity->set(
+                    'fornitorePartnerName',
+                    $brand->get('fornitorePartnerName')
+                );
+            }
+        }
+
+        if (!$entity->get('productCategoryId')) {
+            return;
+        }
+
+        $category = $this->entityManager->getEntityById(
+            'ProductCategory',
+            $entity->get('productCategoryId')
+        );
+
+        if (!$category) {
+            return;
+        }
+
+        if ($category->get('lineaProdotto')) {
+            $entity->set(
+                'lineaProdotto',
+                $category->get('lineaProdotto')
+            );
+        }
+
+        if (!$category->get('productBrandId')) {
+            return;
+        }
+
+        if (
+            $entity->get('productBrandId') &&
+            $entity->get('productBrandId') !== $category->get('productBrandId')
+        ) {
+            $entity->set('productCategoryId', null);
+            $entity->set('productCategoryName', null);
+
+            return;
+        }
+
+        if (!$entity->get('productBrandId')) {
+            $entity->set(
+                'productBrandId',
+                $category->get('productBrandId')
+            );
+
+            $entity->set(
+                'productBrandName',
+                $category->get('productBrandName')
+            );
+        }
+    }
+
 }

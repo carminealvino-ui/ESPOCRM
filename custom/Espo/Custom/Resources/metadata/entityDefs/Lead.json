@@ -287,10 +287,17 @@
         },
         "fornitorePartner": {
             "type": "link",
+            "view": "custom:views/fields/fornitore-partner-cascade",
             "isCustom": true
         },
         "productBrand": {
             "type": "link",
+            "view": "custom:views/fields/product-brand-by-partner",
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "link",
+            "view": "custom:views/fields/product-category-by-brand",
             "isCustom": true
         }
     },
@@ -350,6 +357,13 @@
             "type": "belongsTo",
             "foreign": "leads",
             "entity": "ProductBrand",
+            "audited": false,
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "belongsTo",
+            "foreign": "leads",
+            "entity": "ProductCategory",
             "audited": false,
             "isCustom": true
         }

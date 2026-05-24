@@ -19,6 +19,9 @@
             ],
             [
                 {
+                    "name": "productCategory"
+                },
+                {
                     "name": "lineaProdotto"
                 }
             ],
@@ -123,7 +126,7 @@
         "dynamicLogicVisible": null,
         "style": "default",
         "hidden": false,
-        "customLabel": "Formulazione Opportunità"
+        "customLabel": "Formulazione Opportunit\u00e0"
     },
     {
         "rows": [

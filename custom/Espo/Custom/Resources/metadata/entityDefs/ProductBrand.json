@@ -3,6 +3,13 @@
         "fornitorePartner": {
             "type": "link",
             "isCustom": true
+        },
+        "productCategories": {
+            "type": "linkMultiple",
+            "layoutDetailDisabled": true,
+            "layoutListDisabled": true,
+            "noLoad": true,
+            "isCustom": true
         }
     },
     "links": {
@@ -38,6 +45,13 @@
             "type": "hasMany",
             "foreign": "productBrand",
             "entity": "Opportunity",
+            "audited": false,
+            "isCustom": true
+        },
+        "productCategories": {
+            "type": "hasMany",
+            "foreign": "productBrand",
+            "entity": "ProductCategory",
             "audited": false,
             "isCustom": true
         }

@@ -1,0 +1,9 @@
+{
+    "fields": {
+        "productBrand": "Brand",
+        "lineaProdotto": "Linea prodotto"
+    },
+    "labels": {
+        "Create ProductCategory": "Crea categoria prodotto"
+    }
+}

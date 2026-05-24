@@ -1,0 +1,79 @@
+{
+    "fields": {
+        "productBrand": {
+            "type": "link",
+            "isCustom": true
+        },
+        "lineaProdotto": {
+            "type": "enum",
+            "options": [
+                "",
+                "Tende da Sole",
+                "Pergole",
+                "Vetrate",
+                "Chiusure Verticali",
+                "Climatizzazione",
+                "Caldaie",
+                "Stufe",
+                "Fotovoltaico",
+                "TLC",
+                "Energia",
+                "Rental"
+            ],
+            "style": {
+                "": null,
+                "Tende da Sole": null,
+                "Pergole": null,
+                "Vetrate": null,
+                "Chiusure Verticali": null,
+                "Climatizzazione": null,
+                "Caldaie": null,
+                "Stufe": null,
+                "Fotovoltaico": null,
+                "TLC": null,
+                "Energia": null,
+                "Rental": null
+            },
+            "maxLength": 100,
+            "isCustom": true,
+            "default": null
+        }
+    },
+    "links": {
+        "productBrand": {
+            "type": "belongsTo",
+            "foreign": "productCategories",
+            "entity": "ProductBrand",
+            "audited": false,
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "hasMany",
+            "foreign": "productCategory",
+            "entity": "Opportunity",
+            "audited": false,
+            "isCustom": true
+        },
+        "appuntamenti": {
+            "type": "hasMany",
+            "foreign": "productCategory",
+            "entity": "Appuntamento",
+            "audited": false,
+            "isCustom": true
+        },
+        "leads": {
+            "type": "hasMany",
+            "foreign": "productCategory",
+            "entity": "Lead",
+            "audited": false,
+            "isCustom": true
+        },
+        "prospects": {
+            "type": "hasMany",
+            "foreign": "productCategory",
+            "entity": "Prospect",
+            "audited": false,
+            "isCustom": true
+        }
+    }
+}
