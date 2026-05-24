@@ -1,0 +1,41 @@
+{
+    "fields": {
+        "fornitorePartner": {
+            "type": "link",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "link",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "link",
+            "readOnly": true,
+            "isCustom": true,
+            "tooltip": true,
+            "tooltipText": "Categoria di riferimento dall'opportunita. Ogni riga articolo sul contratto puo avere categoria e regole provvigionali diverse."
+        }
+    },
+    "links": {
+        "fornitorePartner": {
+            "type": "belongsTo",
+            "entity": "FornitorePartner",
+            "foreign": "quotes",
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "belongsTo",
+            "entity": "ProductBrand",
+            "foreign": "quotes",
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "belongsTo",
+            "entity": "ProductCategory",
+            "foreign": "quotes",
+            "isCustom": true
+        }
+    }
+}
