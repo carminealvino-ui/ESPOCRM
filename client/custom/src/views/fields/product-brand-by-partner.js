@@ -1,5 +1,5 @@
 // ========================================
-// VERSIONE: 1.0.1
+// VERSIONE: 1.1.0
 // DATA: 2026-05-24
 // FILE: client/custom/src/views/fields/product-brand-by-partner.js
 // ========================================
@@ -20,8 +20,7 @@ define('custom:views/fields/product-brand-by-partner', ['views/fields/link'], fu
 
                 model.set({
                     productCategoryId: null,
-                    productCategoryName: null,
-                    lineaProdotto: null
+                    productCategoryName: null
                 }, {ui: true});
             });
         },

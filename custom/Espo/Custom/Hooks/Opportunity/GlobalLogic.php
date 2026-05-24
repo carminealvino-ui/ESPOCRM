@@ -1,7 +1,7 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.0
+// VERSIONE: 2.2.1
 // DATA: 2026-05-22
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
@@ -757,7 +757,6 @@ class GlobalLogic
             'productBrandName',
             'productCategoryId',
             'productCategoryName',
-            'lineaProdotto'
         ];
 
         foreach ($fieldList as $field) {
@@ -811,12 +810,6 @@ class GlobalLogic
             return;
         }
 
-        if ($category->get('lineaProdotto')) {
-            $entity->set(
-                'lineaProdotto',
-                $category->get('lineaProdotto')
-            );
-        }
 
         if (!$category->get('productBrandId')) {
             return;

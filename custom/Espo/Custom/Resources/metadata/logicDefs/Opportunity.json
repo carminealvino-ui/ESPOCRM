@@ -124,16 +124,6 @@
                     }
                 ]
             }
-        },
-        "lineaProdotto": {
-            "readOnly": {
-                "conditionGroup": [
-                    {
-                        "type": "isNotEmpty",
-                        "attribute": "productCategoryId"
-                    }
-                ]
-            }
         }
     }
 }

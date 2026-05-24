@@ -4,39 +4,26 @@
             "type": "link",
             "isCustom": true
         },
-        "lineaProdotto": {
+        "gruppoProvvigione": {
             "type": "enum",
             "options": [
                 "",
                 "Tende da Sole",
                 "Pergole",
                 "Vetrate",
-                "Chiusure Verticali",
-                "Climatizzazione",
-                "Caldaie",
-                "Stufe",
-                "Fotovoltaico",
-                "TLC",
-                "Energia",
-                "Rental"
+                "Clima e altro"
             ],
             "style": {
                 "": null,
                 "Tende da Sole": null,
                 "Pergole": null,
                 "Vetrate": null,
-                "Chiusure Verticali": null,
-                "Climatizzazione": null,
-                "Caldaie": null,
-                "Stufe": null,
-                "Fotovoltaico": null,
-                "TLC": null,
-                "Energia": null,
-                "Rental": null
+                "Clima e altro": null
             },
             "maxLength": 100,
             "isCustom": true,
-            "default": null
+            "tooltip": true,
+            "tooltipText": "Gruppo per le regole provvigionali (es. allegato ARQUATI PNC). Usato in sviluppi futuri sul calcolo provvigioni."
         }
     },
     "links": {

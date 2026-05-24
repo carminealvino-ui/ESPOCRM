@@ -1,5 +1,5 @@
 // ========================================
-// VERSIONE: 1.0.0
+// VERSIONE: 1.1.0
 // DATA: 2026-05-24
 // FILE: client/custom/src/views/fields/fornitore-partner-cascade.js
 // ========================================
@@ -22,8 +22,7 @@ define('custom:views/fields/fornitore-partner-cascade', ['views/fields/link'], f
                     productBrandId: null,
                     productBrandName: null,
                     productCategoryId: null,
-                    productCategoryName: null,
-                    lineaProdotto: null
+                    productCategoryName: null
                 }, {ui: true});
             });
         }

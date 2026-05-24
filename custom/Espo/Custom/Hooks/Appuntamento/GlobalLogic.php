@@ -848,12 +848,6 @@ class GlobalLogic
             $prospect->get('productCategoryName')
         );
 
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'lineaProdotto',
-            $prospect->get('lineaProdotto')
-        );
-
         $this->resolveBrandPartnerFromAzienda(
             $lead,
             $prospect->get('azienda')
@@ -876,7 +870,6 @@ class GlobalLogic
             'productBrandName',
             'productCategoryId',
             'productCategoryName',
-            'lineaProdotto'
         ];
 
         foreach ($fieldList as $field) {
@@ -1006,12 +999,6 @@ class GlobalLogic
             return;
         }
 
-        if ($category->get('lineaProdotto')) {
-            $entity->set(
-                'lineaProdotto',
-                $category->get('lineaProdotto')
-            );
-        }
 
         if (!$category->get('productBrandId')) {
             return;
