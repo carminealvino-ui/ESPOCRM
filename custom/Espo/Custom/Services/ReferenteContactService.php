@@ -232,6 +232,20 @@ class ReferenteContactService
         return null;
     }
 
+
+    private function linkLeadToContact(?Entity $lead, Entity $contact): void
+    {
+        if (!$lead) {
+            return;
+        }
+
+        $lead->set([
+            'createdContactId' => $contact->getId(),
+            'createdContactName' => $contact->get('name'),
+        ]);
+        $this->entityManager->saveEntity($lead, ['silent' => true]);
+    }
+
     /**
      * @param array<string, mixed> $payload
      */
