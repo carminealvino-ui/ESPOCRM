@@ -9,10 +9,11 @@ use Espo\ORM\EntityManager;
 /**
  * Crea contratto (Quote) da Opportunity chiusa positivamente.
  *
- * VERSIONE: 2.1.0
+ * VERSIONE: 2.2.0
  * - Risolve Cliente (account) da Account, Prospect.cliente o Lead
  * - Evita ID Prospect nel campo account
  * - Copia indirizzi, contatti e data contratto
+ * - IVA, totali, CAP, installatore, contatto contraente da prospect/lead
  */
 class CreateContratto
 {
@@ -217,7 +218,6 @@ class CreateContratto
         ?Entity $lead
     ): Entity {
         $amount = $opportunity->get('amount') ?: $opportunity->get('importoOpportunita');
-        $dateQuoted = $this->resolveDateQuoted($opportunity);
 
         $dataInstallazione = $opportunity->get('installazione');
         $dataAttivazione = $opportunity->get('dataAttivazione');
@@ -230,14 +230,16 @@ class CreateContratto
             );
         }
 
-        if (!$dataAttivazione && $opportunity->get('appuntamentoId')) {
+        $appuntamento = null;
+
+        if ($opportunity->get('appuntamentoId')) {
             $appuntamento = $this->entityManager->getEntityById(
                 'Appuntamento',
                 $opportunity->get('appuntamentoId')
             );
 
             if ($appuntamento) {
-                $dataAttivazione = $appuntamento->get('dataAttivazione');
+                $dataAttivazione = $dataAttivazione ?: $appuntamento->get('dataAttivazione');
                 $dataInstallazione = $dataInstallazione ?: $appuntamento->get('dataInstallazione');
             }
         }
@@ -252,6 +254,7 @@ class CreateContratto
         $quote = $this->entityManager->createEntity('Quote');
 
         $quoteName = $opportunity->get('name') ?: $opportunity->get('description');
+        $dateQuoted = $this->resolveDateQuoted($opportunity, $appuntamento);
 
         $quote->set([
             'name' => $quoteName,
@@ -294,10 +297,14 @@ class CreateContratto
             $this->applyAddressesFromSource($quote, $opportunity, $lead, $prospect);
         }
 
+        $this->ensureBillingContact($quote, $accountId, $lead, $prospect);
+        $this->applyOpportunityExtras($quote, $opportunity);
+        $this->applyTaxAndTotals($quote, $opportunity);
+
         return $quote;
     }
 
-    private function resolveDateQuoted(Entity $opportunity): string
+    private function resolveDateQuoted(Entity $opportunity, ?Entity $appuntamento): string
     {
         foreach (['closeDate', 'dateClosed', 'dataOpportunit'] as $field) {
             $value = $opportunity->get($field);
@@ -307,7 +314,136 @@ class CreateContratto
             }
         }
 
+        if ($appuntamento && $appuntamento->get('dateStart')) {
+            return substr((string) $appuntamento->get('dateStart'), 0, 10);
+        }
+
         return date('Y-m-d');
+    }
+
+
+    private function ensureBillingContact(
+        Entity $quote,
+        ?string $accountId,
+        ?Entity $lead,
+        ?Entity $prospect
+    ): void {
+        if ($quote->get('billingContactId')) {
+            return;
+        }
+
+        $source = $prospect ?? $lead;
+
+        if (!$source) {
+            return;
+        }
+
+        $firstName = $source->get('firstName');
+        $lastName = $source->get('lastName');
+        $name = $source->get('name');
+
+        if (!$name && ($firstName || $lastName)) {
+            $name = trim(($firstName ?? '') . ' ' . ($lastName ?? ''));
+        }
+
+        if (!$name) {
+            return;
+        }
+
+        $contact = $this->entityManager->createEntity('Contact');
+
+        $contact->set([
+            'firstName' => $firstName ?: $name,
+            'lastName' => $lastName,
+            'name' => $name,
+            'addressStreet' => $source->get('addressStreet'),
+            'addressCity' => $source->get('addressCity'),
+            'addressPostalCode' => $source->get('addressPostalCode'),
+            'addressState' => $source->get('addressState'),
+            'phoneNumber' => $source->get('phoneNumber'),
+            'accountId' => $accountId,
+            'assignedUserId' => $quote->get('assignedUserId'),
+        ]);
+
+        $this->entityManager->saveEntity($contact);
+
+        $quote->set([
+            'billingContactId' => $contact->getId(),
+            'billingContactName' => $contact->get('name'),
+            'shippingContactId' => $contact->getId(),
+            'shippingContactName' => $contact->get('name'),
+        ]);
+    }
+
+    private function applyOpportunityExtras(Entity $quote, Entity $opportunity): void
+    {
+        if ($opportunity->get('cAPId')) {
+            $quote->set([
+                'cAPId' => $opportunity->get('cAPId'),
+                'cAPName' => $opportunity->get('cAPName'),
+            ]);
+        }
+
+        $installatore = trim((string) ($opportunity->get('installatore') ?? ''));
+
+        if ($installatore === '') {
+            return;
+        }
+
+        $provider = $this->entityManager
+            ->getRDBRepository('ShippingProvider')
+            ->where(['name' => $installatore])
+            ->findOne();
+
+        if ($provider) {
+            $quote->set([
+                'shippingProviderId' => $provider->getId(),
+                'shippingProviderName' => $provider->get('name'),
+            ]);
+        }
+    }
+
+    private function applyTaxAndTotals(Entity $quote, Entity $opportunity): void
+    {
+        $amount = (float) ($quote->get('amount') ?? 0);
+        $taxRate = $this->normalizeTaxRate(
+            $opportunity->get('iVA') ?? $quote->get('taxRate') ?? 0.1
+        );
+
+        $taxAmount = 0.0;
+
+        if ($amount > 0) {
+            if ($quote->get('isTaxInclusive')) {
+                $net = $amount / (1 + $taxRate);
+                $taxAmount = $amount - $net;
+            } else {
+                $taxAmount = $amount * $taxRate;
+            }
+        }
+
+        $quote->set([
+            'taxRate' => $taxRate,
+            'aliquotaIVA' => round($taxRate * 100, 2),
+            'taxAmount' => $taxAmount,
+            'taxAmountCurrency' => $quote->get('amountCurrency'),
+            'grandTotalAmount' => $amount,
+            'grandTotalAmountCurrency' => $quote->get('amountCurrency'),
+        ]);
+    }
+
+    private function normalizeTaxRate(mixed $value): float
+    {
+        $rate = (float) $value;
+
+        if ($rate <= 0) {
+            return 0.1;
+        }
+
+        if ($rate > 1) {
+            return $rate / 100;
+        }
+
+        return $rate;
     }
 
     private function applyAccountToQuote(
