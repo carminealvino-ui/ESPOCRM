@@ -341,7 +341,7 @@ class CreateContratto
                         $accountId,
                         $cliente->get('name')
                     );
-                    $this->syncOpportunityAccount($opportunity, $accountId);
+                    $this->syncOpportunityAccount($opportunity, $accountId, $lead, $prospect);
                 }
             } else {
                 $accountId = null;
@@ -406,7 +406,7 @@ class CreateContratto
                     );
                 }
 
-                $this->syncOpportunityAccount($opportunity, $accountId);
+                $this->syncOpportunityAccount($opportunity, $accountId, $lead, $prospect);
             }
         }
 
@@ -1006,7 +1006,7 @@ class CreateContratto
         return $patch;
     }
 
-    private function syncOpportunityAccount($opportunity, string $accountId): void
+    private function syncOpportunityAccount($opportunity, string $accountId, $lead = null, $prospect = null): void
     {
         $account = $this->entityManager->getEntityById('Account', $accountId);
 
@@ -1014,11 +1014,28 @@ class CreateContratto
             return;
         }
 
-        if ($opportunity->get('accountId') !== $accountId) {
-            $opportunity->set([
-                'accountId' => $accountId,
-                'accountName' => $account->get('name'),
+        $patch = [
+            'accountId' => $accountId,
+            'accountName' => $account->get('name'),
+        ];
+
+        $referente = (new \Espo\Custom\Services\ReferenteContactService($this->entityManager))
+            ->ensureForAccount($accountId, [
+                'lead' => $lead,
+                'prospect' => $prospect,
+                'assignedUserId' => $opportunity->get('assignedUserId'),
             ]);
+
+        if ($referente) {
+            $patch['contactId'] = $referente['id'];
+            $patch['contactName'] = $referente['name'];
+        }
+
+        $needsSave = $opportunity->get('accountId') !== $accountId
+            || ($referente && $opportunity->get('contactId') !== $referente['id']);
+
+        if ($needsSave) {
+            $opportunity->set($patch);
             $this->entityManager->saveEntity($opportunity);
         }
     }

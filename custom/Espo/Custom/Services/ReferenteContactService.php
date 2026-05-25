@@ -44,6 +44,7 @@ class ReferenteContactService
 
         if ($existing) {
             $this->patchContactIfNeeded($existing, $payload);
+            $this->linkLeadToContact($lead, $existing);
 
             return [
                 'id' => $existing->getId(),

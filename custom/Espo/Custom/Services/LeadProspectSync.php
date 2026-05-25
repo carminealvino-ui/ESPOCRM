@@ -157,6 +157,22 @@ class LeadProspectSync
     /**
      * @param bool $onlyEmpty non sovrascrive campi già valorizzati (tranne description da prospect se presente)
      */
+
+    private function syncCapFromProspect(Entity $lead, Entity $prospect, bool $onlyEmpty): bool
+    {
+        $changed = false;
+
+        if ($prospect->get('cAPId')) {
+            if (!$onlyEmpty || !$lead->get('cAPId')) {
+                $lead->set('cAPId', $prospect->get('cAPId'));
+                $lead->set('cAPName', $prospect->get('cAPName'));
+                $changed = true;
+            }
+        }
+
+        return $changed;
+    }
+
     public function syncLeadFromProspect(
         Entity $lead,
         Entity $prospect,
@@ -207,6 +223,10 @@ class LeadProspectSync
             }
 
             $lead->set($field, $value);
+            $changed = true;
+        }
+
+        if ($this->syncCapFromProspect($lead, $prospect, $onlyEmpty)) {
             $changed = true;
         }
 
@@ -404,6 +424,68 @@ class LeadProspectSync
         return null;
     }
 
+
+    /**
+     * @return array{leadId:string, updated:bool, accountUpdated:bool, contactEnsured:bool}
+     */
+    public function repairOneLead(string $leadId, bool $onlyEmpty = true): array
+    {
+        $result = [
+            'leadId' => $leadId,
+            'updated' => false,
+            'accountUpdated' => false,
+            'contactEnsured' => false,
+        ];
+
+        $lead = $this->entityManager->getEntityById('Lead', $leadId);
+
+        if (!$lead) {
+            return $result;
+        }
+
+        $prospect = $this->findProspectForLead($lead);
+        $this->fixInvalidCreatedAccountId($lead, $prospect);
+
+        if ($prospect) {
+            if ($this->syncLeadFromProspect($lead, $prospect, $onlyEmpty)) {
+                $this->entityManager->saveEntity($lead);
+                $result['updated'] = true;
+            }
+        }
+
+        $accountId = $lead->get('createdAccountId');
+
+        if ($accountId) {
+            $account = $this->entityManager->getEntityById('Account', $accountId);
+
+            if ($account && $this->enrichAccountFromLead($account, $lead, $onlyEmpty)) {
+                $this->entityManager->saveEntity($account);
+                $result['accountUpdated'] = true;
+            }
+
+            if ($prospect) {
+                $this->linkProspectToAccount($prospect, $accountId, $account->get('name'));
+            }
+
+            $referente = (new ReferenteContactService($this->entityManager))
+                ->ensureForAccount($accountId, [
+                    'lead' => $lead,
+                    'prospect' => $prospect,
+                ]);
+
+            if ($referente) {
+                $result['contactEnsured'] = true;
+                $this->syncOpportunitiesFromLead(
+                    $lead,
+                    $accountId,
+                    $referente['id']
+                );
+            }
+        }
+
+        return $result;
+    }
+
     public function repairAllLeads(bool $onlyEmpty = true, ?int $limit = null): array
     {
         $stats = [
@@ -467,6 +549,12 @@ class LeadProspectSync
                         if ($referente) {
                             $stats['contactsEnsured']++;
                         }
+
+                        $this->syncOpportunitiesFromLead(
+                            $lead,
+                            $accountId,
+                            $referente['id'] ?? $lead->get('createdContactId')
+                        );
                     } elseif (!$leadChanged) {
                         $stats['skipped']++;
                     }

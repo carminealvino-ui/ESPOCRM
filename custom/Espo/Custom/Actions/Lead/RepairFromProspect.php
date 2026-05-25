@@ -24,8 +24,13 @@ class RepairFromProspect
     {
         $onlyEmpty = $params['onlyEmpty'] ?? true;
         $limit = $params['limit'] ?? null;
+        $leadId = $params['leadId'] ?? null;
 
         $sync = new LeadProspectSync($this->entityManager);
+
+        if ($leadId) {
+            return (object) $sync->repairOneLead($leadId, $onlyEmpty);
+        }
 
         $stats = $sync->repairAllLeads($onlyEmpty, $limit);
 

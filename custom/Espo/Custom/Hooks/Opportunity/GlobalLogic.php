@@ -266,6 +266,7 @@ namespace Espo\Custom\Hooks\Opportunity;
 
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
+use Espo\Custom\Services\ReferenteContactService;
 
 class GlobalLogic
 {
@@ -389,6 +390,7 @@ class GlobalLogic
 
         if (!$appuntamento) {
             $this->linkLeadFromProspectIfMissing($entity);
+            $this->syncAccountAndContactFromLead($entity);
             return;
         }
 
@@ -677,6 +679,8 @@ class GlobalLogic
             );
         }
 
+        $this->syncAccountAndContactFromLead($entity);
+
 
         // =====================================================
         // FINE HOOK
@@ -844,6 +848,68 @@ class GlobalLogic
     // =====================================================
     // LEAD DA PROSPECT (opportunità senza appuntamento)
     // =====================================================
+
+
+    private function syncAccountAndContactFromLead(Entity $entity): void
+    {
+        if (!$entity->get('leadId')) {
+            return;
+        }
+
+        $lead = $this->entityManager->getEntityById('Lead', $entity->get('leadId'));
+
+        if (!$lead) {
+            return;
+        }
+
+        $accountId = $lead->get('createdAccountId');
+
+        if (!$accountId) {
+            $prospectId = $entity->get('prospectId') ?: $lead->get('prospectId');
+
+            if ($prospectId) {
+                $prospect = $this->entityManager->getEntityById('Prospect', $prospectId);
+
+                if ($prospect && $prospect->get('clienteId')) {
+                    $accountId = $prospect->get('clienteId');
+                }
+            }
+        }
+
+        if ($accountId && $this->entityManager->getEntityById('Account', $accountId)) {
+            if (!$entity->get('accountId')) {
+                $account = $this->entityManager->getEntityById('Account', $accountId);
+                $entity->set('accountId', $accountId);
+                $entity->set('accountName', $account->get('name'));
+            }
+        }
+
+        if (!$entity->get('accountId')) {
+            return;
+        }
+
+        $prospect = null;
+
+        if ($entity->get('prospectId')) {
+            $prospect = $this->entityManager->getEntityById('Prospect', $entity->get('prospectId'));
+        }
+
+        $referente = (new ReferenteContactService($this->entityManager))
+            ->ensureForAccount($entity->get('accountId'), [
+                'lead' => $lead,
+                'prospect' => $prospect,
+                'assignedUserId' => $entity->get('assignedUserId'),
+            ]);
+
+        if ($referente && !$entity->get('contactId')) {
+            $entity->set('contactId', $referente['id']);
+            $entity->set('contactName', $referente['name']);
+        }
+
+        if ($entity->isAttributeChanged('accountId') || $entity->isAttributeChanged('contactId')) {
+            $this->entityManager->saveEntity($entity, ['silent' => true]);
+        }
+    }
 
     private function linkLeadFromProspectIfMissing(Entity $entity): void
     {
