@@ -8,7 +8,7 @@ use Espo\ORM\EntityManager;
 /**
  * Crea contratto (Quote) da Opportunity chiusa positivamente.
  *
- * VERSIONE: 2.5.0 (Fase 1)
+ * VERSIONE: 2.6.0 (Fase 1)
  * - Risolve Cliente (account) da Account, Prospect.cliente o Lead
  * - Evita ID Prospect nel campo account
  * - Copia indirizzi, contatti e data contratto
@@ -248,7 +248,7 @@ class CreateContratto
 
         $quote->set([
             'status' => 'Draft',
-            'hookVersion' => $opportunity->get('hookVersion') ?: 'CreateContratto-2.4.0',
+            'hookVersion' => $this->resolveHookVersion($opportunity),
             'opportunityId' => $opportunity->getId(),
             'opportunityName' => $opportunity->get('name'),
             'amount' => $amount,
@@ -268,12 +268,6 @@ class CreateContratto
             'itemList' => [],
             'assignedUserId' => $opportunity->get('assignedUserId'),
             'teamsIds' => $teamsIds,
-            'fornitorePartnerId' => $opportunity->get('fornitorePartnerId'),
-            'fornitorePartnerName' => $opportunity->get('fornitorePartnerName'),
-            'productBrandId' => $opportunity->get('productBrandId'),
-            'productBrandName' => $opportunity->get('productBrandName'),
-            'productCategoryId' => $opportunity->get('productCategoryId'),
-            'productCategoryName' => $opportunity->get('productCategoryName'),
             'dataInstallazione' => $dataInstallazione,
             'dataAttivazione' => $dataAttivazione,
             'dataCompetenza' => $dataAttivazione
@@ -289,6 +283,7 @@ class CreateContratto
 
         $this->ensureBillingContact($quote, $accountId, $lead, $prospect);
         $this->applyOpportunityExtras($quote, $opportunity);
+        $this->applyPartnerBrandCategory($quote, $opportunity);
         $this->applyTaxAndTotals($quote, $opportunity);
         $this->finalizeAccountLink($quote, $accountId);
 

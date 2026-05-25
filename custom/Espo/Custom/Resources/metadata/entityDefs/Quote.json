@@ -41,6 +41,12 @@
             "type": "int",
             "minValue": 0,
             "isCustom": true
+        },
+        "hookVersion": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
         }
     },
     "links": {

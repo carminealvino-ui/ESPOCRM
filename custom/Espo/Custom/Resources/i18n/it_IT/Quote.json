@@ -1,0 +1,13 @@
+{
+    "fields": {
+        "fornitorePartner": "Fornitore / Partner",
+        "productBrand": "Brand",
+        "productCategory": "Categoria prodotto",
+        "hookVersion": "HookVersion"
+    },
+    "links": {
+        "fornitorePartner": "Fornitore / Partner",
+        "productBrand": "Brand",
+        "productCategory": "Categoria prodotto"
+    }
+}
