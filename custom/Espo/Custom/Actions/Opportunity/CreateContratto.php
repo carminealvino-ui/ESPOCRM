@@ -71,6 +71,12 @@
 // FIX COMPLETO DATI CONTRATTO
 //
 // 1.7.0 (base: custom.zip 12-05-2026 + correzioni branch)
+//
+// 1.7.1
+// -----------------------------------------------------
+// - Nome contratto solo via formula Quote (no name in PHP)
+// - accountName / billingContactName prima del primo save
+// - Fix accountId = id Prospect errato
 // -----------------------------------------------------
 // - importoOpportunit (nome campo corretto)
 // - Cliente da Prospect.cliente / creazione Account
@@ -379,16 +385,69 @@ class CreateContratto
 
         // Validazione accountId (evita ID prospect nel campo Cliente)
         if ($accountId && !$this->entityManager->getEntityById('Account', $accountId)) {
-            $accountId = null;
+            $prospectAsAccount = $this->entityManager->getEntityById('Prospect', $accountId);
+            if ($prospectAsAccount && $prospectAsAccount->get('clienteId')) {
+                $clienteId = $prospectAsAccount->get('clienteId');
+                if ($this->entityManager->getEntityById('Account', $clienteId)) {
+                    $accountId = $clienteId;
+                } else {
+                    $accountId = null;
+                }
+            } else {
+                $accountId = null;
+            }
         }
 
         // =====================================================
-        // NOME CONTRATTO
+        // ETICHETTE PER FORMULA NOME (prima del save)
         // =====================================================
 
-        $quoteName =
-            'CONTRATTO_' .
-            date('Ymd_His');
+        $accountName = null;
+        $billingContactId = null;
+        $billingContactName = null;
+        $shippingContactId = null;
+        $shippingContactName = null;
+
+        if ($accountId) {
+            $account = $this->entityManager->getEntityById('Account', $accountId);
+            if ($account) {
+                $accountName = $account->get('name');
+            }
+        }
+
+        if ($lead) {
+            $billingContactName = $lead->get('name') ?: $billingContactName;
+        }
+
+        if (!$billingContactId && $opportunity->get('prospectId')) {
+            $prospect = $this->entityManager->getEntityById(
+                'Prospect',
+                $opportunity->get('prospectId')
+            );
+            if ($prospect) {
+                $nome = $prospect->get('name');
+                if (!$nome) {
+                    $nome = trim(
+                        ($prospect->get('firstName') ?? '') . ' ' . ($prospect->get('lastName') ?? '')
+                    );
+                }
+                if ($nome) {
+                    $billingContactName = $nome;
+                    $contact = $this->entityManager->createEntity('Contact');
+                    $contact->set([
+                        'name' => $nome,
+                        'firstName' => $prospect->get('firstName'),
+                        'lastName' => $prospect->get('lastName'),
+                        'accountId' => $accountId,
+                        'assignedUserId' => $opportunity->get('assignedUserId'),
+                    ]);
+                    $this->entityManager->saveEntity($contact);
+                    $billingContactId = $contact->getId();
+                    $shippingContactId = $billingContactId;
+                    $shippingContactName = $contact->get('name');
+                }
+            }
+        }
 
         // =====================================================
         // IMPORTO
@@ -508,7 +567,7 @@ class CreateContratto
             }
         }
 
-        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.7.0';
+        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.7.1';
         $installatoreId = $opportunity->get('installatoreId');
 
 
@@ -527,14 +586,26 @@ class CreateContratto
             // BASE
             // =================================================
 
-            'name' =>
-                $quoteName,
-
             'opportunityId' =>
                 $opportunity->getId(),
 
             'accountId' =>
                 $accountId,
+
+            'accountName' =>
+                $accountName,
+
+            'billingContactId' =>
+                $billingContactId,
+
+            'billingContactName' =>
+                $billingContactName,
+
+            'shippingContactId' =>
+                $shippingContactId,
+
+            'shippingContactName' =>
+                $shippingContactName,
 
             'opportunityName' =>
                 $opportunity->get('name'),
@@ -672,43 +743,7 @@ class CreateContratto
         // SAVE CONTRATTO
         // =====================================================
 
-        // =====================================================
-        // CLIENTE NOME + CONTATTO (1.7.0)
-        // =====================================================
-
-        if ($accountId) {
-            $account = $this->entityManager->getEntityById('Account', $accountId);
-            if ($account) {
-                $quote->set([
-                    'accountId' => $accountId,
-                    'accountName' => $account->get('name'),
-                ]);
-            }
-        }
-
-        if (!$quote->get('billingContactId') && $opportunity->get('prospectId')) {
-            $prospect = $this->entityManager->getEntityById('Prospect', $opportunity->get('prospectId'));
-            if ($prospect) {
-                $nome = $prospect->get('name') ?: trim(($prospect->get('firstName') ?? '') . ' ' . ($prospect->get('lastName') ?? ''));
-                if ($nome) {
-                    $contact = $this->entityManager->createEntity('Contact');
-                    $contact->set([
-                        'name' => $nome,
-                        'firstName' => $prospect->get('firstName'),
-                        'lastName' => $prospect->get('lastName'),
-                        'accountId' => $accountId,
-                        'assignedUserId' => $opportunity->get('assignedUserId'),
-                    ]);
-                    $this->entityManager->saveEntity($contact);
-                    $quote->set([
-                        'billingContactId' => $contact->getId(),
-                        'billingContactName' => $contact->get('name'),
-                        'shippingContactId' => $contact->getId(),
-                        'shippingContactName' => $contact->get('name'),
-                    ]);
-                }
-            }
-        }
+        // Nome contratto: formula Quote beforeSave (non impostare name qui)
 
         $this->entityManager->saveEntity($quote);
 
