@@ -104,6 +104,11 @@
 // backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.4-brand-fallback-stabile.php
 //
+// 1.7.0 (25-05-2026)
+// -----------------------------------------------------
+// - Sync Lead completo da Prospect (email, WhatsApp, telefono da wa.me)
+// - LeadProspectSync + repair massivo Lead/action/repairFromProspect
+//
 // MAPPATURA:
 //
 // Appuntamento.sottostato
@@ -488,29 +493,16 @@ class GlobalLogic
 
             ) {
 
-                $phone = $prospect->get('phoneNumber');
+                $leadSync = new LeadProspectSync($this->entityManager);
 
-                $existingLead = null;
-
-                if ($phone) {
-
-                    $existingLead = $this->entityManager
-                        ->getRepository('Lead')
-                        ->where([
-                            'phoneNumber' => $phone
-                        ])
-                        ->findOne();
-                }
+                $existingLead = $leadSync->findExistingLeadByProspect($prospect);
 
                 $lead = $existingLead;
 
+                $isNewLead = !$lead;
+
                 // ========================================
                 // MAPPING STATO LEAD (1.6.2)
-                // ========================================
-                //
-                // Default per tutti gli altri sottostati Held:
-                // In Process.
-                //
                 // ========================================
 
                 $leadStatus = 'In Process';
@@ -542,95 +534,33 @@ class GlobalLogic
                 }
 
                 // ========================================
-                // CREA LEAD
+                // CREA LEAD (scheletro) + SYNC COMPLETO 1.7.0
                 // ========================================
 
                 if (!$lead) {
 
-                    $lead = $this->entityManager->getEntity('Lead');
+                    $lead = $this->entityManager->createEntity('Lead');
 
                     $lead->set([
-
-                        'firstName' => $prospect->get('firstName'),
-                        'lastName' => $prospect->get('lastName'),
-
-                        'name' => $prospect->get('name'),
-
-                        // ========================================
-                        // FIX DESCRIZIONE LEAD (1.6.3)
-                        // ========================================
-
-                        'description' => $prospect->get('description'),
-
-                        'phoneNumber' => $prospect->get('phoneNumber'),
-
-                        'addressStreet' => $prospect->get('addressStreet'),
-                        'addressCity' => $prospect->get('addressCity'),
-                        'addressPostalCode' => $prospect->get('addressPostalCode'),
-                        'addressState' => $prospect->get('addressState'),
-                        'addressCountry' => $prospect->get('addressCountry'),
-
-                        'cAPId' => $prospect->get('cAPId'),
-
-                        // ========================================
-                        // FORNITORE / BRAND (1.6.4)
-                        // ========================================
-
-                        'fornitorePartnerId' => $prospect->get('fornitorePartnerId'),
-                        'fornitorePartnerName' => $prospect->get('fornitorePartnerName'),
-                        'productBrandId' => $prospect->get('productBrandId'),
-                        'productBrandName' => $prospect->get('productBrandName'),
-
-                        'azienda' => $prospect->get('azienda'),
-
-                        // ========================================
-                        // FIX STATUS LEAD
-                        // ========================================
-
                         'status' => $leadStatus,
-
-                        // ========================================
-                        // FIX ASSEGNAZIONE LEAD
-                        // ========================================
-
-                        'assignedUserId' => $leadAssignedUserId
+                        'assignedUserId' => $leadAssignedUserId,
                     ]);
 
                     $this->entityManager->saveEntity($lead);
                 }
 
-                // ========================================
-                // AGGIORNA LEAD ESISTENTE
-                // ========================================
-
                 if ($lead) {
 
-                    // ========================================
-                    // SYNC PROSPECT -> LEAD (1.6.1)
-                    // ========================================
-                    //
-                    // Compila solo i campi vuoti, cosi non
-                    // sovrascrive modifiche manuali gia' presenti
-                    // sul Lead.
-                    //
-                    // ========================================
-
-                    $this->syncLeadFromProspect(
+                    $leadSync->syncLeadFromProspect(
                         $lead,
-                        $prospect
+                        $prospect,
+                        !$isNewLead
                     );
 
-                    $lead->set(
-                        'status',
-                        $leadStatus
-                    );
+                    $lead->set('status', $leadStatus);
 
                     if ($leadAssignedUserId) {
-
-                        $lead->set(
-                            'assignedUserId',
-                            $leadAssignedUserId
-                        );
+                        $lead->set('assignedUserId', $leadAssignedUserId);
                     }
 
                     $this->entityManager->saveEntity($lead);
@@ -720,138 +650,8 @@ class GlobalLogic
         Entity $lead,
         Entity $prospect
     ): void {
-
-        // ========================================
-        // DESCRIZIONE ATTIVITA (1.6.3)
-        // ========================================
-        //
-        // Lead.description deve essere Prospect.description.
-        // Se Prospect.description e' valorizzata, viene sincronizzata
-        // anche se sul Lead era presente la descrizione automatica
-        // dell'Appuntamento.
-        //
-        // ========================================
-
-        if ($prospect->get('description')) {
-
-            $lead->set(
-                'description',
-                $prospect->get('description')
-            );
-        }
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'firstName',
-            $prospect->get('firstName')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'lastName',
-            $prospect->get('lastName')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'name',
-            $prospect->get('name')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'phoneNumber',
-            $prospect->get('phoneNumber') ?: $prospect->get('telefono')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'addressStreet',
-            $prospect->get('addressStreet')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'addressCity',
-            $prospect->get('addressCity')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'addressPostalCode',
-            $prospect->get('addressPostalCode')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'addressState',
-            $prospect->get('addressState')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'addressCountry',
-            $prospect->get('addressCountry')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'cAPId',
-            $prospect->get('cAPId')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'cAPName',
-            $prospect->get('cAPName')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'azienda',
-            $prospect->get('azienda')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'fornitorePartnerId',
-            $prospect->get('fornitorePartnerId')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'fornitorePartnerName',
-            $prospect->get('fornitorePartnerName')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'productBrandId',
-            $prospect->get('productBrandId')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'productBrandName',
-            $prospect->get('productBrandName')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'productCategoryId',
-            $prospect->get('productCategoryId')
-        );
-
-        $this->setLeadFieldIfEmpty(
-            $lead,
-            'productCategoryName',
-            $prospect->get('productCategoryName')
-        );
-
-        $this->resolveBrandPartnerFromAzienda(
-            $lead,
-            $prospect->get('azienda')
-        );
+        (new LeadProspectSync($this->entityManager))
+            ->syncLeadFromProspect($lead, $prospect, true);
     }
 
     // ========================================
