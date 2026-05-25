@@ -2,7 +2,6 @@
 
 namespace Espo\Custom\Services;
 
-use Espo\Custom\Services\ReferenteContactService;
 
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
