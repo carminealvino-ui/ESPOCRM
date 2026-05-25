@@ -388,6 +388,7 @@ class GlobalLogic
         // =====================================================
 
         if (!$appuntamento) {
+            $this->linkLeadFromProspectIfMissing($entity);
             return;
         }
 
@@ -618,6 +619,8 @@ class GlobalLogic
                 'leadName',
                 $leadName
             );
+
+            $this->syncLeadFieldsFromOpportunity($entity, $lead);
         }
 
 
@@ -836,6 +839,87 @@ class GlobalLogic
                 $category->get('productBrandName')
             );
         }
+    }
+
+    // =====================================================
+    // LEAD DA PROSPECT (opportunità senza appuntamento)
+    // =====================================================
+
+    private function linkLeadFromProspectIfMissing(Entity $entity): void
+    {
+        if ($entity->get('leadId')) {
+            return;
+        }
+
+        $prospectId = $entity->get('prospectId');
+
+        if (!$prospectId) {
+            return;
+        }
+
+        $prospect = $this->entityManager->getEntityById('Prospect', $prospectId);
+
+        if (!$prospect || !$prospect->get('leadId')) {
+            return;
+        }
+
+        $lead = $this->entityManager->getEntityById('Lead', $prospect->get('leadId'));
+
+        if (!$lead) {
+            return;
+        }
+
+        $leadName = $lead->get('name');
+
+        if (!$leadName) {
+            $leadName = trim(($lead->get('firstName') ?: '') . ' ' . ($lead->get('lastName') ?: ''));
+        }
+
+        $entity->set('leadId', $lead->getId());
+        $entity->set('leadName', $leadName);
+
+        $this->entityManager->saveEntity($entity, ['silent' => true]);
+    }
+
+    private function syncLeadFieldsFromOpportunity(Entity $opportunity, Entity $lead): void
+    {
+        $sync = new \Espo\Custom\Services\LeadProspectSync($this->entityManager);
+
+        $prospect = null;
+
+        if ($opportunity->get('prospectId')) {
+            $prospect = $this->entityManager->getEntityById(
+                'Prospect',
+                $opportunity->get('prospectId')
+            );
+        }
+
+        if (!$prospect) {
+            $prospect = $sync->findProspectForLead($lead);
+        }
+
+        if ($prospect) {
+            $sync->syncLeadFromProspect($lead, $prospect, true);
+        }
+
+        $scalarFromOpp = [
+            'fornitorePartnerId',
+            'fornitorePartnerName',
+            'productBrandId',
+            'productBrandName',
+            'productCategoryId',
+            'productCategoryName',
+        ];
+
+        foreach ($scalarFromOpp as $field) {
+            $value = $opportunity->get($field);
+
+            if ($value && !$lead->get($field)) {
+                $lead->set($field, $value);
+            }
+        }
+
+        $this->entityManager->saveEntity($lead, ['silent' => true]);
     }
 
 }

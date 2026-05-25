@@ -356,6 +356,54 @@ class LeadProspectSync
      *
      * @return array{processed:int, updated:int, accountsUpdated:int, skipped:int, errors:array}
      */
+
+    private function fixInvalidCreatedAccountId(Entity $lead, ?Entity $prospect): ?string
+    {
+        $accountId = $lead->get('createdAccountId');
+
+        if (!$accountId) {
+            return null;
+        }
+
+        if ($this->entityManager->getEntityById('Account', $accountId)) {
+            return $accountId;
+        }
+
+        $prospectAsAccount = $this->entityManager->getEntityById('Prospect', $accountId);
+
+        if ($prospectAsAccount && $prospectAsAccount->get('clienteId')) {
+            $clienteId = $prospectAsAccount->get('clienteId');
+
+            if ($this->entityManager->getEntityById('Account', $clienteId)) {
+                $lead->set([
+                    'createdAccountId' => $clienteId,
+                    'createdAccountName' => $this->entityManager
+                        ->getEntityById('Account', $clienteId)
+                        ->get('name'),
+                ]);
+                $this->entityManager->saveEntity($lead, ['silent' => true]);
+
+                return $clienteId;
+            }
+        }
+
+        if ($prospect && $prospect->get('clienteId')) {
+            $clienteId = $prospect->get('clienteId');
+
+            if ($this->entityManager->getEntityById('Account', $clienteId)) {
+                $lead->set([
+                    'createdAccountId' => $clienteId,
+                    'createdAccountName' => $prospect->get('clienteName'),
+                ]);
+                $this->entityManager->saveEntity($lead, ['silent' => true]);
+
+                return $clienteId;
+            }
+        }
+
+        return null;
+    }
+
     public function repairAllLeads(bool $onlyEmpty = true, ?int $limit = null): array
     {
         $stats = [
