@@ -293,6 +293,10 @@ class GlobalLogic
         array $options = []
     ): void {
 
+        if (!empty($options['skipHooks'])) {
+            return;
+        }
+
         // =====================================================
         // VERSIONE HOOK
         // =====================================================

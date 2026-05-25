@@ -341,7 +341,6 @@ class CreateContratto
                         $accountId,
                         $cliente->get('name')
                     );
-                    $this->syncOpportunityAccount($opportunity, $accountId, $lead, $prospect);
                 }
             } else {
                 $accountId = null;
@@ -406,7 +405,6 @@ class CreateContratto
                     );
                 }
 
-                $this->syncOpportunityAccount($opportunity, $accountId, $lead, $prospect);
             }
         }
 
@@ -749,7 +747,12 @@ class CreateContratto
 
         $this->entityManager->saveEntity($quote);
 
-
+        $this->finalizeOpportunityAfterContratto(
+            $opportunity,
+            $accountId,
+            $billingContactId,
+            $billingContactName
+        );
 
         // =====================================================
         // RESPONSE
@@ -1006,8 +1009,16 @@ class CreateContratto
         return $patch;
     }
 
-    private function syncOpportunityAccount($opportunity, string $accountId, $lead = null, $prospect = null): void
-    {
+    private function finalizeOpportunityAfterContratto(
+        $opportunity,
+        ?string $accountId,
+        ?string $contactId,
+        ?string $contactName
+    ): void {
+        if (!$accountId) {
+            return;
+        }
+
         $account = $this->entityManager->getEntityById('Account', $accountId);
 
         if (!$account) {
@@ -1019,25 +1030,16 @@ class CreateContratto
             'accountName' => $account->get('name'),
         ];
 
-        $referente = (new \Espo\Custom\Services\ReferenteContactService($this->entityManager))
-            ->ensureForAccount($accountId, [
-                'lead' => $lead,
-                'prospect' => $prospect,
-                'assignedUserId' => $opportunity->get('assignedUserId'),
-            ]);
-
-        if ($referente) {
-            $patch['contactId'] = $referente['id'];
-            $patch['contactName'] = $referente['name'];
+        if ($contactId) {
+            $patch['contactId'] = $contactId;
+            $patch['contactName'] = $contactName;
         }
 
-        $needsSave = $opportunity->get('accountId') !== $accountId
-            || ($referente && $opportunity->get('contactId') !== $referente['id']);
+        $opportunity->set($patch);
 
-        if ($needsSave) {
-            $opportunity->set($patch);
-            $this->entityManager->saveEntity($opportunity);
-        }
+        $this->entityManager->saveEntity($opportunity, [
+            'skipHooks' => true,
+        ]);
     }
 
     private function linkProspectToAccount($prospect, string $accountId, ?string $accountName = null): void
