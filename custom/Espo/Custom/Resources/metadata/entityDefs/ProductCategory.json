@@ -77,6 +77,13 @@
             "entity": "Prospect",
             "audited": false,
             "isCustom": true
+        },
+        "quotes": {
+            "type": "hasMany",
+            "foreign": "productCategory",
+            "entity": "Quote",
+            "audited": false,
+            "isCustom": true
         }
     }
 }

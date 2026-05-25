@@ -16,15 +16,18 @@
             ],
             [
                 {
-                    "name": "fornitorePartner"
+                    "name": "fornitorePartner",
+                    "customLabel": "Fornitore / Partner"
                 },
                 {
-                    "name": "productBrand"
+                    "name": "productBrand",
+                    "customLabel": "Brand"
                 }
             ],
             [
                 {
-                    "name": "productCategory"
+                    "name": "productCategory",
+                    "customLabel": "Categoria prodotto"
                 }
             ],
             [

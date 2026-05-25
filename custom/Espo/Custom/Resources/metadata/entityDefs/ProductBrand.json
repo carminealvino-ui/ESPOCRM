@@ -54,6 +54,13 @@
             "entity": "ProductCategory",
             "audited": false,
             "isCustom": true
+        },
+        "quotes": {
+            "type": "hasMany",
+            "foreign": "productBrand",
+            "entity": "Quote",
+            "audited": false,
+            "isCustom": true
         }
     }
 }

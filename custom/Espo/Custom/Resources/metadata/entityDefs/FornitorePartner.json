@@ -219,6 +219,13 @@
             "entity": "Opportunity",
             "audited": false,
             "isCustom": true
+        },
+        "quotes": {
+            "type": "hasMany",
+            "foreign": "fornitorePartner",
+            "entity": "Quote",
+            "audited": false,
+            "isCustom": true
         }
     },
     "collection": {

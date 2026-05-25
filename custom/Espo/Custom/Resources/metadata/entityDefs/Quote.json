@@ -2,20 +2,21 @@
     "fields": {
         "fornitorePartner": {
             "type": "link",
+            "entity": "FornitorePartner",
             "readOnly": true,
             "isCustom": true
         },
         "productBrand": {
             "type": "link",
+            "entity": "ProductBrand",
             "readOnly": true,
             "isCustom": true
         },
         "productCategory": {
             "type": "link",
+            "entity": "ProductCategory",
             "readOnly": true,
-            "isCustom": true,
-            "tooltip": true,
-            "tooltipText": "Categoria di riferimento dall'opportunita. Ogni riga articolo sul contratto puo avere categoria e regole provvigionali diverse."
+            "isCustom": true
         },
         "dataInstallazione": {
             "type": "date",
