@@ -157,24 +157,16 @@ class RegolaProvvigionaleCalculator
         }
 
         $margine = $this->floatOrNull($context['marginePercentuale'] ?? null);
-        $hasMarginBand = ($rule->get('margineMin') !== null && $rule->get('margineMin') !== '')
-            || ($rule->get('margineMax') !== null && $rule->get('margineMax') !== '');
 
-        if ($hasMarginBand) {
-            if ($margine === null) {
+        if ($margine !== null && $rule->get('margineMin') !== null && $rule->get('margineMin') !== '') {
+            if ($margine < (float) $rule->get('margineMin')) {
                 return false;
             }
+        }
 
-            if ($rule->get('margineMin') !== null && $rule->get('margineMin') !== '') {
-                if ($margine < (float) $rule->get('margineMin')) {
-                    return false;
-                }
-            }
-
-            if ($rule->get('margineMax') !== null && $rule->get('margineMax') !== '') {
-                if ($margine > (float) $rule->get('margineMax')) {
-                    return false;
-                }
+        if ($margine !== null && $rule->get('margineMax') !== null && $rule->get('margineMax') !== '') {
+            if ($margine > (float) $rule->get('margineMax')) {
+                return false;
             }
         }
 

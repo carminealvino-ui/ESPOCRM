@@ -99,5 +99,37 @@
         ],
         "style": "default",
         "label": ""
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "prezzoListinoIvaEsclusa",
+                    "customLabel": "Prezzo listino (IVA escl.)"
+                },
+                {
+                    "name": "prezzoCodiceIvaEsclusa",
+                    "customLabel": "Prezzo a codice (IVA escl.)"
+                }
+            ],
+            [
+                {
+                    "name": "margineSuListino",
+                    "customLabel": "Margine % su listino"
+                },
+                {
+                    "name": "contattoPersonaleArquati",
+                    "customLabel": "Contatto personale ARQUATI (+5%)"
+                }
+            ],
+            [
+                {
+                    "name": "integrazionePncPercentuale",
+                    "customLabel": "Integrazione PNC % (da contratto)"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": "Provvigioni (calcolo)"
     }
 ]

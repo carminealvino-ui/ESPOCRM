@@ -22,7 +22,7 @@ class ProvvigioneConsolidata implements AfterSave
 
     public function afterSave(Entity $entity, SaveOptions $options): void
     {
-        if ($options->get('silent')) {
+        if ($options->get('silent') || $options->get('skipHooks')) {
             return;
         }
 
@@ -37,6 +37,10 @@ class ProvvigioneConsolidata implements AfterSave
             'dataInstallazione',
             'productCategoryId',
             'minusPlus',
+            'prezzoListinoIvaEsclusa',
+            'prezzoCodiceIvaEsclusa',
+            'margineSuListino',
+            'contattoPersonaleArquati',
         ];
 
         $changed = false;

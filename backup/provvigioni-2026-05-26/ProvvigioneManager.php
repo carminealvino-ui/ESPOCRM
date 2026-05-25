@@ -22,8 +22,7 @@ class ProvvigioneManager
     public function buildContextFromEntities(
         ?Entity $category,
         ?Entity $source,
-        ?float $imponibileOverride = null,
-        ?Entity $opportunity = null
+        ?float $imponibileOverride = null
     ): array {
         $regime = $this->accrual->resolveRegimeFromCategory($category);
 
@@ -33,12 +32,11 @@ class ProvvigioneManager
             $imponibile = $this->resolveImponibile($source);
         }
 
-        if ($imponibile === null && $opportunity) {
-            $imponibile = $this->resolveImponibile($opportunity);
-        }
+        $prezzoCodice = $source ? $this->floatField($source, 'prezzoCodiceIvaEsclusa')
+            ?? $this->floatField($source, 'totalPrezzoCodice')
+            ?? $this->floatField($source, 'prezzoCodice') : null;
 
-        $prezzoCodice = $this->resolvePrezzoCodice($source, $opportunity);
-        $prezzoListino = $this->resolvePrezzoListino($source, $opportunity);
+        $prezzoListino = $source ? $this->floatField($source, 'prezzoListinoIvaEsclusa') : null;
 
         $plusvalenza = null;
 
@@ -46,24 +44,24 @@ class ProvvigioneManager
             $plusvalenza = $imponibile - $prezzoCodice;
         }
 
-        $margine = $this->resolveMarginePercentuale($source, $opportunity, $imponibile, $prezzoListino);
+        $margine = null;
+
+        if ($imponibile !== null && $prezzoListino !== null && $prezzoListino > 0) {
+            $margine = (($imponibile - $prezzoListino) / $prezzoListino) * 100;
+        }
 
         return [
             'regime' => $regime,
-            'fornitorePartnerId' => $source?->get('fornitorePartnerId') ?? $opportunity?->get('fornitorePartnerId'),
-            'productBrandId' => $source?->get('productBrandId') ?? $opportunity?->get('productBrandId'),
-            'productCategoryId' => $category?->getId() ?? $source?->get('productCategoryId') ?? $opportunity?->get('productCategoryId'),
+            'fornitorePartnerId' => $source?->get('fornitorePartnerId'),
+            'productBrandId' => $source?->get('productBrandId'),
+            'productCategoryId' => $category?->getId() ?? $source?->get('productCategoryId'),
             'gruppoProvvigione' => $category?->get('gruppoProvvigione'),
             'imponibile' => $imponibile,
             'canoneMensile' => $this->floatField($source, 'canoneMensile') ?? $imponibile,
             'inflowTotale' => $imponibile,
             'plusvalenza' => $plusvalenza,
             'marginePercentuale' => $margine,
-            'numeroPod' => $source?->get('numeroPod') ?? $opportunity?->get('numeroPod'),
-            'contattoPersonaleArquati' => (bool) ($source?->get('contattoPersonaleArquati')
-                ?? $opportunity?->get('contattoPersonaleArquati')),
-            'integrazionePncPercentuale' => $this->floatField($source, 'integrazionePncPercentuale')
-                ?? $this->floatField($opportunity, 'integrazionePncPercentuale'),
+            'numeroPod' => $source?->get('numeroPod'),
         ];
     }
 
@@ -133,24 +131,15 @@ class ProvvigioneManager
             ?? $this->floatField($opportunity, 'amount')
             ?? $this->floatField($opportunity, 'importoOpportunita');
 
-        $context = $this->buildContextFromEntities($category, $quote, $imponibile, $opportunity);
+        $context = $this->buildContextFromEntities($category, $quote, $imponibile);
         $context['imponibile'] = $imponibile;
         $context['plusvalenza'] = $this->floatField($quote, 'minusPlus') ?? $context['plusvalenza'];
-
-        if ($context['marginePercentuale'] !== null && !$quote->get('margineSuListino')) {
-            $quote->set('margineSuListino', $context['marginePercentuale']);
-            $this->entityManager->saveEntity($quote, [
-                'skipHooks' => true,
-                'silent' => true,
-            ]);
-        }
 
         $result = $this->calculator->calculateBest($context);
 
         $provvigione = $this->findProvvigione(
             'Consolidata',
-            contrattoId: $quote->getId(),
-            tipo: 'Provvigione Base'
+            contrattoId: $quote->getId()
         ) ?? $this->entityManager->createEntity('Provvigione');
 
         $this->applyProvvigioneFromCalculation(
@@ -180,8 +169,6 @@ class ProvvigioneManager
         }
 
         $this->entityManager->saveEntity($provvigione, ['silent' => true]);
-
-        $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
 
         return $provvigione;
     }
@@ -263,8 +250,7 @@ class ProvvigioneManager
         string $stato,
         ?string $appuntamentoId = null,
         ?string $opportunitaId = null,
-        ?string $contrattoId = null,
-        ?string $tipo = null
+        ?string $contrattoId = null
     ): ?Entity {
         $where = ['statoProvvigione' => $stato];
 
@@ -280,102 +266,10 @@ class ProvvigioneManager
             $where['contrattoId'] = $contrattoId;
         }
 
-        if ($tipo) {
-            $where['tipo'] = $tipo;
-        }
-
         return $this->entityManager
             ->getRDBRepository('Provvigione')
             ->where($where)
             ->findOne();
-    }
-
-    /**
-     * Integrazione +5% contatti personali (ARQUATI PNC).
-     *
-     * @param array<string, mixed> $context
-     */
-    private function syncIntegrazioneContattiPersonali(
-        Entity $quote,
-        Entity $opportunity,
-        Entity $category,
-        array $context,
-        ?float $imponibile
-    ): void {
-        if (!$context['contattoPersonaleArquati'] || $imponibile === null || $imponibile <= 0) {
-            return;
-        }
-
-        $rule = $this->entityManager->getEntityById('RegolaProvvigionale', 'arqCpP5');
-
-        if (!$rule || !$rule->get('attiva')) {
-            return;
-        }
-
-        $importo = round($imponibile * 5 / 100, 2);
-
-        $plus = $this->findProvvigione(
-            'Consolidata',
-            contrattoId: $quote->getId(),
-            tipo: 'Plus Provvigionale'
-        ) ?? $this->entityManager->createEntity('Provvigione');
-
-        $this->applyProvvigioneFromCalculation(
-            $plus,
-            $opportunity,
-            $category,
-            ['importo' => $importo, 'regola' => $rule],
-            'Consolidata',
-            $context,
-            $quote
-        );
-
-        $plus->set([
-            'tipo' => 'Plus Provvigionale',
-            'contrattoId' => $quote->getId(),
-            'contrattoName' => $quote->get('name'),
-            'opportunitaId' => $opportunity->getId(),
-            'opportunitaName' => $opportunity->get('name'),
-            'clienteId' => $quote->get('accountId'),
-            'clienteName' => $quote->get('accountName'),
-            'name' => 'PLUS-CP5-' . ($quote->get('number') ?? $quote->getId()),
-        ]);
-
-        $this->entityManager->saveEntity($plus, ['silent' => true]);
-    }
-
-    private function resolvePrezzoListino(?Entity $source, ?Entity $opportunity): ?float
-    {
-        return $this->floatField($source, 'prezzoListinoIvaEsclusa')
-            ?? $this->floatField($opportunity, 'prezzoListinoIvaEsclusa');
-    }
-
-    private function resolvePrezzoCodice(?Entity $source, ?Entity $opportunity): ?float
-    {
-        return $this->floatField($source, 'prezzoCodiceIvaEsclusa')
-            ?? $this->floatField($source, 'totalPrezzoCodice')
-            ?? $this->floatField($source, 'prezzoCodice')
-            ?? $this->floatField($opportunity, 'prezzoCodiceIvaEsclusa');
-    }
-
-    private function resolveMarginePercentuale(
-        ?Entity $source,
-        ?Entity $opportunity,
-        ?float $imponibile,
-        ?float $prezzoListino
-    ): ?float {
-        $stored = $this->floatField($source, 'margineSuListino')
-            ?? $this->floatField($opportunity, 'suPrezzoCodice');
-
-        if ($stored !== null) {
-            return $stored;
-        }
-
-        if ($imponibile === null || $prezzoListino === null || $prezzoListino <= 0) {
-            return null;
-        }
-
-        return round((($imponibile - $prezzoListino) / $prezzoListino) * 100, 2);
     }
 
     private function resolveImponibile(Entity $entity): ?float
