@@ -1,5 +1,68 @@
 {
     "fields": {
+        "cAP": {
+            "type": "link"
+        },
+        "number": {
+            "readOnly": false
+        },
+        "dateQuoted": {
+            "useNumericFormat": true
+        },
+        "createdAt": {
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "dateInvoiced": {
+            "useNumericFormat": true
+        },
+        "dateOrdered": {
+            "useNumericFormat": true
+        },
+        "name": {
+            "readOnly": false,
+            "syncWithNumber": false,
+            "options": []
+        },
+        "prezzoCodice": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoContratto": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "minusPlus": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "taxRate": {
+            "decimalPlaces": 2
+        },
+        "aliquotaIVA": {
+            "notNull": false,
+            "type": "float",
+            "isCustom": true,
+            "decimalPlaces": 2
+        },
+        "numberA": {
+            "prefix": "Contratto_",
+            "nextNumber": 2
+        },
+        "totalPrezzoCodice": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "totaleProvvigioni": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "hookVersion": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
         "fornitorePartner": {
             "type": "link",
             "entity": "FornitorePartner",
@@ -42,15 +105,31 @@
             "type": "int",
             "minValue": 0,
             "isCustom": true
-        },
-        "hookVersion": {
-            "type": "varchar",
-            "maxLength": 100,
-            "options": [],
-            "isCustom": true
         }
     },
     "links": {
+        "cAP": {
+            "type": "belongsTo",
+            "foreign": "quote",
+            "entity": "CAP",
+            "audited": false,
+            "isCustom": true
+        },
+        "prodotti": {
+            "type": "hasMany",
+            "relationName": "prodotticontratti",
+            "foreign": "contratti",
+            "entity": "Product",
+            "audited": false,
+            "isCustom": true
+        },
+        "provvigioni": {
+            "type": "hasMany",
+            "foreign": "contratto",
+            "entity": "Provvigione",
+            "audited": false,
+            "isCustom": true
+        },
         "fornitorePartner": {
             "type": "belongsTo",
             "entity": "FornitorePartner",
@@ -69,5 +148,16 @@
             "foreign": "quotes",
             "isCustom": true
         }
-    }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [
+            "name",
+            "number"
+        ],
+        "fullTextSearch": false,
+        "countDisabled": false
+    },
+    "optimisticConcurrencyControl": true
 }

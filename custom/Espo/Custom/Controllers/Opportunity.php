@@ -1,38 +1,94 @@
 <?php
 
-// VERSIONE: 1.0.1 — usa InjectableFactory per CreateContratto (2 dipendenze)
+// =====================================================
+// VERSIONE: 1.1.4
+// DATA: 11-05-2026
+// FILE: custom/Espo/Custom/Controllers/Opportunity.php
+// =====================================================
+//
+// FIX 1.1.4
+// -----------------------------------------------------
+// Passaggio corretto EntityManager
+// alla action custom CreateContratto.
+//
+// =====================================================
 
 namespace Espo\Custom\Controllers;
 
+use Espo\Core\Controllers\Record;
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
-use Espo\Core\Controllers\Record;
-use Espo\Core\InjectableFactory;
-use Espo\Custom\Actions\Opportunity\CreateContratto;
 
 class Opportunity extends Record
 {
-    public function postActionCreateContratto(Request $request, Response $response): object
-    {
+
+    // =====================================================
+    // ACTION CREATE CONTRATTO
+    // =====================================================
+
+    public function postActionCreateContratto(
+        Request $request,
+        Response $response
+    ) {
+
+        // =====================================================
+        // BODY REQUEST
+        // =====================================================
+
         $data = $request->getParsedBody();
+
         $id = $data->id ?? null;
 
+
+
+        // =====================================================
+        // VALIDAZIONE
+        // =====================================================
+
         if (!$id) {
-            throw new \RuntimeException('ID mancante.');
+            throw new \Exception('ID mancante');
         }
 
-        $entityManager = $this->getContainer()->get('entityManager');
-        $opportunity = $entityManager->getEntityById('Opportunity', $id);
+
+
+        // =====================================================
+        // ENTITY MANAGER
+        // =====================================================
+
+        $entityManager = $this->getContainer()
+            ->get('entityManager');
+
+
+
+        // =====================================================
+        // OPPORTUNITÀ
+        // =====================================================
+
+        $opportunity = $entityManager
+            ->getEntityById('Opportunity', $id);
 
         if (!$opportunity) {
-            throw new \RuntimeException('Opportunita non trovata.');
+            throw new \Exception('Opportunità non trovata');
         }
 
-        /** @var InjectableFactory $injectableFactory */
-        $injectableFactory = $this->getContainer()->get('injectableFactory');
 
-        return $injectableFactory
-            ->create(CreateContratto::class)
-            ->run($opportunity);
+
+        // =====================================================
+        // ACTION CUSTOM
+        // =====================================================
+
+        $action = new \Espo\Custom\Actions\Opportunity\CreateContratto(
+            $entityManager
+        );
+
+        $result = $action->run($opportunity);
+
+
+
+        // =====================================================
+        // RETURN
+        // =====================================================
+
+        return $result;
     }
 }
