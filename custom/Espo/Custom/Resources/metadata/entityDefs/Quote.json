@@ -31,6 +31,16 @@
             "type": "date",
             "useNumericFormat": true,
             "isCustom": true
+        },
+        "opportunita": {
+            "type": "link",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "numeroPod": {
+            "type": "int",
+            "minValue": 0,
+            "isCustom": true
         }
     },
     "links": {

@@ -1,0 +1,192 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "trim": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "attiva": {
+            "type": "bool",
+            "default": true,
+            "isCustom": true
+        },
+        "priorita": {
+            "type": "int",
+            "default": 100,
+            "minValue": 1,
+            "isCustom": true
+        },
+        "regimeProvvigione": {
+            "type": "enum",
+            "options": [
+                "",
+                "ARQUATI_PNC",
+                "ARIEL_2026",
+                "GFB_VODAFONE_COEFF",
+                "GFB_FASTWEB_POD",
+                "GFB_RS_BIMESTRE",
+                "SOLUTION_ENEL_GETTONE",
+                "GENERICO"
+            ],
+            "isCustom": true
+        },
+        "tipoCalcolo": {
+            "type": "enum",
+            "options": [
+                "PercentualeImponibile",
+                "PercentualeImponibileAddizionale",
+                "CoefficienteCanone",
+                "GettoneFisso",
+                "ImportoFissoPod",
+                "PercentualePlusvalenza",
+                "PercentualeMargine"
+            ],
+            "default": "PercentualeImponibile",
+            "isCustom": true
+        },
+        "tipoProvvigioneRecord": {
+            "type": "enum",
+            "options": [
+                "Provvigione Base",
+                "Plus Provvigionale",
+                "Minus Provvigionale",
+                "Bonus (Sabato-Domenica)",
+                "Gara (Soglia >2.5k)",
+                "Gara (Soglia >3.5)",
+                "Gara (Soglia >5k)"
+            ],
+            "default": "Provvigione Base",
+            "isCustom": true
+        },
+        "percentuale": {
+            "type": "float",
+            "decimalPlaces": 2,
+            "isCustom": true
+        },
+        "percentualeAddizionale": {
+            "type": "float",
+            "decimalPlaces": 2,
+            "isCustom": true
+        },
+        "coefficiente": {
+            "type": "float",
+            "decimalPlaces": 2,
+            "isCustom": true
+        },
+        "gettoneImporto": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoFissoPod": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "margineMin": {
+            "type": "float",
+            "decimalPlaces": 2,
+            "isCustom": true
+        },
+        "margineMax": {
+            "type": "float",
+            "decimalPlaces": 2,
+            "isCustom": true
+        },
+        "inflowMin": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "inflowMax": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "podMin": {
+            "type": "int",
+            "minValue": 0,
+            "isCustom": true
+        },
+        "podMax": {
+            "type": "int",
+            "minValue": 0,
+            "isCustom": true
+        },
+        "giorniLiquidazione": {
+            "type": "int",
+            "minValue": 0,
+            "isCustom": true
+        },
+        "gruppoProvvigione": {
+            "type": "enum",
+            "options": [
+                "",
+                "Tende da Sole",
+                "Pergole",
+                "Vetrate",
+                "Clima e altro"
+            ],
+            "isCustom": true
+        },
+        "fornitorePartner": {
+            "type": "link",
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "link",
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "link",
+            "isCustom": true
+        }
+    },
+    "links": {
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "assignedUser": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "entityTeam",
+            "layoutRelationshipsDisabled": true
+        },
+        "fornitorePartner": {
+            "type": "belongsTo",
+            "foreign": "regoleProvvigionali",
+            "entity": "FornitorePartner",
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "belongsTo",
+            "foreign": "regoleProvvigionali",
+            "entity": "ProductBrand",
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "belongsTo",
+            "foreign": "regoleProvvigionali",
+            "entity": "ProductCategory",
+            "isCustom": true
+        },
+        "provvigioni": {
+            "type": "hasMany",
+            "foreign": "regolaProvvigionale",
+            "entity": "Provvigione",
+            "isCustom": true
+        }
+    },
+    "collection": {
+        "orderBy": "priorita",
+        "order": "desc"
+    }
+}

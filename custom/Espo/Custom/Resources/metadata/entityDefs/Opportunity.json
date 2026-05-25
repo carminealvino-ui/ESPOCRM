@@ -341,6 +341,11 @@
             "type": "link",
             "view": "custom:views/fields/product-category-by-brand",
             "isCustom": true
+        },
+        "dataAttivazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
         }
     },
     "links": {

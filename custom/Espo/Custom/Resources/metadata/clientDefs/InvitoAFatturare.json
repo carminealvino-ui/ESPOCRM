@@ -1,5 +1,24 @@
 {
     "controller": "controllers/record",
+    "recordViews": {
+        "detail": "custom:views/invito-a-fatturare/record/detail"
+    },
+    "buttonList": [
+        {
+            "name": "generaDaProvvigioni",
+            "label": "Genera da provvigioni",
+            "style": "default",
+            "action": "generaDaProvvigioni",
+            "acl": "edit"
+        },
+        {
+            "name": "emettiInvito",
+            "label": "Emetti invito",
+            "style": "primary",
+            "action": "emettiInvito",
+            "acl": "edit"
+        }
+    ],
     "relationshipPanels": {
         "provvigioni": {
             "createDisabled": true,
