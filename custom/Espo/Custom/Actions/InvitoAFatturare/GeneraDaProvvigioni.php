@@ -28,7 +28,8 @@ class GeneraDaProvvigioni
             (string) $consulenteId,
             (string) $meseCompetenza,
             $data->fornitorePartnerId ?? null,
-            $data->productBrandId ?? null
+            $data->productBrandId ?? null,
+            $data->id ?? $data->invitoId ?? null
         );
 
         return (object) $result;

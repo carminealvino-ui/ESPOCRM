@@ -21,7 +21,8 @@ class InvitoAFatturareManager
         string $consulenteUserId,
         string $meseCompetenza,
         ?string $fornitorePartnerId = null,
-        ?string $productBrandId = null
+        ?string $productBrandId = null,
+        ?string $invitoId = null
     ): array {
         $meseStart = date('Y-m-01', strtotime($meseCompetenza));
         $meseEnd = date('Y-m-t', strtotime($meseStart));
@@ -88,7 +89,15 @@ class InvitoAFatturareManager
             ->where($whereInvito)
             ->findOne();
 
-        if ($existing) {
+        if ($invitoId) {
+            $invito = $this->entityManager->getEntityById('InvitoAFatturare', $invitoId);
+
+            if (!$invito) {
+                throw new \RuntimeException('Invito a fatturare non trovato.');
+            }
+
+            $isNew = false;
+        } elseif ($existing) {
             $invito = $existing;
             $isNew = false;
         } else {
