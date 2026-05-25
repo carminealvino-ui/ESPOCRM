@@ -2,18 +2,18 @@
 
 namespace Espo\Custom\Actions\Opportunity;
 
-use Espo\Custom\Services\ProvvigioneManager;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
 /**
  * Crea contratto (Quote) da Opportunity chiusa positivamente.
  *
- * VERSIONE: 2.2.1
+ * VERSIONE: 2.3.0 (Fase 1)
  * - Risolve Cliente (account) da Account, Prospect.cliente o Lead
  * - Evita ID Prospect nel campo account
  * - Copia indirizzi, contatti e data contratto
  * - IVA, totali, CAP, installatore, contatto contraente da prospect/lead
+ * - Nessuna dipendenza ProvvigioneManager (Fase 2 separata)
  */
 class CreateContratto
 {
@@ -23,8 +23,7 @@ class CreateContratto
     ];
 
     public function __construct(
-        private EntityManager $entityManager,
-        private ?ProvvigioneManager $provvigioneManager = null
+        private EntityManager $entityManager
     ) {}
 
     public function run(Entity $opportunity): object
@@ -56,21 +55,10 @@ class CreateContratto
 
         $this->entityManager->saveEntity($quote);
 
-        $provvigione = null;
-
-        try {
-            if ($this->provvigioneManager) {
-                $provvigione = $this->provvigioneManager->createConsolidataForQuote($opportunity, $quote);
-            }
-        } catch (\Throwable $e) {
-            // Fase 1: il contratto deve esistere anche se le provvigioni non sono configurate.
-        }
-
         return (object) [
             'quoteId' => $quote->getId(),
             'quoteName' => $quote->get('name'),
             'existing' => false,
-            'provvigioneId' => $provvigione?->getId(),
         ];
     }
 
