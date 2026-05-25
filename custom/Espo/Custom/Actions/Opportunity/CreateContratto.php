@@ -8,7 +8,7 @@ use Espo\ORM\EntityManager;
 /**
  * Crea contratto (Quote) da Opportunity chiusa positivamente.
  *
- * VERSIONE: 2.6.0 (Fase 1)
+ * VERSIONE: 2.7.0 (Fase 1)
  * - Risolve Cliente (account) da Account, Prospect.cliente o Lead
  * - Evita ID Prospect nel campo account
  * - Copia indirizzi, contatti e data contratto
@@ -208,7 +208,7 @@ class CreateContratto
         array $teamsIds,
         ?Entity $lead
     ): Entity {
-        $amount = $opportunity->get('amount') ?: $opportunity->get('importoOpportunita');
+        $amount = $this->resolveContractAmount($opportunity);
 
         $dataInstallazione = $opportunity->get('installazione');
         $dataAttivazione = $opportunity->get('dataAttivazione');
@@ -255,7 +255,7 @@ class CreateContratto
             'amountCurrency' => $opportunity->get('amountCurrency'),
             'importoContratto' => $amount,
             'importoContrattoCurrency' => $opportunity->get('amountCurrency')
-                ?: $opportunity->get('importoOpportunitaCurrency'),
+                ?: $opportunity->get('importoOpportunitCurrency'),
             'minusPlus' => $minusPlus,
             'totalPrezzoCodice' => $prezzoCodice,
             'prezzoCodice' => $prezzoCodice,
@@ -370,23 +370,7 @@ class CreateContratto
             ]);
         }
 
-        $installatore = trim((string) ($opportunity->get('installatore') ?? ''));
-
-        if ($installatore === '') {
-            return;
-        }
-
-        $provider = $this->entityManager
-            ->getRDBRepository('ShippingProvider')
-            ->where(['name' => $installatore])
-            ->findOne();
-
-        if ($provider) {
-            $quote->set([
-                'shippingProviderId' => $provider->getId(),
-                'shippingProviderName' => $provider->get('name'),
-            ]);
-        }
+        $this->applyInstallatoreFromOpportunity($quote, $opportunity);
     }
 
     private function applyTaxAndTotals(Entity $quote, Entity $opportunity): void
@@ -530,4 +514,163 @@ class CreateContratto
             'shippingAddressState' => $source->get('addressState'),
         ]);
     }
+    private function resolveContractAmount(Entity $opportunity): ?float
+    {
+        foreach (['amount', 'importoOpportunit', 'importoOffertaIvaEsclusa'] as $field) {
+            $value = $opportunity->get($field);
+
+            if ($value !== null && $value !== '' && (float) $value != 0.0) {
+                return (float) $value;
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveHookVersion(Entity $opportunity): string
+    {
+        $version = trim((string) ($opportunity->get('hookVersion') ?? ''));
+
+        if ($version !== '') {
+            return $version;
+        }
+
+        return 'CreateContratto-2.7.0';
+    }
+
+    private function applyPartnerBrandCategory(Entity $quote, Entity $opportunity): void
+    {
+        $links = [
+            'fornitorePartner' => 'FornitorePartner',
+            'productBrand' => 'ProductBrand',
+            'productCategory' => 'ProductCategory',
+        ];
+
+        foreach ($links as $linkName => $entityType) {
+            $relatedId = $this->resolveRelatedId($opportunity, $linkName);
+
+            if (!$relatedId) {
+                continue;
+            }
+
+            $related = $this->entityManager->getEntityById($entityType, (string) $relatedId);
+
+            if (!$related) {
+                continue;
+            }
+
+            $this->entityManager
+                ->getRDBRepository('Quote')
+                ->getRelation($quote, $linkName)
+                ->relate($related);
+
+            $quote->set([
+                $linkName . 'Id' => $related->getId(),
+                $linkName . 'Name' => $related->get('name'),
+            ]);
+        }
+    }
+
+    private function resolveRelatedId(Entity $opportunity, string $linkName): ?string
+    {
+        $id = $opportunity->get($linkName . 'Id');
+
+        if ($id) {
+            return (string) $id;
+        }
+
+        if ($linkName !== 'productCategory') {
+            return null;
+        }
+
+        $linea = trim((string) ($opportunity->get('lineaProdotto') ?? ''));
+
+        if ($linea === '') {
+            return null;
+        }
+
+        $category = $this->entityManager
+            ->getRDBRepository('ProductCategory')
+            ->where(['name' => $linea])
+            ->findOne();
+
+        return $category ? (string) $category->getId() : null;
+    }
+
+    private function applyInstallatoreFromOpportunity(Entity $quote, Entity $opportunity): void
+    {
+        $installatoreId = $opportunity->get('installatoreId');
+
+        if ($installatoreId) {
+            $provider = $this->entityManager->getEntityById(
+                'ShippingProvider',
+                (string) $installatoreId
+            );
+
+            if ($provider) {
+                $this->entityManager
+                    ->getRDBRepository('Quote')
+                    ->getRelation($quote, 'shippingProvider')
+                    ->relate($provider);
+
+                $quote->set([
+                    'shippingProviderId' => $provider->getId(),
+                    'shippingProviderName' => $provider->get('name'),
+                ]);
+            }
+
+            return;
+        }
+
+        $installatoreLabel = trim((string) ($opportunity->get('installatore') ?? ''));
+
+        if ($installatoreLabel === '') {
+            return;
+        }
+
+        $provider = $this->entityManager
+            ->getRDBRepository('ShippingProvider')
+            ->where(['name' => $installatoreLabel])
+            ->findOne();
+
+        if ($provider) {
+            $quote->set([
+                'shippingProviderId' => $provider->getId(),
+                'shippingProviderName' => $provider->get('name'),
+            ]);
+        }
+    }
+
+    private function finalizeAccountLink(Entity $quote, ?string $accountId): void
+    {
+        if (!$accountId) {
+            return;
+        }
+
+        $account = $this->entityManager->getEntityById('Account', $accountId);
+
+        if (!$account) {
+            return;
+        }
+
+        $accountName = (string) ($account->get('name') ?? '');
+
+        if ($accountName === '' && $quote->get('billingContactName')) {
+            $accountName = (string) $quote->get('billingContactName');
+            $account->set('name', $accountName);
+            $this->entityManager->saveEntity($account);
+        }
+
+        $this->entityManager
+            ->getRDBRepository('Quote')
+            ->getRelation($quote, 'account')
+            ->relate($account);
+
+        $quote->set([
+            'accountId' => $account->getId(),
+            'accountName' => $accountName,
+        ]);
+    }
+
+
 }
