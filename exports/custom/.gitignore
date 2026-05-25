@@ -1,0 +1,4 @@
+# Export ZIP e manifest generati da tools/export-custom-for-github.php
+*.zip
+custom-export-*.json
+!.gitkeep

@@ -1,8 +1,8 @@
 <?php
 
 // ========================================
-// VERSIONE: 1.0.1
-// DATA: 2026-05-23
+// VERSIONE: 1.0.2
+// DATA: 2026-05-25
 // AUTORE: CARMINE ALVINO + IA
 // FILE:
 // tools/export-custom-for-github.php
@@ -13,7 +13,8 @@
 // su GitHub tra una sessione di sviluppo e la successiva.
 //
 // MODALITA SICURA:
-// - di default crea uno ZIP locale in tools/custom-exports
+// - di default crea uno ZIP locale in exports/custom
+// - backup singole fix: solo in backup/hooks_cleanup/ (non qui)
 // - non contiene password
 // - non contiene token GitHub
 // - non modifica i file EspoCRM
@@ -54,7 +55,7 @@ function main(array $argv): void
 
     $rootPath = findEspoRoot();
     $customPath = $rootPath . DIRECTORY_SEPARATOR . 'custom';
-    $exportPath = $rootPath . DIRECTORY_SEPARATOR . 'tools' . DIRECTORY_SEPARATOR . 'custom-exports';
+    $exportPath = $rootPath . DIRECTORY_SEPARATOR . 'exports' . DIRECTORY_SEPARATOR . 'custom';
 
     if (!is_dir($customPath)) {
         fail("Cartella custom non trovata: {$customPath}");
@@ -76,7 +77,7 @@ function main(array $argv): void
     $sha256 = hash_file('sha256', $zipPath);
 
     $manifest = [
-        'version' => '1.0.1',
+        'version' => '1.0.2',
         'generatedAt' => date('c'),
         'rootPath' => $rootPath,
         'sourcePath' => $customPath,
