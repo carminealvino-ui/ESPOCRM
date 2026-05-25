@@ -96,7 +96,11 @@
 // 1.9.0
 // -----------------------------------------------------
 // - Indirizzi da Account/Lead/Prospect (non solo opportunità)
-// - Categoria/tax/itemList con fallback; secondo save per formula nome
+// - Categoria/tax con fallback; secondo save per formula nome; NO righe articoli
+//
+// 1.9.1
+// -----------------------------------------------------
+// - Non inserire voci (itemList) sul contratto alla creazione
 // - billingContactName da accountName se referente assente
 // -----------------------------------------------------
 // - importoOpportunit (nome campo corretto)
@@ -470,12 +474,6 @@ class CreateContratto
         $amount = $this->resolveOpportunityAmount($opportunity);
 
         // =====================================================
-        // ITEM LIST
-        // =====================================================
-
-        $itemList = $this->buildItemListFromOpportunity($opportunity, $amount);
-
-        // =====================================================
         // PRICE BOOK
         // =====================================================
 
@@ -552,7 +550,7 @@ class CreateContratto
         $productCategoryId = $partnerData['productCategoryId'];
         $productCategoryName = $partnerData['productCategoryName'];
 
-        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.9.0';
+        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.9.1';
         $installatoreId = $opportunity->get('installatoreId');
 
 
@@ -667,13 +665,6 @@ class CreateContratto
 
             'priceBookId' =>
                 $priceBookId,
-
-            // =================================================
-            // ARTICOLI
-            // =================================================
-
-            'itemList' =>
-                $itemList,
 
             // =================================================
             // INDIRIZZI (Account / Lead / Prospect)
@@ -1055,45 +1046,6 @@ class CreateContratto
         return $amount;
     }
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    private function buildItemListFromOpportunity($opportunity, $amount): array
-    {
-        $itemList = $opportunity->get('itemList');
-
-        if (!empty($itemList) && is_array($itemList)) {
-            return $itemList;
-        }
-
-        if (!$amount) {
-            return [];
-        }
-
-        $label = trim((string) $opportunity->get('description'));
-
-        if ($label === '') {
-            $label = trim((string) $opportunity->get('name'));
-        }
-
-        if ($label === '') {
-            $label = 'Servizio';
-        }
-
-        $unitPrice = (float) $amount;
-
-        return [
-            [
-                'name' => $label,
-                'quantity' => 1,
-                'unitPrice' => $unitPrice,
-                'amount' => $unitPrice,
-                'listPrice' => $unitPrice,
-                'productName' => $label,
-            ],
-        ];
-    }
-
     private function resolveTaxCodeId($opportunity, $lead, $prospect): ?string
     {
         $taxCodeId = $opportunity->get('taxCodeId');
@@ -1279,7 +1231,6 @@ class CreateContratto
             'shippingAddressState',
             'productCategoryId',
             'productCategoryName',
-            'itemList',
         ] as $field) {
             $current = $fresh->get($field);
             $previous = $quote->get($field);
