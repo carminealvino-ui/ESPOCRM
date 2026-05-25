@@ -106,10 +106,6 @@
 // -----------------------------------------------------
 // - Nome contratto impostato in PHP (formula salta se hookVersion CreateContratto)
 // - Dopo save: nome corretto + itemList svuotato (no righe articoli)
-//
-// 1.11.0
-// -----------------------------------------------------
-// - Nome: data - cliente - descrizione - importo contratto
 // - billingContactName da accountName se referente assente
 // -----------------------------------------------------
 // - importoOpportunit (nome campo corretto)
@@ -559,7 +555,7 @@ class CreateContratto
         $productCategoryId = $partnerData['productCategoryId'];
         $productCategoryName = $partnerData['productCategoryName'];
 
-        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.11.0';
+        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.10.0';
         $installatoreId = $opportunity->get('installatoreId');
 
 
@@ -741,8 +737,7 @@ class CreateContratto
             $accountName,
             $billingContactName,
             $amount,
-            $dateQuoted,
-            $description
+            $dateQuoted
         );
 
         $this->finalizeOpportunityAfterContratto(
@@ -1222,8 +1217,7 @@ class CreateContratto
         ?string $accountName,
         ?string $billingContactName,
         $amount,
-        $dateQuoted,
-        ?string $description
+        $dateQuoted
     ): void {
         $quoteId = $quote->getId();
 
@@ -1257,28 +1251,15 @@ class CreateContratto
 
         $importo = $amount ?: $fresh->get('importoContratto') ?: $fresh->get('amount');
 
-        $descrizione = trim((string) ($description ?: $fresh->get('description')));
-
-        if ($descrizione === '' && $fresh->get('opportunityId')) {
-            $opp = $this->entityManager->getEntityById(
-                'Opportunity',
-                $fresh->get('opportunityId')
-            );
-
-            if ($opp) {
-                $descrizione = trim((string) $opp->get('description'));
-            }
-        }
-
         $patch = [
             'name' => $this->buildContractDisplayName(
                 $dateQuoted ?: $fresh->get('dateQuoted'),
+                $fresh->get('number'),
                 $clienteLabel,
-                $descrizione,
                 $importo
             ),
             'itemList' => [],
-            'hookVersion' => $fresh->get('hookVersion') ?: 'CreateContratto-1.11.0',
+            'hookVersion' => $fresh->get('hookVersion') ?: 'CreateContratto-1.10.0',
         ];
 
         foreach ([
@@ -1320,12 +1301,11 @@ class CreateContratto
 
     private function buildContractDisplayName(
         ?string $dateQuoted,
+        ?string $number,
         ?string $clienteLabel,
-        ?string $description,
         $amount
     ): string {
         $cliente = trim((string) $clienteLabel);
-        $descrizione = trim((string) $description);
         $importoStr = '';
 
         if ($amount !== null && $amount !== '') {
@@ -1334,9 +1314,9 @@ class CreateContratto
 
         return ($dateQuoted ?: '')
             . ' - '
-            . $cliente
+            . ($number ?: '')
             . ' - '
-            . $descrizione
+            . $cliente
             . ' - €. '
             . $importoStr;
     }
