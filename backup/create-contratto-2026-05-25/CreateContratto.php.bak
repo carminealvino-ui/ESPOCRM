@@ -101,11 +101,6 @@
 // 1.9.1
 // -----------------------------------------------------
 // - Non inserire voci (itemList) sul contratto alla creazione
-//
-// 1.10.0
-// -----------------------------------------------------
-// - Nome contratto impostato in PHP (formula salta se hookVersion CreateContratto)
-// - Dopo save: nome corretto + itemList svuotato (no righe articoli)
 // - billingContactName da accountName se referente assente
 // -----------------------------------------------------
 // - importoOpportunit (nome campo corretto)
@@ -555,7 +550,7 @@ class CreateContratto
         $productCategoryId = $partnerData['productCategoryId'];
         $productCategoryName = $partnerData['productCategoryName'];
 
-        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.10.0';
+        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.9.1';
         $installatoreId = $opportunity->get('installatoreId');
 
 
@@ -671,10 +666,6 @@ class CreateContratto
             'priceBookId' =>
                 $priceBookId,
 
-            // Nessuna riga articoli alla creazione (evita copia da opportunità/core)
-            'itemList' =>
-                [],
-
             // =================================================
             // INDIRIZZI (Account / Lead / Prospect)
             // =================================================
@@ -730,15 +721,11 @@ class CreateContratto
         // SAVE CONTRATTO
         // =====================================================
 
+        // Nome contratto: formula Quote beforeSave (non impostare name qui)
+
         $this->entityManager->saveEntity($quote);
 
-        $this->refreshQuoteAfterCreate(
-            $quote,
-            $accountName,
-            $billingContactName,
-            $amount,
-            $dateQuoted
-        );
+        $this->refreshQuoteAfterCreate($quote);
 
         $this->finalizeOpportunityAfterContratto(
             $opportunity,
@@ -1212,13 +1199,8 @@ class CreateContratto
         return $out;
     }
 
-    private function refreshQuoteAfterCreate(
-        $quote,
-        ?string $accountName,
-        ?string $billingContactName,
-        $amount,
-        $dateQuoted
-    ): void {
+    private function refreshQuoteAfterCreate($quote): void
+    {
         $quoteId = $quote->getId();
 
         if (!$quoteId) {
@@ -1231,36 +1213,7 @@ class CreateContratto
             return;
         }
 
-        $clienteLabel = $billingContactName ?: $accountName;
-
-        if (!$clienteLabel) {
-            $clienteLabel = $fresh->get('billingContactName')
-                ?: $fresh->get('accountName');
-        }
-
-        if (!$clienteLabel && $fresh->get('accountId')) {
-            $account = $this->entityManager->getEntityById(
-                'Account',
-                $fresh->get('accountId')
-            );
-
-            if ($account) {
-                $clienteLabel = $account->get('name');
-            }
-        }
-
-        $importo = $amount ?: $fresh->get('importoContratto') ?: $fresh->get('amount');
-
-        $patch = [
-            'name' => $this->buildContractDisplayName(
-                $dateQuoted ?: $fresh->get('dateQuoted'),
-                $fresh->get('number'),
-                $clienteLabel,
-                $importo
-            ),
-            'itemList' => [],
-            'hookVersion' => $fresh->get('hookVersion') ?: 'CreateContratto-1.10.0',
-        ];
+        $patch = [];
 
         foreach ([
             'accountName',
@@ -1292,33 +1245,11 @@ class CreateContratto
             }
         }
 
-        $fresh->set($patch);
-
-        $this->entityManager->saveEntity($fresh, [
-            'skipHooks' => true,
-        ]);
-    }
-
-    private function buildContractDisplayName(
-        ?string $dateQuoted,
-        ?string $number,
-        ?string $clienteLabel,
-        $amount
-    ): string {
-        $cliente = trim((string) $clienteLabel);
-        $importoStr = '';
-
-        if ($amount !== null && $amount !== '') {
-            $importoStr = number_format((float) $amount, 0, ',', '.');
+        if (!empty($patch)) {
+            $fresh->set($patch);
         }
 
-        return ($dateQuoted ?: '')
-            . ' - '
-            . ($number ?: '')
-            . ' - '
-            . $cliente
-            . ' - €. '
-            . $importoStr;
+        $this->entityManager->saveEntity($fresh);
     }
 
 }
