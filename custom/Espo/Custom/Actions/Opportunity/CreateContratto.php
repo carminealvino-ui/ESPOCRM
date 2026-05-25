@@ -88,6 +88,10 @@
 // - Creazione/aggiornamento Cliente completo da Lead/Prospect/Opportunità
 // - Fix accountId = Prospect senza clienteId
 // - Sync accountId su opportunità
+//
+// 1.8.1
+// -----------------------------------------------------
+// - Referente (Contact) find-or-create su ogni Cliente (ReferenteContactService)
 // -----------------------------------------------------
 // - importoOpportunit (nome campo corretto)
 // - Cliente da Prospect.cliente / creazione Account
@@ -121,6 +125,7 @@
 namespace Espo\Custom\Actions\Opportunity;
 
 use Espo\ORM\EntityManager;
+use Espo\Custom\Services\ReferenteContactService;
 
 class CreateContratto
 {
@@ -428,71 +433,22 @@ class CreateContratto
             if ($account) {
                 $accountName = $account->get('name');
             }
-        }
 
-        if ($lead) {
-            $nomeLead = $lead->get('name');
-            if (!$nomeLead) {
-                $nomeLead = trim(
-                    ($lead->get('firstName') ?? '') . ' ' . ($lead->get('lastName') ?? '')
-                );
-            }
-            if ($nomeLead) {
-                $billingContactName = $nomeLead;
-                if (!$billingContactId) {
-                    $contact = $this->entityManager->createEntity('Contact');
-                    $contact->set([
-                        'name' => $nomeLead,
-                        'firstName' => $lead->get('firstName'),
-                        'lastName' => $lead->get('lastName'),
-                        'accountId' => $accountId,
-                        'phoneNumber' => $this->getLeadPhoneNumber($lead),
-                        'assignedUserId' => $opportunity->get('assignedUserId'),
-                    ]);
-                    $this->entityManager->saveEntity($contact);
-                    $billingContactId = $contact->getId();
-                    $shippingContactId = $billingContactId;
-                    $shippingContactName = $contact->get('name');
-                }
-            }
+            $referente = $this->ensureReferenteForCliente(
+                $accountId,
+                $lead,
+                $prospect,
+                $opportunity
+            );
+
+            $billingContactId = $referente['billingContactId'];
+            $billingContactName = $referente['billingContactName'];
+            $shippingContactId = $referente['shippingContactId'];
+            $shippingContactName = $referente['shippingContactName'];
         }
 
         if (!$billingContactName && $opportunity->get('leadName')) {
             $billingContactName = $opportunity->get('leadName');
-        }
-
-        if (!$billingContactId && $opportunity->get('prospectId')) {
-            $prospect = $this->entityManager->getEntityById(
-                'Prospect',
-                $opportunity->get('prospectId')
-            );
-            if ($prospect) {
-                $nome = $prospect->get('name');
-                if (!$nome) {
-                    $nome = trim(
-                        ($prospect->get('firstName') ?? '') . ' ' . ($prospect->get('lastName') ?? '')
-                    );
-                }
-                if ($nome) {
-                    if (!$billingContactName) {
-                        $billingContactName = $nome;
-                    }
-                    $contact = $this->entityManager->createEntity('Contact');
-                    $contact->set([
-                        'name' => $nome,
-                        'firstName' => $prospect->get('firstName'),
-                        'lastName' => $prospect->get('lastName'),
-                        'accountId' => $accountId,
-                        'assignedUserId' => $opportunity->get('assignedUserId'),
-                    ]);
-                    $this->entityManager->saveEntity($contact);
-                    if (!$billingContactId) {
-                        $billingContactId = $contact->getId();
-                        $shippingContactId = $billingContactId;
-                        $shippingContactName = $contact->get('name');
-                    }
-                }
-            }
         }
 
         // =====================================================
@@ -613,7 +569,7 @@ class CreateContratto
             }
         }
 
-        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.8.0';
+        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.8.1';
         $installatoreId = $opportunity->get('installatoreId');
 
 
@@ -808,6 +764,42 @@ class CreateContratto
                 $quote->get('name'),
 
             'existing' => false
+        ];
+    }
+
+
+    // =====================================================
+    // REFERENTE (Contact) — find or create
+    // =====================================================
+
+    private function ensureReferenteForCliente(
+        string $accountId,
+        $lead,
+        $prospect,
+        $opportunity
+    ): array {
+        $service = new ReferenteContactService($this->entityManager);
+
+        $referente = $service->ensureForAccount($accountId, [
+            'lead' => $lead,
+            'prospect' => $prospect,
+            'assignedUserId' => $opportunity->get('assignedUserId'),
+        ]);
+
+        if (!$referente) {
+            return [
+                'billingContactId' => null,
+                'billingContactName' => null,
+                'shippingContactId' => null,
+                'shippingContactName' => null,
+            ];
+        }
+
+        return [
+            'billingContactId' => $referente['id'],
+            'billingContactName' => $referente['name'],
+            'shippingContactId' => $referente['id'],
+            'shippingContactName' => $referente['name'],
         ];
     }
 

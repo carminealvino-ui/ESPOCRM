@@ -2,6 +2,8 @@
 
 namespace Espo\Custom\Services;
 
+use Espo\Custom\Services\ReferenteContactService;
+
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
@@ -361,6 +363,7 @@ class LeadProspectSync
             'processed' => 0,
             'updated' => 0,
             'accountsUpdated' => 0,
+            'contactsEnsured' => 0,
             'skipped' => 0,
             'errors' => [],
         ];
@@ -396,14 +399,27 @@ class LeadProspectSync
                 if ($accountId) {
                     $account = $this->entityManager->getEntityById('Account', $accountId);
 
-                    if ($account && $this->enrichAccountFromLead($account, $lead, $onlyEmpty)) {
-                        $this->entityManager->saveEntity($account);
+                    if ($account) {
+                        if ($this->enrichAccountFromLead($account, $lead, $onlyEmpty)) {
+                            $this->entityManager->saveEntity($account);
+                            $stats['accountsUpdated']++;
+                        }
+
                         $this->linkProspectToAccount(
                             $prospect,
                             $accountId,
                             $account->get('name')
                         );
-                        $stats['accountsUpdated']++;
+
+                        $referente = (new ReferenteContactService($this->entityManager))
+                            ->ensureForAccount($accountId, [
+                                'lead' => $lead,
+                                'prospect' => $prospect,
+                            ]);
+
+                        if ($referente) {
+                            $stats['contactsEnsured']++;
+                        }
                     } elseif (!$leadChanged) {
                         $stats['skipped']++;
                     }
