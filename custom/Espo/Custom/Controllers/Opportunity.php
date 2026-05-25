@@ -1,5 +1,7 @@
 <?php
 
+// VERSIONE: 1.0.1 — usa InjectableFactory per CreateContratto (2 dipendenze)
+
 namespace Espo\Custom\Controllers;
 
 use Espo\Core\Api\Request;

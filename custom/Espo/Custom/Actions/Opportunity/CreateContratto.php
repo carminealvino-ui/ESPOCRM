@@ -9,7 +9,7 @@ use Espo\ORM\EntityManager;
 /**
  * Crea contratto (Quote) da Opportunity chiusa positivamente.
  *
- * VERSIONE: 2.2.0
+ * VERSIONE: 2.2.1
  * - Risolve Cliente (account) da Account, Prospect.cliente o Lead
  * - Evita ID Prospect nel campo account
  * - Copia indirizzi, contatti e data contratto
@@ -24,7 +24,7 @@ class CreateContratto
 
     public function __construct(
         private EntityManager $entityManager,
-        private ProvvigioneManager $provvigioneManager
+        private ?ProvvigioneManager $provvigioneManager = null
     ) {}
 
     public function run(Entity $opportunity): object
@@ -59,7 +59,9 @@ class CreateContratto
         $provvigione = null;
 
         try {
-            $provvigione = $this->provvigioneManager->createConsolidataForQuote($opportunity, $quote);
+            if ($this->provvigioneManager) {
+                $provvigione = $this->provvigioneManager->createConsolidataForQuote($opportunity, $quote);
+            }
         } catch (\Throwable $e) {
             // Fase 1: il contratto deve esistere anche se le provvigioni non sono configurate.
         }
