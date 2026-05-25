@@ -77,6 +77,11 @@
 // - Nome contratto solo via formula Quote (no name in PHP)
 // - accountName / billingContactName prima del primo save
 // - Fix accountId = id Prospect errato
+//
+// 1.7.2
+// -----------------------------------------------------
+// - Nome formula: priorità Lead (nome + contatto billingContact)
+// - Risoluzione Lead anche da createdAccountId / leadName opportunità
 // -----------------------------------------------------
 // - importoOpportunit (nome campo corretto)
 // - Cliente da Prospect.cliente / creazione Account
@@ -399,8 +404,16 @@ class CreateContratto
         }
 
         // =====================================================
-        // ETICHETTE PER FORMULA NOME (prima del save)
+        // ETICHETTE PER FORMULA NOME (prima del save) — priorità Lead
         // =====================================================
+
+        if (!$lead && $accountId) {
+            $lead = $this->entityManager
+                ->getRDBRepository('Lead')
+                ->where(['createdAccountId' => $accountId])
+                ->order(['createdAt' => 'DESC'])
+                ->findOne();
+        }
 
         $accountName = null;
         $billingContactId = null;
@@ -416,7 +429,34 @@ class CreateContratto
         }
 
         if ($lead) {
-            $billingContactName = $lead->get('name') ?: $billingContactName;
+            $nomeLead = $lead->get('name');
+            if (!$nomeLead) {
+                $nomeLead = trim(
+                    ($lead->get('firstName') ?? '') . ' ' . ($lead->get('lastName') ?? '')
+                );
+            }
+            if ($nomeLead) {
+                $billingContactName = $nomeLead;
+                if (!$billingContactId) {
+                    $contact = $this->entityManager->createEntity('Contact');
+                    $contact->set([
+                        'name' => $nomeLead,
+                        'firstName' => $lead->get('firstName'),
+                        'lastName' => $lead->get('lastName'),
+                        'accountId' => $accountId,
+                        'phoneNumber' => $lead->get('phoneNumber'),
+                        'assignedUserId' => $opportunity->get('assignedUserId'),
+                    ]);
+                    $this->entityManager->saveEntity($contact);
+                    $billingContactId = $contact->getId();
+                    $shippingContactId = $billingContactId;
+                    $shippingContactName = $contact->get('name');
+                }
+            }
+        }
+
+        if (!$billingContactName && $opportunity->get('leadName')) {
+            $billingContactName = $opportunity->get('leadName');
         }
 
         if (!$billingContactId && $opportunity->get('prospectId')) {
@@ -432,7 +472,9 @@ class CreateContratto
                     );
                 }
                 if ($nome) {
-                    $billingContactName = $nome;
+                    if (!$billingContactName) {
+                        $billingContactName = $nome;
+                    }
                     $contact = $this->entityManager->createEntity('Contact');
                     $contact->set([
                         'name' => $nome,
@@ -442,9 +484,11 @@ class CreateContratto
                         'assignedUserId' => $opportunity->get('assignedUserId'),
                     ]);
                     $this->entityManager->saveEntity($contact);
-                    $billingContactId = $contact->getId();
-                    $shippingContactId = $billingContactId;
-                    $shippingContactName = $contact->get('name');
+                    if (!$billingContactId) {
+                        $billingContactId = $contact->getId();
+                        $shippingContactId = $billingContactId;
+                        $shippingContactName = $contact->get('name');
+                    }
                 }
             }
         }
@@ -567,7 +611,7 @@ class CreateContratto
             }
         }
 
-        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.7.1';
+        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.7.2';
         $installatoreId = $opportunity->get('installatoreId');
 
 
