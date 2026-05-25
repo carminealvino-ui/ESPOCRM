@@ -219,7 +219,6 @@ class ReferenteContactService
             $byNameGlobal = $this->entityManager
                 ->getRDBRepository('Contact')
                 ->where(['name' => $name])
-                ->order(['createdAt' => 'DESC'])
                 ->findOne();
 
             if ($byNameGlobal && !$byNameGlobal->get('accountId')) {

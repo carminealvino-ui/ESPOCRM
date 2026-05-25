@@ -418,7 +418,7 @@ class CreateContratto
             $lead = $this->entityManager
                 ->getRDBRepository('Lead')
                 ->where(['createdAccountId' => $accountId])
-                ->order(['createdAt' => 'DESC'])
+                ->order('createdAt', 'DESC')
                 ->findOne();
         }
 
