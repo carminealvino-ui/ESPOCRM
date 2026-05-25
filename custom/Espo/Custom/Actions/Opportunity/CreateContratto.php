@@ -8,6 +8,11 @@ use Espo\ORM\EntityManager;
 
 /**
  * Crea contratto (Quote) da Opportunity chiusa positivamente.
+ *
+ * VERSIONE: 2.1.0
+ * - Risolve Cliente (account) da Account, Prospect.cliente o Lead
+ * - Evita ID Prospect nel campo account
+ * - Copia indirizzi, contatti e data contratto
  */
 class CreateContratto
 {
@@ -43,18 +48,20 @@ class CreateContratto
         }
 
         $teamsIds = $opportunity->getLinkMultipleIdList('teams');
-        $accountId = $opportunity->get('accountId');
         $lead = $this->resolveLead($opportunity);
-
-        if (!$accountId && $lead) {
-            $accountId = $this->createAccountFromLead($lead, $opportunity, $teamsIds);
-        }
+        $accountId = $this->resolveAccountId($opportunity, $lead, $teamsIds);
 
         $quote = $this->buildQuote($opportunity, $accountId, $teamsIds, $lead);
 
         $this->entityManager->saveEntity($quote);
 
-        $provvigione = $this->provvigioneManager->createConsolidataForQuote($opportunity, $quote);
+        $provvigione = null;
+
+        try {
+            $provvigione = $this->provvigioneManager->createConsolidataForQuote($opportunity, $quote);
+        } catch (\Throwable $e) {
+            // Fase 1: il contratto deve esistere anche se le provvigioni non sono configurate.
+        }
 
         return (object) [
             'quoteId' => $quote->getId(),
@@ -94,6 +101,85 @@ class CreateContratto
         return $this->entityManager->getEntityById('Lead', $leadId);
     }
 
+    private function resolveAccountId(Entity $opportunity, ?Entity $lead, array $teamsIds): ?string
+    {
+        $rawAccountId = $opportunity->get('accountId');
+
+        if ($rawAccountId && $this->isValidAccountId((string) $rawAccountId)) {
+            return (string) $rawAccountId;
+        }
+
+        $prospectId = $opportunity->get('prospectId');
+
+        if ($prospectId) {
+            $prospect = $this->entityManager->getEntityById('Prospect', (string) $prospectId);
+
+            if ($prospect) {
+                $clienteId = $prospect->get('clienteId');
+
+                if ($clienteId && $this->isValidAccountId((string) $clienteId)) {
+                    return (string) $clienteId;
+                }
+
+                return $this->createAccountFromProspect($prospect, $opportunity, $teamsIds);
+            }
+        }
+
+        if ($lead) {
+            $createdAccountId = $lead->get('createdAccountId');
+
+            if ($createdAccountId && $this->isValidAccountId((string) $createdAccountId)) {
+                return (string) $createdAccountId;
+            }
+
+            return $this->createAccountFromLead($lead, $opportunity, $teamsIds);
+        }
+
+        return null;
+    }
+
+    private function isValidAccountId(string $id): bool
+    {
+        return $this->entityManager->getEntityById('Account', $id) !== null;
+    }
+
+    private function createAccountFromProspect(Entity $prospect, Entity $opportunity, array $teamsIds): string
+    {
+        $cliente = $this->entityManager->createEntity('Account');
+
+        $name = $prospect->get('name');
+
+        if (!$name) {
+            $name = trim(
+                ($prospect->get('firstName') ?? '') . ' ' . ($prospect->get('lastName') ?? '')
+            );
+        }
+
+        $cliente->set([
+            'name' => $name ?: 'Cliente da prospect',
+            'billingAddressStreet' => $prospect->get('addressStreet'),
+            'billingAddressCity' => $prospect->get('addressCity'),
+            'billingAddressPostalCode' => $prospect->get('addressPostalCode'),
+            'billingAddressState' => $prospect->get('addressState'),
+            'phoneNumber' => $prospect->get('phoneNumber'),
+            'teamsIds' => $teamsIds,
+            'assignedUserId' => $opportunity->get('assignedUserId'),
+            'type' => 'B2C',
+            'segmento' => 'B2C',
+        ]);
+
+        $this->entityManager->saveEntity($cliente);
+
+        $prospect->set([
+            'clienteId' => $cliente->getId(),
+            'clienteName' => $cliente->get('name'),
+        ]);
+
+        $this->entityManager->saveEntity($prospect);
+
+        return $cliente->getId();
+    }
+
     private function createAccountFromLead(Entity $lead, Entity $opportunity, array $teamsIds): string
     {
         $cliente = $this->entityManager->createEntity('Account');
@@ -131,10 +217,18 @@ class CreateContratto
         ?Entity $lead
     ): Entity {
         $amount = $opportunity->get('amount') ?: $opportunity->get('importoOpportunita');
-        $dateQuoted = $opportunity->get('closeDate') ?: $opportunity->get('dateClosed') ?: date('Y-m-d');
+        $dateQuoted = $this->resolveDateQuoted($opportunity);
 
         $dataInstallazione = $opportunity->get('installazione');
         $dataAttivazione = $opportunity->get('dataAttivazione');
+        $prospect = null;
+
+        if ($opportunity->get('prospectId')) {
+            $prospect = $this->entityManager->getEntityById(
+                'Prospect',
+                (string) $opportunity->get('prospectId')
+            );
+        }
 
         if (!$dataAttivazione && $opportunity->get('appuntamentoId')) {
             $appuntamento = $this->entityManager->getEntityById(
@@ -157,12 +251,18 @@ class CreateContratto
 
         $quote = $this->entityManager->createEntity('Quote');
 
+        $quoteName = $opportunity->get('name') ?: $opportunity->get('description');
+
         $quote->set([
-            'name' => 'CONTRATTO_' . date('Ymd_His'),
+            'name' => $quoteName,
+            'status' => 'Draft',
             'opportunityId' => $opportunity->getId(),
-            'accountId' => $accountId,
+            'opportunityName' => $opportunity->get('name'),
             'amount' => $amount,
+            'amountCurrency' => $opportunity->get('amountCurrency'),
             'importoContratto' => $amount,
+            'importoContrattoCurrency' => $opportunity->get('amountCurrency')
+                ?: $opportunity->get('importoOpportunitaCurrency'),
             'minusPlus' => $minusPlus,
             'totalPrezzoCodice' => $prezzoCodice,
             'prezzoCodice' => $prezzoCodice,
@@ -173,14 +273,6 @@ class CreateContratto
             'isTaxInclusive' => true,
             'priceBookId' => $opportunity->get('priceBookId'),
             'itemList' => [],
-            'billingAddressStreet' => $opportunity->get('billingAddressStreet'),
-            'billingAddressCity' => $opportunity->get('billingAddressCity'),
-            'billingAddressPostalCode' => $opportunity->get('billingAddressPostalCode'),
-            'billingAddressState' => $opportunity->get('billingAddressState'),
-            'shippingAddressStreet' => $opportunity->get('billingAddressStreet'),
-            'shippingAddressCity' => $opportunity->get('billingAddressCity'),
-            'shippingAddressPostalCode' => $opportunity->get('billingAddressPostalCode'),
-            'shippingAddressState' => $opportunity->get('billingAddressState'),
             'assignedUserId' => $opportunity->get('assignedUserId'),
             'teamsIds' => $teamsIds,
             'fornitorePartnerId' => $opportunity->get('fornitorePartnerId'),
@@ -196,6 +288,124 @@ class CreateContratto
                 : date('Y-m-01', strtotime($dateQuoted)),
         ]);
 
+        if ($accountId) {
+            $this->applyAccountToQuote($quote, $accountId, $lead, $prospect, $opportunity);
+        } else {
+            $this->applyAddressesFromSource($quote, $opportunity, $lead, $prospect);
+        }
+
         return $quote;
+    }
+
+    private function resolveDateQuoted(Entity $opportunity): string
+    {
+        foreach (['closeDate', 'dateClosed', 'dataOpportunit'] as $field) {
+            $value = $opportunity->get($field);
+
+            if ($value) {
+                return substr((string) $value, 0, 10);
+            }
+        }
+
+        return date('Y-m-d');
+    }
+
+    private function applyAccountToQuote(
+        Entity $quote,
+        string $accountId,
+        ?Entity $lead,
+        ?Entity $prospect,
+        Entity $opportunity
+    ): void {
+        $account = $this->entityManager->getEntityById('Account', $accountId);
+
+        if (!$account) {
+            return;
+        }
+
+        $quote->set([
+            'accountId' => $accountId,
+            'accountName' => $account->get('name'),
+            'billingAddressStreet' => $account->get('billingAddressStreet'),
+            'billingAddressCity' => $account->get('billingAddressCity'),
+            'billingAddressPostalCode' => $account->get('billingAddressPostalCode'),
+            'billingAddressState' => $account->get('billingAddressState'),
+            'shippingAddressStreet' => $account->get('shippingAddressStreet')
+                ?: $account->get('billingAddressStreet'),
+            'shippingAddressCity' => $account->get('shippingAddressCity')
+                ?: $account->get('billingAddressCity'),
+            'shippingAddressPostalCode' => $account->get('shippingAddressPostalCode')
+                ?: $account->get('billingAddressPostalCode'),
+            'shippingAddressState' => $account->get('shippingAddressState')
+                ?: $account->get('billingAddressState'),
+        ]);
+
+        $billingContactId = $account->get('billingContactId');
+
+        if ($billingContactId) {
+            $contact = $this->entityManager->getEntityById('Contact', $billingContactId);
+
+            if ($contact) {
+                $quote->set([
+                    'billingContactId' => $billingContactId,
+                    'billingContactName' => $contact->get('name'),
+                    'shippingContactId' => $billingContactId,
+                    'shippingContactName' => $contact->get('name'),
+                ]);
+
+                return;
+            }
+        }
+
+        if ($lead && $lead->get('createdContactId')) {
+            $contact = $this->entityManager->getEntityById(
+                'Contact',
+                (string) $lead->get('createdContactId')
+            );
+
+            if ($contact) {
+                $quote->set([
+                    'billingContactId' => $contact->getId(),
+                    'billingContactName' => $contact->get('name'),
+                    'shippingContactId' => $contact->getId(),
+                    'shippingContactName' => $contact->get('name'),
+                ]);
+            }
+
+            return;
+        }
+
+        $this->applyAddressesFromSource($quote, $opportunity, $lead, $prospect);
+    }
+
+    private function applyAddressesFromSource(
+        Entity $quote,
+        Entity $opportunity,
+        ?Entity $lead,
+        ?Entity $prospect
+    ): void {
+        $source = $prospect ?? $lead;
+
+        if (!$source) {
+            $quote->set([
+                'billingAddressStreet' => $opportunity->get('billingAddressStreet'),
+                'billingAddressCity' => $opportunity->get('billingAddressCity'),
+                'billingAddressPostalCode' => $opportunity->get('billingAddressPostalCode'),
+                'billingAddressState' => $opportunity->get('billingAddressState'),
+            ]);
+
+            return;
+        }
+
+        $quote->set([
+            'billingAddressStreet' => $source->get('addressStreet'),
+            'billingAddressCity' => $source->get('addressCity'),
+            'billingAddressPostalCode' => $source->get('addressPostalCode'),
+            'billingAddressState' => $source->get('addressState'),
+            'shippingAddressStreet' => $source->get('addressStreet'),
+            'shippingAddressCity' => $source->get('addressCity'),
+            'shippingAddressPostalCode' => $source->get('addressPostalCode'),
+            'shippingAddressState' => $source->get('addressState'),
+        ]);
     }
 }
