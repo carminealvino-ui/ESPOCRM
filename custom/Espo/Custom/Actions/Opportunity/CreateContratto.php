@@ -8,12 +8,13 @@ use Espo\ORM\EntityManager;
 /**
  * Crea contratto (Quote) da Opportunity chiusa positivamente.
  *
- * VERSIONE: 2.3.0 (Fase 1)
+ * VERSIONE: 2.4.0 (Fase 1)
  * - Risolve Cliente (account) da Account, Prospect.cliente o Lead
  * - Evita ID Prospect nel campo account
  * - Copia indirizzi, contatti e data contratto
  * - IVA, totali, CAP, installatore, contatto contraente da prospect/lead
  * - Nessuna dipendenza ProvvigioneManager (Fase 2 separata)
+ * - hookVersion da opportunita; nome contratto delegato alla formula Quote
  */
 class CreateContratto
 {
@@ -243,12 +244,11 @@ class CreateContratto
 
         $quote = $this->entityManager->createEntity('Quote');
 
-        $quoteName = $opportunity->get('name') ?: $opportunity->get('description');
         $dateQuoted = $this->resolveDateQuoted($opportunity, $appuntamento);
 
         $quote->set([
-            'name' => $quoteName,
             'status' => 'Draft',
+            'hookVersion' => $opportunity->get('hookVersion') ?: 'CreateContratto-2.4.0',
             'opportunityId' => $opportunity->getId(),
             'opportunityName' => $opportunity->get('name'),
             'amount' => $amount,
@@ -290,6 +290,7 @@ class CreateContratto
         $this->ensureBillingContact($quote, $accountId, $lead, $prospect);
         $this->applyOpportunityExtras($quote, $opportunity);
         $this->applyTaxAndTotals($quote, $opportunity);
+        $this->finalizeAccountLink($quote, $accountId);
 
         return $quote;
     }
