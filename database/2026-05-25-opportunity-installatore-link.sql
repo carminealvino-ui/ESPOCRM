@@ -1,0 +1,7 @@
+-- Opportunity.installatore: da testo a link ShippingProvider (installatore_id)
+-- Eseguire DOPO rebuild EspoCRM se la colonna non viene creata automaticamente.
+--
+-- Opzionale: collegare vecchi valori testuali al record ShippingProvider con stesso nome
+-- UPDATE opportunity o
+-- SET installatore_id = (SELECT id FROM shipping_provider sp WHERE sp.name = o.installatore AND sp.deleted = 0 LIMIT 1)
+-- WHERE o.installatore IS NOT NULL AND o.installatore != '' AND o.installatore_id IS NULL;

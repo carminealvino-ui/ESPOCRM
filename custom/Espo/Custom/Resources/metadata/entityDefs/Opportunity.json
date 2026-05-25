@@ -34,36 +34,36 @@
             "type": "enum",
             "options": [
                 "",
-                "Ottimo Rapporto Quait\u00e0/Prezzo",
+                "Ottimo Rapporto Quaità/Prezzo",
                 "Fidelizzazione Brand",
                 "Soluzione Esclusiva",
                 "Prezzo Troppo Alto",
                 "Decisione Rinviata per Mancanza di Fondi",
-                "Decisione Rinviata per altre Priorit\u00e0",
+                "Decisione Rinviata per altre Priorità",
                 "Decisione Rinviata per Tempi di Consegna",
                 "Raffronto Concorrenza",
                 "Confronto con Marito-Moglie/Socio",
                 "Tempistica Decisione",
-                "Modalit\u00e0 di Pagamento",
+                "Modalità di Pagamento",
                 "Detrazione non Possibile",
-                "Infattibilit\u00e0 Tecnica",
+                "Infattibilità Tecnica",
                 "Permessi"
             ],
             "style": {
                 "": null,
-                "Ottimo Rapporto Quait\u00e0/Prezzo": null,
+                "Ottimo Rapporto Quaità/Prezzo": null,
                 "Fidelizzazione Brand": null,
                 "Soluzione Esclusiva": null,
                 "Prezzo Troppo Alto": null,
                 "Decisione Rinviata per Mancanza di Fondi": null,
-                "Decisione Rinviata per altre Priorit\u00e0": null,
+                "Decisione Rinviata per altre Priorità": null,
                 "Decisione Rinviata per Tempi di Consegna": null,
                 "Raffronto Concorrenza": null,
                 "Confronto con Marito-Moglie/Socio": null,
                 "Tempistica Decisione": null,
-                "Modalit\u00e0 di Pagamento": null,
+                "Modalità di Pagamento": null,
                 "Detrazione non Possibile": null,
-                "Infattibilit\u00e0 Tecnica": null,
+                "Infattibilità Tecnica": null,
                 "Permessi": null
             },
             "default": "",
@@ -187,9 +187,8 @@
             "isCustom": true
         },
         "installatore": {
-            "type": "varchar",
-            "trim": true,
-            "options": [],
+            "type": "link",
+            "entity": "ShippingProvider",
             "isCustom": true
         },
         "importoProvvigione": {
@@ -416,6 +415,13 @@
             "type": "belongsTo",
             "foreign": "opportunita",
             "entity": "ProductCategory",
+            "audited": false,
+            "isCustom": true
+        },
+        "installatore": {
+            "type": "belongsTo",
+            "foreign": "opportunita",
+            "entity": "ShippingProvider",
             "audited": false,
             "isCustom": true
         }
