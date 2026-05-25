@@ -86,6 +86,11 @@ class ReferenteContactService
         $lastName = null;
         $phone = null;
         $email = null;
+        $description = null;
+        $addressStreet = null;
+        $addressCity = null;
+        $addressPostalCode = null;
+        $addressState = null;
 
         if ($lead) {
             $name = $this->leadSync->resolveDisplayName($lead);
@@ -94,6 +99,12 @@ class ReferenteContactService
             $phone = $this->leadSync->resolvePhoneFromProspect($lead)
                 ?: ($lead->get('phoneNumber') ?: $lead->get('telefono'));
             $email = $lead->get('emailAddress');
+            $description = $lead->get('description')
+                ?: $lead->get('descrizioneOpportunitGenerata');
+            $addressStreet = $lead->get('addressStreet');
+            $addressCity = $lead->get('addressCity');
+            $addressPostalCode = $lead->get('addressPostalCode');
+            $addressState = $lead->get('addressState');
         }
 
         if ($prospect) {
@@ -104,6 +115,11 @@ class ReferenteContactService
             $lastName = $lastName ?: $prospect->get('lastName');
             $phone = $phone ?: $this->leadSync->resolvePhoneFromProspect($prospect);
             $email = $email ?: $prospect->get('emailAddress');
+            $description = $description ?: $prospect->get('description');
+            $addressStreet = $addressStreet ?: $prospect->get('addressStreet');
+            $addressCity = $addressCity ?: $prospect->get('addressCity');
+            $addressPostalCode = $addressPostalCode ?: $prospect->get('addressPostalCode');
+            $addressState = $addressState ?: $prospect->get('addressState');
         }
 
         if (!$phone && $lead) {
@@ -143,6 +159,26 @@ class ReferenteContactService
                     'optOut' => false,
                 ],
             ];
+        }
+
+        if ($description) {
+            $data['description'] = $description;
+        }
+
+        if ($addressStreet) {
+            $data['addressStreet'] = $addressStreet;
+        }
+
+        if ($addressCity) {
+            $data['addressCity'] = $addressCity;
+        }
+
+        if ($addressPostalCode) {
+            $data['addressPostalCode'] = $addressPostalCode;
+        }
+
+        if ($addressState) {
+            $data['addressState'] = $addressState;
         }
 
         return $data;
@@ -253,7 +289,18 @@ class ReferenteContactService
     {
         $patch = [];
 
-        foreach (['firstName', 'lastName', 'phoneNumber', 'emailAddress', 'assignedUserId'] as $field) {
+        foreach ([
+            'firstName',
+            'lastName',
+            'phoneNumber',
+            'emailAddress',
+            'assignedUserId',
+            'description',
+            'addressStreet',
+            'addressCity',
+            'addressPostalCode',
+            'addressState',
+        ] as $field) {
             if (empty($payload[$field])) {
                 continue;
             }

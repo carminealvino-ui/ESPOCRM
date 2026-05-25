@@ -92,6 +92,12 @@
 // 1.8.1
 // -----------------------------------------------------
 // - Referente (Contact) find-or-create su ogni Cliente (ReferenteContactService)
+//
+// 1.9.0
+// -----------------------------------------------------
+// - Indirizzi da Account/Lead/Prospect (non solo opportunità)
+// - Categoria/tax/itemList con fallback; secondo save per formula nome
+// - billingContactName da accountName se referente assente
 // -----------------------------------------------------
 // - importoOpportunit (nome campo corretto)
 // - Cliente da Prospect.cliente / creazione Account
@@ -445,35 +451,29 @@ class CreateContratto
             $shippingContactName = $referente['shippingContactName'];
         }
 
+        if (!$billingContactName && $accountName) {
+            $billingContactName = $accountName;
+        }
+
         if (!$billingContactName && $opportunity->get('leadName')) {
             $billingContactName = $opportunity->get('leadName');
+        }
+
+        if (!$shippingContactName) {
+            $shippingContactName = $billingContactName;
         }
 
         // =====================================================
         // IMPORTO
         // =====================================================
 
-        $amount =
-            $opportunity->get(
-                'amount'
-            );
-
-        if (!$amount) {
-
-            $amount =
-                $opportunity->get(
-                    'importoOpportunit'
-                );
-        }
+        $amount = $this->resolveOpportunityAmount($opportunity);
 
         // =====================================================
         // ITEM LIST
         // =====================================================
 
-        $itemList =
-            $opportunity->get(
-                'itemList'
-            );
+        $itemList = $this->buildItemListFromOpportunity($opportunity, $amount);
 
         // =====================================================
         // PRICE BOOK
@@ -488,10 +488,7 @@ class CreateContratto
         // TAX CODE
         // =====================================================
 
-        $taxCodeId =
-            $opportunity->get(
-                'taxCodeId'
-            );
+        $taxCodeId = $this->resolveTaxCodeId($opportunity, $lead, $prospect);
 
         // =====================================================
         // TAX RATE
@@ -501,6 +498,13 @@ class CreateContratto
             $opportunity->get(
                 'taxRate'
             );
+
+        if ($taxRate === null || $taxRate === '') {
+            $iva = $opportunity->get('iVA') ?? $opportunity->get('iVAListino');
+            if ($iva !== null && $iva !== '') {
+                $taxRate = ((float) $iva) / 100;
+            }
+        }
 
         // =====================================================
         // DESCRIZIONE
@@ -520,54 +524,35 @@ class CreateContratto
             ?: $opportunity->get('dateClosed')
             ?: $opportunity->get('dataOpportunit');
 
-        // =====================================================
-        // INDIRIZZI
-        // =====================================================
+        $accountForQuote = $accountId
+            ? $this->entityManager->getEntityById('Account', $accountId)
+            : null;
 
-        $billingAddressStreet =
-            $opportunity->get(
-                'billingAddressStreet'
-            );
-
-        $billingAddressCity =
-            $opportunity->get(
-                'billingAddressCity'
-            );
-
-        $billingAddressPostalCode =
-            $opportunity->get(
-                'billingAddressPostalCode'
-            );
-
-        $billingAddressState =
-            $opportunity->get(
-                'billingAddressState'
-            );
-
+        $addressData = $this->resolveQuoteAddressData(
+            $opportunity,
+            $accountForQuote,
+            $lead,
+            $prospect
+        );
 
         // =====================================================
         // PARTNER / BRAND / CATEGORIA / HOOK (1.7.0)
         // =====================================================
 
-        $fornitorePartnerId = $opportunity->get('fornitorePartnerId');
-        $fornitorePartnerName = $opportunity->get('fornitorePartnerName');
-        $productBrandId = $opportunity->get('productBrandId');
-        $productBrandName = $opportunity->get('productBrandName');
-        $productCategoryId = $opportunity->get('productCategoryId');
-        $productCategoryName = $opportunity->get('productCategoryName');
+        $partnerData = $this->resolvePartnerBrandCategory(
+            $opportunity,
+            $lead,
+            $prospect
+        );
 
-        if (!$productCategoryId && $opportunity->get('lineaProdotto')) {
-            $cat = $this->entityManager
-                ->getRDBRepository('ProductCategory')
-                ->where(['name' => $opportunity->get('lineaProdotto')])
-                ->findOne();
-            if ($cat) {
-                $productCategoryId = $cat->getId();
-                $productCategoryName = $cat->get('name');
-            }
-        }
+        $fornitorePartnerId = $partnerData['fornitorePartnerId'];
+        $fornitorePartnerName = $partnerData['fornitorePartnerName'];
+        $productBrandId = $partnerData['productBrandId'];
+        $productBrandName = $partnerData['productBrandName'];
+        $productCategoryId = $partnerData['productCategoryId'];
+        $productCategoryName = $partnerData['productCategoryName'];
 
-        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.8.1';
+        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.9.0';
         $installatoreId = $opportunity->get('installatoreId');
 
 
@@ -691,36 +676,38 @@ class CreateContratto
                 $itemList,
 
             // =================================================
-            // INDIRIZZO FATTURAZIONE
+            // INDIRIZZI (Account / Lead / Prospect)
             // =================================================
 
             'billingAddressStreet' =>
-                $billingAddressStreet,
+                $addressData['billingAddressStreet'],
 
             'billingAddressCity' =>
-                $billingAddressCity,
+                $addressData['billingAddressCity'],
 
             'billingAddressPostalCode' =>
-                $billingAddressPostalCode,
+                $addressData['billingAddressPostalCode'],
 
             'billingAddressState' =>
-                $billingAddressState,
+                $addressData['billingAddressState'],
 
-            // =================================================
-            // INDIRIZZO INSTALLAZIONE
-            // =================================================
+            'billingAddressCountry' =>
+                $addressData['billingAddressCountry'],
 
             'shippingAddressStreet' =>
-                $billingAddressStreet,
+                $addressData['shippingAddressStreet'],
 
             'shippingAddressCity' =>
-                $billingAddressCity,
+                $addressData['shippingAddressCity'],
 
             'shippingAddressPostalCode' =>
-                $billingAddressPostalCode,
+                $addressData['shippingAddressPostalCode'],
 
             'shippingAddressState' =>
-                $billingAddressState,
+                $addressData['shippingAddressState'],
+
+            'shippingAddressCountry' =>
+                $addressData['shippingAddressCountry'],
 
             // =================================================
             // USER
@@ -746,6 +733,8 @@ class CreateContratto
         // Nome contratto: formula Quote beforeSave (non impostare name qui)
 
         $this->entityManager->saveEntity($quote);
+
+        $this->refreshQuoteAfterCreate($quote);
 
         $this->finalizeOpportunityAfterContratto(
             $opportunity,
@@ -1053,6 +1042,263 @@ class CreateContratto
             'clienteName' => $accountName ?: $prospect->get('clienteName'),
         ]);
         $this->entityManager->saveEntity($prospect);
+    }
+
+    private function resolveOpportunityAmount($opportunity)
+    {
+        $amount = $opportunity->get('amount');
+
+        if (!$amount) {
+            $amount = $opportunity->get('importoOpportunit');
+        }
+
+        return $amount;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildItemListFromOpportunity($opportunity, $amount): array
+    {
+        $itemList = $opportunity->get('itemList');
+
+        if (!empty($itemList) && is_array($itemList)) {
+            return $itemList;
+        }
+
+        if (!$amount) {
+            return [];
+        }
+
+        $label = trim((string) $opportunity->get('description'));
+
+        if ($label === '') {
+            $label = trim((string) $opportunity->get('name'));
+        }
+
+        if ($label === '') {
+            $label = 'Servizio';
+        }
+
+        $unitPrice = (float) $amount;
+
+        return [
+            [
+                'name' => $label,
+                'quantity' => 1,
+                'unitPrice' => $unitPrice,
+                'amount' => $unitPrice,
+                'listPrice' => $unitPrice,
+                'productName' => $label,
+            ],
+        ];
+    }
+
+    private function resolveTaxCodeId($opportunity, $lead, $prospect): ?string
+    {
+        $taxCodeId = $opportunity->get('taxCodeId');
+
+        if ($taxCodeId) {
+            return $taxCodeId;
+        }
+
+        if ($lead && $lead->get('taxCodeId')) {
+            return $lead->get('taxCodeId');
+        }
+
+        if ($prospect && $prospect->get('taxCodeId')) {
+            return $prospect->get('taxCodeId');
+        }
+
+        $iva = $opportunity->get('iVA') ?? $opportunity->get('iVAListino');
+
+        if ($iva === null || $iva === '') {
+            return null;
+        }
+
+        $rate = ((float) $iva) / 100;
+
+        $tax = $this->entityManager
+            ->getRDBRepository('Tax')
+            ->where(['rate' => $rate])
+            ->findOne();
+
+        if ($tax) {
+            return $tax->getId();
+        }
+
+        $tax = $this->entityManager
+            ->getRDBRepository('Tax')
+            ->where(['rate' => (float) $iva])
+            ->findOne();
+
+        return $tax ? $tax->getId() : null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function resolvePartnerBrandCategory($opportunity, $lead, $prospect): array
+    {
+        $data = [
+            'fornitorePartnerId' => $opportunity->get('fornitorePartnerId'),
+            'fornitorePartnerName' => $opportunity->get('fornitorePartnerName'),
+            'productBrandId' => $opportunity->get('productBrandId'),
+            'productBrandName' => $opportunity->get('productBrandName'),
+            'productCategoryId' => $opportunity->get('productCategoryId'),
+            'productCategoryName' => $opportunity->get('productCategoryName'),
+        ];
+
+        foreach (['fornitorePartnerId', 'productBrandId', 'productCategoryId'] as $field) {
+            if ($data[$field]) {
+                continue;
+            }
+
+            if ($lead && $lead->get($field)) {
+                $data[$field] = $lead->get($field);
+                $nameField = str_replace('Id', 'Name', $field);
+                $data[$nameField] = $lead->get($nameField);
+            } elseif ($prospect && $prospect->get($field)) {
+                $data[$field] = $prospect->get($field);
+                $nameField = str_replace('Id', 'Name', $field);
+                $data[$nameField] = $prospect->get($nameField);
+            }
+        }
+
+        if (!$data['productCategoryId'] && $opportunity->get('lineaProdotto')) {
+            $cat = $this->entityManager
+                ->getRDBRepository('ProductCategory')
+                ->where(['name' => $opportunity->get('lineaProdotto')])
+                ->findOne();
+
+            if ($cat) {
+                $data['productCategoryId'] = $cat->getId();
+                $data['productCategoryName'] = $cat->get('name');
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array<string, ?string>
+     */
+    private function resolveQuoteAddressData($opportunity, $account, $lead, $prospect): array
+    {
+        $billingFields = [
+            'billingAddressStreet',
+            'billingAddressCity',
+            'billingAddressPostalCode',
+            'billingAddressState',
+            'billingAddressCountry',
+        ];
+
+        $leadMap = [
+            'billingAddressStreet' => 'addressStreet',
+            'billingAddressCity' => 'addressCity',
+            'billingAddressPostalCode' => 'addressPostalCode',
+            'billingAddressState' => 'addressState',
+            'billingAddressCountry' => 'addressCountry',
+        ];
+
+        $out = [];
+
+        foreach ($billingFields as $field) {
+            $value = $opportunity->get($field);
+
+            if (!$value && $account) {
+                $value = $account->get($field);
+            }
+
+            if (!$value && $lead) {
+                $value = $lead->get($leadMap[$field] ?? $field);
+            }
+
+            if (!$value && $prospect) {
+                $value = $prospect->get($leadMap[$field] ?? $field);
+            }
+
+            $out[$field] = $value ?: null;
+        }
+
+        $shippingFields = [
+            'shippingAddressStreet',
+            'shippingAddressCity',
+            'shippingAddressPostalCode',
+            'shippingAddressState',
+            'shippingAddressCountry',
+        ];
+
+        foreach ($shippingFields as $field) {
+            $billingKey = str_replace('shipping', 'billing', $field);
+            $value = $opportunity->get($field);
+
+            if (!$value && $account) {
+                $value = $account->get($field);
+            }
+
+            if (!$value) {
+                $value = $out[$billingKey] ?? null;
+            }
+
+            $out[$field] = $value ?: null;
+        }
+
+        return $out;
+    }
+
+    private function refreshQuoteAfterCreate($quote): void
+    {
+        $quoteId = $quote->getId();
+
+        if (!$quoteId) {
+            return;
+        }
+
+        $fresh = $this->entityManager->getEntityById('Quote', $quoteId);
+
+        if (!$fresh) {
+            return;
+        }
+
+        $patch = [];
+
+        foreach ([
+            'accountName',
+            'billingContactName',
+            'shippingContactName',
+            'importoContratto',
+            'amount',
+            'billingAddressStreet',
+            'billingAddressCity',
+            'billingAddressPostalCode',
+            'billingAddressState',
+            'shippingAddressStreet',
+            'shippingAddressCity',
+            'shippingAddressPostalCode',
+            'shippingAddressState',
+            'productCategoryId',
+            'productCategoryName',
+            'itemList',
+        ] as $field) {
+            $current = $fresh->get($field);
+            $previous = $quote->get($field);
+
+            if (
+                ($current === null || $current === '' || $current === [])
+                && $previous !== null
+                && $previous !== ''
+                && $previous !== []
+            ) {
+                $patch[$field] = $previous;
+            }
+        }
+
+        if (!empty($patch)) {
+            $fresh->set($patch);
+        }
+
+        $this->entityManager->saveEntity($fresh);
     }
 
 }
