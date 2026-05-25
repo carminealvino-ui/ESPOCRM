@@ -5,6 +5,8 @@ Copia **prima** delle modifiche v1.10.0 (naming PHP + skip formula):
 - `CreateContratto.php.bak`
 - `Quote.formula.json.bak`
 
+**v1.12.0** — `CreateContratto.php.bak-v1.11` (fix hookVersion opportunità che riattivava formula con numero contratto nel nome).
+
 Ripristino locale:
 
 ```bash

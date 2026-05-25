@@ -110,11 +110,6 @@
 // 1.11.0
 // -----------------------------------------------------
 // - Nome: data - cliente - descrizione - importo contratto
-//
-// 1.12.0
-// -----------------------------------------------------
-// - hookVersion quote sempre CreateContratto-* (non copiare 2.1.5 da opportunità)
-// - Nome impostato in PHP prima e dopo save (formula non sovrascrive)
 // - billingContactName da accountName se referente assente
 // -----------------------------------------------------
 // - importoOpportunit (nome campo corretto)
@@ -564,16 +559,8 @@ class CreateContratto
         $productCategoryId = $partnerData['productCategoryId'];
         $productCategoryName = $partnerData['productCategoryName'];
 
-        // Non usare hookVersion opportunità (es. 2.1.5): la formula Quote lo interpreta e ricalcola il nome.
-        $hookVersion = 'CreateContratto-1.12.0';
+        $hookVersion = $opportunity->get('hookVersion') ?: 'CreateContratto-1.11.0';
         $installatoreId = $opportunity->get('installatoreId');
-
-        $contractDisplayName = $this->buildContractDisplayName(
-            $dateQuoted,
-            $billingContactName ?: $accountName,
-            $description,
-            $amount
-        );
 
 
         // =====================================================
