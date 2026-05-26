@@ -1,6 +1,6 @@
 // ========================================
-// VERSIONE: 1.1.0
-// DATA: 2026-05-24
+// VERSIONE: 1.2.0
+// DATA: 2026-05-26
 // FILE: custom/Espo/Custom/Resources/client/custom/src/views/fields/product-brand-by-partner.js
 // ========================================
 
@@ -32,13 +32,13 @@ define('custom:views/fields/product-brand-by-partner', ['views/fields/link'], fu
                 return;
             }
 
-            return [
-                {
+            return {
+                fornitorePartner: {
                     type: 'equals',
                     attribute: 'fornitorePartnerId',
                     value: partnerId
                 }
-            ];
+            };
         }
     });
 });

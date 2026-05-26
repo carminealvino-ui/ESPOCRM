@@ -1,0 +1,23 @@
+{
+    "fields": {
+        "productCategory": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "and",
+                        "value": [
+                            {
+                                "type": "isEmpty",
+                                "attribute": "productBrandId"
+                            },
+                            {
+                                "type": "isEmpty",
+                                "attribute": "azienda"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,5 +1,5 @@
 // ========================================
-// VERSIONE: 1.2.0
+// VERSIONE: 1.3.0
 // DATA: 2026-05-26
 // FILE: custom/Espo/Custom/Resources/client/custom/src/views/fields/product-category-by-brand.js
 // ========================================
@@ -13,9 +13,58 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
         setup: function () {
             Dep.prototype.setup.call(this);
 
-            this.listenTo(this.model, 'change:productBrandId', function () {
-                this.reRender();
+            this.listenTo(this.model, 'change:productBrandId change:azienda', function () {
+                this.resolveBrandFromAzienda().then(function () {
+                    this.reRender();
+                }.bind(this));
             });
+
+            this.resolveBrandFromAzienda();
+        },
+
+        /**
+         * EspoCRM richiede un oggetto con chiavi (non un array) in getSelectFilters.
+         * Se productBrandId manca ma c'è il vecchio enum azienda (es. ARIEL), risolve il link.
+         */
+        resolveBrandFromAzienda: function () {
+            if (this.model.get('productBrandId')) {
+                return Promise.resolve();
+            }
+
+            var azienda = this.model.get('azienda');
+
+            if (!azienda) {
+                return Promise.resolve();
+            }
+
+            return Espo.Ajax.getRequest('ProductBrand', {
+                where: [
+                    {
+                        type: 'equals',
+                        attribute: 'name',
+                        value: azienda
+                    }
+                ],
+                maxSize: 1,
+                select: ['id', 'name', 'fornitorePartnerId', 'fornitorePartnerName']
+            }).then(function (response) {
+                if (!response.list || !response.list.length) {
+                    return;
+                }
+
+                var brand = response.list[0];
+                var data = {
+                    productBrandId: brand.id,
+                    productBrandName: brand.name
+                };
+
+                if (brand.fornitorePartnerId && !this.model.get('fornitorePartnerId')) {
+                    data.fornitorePartnerId = brand.fornitorePartnerId;
+                    data.fornitorePartnerName = brand.fornitorePartnerName;
+                }
+
+                this.model.set(data, {silent: true});
+            }.bind(this));
         },
 
         getSelectFilters: function () {
@@ -25,8 +74,8 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
                 return;
             }
 
-            return [
-                {
+            return {
+                productBrand: {
                     type: 'or',
                     value: [
                         {
@@ -45,7 +94,7 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
                         }
                     ]
                 }
-            ];
+            };
         }
     });
 });
