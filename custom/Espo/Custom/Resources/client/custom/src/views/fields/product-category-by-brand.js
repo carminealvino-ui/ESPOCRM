@@ -1,7 +1,7 @@
 // ========================================
 // VERSIONE: 1.2.0
 // DATA: 2026-05-26
-// FILE: client/custom/src/views/fields/product-category-by-brand.js
+// FILE: custom/Espo/Custom/Resources/client/custom/src/views/fields/product-category-by-brand.js
 // ========================================
 
 /* global define */

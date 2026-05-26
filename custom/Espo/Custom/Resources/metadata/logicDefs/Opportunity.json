@@ -138,6 +138,16 @@
                     }
                 ]
             }
+        },
+        "productCategory": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "productBrandId"
+                    }
+                ]
+            }
         }
     }
 }
