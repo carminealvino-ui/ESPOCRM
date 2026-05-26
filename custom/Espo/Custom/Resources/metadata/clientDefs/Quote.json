@@ -1,0 +1,14 @@
+{
+    "bottomPanels": {
+        "detail": {
+            "items": {
+                "view": "custom:views/quote/record/panels/items"
+            }
+        },
+        "edit": {
+            "items": {
+                "view": "custom:views/quote/record/panels/items"
+            }
+        }
+    }
+}
