@@ -681,6 +681,10 @@ class GlobalLogic
                 continue;
             }
 
+            if (!$entity->hasAttribute($field)) {
+                continue;
+            }
+
             $entity->set(
                 $field,
                 $source->get($field)
