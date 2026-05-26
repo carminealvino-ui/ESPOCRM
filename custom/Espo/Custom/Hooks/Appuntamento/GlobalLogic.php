@@ -129,6 +129,7 @@ namespace Espo\Custom\Hooks\Appuntamento;
 
 use Espo\Core\ORM\EntityManager;
 use Espo\Custom\Services\LeadProspectSync;
+use Espo\Custom\Services\LineaProdottoCategorySync;
 use Espo\ORM\Entity;
 
 class GlobalLogic
@@ -158,7 +159,7 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.6.5'
+                '1.7.1'
             );
 
             // ========================================
@@ -671,6 +672,7 @@ class GlobalLogic
             'productBrandName',
             'productCategoryId',
             'productCategoryName',
+            'lineaProdotto',
         ];
 
         foreach ($fieldList as $field) {
@@ -768,6 +770,9 @@ class GlobalLogic
 
     private function normalizeProductCascade(Entity $entity): void
     {
+        (new LineaProdottoCategorySync($this->entityManager))
+            ->alignOnEntity($entity);
+
         if ($entity->get('productBrandId') && !$entity->get('fornitorePartnerId')) {
             $brand = $this->entityManager->getEntityById(
                 'ProductBrand',

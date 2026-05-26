@@ -1,7 +1,7 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.3
+// VERSIONE: 2.2.4
 // DATA: 2026-05-26
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
@@ -284,6 +284,7 @@ namespace Espo\Custom\Hooks\Opportunity;
 
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
+use Espo\Custom\Services\LineaProdottoCategorySync;
 use Espo\Custom\Services\ReferenteContactService;
 
 class GlobalLogic
@@ -321,7 +322,7 @@ class GlobalLogic
 
         $entity->set(
             'hookVersion',
-            '2.2.3'
+            '2.2.4'
         );
 
 
@@ -796,11 +797,16 @@ class GlobalLogic
             'productBrandName',
             'productCategoryId',
             'productCategoryName',
+            'lineaProdotto',
         ];
 
         foreach ($fieldList as $field) {
 
             if (!$source->get($field)) {
+                continue;
+            }
+
+            if (!$entity->hasAttribute($field)) {
                 continue;
             }
 
@@ -817,6 +823,9 @@ class GlobalLogic
 
     private function normalizeProductCascade(Entity $entity): void
     {
+        (new LineaProdottoCategorySync($this->entityManager))
+            ->alignOnEntity($entity);
+
         if ($entity->get('productBrandId') && !$entity->get('fornitorePartnerId')) {
             $brand = $this->entityManager->getEntityById(
                 'ProductBrand',
