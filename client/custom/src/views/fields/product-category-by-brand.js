@@ -1,5 +1,5 @@
 // ========================================
-// VERSIONE: 1.3.0
+// VERSIONE: 1.4.0
 // DATA: 2026-05-26
 // FILE: client/custom/src/views/fields/product-category-by-brand.js
 // ========================================
@@ -7,6 +7,69 @@
 /* global define */
 
 define('custom:views/fields/product-category-by-brand', ['views/fields/link'], function (Dep) {
+
+    var BRAND_CATEGORY_FILTER = {
+        ARIEL: {
+            names: [
+                'CLIMATIZZATORI',
+                'CLIMATIZZAZIONE',
+                'CALDAIE A GAS',
+                'CALDAIE',
+                'STUFE',
+                'STUFE A PELLET',
+                'FOTOVOLTAICO'
+            ],
+            gruppoProvvigione: ['Clima e altro'],
+            regimeProvvigione: ['ARIEL_2026']
+        },
+        ARTEL: {
+            names: [
+                'CLIMATIZZATORI',
+                'CLIMATIZZAZIONE',
+                'CALDAIE A GAS',
+                'CALDAIE',
+                'STUFE',
+                'STUFE A PELLET',
+                'FOTOVOLTAICO'
+            ],
+            gruppoProvvigione: ['Clima e altro']
+        },
+        ARQUATI: {
+            names: [
+                'TENDA VERTICALE',
+                'TENDA A BRACCI',
+                'TENDA A CUPOLA',
+                'PERGOLA',
+                'BIOCLIMATICA',
+                'VETROTENDA',
+                'VETRATA IMPACCHETTABILE',
+                'VETRATA SCORREVOLE',
+                'CHIUSURE VERTICALI'
+            ],
+            gruppoProvvigione: ['Tende da Sole', 'Pergole', 'Vetrate']
+        },
+        PROGETTO: {
+            names: [
+                'TENDA VERTICALE',
+                'TENDA A BRACCI',
+                'TENDA A CUPOLA',
+                'PERGOLA',
+                'BIOCLIMATICA',
+                'VETROTENDA',
+                'VETRATA IMPACCHETTABILE',
+                'VETRATA SCORREVOLE',
+                'CHIUSURE VERTICALI'
+            ],
+            gruppoProvvigione: ['Tende da Sole', 'Pergole', 'Vetrate']
+        },
+        GFB: {
+            regimeProvvigione: [
+                'GFB_VODAFONE_COEFF',
+                'GFB_FASTWEB_POD',
+                'GFB_RS_BIMESTRE'
+            ]
+        }
+    };
 
     return Dep.extend({
 
@@ -20,6 +83,12 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
             });
 
             this.resolveBrandFromAzienda();
+        },
+
+        getBrandKey: function () {
+            var name = this.model.get('productBrandName') || this.model.get('azienda') || '';
+
+            return String(name).trim().toUpperCase();
         },
 
         resolveBrandFromAzienda: function () {
@@ -63,34 +132,67 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
             }.bind(this));
         },
 
+        buildFilterFromConfig: function (config) {
+            if (config.names && config.names.length) {
+                return {
+                    byCategoryName: {
+                        type: 'in',
+                        attribute: 'name',
+                        value: config.names
+                    }
+                };
+            }
+
+            if (config.gruppoProvvigione && config.gruppoProvvigione.length) {
+                return {
+                    byGruppo: {
+                        type: 'in',
+                        attribute: 'gruppoProvvigione',
+                        value: config.gruppoProvvigione
+                    }
+                };
+            }
+
+            if (config.regimeProvvigione && config.regimeProvvigione.length) {
+                return {
+                    byRegime: {
+                        type: 'in',
+                        attribute: 'regimeProvvigione',
+                        value: config.regimeProvvigione
+                    }
+                };
+            }
+
+            return null;
+        },
+
         getSelectFilters: function () {
+            var brandKey = this.getBrandKey();
             var brandId = this.model.get('productBrandId');
 
-            if (!brandId) {
+            if (!brandKey && !brandId) {
                 return;
             }
 
-            return {
-                productBrand: {
-                    type: 'or',
-                    value: [
-                        {
-                            type: 'equals',
-                            attribute: 'productBrandId',
-                            value: brandId
-                        },
-                        {
-                            type: 'isNull',
-                            attribute: 'productBrandId'
-                        },
-                        {
-                            type: 'equals',
-                            attribute: 'productBrandId',
-                            value: ''
-                        }
-                    ]
+            if (brandKey && BRAND_CATEGORY_FILTER[brandKey]) {
+                var mapped = this.buildFilterFromConfig(BRAND_CATEGORY_FILTER[brandKey]);
+
+                if (mapped) {
+                    return mapped;
                 }
-            };
+            }
+
+            if (brandId) {
+                return {
+                    productBrandLinked: {
+                        type: 'equals',
+                        attribute: 'productBrandId',
+                        value: brandId
+                    }
+                };
+            }
+
+            return;
         }
     });
 });
