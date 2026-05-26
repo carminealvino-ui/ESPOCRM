@@ -34,16 +34,7 @@ WHERE o.deleted = 0
   AND o.linea_prodotto IS NOT NULL
   AND TRIM(o.linea_prodotto) != '';
 
--- Se esiste product_category_name su opportunity (opzionale — commentare se errore 1054)
-UPDATE opportunity o
-INNER JOIN product_category pc ON pc.id = o.product_category_id AND pc.deleted = 0
-SET o.product_category_name = pc.name
-WHERE o.deleted = 0
-  AND o.product_category_id IS NOT NULL
-  AND o.product_category_id != ''
-  AND (o.product_category_name IS NULL OR o.product_category_name = '');
-
--- Verifica
+-- Verifica (solo product_category_id — in produzione non c'è product_category_name)
 SELECT linea_prodotto, COUNT(*) AS tot,
   SUM(CASE WHEN product_category_id IS NOT NULL AND product_category_id != '' THEN 1 ELSE 0 END) AS con_categoria
 FROM opportunity
