@@ -40,6 +40,28 @@ class ProvvigioneAccrual
         };
     }
 
+    /**
+     * GDL + brand Ariel → regime mail febbraio 2026 (priorità su gruppo ARQUATI).
+     */
+    public function resolveRegimeFromCommercial(
+        ?object $category,
+        ?string $fornitorePartnerName,
+        ?string $productBrandName
+    ): string {
+        $brand = strtoupper(trim((string) $productBrandName));
+        $partner = strtoupper(trim((string) $fornitorePartnerName));
+
+        if (str_contains($brand, 'ARIEL') || str_contains($partner, 'GDL')) {
+            return 'ARIEL_2026';
+        }
+
+        if ($category && $category->get('regimeProvvigione') === 'ARIEL_2026') {
+            return 'ARIEL_2026';
+        }
+
+        return $this->resolveRegimeFromCategory($category);
+    }
+
     public function resolveEventDate(?string $dataAttivazione, ?string $dataInstallazione): ?string
     {
         if ($dataAttivazione) {

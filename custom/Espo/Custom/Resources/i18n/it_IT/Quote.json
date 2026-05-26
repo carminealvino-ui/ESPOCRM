@@ -53,7 +53,8 @@
         "margineSuListino": "Margine % su listino",
         "prezzoCodiceIvaEsclusa": "Prezzo a codice (IVA escl.)",
         "contattoPersonaleArquati": "Contatto personale ARQUATI (+5%)",
-        "integrazionePncPercentuale": "Integrazione PNC %"
+        "integrazionePncPercentuale": "Integrazione PNC %",
+        "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)"
     },
     "links": {
         "cAP": "CAP",

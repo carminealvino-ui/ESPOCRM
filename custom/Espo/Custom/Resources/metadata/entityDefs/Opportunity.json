@@ -281,6 +281,11 @@
             "isCustom": true,
             "conversionDisabled": true
         },
+        "ordineIncompletoAriel": {
+            "type": "bool",
+            "default": false,
+            "isCustom": true
+        },
         "azienda": {
             "type": "enum",
             "options": [

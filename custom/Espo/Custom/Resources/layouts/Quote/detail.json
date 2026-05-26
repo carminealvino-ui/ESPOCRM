@@ -127,6 +127,16 @@
                     "name": "integrazionePncPercentuale",
                     "customLabel": "Integrazione PNC % (da contratto)"
                 }
+            ],
+            [
+                {
+                    "name": "minusPlus",
+                    "customLabel": "Plusvalenza / Minusvalenza (€)"
+                },
+                {
+                    "name": "ordineIncompletoAriel",
+                    "customLabel": "Ordine incompleto Ariel (−5% provv.)"
+                }
             ]
         ],
         "style": "default",

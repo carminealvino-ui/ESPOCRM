@@ -673,6 +673,12 @@ class CreateContratto
             'integrazionePncPercentuale' =>
                 $opportunity->get('integrazionePncPercentuale'),
 
+            'ordineIncompletoAriel' =>
+                (bool) $opportunity->get('ordineIncompletoAriel'),
+
+            'minusPlus' =>
+                $this->resolveMinusPlusForQuote($opportunity, $amount),
+
             // =================================================
             // DATA
             // =================================================
@@ -1347,6 +1353,23 @@ class CreateContratto
         $this->entityManager->saveEntity($fresh, [
             'skipHooks' => true,
         ]);
+    }
+
+    private function resolveMinusPlusForQuote($opportunity, $amount): ?float
+    {
+        $stored = $opportunity->get('minusPlus');
+
+        if ($stored !== null && $stored !== '') {
+            return round((float) $stored, 2);
+        }
+
+        $codice = $opportunity->get('prezzoCodiceIvaEsclusa');
+
+        if (!$amount || !$codice) {
+            return null;
+        }
+
+        return round((float) $amount - (float) $codice, 2);
     }
 
     private function resolveMargineSuListino($opportunity, $amount): ?float

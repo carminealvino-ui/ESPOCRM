@@ -129,6 +129,11 @@
             "type": "float",
             "decimalPlaces": 2,
             "isCustom": true
+        },
+        "ordineIncompletoAriel": {
+            "type": "bool",
+            "default": false,
+            "isCustom": true
         }
     },
     "links": {

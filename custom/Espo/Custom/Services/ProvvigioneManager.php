@@ -25,8 +25,6 @@ class ProvvigioneManager
         ?float $imponibileOverride = null,
         ?Entity $opportunity = null
     ): array {
-        $regime = $this->accrual->resolveRegimeFromCategory($category);
-
         $imponibile = $imponibileOverride;
 
         if ($imponibile === null && $source) {
@@ -48,6 +46,12 @@ class ProvvigioneManager
 
         $margine = $this->resolveMarginePercentuale($source, $opportunity, $imponibile, $prezzoListino);
 
+        $regime = $this->accrual->resolveRegimeFromCommercial(
+            $category,
+            $source?->get('fornitorePartnerName') ?? $opportunity?->get('fornitorePartnerName'),
+            $source?->get('productBrandName') ?? $opportunity?->get('productBrandName')
+        );
+
         return [
             'regime' => $regime,
             'fornitorePartnerId' => $source?->get('fornitorePartnerId') ?? $opportunity?->get('fornitorePartnerId'),
@@ -64,6 +68,8 @@ class ProvvigioneManager
                 ?? $opportunity?->get('contattoPersonaleArquati')),
             'integrazionePncPercentuale' => $this->floatField($source, 'integrazionePncPercentuale')
                 ?? $this->floatField($opportunity, 'integrazionePncPercentuale'),
+            'ordineIncompletoAriel' => (bool) ($source?->get('ordineIncompletoAriel')
+                ?? $opportunity?->get('ordineIncompletoAriel')),
         ];
     }
 
@@ -110,31 +116,24 @@ class ProvvigioneManager
 
     public function createConsolidataForQuote(Entity $opportunity, Entity $quote): ?Entity
     {
-        $category = null;
+        $category = $this->resolveProductCategory($quote, $opportunity);
 
-        if ($quote->get('productCategoryId')) {
-            $category = $this->entityManager->getEntityById(
-                'ProductCategory',
-                $quote->get('productCategoryId')
-            );
-        } elseif ($opportunity->get('productCategoryId')) {
-            $category = $this->entityManager->getEntityById(
-                'ProductCategory',
-                $opportunity->get('productCategoryId')
-            );
+        $imponibile = $this->floatField($quote, 'amount')
+            ?? $this->floatField($quote, 'importoContratto')
+            ?? $this->floatField($opportunity, 'amount')
+            ?? $this->floatField($opportunity, 'importoOpportunit');
+
+        $context = $this->buildContextFromEntities($category, $quote, $imponibile, $opportunity);
+        $context['imponibile'] = $imponibile;
+
+        if ($context['regime'] === 'ARIEL_2026') {
+            return $this->createConsolidataAriel2026($opportunity, $quote, $category, $context, $imponibile);
         }
 
         if (!$category) {
             return null;
         }
 
-        $imponibile = $this->floatField($quote, 'amount')
-            ?? $this->floatField($quote, 'importoContratto')
-            ?? $this->floatField($opportunity, 'amount')
-            ?? $this->floatField($opportunity, 'importoOpportunita');
-
-        $context = $this->buildContextFromEntities($category, $quote, $imponibile, $opportunity);
-        $context['imponibile'] = $imponibile;
         $context['plusvalenza'] = $this->floatField($quote, 'minusPlus') ?? $context['plusvalenza'];
 
         if ($context['marginePercentuale'] !== null && !$quote->get('margineSuListino')) {
@@ -147,10 +146,116 @@ class ProvvigioneManager
 
         $result = $this->calculator->calculateBest($context);
 
+        $provvigione = $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            $result,
+            $context,
+            'Provvigione Base',
+            null
+        );
+
+        $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
+
+        return $provvigione;
+    }
+
+    /**
+     * GDL / Ariel 2026: 10+5% su imponibile (o 10% se ordine incompleto) + 35% su plusvalenza.
+     *
+     * @param array<string, mixed> $context
+     */
+    private function createConsolidataAriel2026(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        array $context,
+        ?float $imponibile
+    ): ?Entity {
+        if ($imponibile === null || $imponibile <= 0) {
+            return null;
+        }
+
+        $minusPlus = $this->resolveMinusPlusValue($quote, $opportunity, $imponibile);
+
+        $quote->set([
+            'minusPlus' => $minusPlus,
+            'prezzoCodiceIvaEsclusa' => $quote->get('prezzoCodiceIvaEsclusa')
+                ?: $opportunity->get('prezzoCodiceIvaEsclusa'),
+            'prezzoListinoIvaEsclusa' => $quote->get('prezzoListinoIvaEsclusa')
+                ?: $opportunity->get('prezzoListinoIvaEsclusa'),
+        ]);
+
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+            'silent' => true,
+        ]);
+
+        $context['plusvalenza'] = ($minusPlus !== null && $minusPlus > 0) ? $minusPlus : null;
+
+        $ruleId = !empty($context['ordineIncompletoAriel']) ? 'arielBase10' : 'arielBase105';
+        $baseRule = $this->entityManager->getEntityById('RegolaProvvigionale', $ruleId);
+        $baseResult = null;
+
+        if ($baseRule && $baseRule->get('attiva')) {
+            $importo = $this->calculator->calculateRule($baseRule, $context);
+
+            if ($importo !== null && $importo > 0) {
+                $baseResult = ['importo' => $importo, 'regola' => $baseRule];
+            }
+        }
+
+        $base = $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            $baseResult,
+            $context,
+            'Provvigione Base',
+            'ARIEL-BASE-' . ($quote->get('number') ?? $quote->getId())
+        );
+
+        if ($context['plusvalenza'] !== null && $context['plusvalenza'] > 0) {
+            $plusRule = $this->entityManager->getEntityById('RegolaProvvigionale', 'arielPlus35');
+
+            if ($plusRule && $plusRule->get('attiva')) {
+                $plusImporto = $this->calculator->calculateRule($plusRule, $context);
+
+                if ($plusImporto !== null && $plusImporto > 0) {
+                    $this->saveConsolidataProvvigione(
+                        $opportunity,
+                        $quote,
+                        $category,
+                        ['importo' => $plusImporto, 'regola' => $plusRule],
+                        $context,
+                        'Plus Provvigionale',
+                        'ARIEL-PLUS35-' . ($quote->get('number') ?? $quote->getId())
+                    );
+                }
+            }
+        }
+
+        return $base;
+    }
+
+    /**
+     * @param array{importo: float, regola: Entity}|null $result
+     * @param array<string, mixed> $context
+     */
+    private function saveConsolidataProvvigione(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        ?array $result,
+        array $context,
+        string $tipo,
+        ?string $nameSuffix
+    ): ?Entity {
         $provvigione = $this->findProvvigione(
             'Consolidata',
             contrattoId: $quote->getId(),
-            tipo: 'Provvigione Base'
+            tipo: $tipo
         ) ?? $this->entityManager->createEntity('Provvigione');
 
         $this->applyProvvigioneFromCalculation(
@@ -164,6 +269,7 @@ class ProvvigioneManager
         );
 
         $provvigione->set([
+            'tipo' => $tipo,
             'contrattoId' => $quote->getId(),
             'contrattoName' => $quote->get('name'),
             'opportunitaId' => $opportunity->getId(),
@@ -172,18 +278,33 @@ class ProvvigioneManager
             'clienteName' => $quote->get('accountName'),
         ]);
 
-        $prevista = $this->findProvvigione('Prevista', opportunitaId: $opportunity->getId())
-            ?? $this->findProvvigione('Prevista', appuntamentoId: $opportunity->get('appuntamentoId'));
+        if ($nameSuffix) {
+            $provvigione->set('name', $nameSuffix);
+        }
 
-        if ($prevista) {
-            $provvigione->set('importoPrevisto', $prevista->get('importoPrevisto') ?? $prevista->get('importo'));
+        if ($tipo === 'Provvigione Base') {
+            $prevista = $this->findProvvigione('Prevista', opportunitaId: $opportunity->getId())
+                ?? $this->findProvvigione('Prevista', appuntamentoId: $opportunity->get('appuntamentoId'));
+
+            if ($prevista) {
+                $provvigione->set('importoPrevisto', $prevista->get('importoPrevisto') ?? $prevista->get('importo'));
+            }
         }
 
         $this->entityManager->saveEntity($provvigione, ['silent' => true]);
 
-        $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
-
         return $provvigione;
+    }
+
+    private function resolveProductCategory(Entity $quote, Entity $opportunity): ?Entity
+    {
+        $categoryId = $quote->get('productCategoryId') ?: $opportunity->get('productCategoryId');
+
+        if (!$categoryId) {
+            return null;
+        }
+
+        return $this->entityManager->getEntityById('ProductCategory', $categoryId);
     }
 
     /**
@@ -193,13 +314,17 @@ class ProvvigioneManager
     private function applyProvvigioneFromCalculation(
         Entity $provvigione,
         Entity $parent,
-        Entity $category,
+        ?Entity $category,
         ?array $result,
         string $stato,
         ?array $context,
         Entity $dateSource
     ): void {
-        $regime = $context['regime'] ?? $this->accrual->resolveRegimeFromCategory($category);
+        $regime = $context['regime'] ?? $this->accrual->resolveRegimeFromCommercial(
+            $category,
+            $parent->get('fornitorePartnerName'),
+            $parent->get('productBrandName')
+        );
         $importo = $result['importo'] ?? null;
         $rule = $result['regola'] ?? null;
 
@@ -214,8 +339,8 @@ class ProvvigioneManager
             'statoProvvigione' => $stato,
             'regimeProvvigione' => $regime,
             'tipo' => $rule?->get('tipoProvvigioneRecord') ?? 'Provvigione Base',
-            'productCategoryId' => $category->getId(),
-            'productCategoryName' => $category->get('name'),
+            'productCategoryId' => $category?->getId(),
+            'productCategoryName' => $category?->get('name') ?? $parent->get('productCategoryName'),
             'fornitorePartnerId' => $parent->get('fornitorePartnerId'),
             'fornitorePartnerName' => $parent->get('fornitorePartnerName'),
             'productBrandId' => $parent->get('productBrandId'),
@@ -302,6 +427,10 @@ class ProvvigioneManager
         array $context,
         ?float $imponibile
     ): void {
+        if (($context['regime'] ?? '') !== 'ARQUATI_PNC') {
+            return;
+        }
+
         if (!$context['contattoPersonaleArquati'] || $imponibile === null || $imponibile <= 0) {
             return;
         }
@@ -376,6 +505,26 @@ class ProvvigioneManager
         }
 
         return round((($imponibile - $prezzoListino) / $prezzoListino) * 100, 2);
+    }
+
+    private function resolveMinusPlusValue(
+        Entity $quote,
+        Entity $opportunity,
+        ?float $imponibile
+    ): ?float {
+        $stored = $this->floatField($quote, 'minusPlus') ?? $this->floatField($opportunity, 'minusPlus');
+
+        if ($stored !== null) {
+            return round($stored, 2);
+        }
+
+        $prezzoCodice = $this->resolvePrezzoCodice($quote, $opportunity);
+
+        if ($imponibile === null || $prezzoCodice === null) {
+            return null;
+        }
+
+        return round($imponibile - $prezzoCodice, 2);
     }
 
     private function resolveImponibile(Entity $entity): ?float
