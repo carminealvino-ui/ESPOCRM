@@ -23,7 +23,19 @@ WHERE deleted = 0 AND UPPER(TRIM(name)) = 'CALDAIE A GAS'
   AND (linea_prodotto IS NULL OR linea_prodotto = '');
 
 UPDATE product_category SET linea_prodotto = 'Stufe'
-WHERE deleted = 0 AND UPPER(TRIM(name)) IN ('STUFE', 'STUFE A PELLET', 'BIOMASSA')
+WHERE deleted = 0 AND UPPER(TRIM(name)) IN ('STUFE', 'STUFE A PELLET')
+  AND (linea_prodotto IS NULL OR linea_prodotto = '');
+
+UPDATE product_category SET linea_prodotto = 'Biomassa'
+WHERE deleted = 0 AND UPPER(TRIM(name)) = 'BIOMASSA'
+  AND (linea_prodotto IS NULL OR linea_prodotto = '');
+
+UPDATE product_category SET linea_prodotto = 'TLC'
+WHERE deleted = 0 AND UPPER(TRIM(name)) LIKE '%VODAFONE%'
+  AND (linea_prodotto IS NULL OR linea_prodotto = '');
+
+UPDATE product_category SET linea_prodotto = 'Energia'
+WHERE deleted = 0 AND UPPER(TRIM(name)) LIKE '%ENEL%'
   AND (linea_prodotto IS NULL OR linea_prodotto = '');
 
 UPDATE product_category SET linea_prodotto = 'Fotovoltaico'
@@ -91,7 +103,10 @@ INNER JOIN product_category pc ON pc.deleted = 0 AND pc.name = CASE TRIM(o.linea
     WHEN 'Climatizzazione' THEN 'CLIMATIZZATORI'
     WHEN 'Caldaie' THEN 'CALDAIE A GAS'
     WHEN 'Stufe' THEN 'BIOMASSA'
+    WHEN 'Biomassa' THEN 'BIOMASSA'
     WHEN 'Fotovoltaico' THEN 'FOTOVOLTAICO'
+    WHEN 'TLC' THEN 'VODAFONE VOCE'
+    WHEN 'Energia' THEN 'ENEL BUSINESS'
     WHEN 'Pergole' THEN 'PERGOLA'
     WHEN 'Tende da Sole' THEN 'TENDA A BRACCI'
     WHEN 'Chiusure Verticali' THEN 'TENDA VERTICALE'
@@ -134,7 +149,10 @@ INNER JOIN product_category pc ON pc.deleted = 0 AND pc.name = CASE TRIM(a.linea
     WHEN 'Climatizzazione' THEN 'CLIMATIZZATORI'
     WHEN 'Caldaie' THEN 'CALDAIE A GAS'
     WHEN 'Stufe' THEN 'BIOMASSA'
+    WHEN 'Biomassa' THEN 'BIOMASSA'
     WHEN 'Fotovoltaico' THEN 'FOTOVOLTAICO'
+    WHEN 'TLC' THEN 'VODAFONE VOCE'
+    WHEN 'Energia' THEN 'ENEL BUSINESS'
     WHEN 'Pergole' THEN 'PERGOLA'
     WHEN 'Tende da Sole' THEN 'TENDA A BRACCI'
     WHEN 'Chiusure Verticali' THEN 'TENDA VERTICALE'
@@ -155,7 +173,10 @@ INNER JOIN product_category pc ON pc.deleted = 0 AND pc.name = CASE TRIM(l.linea
     WHEN 'Climatizzazione' THEN 'CLIMATIZZATORI'
     WHEN 'Caldaie' THEN 'CALDAIE A GAS'
     WHEN 'Stufe' THEN 'BIOMASSA'
+    WHEN 'Biomassa' THEN 'BIOMASSA'
     WHEN 'Fotovoltaico' THEN 'FOTOVOLTAICO'
+    WHEN 'TLC' THEN 'VODAFONE VOCE'
+    WHEN 'Energia' THEN 'ENEL BUSINESS'
     WHEN 'Pergole' THEN 'PERGOLA'
     WHEN 'Tende da Sole' THEN 'TENDA A BRACCI'
     WHEN 'Chiusure Verticali' THEN 'TENDA VERTICALE'
@@ -175,7 +196,10 @@ INNER JOIN product_category pc ON pc.deleted = 0 AND pc.name = CASE TRIM(p.linea
     WHEN 'Climatizzazione' THEN 'CLIMATIZZATORI'
     WHEN 'Caldaie' THEN 'CALDAIE A GAS'
     WHEN 'Stufe' THEN 'BIOMASSA'
+    WHEN 'Biomassa' THEN 'BIOMASSA'
     WHEN 'Fotovoltaico' THEN 'FOTOVOLTAICO'
+    WHEN 'TLC' THEN 'VODAFONE VOCE'
+    WHEN 'Energia' THEN 'ENEL BUSINESS'
     WHEN 'Pergole' THEN 'PERGOLA'
     WHEN 'Tende da Sole' THEN 'TENDA A BRACCI'
     WHEN 'Chiusure Verticali' THEN 'TENDA VERTICALE'
