@@ -143,8 +143,17 @@
             "readOnly": {
                 "conditionGroup": [
                     {
-                        "type": "isEmpty",
-                        "attribute": "productBrandId"
+                        "type": "and",
+                        "value": [
+                            {
+                                "type": "isEmpty",
+                                "attribute": "productBrandId"
+                            },
+                            {
+                                "type": "isEmpty",
+                                "attribute": "azienda"
+                            }
+                        ]
                     }
                 ]
             }
