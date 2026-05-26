@@ -1,8 +1,8 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.1
-// DATA: 2026-05-22
+// VERSIONE: 2.2.2
+// DATA: 2026-05-26
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
 //
@@ -303,7 +303,7 @@ class GlobalLogic
 
         $entity->set(
             'hookVersion',
-            '2.1.5'
+            '2.2.2'
         );
 
 
@@ -649,6 +649,11 @@ class GlobalLogic
 
         if ($entity->get('prospectName')) {
 
+            $brandLabel = trim((string) (
+                $entity->get('productBrandName')
+                ?: $entity->get('azienda')
+            ));
+
             $name =
 
                 $entity->get('dataOpportunit')
@@ -659,7 +664,7 @@ class GlobalLogic
 
                 . ' - '
 
-                . $entity->get('azienda')
+                . $brandLabel
 
                 . ' - '
 
