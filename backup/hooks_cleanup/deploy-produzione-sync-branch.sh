@@ -41,12 +41,13 @@ if [[ ! -d "${SRC}/custom" ]]; then
 fi
 
 echo "==> Copia custom/"
-rsync -a --delete "${SRC}/custom/" "${CRM_ROOT}/custom/"
+mkdir -p "${CRM_ROOT}/custom"
+cp -a "${SRC}/custom/." "${CRM_ROOT}/custom/"
 
 if [[ -d "${SRC}/client/custom" ]]; then
   mkdir -p "${CRM_ROOT}/client/custom"
   echo "==> Copia client/custom/"
-  rsync -a "${SRC}/client/custom/" "${CRM_ROOT}/client/custom/"
+  cp -a "${SRC}/client/custom/." "${CRM_ROOT}/client/custom/"
 fi
 
 echo "==> Rebuild + Clear cache"
