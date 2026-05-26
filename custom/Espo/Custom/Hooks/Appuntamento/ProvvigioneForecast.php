@@ -7,7 +7,7 @@ use Espo\Custom\Services\ProvvigioneManager;
 use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
-class ProvvigioneForecastHook implements AfterSave
+class ProvvigioneForecast implements AfterSave
 {
     public static int $order = 20;
 

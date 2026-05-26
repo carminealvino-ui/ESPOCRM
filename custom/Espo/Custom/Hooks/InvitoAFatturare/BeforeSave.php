@@ -10,7 +10,7 @@ use Espo\ORM\Repository\Option\SaveOptions;
 /**
  * Totali amministrativi e allineamento stato provvigioni incluse.
  */
-class BeforeSaveHook implements BeforeSave
+class BeforeSave implements BeforeSave
 {
     public static int $order = 9;
 

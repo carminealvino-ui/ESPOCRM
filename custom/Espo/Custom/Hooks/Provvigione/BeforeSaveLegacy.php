@@ -5,7 +5,7 @@ namespace Espo\Custom\Hooks\Provvigione;
 use Espo\ORM\Entity;
 use Espo\Core\Hooks\Base;
 
-class BeforeSave extends Base
+class BeforeSaveLegacy extends Base
 {
     public function beforeSave(Entity $entity, array $options)
     {
