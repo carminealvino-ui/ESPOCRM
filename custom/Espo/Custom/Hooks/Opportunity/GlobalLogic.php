@@ -1,7 +1,7 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.2
+// VERSIONE: 2.2.3
 // DATA: 2026-05-26
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
@@ -116,6 +116,24 @@
 // ripristinare il file stabile da:
 // backup/hooks_cleanup/
 // backup-opportunity-globallogic-2.1.4-brand-fallback-stabile.php
+//
+// FIX 2.2.3
+// -----------------------------------------------------
+// OPPORTUNITA IN LISTA APPUNTAMENTO
+//
+// Problema:
+//
+// Opportunity con lead_id valorizzato ma appuntamento_id NULL
+// compaiono in lista Lead (hasMany via lead) ma non in lista
+// Appuntamento (hasMany via appuntamento).
+//
+// Fix:
+//
+// - resolveAppuntamentoFromLead() in afterSave
+// - beforeSave richiama sync anche con leadId
+//
+// Rollback:
+// backup/hooks_cleanup/backup-opportunity-globallogic-2.2.2-category-cascade-stabile.php
 //
 // =====================================================
 //
@@ -303,7 +321,7 @@ class GlobalLogic
 
         $entity->set(
             'hookVersion',
-            '2.2.2'
+            '2.2.3'
         );
 
 
@@ -332,6 +350,7 @@ class GlobalLogic
 
         if (
             $entity->get('appuntamentoId') ||
+            $entity->get('leadId') ||
             !$entity->isNew()
         ) {
 
@@ -385,6 +404,10 @@ class GlobalLogic
 
                 break;
             }
+        }
+
+        if (!$appuntamento) {
+            $appuntamento = $this->resolveAppuntamentoFromLead($entity);
         }
 
 
@@ -918,6 +941,49 @@ class GlobalLogic
         if ($entity->isAttributeChanged('accountId') || $entity->isAttributeChanged('contactId')) {
             $this->entityManager->saveEntity($entity, ['silent' => true]);
         }
+    }
+
+    // =====================================================
+    // APPUNTAMENTO DA LEAD (2.2.3)
+    // =====================================================
+
+    private function resolveAppuntamentoFromLead(Entity $entity): ?Entity
+    {
+        $leadId = $entity->get('leadId');
+
+        if (!$leadId) {
+            return null;
+        }
+
+        $leadWhere = [
+            'OR' => [
+                ['leadId' => $leadId],
+                [
+                    'parentType' => 'Lead',
+                    'parentId' => $leadId,
+                ],
+            ],
+        ];
+
+        $prospectId = $entity->get('prospectId');
+
+        if ($prospectId) {
+            $byProspect = $this->entityManager
+                ->getRDBRepository('Appuntamento')
+                ->where(array_merge($leadWhere, ['prospectId' => $prospectId]))
+                ->order('dateStart', 'DESC')
+                ->findOne();
+
+            if ($byProspect) {
+                return $byProspect;
+            }
+        }
+
+        return $this->entityManager
+            ->getRDBRepository('Appuntamento')
+            ->where($leadWhere)
+            ->order('dateStart', 'DESC')
+            ->findOne();
     }
 
     private function linkLeadFromProspectIfMissing(Entity $entity): void

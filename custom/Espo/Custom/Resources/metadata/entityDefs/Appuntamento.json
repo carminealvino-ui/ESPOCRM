@@ -335,7 +335,6 @@
             "type": "linkMultiple",
             "layoutDetailDisabled": true,
             "layoutMassUpdateDisabled": true,
-            "noLoad": true,
             "importDisabled": true,
             "isCustom": true
         },
