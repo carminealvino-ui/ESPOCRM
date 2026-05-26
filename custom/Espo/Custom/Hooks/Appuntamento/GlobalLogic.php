@@ -127,8 +127,9 @@
 
 namespace Espo\Custom\Hooks\Appuntamento;
 
-use Espo\ORM\Entity;
 use Espo\Core\ORM\EntityManager;
+use Espo\Custom\Services\LeadProspectSync;
+use Espo\ORM\Entity;
 
 class GlobalLogic
 {
