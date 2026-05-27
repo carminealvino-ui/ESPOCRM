@@ -1,8 +1,8 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.4
-// DATA: 2026-05-26
+// VERSIONE: 2.2.5
+// DATA: 2026-05-27
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
 //
@@ -134,6 +134,24 @@
 //
 // Rollback:
 // backup/hooks_cleanup/backup-opportunity-globallogic-2.2.2-category-cascade-stabile.php
+//
+// FIX 2.2.5
+// -----------------------------------------------------
+// RIporto campi = solo suggerimento (modificabile dopo)
+//
+// Problema:
+//
+// beforeSave richiamava afterSave su ogni UPDATE (!isNew) e
+// syncBrandPartnerFromSource sovrascriveva sempre fornitore/brand/categoria.
+//
+// Fix:
+//
+// - sync da Appuntamento/Lead solo su CREATE o cambio appuntamentoId/leadId
+// - syncBrandPartnerFromSource imposta solo campi Opportunity ancora vuoti
+// - normalizeProductCascade solo in fase import (non su ogni modifica)
+// - telefono/prospect/lead: non sovrascrivere valori gia presenti
+//
+// =====================================================
 //
 // =====================================================
 //
@@ -322,7 +340,7 @@ class GlobalLogic
 
         $entity->set(
             'hookVersion',
-            '2.2.4'
+            '2.2.5'
         );
 
 
@@ -349,15 +367,19 @@ class GlobalLogic
         //
         // =====================================================
 
-        if (
-            $entity->get('appuntamentoId') ||
-            $entity->get('leadId') ||
-            !$entity->isNew()
-        ) {
+        $importFromSource = $entity->isNew()
+            || $entity->isAttributeChanged('appuntamentoId')
+            || $entity->isAttributeChanged('leadId');
 
-            $this->afterSave(
+        $needsSync = $importFromSource
+            || $entity->get('appuntamentoId')
+            || $entity->get('leadId');
+
+        if ($needsSync) {
+            $this->runOpportunitySync(
                 $entity,
-                $options
+                $options,
+                $importFromSource
             );
         }
     }
@@ -375,7 +397,22 @@ class GlobalLogic
         Entity $entity,
         array $options = []
     ): void {
+        $this->runOpportunitySync(
+            $entity,
+            $options,
+            true
+        );
+    }
 
+    private function runOpportunitySync(
+        Entity $entity,
+        array $options,
+        bool $importFromSource
+    ): void {
+
+        if (!empty($options['skipHooks'])) {
+            return;
+        }
 
         // =====================================================
         // RECUPERO APPUNTAMENTO RELAZIONATO
@@ -459,46 +496,48 @@ class GlobalLogic
 
 
         // =====================================================
-        // SYNC FORNITORE / BRAND (2.1.4)
+        // SYNC FORNITORE / BRAND (2.1.4) — solo suggerimento (2.2.5)
         // =====================================================
 
-        $this->syncBrandPartnerFromSource(
-            $entity,
-            $appuntamento
-        );
-
-        if (
-            (!$entity->get('fornitorePartnerId') || !$entity->get('productBrandId') || !$entity->get('productCategoryId')) &&
-            $lead
-        ) {
+        if ($importFromSource) {
 
             $this->syncBrandPartnerFromSource(
                 $entity,
+                $appuntamento
+            );
+
+            if (
+                (!$entity->get('fornitorePartnerId') || !$entity->get('productBrandId') || !$entity->get('productCategoryId')) &&
                 $lead
-            );
-        }
+            ) {
 
-        if (
-            (!$entity->get('fornitorePartnerId') || !$entity->get('productBrandId') || !$entity->get('productCategoryId')) &&
-            $prospect
-        ) {
+                $this->syncBrandPartnerFromSource(
+                    $entity,
+                    $lead
+                );
+            }
 
-            $this->syncBrandPartnerFromSource(
-                $entity,
+            if (
+                (!$entity->get('fornitorePartnerId') || !$entity->get('productBrandId') || !$entity->get('productCategoryId')) &&
                 $prospect
-            );
+            ) {
+
+                $this->syncBrandPartnerFromSource(
+                    $entity,
+                    $prospect
+                );
+            }
+
+            if (!$entity->get('productBrandId')) {
+
+                $this->resolveBrandPartnerFromAzienda(
+                    $entity,
+                    $appuntamento->get('azienda') ?: $entity->get('azienda')
+                );
+            }
+
+            $this->normalizeProductCascade($entity);
         }
-
-        if (!$entity->get('productBrandId')) {
-
-            $this->resolveBrandPartnerFromAzienda(
-                $entity,
-                $appuntamento->get('azienda') ?: $entity->get('azienda')
-            );
-        }
-
-
-        $this->normalizeProductCascade($entity);
 
 
         // =====================================================
@@ -528,7 +567,8 @@ class GlobalLogic
                 10
             );
 
-            $entity->set(
+            $this->setEntityFieldIfEmpty(
+                $entity,
                 'dataOpportunit',
                 $date
             );
@@ -541,12 +581,14 @@ class GlobalLogic
 
         if ($appuntamento->get('prospectId')) {
 
-            $entity->set(
+            $this->setEntityFieldIfEmpty(
+                $entity,
                 'prospectId',
                 $appuntamento->get('prospectId')
             );
 
-            $entity->set(
+            $this->setEntityFieldIfEmpty(
+                $entity,
                 'prospectName',
                 $appuntamento->get('prospectName')
             );
@@ -559,12 +601,14 @@ class GlobalLogic
 
         if ($appuntamento->get('cAPId')) {
 
-            $entity->set(
+            $this->setEntityFieldIfEmpty(
+                $entity,
                 'cAPId',
                 $appuntamento->get('cAPId')
             );
 
-            $entity->set(
+            $this->setEntityFieldIfEmpty(
+                $entity,
                 'cAPName',
                 $appuntamento->get('cAPName')
             );
@@ -590,7 +634,8 @@ class GlobalLogic
 
         if ($telefono) {
 
-            $entity->set(
+            $this->setEntityFieldIfEmpty(
+                $entity,
                 'telefono',
                 $telefono
             );
@@ -612,7 +657,8 @@ class GlobalLogic
 
         if ($whatsApp) {
 
-            $entity->set(
+            $this->setEntityFieldIfEmpty(
+                $entity,
                 'whatsApp',
                 $whatsApp
             );
@@ -623,7 +669,7 @@ class GlobalLogic
         // LEAD (2.1.3)
         // =====================================================
 
-        if ($lead) {
+        if ($lead && !$entity->get('leadId')) {
 
             $leadName = $lead->get('name');
 
@@ -640,15 +686,17 @@ class GlobalLogic
                 $leadName = $lead->get('phoneNumber');
             }
 
-            $entity->set(
-                'leadId',
-                $lead->getId()
-            );
+            if (!$entity->get('leadId')) {
+                $entity->set(
+                    'leadId',
+                    $lead->getId()
+                );
 
-            $entity->set(
-                'leadName',
-                $leadName
-            );
+                $entity->set(
+                    'leadName',
+                    $leadName
+                );
+            }
 
             $this->syncLeadFieldsFromOpportunity($entity, $lead);
         }
@@ -766,7 +814,10 @@ class GlobalLogic
             $brand->get('name')
         );
 
-        if ($brand->get('fornitorePartnerId')) {
+        if (
+            $brand->get('fornitorePartnerId') &&
+            !$entity->get('fornitorePartnerId')
+        ) {
 
             $entity->set(
                 'fornitorePartnerId',
@@ -782,7 +833,7 @@ class GlobalLogic
 
 
     // =====================================================
-    // SYNC FORNITORE / BRAND (2.1.4)
+    // SYNC FORNITORE / BRAND (2.1.4) — solo campi vuoti (2.2.5)
     // =====================================================
 
     private function syncBrandPartnerFromSource(
@@ -810,11 +861,38 @@ class GlobalLogic
                 continue;
             }
 
-            $entity->set(
+            $this->setEntityFieldIfEmpty(
+                $entity,
                 $field,
                 $source->get($field)
             );
         }
+    }
+
+    private function setEntityFieldIfEmpty(
+        Entity $entity,
+        string $field,
+        mixed $value
+    ): void {
+
+        if ($value === null || $value === '') {
+            return;
+        }
+
+        if (!$entity->hasAttribute($field)) {
+            return;
+        }
+
+        $current = $entity->get($field);
+
+        if ($current !== null && $current !== '') {
+            return;
+        }
+
+        $entity->set(
+            $field,
+            $value
+        );
     }
 
     // =====================================================
