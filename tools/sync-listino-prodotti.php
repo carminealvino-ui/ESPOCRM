@@ -16,7 +16,8 @@
  * Opzioni:
  *   --crm-root=PATH          Root installazione (default: cwd)
  *   --csv=PATH               CSV (;): codice_articolo,nome,prezzo_listino,prezzo_codice,tipo,note
- *                            Colonna PDF "Codice" (evidenziata) = prezzo_codice (es. 2950), ≠ listino
+ *                            prezzo_listino = riga TOTALE PDF (es. 3950 = 2700 + 1250 installazione)
+ *                            prezzo_codice = da codice articolo (00.02.95.0 → 2950) se colonna vuota
  *   --price-book-id=ID       Listino Sales Pack (alternativa a --price-book-name)
  *   --price-book-name=TEXT   Cerca listino per nome (LIKE %TEXT%, ordine nome DESC)
  *   --date-start=YYYY-MM-DD  dateStart su nuove righe product_price (default 2026-05-07)
@@ -104,6 +105,10 @@ foreach ($rows as $i => $row) {
     $nome = trim((string) ($row['nome'] ?? ''));
     $prezzoListino = parseEuro($row['prezzo_listino'] ?? null);
     $prezzoCodice = parseEuro($row['prezzo_codice'] ?? null);
+
+    if ($prezzoCodice === null && $codiceArticolo !== '') {
+        $prezzoCodice = derivePrezzoCodiceFromArticolo($codiceArticolo);
+    }
 
     if ($codiceArticolo === '' && $nome === '') {
         fwrite(STDOUT, "[riga {$line}] SKIP: codice_articolo e nome vuoti\n");
@@ -298,6 +303,29 @@ function looksLikeEuroAmount(string $value): bool
     $n = parseEuro($value);
 
     return $n !== null && $n >= 100;
+}
+
+/**
+ * Da codice listino Ariel (es. 00.02.95.0) → prezzo a codice 2950 (segmenti 02.95.0).
+ */
+function derivePrezzoCodiceFromArticolo(string $codiceArticolo): ?float
+{
+    $parts = array_values(array_filter(explode('.', $codiceArticolo), static fn ($p) => $p !== ''));
+
+    if (count($parts) < 4) {
+        return null;
+    }
+
+    $segments = array_slice($parts, 1, 3);
+    $digits = ltrim(implode('', $segments), '0');
+
+    if ($digits === '' || !ctype_digit($digits)) {
+        return null;
+    }
+
+    $value = (float) $digits;
+
+    return $value > 0 ? round($value, 2) : null;
 }
 
 function parseEuro(mixed $value): ?float

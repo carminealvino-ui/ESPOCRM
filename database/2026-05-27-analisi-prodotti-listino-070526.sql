@@ -7,12 +7,12 @@
 -- Audit prodotti vs listino Ariel climatizzatori in vigore dal 07/05/2026.
 -- Eseguire su DB CRM (solo SELECT) dopo backup.
 --
--- Mappatura listino PDF → CRM:
---   Codice articolo (es. 00.02.95.0, se presente) → product.part_number
---   Descrizione                                     → product.name
---   Prezzo (colonna listino, es. 2700)              → product.list_price, product_price.price
---   Codice evidenziato nel PDF (es. 2950)           → product.prezzo_codice
---       = prezzo a codice per provvigioni/minus-plus — NON coincide con il listino
+-- Mappatura listino PDF → CRM (es. Falcon 9.000 btu):
+--   Codice articolo (00.02.95.0)           → product.part_number
+--   Descrizione                              → product.name
+--   TOTALE (2700 + 1250 installazione)       → prezzo listino = 3950 (list_price, product_price)
+--   Prezzo a codice (da codice 00.02.95.0)   → product.prezzo_codice = 2950 (segmenti 02.95.0)
+--   Riga prodotto 2700 / installazione 1250  → solo componenti; il listino CRM è il TOTALE
 --
 -- ========================================
 
