@@ -1,4 +1,8 @@
 {
+    "presetFilters": {
+        "svolto": "Svolto",
+        "nonSvolto": "Non Svolto"
+    },
     "options": {
         "status": {
             "Planned": "Pianificato",
