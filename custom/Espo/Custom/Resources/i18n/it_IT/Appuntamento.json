@@ -23,5 +23,9 @@
             "Not Held": "Non Svolto",
             "Ingestibile": "Ingestibile"
         }
+    },
+    "presetFilters": {
+        "svolto": "Svolto",
+        "nonSvolto": "Non Svolto"
     }
 }

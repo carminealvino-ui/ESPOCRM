@@ -12,5 +12,21 @@
     },
     "modalViews": {
         "detail": "crm:views/meeting/modals/detail"
+    },
+    "filterList": [
+        {
+            "name": "all"
+        },
+        {
+            "name": "svolto",
+            "style": "success"
+        },
+        {
+            "name": "nonSvolto",
+            "style": "danger"
+        }
+    ],
+    "defaultFilterData": {
+        "primary": "all"
     }
 }
