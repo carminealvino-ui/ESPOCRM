@@ -21,19 +21,9 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 var viewStr = typeof view === 'string' ? view : '';
                 var isSelectRecords = viewStr.indexOf('select-records') !== -1;
 
-                var scope = options.scope || options.entityType || '';
-                var scopeNorm = typeof scope === 'string' ? scope.toLowerCase() : '';
-
-                // Sales Pack in alcuni casi passa scope/entityType non identici a 'Product'.
-                // Forziamo la selezione sul modal prodotti.
-                var isProductSelect =
-                    (scopeNorm === 'product') ||
-                    (scopeNorm === 'products') ||
-                    (scopeNorm.indexOf('product') !== -1);
-
-                isProductSelect = isSelectRecords && isProductSelect;
-
-                if (isProductSelect) {
+                // Nel contesto item-list del contratto, la modale select-records
+                // viene usata per i prodotti: forziamo scope Product.
+                if (isSelectRecords) {
                     options.entityType = 'Product';
                     options.scope = 'Product';
                     options.createButton = true;
