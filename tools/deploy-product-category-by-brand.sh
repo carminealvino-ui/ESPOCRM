@@ -21,8 +21,8 @@ echo "==> Download ${URL}"
 TMP="$(mktemp)"
 curl -fsSL -o "${TMP}" "${URL}"
 
-if ! grep -q 'VERSIONE: 1.6.1' "${TMP}"; then
-  echo "ERRORE: file remoto non contiene VERSIONE: 1.6.1" >&2
+if ! grep -q 'VERSIONE: 1.6.2' "${TMP}"; then
+  echo "ERRORE: file remoto non contiene VERSIONE: 1.6.2" >&2
   exit 1
 fi
 

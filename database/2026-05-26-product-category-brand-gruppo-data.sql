@@ -23,6 +23,7 @@ WHERE pc.deleted = 0
       'CLIMATIZZAZIONE',
       'CALDAIE A GAS',
       'CALDAIE',
+      'BIOMASSA',
       'STUFE',
       'STUFE A PELLET',
       'FOTOVOLTAICO'
@@ -42,6 +43,7 @@ WHERE pc.deleted = 0
       'CLIMATIZZAZIONE',
       'CALDAIE A GAS',
       'CALDAIE',
+      'BIOMASSA',
       'STUFE',
       'STUFE A PELLET',
       'FOTOVOLTAICO'

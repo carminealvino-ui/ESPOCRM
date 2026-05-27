@@ -1,9 +1,13 @@
 // ========================================
-// VERSIONE: 1.6.1
+// VERSIONE: 1.6.2
 // DATA: 2026-05-27
 // FILE: client/custom/src/views/fields/product-category-by-brand.js
-// VERIFICA DEPLOY: grep "VERSIONE: 1.6.1" sui tre path in produzione
+// VERIFICA DEPLOY: grep "VERSIONE: 1.6.2" sui tre path in produzione
 // ========================================
+//
+// FIX 1.6.2
+// -----------------------------------------------------
+// ARIEL/ARTEL: aggiunti BIOMASSA e FOTOVOLTAICO (nome anagrafica)
 //
 // FIX 1.6.1
 // -----------------------------------------------------
@@ -23,6 +27,7 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
             'CLIMATIZZAZIONE',
             'CALDAIE A GAS',
             'CALDAIE',
+            'BIOMASSA',
             'STUFE',
             'STUFE A PELLET',
             'FOTOVOLTAICO'
@@ -32,6 +37,7 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
             'CLIMATIZZAZIONE',
             'CALDAIE A GAS',
             'CALDAIE',
+            'BIOMASSA',
             'STUFE',
             'STUFE A PELLET',
             'FOTOVOLTAICO'
