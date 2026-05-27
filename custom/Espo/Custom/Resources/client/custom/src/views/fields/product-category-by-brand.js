@@ -155,22 +155,22 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
         },
 
         buildFilterFromConfig: function (config) {
-            if (config.names && config.names.length) {
-                return {
-                    byCategoryName: {
-                        type: 'in',
-                        attribute: 'name',
-                        value: config.names
-                    }
-                };
-            }
-
             if (config.gruppoProvvigione && config.gruppoProvvigione.length) {
                 return {
                     byGruppo: {
                         type: 'in',
                         attribute: 'gruppoProvvigione',
                         value: config.gruppoProvvigione
+                    }
+                };
+            }
+
+            if (config.names && config.names.length) {
+                return {
+                    byCategoryName: {
+                        type: 'in',
+                        attribute: 'name',
+                        value: config.names
                     }
                 };
             }
