@@ -16,10 +16,12 @@
     "filterList": [
         {
             "name": "svolto",
+            "label": "Svolto",
             "style": "success"
         },
         {
             "name": "nonSvolto",
+            "label": "Non Svolto",
             "style": "danger"
         }
     ]
