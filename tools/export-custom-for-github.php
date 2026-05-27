@@ -1,7 +1,7 @@
 <?php
 
 // ========================================
-// VERSIONE: 1.0.2
+// VERSIONE: 1.0.3
 // DATA: 2026-05-25
 // AUTORE: CARMINE ALVINO + IA
 // FILE:
@@ -13,7 +13,7 @@
 // su GitHub tra una sessione di sviluppo e la successiva.
 //
 // MODALITA SICURA:
-// - di default crea uno ZIP locale in exports/custom
+// - di default crea uno ZIP locale in exports/custom (custom/ + client/custom/)
 // - backup singole fix: solo in backup/hooks_cleanup/ (non qui)
 // - non contiene password
 // - non contiene token GitHub
@@ -55,6 +55,7 @@ function main(array $argv): void
 
     $rootPath = findEspoRoot();
     $customPath = $rootPath . DIRECTORY_SEPARATOR . 'custom';
+    $clientCustomPath = $rootPath . DIRECTORY_SEPARATOR . 'client' . DIRECTORY_SEPARATOR . 'custom';
     $exportPath = $rootPath . DIRECTORY_SEPARATOR . 'exports' . DIRECTORY_SEPARATOR . 'custom';
 
     if (!is_dir($customPath)) {
@@ -73,14 +74,20 @@ function main(array $argv): void
     $zipFileName = "custom-export-{$timestamp}.zip";
     $zipPath = $exportPath . DIRECTORY_SEPARATOR . $zipFileName;
 
-    $fileCount = zipDirectory($customPath, $zipPath, $rootPath);
+    $sourcePaths = [$customPath];
+
+    if (is_dir($clientCustomPath)) {
+        $sourcePaths[] = $clientCustomPath;
+    }
+
+    $fileCount = zipDirectories($sourcePaths, $zipPath, $rootPath);
     $sha256 = hash_file('sha256', $zipPath);
 
     $manifest = [
-        'version' => '1.0.2',
+        'version' => '1.0.3',
         'generatedAt' => date('c'),
         'rootPath' => $rootPath,
-        'sourcePath' => $customPath,
+        'sourcePaths' => $sourcePaths,
         'zipPath' => $zipPath,
         'fileCount' => $fileCount,
         'sha256' => $sha256,
@@ -132,7 +139,7 @@ function findEspoRoot(): string
     fail('Root EspoCRM non trovata. Eseguire dalla root del CRM.');
 }
 
-function zipDirectory(string $sourcePath, string $zipPath, string $rootPath): int
+function zipDirectories(array $sourcePaths, string $zipPath, string $rootPath): int
 {
     $zip = new ZipArchive();
 
@@ -140,11 +147,29 @@ function zipDirectory(string $sourcePath, string $zipPath, string $rootPath): in
         fail("Impossibile creare ZIP: {$zipPath}");
     }
 
-    $sourcePath = realpath($sourcePath);
     $rootPath = realpath($rootPath);
 
-    if (!$sourcePath || !$rootPath) {
-        fail('Percorso sorgente non valido.');
+    if (!$rootPath) {
+        fail('Root EspoCRM non valida.');
+    }
+
+    $fileCount = 0;
+
+    foreach ($sourcePaths as $sourcePath) {
+        $fileCount += addDirectoryToZip($zip, $sourcePath, $rootPath);
+    }
+
+    $zip->close();
+
+    return $fileCount;
+}
+
+function addDirectoryToZip(ZipArchive $zip, string $sourcePath, string $rootPath): int
+{
+    $sourcePath = realpath($sourcePath);
+
+    if (!$sourcePath) {
+        return 0;
     }
 
     $fileCount = 0;
@@ -167,8 +192,6 @@ function zipDirectory(string $sourcePath, string $zipPath, string $rootPath): in
         $zip->addFile($path, $relativePath);
         $fileCount++;
     }
-
-    $zip->close();
 
     return $fileCount;
 }
