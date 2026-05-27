@@ -1,8 +1,5 @@
 /* global define */
 
-/**
- * Fallback: patch core calendar even if calendarView metadata is missing.
- */
 define('custom:handlers/calendar-default-duration', [
     'crm:views/calendar/calendar',
     'crm:views/calendar/modals/edit',
@@ -34,21 +31,7 @@ define('custom:handlers/calendar-default-duration', [
                 values.dateEnd = buildDateEnd(values.dateStart, this.getDateTime());
             }
 
-            const originalCreateView = this.createView.bind(this);
-
-            this.createView = (name, viewName, options) => {
-                if (name === 'dialog' && viewName === 'crm:views/calendar/modals/edit') {
-                    viewName = 'custom:views/calendar/modals/edit';
-                }
-
-                return originalCreateView(name, viewName, options);
-            };
-
-            try {
-                return await originalCreateEvent.call(this, values);
-            } finally {
-                this.createView = originalCreateView;
-            }
+            return originalCreateEvent.call(this, values);
         };
     }
 
