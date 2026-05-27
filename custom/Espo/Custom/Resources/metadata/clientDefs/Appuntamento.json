@@ -1,1 +1,16 @@
-{}
+{
+    "controller": "controllers/record",
+    "acl": "crm:acl/meeting",
+    "views": {
+        "detail": "crm:views/meeting/detail"
+    },
+    "recordViews": {
+        "list": "crm:views/meeting/record/list",
+        "detail": "crm:views/meeting/record/detail",
+        "edit": "crm:views/meeting/record/edit",
+        "editSmall": "crm:views/meeting/record/edit-small"
+    },
+    "modalViews": {
+        "detail": "crm:views/meeting/modals/detail"
+    }
+}
