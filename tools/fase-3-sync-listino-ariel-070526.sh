@@ -30,8 +30,13 @@ mkdir -p tools database/data
 
 echo "=== Scarico script e CSV da GitHub (${BRANCH}) ==="
 curl -fsSL "${RAW_BASE}/tools/sync-listino-prodotti.php" -o tools/sync-listino-prodotti.php
-curl -fsSL "${RAW_BASE}/database/data/listino-ariel-climatizzatori-07052026.csv" \
-  -o database/data/listino-ariel-climatizzatori-07052026.csv
+CSV_FILE="${CSV_FILE:-database/data/listino-ariel-prodotti-07052026.csv}"
+curl -fsSL "${RAW_BASE}/${CSV_FILE}" -o "${CSV_FILE}"
+# Fallback listino parziale (solo MONO PLUS) se CSV completo non ancora su GitHub
+if [[ ! -s "${CSV_FILE}" ]]; then
+  CSV_FILE="database/data/listino-ariel-climatizzatori-07052026.csv"
+  curl -fsSL "${RAW_BASE}/${CSV_FILE}" -o "${CSV_FILE}"
+fi
 
 if [[ ! -f "bootstrap.php" ]]; then
   echo "ERRORE: bootstrap.php non trovato in $(pwd)" >&2
@@ -39,7 +44,7 @@ if [[ ! -f "bootstrap.php" ]]; then
 fi
 
 ARGS=(
-  --csv=database/data/listino-ariel-climatizzatori-07052026.csv
+  --csv="${CSV_FILE}"
   --price-book-id="${PRICE_BOOK_ID}"
   --date-start="${DATE_START}"
   --aliquota-iva=10
@@ -101,7 +106,7 @@ WHERE pp.deleted = 0
 echo ""
 echo "Attesi dopo APPLY (solo FALCON MONO PLUS — da maggio niente MONO 9000 senza PLUS):"
 echo "  MONO PLUS 9000: list_price 3590,91 | prezzo_codice 2681,82 | product_price 3950 IVI"
-echo "Listini marzo/aprile NON attivi — solo questo listino 07/05 per nuovi prezzi"
+echo "Solo listino 07/05/2026 attivo per ARIEL (marzo/aprile/maggio disattivati)"
 echo "Regola vigore: database/2026-05-27-falcon-plus-vigore-listini.sql"
 echo ""
 echo "=== FINE FASE 3 ==="
