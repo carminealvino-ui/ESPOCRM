@@ -1,0 +1,10 @@
+{
+    "options": {
+        "status": {
+            "Planned": "Pianificato",
+            "Held": "Svolto",
+            "Not Held": "Non Svolto",
+            "Ingestibile": "Ingestibile"
+        }
+    }
+}
