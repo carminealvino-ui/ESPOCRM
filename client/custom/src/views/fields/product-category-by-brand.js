@@ -1,5 +1,5 @@
 // ========================================
-// VERSIONE: 1.4.0
+// VERSIONE: 1.4.1
 // DATA: 2026-05-26
 // FILE: client/custom/src/views/fields/product-category-by-brand.js
 // ========================================
@@ -76,13 +76,31 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
         setup: function () {
             Dep.prototype.setup.call(this);
 
-            this.listenTo(this.model, 'change:productBrandId change:azienda', function () {
+            this.listenTo(this.model, 'change:productBrandId', function () {
+                this.refreshCategoryFieldState();
+            });
+
+            this.listenTo(this.model, 'change:azienda', function () {
                 this.resolveBrandFromAzienda().then(function () {
-                    this.reRender();
+                    this.refreshCategoryFieldState();
                 }.bind(this));
             });
 
-            this.resolveBrandFromAzienda();
+            this.resolveBrandFromAzienda().then(function () {
+                this.refreshCategoryFieldState();
+            }.bind(this));
+        },
+
+        refreshCategoryFieldState: function () {
+            this.reRender();
+
+            if (typeof this.getRecordView === 'function' && this.getRecordView()) {
+                var recordView = this.getRecordView();
+
+                if (recordView.dynamicLogic && typeof recordView.dynamicLogic.sync === 'function') {
+                    recordView.dynamicLogic.sync();
+                }
+            }
         },
 
         getBrandKey: function () {
@@ -128,7 +146,11 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
                     data.fornitorePartnerName = brand.fornitorePartnerName;
                 }
 
-                this.model.set(data, {silent: true});
+                this.model.set(data);
+
+                if (data.productBrandId) {
+                    this.model.trigger('change:productBrandId', this.model, data.productBrandId, {});
+                }
             }.bind(this));
         },
 
