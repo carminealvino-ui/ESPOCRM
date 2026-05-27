@@ -20,15 +20,14 @@ SHOW COLUMNS FROM product LIKE '%part%';
 SHOW COLUMNS FROM product LIKE '%prezzo%';
 SHOW COLUMNS FROM product LIKE '%list%';
 
--- ---------- B) Listini ARIEL attivi ----------
-SELECT id, name, date_start, date_end, status, deleted
+-- ---------- B) Listini ARIEL (in produzione price_book NON ha date_start/date_end) ----------
+SELECT id, name, status
 FROM price_book
 WHERE deleted = 0
   AND UPPER(name) LIKE '%ARIEL%'
 ORDER BY name;
 
--- Listini il cui nome richiama maggio 2026 o 07/05 (verificare vigore comunicato)
-SELECT id, name, date_start, date_end
+SELECT id, name, status
 FROM price_book
 WHERE deleted = 0
   AND UPPER(name) LIKE '%ARIEL%'
@@ -108,22 +107,22 @@ WHERE deleted = 0
   AND ABS(prezzo_codice - list_price) < 0.01
   AND UPPER(name) LIKE '%FALCON%';
 
--- ---------- F) Opportunità recenti ARIEL (campione) ----------
+-- ---------- F) Opportunità recenti ARIEL (nome listino da JOIN, non price_book_name) ----------
 SELECT
     o.id,
     o.name,
     o.price_book_id,
-    o.price_book_name,
+    pb.name AS price_book_name,
     o.prezzo_listino_iva_esclusa,
     o.prezzo_codice_iva_esclusa,
     o.data_opportunit,
     o.created_at
 FROM opportunity o
+LEFT JOIN price_book pb ON pb.id = o.price_book_id AND pb.deleted = 0
 WHERE o.deleted = 0
   AND (
-      UPPER(o.price_book_name) LIKE '%ARIEL%'
-      OR UPPER(o.azienda) LIKE '%ARIEL%'
-      OR UPPER(o.product_brand_name) LIKE '%ARIEL%'
+      UPPER(IFNULL(pb.name, '')) LIKE '%ARIEL%'
+      OR UPPER(IFNULL(o.azienda, '')) LIKE '%ARIEL%'
   )
 ORDER BY o.created_at DESC
 LIMIT 15;

@@ -1,19 +1,15 @@
 #!/usr/bin/env bash
 # =============================================================================
-# FASE 1 — Audit listino Ariel 07/05/2026 (SOLO LETTURA, nessun UPDATE)
-# Server: telcalli@s4409 — root CRM ~/public_html/crm/mec-group
+# FASE 1 — Audit listino Ariel 07/05/2026 (SOLO LETTURA)
+# Produzione: telcalli_espo — colonne allineate allo schema reale (no date_start su price_book)
 #
-# Uso (copia-incolla intero blocco sul server, oppure):
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/run-fase-1-audit.sh" -o /tmp/run-fase-1-audit.sh && bash /tmp/run-fase-1-audit.sh
+# Esecuzione consigliata (non serve file in tools/):
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/run-fase-1-audit.sh" | bash
 # =============================================================================
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${GITHUB_BRANCH:-cursor/opportunity-globallogic-9999}"
-REPO="${GITHUB_REPOSITORY:-carminealvino-ui/ESPOCRM}"
-RAW_BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 
-# --- 0) Directory progetto ---
 cd "${CRM_ROOT}" || {
   echo "ERRORE: directory non trovata: ${CRM_ROOT}" >&2
   exit 1
@@ -24,44 +20,47 @@ if [[ ! -f "data/config-internal.php" ]]; then
   exit 1
 fi
 
-# --- 1) Credenziali DB da config-internal.php (stesso metodo usato in produzione) ---
-DB_USER="$(sed -n "s/.*'user' => '\([^']*\)'.*/\1/p" data/config-internal.php | head -1)"
 DB_PASS="$(sed -n "s/.*'password' => '\([^']*\)'.*/\1/p" data/config-internal.php | head -1)"
+DB_USER="$(sed -n "s/.*'user' => '\([^']*\)'.*/\1/p" data/config-internal.php | head -1)"
 DB_NAME="$(sed -n "s/.*'dbname' => '\([^']*\)'.*/\1/p" data/config-internal.php | head -1)"
 DB_HOST="$(sed -n "s/.*'host' => '\([^']*\)'.*/\1/p" data/config-internal.php | head -1)"
-
 DB_NAME="${DB_NAME:-telcalli_espo}"
 DB_HOST="${DB_HOST:-localhost}"
 
 if [[ -z "${DB_USER}" || -z "${DB_PASS}" ]]; then
-  echo "ERRORE: impossibile leggere user/password da data/config-internal.php" >&2
+  echo "ERRORE: user/password non letti da config-internal.php" >&2
   exit 1
 fi
 
 if command -v mariadb >/dev/null 2>&1; then
   MYSQL_BIN="mariadb"
-elif command -v mysql >/dev/null 2>&1; then
-  MYSQL_BIN="mysql"
 else
-  echo "ERRORE: né mariadb né mysql nel PATH" >&2
-  exit 1
+  MYSQL_BIN="mysql"
 fi
 
 CNF="$(mktemp)"
 chmod 600 "${CNF}"
 trap 'rm -f "${CNF}"' EXIT
-
 printf '[client]\nhost=%s\nuser=%s\npassword=%s\ndatabase=%s\n' \
   "${DB_HOST}" "${DB_USER}" "${DB_PASS}" "${DB_NAME}" > "${CNF}"
 
-echo "=== FASE 1 — Audit listino (DB: ${DB_NAME} @ ${DB_HOST}) ==="
-echo "=== Attesi Falcon: listino 3590,91 escl. (3950 IVI) | codice 2681,82 escl. (2950 IVI) ==="
+run_sql() {
+  "${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" -e "$1"
+}
+
+echo "=== FASE 1 — Audit listino Ariel (DB: ${DB_NAME}) ==="
+echo "=== Attesi Falcon IVA escl.: listino 3590,91 | codice 2681,82 ==="
 echo ""
 
-# --- 2) B) Listini ARIEL ---
-echo "=== B) Listini Price Book ARIEL ==="
-"${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" -e "
-SELECT id, name, date_start, date_end, status
+echo "=== A) Colonne tabelle (riferimento schema produzione) ==="
+run_sql "SHOW COLUMNS FROM price_book;"
+echo ""
+run_sql "SHOW COLUMNS FROM product_price LIKE 'date%';"
+echo ""
+
+echo "=== B) Listini ARIEL (price_book: id, name, status) ==="
+run_sql "
+SELECT id, name, status
 FROM price_book
 WHERE deleted = 0
   AND UPPER(name) LIKE '%ARIEL%'
@@ -69,9 +68,9 @@ ORDER BY name;
 "
 
 echo ""
-echo "=== B2) Listini ARIEL con riferimento 05/2026 nel nome ==="
-"${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" -e "
-SELECT id, name, date_start, date_end
+echo "=== B2) Listini ARIEL — nome con 05 / 2026 ==="
+run_sql "
+SELECT id, name, status
 FROM price_book
 WHERE deleted = 0
   AND UPPER(name) LIKE '%ARIEL%'
@@ -83,10 +82,9 @@ WHERE deleted = 0
 ORDER BY name;
 "
 
-# --- 3) C) Prodotto Falcon ---
 echo ""
-echo "=== C) Prodotto Falcon (part_number 00.02.95.0) ==="
-"${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" -e "
+echo "=== C) Prodotto Falcon ==="
+run_sql "
 SELECT
     id,
     name,
@@ -105,8 +103,8 @@ ORDER BY part_number, name;
 "
 
 echo ""
-echo "=== C2) Check Falcon vs valori attesi (IVA escl.) ==="
-"${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" -e "
+echo "=== C2) Check Falcon (vs 3590,91 / 2681,82 IVA escl.) ==="
+run_sql "
 SELECT
     id,
     name,
@@ -120,14 +118,12 @@ WHERE deleted = 0
   AND part_number = '00.02.95.0';
 "
 
-# --- 4) D) ProductPrice Falcon su tutti i listini ARIEL ---
 echo ""
-echo "=== D) Prezzi Falcon (product_price) su listini ARIEL ==="
-"${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" -e "
+echo "=== D) product_price Falcon su listini ARIEL (date_start su riga prezzo) ==="
+run_sql "
 SELECT
     pb.name AS listino,
     pb.id AS price_book_id,
-    p.part_number,
     pp.price AS price_iva_escl,
     ROUND(pp.price * 1.10, 2) AS price_ivi,
     pp.date_start,
@@ -143,10 +139,9 @@ WHERE pp.deleted = 0
 ORDER BY pb.name, pp.date_start DESC;
 "
 
-# --- 5) E) Anomalie ---
 echo ""
 echo "=== E) Codici articolo duplicati ==="
-"${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" -e "
+run_sql "
 SELECT part_number, COUNT(*) AS n
 FROM product
 WHERE deleted = 0
@@ -158,42 +153,28 @@ ORDER BY n DESC
 LIMIT 20;
 "
 
-# --- 6) F) Opportunità recenti ARIEL ---
 echo ""
-echo "=== F) Ultime 15 opportunità ARIEL (listino collegato) ==="
-"${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" -e "
+echo "=== F) Ultime 15 opportunità ARIEL (JOIN price_book, no price_book_name) ==="
+run_sql "
 SELECT
     o.id,
     o.name,
     o.price_book_id,
-    o.price_book_name,
+    pb.name AS price_book_name,
     o.prezzo_listino_iva_esclusa,
     o.prezzo_codice_iva_esclusa,
     o.data_opportunit,
     o.created_at
 FROM opportunity o
+LEFT JOIN price_book pb ON pb.id = o.price_book_id AND pb.deleted = 0
 WHERE o.deleted = 0
   AND (
-      UPPER(IFNULL(o.price_book_name, '')) LIKE '%ARIEL%'
+      UPPER(IFNULL(pb.name, '')) LIKE '%ARIEL%'
       OR UPPER(IFNULL(o.azienda, '')) LIKE '%ARIEL%'
-      OR UPPER(IFNULL(o.product_brand_name, '')) LIKE '%ARIEL%'
   )
 ORDER BY o.created_at DESC
 LIMIT 15;
 "
 
 echo ""
-echo "=== FINE FASE 1 (nessuna modifica al DB) ==="
-echo "Invia l'output completo per passare alla Fase 2 (configurazione Price Book 07/05/2026)."
-echo ""
-
-# --- 7) Opzionale: audit PHP Espo (se bootstrap presente) ---
-if [[ -f "bootstrap.php" ]] && command -v php >/dev/null 2>&1; then
-  mkdir -p tools
-  if [[ ! -f "tools/fase-1-audit-listino.php" ]]; then
-    echo "=== Scarico tools/fase-1-audit-listino.php da GitHub ==="
-    curl -fsSL "${RAW_BASE}/tools/fase-1-audit-listino.php" -o tools/fase-1-audit-listino.php
-  fi
-  echo "=== Audit PHP (riepilogo) ==="
-  php tools/fase-1-audit-listino.php "${CRM_ROOT}" || true
-fi
+echo "=== FINE FASE 1 — incolla tutto l'output per la Fase 2 ==="
