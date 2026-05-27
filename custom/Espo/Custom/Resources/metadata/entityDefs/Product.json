@@ -1,0 +1,59 @@
+{
+    "fields": {
+        "denominazione": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "link"
+        },
+        "prezzoCodice": {
+            "type": "currency",
+            "isCustom": true,
+            "onlyDefaultCurrency": true
+        },
+        "name": {
+            "required": false,
+            "options": []
+        },
+        "pricingType": {
+            "default": "Fixed",
+            "style": {
+                "Same as List": null,
+                "Fixed": null,
+                "Discount from List": null,
+                "Markup over Cost": null,
+                "Profit Margin": null
+            }
+        }
+    },
+    "links": {
+        "opportunita": {
+            "type": "belongsTo",
+            "foreign": "prodotti",
+            "entity": "Opportunity",
+            "audited": false,
+            "isCustom": true
+        },
+        "contratti": {
+            "type": "hasMany",
+            "relationName": "prodotticontratti",
+            "foreign": "prodotti",
+            "entity": "Quote",
+            "audited": false,
+            "isCustom": true
+        }
+    },
+    "collection": {
+        "orderBy": "name",
+        "order": "asc",
+        "textFilterFields": [
+            "name"
+        ],
+        "fullTextSearch": false,
+        "countDisabled": false
+    },
+    "optimisticConcurrencyControl": true
+}

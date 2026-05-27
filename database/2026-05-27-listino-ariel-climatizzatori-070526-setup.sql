@@ -1,0 +1,37 @@
+-- ========================================
+-- VERSIONE: 1.0.0
+-- DATA: 2026-05-27
+-- FILE: database/2026-05-27-listino-ariel-climatizzatori-070526-setup.sql
+-- ========================================
+--
+-- Dopo audit: allinea date vigore listino ARIEL climatizzatori 07/05/2026.
+-- Modificare @price_book_id con l'id reale da:
+--   SELECT id, name FROM price_book WHERE name LIKE '%ARIEL%' AND name LIKE '%05%';
+--
+-- BACKUP prima di UPDATE.
+-- ========================================
+
+-- Esempio: imposta date_start su price_book se la colonna esiste (Sales Pack custom)
+-- UPDATE price_book
+-- SET date_start = '2026-05-07',
+--     date_end = NULL
+-- WHERE id = @price_book_id
+--   AND deleted = 0;
+
+-- Chiudi righe product_price precedenti (stesso prodotto + listino) prima del 07/05/2026
+-- UPDATE product_price pp
+-- INNER JOIN product p ON p.id = pp.product_id AND p.deleted = 0
+-- SET pp.date_end = '2026-05-06'
+-- WHERE pp.deleted = 0
+--   AND pp.price_book_id = @price_book_id
+--   AND (pp.date_end IS NULL OR pp.date_end > '2026-05-06')
+--   AND (pp.date_start IS NULL OR pp.date_start < '2026-05-07');
+
+-- Verifica post-setup
+-- SELECT pb.name, pp.date_start, pp.date_end, p.part_number, p.name, pp.price
+-- FROM product_price pp
+-- JOIN product p ON p.id = pp.product_id
+-- JOIN price_book pb ON pb.id = pp.price_book_id
+-- WHERE pp.price_book_id = @price_book_id AND pp.deleted = 0
+-- ORDER BY p.part_number
+-- LIMIT 100;
