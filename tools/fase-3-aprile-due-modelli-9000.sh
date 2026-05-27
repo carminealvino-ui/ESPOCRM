@@ -34,4 +34,9 @@ ARGS=(
 [[ "${DRY_RUN}" == "1" ]] && ARGS+=(--dry-run)
 
 echo "=== Aprile 2026 — due modelli 9.000 su listino ${PRICE_BOOK_ID} ==="
+echo "MONO 9000BTU: vigore solo fino al 30/04/2026"
 php tools/sync-listino-prodotti.php "${ARGS[@]}"
+
+echo ""
+echo "Poi chiudere eventuali prezzi MONO 9000 su listini maggio+:"
+echo "  curl -fsSL .../tools/fase-3d-chiudi-mono-9000-dopo-aprile.sh | bash"

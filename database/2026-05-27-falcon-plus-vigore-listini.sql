@@ -4,8 +4,11 @@
 --
 -- APRILE 2026 (price_book 69ce7c1fa73049580 — ARIEL - 26-04):
 --   Due modelli 9.000 BTU:
---     - FALCON MONO 9000BTU
+--     - FALCON MONO 9000BTU          → valido FINO AL 30/04/2026 (non dal 1° maggio)
 --     - FALCON MONO PLUS 9000BTU
+--
+-- Dal 1 MAGGIO 2026:
+--   Il MONO 9000BTU (senza PLUS) non è più in listino.
 --
 -- MAGGIO 2026 e successivi (26-05, 07/05/2026 …):
 --   Solo FALCON MONO PLUS … (niente MONO 9.000 senza PLUS)
