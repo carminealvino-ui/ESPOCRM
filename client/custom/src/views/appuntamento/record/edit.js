@@ -1,22 +1,31 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit', ['crm:views/meeting/record/edit'], function (Dep) {
+define('custom:views/appuntamento/record/edit', ['crm:views/meeting/record/edit'], function (MeetingEditModule) {
 
-    return Dep.extend({
+    const Parent = MeetingEditModule.default || MeetingEditModule;
+    const DEFAULT_DURATION_SECONDS = 5400;
 
-        setup: function () {
-            Dep.prototype.setup.call(this, arguments);
+    return class AppuntamentoEditView extends Parent {
+
+        setup() {
+            super.setup();
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
             }
 
-            this.once('after:render', () => {
+            this.listenTo(this.model, 'change:dateStart', () => {
                 this.applyDefaultDuration();
             });
-        },
 
-        applyDefaultDuration: function () {
+            this.once('after:render', () => {
+                this.applyDefaultDuration();
+                setTimeout(() => this.applyDefaultDuration(), 0);
+                setTimeout(() => this.applyDefaultDuration(), 150);
+            });
+        }
+
+        applyDefaultDuration() {
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
             }
@@ -27,15 +36,14 @@ define('custom:views/appuntamento/record/edit', ['crm:views/meeting/record/edit'
                 return;
             }
 
-            const defaultSeconds = 5400;
             const dateEnd = this.getDateTime()
                 .toMoment(dateStart)
-                .add(defaultSeconds, 'seconds')
+                .add(DEFAULT_DURATION_SECONDS, 'seconds')
                 .format(this.getDateTime().internalDateTimeFormat);
 
             this.model.set({
                 dateEnd: dateEnd,
-            });
-        },
-    });
+            }, {updatedByDuration: true});
+        }
+    };
 });
