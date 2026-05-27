@@ -5,7 +5,7 @@
     },
     "recordViews": {
         "detail": "custom:views/opportunity/record/detail",
-        "edit": "crm:views/opportunity/record/edit",
+        "edit": "custom:views/opportunity/record/edit",
         "editSmall": "crm:views/opportunity/record/edit-small",
         "list": "crm:views/opportunity/record/list",
         "kanban": "crm:views/opportunity/record/kanban"

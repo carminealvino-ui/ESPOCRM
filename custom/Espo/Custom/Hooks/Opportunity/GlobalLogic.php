@@ -1,7 +1,7 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.5
+// VERSIONE: 2.2.6
 // DATA: 2026-05-27
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
@@ -134,6 +134,13 @@
 //
 // Rollback:
 // backup/hooks_cleanup/backup-opportunity-globallogic-2.2.2-category-cascade-stabile.php
+//
+// FIX 2.2.6
+// -----------------------------------------------------
+// LISTINO PREZZI (Price Book) in vigore per data opportunità + brand
+//
+// - OpportunityPriceBookResolver in beforeSave
+// - Solo se priceBookId vuoto o cambiano data/brand (non se utente cambia listino)
 //
 // FIX 2.2.5
 // -----------------------------------------------------
@@ -303,6 +310,7 @@ namespace Espo\Custom\Hooks\Opportunity;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 use Espo\Custom\Services\LineaProdottoCategorySync;
+use Espo\Custom\Services\OpportunityPriceBookResolver;
 use Espo\Custom\Services\ReferenteContactService;
 
 class GlobalLogic
@@ -340,7 +348,7 @@ class GlobalLogic
 
         $entity->set(
             'hookVersion',
-            '2.2.5'
+            '2.2.6'
         );
 
 
@@ -381,6 +389,43 @@ class GlobalLogic
                 $options,
                 $importFromSource
             );
+        }
+
+        $this->applyPriceBookFromEffectiveDate($entity);
+    }
+
+    private function applyPriceBookFromEffectiveDate(Entity $entity): void
+    {
+        if (!$entity->hasAttribute('priceBookId')) {
+            return;
+        }
+
+        if ($entity->isAttributeChanged('priceBookId')) {
+            return;
+        }
+
+        $shouldResolve = $entity->isNew()
+            || !$entity->get('priceBookId')
+            || $entity->isAttributeChanged('dataOpportunit')
+            || $entity->isAttributeChanged('productBrandId')
+            || $entity->isAttributeChanged('productBrandName')
+            || $entity->isAttributeChanged('azienda');
+
+        if (!$shouldResolve) {
+            return;
+        }
+
+        $priceBook = (new OpportunityPriceBookResolver($this->entityManager))
+            ->resolveForOpportunity($entity);
+
+        if (!$priceBook) {
+            return;
+        }
+
+        $entity->set('priceBookId', $priceBook->getId());
+
+        if ($entity->hasAttribute('priceBookName')) {
+            $entity->set('priceBookName', $priceBook->get('name'));
         }
     }
 
