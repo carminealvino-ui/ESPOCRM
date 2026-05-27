@@ -90,9 +90,12 @@ class OpportunityPriceBookResolver
 
     private function findPriceBook(string $brandKey, ?string $brandId, string $refDate): ?Entity
     {
+        $where = $this->buildBrandWhere($brandKey, $brandId);
+        $where['status'] = 'Active';
+
         $collection = $this->entityManager
             ->getRDBRepository('PriceBook')
-            ->where($this->buildBrandWhere($brandKey, $brandId))
+            ->where($where)
             ->order('name', 'ASC')
             ->find();
 

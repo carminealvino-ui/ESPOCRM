@@ -2,50 +2,42 @@
 -- FALCON MONO / PLUS — regole vigore listini (ARIEL)
 -- ========================================
 --
--- APRILE 2026 (price_book 69ce7c1fa73049580 — ARIEL - 26-04):
---   Due modelli 9.000 BTU:
---     - FALCON MONO 9000BTU          → valido FINO AL 30/04/2026 (non dal 1° maggio)
---     - FALCON MONO PLUS 9000BTU
+-- LISTINI NON PIÙ ATTIVI (non sincronizzare, non usare su nuove opportunità):
+--   Marzo 2026  69d4c2dce710dc14b  ARIEL - 26-03 (Marzo 2026)
+--   Aprile 2026 69ce7c1fa73049580  ARIEL - 26-04 (Aprile 2026)
 --
--- Dal 1 MAGGIO 2026:
---   Il MONO 9000BTU (senza PLUS) non è più in listino.
+-- LISTINI ATTIVI (sync prezzi / opportunità):
+--   Maggio 2026  6a043018dc22acf33  ARIEL - 26-05 (Maggio 2026)  — in transizione
+--   07/05/2026   07ce1b326cd314ca2  ARIEL - 26-07-05 (Climatizzatori 07/05/2026)  — listino in vigore
 --
--- MAGGIO 2026 e successivi (26-05, 07/05/2026 …):
---   Solo FALCON MONO PLUS … (niente MONO 9.000 senza PLUS)
---   Stessa logica estesa a tutta la gamma Falcon (MONO, DUAL, TRIAL, combo)
---   Nel PDF 07/05 la voce può essere "Falcon 9.000 btu" = prodotto CRM PLUS.
+-- Storico aprile (solo documentazione):
+--   Fino al 30/04/2026: due modelli 9.000 (MONO + MONO PLUS)
+--   Dal 01/05/2026: solo FALCON MONO PLUS (e gamma PLUS)
 --
--- Listino 07/05/2026: 07ce1b326cd314ca2
--- Listino Maggio 2026: 6a043018dc22acf33
--- Listino Aprile 2026: 69ce7c1fa73049580
---
--- CSV sync:
---   Aprile 9.000: database/data/listino-ariel-climatizzatori-2604-aprile-9000.csv
---   Maggio+/07-05 MONO: database/data/listino-ariel-climatizzatori-07052026.csv
+-- CSV sync SOLO su listini attivi:
+--   database/data/listino-ariel-climatizzatori-07052026.csv → 07ce1b326cd314ca2
 --
 -- ========================================
 
--- Verifica: prezzi MONO 9000 senza PLUS su listini da maggio in poi
+SELECT id, name, status, deleted
+FROM price_book
+WHERE deleted = 0
+  AND UPPER(name) LIKE '%ARIEL%'
+ORDER BY name;
+
+-- MONO 9000 senza PLUS non deve avere product_price attivi su listini maggio / 07-05
 SELECT
     pb.name AS listino,
+    pb.status AS listino_status,
     p.name AS prodotto,
     pp.price,
     pp.date_start,
     pp.date_end,
-    pp.status
+    pp.status AS prezzo_status
 FROM product_price pp
 JOIN product p ON p.id = pp.product_id AND p.deleted = 0
 JOIN price_book pb ON pb.id = pp.price_book_id AND pb.deleted = 0
 WHERE pp.deleted = 0
   AND p.name = 'ARIEL - CLIMATIZZATORI - FALCON MONO 9000BTU'
-  AND pb.id IN ('6a043018dc22acf33', '07ce1b326cd314ca2')
+  AND pp.price_book_id IN ('6a043018dc22acf33', '07ce1b326cd314ca2')
 ORDER BY pb.name;
-
--- Dopo verifica: chiudere eventuali righe errate (es. MONO non-PLUS su listino maggio+)
--- UPDATE product_price pp
--- INNER JOIN product p ON p.id = pp.product_id
--- SET pp.date_end = '2026-04-30', pp.status = 'Inactive'
--- WHERE pp.deleted = 0
---   AND p.name = 'ARIEL - CLIMATIZZATORI - FALCON MONO 9000BTU'
---   AND pp.price_book_id IN ('6a043018dc22acf33', '07ce1b326cd314ca2')
---   AND (pp.date_end IS NULL OR pp.date_end >= '2026-05-01');

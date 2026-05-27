@@ -1,42 +1,13 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Listino APRILE 2026 — due modelli Falcon 9.000 (MONO + MONO PLUS)
+# DEPRECATO — Listino aprile (e marzo) NON sono più attivi in produzione.
+# Non eseguire sync su 69ce7c1fa73049580 / 69d4c2dce710dc14b.
 #
-# cd ~/public_html/crm/mec-group
-# curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/fase-3-aprile-due-modelli-9000.sh" | DRY_RUN=1 bash
-# curl -fsSL ".../tools/fase-3-aprile-due-modelli-9000.sh" | bash
+# Per Falcon usare solo:
+#   tools/fase-3-sync-listino-ariel-070526.sh  → listino 07/05/2026
+#   tools/fase-3d-chiudi-mono-9000-dopo-aprile.sh
 # =============================================================================
-set -euo pipefail
-
-CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${GITHUB_BRANCH:-cursor/opportunity-globallogic-9999}"
-REPO="${GITHUB_REPOSITORY:-carminealvino-ui/ESPOCRM}"
-RAW_BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
-
-PRICE_BOOK_ID="${PRICE_BOOK_ID:-69ce7c1fa73049580}"
-DATE_START="${DATE_START:-2026-04-01}"
-DRY_RUN="${DRY_RUN:-0}"
-
-cd "${CRM_ROOT}" || exit 1
-mkdir -p tools database/data
-
-curl -fsSL "${RAW_BASE}/tools/sync-listino-prodotti.php" -o tools/sync-listino-prodotti.php
-curl -fsSL "${RAW_BASE}/database/data/listino-ariel-climatizzatori-2604-aprile-9000.csv" \
-  -o database/data/listino-ariel-climatizzatori-2604-aprile-9000.csv
-
-ARGS=(
-  --csv=database/data/listino-ariel-climatizzatori-2604-aprile-9000.csv
-  --price-book-id="${PRICE_BOOK_ID}"
-  --date-start="${DATE_START}"
-  --aliquota-iva=10
-)
-
-[[ "${DRY_RUN}" == "1" ]] && ARGS+=(--dry-run)
-
-echo "=== Aprile 2026 — due modelli 9.000 su listino ${PRICE_BOOK_ID} ==="
-echo "MONO 9000BTU: vigore solo fino al 30/04/2026"
-php tools/sync-listino-prodotti.php "${ARGS[@]}"
-
-echo ""
-echo "Poi chiudere eventuali prezzi MONO 9000 su listini maggio+:"
-echo "  curl -fsSL .../tools/fase-3d-chiudi-mono-9000-dopo-aprile.sh | bash"
+echo "ATTENZIONE: i listini ARIEL Marzo e Aprile 2026 non sono più attivi." >&2
+echo "Non serve popolarli. Listino di riferimento: 07ce1b326cd314ca2 (07/05/2026)." >&2
+echo "Vedi database/2026-05-27-falcon-plus-vigore-listini.sql" >&2
+exit 1
