@@ -2,9 +2,10 @@
 -- FALCON MONO / PLUS — regole vigore listini (ARIEL)
 -- ========================================
 --
--- LISTINI NON PIÙ ATTIVI (non sincronizzare, non usare su nuove opportunità):
+-- LISTINI DA DISATTIVARE IN ESPO (status = Inactive):
 --   Marzo 2026  69d4c2dce710dc14b  ARIEL - 26-03 (Marzo 2026)
 --   Aprile 2026 69ce7c1fa73049580  ARIEL - 26-04 (Aprile 2026)
+--   Script: tools/fase-3e-disattiva-listini-marzo-aprile.sh
 --
 -- LISTINI ATTIVI (sync prezzi / opportunità):
 --   Maggio 2026  6a043018dc22acf33  ARIEL - 26-05 (Maggio 2026)  — in transizione
