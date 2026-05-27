@@ -158,43 +158,5 @@
         "style": "default",
         "hidden": false,
         "customLabel": "Installazione"
-    },
-    {
-        "rows": [
-            [
-                {
-                    "name": "plusMinus"
-                },
-                {
-                    "name": "minusPlus"
-                }
-            ],
-            [
-                {
-                    "name": "provvigione"
-                },
-                false
-            ],
-            [
-                {
-                    "name": "provvigioneTotale"
-                },
-                {
-                    "name": "importoProvvigione"
-                }
-            ]
-        ],
-        "dynamicLogicVisible": {
-            "conditionGroup": [
-                {
-                    "type": "equals",
-                    "attribute": "stage",
-                    "value": "Closed Won"
-                }
-            ]
-        },
-        "style": "default",
-        "hidden": false,
-        "customLabel": "Provvigioni"
     }
 ]

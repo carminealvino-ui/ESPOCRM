@@ -1,20 +1,15 @@
 // ========================================
-// VERSIONE: 1.5.0
+// VERSIONE: 1.6.0
 // DATA: 2026-05-27
 // FILE: client/custom/src/views/fields/product-category-by-brand.js
 // ========================================
 //
-// FIX 1.5.0
+// FIX 1.6.0
 // -----------------------------------------------------
-// Modal "Nessun dato" con brand ARTEL (e simili)
+// Nessun filtro su campi provvigionali (gruppo/regime)
 //
-// Problema:
-// buildFilterFromConfig preferiva gruppoProvvigione rispetto a name;
-// in produzione le categorie ARTEL non hanno gruppo_provvigione valorizzato.
-//
-// Fix:
-// - priorità filtro: name > regime > gruppoProvvigione
-// - fallback productBrandId quando non c'è mappa brand
+// Il picker usa solo nomi categoria per brand, oppure
+// productBrandId come fallback.
 //
 // ========================================
 
@@ -22,67 +17,51 @@
 
 define('custom:views/fields/product-category-by-brand', ['views/fields/link'], function (Dep) {
 
-    var BRAND_CATEGORY_FILTER = {
-        ARIEL: {
-            names: [
-                'CLIMATIZZATORI',
-                'CLIMATIZZAZIONE',
-                'CALDAIE A GAS',
-                'CALDAIE',
-                'STUFE',
-                'STUFE A PELLET',
-                'FOTOVOLTAICO'
-            ],
-            gruppoProvvigione: ['Clima e altro'],
-            regimeProvvigione: ['ARIEL_2026']
-        },
-        ARTEL: {
-            names: [
-                'CLIMATIZZATORI',
-                'CLIMATIZZAZIONE',
-                'CALDAIE A GAS',
-                'CALDAIE',
-                'STUFE',
-                'STUFE A PELLET',
-                'FOTOVOLTAICO'
-            ],
-            gruppoProvvigione: ['Clima e altro']
-        },
-        ARQUATI: {
-            names: [
-                'TENDA VERTICALE',
-                'TENDA A BRACCI',
-                'TENDA A CUPOLA',
-                'PERGOLA',
-                'BIOCLIMATICA',
-                'VETROTENDA',
-                'VETRATA IMPACCHETTABILE',
-                'VETRATA SCORREVOLE',
-                'CHIUSURE VERTICALI'
-            ],
-            gruppoProvvigione: ['Tende da Sole', 'Pergole', 'Vetrate']
-        },
-        PROGETTO: {
-            names: [
-                'TENDA VERTICALE',
-                'TENDA A BRACCI',
-                'TENDA A CUPOLA',
-                'PERGOLA',
-                'BIOCLIMATICA',
-                'VETROTENDA',
-                'VETRATA IMPACCHETTABILE',
-                'VETRATA SCORREVOLE',
-                'CHIUSURE VERTICALI'
-            ],
-            gruppoProvvigione: ['Tende da Sole', 'Pergole', 'Vetrate']
-        },
-        GFB: {
-            regimeProvvigione: [
-                'GFB_VODAFONE_COEFF',
-                'GFB_FASTWEB_POD',
-                'GFB_RS_BIMESTRE'
-            ]
-        }
+    var BRAND_CATEGORY_NAMES = {
+        ARIEL: [
+            'CLIMATIZZATORI',
+            'CLIMATIZZAZIONE',
+            'CALDAIE A GAS',
+            'CALDAIE',
+            'STUFE',
+            'STUFE A PELLET',
+            'FOTOVOLTAICO'
+        ],
+        ARTEL: [
+            'CLIMATIZZATORI',
+            'CLIMATIZZAZIONE',
+            'CALDAIE A GAS',
+            'CALDAIE',
+            'STUFE',
+            'STUFE A PELLET',
+            'FOTOVOLTAICO'
+        ],
+        ARQUATI: [
+            'TENDA VERTICALE',
+            'TENDA A BRACCI',
+            'TENDA A CUPOLA',
+            'PERGOLA',
+            'BIOCLIMATICA',
+            'VETROTENDA',
+            'VETRATA IMPACCHETTABILE',
+            'VETRATA SCORREVOLE',
+            'CHIUSURE VERTICALI'
+        ],
+        PROGETTO: [
+            'TENDA VERTICALE',
+            'TENDA A BRACCI',
+            'TENDA A CUPOLA',
+            'PERGOLA',
+            'BIOCLIMATICA',
+            'VETROTENDA',
+            'VETRATA IMPACCHETTABILE',
+            'VETRATA SCORREVOLE',
+            'CHIUSURE VERTICALI'
+        ],
+        GFB: [
+            'VODAFONE VOCE',
+            'ENEL BUSINESS'
+        ]
     };
 
     return Dep.extend({
@@ -168,59 +147,24 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
             }.bind(this));
         },
 
-        buildFilterFromConfig: function (config) {
-            if (config.names && config.names.length) {
+        getSelectFilters: function () {
+            var brandKey = this.getBrandKey();
+            var brandId = this.model.get('productBrandId');
+            var names = brandKey ? BRAND_CATEGORY_NAMES[brandKey] : null;
+
+            if (names && names.length) {
                 return {
                     byCategoryName: {
                         type: 'in',
                         attribute: 'name',
-                        value: config.names
+                        value: names
                     }
                 };
-            }
-
-            if (config.regimeProvvigione && config.regimeProvvigione.length) {
-                return {
-                    byRegime: {
-                        type: 'in',
-                        attribute: 'regimeProvvigione',
-                        value: config.regimeProvvigione
-                    }
-                };
-            }
-
-            if (config.gruppoProvvigione && config.gruppoProvvigione.length) {
-                return {
-                    byGruppo: {
-                        type: 'in',
-                        attribute: 'gruppoProvvigione',
-                        value: config.gruppoProvvigione
-                    }
-                };
-            }
-
-            return null;
-        },
-
-        getSelectFilters: function () {
-            var brandKey = this.getBrandKey();
-            var brandId = this.model.get('productBrandId');
-
-            if (!brandKey && !brandId) {
-                return;
-            }
-
-            if (brandKey && BRAND_CATEGORY_FILTER[brandKey]) {
-                var mapped = this.buildFilterFromConfig(BRAND_CATEGORY_FILTER[brandKey]);
-
-                if (mapped) {
-                    return mapped;
-                }
             }
 
             if (brandId) {
                 return {
-                    productBrandLinked: {
+                    byBrand: {
                         type: 'equals',
                         attribute: 'productBrandId',
                         value: brandId

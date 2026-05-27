@@ -17,14 +17,6 @@
             ],
             [
                 {
-                    "name": "regimeProvvigione"
-                },
-                {
-                    "name": "gruppoProvvigione"
-                }
-            ],
-            [
-                {
                     "name": "order"
                 },
                 false
