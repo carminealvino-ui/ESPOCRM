@@ -99,8 +99,8 @@ WHERE pp.deleted = 0
 "
 
 echo ""
-echo "Attesi dopo APPLY:"
-echo "  product.list_price / prezzo_codice  → 3590,91 / 2681,82 (IVA escl.)"
-echo "  product_price.price (listino IVI)   → 3950,00 dal ${DATE_START}"
+echo "Attesi dopo APPLY (solo FALCON MONO PLUS — da maggio niente MONO 9000 senza PLUS):"
+echo "  MONO PLUS 9000: list_price 3590,91 | prezzo_codice 2681,82 | product_price 3950 IVI"
+echo "Regola vigore: vedi database/2026-05-27-falcon-plus-vigore-listini.sql"
 echo ""
 echo "=== FINE FASE 3 ==="

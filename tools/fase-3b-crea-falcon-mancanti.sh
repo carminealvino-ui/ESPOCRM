@@ -21,7 +21,7 @@ curl -fsSL "${RAW_BASE}/database/data/listino-ariel-climatizzatori-07052026.csv"
   -o database/data/listino-ariel-climatizzatori-07052026.csv
 
 TMP_CSV="$(mktemp)"
-grep -E '12000BTU|18000BTU|24000BTU' database/data/listino-ariel-climatizzatori-07052026.csv > "${TMP_CSV}" || true
+grep -E 'MONO PLUS 12000|MONO PLUS 18000|MONO PLUS 24000' database/data/listino-ariel-climatizzatori-07052026.csv > "${TMP_CSV}" || true
 head -1 database/data/listino-ariel-climatizzatori-07052026.csv | cat - "${TMP_CSV}" > "${TMP_CSV}.full"
 mv "${TMP_CSV}.full" "${TMP_CSV}"
 
