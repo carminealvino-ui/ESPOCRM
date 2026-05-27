@@ -463,6 +463,7 @@ function parseEuro(mixed $value): ?float
 function findProductByIdentity(\Espo\ORM\EntityManager $entityManager, array $identity): ?\Espo\ORM\Entity
 {
     $name = $identity['name'] ?? '';
+    $denominazione = $identity['denominazione'] ?? '';
 
     if ($name !== '') {
         $product = $entityManager
@@ -475,28 +476,55 @@ function findProductByIdentity(\Espo\ORM\EntityManager $entityManager, array $id
         }
     }
 
-    if ($identity['denominazione'] === '') {
+    if ($denominazione === '') {
         return null;
     }
 
-    $where = ['denominazione' => $identity['denominazione']];
-
     $brand = resolveProductBrand($entityManager, $identity['brand']);
+    $category = resolveProductCategory($entityManager, $identity['categoria'], $brand);
+
+    // Denominazione + brand (+ categoria se risolta)
+    $where = ['denominazione' => $denominazione];
 
     if ($brand) {
         $where['brandId'] = $brand->getId();
     }
 
-    $category = resolveProductCategory($entityManager, $identity['categoria'], $brand);
-
     if ($category) {
         $where['categoryId'] = $category->getId();
     }
 
-    return $entityManager
+    $product = $entityManager
         ->getRDBRepository('Product')
         ->where($where)
         ->findOne();
+
+    if ($product) {
+        return $product;
+    }
+
+    // Fallback: nome contiene denominazione (prodotti creati senza denominazione in sync precedenti)
+    $fallbackWhere = ['name*' => $denominazione];
+
+    if ($brand) {
+        $fallbackWhere['brandId'] = $brand->getId();
+    }
+
+    $collection = $entityManager
+        ->getRDBRepository('Product')
+        ->where($fallbackWhere)
+        ->limit(0, 5)
+        ->find();
+
+    foreach ($collection as $candidate) {
+        $candidateName = (string) $candidate->get('name');
+
+        if (stripos($candidateName, $denominazione) !== false) {
+            return $candidate;
+        }
+    }
+
+    return null;
 }
 
 function resolveProductBrand(\Espo\ORM\EntityManager $entityManager, string $brandName): ?\Espo\ORM\Entity
