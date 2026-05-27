@@ -1,13 +1,15 @@
 /* global define */
 
-define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], function (Dep) {
+define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], function (CalendarViewModule) {
 
-    return Dep.extend({
+    const CalendarView = CalendarViewModule.default || CalendarViewModule;
 
-        createEvent: function (values) {
+    return class CustomCalendarView extends CalendarView {
+
+        async createEvent(values) {
             const originalCreateView = this.createView.bind(this);
 
-            this.createView = function (name, viewName, options) {
+            this.createView = (name, viewName, options) => {
                 if (name === 'dialog' && viewName === 'crm:views/calendar/modals/edit') {
                     viewName = 'custom:views/calendar/modals/edit';
                 }
@@ -15,11 +17,11 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
                 return originalCreateView(name, viewName, options);
             };
 
-            const result = Dep.prototype.createEvent.call(this, values);
-
-            return Promise.resolve(result).finally(() => {
+            try {
+                return await super.createEvent(values);
+            } finally {
                 this.createView = originalCreateView;
-            });
-        },
-    });
+            }
+        }
+    };
 });

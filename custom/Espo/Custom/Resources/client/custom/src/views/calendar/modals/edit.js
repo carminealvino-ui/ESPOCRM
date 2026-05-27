@@ -1,13 +1,15 @@
 /* global define */
 
-define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], function (Dep) {
+define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], function (CalendarEditModalModule) {
+
+    const CalendarEditModalView = CalendarEditModalModule.default || CalendarEditModalModule;
 
     const APPUNTAMENTO_SCOPE = 'Appuntamento';
     const DEFAULT_DURATION_SECONDS = 5400;
 
-    return Dep.extend({
+    return class CustomCalendarEditModalView extends CalendarEditModalView {
 
-        createRecordView: function (model, callback) {
+        createRecordView(model, callback) {
             if (
                 !this.id &&
                 this.scope === APPUNTAMENTO_SCOPE &&
@@ -18,7 +20,7 @@ define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], 
                 this.options.dateEnd = this.getAppuntamentoDefaultDateEnd(this.options.dateStart);
             }
 
-            Dep.prototype.createRecordView.call(this, model, (view) => {
+            super.createRecordView(model, (view) => {
                 if (
                     !this.id &&
                     this.scope === APPUNTAMENTO_SCOPE &&
@@ -36,13 +38,13 @@ define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], 
 
                 callback(view);
             });
-        },
+        }
 
-        getAppuntamentoDefaultDateEnd: function (dateStart) {
+        getAppuntamentoDefaultDateEnd(dateStart) {
             return this.getDateTime()
                 .toMoment(dateStart)
                 .add(DEFAULT_DURATION_SECONDS, 'seconds')
                 .format(this.getDateTime().internalDateTimeFormat);
-        },
-    });
+        }
+    };
 });
