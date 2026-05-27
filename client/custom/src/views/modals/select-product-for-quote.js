@@ -13,6 +13,9 @@ define('custom:views/modals/select-product-for-quote', ['views/modals/select-rec
     return Dep.extend({
 
         setup: function () {
+            this.options = this.options || {};
+            this.options.entityType = 'Product';
+            this.options.scope = 'Product';
             this.options.createButton = true;
 
             Dep.prototype.setup.call(this);
