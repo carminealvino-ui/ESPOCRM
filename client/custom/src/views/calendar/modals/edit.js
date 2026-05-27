@@ -1,6 +1,9 @@
 /* global define */
 
-define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], function (CalendarEditModalModule) {
+define('custom:views/calendar/modals/edit', [
+    'custom:handlers/calendar-default-duration',
+    'crm:views/calendar/modals/edit',
+], function (_calendarDurationHandler, CalendarEditModalModule) {
 
     const CalendarEditModalView = CalendarEditModalModule.default || CalendarEditModalModule;
 
@@ -9,35 +12,74 @@ define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], 
 
     return class CustomCalendarEditModalView extends CalendarEditModalView {
 
+        setup() {
+            super.setup();
+
+            this.once('after:render', () => {
+                this.applyDefaultDurationToEditView();
+            });
+        }
+
         createRecordView(model, callback) {
-            if (
-                !this.id &&
-                this.scope === APPUNTAMENTO_SCOPE &&
-                !this.dateIsChanged &&
-                !this.options.allDay &&
-                this.options.dateStart
-            ) {
-                this.options.dateEnd = this.getAppuntamentoDefaultDateEnd(this.options.dateStart);
-            }
+            this.applyDefaultDurationOptions();
 
             super.createRecordView(model, (view) => {
-                if (
-                    !this.id &&
-                    this.scope === APPUNTAMENTO_SCOPE &&
-                    !this.dateIsChanged &&
-                    !model.get('isAllDay')
-                ) {
-                    const dateStart = model.get('dateStart');
-
-                    if (dateStart) {
-                        model.set({
-                            dateEnd: this.getAppuntamentoDefaultDateEnd(dateStart),
-                        });
-                    }
-                }
+                this.applyDefaultDurationToModel(model);
 
                 callback(view);
+
+                this.applyDefaultDurationToEditView();
             });
+        }
+
+        applyDefaultDurationOptions() {
+            if (!this.shouldApplyDefaultDuration()) {
+                return;
+            }
+
+            this.options.dateEnd = this.getAppuntamentoDefaultDateEnd(this.options.dateStart);
+        }
+
+        applyDefaultDurationToModel(model) {
+            if (!this.shouldApplyDefaultDuration()) {
+                return;
+            }
+
+            const dateStart = model.get('dateStart') || this.options.dateStart;
+
+            if (!dateStart) {
+                return;
+            }
+
+            model.set({
+                dateEnd: this.getAppuntamentoDefaultDateEnd(dateStart),
+            }, {updatedByDuration: true});
+        }
+
+        applyDefaultDurationToEditView() {
+            if (!this.shouldApplyDefaultDuration()) {
+                return;
+            }
+
+            const editView = this.hasView('edit') ? this.getView('edit') : null;
+
+            if (!editView || !editView.model) {
+                return;
+            }
+
+            this.applyDefaultDurationToModel(editView.model);
+        }
+
+        shouldApplyDefaultDuration() {
+            if (this.id || this.dateIsChanged || this.options.allDay) {
+                return false;
+            }
+
+            if (this.scope !== APPUNTAMENTO_SCOPE) {
+                return false;
+            }
+
+            return Boolean(this.options.dateStart);
         }
 
         getAppuntamentoDefaultDateEnd(dateStart) {
