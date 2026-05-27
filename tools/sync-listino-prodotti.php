@@ -81,7 +81,6 @@ $app = new \Espo\Core\Application();
 $app->setupSystemUser();
 
 $entityManager = $app->getContainer()->get('entityManager');
-$metadata = $entityManager->getMetadata();
 
 $dryRun = array_key_exists('dry-run', $options);
 $createMissing = !array_key_exists('no-create-missing', $options);
@@ -166,7 +165,7 @@ foreach ($rows as $i => $row) {
             $product->set('type', 'Regular');
             $product->set('itemType', ($row['tipo'] ?? '') === 'servizio' ? 'Service' : 'Goods');
 
-            if ($brandId && $metadata->hasAttribute('Product', 'brandId')) {
+            if ($brandId && defsHasAttribute($entityManager, 'Product', 'brandId')) {
                 $product->set('brandId', $brandId);
             }
 
@@ -196,7 +195,7 @@ foreach ($rows as $i => $row) {
                 $patch['name'] = $nome;
             }
 
-            if ($metadata->hasAttribute('Product', 'denominazione') && $nome !== '') {
+            if (defsHasAttribute($entityManager, 'Product', 'denominazione') && $nome !== '') {
                 $patch['denominazione'] = $nome;
             }
 
@@ -205,16 +204,16 @@ foreach ($rows as $i => $row) {
             }
 
             if ($prezzoListino !== null) {
-                if ($metadata->hasAttribute('Product', 'listPrice')) {
+                if (defsHasAttribute($entityManager, 'Product', 'listPrice')) {
                     $patch['listPrice'] = $prezzoListino;
                 }
 
-                if ($metadata->hasAttribute('Product', 'unitPrice')) {
+                if (defsHasAttribute($entityManager, 'Product', 'unitPrice')) {
                     $patch['unitPrice'] = $prezzoListino;
                 }
             }
 
-            if ($prezzoCodice !== null && $metadata->hasAttribute('Product', 'prezzoCodice')) {
+            if ($prezzoCodice !== null && defsHasAttribute($entityManager, 'Product', 'prezzoCodice')) {
                 $patch['prezzoCodice'] = $prezzoCodice;
             }
 
@@ -235,7 +234,7 @@ foreach ($rows as $i => $row) {
             }
         }
 
-        if ($prezzoPerProductPrice !== null && $metadata->hasEntity('ProductPrice')) {
+        if ($prezzoPerProductPrice !== null && metadataHasEntity($entityManager, 'ProductPrice')) {
             $ppResult = upsertProductPrice(
                 $entityManager,
                 $product,
@@ -260,6 +259,20 @@ foreach ($rows as $i => $row) {
 fwrite(STDOUT, "\nRiepilogo: " . json_encode($stats, JSON_PRETTY_PRINT) . "\n");
 
 exit($stats['errors'] > 0 ? 1 : 0);
+
+function defsHasAttribute(\Espo\ORM\EntityManager $entityManager, string $entityType, string $attribute): bool
+{
+    try {
+        return $entityManager->getDefs()->getEntity($entityType)->hasAttribute($attribute);
+    } catch (Throwable) {
+        return false;
+    }
+}
+
+function metadataHasEntity(\Espo\ORM\EntityManager $entityManager, string $entityType): bool
+{
+    return $entityManager->getMetadata()->has($entityType);
+}
 
 function resolvePriceBook($entityManager, array $options): ?\Espo\ORM\Entity
 {
