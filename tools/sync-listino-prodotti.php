@@ -15,7 +15,8 @@
  *
  * Opzioni:
  *   --crm-root=PATH          Root installazione (default: cwd)
- *   --csv=PATH               File CSV (;) con colonne: codice,nome,prezzo_listino,prezzo_codice,tipo,note
+ *   --csv=PATH               CSV (;): codice_articolo,nome,prezzo_listino,prezzo_codice,tipo,note
+ *                            Colonna PDF "Codice" (evidenziata) = prezzo_codice (es. 2950), ≠ listino
  *   --price-book-id=ID       Listino Sales Pack (alternativa a --price-book-name)
  *   --price-book-name=TEXT   Cerca listino per nome (LIKE %TEXT%, ordine nome DESC)
  *   --date-start=YYYY-MM-DD  dateStart su nuove righe product_price (default 2026-05-07)
@@ -99,30 +100,29 @@ $stats = ['updated' => 0, 'created' => 0, 'prices' => 0, 'skipped' => 0, 'errors
 
 foreach ($rows as $i => $row) {
     $line = $i + 2;
-    $codice = normalizeCodice($row['codice'] ?? '');
+    $codiceArticolo = resolveCodiceArticolo($row);
+    $nome = trim((string) ($row['nome'] ?? ''));
+    $prezzoListino = parseEuro($row['prezzo_listino'] ?? null);
+    $prezzoCodice = parseEuro($row['prezzo_codice'] ?? null);
 
-    if ($codice === '') {
-        fwrite(STDOUT, "[riga {$line}] SKIP: codice vuoto ({$row['nome']})\n");
+    if ($codiceArticolo === '' && $nome === '') {
+        fwrite(STDOUT, "[riga {$line}] SKIP: codice_articolo e nome vuoti\n");
         $stats['skipped']++;
 
         continue;
     }
 
-    $nome = trim((string) ($row['nome'] ?? ''));
-    $prezzoListino = parseEuro($row['prezzo_listino'] ?? null);
-    $prezzoCodice = parseEuro($row['prezzo_codice'] ?? null);
-
-    if ($prezzoCodice === null && $prezzoListino !== null) {
-        $prezzoCodice = $prezzoListino;
-    }
-
     try {
-        $product = findProductByCodice($entityManager, $codice);
+        $product = findProduct($entityManager, $codiceArticolo, $nome);
 
         if (!$product && $createMissing) {
             $product = $entityManager->getNewEntity('Product');
-            $product->set('partNumber', $codice);
-            $product->set('name', $nome !== '' ? $nome : $codice);
+
+            if ($codiceArticolo !== '') {
+                $product->set('partNumber', $codiceArticolo);
+            }
+
+            $product->set('name', $nome !== '' ? $nome : $codiceArticolo);
             $product->set('status', 'Available');
             $product->set('type', 'Regular');
             $product->set('itemType', ($row['tipo'] ?? '') === 'servizio' ? 'Service' : 'Goods');
@@ -135,15 +135,18 @@ foreach ($rows as $i => $row) {
                 $entityManager->saveEntity($product);
             }
 
-            fwrite(STDOUT, "[{$codice}] CREATO prodotto: {$product->get('name')}\n");
+            $label = $codiceArticolo !== '' ? $codiceArticolo : $nome;
+            fwrite(STDOUT, "[{$label}] CREATO prodotto: {$product->get('name')}\n");
             $stats['created']++;
         } elseif (!$product) {
-            fwrite(STDERR, "[{$codice}] ERRORE: prodotto assente (--no-create-missing)\n");
+            $label = $codiceArticolo !== '' ? $codiceArticolo : $nome;
+            fwrite(STDERR, "[{$label}] ERRORE: prodotto assente (--no-create-missing)\n");
             $stats['errors']++;
 
             continue;
         } else {
             $patch = [];
+            $label = $product->get('partNumber') ?: $product->get('name');
 
             if ($nome !== '' && $product->get('name') !== $nome) {
                 $patch['name'] = $nome;
@@ -153,8 +156,8 @@ foreach ($rows as $i => $row) {
                 $patch['denominazione'] = $nome;
             }
 
-            if ($product->get('partNumber') !== $codice) {
-                $patch['partNumber'] = $codice;
+            if ($codiceArticolo !== '' && $product->get('partNumber') !== $codiceArticolo) {
+                $patch['partNumber'] = $codiceArticolo;
             }
 
             if ($prezzoListino !== null) {
@@ -178,7 +181,7 @@ foreach ($rows as $i => $row) {
                     $entityManager->saveEntity($product);
                 }
 
-                fwrite(STDOUT, "[{$codice}] AGGIORNATO: " . json_encode($patch, JSON_UNESCAPED_UNICODE) . "\n");
+                fwrite(STDOUT, "[{$label}] AGGIORNATO: " . json_encode($patch, JSON_UNESCAPED_UNICODE) . "\n");
                 $stats['updated']++;
             }
         }
@@ -195,11 +198,12 @@ foreach ($rows as $i => $row) {
 
             if ($ppResult) {
                 $stats['prices']++;
-                fwrite(STDOUT, "[{$codice}] product_price: {$ppResult}\n");
+                fwrite(STDOUT, "[{$label}] product_price (listino): {$ppResult}\n");
             }
         }
     } catch (Throwable $e) {
-        fwrite(STDERR, "[{$codice}] ERRORE: {$e->getMessage()}\n");
+        $label = $codiceArticolo !== '' ? $codiceArticolo : $nome;
+        fwrite(STDERR, "[{$label}] ERRORE: {$e->getMessage()}\n");
         $stats['errors']++;
     }
 }
@@ -262,9 +266,38 @@ function readCsv(string $path): array
     return $rows;
 }
 
-function normalizeCodice(?string $codice): string
+function resolveCodiceArticolo(array $row): string
 {
-    return trim(str_replace(',', '.', (string) $codice));
+    $articolo = trim((string) ($row['codice_articolo'] ?? ''));
+
+    if ($articolo !== '') {
+        return normalizePartNumber($articolo);
+    }
+
+    // Legacy: colonna "codice" = SKU articolo (non il prezzo a codice del PDF)
+    $legacy = trim((string) ($row['codice'] ?? ''));
+
+    if ($legacy === '') {
+        return '';
+    }
+
+    if (looksLikeEuroAmount($legacy)) {
+        return '';
+    }
+
+    return normalizePartNumber($legacy);
+}
+
+function normalizePartNumber(string $value): string
+{
+    return trim(str_replace(',', '.', $value));
+}
+
+function looksLikeEuroAmount(string $value): bool
+{
+    $n = parseEuro($value);
+
+    return $n !== null && $n >= 100;
 }
 
 function parseEuro(mixed $value): ?float
@@ -285,20 +318,39 @@ function parseEuro(mixed $value): ?float
     return round((float) $s, 2);
 }
 
-function findProductByCodice($entityManager, string $codice): ?\Espo\ORM\Entity
+function findProduct($entityManager, string $codiceArticolo, string $nome): ?\Espo\ORM\Entity
 {
-    $product = $entityManager
-        ->getRDBRepository('Product')
-        ->where(['partNumber' => $codice])
-        ->findOne();
+    if ($codiceArticolo !== '') {
+        $product = $entityManager
+            ->getRDBRepository('Product')
+            ->where(['partNumber' => $codiceArticolo])
+            ->findOne();
 
-    if ($product) {
-        return $product;
+        if ($product) {
+            return $product;
+        }
+
+        $alt = str_replace('.', '', $codiceArticolo);
+
+        if ($alt !== $codiceArticolo) {
+            $product = $entityManager
+                ->getRDBRepository('Product')
+                ->where(['partNumber' => $alt])
+                ->findOne();
+
+            if ($product) {
+                return $product;
+            }
+        }
+    }
+
+    if ($nome === '') {
+        return null;
     }
 
     return $entityManager
         ->getRDBRepository('Product')
-        ->where(['partNumber' => str_replace('.', '', $codice)])
+        ->where(['name' => $nome])
         ->findOne();
 }
 

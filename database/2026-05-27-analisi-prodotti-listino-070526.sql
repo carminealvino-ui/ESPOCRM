@@ -8,10 +8,11 @@
 -- Eseguire su DB CRM (solo SELECT) dopo backup.
 --
 -- Mappatura listino PDF → CRM:
---   Codice (es. 00.02.95.0)     → product.part_number
---   Descrizione                 → product.name
---   Prezzo listino (IVA escl.)  → product.list_price, product_price.price
---   Prezzo a codice (provvig.)  → product.prezzo_codice (se assente: = listino)
+--   Codice articolo (es. 00.02.95.0, se presente) → product.part_number
+--   Descrizione                                     → product.name
+--   Prezzo (colonna listino, es. 2700)              → product.list_price, product_price.price
+--   Codice evidenziato nel PDF (es. 2950)           → product.prezzo_codice
+--       = prezzo a codice per provvigioni/minus-plus — NON coincide con il listino
 --
 -- ========================================
 
@@ -74,6 +75,15 @@ SELECT id, name, part_number, list_price, prezzo_codice
 FROM product
 WHERE deleted = 0
   AND (part_number IS NULL OR TRIM(part_number) = '')
+  AND UPPER(name) LIKE '%FALCON%';
+
+-- Prezzo a codice uguale al listino (sospetto: colonna PDF non importata correttamente)
+SELECT id, name, part_number, list_price, prezzo_codice
+FROM product
+WHERE deleted = 0
+  AND prezzo_codice IS NOT NULL
+  AND list_price IS NOT NULL
+  AND ABS(prezzo_codice - list_price) < 0.01
   AND UPPER(name) LIKE '%FALCON%';
 
 -- Duplicati per stesso codice
