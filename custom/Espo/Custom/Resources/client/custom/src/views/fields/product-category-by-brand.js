@@ -1,7 +1,21 @@
 // ========================================
-// VERSIONE: 1.4.1
-// DATA: 2026-05-26
+// VERSIONE: 1.5.0
+// DATA: 2026-05-27
 // FILE: client/custom/src/views/fields/product-category-by-brand.js
+// ========================================
+//
+// FIX 1.5.0
+// -----------------------------------------------------
+// Modal "Nessun dato" con brand ARTEL (e simili)
+//
+// Problema:
+// buildFilterFromConfig preferiva gruppoProvvigione rispetto a name;
+// in produzione le categorie ARTEL non hanno gruppo_provvigione valorizzato.
+//
+// Fix:
+// - priorità filtro: name > regime > gruppoProvvigione
+// - fallback productBrandId quando non c'è mappa brand
+//
 // ========================================
 
 /* global define */
@@ -155,16 +169,6 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
         },
 
         buildFilterFromConfig: function (config) {
-            if (config.gruppoProvvigione && config.gruppoProvvigione.length) {
-                return {
-                    byGruppo: {
-                        type: 'in',
-                        attribute: 'gruppoProvvigione',
-                        value: config.gruppoProvvigione
-                    }
-                };
-            }
-
             if (config.names && config.names.length) {
                 return {
                     byCategoryName: {
@@ -181,6 +185,16 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
                         type: 'in',
                         attribute: 'regimeProvvigione',
                         value: config.regimeProvvigione
+                    }
+                };
+            }
+
+            if (config.gruppoProvvigione && config.gruppoProvvigione.length) {
+                return {
+                    byGruppo: {
+                        type: 'in',
+                        attribute: 'gruppoProvvigione',
+                        value: config.gruppoProvvigione
                     }
                 };
             }

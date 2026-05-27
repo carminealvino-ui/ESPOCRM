@@ -30,6 +30,25 @@ WHERE pc.deleted = 0
 
 UPDATE `product_category` pc
 INNER JOIN `product_brand` pb
+    ON pb.deleted = 0 AND UPPER(TRIM(pb.name)) = 'ARTEL'
+SET
+    pc.product_brand_id = pb.id,
+    pc.product_brand_name = pb.name,
+    pc.gruppo_provvigione = 'Clima e altro',
+    pc.regime_provigione = COALESCE(NULLIF(TRIM(pc.regime_provigione), ''), 'GENERICO')
+WHERE pc.deleted = 0
+  AND UPPER(TRIM(pc.name)) IN (
+      'CLIMATIZZATORI',
+      'CLIMATIZZAZIONE',
+      'CALDAIE A GAS',
+      'CALDAIE',
+      'STUFE',
+      'STUFE A PELLET',
+      'FOTOVOLTAICO'
+  );
+
+UPDATE `product_category` pc
+INNER JOIN `product_brand` pb
     ON pb.deleted = 0 AND UPPER(TRIM(pb.name)) = 'ARQUATI'
 SET
     pc.product_brand_id = pb.id,
