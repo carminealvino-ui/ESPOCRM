@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// VERSIONE: 1.6.5
+// VERSIONE: 1.7.2
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
@@ -104,6 +104,15 @@
 // backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.4-brand-fallback-stabile.php
 //
+// 1.7.1
+// ----------------------------------------
+// ✔ LineaProdottoCategorySync su save
+//
+// 1.7.2 (27-05-2026)
+// ----------------------------------------
+// ✔ dataAppuntamento sincronizzato da dateStartDate / dateStart
+//    per report e filtri su data senza ora
+//
 // 1.7.0 (25-05-2026)
 // -----------------------------------------------------
 // - Sync Lead completo da Prospect (email, WhatsApp, telefono da wa.me)
@@ -159,8 +168,10 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.7.1'
+                '1.7.2'
             );
+
+            $this->syncDataAppuntamentoFromDateStart($entity);
 
             // ========================================
             // RECUPERO STATUS
@@ -766,6 +777,33 @@ class GlobalLogic
             $field,
             $value
         );
+    }
+
+    // ========================================
+    // DATA APPUNTAMENTO (1.7.2)
+    // ========================================
+
+    private function syncDataAppuntamentoFromDateStart(Entity $entity): void
+    {
+        if (!$entity->hasAttribute('dataAppuntamento')) {
+            return;
+        }
+
+        $date = $entity->get('dateStartDate');
+
+        if (!$date) {
+            $dateStart = $entity->get('dateStart');
+
+            if (is_string($dateStart) && strlen($dateStart) >= 10) {
+                $date = substr($dateStart, 0, 10);
+            }
+        }
+
+        if (!$date) {
+            return;
+        }
+
+        $entity->set('dataAppuntamento', $date);
     }
 
     // =====================================================
