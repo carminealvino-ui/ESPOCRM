@@ -7,12 +7,12 @@
 -- Audit prodotti vs listino Ariel climatizzatori in vigore dal 07/05/2026.
 -- Eseguire su DB CRM (solo SELECT) dopo backup.
 --
--- Mappatura listino PDF → CRM (es. Falcon 9.000 btu):
+-- Mappatura listino PDF → CRM (es. Falcon 9.000 btu) — prezzi PDF IVA inclusa 10%:
 --   Codice articolo (00.02.95.0)           → product.part_number
 --   Descrizione                              → product.name
---   TOTALE (2700 + 1250 installazione)       → prezzo listino = 3950 (list_price, product_price)
---   Prezzo a codice (da codice 00.02.95.0)   → product.prezzo_codice = 2950 (segmenti 02.95.0)
---   Riga prodotto 2700 / installazione 1250  → solo componenti; il listino CRM è il TOTALE
+--   TOTALE IVI (2700 + 1250 = 3950)          → listino IVA escl. 3590,91 (list_price, product_price)
+--   Prezzo a codice IVI (da 00.02.95.0)      → prezzo_codice IVA escl. 2681,82
+--   Opportunità/contratto                    → prezzoListinoIvaEsclusa / prezzoCodiceIvaEsclusa
 --
 -- ========================================
 

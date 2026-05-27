@@ -15,9 +15,10 @@
  *
  * Opzioni:
  *   --crm-root=PATH          Root installazione (default: cwd)
- *   --csv=PATH               CSV (;): codice_articolo,nome,prezzo_listino,prezzo_codice,tipo,note
- *                            prezzo_listino = riga TOTALE PDF (es. 3950 = 2700 + 1250 installazione)
- *                            prezzo_codice = da codice articolo (00.02.95.0 → 2950) se colonna vuota
+ *   --csv=PATH               CSV (;): importi come nel PDF (IVA inclusa 10% per listino Ariel)
+ *   --aliquota-iva=10        Aliquota IVA listino (default 10)
+ *   --prezzi-iva-esclusa     CSV già in IVA esclusa (nessuna conversione)
+ *                            prezzo_listino = TOTALE PDF (es. 3950 IVI → 3590,91 escl. in CRM)
  *   --price-book-id=ID       Listino Sales Pack (alternativa a --price-book-name)
  *   --price-book-name=TEXT   Cerca listino per nome (LIKE %TEXT%, ordine nome DESC)
  *   --date-start=YYYY-MM-DD  dateStart su nuove righe product_price (default 2026-05-07)
@@ -42,6 +43,8 @@ $options = getopt('', [
     'price-book-name::',
     'date-start::',
     'product-brand-id::',
+    'aliquota-iva::',
+    'prezzi-iva-esclusa',
     'create-missing',
     'no-create-missing',
     'dry-run',
@@ -84,6 +87,8 @@ $dryRun = array_key_exists('dry-run', $options);
 $createMissing = !array_key_exists('no-create-missing', $options);
 $dateStart = $options['date-start'] ?? '2026-05-07';
 $brandId = $options['product-brand-id'] ?? null;
+$aliquotaIva = isset($options['aliquota-iva']) ? (float) $options['aliquota-iva'] : 10.0;
+$convertiIvaEsclusa = !array_key_exists('prezzi-iva-esclusa', $options);
 
 $priceBook = resolvePriceBook($entityManager, $options);
 
@@ -94,6 +99,13 @@ if (!$priceBook) {
 
 fwrite(STDOUT, "Listino: {$priceBook->get('name')} ({$priceBook->getId()})\n");
 fwrite(STDOUT, "CSV: {$csvPath}\n");
+
+if ($convertiIvaEsclusa) {
+    fwrite(STDOUT, "IVA: importi PDF inclusi al {$aliquotaIva}% → salvataggio IVA esclusa in CRM\n");
+} else {
+    fwrite(STDOUT, "IVA: importi CSV già IVA esclusa\n");
+}
+
 fwrite(STDOUT, $dryRun ? "MODALITÀ: dry-run\n" : "MODALITÀ: APPLY\n");
 
 $rows = readCsv($csvPath);
@@ -109,6 +121,13 @@ foreach ($rows as $i => $row) {
     if ($prezzoCodice === null && $codiceArticolo !== '') {
         $prezzoCodice = derivePrezzoCodiceFromArticolo($codiceArticolo);
     }
+
+    [$prezzoListino, $prezzoCodice, $ivaLog] = applyIvaConversion(
+        $prezzoListino,
+        $prezzoCodice,
+        $aliquotaIva,
+        $convertiIvaEsclusa
+    );
 
     if ($codiceArticolo === '' && $nome === '') {
         fwrite(STDOUT, "[riga {$line}] SKIP: codice_articolo e nome vuoti\n");
@@ -142,6 +161,11 @@ foreach ($rows as $i => $row) {
 
             $label = $codiceArticolo !== '' ? $codiceArticolo : $nome;
             fwrite(STDOUT, "[{$label}] CREATO prodotto: {$product->get('name')}\n");
+
+            if ($ivaLog !== '') {
+                fwrite(STDOUT, "  {$ivaLog}\n");
+            }
+
             $stats['created']++;
         } elseif (!$product) {
             $label = $codiceArticolo !== '' ? $codiceArticolo : $nome;
@@ -187,6 +211,11 @@ foreach ($rows as $i => $row) {
                 }
 
                 fwrite(STDOUT, "[{$label}] AGGIORNATO: " . json_encode($patch, JSON_UNESCAPED_UNICODE) . "\n");
+
+                if ($ivaLog !== '') {
+                    fwrite(STDOUT, "  {$ivaLog}\n");
+                }
+
                 $stats['updated']++;
             }
         }
@@ -305,8 +334,53 @@ function looksLikeEuroAmount(string $value): bool
     return $n !== null && $n >= 100;
 }
 
+function applyIvaConversion(
+    ?float $prezzoListino,
+    ?float $prezzoCodice,
+    float $aliquotaIva,
+    bool $converti
+): array {
+    if (!$converti || $aliquotaIva <= 0) {
+        return [$prezzoListino, $prezzoCodice, ''];
+    }
+
+    $parts = [];
+    $listinoNetto = $prezzoListino;
+    $codiceNetto = $prezzoCodice;
+
+    if ($prezzoListino !== null) {
+        $listinoNetto = toIvaEsclusa($prezzoListino, $aliquotaIva);
+        $parts[] = sprintf(
+            'listino %s IVI → %s IVA escl.',
+            formatEuro($prezzoListino),
+            formatEuro($listinoNetto)
+        );
+    }
+
+    if ($prezzoCodice !== null) {
+        $codiceNetto = toIvaEsclusa($prezzoCodice, $aliquotaIva);
+        $parts[] = sprintf(
+            'codice %s IVI → %s IVA escl.',
+            formatEuro($prezzoCodice),
+            formatEuro($codiceNetto)
+        );
+    }
+
+    return [$listinoNetto, $codiceNetto, implode('; ', $parts)];
+}
+
+function toIvaEsclusa(float $importoIvi, float $aliquotaPercent): float
+{
+    return round($importoIvi / (1 + $aliquotaPercent / 100), 2);
+}
+
+function formatEuro(float $amount): string
+{
+    return number_format($amount, 2, ',', '.') . ' €';
+}
+
 /**
- * Da codice listino Ariel (es. 00.02.95.0) → prezzo a codice 2950 (segmenti 02.95.0).
+ * Da codice listino Ariel (es. 00.02.95.0) → prezzo a codice 2950 IVI (segmenti 02.95.0).
  */
 function derivePrezzoCodiceFromArticolo(string $codiceArticolo): ?float
 {
