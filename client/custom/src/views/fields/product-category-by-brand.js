@@ -196,14 +196,6 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
                 return;
             }
 
-            if (brandKey && BRAND_CATEGORY_FILTER[brandKey]) {
-                var mapped = this.buildFilterFromConfig(BRAND_CATEGORY_FILTER[brandKey]);
-
-                if (mapped) {
-                    return mapped;
-                }
-            }
-
             if (brandId) {
                 return {
                     productBrandLinked: {
@@ -212,6 +204,15 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
                         value: brandId
                     }
                 };
+            }
+
+            // Fallback: se non abbiamo productBrandId, proviamo a mappare in base al brand name.
+            if (brandKey && BRAND_CATEGORY_FILTER[brandKey]) {
+                var mapped = this.buildFilterFromConfig(BRAND_CATEGORY_FILTER[brandKey]);
+
+                if (mapped) {
+                    return mapped;
+                }
             }
 
             return;
