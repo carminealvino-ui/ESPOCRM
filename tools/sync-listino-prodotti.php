@@ -15,7 +15,8 @@
  *
  * Opzioni:
  *   --crm-root=PATH          Root installazione (default: cwd)
- *   --csv=PATH               CSV (;): importi come nel PDF (IVA inclusa 10% per listino Ariel)
+ *   --csv=PATH               CSV (;): brand;categoria;denominazione;codice_listino;prezzo_listino;prezzo_codice
+ *                            Nome prodotto CRM = BRAND - CATEGORIA - DENOMINAZIONE
  *   --aliquota-iva=10        Aliquota IVA listino (default 10)
  *   --prezzi-iva-esclusa     CSV già in IVA esclusa (nessuna conversione)
  *                            prezzo_listino = TOTALE PDF (es. 3950 IVI → 3590,91 escl. in CRM)
@@ -121,13 +122,13 @@ $stats = ['updated' => 0, 'created' => 0, 'prices' => 0, 'skipped' => 0, 'errors
 
 foreach ($rows as $i => $row) {
     $line = $i + 2;
-    $codiceArticolo = resolveCodiceArticolo($row);
-    $nome = trim((string) ($row['nome'] ?? ''));
+    $identity = parseProductIdentity($row);
+    $codiceListino = resolveCodiceListino($row);
     $prezzoListinoIvi = parseEuro($row['prezzo_listino'] ?? null);
     $prezzoCodiceIvi = parseEuro($row['prezzo_codice'] ?? null);
 
-    if ($prezzoCodiceIvi === null && $codiceArticolo !== '') {
-        $prezzoCodiceIvi = derivePrezzoCodiceFromArticolo($codiceArticolo);
+    if ($prezzoCodiceIvi === null && $codiceListino !== '') {
+        $prezzoCodiceIvi = derivePrezzoCodiceFromArticolo($codiceListino);
     }
 
     [$prezzoListino, $prezzoCodice, $ivaLog] = applyIvaConversion(
@@ -143,37 +144,29 @@ foreach ($rows as $i => $row) {
         $prezzoPerProductPrice = $prezzoListinoIvi;
     }
 
-    if ($codiceArticolo === '' && $nome === '') {
-        fwrite(STDOUT, "[riga {$line}] SKIP: codice_articolo e nome vuoti\n");
+    if ($identity['denominazione'] === '' && $identity['name'] === '') {
+        fwrite(STDOUT, "[riga {$line}] SKIP: denominazione / brand-categoria vuoti\n");
         $stats['skipped']++;
 
         continue;
     }
 
+    $label = $identity['denominazione'] !== '' ? $identity['denominazione'] : $identity['name'];
+
     try {
-        $product = findProduct($entityManager, $codiceArticolo, $nome);
+        $product = findProductByIdentity($entityManager, $identity);
 
         if (!$product && $createMissing) {
             $product = $entityManager->getNewEntity('Product');
-
-            if ($codiceArticolo !== '') {
-                $product->set('partNumber', $codiceArticolo);
-            }
-
-            $product->set('name', $nome !== '' ? $nome : $codiceArticolo);
+            applyProductIdentity($entityManager, $product, $identity, $brandId);
             $product->set('status', 'Available');
             $product->set('type', 'Regular');
             $product->set('itemType', ($row['tipo'] ?? '') === 'servizio' ? 'Service' : 'Goods');
-
-            if ($brandId && defsHasAttribute($entityManager, 'Product', 'brandId')) {
-                $product->set('brandId', $brandId);
-            }
 
             if (!$dryRun) {
                 $entityManager->saveEntity($product);
             }
 
-            $label = $codiceArticolo !== '' ? $codiceArticolo : $nome;
             fwrite(STDOUT, "[{$label}] CREATO prodotto: {$product->get('name')}\n");
 
             if ($ivaLog !== '') {
@@ -182,26 +175,16 @@ foreach ($rows as $i => $row) {
 
             $stats['created']++;
         } elseif (!$product) {
-            $label = $codiceArticolo !== '' ? $codiceArticolo : $nome;
             fwrite(STDERR, "[{$label}] ERRORE: prodotto assente (--no-create-missing)\n");
             $stats['errors']++;
 
             continue;
         } else {
             $patch = [];
-            $label = $product->get('partNumber') ?: $product->get('name');
+            $label = $product->get('name') ?: $identity['denominazione'];
 
-            if ($nome !== '' && $product->get('name') !== $nome) {
-                $patch['name'] = $nome;
-            }
-
-            if (defsHasAttribute($entityManager, 'Product', 'denominazione') && $nome !== '') {
-                $patch['denominazione'] = $nome;
-            }
-
-            if ($codiceArticolo !== '' && $product->get('partNumber') !== $codiceArticolo) {
-                $patch['partNumber'] = $codiceArticolo;
-            }
+            $identityPatch = buildIdentityPatch($entityManager, $product, $identity, $brandId);
+            $patch = array_merge($patch, $identityPatch);
 
             if ($prezzoListino !== null) {
                 if (defsHasAttribute($entityManager, 'Product', 'listPrice')) {
@@ -250,7 +233,6 @@ foreach ($rows as $i => $row) {
             }
         }
     } catch (Throwable $e) {
-        $label = $codiceArticolo !== '' ? $codiceArticolo : $nome;
         fwrite(STDERR, "[{$label}] ERRORE: {$e->getMessage()}\n");
         $stats['errors']++;
     }
@@ -328,31 +310,61 @@ function readCsv(string $path): array
     return $rows;
 }
 
-function resolveCodiceArticolo(array $row): string
+/**
+ * @return array{brand: string, categoria: string, denominazione: string, name: string}
+ */
+function parseProductIdentity(array $row): array
 {
-    $articolo = trim((string) ($row['codice_articolo'] ?? ''));
+    $brand = trim((string) ($row['brand'] ?? ''));
+    $categoria = trim((string) ($row['categoria'] ?? $row['category'] ?? ''));
+    $denominazione = trim((string) ($row['denominazione'] ?? ''));
+    $nome = trim((string) ($row['nome'] ?? ''));
 
-    if ($articolo !== '') {
-        return normalizePartNumber($articolo);
+    if ($brand === '' && $categoria === '' && $denominazione === '' && $nome !== '') {
+        $parts = preg_split('/\s+-\s+/', $nome, 3);
+
+        if (is_array($parts) && count($parts) === 3) {
+            $brand = trim($parts[0]);
+            $categoria = trim($parts[1]);
+            $denominazione = trim($parts[2]);
+        }
     }
 
-    // Legacy: colonna "codice" = SKU articolo (non il prezzo a codice del PDF)
-    $legacy = trim((string) ($row['codice'] ?? ''));
-
-    if ($legacy === '') {
-        return '';
-    }
-
-    if (looksLikeEuroAmount($legacy)) {
-        return '';
-    }
-
-    return normalizePartNumber($legacy);
+    return [
+        'brand' => $brand,
+        'categoria' => $categoria,
+        'denominazione' => $denominazione,
+        'name' => buildProductName($brand, $categoria, $denominazione),
+    ];
 }
 
-function normalizePartNumber(string $value): string
+function buildProductName(string $brand, string $categoria, string $denominazione): string
 {
-    return trim(str_replace(',', '.', $value));
+    $parts = [];
+
+    foreach ([$brand, $categoria, $denominazione] as $part) {
+        $part = trim($part);
+
+        if ($part !== '') {
+            $parts[] = $part;
+        }
+    }
+
+    return implode(' - ', $parts);
+}
+
+/** Codice listino PDF (es. 00.02.95.0) → deriva prezzo a codice, non è il part_number. */
+function resolveCodiceListino(array $row): string
+{
+    foreach (['codice_listino', 'codice_articolo', 'codice'] as $key) {
+        $value = trim((string) ($row[$key] ?? ''));
+
+        if ($value !== '' && !looksLikeEuroAmount($value)) {
+            return trim(str_replace(',', '.', $value));
+        }
+    }
+
+    return '';
 }
 
 function looksLikeEuroAmount(string $value): bool
@@ -448,49 +460,125 @@ function parseEuro(mixed $value): ?float
     return round((float) $s, 2);
 }
 
-function findProduct($entityManager, string $codiceArticolo, string $nome): ?\Espo\ORM\Entity
+function findProductByIdentity(\Espo\ORM\EntityManager $entityManager, array $identity): ?\Espo\ORM\Entity
 {
-    if ($codiceArticolo !== '') {
+    $name = $identity['name'] ?? '';
+
+    if ($name !== '') {
         $product = $entityManager
             ->getRDBRepository('Product')
-            ->where(['partNumber' => $codiceArticolo])
+            ->where(['name' => $name])
             ->findOne();
 
         if ($product) {
             return $product;
         }
-
-        $alt = str_replace('.', '', $codiceArticolo);
-
-        if ($alt !== $codiceArticolo) {
-            $product = $entityManager
-                ->getRDBRepository('Product')
-                ->where(['partNumber' => $alt])
-                ->findOne();
-
-            if ($product) {
-                return $product;
-            }
-        }
     }
 
-    if ($nome === '') {
+    if ($identity['denominazione'] === '') {
         return null;
     }
 
-    $product = $entityManager
-        ->getRDBRepository('Product')
-        ->where(['name' => $nome])
-        ->findOne();
+    $where = ['denominazione' => $identity['denominazione']];
 
-    if ($product) {
-        return $product;
+    $brand = resolveProductBrand($entityManager, $identity['brand']);
+
+    if ($brand) {
+        $where['brandId'] = $brand->getId();
+    }
+
+    $category = resolveProductCategory($entityManager, $identity['categoria'], $brand);
+
+    if ($category) {
+        $where['categoryId'] = $category->getId();
     }
 
     return $entityManager
         ->getRDBRepository('Product')
-        ->where(['name*' => $nome])
+        ->where($where)
         ->findOne();
+}
+
+function resolveProductBrand(\Espo\ORM\EntityManager $entityManager, string $brandName): ?\Espo\ORM\Entity
+{
+    if ($brandName === '' || !metadataHasEntity($entityManager, 'ProductBrand')) {
+        return null;
+    }
+
+    return $entityManager
+        ->getRDBRepository('ProductBrand')
+        ->where(['name' => $brandName])
+        ->findOne();
+}
+
+function resolveProductCategory(
+    \Espo\ORM\EntityManager $entityManager,
+    string $categoryName,
+    ?\Espo\ORM\Entity $brand
+): ?\Espo\ORM\Entity {
+    if ($categoryName === '' || !metadataHasEntity($entityManager, 'ProductCategory')) {
+        return null;
+    }
+
+    $where = ['name' => $categoryName];
+
+    if ($brand) {
+        $where['productBrandId'] = $brand->getId();
+    }
+
+    return $entityManager
+        ->getRDBRepository('ProductCategory')
+        ->where($where)
+        ->findOne();
+}
+
+function applyProductIdentity(
+    \Espo\ORM\EntityManager $entityManager,
+    \Espo\ORM\Entity $product,
+    array $identity,
+    ?string $defaultBrandId
+): void {
+    $patch = buildIdentityPatch($entityManager, $product, $identity, $defaultBrandId);
+    $product->set($patch);
+}
+
+function buildIdentityPatch(
+    \Espo\ORM\EntityManager $entityManager,
+    \Espo\ORM\Entity $product,
+    array $identity,
+    ?string $defaultBrandId
+): array {
+    $patch = [];
+
+    if ($identity['name'] !== '' && $product->get('name') !== $identity['name']) {
+        $patch['name'] = $identity['name'];
+    }
+
+    if (defsHasAttribute($entityManager, 'Product', 'denominazione') && $identity['denominazione'] !== '') {
+        $patch['denominazione'] = $identity['denominazione'];
+    }
+
+    $brand = resolveProductBrand($entityManager, $identity['brand']);
+
+    if ($brand && defsHasAttribute($entityManager, 'Product', 'brandId')) {
+        $patch['brandId'] = $brand->getId();
+    } elseif ($defaultBrandId && defsHasAttribute($entityManager, 'Product', 'brandId')) {
+        $patch['brandId'] = $defaultBrandId;
+    }
+
+    $brandForCategory = $brand;
+
+    if (!$brandForCategory && !empty($patch['brandId'])) {
+        $brandForCategory = $entityManager->getEntityById('ProductBrand', $patch['brandId']);
+    }
+
+    $category = resolveProductCategory($entityManager, $identity['categoria'], $brandForCategory);
+
+    if ($category && defsHasAttribute($entityManager, 'Product', 'categoryId')) {
+        $patch['categoryId'] = $category->getId();
+    }
+
+    return $patch;
 }
 
 function upsertProductPrice(

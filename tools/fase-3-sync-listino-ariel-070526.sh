@@ -82,10 +82,10 @@ MYSQL_BIN="mariadb"
 command -v mariadb >/dev/null 2>&1 || MYSQL_BIN="mysql"
 
 "${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" -e "
-SELECT id, name, part_number, list_price, prezzo_codice
+SELECT id, name, denominazione, brand_name, category_name, list_price, prezzo_codice
 FROM product
 WHERE deleted = 0
-  AND UPPER(name) LIKE '%FALCON%MONO PLUS%9000%';
+  AND name = 'ARIEL - CLIMATIZZATORI - FALCON MONO PLUS 9000BTU';
 "
 
 "${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" -e "
@@ -95,7 +95,7 @@ JOIN product p ON p.id = pp.product_id AND p.deleted = 0
 JOIN price_book pb ON pb.id = pp.price_book_id
 WHERE pp.deleted = 0
   AND pp.price_book_id = '${PRICE_BOOK_ID}'
-  AND UPPER(p.name) LIKE '%FALCON%MONO PLUS%9000%';
+  AND p.name = 'ARIEL - CLIMATIZZATORI - FALCON MONO PLUS 9000BTU';
 "
 
 echo ""
