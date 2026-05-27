@@ -45,6 +45,11 @@ ARGS=(
   --aliquota-iva=10
 )
 
+if [[ "${NO_CREATE:-0}" == "1" ]]; then
+  ARGS+=(--no-create-missing)
+  echo "(solo aggiornamento prodotti esistenti — NO_CREATE=1)"
+fi
+
 if [[ "${DRY_RUN}" == "1" ]]; then
   ARGS+=(--dry-run)
   echo "=== FASE 3 — DRY RUN (nessun salvataggio) ==="
