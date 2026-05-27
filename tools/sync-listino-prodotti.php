@@ -100,10 +100,19 @@ if (!$priceBook) {
 fwrite(STDOUT, "Listino: {$priceBook->get('name')} ({$priceBook->getId()})\n");
 fwrite(STDOUT, "CSV: {$csvPath}\n");
 
+$priceBookIvaInclusa = (bool) $priceBook->get('isTaxInclusive');
+
 if ($convertiIvaEsclusa) {
-    fwrite(STDOUT, "IVA: importi PDF inclusi al {$aliquotaIva}% → salvataggio IVA esclusa in CRM\n");
+    fwrite(STDOUT, "IVA: CSV = PDF IVA {$aliquotaIva}% inclusa\n");
+    fwrite(STDOUT, "     → Product listPrice/prezzoCodice: IVA esclusa (provvigioni)\n");
+
+    if ($priceBookIvaInclusa) {
+        fwrite(STDOUT, "     → ProductPrice.price: IVA inclusa (listino is_tax_inclusive=1)\n");
+    } else {
+        fwrite(STDOUT, "     → ProductPrice.price: IVA esclusa\n");
+    }
 } else {
-    fwrite(STDOUT, "IVA: importi CSV già IVA esclusa\n");
+    fwrite(STDOUT, "IVA: importi CSV già IVA esclusa ovunque\n");
 }
 
 fwrite(STDOUT, $dryRun ? "MODALITÀ: dry-run\n" : "MODALITÀ: APPLY\n");
@@ -115,19 +124,25 @@ foreach ($rows as $i => $row) {
     $line = $i + 2;
     $codiceArticolo = resolveCodiceArticolo($row);
     $nome = trim((string) ($row['nome'] ?? ''));
-    $prezzoListino = parseEuro($row['prezzo_listino'] ?? null);
-    $prezzoCodice = parseEuro($row['prezzo_codice'] ?? null);
+    $prezzoListinoIvi = parseEuro($row['prezzo_listino'] ?? null);
+    $prezzoCodiceIvi = parseEuro($row['prezzo_codice'] ?? null);
 
-    if ($prezzoCodice === null && $codiceArticolo !== '') {
-        $prezzoCodice = derivePrezzoCodiceFromArticolo($codiceArticolo);
+    if ($prezzoCodiceIvi === null && $codiceArticolo !== '') {
+        $prezzoCodiceIvi = derivePrezzoCodiceFromArticolo($codiceArticolo);
     }
 
     [$prezzoListino, $prezzoCodice, $ivaLog] = applyIvaConversion(
-        $prezzoListino,
-        $prezzoCodice,
+        $prezzoListinoIvi,
+        $prezzoCodiceIvi,
         $aliquotaIva,
         $convertiIvaEsclusa
     );
+
+    $prezzoPerProductPrice = $prezzoListino;
+
+    if ($priceBookIvaInclusa && $prezzoListinoIvi !== null) {
+        $prezzoPerProductPrice = $prezzoListinoIvi;
+    }
 
     if ($codiceArticolo === '' && $nome === '') {
         fwrite(STDOUT, "[riga {$line}] SKIP: codice_articolo e nome vuoti\n");
@@ -220,12 +235,12 @@ foreach ($rows as $i => $row) {
             }
         }
 
-        if ($prezzoListino !== null && $metadata->hasEntity('ProductPrice')) {
+        if ($prezzoPerProductPrice !== null && $metadata->hasEntity('ProductPrice')) {
             $ppResult = upsertProductPrice(
                 $entityManager,
                 $product,
                 $priceBook,
-                $prezzoListino,
+                $prezzoPerProductPrice,
                 $dateStart,
                 $dryRun
             );
