@@ -450,9 +450,18 @@ function findProduct($entityManager, string $codiceArticolo, string $nome): ?\Es
         return null;
     }
 
-    return $entityManager
+    $product = $entityManager
         ->getRDBRepository('Product')
         ->where(['name' => $nome])
+        ->findOne();
+
+    if ($product) {
+        return $product;
+    }
+
+    return $entityManager
+        ->getRDBRepository('Product')
+        ->where(['name*' => $nome])
         ->findOne();
 }
 

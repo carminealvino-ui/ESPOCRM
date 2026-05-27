@@ -1,3 +1,6 @@
 codice_articolo;nome;prezzo_listino;prezzo_codice;tipo;note
-00.02.95.0;Falcon 9.000 btu;3950;2950;prodotto;Importi IVA inclusa 10% come PDF. TOTALE=3950 (2700+1250). CRM: 3590,91 listino e 2681,82 codice IVA escl.
-;Installazione standard;1250;;servizio;IVI 10%; componente totale. CRM netto 1136,36 se importata da sola
+00.02.95.0;ARIEL - CLIMATIZZATORI - FALCON MONO PLUS 9000BTU;3950;2950;prodotto;PDF p. CLIMA FALCON MONO — TOTALE IVI 10% (2700+1250). Match nome CRM
+00.03.25.0;ARIEL - CLIMATIZZATORI - FALCON MONO 12000BTU;4250;3250;prodotto;PDF Falcon 12.000 — TOTALE IVI
+00.03.65.0;ARIEL - CLIMATIZZATORI - FALCON MONO 18000BTU;4650;3650;prodotto;PDF Falcon 18.000 — TOTALE IVI
+00.03.85.0;ARIEL - CLIMATIZZATORI - FALCON MONO 24000BTU;4850;3850;prodotto;PDF Falcon 24.000 — TOTALE IVI
+00.02.95.0;ARIEL - CLIMATIZZATORI - FALCON MONO 9000BTU;3750;2750;prodotto;PDF Falcon 9.000 (non PLUS) — TOTALE IVI 3750 se distinto in CRM
