@@ -1,15 +1,15 @@
 // ========================================
-// VERSIONE: 1.6.0
+// VERSIONE: 1.6.1
 // DATA: 2026-05-27
 // FILE: client/custom/src/views/fields/product-category-by-brand.js
+// VERIFICA DEPLOY: grep "VERSIONE: 1.6.1" sui tre path in produzione
 // ========================================
 //
-// FIX 1.6.0
+// FIX 1.6.1
 // -----------------------------------------------------
-// Nessun filtro su campi provvigionali (gruppo/regime)
-//
-// Il picker usa solo nomi categoria per brand, oppure
-// productBrandId come fallback.
+// - Nessun filtro provvigionale (gruppo/regime)
+// - Filtro OR: nomi categoria del brand O productBrandId collegato
+// - Fallback: solo productBrandId, poi nessun filtro
 //
 // ========================================
 
@@ -70,6 +70,10 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
             Dep.prototype.setup.call(this);
 
             this.listenTo(this.model, 'change:productBrandId', function () {
+                this.refreshCategoryFieldState();
+            });
+
+            this.listenTo(this.model, 'change:productBrandName', function () {
                 this.refreshCategoryFieldState();
             });
 
@@ -147,32 +151,52 @@ define('custom:views/fields/product-category-by-brand', ['views/fields/link'], f
             }.bind(this));
         },
 
+        buildBrandScopeFilter: function (names, brandId) {
+            var parts = [];
+
+            if (names && names.length) {
+                parts.push({
+                    type: 'in',
+                    attribute: 'name',
+                    value: names
+                });
+            }
+
+            if (brandId) {
+                parts.push({
+                    type: 'equals',
+                    attribute: 'productBrandId',
+                    value: brandId
+                });
+            }
+
+            if (!parts.length) {
+                return null;
+            }
+
+            if (parts.length === 1) {
+                return parts[0];
+            }
+
+            return {
+                type: 'or',
+                value: parts
+            };
+        },
+
         getSelectFilters: function () {
             var brandKey = this.getBrandKey();
             var brandId = this.model.get('productBrandId');
             var names = brandKey ? BRAND_CATEGORY_NAMES[brandKey] : null;
+            var scopeFilter = this.buildBrandScopeFilter(names, brandId);
 
-            if (names && names.length) {
+            if (scopeFilter) {
                 return {
-                    byCategoryName: {
-                        type: 'in',
-                        attribute: 'name',
-                        value: names
-                    }
+                    brandScope: scopeFilter
                 };
             }
 
-            if (brandId) {
-                return {
-                    byBrand: {
-                        type: 'equals',
-                        attribute: 'productBrandId',
-                        value: brandId
-                    }
-                };
-            }
-
-            return;
+            return null;
         }
     });
 });
