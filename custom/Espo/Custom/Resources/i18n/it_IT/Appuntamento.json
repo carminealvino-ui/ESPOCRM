@@ -4,6 +4,14 @@
         "fornitorePartner": "Fornitore / Partner",
         "productBrand": "Brand"
     },
+    "options": {
+        "status": {
+            "Planned": "Pianificato",
+            "Held": "Svolto",
+            "Not Held": "Non Svolto",
+            "Ingestibile": "Ingestibile"
+        }
+    },
     "presetFilters": {
         "svolto": "Svolto",
         "nonSvolto": "Non Svolto"
