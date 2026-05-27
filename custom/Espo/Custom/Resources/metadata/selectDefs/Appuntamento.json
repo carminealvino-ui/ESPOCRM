@@ -1,0 +1,6 @@
+{
+    "primaryFilterClassNameMap": {
+        "svolto": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\Svolto",
+        "nonSvolto": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\NonSvolto"
+    }
+}
