@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// VERSIONE: 1.7.2
+// VERSIONE: 1.7.3
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
@@ -113,6 +113,11 @@
 // ✔ dataAppuntamento sincronizzato da dateStartDate / dateStart
 //    per report e filtri su data senza ora
 //
+// 1.7.3 (27-05-2026)
+// ----------------------------------------
+// ✔ Nuovo appuntamento: dateEnd = dateStart + 1h30 (5400 sec)
+//    (calendario / dettaglio piccolo; backup server-side)
+//
 // 1.7.0 (25-05-2026)
 // -----------------------------------------------------
 // - Sync Lead completo da Prospect (email, WhatsApp, telefono da wa.me)
@@ -168,9 +173,10 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.7.2'
+                '1.7.3'
             );
 
+            $this->applyDefaultDurationOnCreate($entity);
             $this->syncDataAppuntamentoFromDateStart($entity);
 
             // ========================================
@@ -777,6 +783,51 @@ class GlobalLogic
             $field,
             $value
         );
+    }
+
+    private const DEFAULT_DURATION_SECONDS = 5400;
+
+    // ========================================
+    // DURATA DEFAULT 1h30 (1.7.3)
+    // ========================================
+
+    private function applyDefaultDurationOnCreate(Entity $entity): void
+    {
+        if (!$entity->isNew()) {
+            return;
+        }
+
+        if ($entity->get('isAllDay')) {
+            return;
+        }
+
+        $dateStart = $entity->get('dateStart');
+
+        if (!$dateStart) {
+            return;
+        }
+
+        $dateEnd = $this->addSecondsToDateTimeString(
+            $dateStart,
+            self::DEFAULT_DURATION_SECONDS
+        );
+
+        if (!$dateEnd) {
+            return;
+        }
+
+        $entity->set('dateEnd', $dateEnd);
+    }
+
+    private function addSecondsToDateTimeString(string $dateTime, int $seconds): ?string
+    {
+        try {
+            $dt = new \DateTimeImmutable($dateTime);
+        } catch (\Exception) {
+            return null;
+        }
+
+        return $dt->modify('+' . $seconds . ' seconds')->format('Y-m-d H:i:s');
     }
 
     // ========================================

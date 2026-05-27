@@ -1,0 +1,9 @@
+{
+    "modalViews": {
+        "detail": "custom:views/appuntamento/modals/detail"
+    },
+    "recordViews": {
+        "edit": "custom:views/appuntamento/record/edit",
+        "editSmall": "custom:views/appuntamento/record/edit-small"
+    }
+}
