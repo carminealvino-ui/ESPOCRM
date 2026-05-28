@@ -1,0 +1,23 @@
+[
+    {
+        "label": "Listino Ariel (riferimento)",
+        "rows": [
+            [
+                {
+                    "name": "prezzoListinoIvaInclusa"
+                },
+                {
+                    "name": "prezzoCodiceIvaInclusa"
+                }
+            ],
+            [
+                {
+                    "name": "prezzoCodice"
+                },
+                false
+            ]
+        ],
+        "style": "default",
+        "tabBreak": false
+    }
+]

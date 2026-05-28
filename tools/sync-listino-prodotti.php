@@ -181,7 +181,13 @@ foreach ($rows as $i => $row) {
             $product->set('type', 'Regular');
             $product->set('itemType', ($row['tipo'] ?? '') === 'servizio' ? 'Service' : 'Goods');
 
-            $pricePatch = buildProductPricePatch($entityManager, $prezzoListino, $prezzoCodice);
+            $pricePatch = buildProductPricePatch(
+                $entityManager,
+                $prezzoListino,
+                $prezzoCodice,
+                $prezzoListinoIvi,
+                $prezzoCodiceIvi
+            );
 
             if ($pricePatch !== []) {
                 $product->set($pricePatch);
@@ -220,7 +226,17 @@ foreach ($rows as $i => $row) {
             $label = $product->get('name') ?: $identity['denominazione'];
 
             $identityPatch = buildIdentityPatch($entityManager, $product, $identity, $brandId);
-            $patch = array_merge($patch, $identityPatch, buildProductPricePatch($entityManager, $prezzoListino, $prezzoCodice));
+            $patch = array_merge(
+                $patch,
+                $identityPatch,
+                buildProductPricePatch(
+                    $entityManager,
+                    $prezzoListino,
+                    $prezzoCodice,
+                    $prezzoListinoIvi,
+                    $prezzoCodiceIvi
+                )
+            );
 
             if ($patch !== []) {
                 $product->set($patch);
@@ -243,7 +259,13 @@ foreach ($rows as $i => $row) {
 
                 $stats['updated']++;
 
-                $priceOnlyPatch = buildProductPricePatch($entityManager, $prezzoListino, $prezzoCodice);
+                $priceOnlyPatch = buildProductPricePatch(
+                    $entityManager,
+                    $prezzoListino,
+                    $prezzoCodice,
+                    $prezzoListinoIvi,
+                    $prezzoCodiceIvi
+                );
                 $stats['updated'] += syncAliasProductsPrices(
                     $entityManager,
                     $product,
@@ -291,23 +313,33 @@ exit($stats['errors'] > 0 ? 1 : 0);
  */
 function buildProductPricePatch(
     \Espo\ORM\EntityManager $entityManager,
-    ?float $prezzoListino,
-    ?float $prezzoCodice
+    ?float $prezzoListinoNetto,
+    ?float $prezzoCodiceNetto,
+    ?float $prezzoListinoIvi = null,
+    ?float $prezzoCodiceIvi = null
 ): array {
     $patch = [];
 
-    if ($prezzoListino !== null) {
+    if ($prezzoListinoNetto !== null) {
         if (defsHasAttribute($entityManager, 'Product', 'listPrice')) {
-            $patch['listPrice'] = $prezzoListino;
+            $patch['listPrice'] = $prezzoListinoNetto;
         }
 
         if (defsHasAttribute($entityManager, 'Product', 'unitPrice')) {
-            $patch['unitPrice'] = $prezzoListino;
+            $patch['unitPrice'] = $prezzoListinoNetto;
         }
     }
 
-    if ($prezzoCodice !== null && defsHasAttribute($entityManager, 'Product', 'prezzoCodice')) {
-        $patch['prezzoCodice'] = $prezzoCodice;
+    if ($prezzoListinoIvi !== null && defsHasAttribute($entityManager, 'Product', 'prezzoListinoIvaInclusa')) {
+        $patch['prezzoListinoIvaInclusa'] = $prezzoListinoIvi;
+    }
+
+    if ($prezzoCodiceNetto !== null && defsHasAttribute($entityManager, 'Product', 'prezzoCodice')) {
+        $patch['prezzoCodice'] = $prezzoCodiceNetto;
+    }
+
+    if ($prezzoCodiceIvi !== null && defsHasAttribute($entityManager, 'Product', 'prezzoCodiceIvaInclusa')) {
+        $patch['prezzoCodiceIvaInclusa'] = $prezzoCodiceIvi;
     }
 
     return $patch;

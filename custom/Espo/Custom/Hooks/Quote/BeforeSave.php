@@ -45,7 +45,7 @@ class BeforeSave extends Base
 
                     $prezzoCodice = $product->get('prezzoCodice');
 
-                    if ($prezzoCodice === null) {
+                    if ($prezzoCodice === null || $prezzoCodice === '') {
                         $prezzoCodice = $product->get('unitPrice');
                     }
 
