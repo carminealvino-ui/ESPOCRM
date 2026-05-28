@@ -64,58 +64,10 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 return;
             }
 
-            this.injectCreateProductButton();
+            this.injectCreateProductMenuItem();
             setTimeout(function () {
-                this.injectCreateProductButton();
                 this.injectCreateProductMenuItem();
             }.bind(this), 200);
-        },
-
-        injectCreateProductButton: function () {
-            if (this.$el.find('.btn-create-product').length) {
-                return;
-            }
-
-            var $button = $('<button>')
-                .attr('type', 'button')
-                .addClass('btn btn-primary btn-sm btn-create-product')
-                .text('Crea prodotto');
-
-            this.listenToDom($button, 'click', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.openCreateProductModal();
-            }.bind(this));
-
-            var $panel = this.$el.closest('.panel, .bottom-panel');
-
-            if (!$panel.length) {
-                var $bar = $('<div class="mec-crea-prodotto-toolbar" style="margin-bottom:10px;"></div>');
-                $bar.append($button);
-                this.$el.prepend($bar);
-
-                return;
-            }
-
-            var $toolbar = $panel.children('.mec-crea-prodotto-toolbar').first();
-
-            if (!$toolbar.length) {
-                $toolbar = $('<div class="mec-crea-prodotto-toolbar" style="margin:0 0 12px 0;clear:both;"></div>');
-                var $heading = $panel.children('.panel-heading, .panel-header').first();
-
-                if ($heading.length) {
-                    $heading.after($toolbar);
-                } else {
-                    var $body = $panel.children('.panel-body').first();
-                    if ($body.length) {
-                        $body.prepend($toolbar);
-                    } else {
-                        $panel.prepend($toolbar);
-                    }
-                }
-            }
-
-            $toolbar.empty().append($button);
         },
 
         injectCreateProductMenuItem: function () {
