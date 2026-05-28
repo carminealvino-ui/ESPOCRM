@@ -10,6 +10,9 @@
 # Solo anteprima (non scrive file):
 #   DRY_RUN=1 bash /tmp/deploy-layout-minus-plus.sh
 #
+# Sovrascrive anche Opportunity/detail.json dal repo (senza patch jq):
+#   FULL_OPP_LAYOUT=1 bash /tmp/deploy-layout-minus-plus.sh
+#
 # Da repo locale:
 #   CRM_ROOT=~/public_html/crm/mec-group bash tools/deploy-layout-minus-plus.sh
 # =============================================================================
@@ -17,6 +20,7 @@ set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 DRY_RUN="${DRY_RUN:-0}"
+FULL_OPP_LAYOUT="${FULL_OPP_LAYOUT:-0}"
 BRANCH="${BRANCH:-cursor/provvigioni-manuali-fase-a-9999}"
 REPO_RAW="${REPO_RAW:-https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}}"
 
@@ -38,7 +42,7 @@ write_file() {
   local dest="$1"
   local src="$2"
   if [[ "${DRY_RUN}" == "1" ]]; then
-    log "DRY_RUN: scriverei ${dest} (${#src} byte da ${src})"
+    log "DRY_RUN: scriverei ${dest} ← ${src}"
     return 0
   fi
   mkdir -p "$(dirname "${dest}")"
@@ -67,43 +71,57 @@ fetch_or_local() {
   log "OK scaricato ${rel}"
 }
 
-patch_opportunity_minus_plus() {
-  need_cmd jq
+# jq: le righe layout possono contenere "false" al posto di celle vuote
+JQ_PATCH_OPP='
+  map(
+    if (.customLabel // .label // "" | test("Formulazione Opportunit")) then
+      .rows |= (
+        if ([.[] | .[]? | select(type == "object") | .name] | index("minusPlus")) != null then .
+        else . + [[
+          {"name": "importoOpportunit", "customLabel": "Importo venduto (IVA incl. B2C)"},
+          {"name": "minusPlus", "customLabel": "Minus / Plus (minusbonus €)"},
+          false
+        ]]
+        end
+      )
+    else .
+    end
+  )
+'
 
+patch_opportunity_minus_plus() {
   if [[ ! -f "${OPP_DETAIL}" ]]; then
-    log "ATTENZIONE: ${OPP_DETAIL} assente; salto patch Opportunity."
+    log "Opportunity/detail.json assente → download completo da repo"
+    fetch_or_local "custom/Espo/Custom/Resources/layouts/Opportunity/detail.json" "${OPP_DETAIL}"
     return 0
   fi
 
+  if [[ "${FULL_OPP_LAYOUT}" == "1" ]]; then
+    log "FULL_OPP_LAYOUT=1 → sovrascrivo Opportunity/detail.json"
+    fetch_or_local "custom/Espo/Custom/Resources/layouts/Opportunity/detail.json" "${OPP_DETAIL}"
+    return 0
+  fi
+
+  need_cmd jq
+
   local tmp
   tmp="$(mktemp)"
+  trap 'rm -f "${tmp}"' EXIT
 
-  # Pannello "Formulazione Opportunità": aggiunge importo + minusPlus se mancanti
-  jq '
-    map(
-      if .customLabel == "Formulazione Opportunità" or .label == "Formulazione Opportunità" then
-        .rows |= (
-          if any(.[]; .name == "minusPlus") then .
-          else . + [[
-            {"name": "importoOpportunit", "customLabel": "Importo venduto (IVA incl. B2C)"},
-            {"name": "minusPlus", "customLabel": "Minus / Plus (minusbonus €)"},
-            false
-          ]]
-          end
-        )
-      else .
-      end
-    )
-  ' "${OPP_DETAIL}" > "${tmp}"
+  if ! jq -e "${JQ_PATCH_OPP}" "${OPP_DETAIL}" > "${tmp}" 2>/dev/null; then
+    log "ATTENZIONE: patch jq fallita; scarico layout Opportunity completo da repo"
+    fetch_or_local "custom/Espo/Custom/Resources/layouts/Opportunity/detail.json" "${OPP_DETAIL}"
+    return 0
+  fi
 
   if [[ "${DRY_RUN}" == "1" ]]; then
-    log "DRY_RUN: patch Opportunity minusPlus (anteprima prime righe aggiunte):"
-    jq '.[] | select(.customLabel=="Formulazione Opportunità") | .rows[-2:]' "${tmp}" 2>/dev/null || true
-    rm -f "${tmp}"
+    log "DRY_RUN: patch Opportunity OK (minusPlus presente o aggiunto)"
+    jq '.[] | select(.customLabel // "" | test("Formulazione Opportunit")) | .rows[] | [.[]? | select(type=="object") | .name] | select(index("minusPlus"))' "${tmp}" 2>/dev/null || true
     return 0
   fi
 
   mv "${tmp}" "${OPP_DETAIL}"
+  trap - EXIT
   log "OK patch Opportunity: importoOpportunit + minusPlus"
 }
 
@@ -125,21 +143,12 @@ rebuild_crm() {
 main() {
   log "CRM_ROOT=${CRM_ROOT} BRANCH=${BRANCH}"
 
-  # Contratto (Quote): pannello completo Provvigioni con minusPlus
   fetch_or_local "custom/Espo/Custom/Resources/layouts/Quote/detail.json" "${QUOTE_DETAIL}"
-
-  # Opportunità: patch jq sul layout esistente (non sovrascrive tutto il file)
-  if [[ -f "${OPP_DETAIL}" ]]; then
-    patch_opportunity_minus_plus
-  else
-    fetch_or_local "custom/Espo/Custom/Resources/layouts/Opportunity/detail.json" "${OPP_DETAIL}"
-    patch_opportunity_minus_plus
-  fi
-
+  patch_opportunity_minus_plus
   rebuild_crm
 
-  log "Fatto. Apri un Contratto: pannello «Provvigioni (calcolo)» → Minus / Plus venduto."
-  log "Il valore si calcola al Salva (non editabile); serve importo + prezzo codice da prodotto/listino."
+  log "Fatto. Contratto → pannello «Provvigioni (calcolo)» → Minus / Plus venduto."
+  log "Opportunità → pannello «Formulazione Opportunità» → Importo venduto + Minus/Plus."
 }
 
 main "$@"
