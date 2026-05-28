@@ -16,7 +16,7 @@
 # =============================================================================
 set -euo pipefail
 
-SCRIPT_VERSION="2026-05-27-csv-github-v2"
+SCRIPT_VERSION="2026-05-27-csv-github-v3"
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 BRANCH="${GITHUB_BRANCH:-cursor/opportunity-globallogic-9999}"

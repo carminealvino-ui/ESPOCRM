@@ -151,6 +151,23 @@ foreach ($rows as $i => $row) {
         continue;
     }
 
+    $skipReason = shouldSkipImportRow($row, $identity);
+
+    if ($skipReason !== null) {
+        fwrite(STDOUT, "[riga {$line}] SKIP: {$skipReason}\n");
+        $stats['skipped']++;
+
+        continue;
+    }
+
+    $filterCategoria = getenv('FILTER_CATEGORIA') ?: '';
+
+    if ($filterCategoria !== '' && stripos((string) ($row['categoria'] ?? ''), $filterCategoria) === false) {
+        $stats['skipped']++;
+
+        continue;
+    }
+
     $label = $identity['denominazione'] !== '' ? $identity['denominazione'] : $identity['name'];
 
     try {
@@ -218,18 +235,25 @@ foreach ($rows as $i => $row) {
         }
 
         if ($prezzoPerProductPrice !== null && metadataHasEntity($entityManager, 'ProductPrice')) {
-            $ppResult = upsertProductPrice(
-                $entityManager,
-                $product,
-                $priceBook,
-                $prezzoPerProductPrice,
-                $dateStart,
-                $dryRun
-            );
+            $productId = $product->getId();
 
-            if ($ppResult) {
+            if ($dryRun && !$productId) {
                 $stats['prices']++;
-                fwrite(STDOUT, "[{$label}] product_price (listino): {$ppResult}\n");
+                fwrite(STDOUT, "[{$label}] product_price (listino): dry-run: {$prezzoPerProductPrice} EUR dal {$dateStart} (con creazione prodotto)\n");
+            } else {
+                $ppResult = upsertProductPrice(
+                    $entityManager,
+                    $product,
+                    $priceBook,
+                    $prezzoPerProductPrice,
+                    $dateStart,
+                    $dryRun
+                );
+
+                if ($ppResult) {
+                    $stats['prices']++;
+                    fwrite(STDOUT, "[{$label}] product_price (listino): {$ppResult}\n");
+                }
             }
         }
     } catch (Throwable $e) {
@@ -609,6 +633,27 @@ function buildIdentityPatch(
     return $patch;
 }
 
+/**
+ * Esclude righe CSV generate male dal PDF (testi legali, nomi troppo lunghi).
+ */
+function shouldSkipImportRow(array $row, array $identity): ?string
+{
+    $denom = $identity['denominazione'] ?? '';
+
+    if (strlen($denom) > 95) {
+        return 'denominazione troppo lunga (probabile testo PDF)';
+    }
+
+    if (preg_match(
+        '/CONDIZIONI DI VENDITA|PER LEGGE LA NUOVA|SPECIFICHE PROMO|MESSAGGIO PROMO:|INSTALLAZIONE PRODOTTI A PELLET\s+1\s+CURVA|10%\s+INCLUSA/i',
+        $denom
+    )) {
+        return 'testo informativo PDF, non prodotto';
+    }
+
+    return null;
+}
+
 function upsertProductPrice(
     $entityManager,
     \Espo\ORM\Entity $product,
@@ -617,10 +662,20 @@ function upsertProductPrice(
     string $dateStart,
     bool $dryRun
 ): ?string {
+    $productId = $product->getId();
+
+    if (!$productId) {
+        if ($dryRun) {
+            return "dry-run: nuovo prezzo {$price} dal {$dateStart}";
+        }
+
+        throw new RuntimeException('Entity ID is not set.');
+    }
+
     $existing = $entityManager
         ->getRDBRepository('ProductPrice')
         ->where([
-            'productId' => $product->getId(),
+            'productId' => $productId,
             'priceBookId' => $priceBook->getId(),
             'status' => 'Active',
         ])

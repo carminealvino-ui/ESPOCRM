@@ -53,6 +53,8 @@ for ($i = 0; $i < $n; $i++) {
 
     // --- Caldaie + Falcon (Prezzo Retail) ---
     if ($ctx['caldaia'] !== ''
+        && $ctx['biomassa'] === ''
+        && stripos($ctx['listino'], 'CALDAIE + Clima') !== false
         && preg_match('/^(00\.\d{2}\.\d{2}\.\d)\s+(\d+\s*kW|\d+-\d+\s*LT)\s+[\d.,\s€]+\s+[\d.,\s€]+\s+([\d.]+,\d{2})\s*€/iu', $line, $m)
     ) {
         $rows[] = makeRow(
@@ -86,12 +88,21 @@ for ($i = 0; $i < $n; $i++) {
     }
 
     // --- Biomassa righe codice ---
-    if ($ctx['biomassa'] !== '' && preg_match('/^(00\.\d{2}\.\d{2}\.\d)\s+(.+?)\s+([\d.]+,\d{2})\s*€/u', $line, $m)) {
+    if ($ctx['biomassa'] !== ''
+        && stripos($ctx['listino'], 'BIOMASSA') !== false
+        && preg_match('/^(00\.\d{2}\.\d{2}\.\d)\s+(.+?)\s+([\d.]+,\d{2})\s*€/u', $line, $m)
+    ) {
         $potenza = rtrim(trim($m[2]), '*');
+        $label = $ctx['biomassa'];
+
+        if (stripos($label, 'CALDAIA PELLET') !== false) {
+            $label = 'CALDAIA PELLET BOILER 2S';
+        }
+
         $rows[] = makeRow(
             $brand,
             'BIOMASSA',
-            $ctx['biomassa'] . ' ' . $potenza,
+            $label . ' ' . $potenza,
             $m[1],
             parseEuro($m[3]),
             null,
@@ -182,10 +193,22 @@ function updateContext(array &$ctx, string $line): void
     } elseif (preg_match('/Listino ACCESSORI.*BIOMASSA/i', $line)) {
         $ctx['accessori'] = 'BIOMASSA';
         $ctx['acc_titolo'] = '';
-    } else    if (preg_match('/^Listino CLIMA|^Listino CLIMATIZZAZIONE/i', $line)) {
+    } elseif (preg_match('/^Listino CLIMA|^Listino CLIMATIZZAZIONE/i', $line)) {
         $ctx['accessori'] = '';
         $ctx['caldaia'] = '';
         $ctx['biomassa'] = '';
+    }
+
+    if (preg_match('/Listino BIOMASSA/i', $line)) {
+        $ctx['listino'] = 'BIOMASSA';
+        $ctx['biomassa'] = '';
+        $ctx['caldaia'] = '';
+        $ctx['accessori'] = '';
+    }
+
+    if (preg_match('/CONDIZIONI DI VENDITA/i', $line)) {
+        $ctx['accessori'] = '';
+        $ctx['acc_titolo'] = '';
     }
 
     if ($ctx['accessori'] !== '' && preg_match('/^Descrizione\s+Prezzo$/i', str_replace('  ', ' ', $line))) {
@@ -423,7 +446,11 @@ function parseAccessorioLine(string $line, array &$ctx): ?array
     $denom = strtoupper($titolo . $desc);
     $denom = preg_replace('/\s+/u', ' ', $denom) ?? $denom;
 
-    if (strlen($denom) < 12 || preg_match('/^(VIGENTE|PREZZO PER)/i', $denom)) {
+    if (strlen($denom) < 12 || strlen($denom) > 95 || preg_match('/^(VIGENTE|PREZZO PER)/i', $denom)) {
+        return null;
+    }
+
+    if (preg_match('/CONDIZIONI DI VENDITA|PER LEGGE LA NUOVA|SPECIFICHE PROMO/i', $denom)) {
         return null;
     }
 
