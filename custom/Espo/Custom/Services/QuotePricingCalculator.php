@@ -22,9 +22,7 @@ class QuotePricingCalculator
     public function syncOnBeforeSave(Entity $quote): void
     {
         $this->ensureImportoContrattoOnQuote($quote);
-        $this->syncItemListPrezzoCodice($quote);
-        $this->syncItemListListinoFromProducts($quote);
-        $this->syncItemListAmountFromImportoContratto($quote);
+        $this->syncItemListLinePricingFromImportoContratto($quote);
         $this->syncTotalsAndDerivedFields($quote, true);
     }
 
@@ -78,7 +76,14 @@ class QuotePricingCalculator
         }
     }
 
-    private function syncItemListAmountFromImportoContratto(Entity $quote): void
+    /**
+     * Regole contratto IVA inclusa:
+     * - listino riga = listino catalogo IVI (es. 5200)
+     * - prezzo codice riga = codice IVI (es. 4200)
+     * - prezzo unitario/importo riga = importoContratto ripartito in proporzione al listino
+     * - importoContratto = grandTotalAmount (es. 4500 IVI)
+     */
+    private function syncItemListLinePricingFromImportoContratto(Entity $quote): void
     {
         $importo = $this->resolveImportoContrattoForQuote($quote);
 
@@ -95,7 +100,10 @@ class QuotePricingCalculator
         $aliquota = $this->resolveAliquotaIva($quote);
         $taxInclusive = $this->isQuotePricesTaxInclusive($quote);
         $split = $this->splitImportoContratto($importo, $aliquota, $taxInclusive);
-        $changed = false;
+        $importoPerRighe = $taxInclusive ? $split['gross'] : $split['net'];
+
+        $weights = [];
+        $lineIndices = [];
 
         foreach ($itemList as $index => $item) {
             $qty = (float) ($this->itemValue($item, 'quantity') ?? 1);
@@ -104,34 +112,89 @@ class QuotePricingCalculator
                 $qty = 1.0;
             }
 
-            $lineNet = round($split['net'] / $qty, 2);
-            $lineTax = round($split['tax'] / $qty, 2);
-            $lineGross = round($split['gross'] / $qty, 2);
+            $productId = $this->itemValue($item, 'productId');
+            $product = $productId
+                ? $this->entityManager->getEntityById('Product', $productId)
+                : null;
 
-            if ($taxInclusive) {
-                $itemList[$index] = $this->itemSet($item, 'unitPrice', $lineGross);
-                $itemList[$index] = $this->itemSet($itemList[$index], 'amount', $lineGross);
-                $itemList[$index] = $this->itemSet($itemList[$index], 'taxAmount', $lineTax);
-            } else {
-                $itemList[$index] = $this->itemSet($item, 'unitPrice', $lineNet);
-                $itemList[$index] = $this->itemSet($itemList[$index], 'amount', $lineNet);
-                $itemList[$index] = $this->itemSet($itemList[$index], 'taxAmount', $lineTax);
-                $itemList[$index] = $this->itemSet($itemList[$index], 'listPrice', $lineNet);
+            $listForWeight = null;
+            $listCatalog = null;
+            $codiceLine = null;
+
+            if ($product) {
+                if ($taxInclusive) {
+                    $listCatalog = $this->resolveProductListinoIvaInclusa($product, $aliquota);
+                    $codiceLine = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota);
+                } else {
+                    $listCatalog = $this->floatOrNull($product->get('listPrice'));
+                    $codiceLine = $this->resolveProductPrezzoCodiceNet($product, $aliquota);
+                }
             }
 
-            $changed = true;
+            if ($listCatalog !== null && $listCatalog > 0) {
+                $item = $this->itemSet($item, 'listPrice', $listCatalog);
+            }
+
+            if ($codiceLine !== null && $codiceLine > 0) {
+                $item = $this->itemSet($item, 'prezzoCodice', $codiceLine);
+            }
+
+            $listForWeight = $this->floatOrNull($this->itemValue($item, 'listPrice')) ?? $listCatalog ?? 0.0;
+            $weights[$index] = max(0.0, $listForWeight * $qty);
+            $lineIndices[] = $index;
+            $itemList[$index] = $item;
         }
 
-        if ($changed) {
-            $quote->set('itemList', $itemList);
+        $totalWeight = array_sum($weights);
+        $allocated = 0.0;
+        $lastIndex = $lineIndices[array_key_last($lineIndices)] ?? null;
+
+        foreach ($lineIndices as $pos => $index) {
+            $item = $itemList[$index];
+            $qty = (float) ($this->itemValue($item, 'quantity') ?? 1);
+
+            if ($qty <= 0) {
+                $qty = 1.0;
+            }
+
+            if ($totalWeight > 0) {
+                if ($index === $lastIndex) {
+                    $lineTotal = round($importoPerRighe - $allocated, 2);
+                } else {
+                    $lineTotal = round($importoPerRighe * ($weights[$index] / $totalWeight), 2);
+                    $allocated += $lineTotal;
+                }
+            } else {
+                $lineTotal = round($importoPerRighe / count($lineIndices), 2);
+            }
+
+            $unitPrice = round($lineTotal / $qty, 2);
+
+            if ($taxInclusive) {
+                $lineNet = round($lineTotal / (1 + $aliquota / 100), 2);
+                $lineTax = round($lineTotal - $lineNet, 2);
+                $itemList[$index] = $this->itemSet($item, 'unitPrice', $unitPrice);
+                $itemList[$index] = $this->itemSet($itemList[$index], 'amount', $lineTotal);
+                $itemList[$index] = $this->itemSet($itemList[$index], 'taxAmount', $lineTax);
+            } else {
+                $lineTax = round($lineTotal * $aliquota / 100, 2);
+                $itemList[$index] = $this->itemSet($item, 'unitPrice', $unitPrice);
+                $itemList[$index] = $this->itemSet($itemList[$index], 'amount', $lineTotal);
+                $itemList[$index] = $this->itemSet($itemList[$index], 'taxAmount', $lineTax);
+
+                if ($this->floatOrNull($this->itemValue($itemList[$index], 'listPrice')) === null) {
+                    $itemList[$index] = $this->itemSet($itemList[$index], 'listPrice', $unitPrice);
+                }
+            }
         }
 
+        $quote->set('itemList', $itemList);
         $quote->set([
             'amount' => $split['net'],
             'taxAmount' => $split['tax'],
             'grandTotalAmount' => $split['gross'],
+            'importoContratto' => $split['gross'],
             'aliquotaIVA' => $aliquota,
-            'importoContratto' => $importo,
         ]);
 
         if ($this->floatOrNull($quote->get('taxRate')) === null && $aliquota > 0) {
@@ -560,55 +623,6 @@ class QuotePricingCalculator
         }
 
         return (bool) $entity->get('isTaxInclusive') || $this->isB2cContract($entity);
-    }
-
-    private function syncItemListListinoFromProducts(Entity $quote): void
-    {
-        if (!$this->isQuotePricesTaxInclusive($quote)) {
-            return;
-        }
-
-        $itemList = $quote->get('itemList');
-
-        if (!is_array($itemList) || $itemList === []) {
-            return;
-        }
-
-        $aliquota = $this->resolveAliquotaIva($quote);
-        $changed = false;
-
-        foreach ($itemList as $index => $item) {
-            $productId = $this->itemValue($item, 'productId');
-
-            if (!$productId) {
-                continue;
-            }
-
-            $product = $this->entityManager->getEntityById('Product', $productId);
-
-            if (!$product) {
-                continue;
-            }
-
-            $listIvi = $this->resolveProductListinoIvaInclusa($product, $aliquota);
-
-            if ($listIvi === null || $listIvi <= 0) {
-                continue;
-            }
-
-            $lineList = $this->floatOrNull($this->itemValue($item, 'listPrice'));
-
-            if ($lineList !== null && abs($lineList - $listIvi) < 0.02) {
-                continue;
-            }
-
-            $itemList[$index] = $this->itemSet($item, 'listPrice', $listIvi);
-            $changed = true;
-        }
-
-        if ($changed) {
-            $quote->set('itemList', $itemList);
-        }
     }
 
     public function resolveProductListinoIvaInclusa(Entity $product, float $aliquotaPercent): ?float

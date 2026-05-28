@@ -14,8 +14,7 @@ cd "${CRM_ROOT}" || exit 1
 
 FILES=(
   "custom/Espo/Custom/Services/QuotePricingCalculator.php"
-  "custom/Espo/Custom/Hooks/Quote/SyncMinusPlus.php"
-  "custom/Espo/Custom/Hooks/Quote/AfterSaveSyncContractTotals.php"
+  "custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php"
   "tools/fix-contratto-importo-minusplus-standalone.php"
 )
 
