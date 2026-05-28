@@ -114,6 +114,16 @@
             ],
             [
                 {
+                    "name": "totalPrezzoCodice",
+                    "customLabel": "Prezzo codice totale (da articoli)"
+                },
+                {
+                    "name": "minusPlus",
+                    "customLabel": "Minus / Plus (plusvalenza €)"
+                }
+            ],
+            [
+                {
                     "name": "margineSuListino",
                     "customLabel": "Margine % su listino"
                 },
@@ -130,13 +140,10 @@
             ],
             [
                 {
-                    "name": "minusPlus",
-                    "customLabel": "Plusvalenza / Minusvalenza (€)"
-                },
-                {
                     "name": "ordineIncompletoAriel",
                     "customLabel": "Ordine incompleto Ariel (−5% provv.)"
-                }
+                },
+                false
             ],
             [
                 {

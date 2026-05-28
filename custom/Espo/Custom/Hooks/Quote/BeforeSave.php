@@ -71,7 +71,26 @@ class BeforeSave extends Base
         }
 
         $entity->set('itemList', $itemList);
-        $entity->set('totalPrezzoCodice', $totalePrezzoCodice);
+        $entity->set('totalPrezzoCodice', round($totalePrezzoCodice, 2));
+
+        if ($totalePrezzoCodice > 0) {
+            $entity->set('prezzoCodiceIvaEsclusa', round($totalePrezzoCodice, 2));
+        }
+
+        $imponibile = $this->floatOrNull($entity->get('amount'));
+
+        if ($imponibile !== null && $imponibile > 0 && $totalePrezzoCodice > 0) {
+            $entity->set('minusPlus', round($imponibile - $totalePrezzoCodice, 2));
+        }
+    }
+
+    private function floatOrNull(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (float) $value;
     }
 
     // =========================
