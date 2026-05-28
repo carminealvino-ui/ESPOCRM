@@ -99,18 +99,51 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 this.openCreateProductModal();
             }.bind(this));
 
-            var $panel = this.$el.closest('.panel, .field[data-name="itemList"]');
-            var $heading = $panel.find('.panel-heading').first();
+            var $panel = this.$el.closest('.panel, .bottom-panel, .field[data-name="itemList"]');
+            var $heading = $panel.find('.panel-heading, .panel-header').first();
+
+            if (!$heading.length) {
+                $panel.children().each(function () {
+                    var $child = $(this);
+                    var tag = (this.tagName || '').toLowerCase();
+
+                    if (tag === 'div' && ($child.hasClass('panel-heading') || $child.find('.panel-title').length)) {
+                        $heading = $child;
+                        return false;
+                    }
+                });
+            }
 
             if ($heading.length) {
                 var $slot = $heading.find('.mec-crea-prodotto-slot').first();
 
                 if (!$slot.length) {
-                    $slot = $('<div class="pull-right mec-crea-prodotto-slot" style="margin-top:2px;"></div>');
-                    $heading.append($slot);
+                    $slot = $('<div class="pull-right mec-crea-prodotto-slot" style="margin-left:12px;"></div>');
+                    var $title = $heading.find('.panel-title, .strong').first();
+
+                    if ($title.length) {
+                        $title.after($slot);
+                    } else {
+                        $heading.append($slot);
+                    }
                 }
 
                 $slot.empty().append($button);
+
+                return;
+            }
+
+            var $fieldLabel = this.$el.closest('.field').find('> .field-label, .field-header').first();
+
+            if ($fieldLabel.length) {
+                var $labelSlot = $fieldLabel.find('.mec-crea-prodotto-slot').first();
+
+                if (!$labelSlot.length) {
+                    $labelSlot = $('<span class="mec-crea-prodotto-slot" style="float:right;"></span>');
+                    $fieldLabel.append($labelSlot);
+                }
+
+                $labelSlot.empty().append($button);
 
                 return;
             }
