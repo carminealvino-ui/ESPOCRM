@@ -1,4 +1,4 @@
-// Contratto: lista articoli + pulsante «Crea prodotto» (dettaglio e modifica).
+// Contratto: lista articoli + pulsante «Crea prodotto». Deploy: client/custom/src/views/quote/fields/item-list.js
 define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-list'], function (Dep) {
 
     return Dep.extend({
@@ -85,25 +85,19 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
             }
 
             var $anchorGroup = this.$el.find('.btn-group').first();
-            var $container = $anchorGroup.length ? $anchorGroup.parent() : this.$el;
-
+            var $bar = $('<div class="mec-item-list-toolbar" style="margin-bottom:8px;"></div>');
             var $button = $('<button>')
                 .attr('type', 'button')
                 .addClass('btn btn-primary btn-sm btn-create-product')
-                .css({ marginLeft: '8px', marginBottom: '8px' })
                 .append($('<span>').addClass('fas fa-cube'))
                 .append(document.createTextNode(' Crea prodotto'));
 
-            if ($anchorGroup.length) {
-                $anchorGroup.after($button);
-            } else {
-                var $label = this.$el.find('.field-label').first();
+            $bar.append($button);
 
-                if ($label.length) {
-                    $label.after($button);
-                } else {
-                    $container.prepend($button);
-                }
+            if ($anchorGroup.length) {
+                $anchorGroup.before($bar);
+            } else {
+                this.$el.prepend($bar);
             }
 
             this.listenToDom($button, 'click', function (e) {
@@ -113,10 +107,6 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
         },
 
         injectCreateProductMenuItem: function () {
-            if (this.mode !== 'edit') {
-                return;
-            }
-
             var $menus = this.$el.find('.dropdown-menu:visible');
 
             if (!$menus.length) {
