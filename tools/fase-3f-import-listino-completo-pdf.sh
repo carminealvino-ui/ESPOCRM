@@ -16,6 +16,8 @@
 # =============================================================================
 set -euo pipefail
 
+SCRIPT_VERSION="2026-05-27-csv-github-v2"
+
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 BRANCH="${GITHUB_BRANCH:-cursor/opportunity-globallogic-9999}"
 REPO="${GITHUB_REPOSITORY:-carminealvino-ui/ESPOCRM}"
@@ -32,6 +34,7 @@ cd "${CRM_ROOT}" || exit 1
 
 mkdir -p tools database/data "database/listini"
 
+echo "=== FASE 3f ${SCRIPT_VERSION} — CSV da GitHub (pdftotext NON richiesto) ==="
 echo "=== Scarico script da GitHub (${BRANCH}) ==="
 curl -fsSL "${RAW_BASE}/tools/sync-listino-prodotti.php" -o tools/sync-listino-prodotti.php
 
