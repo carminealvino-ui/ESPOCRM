@@ -1,10 +1,39 @@
-// Contratto: lista articoli + solo pulsante «Crea articolo».
+// Contratto: lista articoli + pulsante «Crea prodotto» (dettaglio e modifica).
 define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-list'], function (Dep) {
 
     return Dep.extend({
 
+        events: {
+            'click .btn-group .dropdown-toggle': function () {
+                setTimeout(function () {
+                    this.injectCreateProductMenuItem();
+                }.bind(this), 0);
+            },
+        },
+
         setup: function () {
             Dep.prototype.setup.call(this);
+
+            this.dropdownItemList = this.dropdownItemList || [];
+
+            if (!this.dropdownItemList.some(function (item) {
+                return item && item.name === 'createProductDirect';
+            })) {
+                var idx = this.dropdownItemList.findIndex(function (item) {
+                    return item && item.name === 'addProducts';
+                });
+
+                var menuItem = {
+                    name: 'createProductDirect',
+                    label: 'Crea prodotto',
+                };
+
+                if (idx >= 0) {
+                    this.dropdownItemList.splice(idx + 1, 0, menuItem);
+                } else {
+                    this.dropdownItemList.unshift(menuItem);
+                }
+            }
 
             var originalCreateView = this.createView.bind(this);
 
@@ -24,51 +53,109 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
             };
         },
 
+        actionCreateProductDirect: function () {
+            this.openCreateProductModal();
+        },
+
         afterRender: function () {
             Dep.prototype.afterRender.call(this);
 
-            if (this.mode !== 'edit') {
+            if (this.mode === 'list' || this.mode === 'listLinked') {
                 return;
             }
 
-            this.injectCreateArticleButton();
+            this.injectCreateProductButton();
             setTimeout(function () {
-                this.injectCreateArticleButton();
+                this.injectCreateProductButton();
+                this.injectCreateProductMenuItem();
             }.bind(this), 200);
 
             if (!this._buttonObserver) {
                 this._buttonObserver = new MutationObserver(function () {
-                    this.injectCreateArticleButton();
+                    this.injectCreateProductButton();
+                    this.injectCreateProductMenuItem();
                 }.bind(this));
                 this._buttonObserver.observe(this.el, { childList: true, subtree: true });
             }
         },
 
-        injectCreateArticleButton: function () {
-            this.$el.find('.btn-create-article').remove();
+        injectCreateProductButton: function () {
+            if (this.$el.find('.btn-create-product').length) {
+                return;
+            }
 
             var $anchorGroup = this.$el.find('.btn-group').first();
             var $container = $anchorGroup.length ? $anchorGroup.parent() : this.$el;
 
             var $button = $('<button>')
                 .attr('type', 'button')
-                .addClass('btn btn-primary btn-sm btn-create-article')
-                .css('margin-left', '8px')
-                .append($('<span>').addClass('fas fa-plus'))
-                .append(document.createTextNode(' Crea articolo'));
+                .addClass('btn btn-primary btn-sm btn-create-product')
+                .css({ marginLeft: '8px', marginBottom: '8px' })
+                .append($('<span>').addClass('fas fa-cube'))
+                .append(document.createTextNode(' Crea prodotto'));
 
             if ($anchorGroup.length) {
                 $anchorGroup.after($button);
             } else {
-                $container.prepend($button);
+                var $label = this.$el.find('.field-label').first();
+
+                if ($label.length) {
+                    $label.after($button);
+                } else {
+                    $container.prepend($button);
+                }
             }
 
-            this.listenToDom($button, 'click', function () {
-                this.openCreateArticleModal();
+            this.listenToDom($button, 'click', function (e) {
+                e.preventDefault();
+                this.openCreateProductModal();
             }.bind(this));
         },
 
-        openCreateArticleModal: function () {
+        injectCreateProductMenuItem: function () {
+            if (this.mode !== 'edit') {
+                return;
+            }
+
+            var $menus = this.$el.find('.dropdown-menu:visible');
+
+            if (!$menus.length) {
+                return;
+            }
+
+            var self = this;
+
+            $menus.each(function (i, menuEl) {
+                var $menu = $(menuEl);
+
+                if ($menu.find('.action[data-action="createProductDirect"]').length) {
+                    return;
+                }
+
+                var $base = $menu.find('.action[data-action="addProducts"]').first().closest('li');
+                var $item = $('<li>');
+                var $link = $('<a>')
+                    .attr('href', 'javascript:')
+                    .addClass('action')
+                    .attr('data-action', 'createProductDirect')
+                    .text('Crea prodotto');
+
+                $item.append($link);
+
+                if ($base.length) {
+                    $base.after($item);
+                } else {
+                    $menu.prepend($item);
+                }
+
+                self.listenToDom($link, 'click', function (e) {
+                    e.preventDefault();
+                    self.openCreateProductModal();
+                });
+            });
+        },
+
+        openCreateProductModal: function () {
             this.createView(
                 'quickCreateProductModal',
                 'views/modals/edit',
@@ -78,7 +165,7 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 },
                 function (view) {
                     this.listenToOnce(view, 'after:save', function () {
-                        Espo.Ui.success('Articolo creato. Aggiungilo con + nella lista articoli.');
+                        Espo.Ui.success('Prodotto creato. Aggiungilo con + nella lista articoli.');
                     }, this);
 
                     view.render();

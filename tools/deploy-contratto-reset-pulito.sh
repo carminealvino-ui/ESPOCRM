@@ -43,4 +43,4 @@ done
 
 php command.php rebuild
 rm -rf data/cache/*
-echo "Fatto. Contratto: articoli standard + pulsante Crea articolo."
+echo "Fatto. Contratto: articoli + pulsante Crea prodotto (anche in visualizzazione)."
