@@ -20,17 +20,27 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
         setup: function () {
             Dep.prototype.setup.call(this);
 
-            this.actionList = this.actionList || [];
+            this.dropdownItemList = this.dropdownItemList || [];
 
-            var hasCreateProductAction = this.actionList.some(function (item) {
+            var hasCreateProductAction = this.dropdownItemList.some(function (item) {
                 return item && item.name === 'createProductDirect';
             });
 
             if (!hasCreateProductAction) {
-                this.actionList.unshift({
+                var addProductsIndex = this.dropdownItemList.findIndex(function (item) {
+                    return item && item.name === 'addProducts';
+                });
+
+                var menuItem = {
                     name: 'createProductDirect',
                     label: 'Crea prodotto',
-                });
+                };
+
+                if (addProductsIndex >= 0) {
+                    this.dropdownItemList.splice(addProductsIndex + 1, 0, menuItem);
+                } else {
+                    this.dropdownItemList.unshift(menuItem);
+                }
             }
 
             var originalCreateView = this.createView.bind(this);
