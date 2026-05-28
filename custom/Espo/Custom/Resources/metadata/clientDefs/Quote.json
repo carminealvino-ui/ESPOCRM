@@ -1,37 +1,16 @@
 {
     "controller": "controllers/record",
-    "menu": {
-        "detail": {
-            "buttons": [
-                "__APPEND__",
-                {
-                    "label": "Crea prodotto",
-                    "name": "creaProdotto",
-                    "style": "primary",
-                    "iconClass": "fas fa-cube",
-                    "handler": "custom:action-handlers/quote/crea-prodotto",
-                    "actionFunction": "creaProdotto",
-                    "acl": "create",
-                    "aclScope": "Product",
-                    "index": 5
-                }
-            ]
-        },
-        "edit": {
-            "buttons": [
-                "__APPEND__",
-                {
-                    "label": "Crea prodotto",
-                    "name": "creaProdotto",
-                    "style": "primary",
-                    "iconClass": "fas fa-cube",
-                    "handler": "custom:action-handlers/quote/crea-prodotto",
-                    "actionFunction": "creaProdotto",
-                    "acl": "create",
-                    "aclScope": "Product",
-                    "index": 5
-                }
-            ]
+    "buttonList": [
+        "__APPEND__",
+        {
+            "label": "Crea prodotto",
+            "name": "creaProdotto",
+            "style": "primary",
+            "iconClass": "fas fa-cube",
+            "handler": "custom:action-handlers/quote/crea-prodotto",
+            "actionFunction": "creaProdotto",
+            "acl": "create",
+            "aclScope": "Product"
         }
-    }
+    ]
 }

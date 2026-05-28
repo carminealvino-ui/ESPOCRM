@@ -25,6 +25,10 @@ fetch "client/custom/src/action-handlers/quote/crea-prodotto.js"
 fetch "client/custom/src/views/quote/fields/item-list.js"
 fetch "client/custom/src/views/modals/select-product-for-quote.js"
 
+mkdir -p "${CRM_ROOT}/tools"
+curl -fsSL "${BASE}/tools/dedupe-quote-crea-prodotto.php?t=$(date +%s)" -o "${CRM_ROOT}/tools/dedupe-quote-crea-prodotto.php"
+CRM_ROOT="${CRM_ROOT}" php "${CRM_ROOT}/tools/dedupe-quote-crea-prodotto.php"
+
 # Rimuovi script DOM legacy (causava doppio pulsante in testata)
 rm -f "${CRM_ROOT}/${LEGACY_SCRIPT}"
 if [[ -f "${CLIENT_JSON}" ]]; then

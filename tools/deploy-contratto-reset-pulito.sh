@@ -24,9 +24,8 @@ echo "=== Reset contratto pulito ==="
 
 fetch "custom/Espo/Custom/Resources/layouts/Quote/detail.json"
 fetch "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
-fetch "custom/Espo/Custom/Resources/metadata/app/client.json"
-fetch "custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js"
-fetch "custom/Espo/Custom/Resources/client/custom/src/custom-product-button.js"
+fetch "client/custom/src/views/quote/fields/item-list.js"
+rm -f "${CRM_ROOT}/client/custom/src/custom-product-button.js"
 
 HOOKS=(
   "custom/Espo/Custom/Hooks/Quote/SyncMinusPlus.php"
