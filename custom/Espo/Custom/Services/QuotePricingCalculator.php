@@ -8,8 +8,8 @@ use Espo\ORM\EntityManager;
 /**
  * Contratto / Opportunity: prezzo codice da prodotto, Minus/Plus GDL (B2C).
  *
- * COMBO 9+9: codice 4.000 netto, importo venduto 4.500 IVI → imponibile 4.090,91 → minusPlus ≈ 91.
- * GDL: minusPlus = imponibile netto − prezzo codice IVA escl. (non lordo − codice IVI).
+ * COMBO 9+9: codice 4.200 IVI → netto 3.818,18; importo 4.500 IVI → imponibile 4.090,91 → minusPlus ≈ 272,73.
+ * GDL: minusPlus = imponibile netto − prezzo codice netto (IVA escl.), mai lordo − codice IVI.
  */
 class QuotePricingCalculator
 {
@@ -495,12 +495,6 @@ class QuotePricingCalculator
         float $aliquotaPercent,
         ?Entity $productPrice = null
     ): ?float {
-        $net = $this->floatOrNull($product->get('prezzoCodice'));
-
-        if ($net !== null && $net > 0) {
-            return $net;
-        }
-
         if ($productPrice) {
             $fromPrice = $this->resolvePrezzoCodiceNetFromProductPrice($productPrice, $aliquotaPercent);
 
@@ -513,6 +507,12 @@ class QuotePricingCalculator
 
         if ($ivi !== null && $ivi > 0) {
             return round($ivi / (1 + $aliquotaPercent / 100), 2);
+        }
+
+        $net = $this->floatOrNull($product->get('prezzoCodice'));
+
+        if ($net !== null && $net > 0) {
+            return $net;
         }
 
         return null;
@@ -628,10 +628,11 @@ class QuotePricingCalculator
     }
 
     /**
-     * GDL: Minus/Plus usa prezzo codice netto (es. 4.000), non 4.200 IVI né 4.200/1,1.
+     * Prezzo codice netto per Minus/Plus (es. 4.200 IVI → 3.818,18).
      */
     public function resolvePrezzoCodiceNetForMinusPlus(Entity $entity, ?Entity $opportunity = null): ?float
     {
+        $aliquota = $this->resolveAliquotaIva($entity);
         $fromProducts = $this->sumPrezzoCodiceNetFromProductsOnItems($entity);
 
         if ($fromProducts > 0) {
@@ -644,7 +645,11 @@ class QuotePricingCalculator
             ?? $this->floatOrNull($opportunity?->get('prezzoCodiceIvaInclusa'));
 
         if ($net !== null && $net > 0 && $ivi !== null && $ivi > 0 && abs($net - $ivi) < 0.02) {
-            return null;
+            return round($ivi / (1 + $aliquota / 100), 2);
+        }
+
+        if (($net === null || $net <= 0) && $ivi !== null && $ivi > 0) {
+            return round($ivi / (1 + $aliquota / 100), 2);
         }
 
         return $net;
@@ -689,13 +694,17 @@ class QuotePricingCalculator
 
             $codiceNet = $prezzoCodiceIvaEsclusa;
 
+            if (($codiceNet === null || $codiceNet <= 0) && $prezzoCodiceIvaInclusa !== null && $prezzoCodiceIvaInclusa > 0) {
+                $codiceNet = round($prezzoCodiceIvaInclusa / (1 + $aliquotaPercent / 100), 2);
+            }
+
             if ($codiceNet === null || $codiceNet <= 0) {
                 return null;
             }
 
             if ($prezzoCodiceIvaInclusa !== null && $prezzoCodiceIvaInclusa > 0
                 && abs($codiceNet - $prezzoCodiceIvaInclusa) < 0.02) {
-                return null;
+                $codiceNet = round($prezzoCodiceIvaInclusa / (1 + $aliquotaPercent / 100), 2);
             }
 
             return round($imponibileNet - $codiceNet, 2);
@@ -936,12 +945,12 @@ class QuotePricingCalculator
         );
         $bookTaxInclusive = $priceBook && (bool) $priceBook->get('isTaxInclusive');
 
-        if ($net !== null && $net > 0) {
-            return round($net, 2);
-        }
-
         if ($ivi !== null && $ivi > 0) {
             return round($ivi / (1 + $aliquotaPercent / 100), 2);
+        }
+
+        if ($net !== null && $net > 0) {
+            return round($net, 2);
         }
 
         return null;

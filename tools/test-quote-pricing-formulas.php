@@ -15,15 +15,16 @@ $line2Gross = round($importoIvi - $line1Gross, 2);
 $line1Net = round($line1Gross / (1 + $aliquota / 100), 2);
 $line2Net = round($line2Gross / (1 + $aliquota / 100), 2);
 $imponibile = round($importoIvi / (1 + $aliquota / 100), 2);
-$codiceNet = 4000.0;
+$codiceNet = round(4200.0 / (1 + $aliquota / 100), 2);
 $minusPlus = round($imponibile - $codiceNet, 2);
 
 $ok = abs($line1Gross + $line2Gross - $importoIvi) < 0.02
     && abs($line1Net + $line2Net - $imponibile) < 0.02
-    && abs($minusPlus - 90.91) < 0.02;
+    && abs($codiceNet - 3818.18) < 0.02
+    && abs($minusPlus - 272.73) < 0.02;
 
 fwrite(STDOUT, "Riga1 IVI {$line1Gross} net {$line1Net}\n");
 fwrite(STDOUT, "Riga2 IVI {$line2Gross} net {$line2Net}\n");
-fwrite(STDOUT, "Imponibile {$imponibile} − codice net {$codiceNet} = {$minusPlus} (≈91) → " . ($ok ? 'OK' : 'FAIL') . PHP_EOL);
+fwrite(STDOUT, "Imponibile {$imponibile} − codice net {$codiceNet} = {$minusPlus} (≈272,73) → " . ($ok ? 'OK' : 'FAIL') . PHP_EOL);
 
 exit($ok ? 0 : 1);
