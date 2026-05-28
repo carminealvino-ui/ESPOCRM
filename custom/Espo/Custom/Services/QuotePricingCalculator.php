@@ -9,8 +9,8 @@ use Espo\ORM\EntityManager;
  * Passaggio 1 contratto: totali prezzo codice, minus/plus (plusvalenza), margine % su listino.
  *
  * Regola: minusPlus = imponibile IVA esclusa − prezzo codice totale IVA esclusa.
- * L'imponibile è {@see importoContratto} (IVA escl.) quando valorizzato — non la somma
- * automatica delle righe articolo (es. listino 5200 IVI → 4727,27).
+ * B2C: {@see importoContratto} è sempre IVA inclusa → si scorpora per amount e minus/plus.
+ * B2B: importoContratto è IVA esclusa.
  */
 class QuotePricingCalculator
 {
@@ -123,24 +123,24 @@ class QuotePricingCalculator
     }
 
     /**
-     * Importo contratto = imponibile negoziato (IVA escl.). Allinea amount, IVA e totale documento.
+     * Allinea amount (netto), IVA e totale da importoContratto.
+     * B2C: importoContratto = lordo IVA inclusa; B2B: importoContratto = imponibile netto.
      */
     private function syncAmountAndTaxFromImportoContratto(Entity $quote): void
     {
-        $net = $this->floatOrNull($quote->get('importoContratto'));
+        $importoContratto = $this->floatOrNull($quote->get('importoContratto'));
 
-        if ($net === null || $net <= 0) {
+        if ($importoContratto === null || $importoContratto <= 0) {
             return;
         }
 
         $aliquota = $this->resolveAliquotaIva($quote);
-        $tax = round($net * $aliquota / 100, 2);
-        $gross = round($net + $tax, 2);
+        $split = $this->splitImportoContratto($importoContratto, $aliquota, $this->isB2cContract($quote));
 
         $quote->set([
-            'amount' => $net,
-            'taxAmount' => $tax,
-            'grandTotalAmount' => $gross,
+            'amount' => $split['net'],
+            'taxAmount' => $split['tax'],
+            'grandTotalAmount' => $split['gross'],
             'aliquotaIVA' => $aliquota,
         ]);
 
@@ -149,12 +149,21 @@ class QuotePricingCalculator
         }
     }
 
-    private function resolveImponibileNetto(Entity $quote): ?float
+    /**
+     * Imponibile netto per minus/plus e provvigioni.
+     */
+    public function resolveImponibileNetto(Entity $quote): ?float
     {
         $importoContratto = $this->floatOrNull($quote->get('importoContratto'));
 
         if ($importoContratto !== null && $importoContratto > 0) {
-            return $importoContratto;
+            $aliquota = $this->resolveAliquotaIva($quote);
+
+            return $this->splitImportoContratto(
+                $importoContratto,
+                $aliquota,
+                $this->isB2cContract($quote)
+            )['net'];
         }
 
         $amount = $this->floatOrNull($quote->get('amount'));
@@ -171,6 +180,57 @@ class QuotePricingCalculator
         }
 
         return null;
+    }
+
+    public function isB2cContract(Entity $quote): bool
+    {
+        $accountId = $quote->get('accountId');
+
+        if (!$accountId) {
+            return true;
+        }
+
+        $account = $this->entityManager->getEntityById('Account', $accountId);
+
+        if (!$account) {
+            return true;
+        }
+
+        if ($account->get('type') === 'B2C') {
+            return true;
+        }
+
+        $segmento = (string) $account->get('segmento');
+
+        if ($segmento === 'B2C' || str_starts_with(strtoupper($segmento), 'B2C')) {
+            return true;
+        }
+
+        if ($account->get('b2B') === false) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return array{net: float, tax: float, gross: float}
+     */
+    public function splitImportoContratto(float $importoContratto, float $aliquotaPercent, bool $taxInclusive): array
+    {
+        if ($taxInclusive) {
+            $net = round($importoContratto / (1 + $aliquotaPercent / 100), 2);
+            $gross = round($importoContratto, 2);
+            $tax = round($gross - $net, 2);
+
+            return ['net' => $net, 'tax' => $tax, 'gross' => $gross];
+        }
+
+        $net = round($importoContratto, 2);
+        $tax = round($net * $aliquotaPercent / 100, 2);
+        $gross = round($net + $tax, 2);
+
+        return ['net' => $net, 'tax' => $tax, 'gross' => $gross];
     }
 
     private function resolveAliquotaIva(Entity $quote): float

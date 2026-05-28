@@ -13,7 +13,8 @@ class ProvvigioneManager
     public function __construct(
         private EntityManager $entityManager,
         private RegolaProvvigionaleCalculator $calculator,
-        private ProvvigioneAccrual $accrual
+        private ProvvigioneAccrual $accrual,
+        private QuotePricingCalculator $quotePricingCalculator
     ) {}
 
     /**
@@ -238,10 +239,14 @@ class ProvvigioneManager
 
     private function resolveImponibileForQuote(Entity $quote, Entity $opportunity): ?float
     {
-        return $this->floatField($quote, 'amount')
-            ?? $this->floatField($quote, 'importoContratto')
-            ?? $this->floatField($opportunity, 'amount')
-            ?? $this->floatField($opportunity, 'importoOpportunit');
+        $fromQuote = $this->quotePricingCalculator->resolveImponibileNetto($quote);
+
+        if ($fromQuote !== null && $fromQuote > 0) {
+            return $fromQuote;
+        }
+
+        return $this->floatField($opportunity, 'importoOpportunit')
+            ?? $this->floatField($opportunity, 'amount');
     }
 
     /**
@@ -717,6 +722,14 @@ class ProvvigioneManager
 
     private function resolveImponibile(Entity $entity): ?float
     {
+        if ($entity->getEntityType() === 'Quote') {
+            $net = $this->quotePricingCalculator->resolveImponibileNetto($entity);
+
+            if ($net !== null && $net > 0) {
+                return $net;
+            }
+        }
+
         return $this->floatField($entity, 'importoContratto')
             ?? $this->floatField($entity, 'amount')
             ?? $this->floatField($entity, 'importoOpportunita')

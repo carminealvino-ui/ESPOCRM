@@ -39,7 +39,7 @@
                 },
                 {
                     "name": "importoContratto",
-                    "customLabel": "Importo contratto (IVA escl.)"
+                    "customLabel": "Importo contratto (IVA incl. se B2C)"
                 }
             ],
             [

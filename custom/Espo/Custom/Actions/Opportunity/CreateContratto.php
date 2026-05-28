@@ -677,7 +677,7 @@ class CreateContratto
                 (bool) $opportunity->get('ordineIncompletoAriel'),
 
             'minusPlus' =>
-                $this->resolveMinusPlusForQuote($opportunity, $amount),
+                $this->resolveMinusPlusForQuote($opportunity, $amount, $accountForQuote),
 
             // =================================================
             // DATA
@@ -1355,7 +1355,7 @@ class CreateContratto
         ]);
     }
 
-    private function resolveMinusPlusForQuote($opportunity, $amount): ?float
+    private function resolveMinusPlusForQuote($opportunity, $amount, $account = null): ?float
     {
         $stored = $opportunity->get('minusPlus');
 
@@ -1369,7 +1369,35 @@ class CreateContratto
             return null;
         }
 
-        return round((float) $amount - (float) $codice, 2);
+        $imponibile = (float) $amount;
+
+        if ($this->isB2cAccount($account)) {
+            $aliquota = 10.0;
+            $iva = $opportunity->get('iVA') ?? $opportunity->get('iVAListino');
+
+            if ($iva !== null && $iva !== '') {
+                $aliquota = (float) $iva;
+            }
+
+            $imponibile = round($imponibile / (1 + $aliquota / 100), 2);
+        }
+
+        return round($imponibile - (float) $codice, 2);
+    }
+
+    private function isB2cAccount($account): bool
+    {
+        if (!$account) {
+            return true;
+        }
+
+        if ($account->get('type') === 'B2C') {
+            return true;
+        }
+
+        $segmento = (string) $account->get('segmento');
+
+        return $segmento === 'B2C' || str_starts_with(strtoupper($segmento), 'B2C');
     }
 
     private function resolveMargineSuListino($opportunity, $amount): ?float
