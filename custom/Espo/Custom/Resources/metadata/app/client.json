@@ -3,6 +3,10 @@
         "__APPEND__",
         "client/custom/src/custom-product-button.js"
     ],
+    "developerModeScriptList": [
+        "__APPEND__",
+        "client/custom/src/custom-product-button.js"
+    ],
     "cssList": [
         "__APPEND__",
         "client/custom/css/custom-ui.css",

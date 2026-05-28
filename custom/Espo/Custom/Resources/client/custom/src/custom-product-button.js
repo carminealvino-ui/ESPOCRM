@@ -51,11 +51,28 @@
         }
 
         var headerActions = document.querySelector(
-            '.header-buttons, .page-header .btn-group, .detail-button-container, .record-header .btn-group'
+            '.header-buttons, .page-header .btn-group, .detail-button-container, ' +
+            '.record-header .btn-group, .page-header .actions-panel, .header-row .btn-group'
         );
 
         if (!headerActions) {
-            var editBtn = document.querySelector('.btn[data-action="edit"], a.btn[data-action="edit"]');
+            var editBtn = document.querySelector(
+                '.btn[data-action="edit"], a.btn[data-action="edit"], ' +
+                'button[data-action="edit"], a.action[data-action="edit"]'
+            );
+
+            if (!editBtn) {
+                var candidates = document.querySelectorAll('.page-header button, .page-header a.btn, .header-row button, .header-row a.btn');
+
+                for (var c = 0; c < candidates.length; c++) {
+                    var label = (candidates[c].textContent || '').trim();
+
+                    if (label === 'Modifica' || label === 'Edit') {
+                        editBtn = candidates[c];
+                        break;
+                    }
+                }
+            }
 
             if (editBtn && editBtn.parentNode) {
                 headerActions = editBtn.parentNode;
