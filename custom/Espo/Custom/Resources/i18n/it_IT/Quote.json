@@ -54,7 +54,9 @@
         "prezzoCodiceIvaEsclusa": "Prezzo a codice (IVA escl.)",
         "contattoPersonaleArquati": "Contatto personale ARQUATI (+5%)",
         "integrazionePncPercentuale": "Integrazione PNC %",
-        "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)"
+        "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)",
+        "modalitaCalcoloProvvigioni": "Modalità calcolo provvigioni",
+        "regoleProvvigionali": "Regole provvigionali"
     },
     "links": {
         "cAP": "CAP",
@@ -76,6 +78,10 @@
         "inventoryStatus": {
             "Available": "Disponibile",
             "Not Available": "Non Disponibile"
+        },
+        "modalitaCalcoloProvvigioni": {
+            "Manuale": "Manuale (selezione regole + pulsante Calcola)",
+            "Automatico": "Automatico (miglior regola matching)"
         }
     }
 }

@@ -30,6 +30,12 @@ class ProvvigioneConsolidata implements AfterSave
             return;
         }
 
+        $modalita = $entity->get('modalitaCalcoloProvvigioni') ?? 'Manuale';
+
+        if ($modalita === 'Manuale') {
+            return;
+        }
+
         $watch = [
             'amount',
             'importoContratto',
@@ -41,6 +47,9 @@ class ProvvigioneConsolidata implements AfterSave
             'prezzoCodiceIvaEsclusa',
             'margineSuListino',
             'contattoPersonaleArquati',
+            'ordineIncompletoAriel',
+            'numeroPod',
+            'modalitaCalcoloProvvigioni',
         ];
 
         $changed = false;

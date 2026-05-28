@@ -114,35 +114,109 @@ class ProvvigioneManager
         return $provvigione;
     }
 
-    public function createConsolidataForQuote(Entity $opportunity, Entity $quote): ?Entity
+    /**
+     * Genera/aggiorna provvigioni consolidate sul contratto.
+     *
+     * @return Entity[] provvigioni consolidate salvate
+     */
+    public function createConsolidataForQuote(Entity $opportunity, Entity $quote): array
+    {
+        $modalita = $quote->get('modalitaCalcoloProvvigioni') ?? 'Manuale';
+
+        if ($modalita === 'Manuale') {
+            return $this->syncConsolidataManuale($opportunity, $quote);
+        }
+
+        return $this->syncConsolidataAutomatica($opportunity, $quote);
+    }
+
+    /**
+     * Fase A: regole scelte manualmente sul contratto → una provvigione per regola.
+     *
+     * @return Entity[]
+     */
+    public function syncConsolidataManuale(Entity $opportunity, Entity $quote): array
+    {
+        $ruleIds = $quote->getLinkMultipleIdList('regoleProvvigionali') ?? [];
+
+        if ($ruleIds === []) {
+            return [];
+        }
+
+        $category = $this->resolveProductCategory($quote, $opportunity);
+        $imponibile = $this->resolveImponibileForQuote($quote, $opportunity);
+        $context = $this->buildContextFromEntities($category, $quote, $imponibile, $opportunity);
+        $context['imponibile'] = $imponibile;
+        $context['plusvalenza'] = $this->floatField($quote, 'minusPlus') ?? $context['plusvalenza'];
+
+        $this->refreshMargineSuListino($quote, $opportunity, $context);
+
+        $this->removeStaleConsolidateForQuote($quote, $ruleIds);
+
+        $saved = [];
+
+        foreach ($ruleIds as $ruleId) {
+            $rule = $this->entityManager->getEntityById('RegolaProvvigionale', $ruleId);
+
+            if (!$rule || !$rule->get('attiva')) {
+                continue;
+            }
+
+            $importo = $this->calculator->calculateRule($rule, $context);
+
+            if ($importo === null || $importo <= 0) {
+                continue;
+            }
+
+            $tipo = (string) ($rule->get('tipoProvvigioneRecord') ?? 'Provvigione Base');
+            $result = ['importo' => $importo, 'regola' => $rule];
+
+            $provvigione = $this->saveConsolidataProvvigione(
+                $opportunity,
+                $quote,
+                $category,
+                $result,
+                $context,
+                $tipo,
+                'MAN-' . $ruleId . '-' . ($quote->get('number') ?? $quote->getId()),
+                $ruleId
+            );
+
+            if ($provvigione) {
+                $saved[] = $provvigione;
+            }
+        }
+
+        $this->updateQuoteTotaleProvvigioni($quote);
+
+        return $saved;
+    }
+
+    /**
+     * Calcolo automatico (regime Ariel dedicato o migliore regola matching).
+     *
+     * @return Entity[]
+     */
+    private function syncConsolidataAutomatica(Entity $opportunity, Entity $quote): array
     {
         $category = $this->resolveProductCategory($quote, $opportunity);
-
-        $imponibile = $this->floatField($quote, 'amount')
-            ?? $this->floatField($quote, 'importoContratto')
-            ?? $this->floatField($opportunity, 'amount')
-            ?? $this->floatField($opportunity, 'importoOpportunit');
-
+        $imponibile = $this->resolveImponibileForQuote($quote, $opportunity);
         $context = $this->buildContextFromEntities($category, $quote, $imponibile, $opportunity);
         $context['imponibile'] = $imponibile;
 
         if ($context['regime'] === 'ARIEL_2026') {
-            return $this->createConsolidataAriel2026($opportunity, $quote, $category, $context, $imponibile);
+            $base = $this->createConsolidataAriel2026($opportunity, $quote, $category, $context, $imponibile);
+            $this->updateQuoteTotaleProvvigioni($quote);
+
+            return $base ? [$base] : [];
         }
 
         if (!$category) {
-            return null;
+            return [];
         }
 
         $context['plusvalenza'] = $this->floatField($quote, 'minusPlus') ?? $context['plusvalenza'];
-
-        if ($context['marginePercentuale'] !== null && !$quote->get('margineSuListino')) {
-            $quote->set('margineSuListino', $context['marginePercentuale']);
-            $this->entityManager->saveEntity($quote, [
-                'skipHooks' => true,
-                'silent' => true,
-            ]);
-        }
+        $this->refreshMargineSuListino($quote, $opportunity, $context);
 
         $result = $this->calculator->calculateBest($context);
 
@@ -157,8 +231,88 @@ class ProvvigioneManager
         );
 
         $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
+        $this->updateQuoteTotaleProvvigioni($quote);
 
-        return $provvigione;
+        return $provvigione ? [$provvigione] : [];
+    }
+
+    private function resolveImponibileForQuote(Entity $quote, Entity $opportunity): ?float
+    {
+        return $this->floatField($quote, 'amount')
+            ?? $this->floatField($quote, 'importoContratto')
+            ?? $this->floatField($opportunity, 'amount')
+            ?? $this->floatField($opportunity, 'importoOpportunit');
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function refreshMargineSuListino(Entity $quote, Entity $opportunity, array $context): void
+    {
+        if ($context['marginePercentuale'] === null || $quote->get('margineSuListino')) {
+            return;
+        }
+
+        $quote->set('margineSuListino', $context['marginePercentuale']);
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+            'silent' => true,
+        ]);
+    }
+
+    /**
+     * @param string[] $activeRuleIds
+     */
+    private function removeStaleConsolidateForQuote(Entity $quote, array $activeRuleIds): void
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where([
+                'contrattoId' => $quote->getId(),
+                'statoProvvigione' => 'Consolidata',
+            ])
+            ->find();
+
+        foreach ($collection as $provvigione) {
+            $stato = $provvigione->get('statoProvvigione');
+
+            if (in_array($stato, ['InInvito', 'Fatturata'], true)) {
+                continue;
+            }
+
+            $ruleId = $provvigione->get('regolaProvvigionaleId');
+
+            if ($ruleId && in_array($ruleId, $activeRuleIds, true)) {
+                continue;
+            }
+
+            $this->entityManager->removeEntity($provvigione);
+        }
+    }
+
+    private function updateQuoteTotaleProvvigioni(Entity $quote): void
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where([
+                'contrattoId' => $quote->getId(),
+                'statoProvvigione' => 'Consolidata',
+            ])
+            ->find();
+
+        $totale = 0.0;
+
+        foreach ($collection as $provvigione) {
+            $totale += (float) ($provvigione->get('importoConsolidato')
+                ?? $provvigione->get('importo')
+                ?? 0);
+        }
+
+        $quote->set('totaleProvvigioni', round($totale, 2));
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+            'silent' => true,
+        ]);
     }
 
     /**
@@ -250,13 +404,28 @@ class ProvvigioneManager
         ?array $result,
         array $context,
         string $tipo,
-        ?string $nameSuffix
+        ?string $nameSuffix,
+        ?string $regolaProvvigionaleId = null
     ): ?Entity {
-        $provvigione = $this->findProvvigione(
-            'Consolidata',
-            contrattoId: $quote->getId(),
-            tipo: $tipo
-        ) ?? $this->entityManager->createEntity('Provvigione');
+        $provvigione = null;
+
+        if ($regolaProvvigionaleId) {
+            $provvigione = $this->findProvvigioneByRule($quote->getId(), $regolaProvvigionaleId);
+        }
+
+        if (!$provvigione) {
+            $provvigione = $this->findProvvigione(
+                'Consolidata',
+                contrattoId: $quote->getId(),
+                tipo: $tipo
+            );
+        }
+
+        if ($result === null || empty($result['importo'])) {
+            return null;
+        }
+
+        $provvigione ??= $this->entityManager->createEntity('Provvigione');
 
         $this->applyProvvigioneFromCalculation(
             $provvigione,
@@ -294,6 +463,18 @@ class ProvvigioneManager
         $this->entityManager->saveEntity($provvigione, ['silent' => true]);
 
         return $provvigione;
+    }
+
+    private function findProvvigioneByRule(string $contrattoId, string $regolaId): ?Entity
+    {
+        return $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where([
+                'contrattoId' => $contrattoId,
+                'regolaProvvigionaleId' => $regolaId,
+                'statoProvvigione' => 'Consolidata',
+            ])
+            ->findOne();
     }
 
     private function resolveProductCategory(Entity $quote, Entity $opportunity): ?Entity
@@ -381,6 +562,13 @@ class ProvvigioneManager
                 'importoConsolidato' => $importo,
                 'importo' => $importo,
             ]);
+
+            if ($importo !== null && $provvigione->get('importoPrevisto') !== null) {
+                $provvigione->set(
+                    'scostamentoImporto',
+                    round((float) $importo - (float) $provvigione->get('importoPrevisto'), 2)
+                );
+            }
         }
     }
 

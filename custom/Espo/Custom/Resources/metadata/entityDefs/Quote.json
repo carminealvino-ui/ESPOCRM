@@ -134,6 +134,20 @@
             "type": "bool",
             "default": false,
             "isCustom": true
+        },
+        "modalitaCalcoloProvvigioni": {
+            "type": "enum",
+            "options": [
+                "Manuale",
+                "Automatico"
+            ],
+            "default": "Manuale",
+            "isCustom": true
+        },
+        "regoleProvvigionali": {
+            "type": "linkMultiple",
+            "entity": "RegolaProvvigionale",
+            "isCustom": true
         }
     },
     "links": {
@@ -157,6 +171,13 @@
             "foreign": "contratto",
             "entity": "Provvigione",
             "audited": false,
+            "isCustom": true
+        },
+        "regoleProvvigionali": {
+            "type": "hasMany",
+            "relationName": "quoteRegolaProvvigionale",
+            "foreign": "quotes",
+            "entity": "RegolaProvvigionale",
             "isCustom": true
         },
         "fornitorePartner": {

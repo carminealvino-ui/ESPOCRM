@@ -105,6 +105,39 @@
             "type": "link",
             "readOnly": true,
             "isCustom": true
+        },
+        "contratto": {
+            "type": "link",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "cliente": {
+            "type": "link",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "tipo": {
+            "type": "enum",
+            "options": [
+                "Provvigione Base",
+                "Plus Provvigionale",
+                "Minus Provvigionale",
+                "Bonus (Sabato-Domenica)",
+                "Gara (Soglia >2.5k)",
+                "Gara (Soglia >3.5)",
+                "Gara (Soglia >5k)"
+            ],
+            "isCustom": true
+        },
+        "importo": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "tassoProvvigioni": {
+            "type": "float",
+            "decimalPlaces": 2,
+            "readOnly": true,
+            "isCustom": true
         }
     },
     "links": {
@@ -148,6 +181,18 @@
             "type": "belongsTo",
             "foreign": "provvigioni",
             "entity": "RegolaProvvigionale",
+            "isCustom": true
+        },
+        "contratto": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "Quote",
+            "isCustom": true
+        },
+        "cliente": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "Account",
             "isCustom": true
         }
     }

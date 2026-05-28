@@ -34,6 +34,20 @@ class ProvvigioneAccrual
 
         $gruppo = $category->get('gruppoProvvigione');
 
+        $name = strtoupper(trim((string) $category->get('name')));
+
+        if (str_contains($name, 'VODAFONE')) {
+            return 'GFB_VODAFONE_COEFF';
+        }
+
+        if (str_contains($name, 'FASTWEB')) {
+            return 'GFB_FASTWEB_POD';
+        }
+
+        if (str_contains($name, 'ENEL')) {
+            return 'SOLUTION_ENEL_GETTONE';
+        }
+
         return match ($gruppo) {
             'Tende da Sole', 'Pergole', 'Vetrate', 'Clima e altro' => 'ARQUATI_PNC',
             default => 'GENERICO',

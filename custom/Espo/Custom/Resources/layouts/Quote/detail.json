@@ -137,6 +137,23 @@
                     "name": "ordineIncompletoAriel",
                     "customLabel": "Ordine incompleto Ariel (−5% provv.)"
                 }
+            ],
+            [
+                {
+                    "name": "modalitaCalcoloProvvigioni",
+                    "customLabel": "Modalità calcolo provvigioni"
+                },
+                {
+                    "name": "totaleProvvigioni",
+                    "customLabel": "Totale provvigioni consolidate (€)"
+                }
+            ],
+            [
+                {
+                    "name": "regoleProvvigionali",
+                    "customLabel": "Regole provvigionali (selezione manuale)",
+                    "fullWidth": true
+                }
             ]
         ],
         "style": "default",

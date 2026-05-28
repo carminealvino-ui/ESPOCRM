@@ -183,6 +183,13 @@
             "foreign": "regolaProvvigionale",
             "entity": "Provvigione",
             "isCustom": true
+        },
+        "quotes": {
+            "type": "hasMany",
+            "relationName": "quoteRegolaProvvigionale",
+            "foreign": "regoleProvvigionali",
+            "entity": "Quote",
+            "isCustom": true
         }
     },
     "collection": {

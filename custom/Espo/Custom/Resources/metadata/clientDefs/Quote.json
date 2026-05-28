@@ -1,0 +1,37 @@
+{
+    "controller": "controllers/record",
+    "actionHandlers": {
+        "calcolaProvvigioni": "custom:action-handlers/quote/calcola-provvigioni"
+    },
+    "buttonList": [
+        {
+            "name": "calcolaProvvigioni",
+            "label": "Calcola provvigioni",
+            "style": "primary",
+            "action": "calcolaProvvigioni",
+            "acl": "edit"
+        }
+    ],
+    "bottomPanels": {
+        "provvigioni": {
+            "order": 20,
+            "label": "Provvigioni maturate"
+        },
+        "_delimiter_1": {
+            "disabled": true
+        }
+    },
+    "relationshipPanels": {
+        "provvigioni": {
+            "createDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": false,
+            "view": "views/record/panels/relationship"
+        },
+        "regoleProvvigionali": {
+            "createDisabled": true,
+            "selectDisabled": false,
+            "unlinkDisabled": false
+        }
+    }
+}
