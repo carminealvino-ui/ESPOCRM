@@ -21,10 +21,17 @@
             return;
         }
 
-        var target = document.querySelector('[data-name="itemList"]')
-            || Array.from(document.querySelectorAll('.cell, .panel, .field')).find(function (el) {
-                return /articoli/i.test((el.textContent || '').trim());
-            });
+        var target = document.querySelector('[data-name="itemList"]');
+
+        if (!target) {
+            var xpath = "//div[contains(@class,'field-label') or contains(@class,'cell') or self::label][contains(normalize-space(.), 'Articoli')]";
+            var result = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+            var labelNode = result.singleNodeValue;
+
+            if (labelNode) {
+                target = labelNode.closest('[data-name], .cell, .panel, .record, .detail') || labelNode.parentElement;
+            }
+        }
 
         if (!target) {
             return;
@@ -34,7 +41,7 @@
             return;
         }
 
-        var anchor = target.querySelector('.field-label, .panel-heading, .header')
+        var anchor = target.querySelector('.field-label, .panel-heading, .header, [data-name="itemList"] > .field-label')
             || target;
 
         var button = document.createElement('button');
