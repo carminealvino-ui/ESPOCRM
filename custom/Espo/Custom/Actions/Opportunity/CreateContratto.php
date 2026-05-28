@@ -664,6 +664,12 @@ class CreateContratto
             'prezzoCodiceIvaEsclusa' =>
                 $opportunity->get('prezzoCodiceIvaEsclusa'),
 
+            'prezzoCodiceIvaInclusa' =>
+                $opportunity->get('prezzoCodiceIvaInclusa'),
+
+            'prezzoListinoIVAInclusa' =>
+                $opportunity->get('prezzoListinoIVAInclusa'),
+
             'margineSuListino' =>
                 $this->resolveMargineSuListino($opportunity, $amount),
 
@@ -1363,26 +1369,31 @@ class CreateContratto
             return round((float) $stored, 2);
         }
 
-        $codice = $opportunity->get('prezzoCodiceIvaEsclusa');
+        $aliquota = 10.0;
+        $iva = $opportunity->get('iVA') ?? $opportunity->get('iVAListino');
 
-        if (!$amount || !$codice) {
+        if ($iva !== null && $iva !== '') {
+            $aliquota = (float) $iva;
+        }
+
+        $calculator = new \Espo\Custom\Services\QuotePricingCalculator($this->entityManager);
+
+        return $calculator->resolveMinusPlusFromValues(
+            $amount ? (float) $amount : null,
+            $this->floatOrNull($opportunity->get('prezzoCodiceIvaInclusa')),
+            $this->floatOrNull($opportunity->get('prezzoCodiceIvaEsclusa')),
+            $aliquota,
+            $this->isB2cAccount($account)
+        );
+    }
+
+    private function floatOrNull(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
             return null;
         }
 
-        $imponibile = (float) $amount;
-
-        if ($this->isB2cAccount($account)) {
-            $aliquota = 10.0;
-            $iva = $opportunity->get('iVA') ?? $opportunity->get('iVAListino');
-
-            if ($iva !== null && $iva !== '') {
-                $aliquota = (float) $iva;
-            }
-
-            $imponibile = round($imponibile / (1 + $aliquota / 100), 2);
-        }
-
-        return round($imponibile - (float) $codice, 2);
+        return (float) $value;
     }
 
     private function isB2cAccount($account): bool

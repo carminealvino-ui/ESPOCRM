@@ -76,13 +76,6 @@ class BeforeSave extends Base
         if ($totalePrezzoCodice > 0) {
             $entity->set('prezzoCodiceIvaEsclusa', round($totalePrezzoCodice, 2));
         }
-
-        $imponibile = $this->floatOrNull($entity->get('importoContratto'))
-            ?? $this->floatOrNull($entity->get('amount'));
-
-        if ($imponibile !== null && $imponibile > 0 && $totalePrezzoCodice > 0) {
-            $entity->set('minusPlus', round($imponibile - $totalePrezzoCodice, 2));
-        }
     }
 
     private function floatOrNull(mixed $value): ?float

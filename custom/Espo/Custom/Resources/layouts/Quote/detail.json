@@ -115,12 +115,22 @@
             ],
             [
                 {
-                    "name": "totalPrezzoCodice",
-                    "customLabel": "Prezzo codice totale (da articoli)"
+                    "name": "prezzoCodiceIvaInclusa",
+                    "customLabel": "Prezzo a codice (IVA incl.)"
                 },
                 {
+                    "name": "totalPrezzoCodice",
+                    "customLabel": "Prezzo codice netto (da articoli)"
+                }
+            ],
+            [
+                {
                     "name": "minusPlus",
-                    "customLabel": "Minus / Plus (plusvalenza €)"
+                    "customLabel": "Minus / Plus venduto (€)"
+                },
+                {
+                    "name": "prezzoListinoIVAInclusa",
+                    "customLabel": "Prezzo listino (IVA incl.)"
                 }
             ],
             [
