@@ -33,7 +33,7 @@
         "importoContratto": "Importo contratto (IVA incl. B2C)",
         "importoContrattoCurrency": "Importo Contratto (Valuta)",
         "importoContrattoConverted": "Importo Contratto (Convertito)",
-        "minusPlus": "Minus/Plus venduto",
+        "minusPlus": "Minus/Plus (imponibile netto − prezzo codice netto)",
         "minusPlusCurrency": "Minus/Plus (Valuta)",
         "minusPlusConverted": "Minus/Plus (Convertito)",
         "taxRate": "Tax Rate",

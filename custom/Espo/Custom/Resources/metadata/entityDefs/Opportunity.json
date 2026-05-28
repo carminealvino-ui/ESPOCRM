@@ -157,7 +157,8 @@
         },
         "prezzoCodiceIvaInclusa": {
             "type": "currency",
-            "isCustom": true
+            "isCustom": true,
+            "readOnly": true
         },
         "importoOpportunit": {
             "type": "currency",
@@ -279,7 +280,8 @@
         "minusPlus": {
             "type": "currency",
             "isCustom": true,
-            "conversionDisabled": true
+            "conversionDisabled": true,
+            "readOnly": true
         },
         "ordineIncompletoAriel": {
             "type": "bool",

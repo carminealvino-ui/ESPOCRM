@@ -52,7 +52,18 @@ class BeforeSave implements BeforeSaveHook
             return;
         }
 
+        $aliquota = 10.0;
         $net = $entity->get('prezzoCodice');
+        $ivi = $entity->get('prezzoCodiceIvaInclusa');
+
+        if ($entity->isAttributeChanged('prezzoCodiceIvaInclusa')
+            && $ivi !== null
+            && $ivi !== ''
+            && !$entity->isAttributeChanged('prezzoCodice')) {
+            $entity->set('prezzoCodice', round((float) $ivi / (1 + $aliquota / 100), 2));
+
+            return;
+        }
 
         if ($net === null || $net === '') {
             return;
@@ -62,7 +73,7 @@ class BeforeSave implements BeforeSaveHook
             || !$entity->get('prezzoCodiceIvaInclusa')) {
             $entity->set(
                 'prezzoCodiceIvaInclusa',
-                round((float) $net * 1.1, 2)
+                round((float) $net * (1 + $aliquota / 100), 2)
             );
         }
     }
