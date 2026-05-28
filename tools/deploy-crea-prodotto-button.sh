@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Pulsante «Crea prodotto» su Contratto — metadata + client/custom/src/
+# Pulsante «Crea prodotto» su Contratto — solo clientDefs + handler (no duplicati DOM)
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 BRANCH="${BRANCH:-cursor/provvigioni-manuali-fase-a-9999}"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 CLIENT_JSON="${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/app/client.json"
-SCRIPT_ENTRY="client/custom/src/custom-product-button.js"
+LEGACY_SCRIPT="client/custom/src/custom-product-button.js"
 
 cd "${CRM_ROOT}" || exit 1
 
@@ -22,34 +22,27 @@ echo "=== Deploy Crea prodotto ==="
 
 fetch "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
 fetch "client/custom/src/action-handlers/quote/crea-prodotto.js"
-fetch "client/custom/src/custom-product-button.js"
 fetch "client/custom/src/views/quote/fields/item-list.js"
 fetch "client/custom/src/views/modals/select-product-for-quote.js"
 
-# Registra script fallback in app/client.json (scriptList + developerMode)
+# Rimuovi script DOM legacy (causava doppio pulsante in testata)
+rm -f "${CRM_ROOT}/${LEGACY_SCRIPT}"
 if [[ -f "${CLIENT_JSON}" ]]; then
   php -r "
     \$f = '${CLIENT_JSON}';
-    \$entry = '${SCRIPT_ENTRY}';
+    \$legacy = '${LEGACY_SCRIPT}';
     \$j = json_decode(file_get_contents(\$f), true);
     foreach (['scriptList', 'developerModeScriptList'] as \$key) {
-      \$j[\$key] = \$j[\$key] ?? ['__APPEND__'];
-      if (!in_array(\$entry, \$j[\$key], true)) {
-        \$j[\$key][] = \$entry;
+      if (!isset(\$j[\$key]) || !is_array(\$j[\$key])) {
+        continue;
       }
+      \$j[\$key] = array_values(array_filter(\$j[\$key], function (\$v) use (\$legacy) {
+        return \$v !== \$legacy;
+      }));
     }
     file_put_contents(\$f, json_encode(\$j, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
   "
-  echo "OK app/client.json (scriptList + developerModeScriptList)"
-else
-  echo "ATTENZIONE: ${CLIENT_JSON} non trovato"
-fi
-
-if [[ -f "${CRM_ROOT}/${SCRIPT_ENTRY}" ]]; then
-  echo "Verifica: $(wc -c < "${CRM_ROOT}/${SCRIPT_ENTRY}") byte — ${SCRIPT_ENTRY}"
-else
-  echo "ERRORE: file non scritto ${SCRIPT_ENTRY}" >&2
-  exit 1
+  echo "OK rimosso ${LEGACY_SCRIPT} da app/client.json (se presente)"
 fi
 
 if [[ -f "${CRM_ROOT}/client/custom/src/action-handlers/quote/crea-prodotto.js" ]]; then
@@ -62,5 +55,4 @@ fi
 php command.php rebuild
 rm -rf data/cache/*
 echo ""
-echo "Fatto. Su scheda Contratto (vista/edizione): pulsante «Crea prodotto» in testata (metadata Espo)."
-echo "Cache browser: Ctrl+Shift+R"
+echo "Fatto. Un solo pulsante «Crea prodotto» in testata (metadata). Cache browser: Ctrl+Shift+R"
