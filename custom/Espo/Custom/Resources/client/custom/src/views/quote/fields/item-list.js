@@ -9,6 +9,13 @@
 define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-list'], function (Dep) {
 
     return Dep.extend({
+        events: {
+            'click .btn-group .dropdown-toggle': function () {
+                setTimeout(function () {
+                    this.injectCreateProductMenuItem();
+                }.bind(this), 0);
+            },
+        },
 
         setup: function () {
             Dep.prototype.setup.call(this);
@@ -91,7 +98,11 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
         },
 
         injectCreateProductMenuItem: function () {
-            var $menus = this.$el.find('.dropdown-menu');
+            var $menus = this.$el.find('.dropdown.open .dropdown-menu:visible');
+
+            if (!$menus.length) {
+                $menus = this.$el.find('.dropdown-menu');
+            }
 
             if (!$menus.length) {
                 return;
