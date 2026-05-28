@@ -153,17 +153,30 @@ if (is_array($itemList)) {
     $quote->set('itemList', $itemList);
 }
 
-$quote->set([
+$patch = [
     'importoContratto' => $gross,
     'amount' => $net,
     'taxAmount' => $taxAmt,
     'grandTotalAmount' => $gross,
     'aliquotaIVA' => $aliquota,
     'taxRate' => round($aliquota / 100, 4),
-    'totalPrezzoCodice' => $codiceNet > 0 ? $codiceNet : $quote->get('totalPrezzoCodice'),
-    'prezzoCodiceIvaEsclusa' => $codiceNet > 0 ? $codiceNet : $quote->get('prezzoCodiceIvaEsclusa'),
-    'prezzoCodiceIvaInclusa' => $codiceIvi > 0 ? $codiceIvi : $quote->get('prezzoCodiceIvaInclusa'),
-]);
+];
+
+if ($codiceNet > 0) {
+    $patch['totalPrezzoCodice'] = $codiceNet;
+    $patch['prezzoCodiceIvaEsclusa'] = $codiceNet;
+    $patch['prezzoCodiceIvaInclusa'] = $codiceIvi;
+}
+
+if ($listinoNet > 0) {
+    $patch['prezzoListinoIvaEsclusa'] = $listinoNet;
+}
+
+if ($listinoIvi > 0) {
+    $patch['prezzoListinoIVAInclusa'] = $listinoIvi;
+}
+
+$quote->set($patch);
 
 if ($minusPlus !== null) {
     $quote->set('minusPlus', $minusPlus);
@@ -193,73 +206,62 @@ function parseAmount(string $raw): float
     return (float) $s;
 }
 
-function resolveCodiceNetto($em, $quote, float $aliquota): float
+/**
+ * @return array{0: float, 1: float, 2: float, 3: float} codiceNet, codiceIvi, listinoNet, listinoIvi
+ */
+function resolvePrezziDaRiga($em, $quote, float $aliquota): array
 {
+    $codiceNet = 0.0;
+    $codiceIvi = 0.0;
+    $listinoNet = 0.0;
+    $listinoIvi = 0.0;
     $itemList = $quote->get('itemList');
 
-    if (is_array($itemList)) {
-        foreach ($itemList as $item) {
-            $productId = is_array($item) ? ($item['productId'] ?? null) : ($item->productId ?? null);
-            $lineCodice = is_array($item) ? ($item['prezzoCodice'] ?? null) : ($item->prezzoCodice ?? null);
+    if (!is_array($itemList)) {
+        return [0.0, 0.0, 0.0, 0.0];
+    }
 
-            if ($productId) {
-                $product = $em->getEntityById('Product', $productId);
+    foreach ($itemList as $item) {
+        $productId = is_array($item) ? ($item['productId'] ?? null) : ($item->productId ?? null);
+        $lineCodice = is_array($item) ? ($item['prezzoCodice'] ?? null) : ($item->prezzoCodice ?? null);
 
-                if ($product) {
-                    $net = (float) ($product->get('prezzoCodice') ?? 0);
-                    $ivi = (float) ($product->get('prezzoCodiceIvaInclusa') ?? 0);
+        if ($productId) {
+            $product = $em->getEntityById('Product', $productId);
 
-                    if ($net > 0) {
-                        return round($net, 2);
-                    }
+            if ($product) {
+                $listinoNet = (float) ($product->get('listPrice') ?? 0);
+                $listinoIvi = (float) ($product->get('prezzoListinoIvaInclusa') ?? 0);
 
-                    if ($ivi > 0) {
-                        return round($ivi / (1 + $aliquota / 100), 2);
-                    }
+                if ($listinoIvi <= 0 && $listinoNet > 0) {
+                    $listinoIvi = round($listinoNet * (1 + $aliquota / 100), 2);
+                }
+
+                $codiceNet = (float) ($product->get('prezzoCodice') ?? 0);
+                $codiceIvi = (float) ($product->get('prezzoCodiceIvaInclusa') ?? 0);
+
+                if ($codiceIvi <= 0 && $codiceNet > 0) {
+                    $codiceIvi = round($codiceNet * (1 + $aliquota / 100), 2);
                 }
             }
+        }
 
-            if ($lineCodice !== null && $lineCodice !== '') {
-                $line = (float) $lineCodice;
-                $list = 0.0;
+        if ($lineCodice !== null && $lineCodice !== '' && $codiceIvi <= 0) {
+            $line = (float) $lineCodice;
 
-                if ($productId) {
-                    $p = $em->getEntityById('Product', $productId);
-
-                    if ($p) {
-                        $list = (float) ($p->get('listPrice') ?? 0);
-                        $iviP = (float) ($p->get('prezzoCodiceIvaInclusa') ?? 0);
-
-                        if ($iviP > 0 && abs($line - $iviP) < 0.02) {
-                            return round($iviP / (1 + $aliquota / 100), 2);
-                        }
-                    }
-                }
-
-                if ($list > 0 && abs($line - $list) < 0.02) {
-                    continue;
-                }
-
-                if ($line > 4000 && $line < 5000) {
-                    return round($line / (1 + $aliquota / 100), 2);
-                }
-
-                return round($line, 2);
+            if ($line >= 4000 && $line <= 5500) {
+                $codiceIvi = round($line, 2);
+                $codiceNet = round($line / (1 + $aliquota / 100), 2);
+            } else {
+                $codiceNet = round($line, 2);
+                $codiceIvi = round($line * (1 + $aliquota / 100), 2);
             }
         }
     }
 
-    $stored = (float) ($quote->get('prezzoCodiceIvaEsclusa') ?? 0);
-
-    if ($stored > 0) {
-        return $stored;
-    }
-
-    $ivi = (float) ($quote->get('prezzoCodiceIvaInclusa') ?? 0);
-
-    if ($ivi > 0) {
-        return round($ivi / (1 + $aliquota / 100), 2);
-    }
-
-    return 0.0;
+    return [
+        round($codiceNet, 2),
+        round($codiceIvi, 2),
+        round($listinoNet, 2),
+        round($listinoIvi, 2),
+    ];
 }
