@@ -92,6 +92,12 @@
                 {
                     "name": "isTaxInclusive"
                 }
+            ],
+            [
+                {
+                    "name": "importoContratto"
+                },
+                false
             ]
         ],
         "style": "default",

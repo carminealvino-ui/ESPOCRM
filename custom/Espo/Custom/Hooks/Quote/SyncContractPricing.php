@@ -12,7 +12,7 @@ use Espo\ORM\Repository\Option\SaveOptions;
  */
 class SyncContractPricing implements BeforeSave
 {
-    public static int $order = 98;
+    public static int $order = 999;
 
     public function __construct(
         private QuotePricingCalculator $pricingCalculator

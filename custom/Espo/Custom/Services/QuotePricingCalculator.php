@@ -33,6 +33,10 @@ class QuotePricingCalculator
     {
         $importo = $this->floatOrNull($quote->get('importoContratto'));
 
+        if (($importo === null || $importo <= 0) && method_exists($quote, 'getFetched')) {
+            $importo = $this->floatOrNull($quote->getFetched('importoContratto'));
+        }
+
         if ($importo !== null && $importo > 0) {
             return $importo;
         }
@@ -65,6 +69,54 @@ class QuotePricingCalculator
         }
 
         return null;
+    }
+
+    /**
+     * Totale documento = listino invece di importoContratto (Sales Pack ha sovrascritto le righe).
+     */
+    public function needsContractPricingResync(Entity $quote): bool
+    {
+        if ($quote->getEntityType() !== 'Quote' || !$this->isQuotePricesTaxInclusive($quote)) {
+            return false;
+        }
+
+        $importo = $this->resolveImportoContrattoForQuote($quote);
+
+        if ($importo === null || $importo <= 0) {
+            return false;
+        }
+
+        $itemList = $quote->get('itemList');
+
+        if (!is_array($itemList) || $itemList === []) {
+            return false;
+        }
+
+        $grandTotal = $this->floatOrNull($quote->get('grandTotalAmount'));
+
+        if ($grandTotal === null) {
+            return true;
+        }
+
+        if (abs($grandTotal - $importo) <= 0.02) {
+            return false;
+        }
+
+        $listinoIvi = $this->sumListinoIvaInclusaFromProductsOnItems($quote);
+
+        if ($listinoIvi > 0 && abs($grandTotal - $listinoIvi) <= 0.02) {
+            return true;
+        }
+
+        $first = $itemList[0];
+        $unit = $this->floatOrNull($this->itemValue($first, 'unitPrice'));
+        $list = $this->floatOrNull($this->itemValue($first, 'listPrice'));
+
+        if ($unit !== null && $list !== null && abs($unit - $list) < 0.02 && abs($unit - $importo) > 0.02) {
+            return true;
+        }
+
+        return abs($grandTotal - $importo) > 0.02;
     }
 
     private function ensureImportoContrattoOnQuote(Entity $quote): void
@@ -382,7 +434,13 @@ class QuotePricingCalculator
         }
 
         if (!$entity->get('importoContratto') && $entity->get('grandTotalAmount')) {
-            $entity->set('importoContratto', $entity->get('grandTotalAmount'));
+            $grandTotal = $this->floatOrNull($entity->get('grandTotalAmount'));
+            $listinoIvi = $this->sumListinoIvaInclusaFromProductsOnItems($entity);
+
+            if ($grandTotal !== null && $grandTotal > 0
+                && ($listinoIvi <= 0 || abs($grandTotal - $listinoIvi) > 0.02)) {
+                $entity->set('importoContratto', $grandTotal);
+            }
         }
     }
 
@@ -1256,6 +1314,8 @@ class QuotePricingCalculator
             $s = str_replace(',', '.', $s);
         } elseif (str_contains($s, ',')) {
             $s = str_replace(',', '.', $s);
+        } elseif (preg_match('/^\d{1,3}(\.\d{3})+$/', $s)) {
+            $s = str_replace('.', '', $s);
         }
 
         $v = (float) $s;
