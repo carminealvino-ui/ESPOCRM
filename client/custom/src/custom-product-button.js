@@ -21,38 +21,25 @@
             return;
         }
 
-        var panels = document.querySelectorAll('.panel');
-        var targetPanel = null;
+        var target = document.querySelector('[data-name="itemList"]')
+            || Array.from(document.querySelectorAll('.cell, .panel, .field')).find(function (el) {
+                return /articoli/i.test((el.textContent || '').trim());
+            });
 
-        panels.forEach(function (panel) {
-            var heading = panel.querySelector('.panel-heading');
-
-            if (!heading) {
-                return;
-            }
-
-            if (heading.innerText && heading.innerText.trim() === 'Articoli') {
-                targetPanel = panel;
-            }
-        });
-
-        if (!targetPanel) {
+        if (!target) {
             return;
         }
 
-        if (targetPanel.querySelector('.custom-new-product-btn')) {
+        if (target.querySelector('.custom-new-product-btn')) {
             return;
         }
 
-        var heading = targetPanel.querySelector('.panel-heading');
-
-        if (!heading) {
-            return;
-        }
+        var anchor = target.querySelector('.field-label, .panel-heading, .header')
+            || target;
 
         var button = document.createElement('button');
         button.type = 'button';
-        button.className = 'btn btn-default btn-sm custom-new-product-btn';
+        button.className = 'btn btn-primary btn-sm custom-new-product-btn';
         button.style.marginLeft = '12px';
         button.innerHTML = '<span class="fas fa-cube"></span> Crea prodotto';
 
@@ -64,7 +51,7 @@
             window.open('#Product/create', '_blank');
         });
 
-        heading.appendChild(button);
+        anchor.appendChild(button);
     }
 
     function init() {
