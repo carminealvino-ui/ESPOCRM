@@ -41,13 +41,54 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 return;
             }
 
+            this.decorateNativeAddButton();
             this.injectCreateArticleButton();
             setTimeout(function () {
+                this.decorateNativeAddButton();
                 this.injectCreateArticleButton();
             }.bind(this), 200);
+
+            this.bindButtonObserver();
+        },
+
+        bindButtonObserver: function () {
+            if (this._buttonObserver) {
+                return;
+            }
+
+            this._buttonObserver = new MutationObserver(function () {
+                this.decorateNativeAddButton();
+                this.injectCreateArticleButton();
+            }.bind(this));
+
+            this._buttonObserver.observe(this.el, { childList: true, subtree: true });
+        },
+
+        decorateNativeAddButton: function () {
+            var $buttons = this.$el.find('button.btn');
+            var done = false;
+
+            $buttons.each(function (i, el) {
+                var $btn = $(el);
+                var text = ($btn.text() || '').replace(/\s+/g, ' ').trim();
+
+                if (text === '+') {
+                    $btn.addClass('btn-create-article-native');
+                    $btn.text('+ Crea articolo');
+                    $btn.attr('title', 'Crea articolo');
+                    done = true;
+                    return false;
+                }
+            });
+
+            return done;
         },
 
         injectCreateArticleButton: function () {
+            if (this.decorateNativeAddButton()) {
+                return;
+            }
+
             if (this.$el.find('.btn-create-article').length) {
                 return;
             }
