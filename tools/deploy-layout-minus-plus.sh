@@ -1,35 +1,24 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Layout UI: Minus/Plus (minusbonus), prezzo codice, importo — Quote + Opportunity
+# Layout Contratto (Quote): solo prezzi + Minus/Plus — NESSUN campo provvigioni
+# Layout Opportunità: importo venduto + Minus/Plus
 #
-# Uso in produzione:
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/provvigioni-manuali-fase-a-9999/tools/deploy-layout-minus-plus.sh?t=$(date +%s)" -o /tmp/deploy-layout-minus-plus.sh
-#   bash /tmp/deploy-layout-minus-plus.sh
-#
-# Solo anteprima (non scrive file):
-#   DRY_RUN=1 bash /tmp/deploy-layout-minus-plus.sh
-#
-# Sovrascrive anche Opportunity/detail.json dal repo (senza patch jq):
-#   FULL_OPP_LAYOUT=1 bash /tmp/deploy-layout-minus-plus.sh
-#
-# Da repo locale:
-#   CRM_ROOT=~/public_html/crm/mec-group bash tools/deploy-layout-minus-plus.sh
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/provvigioni-manuali-fase-a-9999/tools/deploy-layout-minus-plus.sh?t=$(date +%s)" -o /tmp/deploy-layout-contratto-prezzi.sh
+#   bash /tmp/deploy-layout-contratto-prezzi.sh
 # =============================================================================
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 DRY_RUN="${DRY_RUN:-0}"
-FULL_OPP_LAYOUT="${FULL_OPP_LAYOUT:-0}"
 BRANCH="${BRANCH:-cursor/provvigioni-manuali-fase-a-9999}"
 REPO_RAW="${REPO_RAW:-https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || true)"
 LAYOUT_BASE="${CRM_ROOT}/custom/Espo/Custom/Resources/layouts"
-QUOTE_DETAIL="${LAYOUT_BASE}/Quote/detail.json"
-OPP_DETAIL="${LAYOUT_BASE}/Opportunity/detail.json"
+CLIENT_DEFS="${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
 
-log() { echo "[deploy-layout-minus-plus] $*"; }
+log() { echo "[deploy-layout-contratto-prezzi] $*"; }
 
 need_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -71,63 +60,9 @@ fetch_or_local() {
   log "OK scaricato ${rel}"
 }
 
-# jq: le righe layout possono contenere "false" al posto di celle vuote
-JQ_PATCH_OPP='
-  map(
-    if (.customLabel // .label // "" | test("Formulazione Opportunit")) then
-      .rows |= (
-        if ([.[] | .[]? | select(type == "object") | .name] | index("minusPlus")) != null then .
-        else . + [[
-          {"name": "importoOpportunit", "customLabel": "Importo venduto (IVA incl. B2C)"},
-          {"name": "minusPlus", "customLabel": "Minus / Plus (minusbonus €)"},
-          false
-        ]]
-        end
-      )
-    else .
-    end
-  )
-'
-
-patch_opportunity_minus_plus() {
-  if [[ ! -f "${OPP_DETAIL}" ]]; then
-    log "Opportunity/detail.json assente → download completo da repo"
-    fetch_or_local "custom/Espo/Custom/Resources/layouts/Opportunity/detail.json" "${OPP_DETAIL}"
-    return 0
-  fi
-
-  if [[ "${FULL_OPP_LAYOUT}" == "1" ]]; then
-    log "FULL_OPP_LAYOUT=1 → sovrascrivo Opportunity/detail.json"
-    fetch_or_local "custom/Espo/Custom/Resources/layouts/Opportunity/detail.json" "${OPP_DETAIL}"
-    return 0
-  fi
-
-  need_cmd jq
-
-  local tmp
-  tmp="$(mktemp)"
-  trap 'rm -f "${tmp}"' EXIT
-
-  if ! jq -e "${JQ_PATCH_OPP}" "${OPP_DETAIL}" > "${tmp}" 2>/dev/null; then
-    log "ATTENZIONE: patch jq fallita; scarico layout Opportunity completo da repo"
-    fetch_or_local "custom/Espo/Custom/Resources/layouts/Opportunity/detail.json" "${OPP_DETAIL}"
-    return 0
-  fi
-
-  if [[ "${DRY_RUN}" == "1" ]]; then
-    log "DRY_RUN: patch Opportunity OK (minusPlus presente o aggiunto)"
-    jq '.[] | select(.customLabel // "" | test("Formulazione Opportunit")) | .rows[] | [.[]? | select(type=="object") | .name] | select(index("minusPlus"))' "${tmp}" 2>/dev/null || true
-    return 0
-  fi
-
-  mv "${tmp}" "${OPP_DETAIL}"
-  trap - EXIT
-  log "OK patch Opportunity: importoOpportunit + minusPlus"
-}
-
 rebuild_crm() {
-  if [[ ! -d "${CRM_ROOT}" ]]; then
-    log "ATTENZIONE: CRM_ROOT=${CRM_ROOT} non esiste; salto rebuild."
+  if [[ ! -d "${CRM_ROOT}" ]] || [[ ! -f "${CRM_ROOT}/command.php" ]]; then
+    log "ATTENZIONE: rebuild saltato (CRM_ROOT o command.php mancante)."
     return 0
   fi
   if [[ "${DRY_RUN}" == "1" ]]; then
@@ -141,14 +76,17 @@ rebuild_crm() {
 }
 
 main() {
-  log "CRM_ROOT=${CRM_ROOT} BRANCH=${BRANCH}"
+  log "CRM_ROOT=${CRM_ROOT}"
+  log "Contratto: pannello «Prezzi e Minus/Plus» — senza provvigioni in layout/UI"
 
-  fetch_or_local "custom/Espo/Custom/Resources/layouts/Quote/detail.json" "${QUOTE_DETAIL}"
-  patch_opportunity_minus_plus
+  fetch_or_local "custom/Espo/Custom/Resources/layouts/Quote/detail.json" "${LAYOUT_BASE}/Quote/detail.json"
+  fetch_or_local "custom/Espo/Custom/Resources/layouts/Opportunity/detail.json" "${LAYOUT_BASE}/Opportunity/detail.json"
+  fetch_or_local "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json" "${CLIENT_DEFS}"
+
   rebuild_crm
 
-  log "Fatto. Contratto → pannello «Provvigioni (calcolo)» → Minus / Plus venduto."
-  log "Opportunità → pannello «Formulazione Opportunità» → Importo venduto + Minus/Plus."
+  log "Fatto. Sul contratto: solo prezzi, codice, Minus/Plus."
+  log "Provvigioni: gestione separata (non in questa scheda)."
 }
 
 main "$@"

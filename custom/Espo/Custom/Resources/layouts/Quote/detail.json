@@ -109,28 +109,28 @@
                     "customLabel": "Prezzo listino (IVA escl.)"
                 },
                 {
-                    "name": "prezzoCodiceIvaEsclusa",
-                    "customLabel": "Prezzo a codice (IVA escl.)"
+                    "name": "prezzoListinoIVAInclusa",
+                    "customLabel": "Prezzo listino (IVA incl.)"
                 }
             ],
             [
+                {
+                    "name": "prezzoCodiceIvaEsclusa",
+                    "customLabel": "Prezzo a codice (IVA escl.)"
+                },
                 {
                     "name": "prezzoCodiceIvaInclusa",
                     "customLabel": "Prezzo a codice (IVA incl.)"
-                },
-                {
-                    "name": "totalPrezzoCodice",
-                    "customLabel": "Prezzo codice netto (da articoli)"
                 }
             ],
             [
                 {
-                    "name": "minusPlus",
-                    "customLabel": "Minus / Plus venduto (€)"
+                    "name": "totalPrezzoCodice",
+                    "customLabel": "Totale prezzo codice (da articoli)"
                 },
                 {
-                    "name": "prezzoListinoIVAInclusa",
-                    "customLabel": "Prezzo listino (IVA incl.)"
+                    "name": "minusPlus",
+                    "customLabel": "Minus / Plus venduto (€)"
                 }
             ],
             [
@@ -138,43 +138,11 @@
                     "name": "margineSuListino",
                     "customLabel": "Margine % su listino"
                 },
-                {
-                    "name": "contattoPersonaleArquati",
-                    "customLabel": "Contatto personale ARQUATI (+5%)"
-                }
-            ],
-            [
-                {
-                    "name": "integrazionePncPercentuale",
-                    "customLabel": "Integrazione PNC % (da contratto)"
-                }
-            ],
-            [
-                {
-                    "name": "ordineIncompletoAriel",
-                    "customLabel": "Ordine incompleto Ariel (−5% provv.)"
-                },
                 false
-            ],
-            [
-                {
-                    "name": "modalitaCalcoloProvvigioni",
-                    "customLabel": "Modalità calcolo provvigioni"
-                },
-                {
-                    "name": "totaleProvvigioni",
-                    "customLabel": "Totale provvigioni consolidate (€)"
-                }
-            ],
-            [
-                {
-                    "name": "regoleProvvigionali",
-                    "customLabel": "Regole provvigionali (selezione manuale)",
-                    "fullWidth": true
-                }
             ]
         ],
         "style": "default",
-        "label": "Provvigioni (calcolo)"
+        "label": "Prezzi e Minus/Plus",
+        "noteText": "Importo contratto, listino e prezzo codice dal prodotto/listino. Minus/Plus calcolato al salvataggio."
     }
 ]
