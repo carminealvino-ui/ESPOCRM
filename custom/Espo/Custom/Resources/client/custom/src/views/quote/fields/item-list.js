@@ -44,9 +44,11 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
             this.injectCreateArticleButton();
             setTimeout(function () {
                 this.injectCreateArticleButton();
+                this.injectCreateProductMenuItem();
             }.bind(this), 200);
 
             this.bindButtonObserver();
+            this.injectCreateProductMenuItem();
         },
 
         bindButtonObserver: function () {
@@ -56,6 +58,7 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
 
             this._buttonObserver = new MutationObserver(function () {
                 this.injectCreateArticleButton();
+                this.injectCreateProductMenuItem();
             }.bind(this));
 
             this._buttonObserver.observe(this.el, { childList: true, subtree: true });
@@ -85,6 +88,45 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
             this.listenToDom($button, 'click', function () {
                 this.openCreateArticleModal();
             }.bind(this));
+        },
+
+        injectCreateProductMenuItem: function () {
+            var $menus = this.$el.find('.dropdown-menu');
+
+            if (!$menus.length) {
+                return;
+            }
+
+            var self = this;
+
+            $menus.each(function (i, menuEl) {
+                var $menu = $(menuEl);
+
+                if ($menu.find('.action[data-action="createProductDirect"]').length) {
+                    return;
+                }
+
+                var $first = $menu.find('li, .list-group-item').first();
+                var $item = $('<li>');
+                var $link = $('<a>')
+                    .attr('href', 'javascript:')
+                    .addClass('action')
+                    .attr('data-action', 'createProductDirect')
+                    .text('Crea prodotto');
+
+                $item.append($link);
+
+                if ($first.length) {
+                    $first.after($item);
+                } else {
+                    $menu.append($item);
+                }
+
+                self.listenToDom($link, 'click', function (e) {
+                    e.preventDefault();
+                    self.openCreateArticleModal();
+                });
+            });
         },
 
         openCreateArticleModal: function () {
