@@ -125,26 +125,55 @@ if (is_array($itemList)) {
 
         $lineNet = round($net / $qty, 2);
         $lineTax = round($taxAmt / $qty, 2);
+        $lineGross = round($gross / $qty, 2);
 
         if (is_array($item)) {
-            $item['amount'] = $lineNet;
-            $item['taxAmount'] = $lineTax;
-            $item['listPrice'] = $lineNet;
-            $item['unitPrice'] = $lineNet;
+            if ($taxInclusive) {
+                $item['unitPrice'] = $lineGross;
+                $item['amount'] = $lineGross;
+                $item['taxAmount'] = $lineTax;
 
-            if ($codiceNet > 0) {
-                $item['prezzoCodice'] = $codiceNet;
+                if ($listinoIvi > 0) {
+                    $item['listPrice'] = round($listinoIvi / $qty, 2);
+                }
+
+                if ($codiceIvi > 0) {
+                    $item['prezzoCodice'] = $codiceIvi;
+                }
+            } else {
+                $item['amount'] = $lineNet;
+                $item['taxAmount'] = $lineTax;
+                $item['listPrice'] = $lineNet;
+                $item['unitPrice'] = $lineNet;
+
+                if ($codiceNet > 0) {
+                    $item['prezzoCodice'] = $codiceNet;
+                }
             }
 
             $itemList[$index] = $item;
         } elseif (is_object($item)) {
-            $item->amount = $lineNet;
-            $item->taxAmount = $lineTax;
-            $item->listPrice = $lineNet;
-            $item->unitPrice = $lineNet;
+            if ($taxInclusive) {
+                $item->unitPrice = $lineGross;
+                $item->amount = $lineGross;
+                $item->taxAmount = $lineTax;
 
-            if ($codiceNet > 0) {
-                $item->prezzoCodice = $codiceNet;
+                if ($listinoIvi > 0) {
+                    $item->listPrice = round($listinoIvi / $qty, 2);
+                }
+
+                if ($codiceIvi > 0) {
+                    $item->prezzoCodice = $codiceIvi;
+                }
+            } else {
+                $item->amount = $lineNet;
+                $item->taxAmount = $lineTax;
+                $item->listPrice = $lineNet;
+                $item->unitPrice = $lineNet;
+
+                if ($codiceNet > 0) {
+                    $item->prezzoCodice = $codiceNet;
+                }
             }
         }
     }
