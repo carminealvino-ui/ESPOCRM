@@ -1,15 +1,7 @@
-// Contratto: «Crea prodotto» sotto il titolo Prodotti/Articoli (pulsante, a sinistra).
+// Contratto: «Crea prodotto» a sinistra del + (come implementazione originale item-list).
 define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-list'], function (Dep) {
 
     return Dep.extend({
-
-        events: {
-            'click .btn-group .dropdown-toggle': function () {
-                setTimeout(function () {
-                    this.injectCreateProductMenuItem();
-                }.bind(this), 0);
-            },
-        },
 
         setup: function () {
             Dep.prototype.setup.call(this);
@@ -64,10 +56,47 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 return;
             }
 
-            this.injectCreateProductMenuItem();
+            this.injectCreateProductButton();
             setTimeout(function () {
+                this.injectCreateProductButton();
                 this.injectCreateProductMenuItem();
             }.bind(this), 200);
+
+            if (!this._buttonObserver) {
+                this._buttonObserver = new MutationObserver(function () {
+                    this.injectCreateProductButton();
+                    this.injectCreateProductMenuItem();
+                }.bind(this));
+                this._buttonObserver.observe(this.el, { childList: true, subtree: true });
+            }
+        },
+
+        injectCreateProductButton: function () {
+            if (this.$el.find('.btn-create-product').length) {
+                return;
+            }
+
+            var $anchorGroup = this.$el.find('.btn-group').first();
+
+            var $button = $('<button>')
+                .attr('type', 'button')
+                .addClass('btn btn-primary btn-sm btn-create-product')
+                .css('margin-right', '8px')
+                .append($('<span>').addClass('fas fa-plus'))
+                .append(document.createTextNode(' Crea prodotto'));
+
+            this.listenToDom($button, 'click', function (e) {
+                e.preventDefault();
+                this.openCreateProductModal();
+            }.bind(this));
+
+            if ($anchorGroup.length) {
+                $anchorGroup.before($button);
+            } else {
+                var $bar = $('<div class="mec-item-list-actions" style="margin-bottom:8px;"></div>');
+                $bar.append($button);
+                this.$el.prepend($bar);
+            }
         },
 
         injectCreateProductMenuItem: function () {

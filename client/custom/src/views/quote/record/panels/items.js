@@ -1,4 +1,4 @@
-// Collega item-list custom nel pannello righe (Sales Pack).
+// Pannello righe contratto: view item-list custom (Sales Pack).
 define('custom:views/quote/record/panels/items', ['sales:views/quote/record/panels/items'], function (Dep) {
 
     return Dep.extend({
