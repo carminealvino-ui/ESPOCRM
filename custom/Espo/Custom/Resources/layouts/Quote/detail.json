@@ -142,7 +142,6 @@
             ]
         ],
         "style": "default",
-        "label": "Prezzi e Minus/Plus",
-        "noteText": "Importo contratto, listino e prezzo codice dal prodotto/listino. Minus/Plus calcolato al salvataggio."
+        "label": "Prezzi e Minus/Plus"
     }
 ]

@@ -21,8 +21,113 @@ class QuotePricingCalculator
 
     public function syncOnBeforeSave(Entity $quote): void
     {
+        $this->ensureImportoContrattoOnQuote($quote);
         $this->syncItemListPrezzoCodice($quote);
+        $this->syncItemListAmountFromImportoContratto($quote);
         $this->syncTotalsAndDerivedFields($quote, true);
+    }
+
+    /**
+     * Importo venduto B2C: campo importoContratto, opportunità o nome contratto (es. «€. 4.500»).
+     */
+    public function resolveImportoContrattoForQuote(Entity $quote): ?float
+    {
+        $importo = $this->floatOrNull($quote->get('importoContratto'));
+
+        if ($importo !== null && $importo > 0) {
+            return $importo;
+        }
+
+        if ($quote->get('opportunityId')) {
+            $opportunity = $this->entityManager->getEntityById(
+                'Opportunity',
+                $quote->get('opportunityId')
+            );
+
+            if ($opportunity) {
+                foreach (['importoOpportunit', 'importoContratto', 'amount'] as $field) {
+                    $val = $this->floatOrNull($opportunity->get($field));
+
+                    if ($val !== null && $val > 0) {
+                        return $val;
+                    }
+                }
+            }
+        }
+
+        $name = (string) ($quote->get('name') ?? '');
+
+        if (preg_match('/€\.?\s*([\d.,]+)/u', $name, $m)) {
+            return $this->parseItalianAmount($m[1]);
+        }
+
+        if (preg_match('/([\d.,]+)\s*€/u', $name, $m)) {
+            return $this->parseItalianAmount($m[1]);
+        }
+
+        return null;
+    }
+
+    private function ensureImportoContrattoOnQuote(Entity $quote): void
+    {
+        $resolved = $this->resolveImportoContrattoForQuote($quote);
+
+        if ($resolved !== null && $resolved > 0) {
+            $quote->set('importoContratto', $resolved);
+        }
+    }
+
+    private function syncItemListAmountFromImportoContratto(Entity $quote): void
+    {
+        $importo = $this->resolveImportoContrattoForQuote($quote);
+
+        if ($importo === null || $importo <= 0) {
+            return;
+        }
+
+        $itemList = $quote->get('itemList');
+
+        if (!is_array($itemList) || $itemList === []) {
+            return;
+        }
+
+        $aliquota = $this->resolveAliquotaIva($quote);
+        $taxInclusive = $this->isB2cContract($quote) || (bool) $quote->get('isTaxInclusive');
+        $split = $this->splitImportoContratto($importo, $aliquota, $taxInclusive);
+        $changed = false;
+
+        foreach ($itemList as $index => $item) {
+            $qty = (float) ($this->itemValue($item, 'quantity') ?? 1);
+
+            if ($qty <= 0) {
+                $qty = 1.0;
+            }
+
+            $lineNet = round($split['net'] / $qty, 2);
+            $lineTax = round($split['tax'] / $qty, 2);
+
+            $itemList[$index] = $this->itemSet($item, 'amount', $lineNet);
+            $itemList[$index] = $this->itemSet($itemList[$index], 'taxAmount', $lineTax);
+            $itemList[$index] = $this->itemSet($itemList[$index], 'listPrice', $lineNet);
+            $itemList[$index] = $this->itemSet($itemList[$index], 'unitPrice', $lineNet);
+            $changed = true;
+        }
+
+        if ($changed) {
+            $quote->set('itemList', $itemList);
+        }
+
+        $quote->set([
+            'amount' => $split['net'],
+            'taxAmount' => $split['tax'],
+            'grandTotalAmount' => $split['gross'],
+            'aliquotaIVA' => $aliquota,
+            'importoContratto' => $importo,
+        ]);
+
+        if ($this->floatOrNull($quote->get('taxRate')) === null && $aliquota > 0) {
+            $quote->set('taxRate', round($aliquota / 100, 4));
+        }
     }
 
     public function syncOpportunityOnBeforeSave(Entity $opportunity): void
@@ -56,6 +161,7 @@ class QuotePricingCalculator
             }
 
             $codiceNet = $this->resolveProductPrezzoCodiceNet($product, $aliquota);
+            $codiceIvi = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota);
             $lineNet = $this->floatOrNull($this->itemValue($item, 'prezzoCodice'));
 
             if ($codiceNet === null) {
@@ -65,6 +171,13 @@ class QuotePricingCalculator
             $listNet = $this->floatOrNull($product->get('listPrice'));
 
             if ($lineNet !== null && $lineNet > 0) {
+                if ($codiceIvi !== null && abs($lineNet - $codiceIvi) < 0.02) {
+                    $itemList[$index] = $this->itemSet($item, 'prezzoCodice', $codiceNet);
+                    $changed = true;
+
+                    continue;
+                }
+
                 if ($listNet !== null
                     && abs($lineNet - $listNet) < 0.02
                     && abs($lineNet - $codiceNet) > 0.02) {
@@ -98,6 +211,12 @@ class QuotePricingCalculator
 
         if ($totalPrezzoCodice <= 0) {
             $totalPrezzoCodice = $this->sumPrezzoCodiceNetFromProductsOnItems($entity);
+        }
+
+        $codiceNetFromProducts = $this->sumPrezzoCodiceNetFromProductsOnItems($entity);
+
+        if ($codiceNetFromProducts > 0) {
+            $totalPrezzoCodice = $codiceNetFromProducts;
         }
 
         if ($totalPrezzoCodice > 0) {
@@ -316,7 +435,7 @@ class QuotePricingCalculator
     public function resolveImportoVenditaLordo(Entity $entity): ?float
     {
         if ($entity->getEntityType() === 'Quote') {
-            $importo = $this->floatOrNull($entity->get('importoContratto'));
+            $importo = $this->resolveImportoContrattoForQuote($entity);
 
             if ($importo !== null && $importo > 0) {
                 return $importo;
@@ -406,6 +525,10 @@ class QuotePricingCalculator
 
     public function isB2cContract(Entity $entity): bool
     {
+        if ($entity->getEntityType() === 'Quote' && $entity->get('isTaxInclusive')) {
+            return true;
+        }
+
         $accountId = $entity->get('accountId');
 
         if (!$accountId) {
@@ -676,6 +799,26 @@ class QuotePricingCalculator
         $item[$key] = $value;
 
         return $item;
+    }
+
+    private function parseItalianAmount(string $raw): ?float
+    {
+        $s = trim(str_replace([' ', "\u{00a0}"], '', $raw));
+
+        if ($s === '') {
+            return null;
+        }
+
+        if (str_contains($s, ',') && str_contains($s, '.')) {
+            $s = str_replace('.', '', $s);
+            $s = str_replace(',', '.', $s);
+        } elseif (str_contains($s, ',')) {
+            $s = str_replace(',', '.', $s);
+        }
+
+        $v = (float) $s;
+
+        return $v > 0 ? $v : null;
     }
 
     private function floatOrNull(mixed $value): ?float
