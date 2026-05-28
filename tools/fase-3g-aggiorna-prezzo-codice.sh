@@ -13,7 +13,7 @@ set -euo pipefail
 export NO_CREATE=1
 export DRY_RUN="${DRY_RUN:-0}"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)" || true)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || true)"
 
 if [[ -f "${SCRIPT_DIR}/fase-3f-import-listino-completo-pdf.sh" ]]; then
   bash "${SCRIPT_DIR}/fase-3f-import-listino-completo-pdf.sh"
