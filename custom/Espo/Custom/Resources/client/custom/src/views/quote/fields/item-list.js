@@ -20,6 +20,19 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
         setup: function () {
             Dep.prototype.setup.call(this);
 
+            this.actionList = this.actionList || [];
+
+            var hasCreateProductAction = this.actionList.some(function (item) {
+                return item && item.name === 'createProductDirect';
+            });
+
+            if (!hasCreateProductAction) {
+                this.actionList.unshift({
+                    name: 'createProductDirect',
+                    label: 'Crea prodotto',
+                });
+            }
+
             var originalCreateView = this.createView.bind(this);
 
             this.createView = function (name, view, options, callback) {
@@ -39,6 +52,10 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
 
                 return originalCreateView(name, view, options, callback);
             };
+        },
+
+        actionCreateProductDirect: function () {
+            this.openCreateArticleModal();
         },
 
         afterRender: function () {
