@@ -572,6 +572,26 @@ function normalizeLine(string $line): string
 }
 
 /** @return array<string, string> */
+function derivePrezzoCodiceIviFromCodice(string $codiceArticolo): ?float
+{
+    $parts = array_values(array_filter(explode('.', $codiceArticolo), static fn ($p) => $p !== ''));
+
+    if (count($parts) < 4) {
+        return null;
+    }
+
+    $segments = array_slice($parts, 1, 3);
+    $digits = ltrim(implode('', $segments), '0');
+
+    if ($digits === '' || !ctype_digit($digits)) {
+        return null;
+    }
+
+    $value = (float) $digits;
+
+    return $value > 0 ? round($value, 2) : null;
+}
+
 function makeRow(
     string $brand,
     string $categoria,
@@ -582,6 +602,10 @@ function makeRow(
     string $tipo,
     string $note
 ): array {
+    if ($prezzoCodice === null && $codice !== '') {
+        $prezzoCodice = derivePrezzoCodiceIviFromCodice($codice);
+    }
+
     return [
         'brand' => $brand,
         'categoria' => $categoria,

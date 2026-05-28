@@ -180,11 +180,21 @@ foreach ($rows as $i => $row) {
             $product->set('type', 'Regular');
             $product->set('itemType', ($row['tipo'] ?? '') === 'servizio' ? 'Service' : 'Goods');
 
+            $pricePatch = buildProductPricePatch($entityManager, $prezzoListino, $prezzoCodice);
+
+            if ($pricePatch !== []) {
+                $product->set($pricePatch);
+            }
+
             if (!$dryRun) {
                 $entityManager->saveEntity($product);
             }
 
             fwrite(STDOUT, "[{$label}] CREATO prodotto: {$product->get('name')}\n");
+
+            if ($pricePatch !== []) {
+                fwrite(STDOUT, "  prezzi: " . json_encode($pricePatch, JSON_UNESCAPED_UNICODE) . "\n");
+            }
 
             if ($ivaLog !== '') {
                 fwrite(STDOUT, "  {$ivaLog}\n");
@@ -201,21 +211,7 @@ foreach ($rows as $i => $row) {
             $label = $product->get('name') ?: $identity['denominazione'];
 
             $identityPatch = buildIdentityPatch($entityManager, $product, $identity, $brandId);
-            $patch = array_merge($patch, $identityPatch);
-
-            if ($prezzoListino !== null) {
-                if (defsHasAttribute($entityManager, 'Product', 'listPrice')) {
-                    $patch['listPrice'] = $prezzoListino;
-                }
-
-                if (defsHasAttribute($entityManager, 'Product', 'unitPrice')) {
-                    $patch['unitPrice'] = $prezzoListino;
-                }
-            }
-
-            if ($prezzoCodice !== null && defsHasAttribute($entityManager, 'Product', 'prezzoCodice')) {
-                $patch['prezzoCodice'] = $prezzoCodice;
-            }
+            $patch = array_merge($patch, $identityPatch, buildProductPricePatch($entityManager, $prezzoListino, $prezzoCodice));
 
             if ($patch !== []) {
                 $product->set($patch);
@@ -265,6 +261,33 @@ foreach ($rows as $i => $row) {
 fwrite(STDOUT, "\nRiepilogo: " . json_encode($stats, JSON_PRETTY_PRINT) . "\n");
 
 exit($stats['errors'] > 0 ? 1 : 0);
+
+/**
+ * @return array<string, float>
+ */
+function buildProductPricePatch(
+    \Espo\ORM\EntityManager $entityManager,
+    ?float $prezzoListino,
+    ?float $prezzoCodice
+): array {
+    $patch = [];
+
+    if ($prezzoListino !== null) {
+        if (defsHasAttribute($entityManager, 'Product', 'listPrice')) {
+            $patch['listPrice'] = $prezzoListino;
+        }
+
+        if (defsHasAttribute($entityManager, 'Product', 'unitPrice')) {
+            $patch['unitPrice'] = $prezzoListino;
+        }
+    }
+
+    if ($prezzoCodice !== null && defsHasAttribute($entityManager, 'Product', 'prezzoCodice')) {
+        $patch['prezzoCodice'] = $prezzoCodice;
+    }
+
+    return $patch;
+}
 
 function defsHasAttribute(\Espo\ORM\EntityManager $entityManager, string $entityType, string $attribute): bool
 {
