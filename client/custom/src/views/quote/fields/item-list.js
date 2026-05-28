@@ -116,18 +116,19 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
 
         openCreateArticleModal: function () {
             this.createView(
-                'selectProductForQuoteModal',
-                'custom:views/modals/select-product-for-quote',
+                'quickCreateProductModal',
+                'views/modals/edit',
                 {
                     scope: 'Product',
-                    entityType: 'Product',
-                    createButton: true,
-                    multiple: false,
+                    attributes: {},
                 },
                 function (view) {
+                    this.listenToOnce(view, 'after:save', function () {
+                        Espo.Ui.success('Articolo creato. Ora selezionalo con il tasto + nella lista articoli.');
+                    }, this);
+
                     view.render();
-                    view.notify(false);
-                }
+                }.bind(this)
             );
         },
     });
