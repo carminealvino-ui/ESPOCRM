@@ -97,6 +97,17 @@
                 }
             ],
             [
+                {
+                    "name": "importoOpportunit",
+                    "customLabel": "Importo venduto (IVA incl. B2C)"
+                },
+                {
+                    "name": "minusPlus",
+                    "customLabel": "Minus / Plus (minusbonus €)"
+                },
+                false
+            ],
+            [
                 false,
                 false,
                 {
