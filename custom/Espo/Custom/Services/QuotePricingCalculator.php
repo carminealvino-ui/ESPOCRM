@@ -122,12 +122,14 @@ class QuotePricingCalculator
             $codiceLine = null;
 
             if ($product) {
+                $productPrice = $this->findActiveProductPrice($product, $quote);
+
                 if ($taxInclusive) {
-                    $listCatalog = $this->resolveProductListinoIvaInclusa($product, $aliquota);
-                    $codiceLine = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota);
+                    $listCatalog = $this->resolveProductListinoIvaInclusa($product, $aliquota, $quote, $productPrice);
+                    $codiceLine = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota, $productPrice);
                 } else {
-                    $listCatalog = $this->floatOrNull($product->get('listPrice'));
-                    $codiceLine = $this->resolveProductPrezzoCodiceNet($product, $aliquota);
+                    $listCatalog = $this->resolveProductListinoNet($product, $quote, $productPrice);
+                    $codiceLine = $this->resolveProductPrezzoCodiceNet($product, $aliquota, $productPrice);
                 }
             }
 
@@ -174,7 +176,8 @@ class QuotePricingCalculator
                 $lineNet = round($lineTotal / (1 + $aliquota / 100), 2);
                 $lineTax = round($lineTotal - $lineNet, 2);
                 $itemList[$index] = $this->itemSet($item, 'unitPrice', $unitPrice);
-                $itemList[$index] = $this->itemSet($itemList[$index], 'amount', $lineTotal);
+                // Sales Pack IVA inclusa: unitPrice lordo, amount riga = imponibile netto
+                $itemList[$index] = $this->itemSet($itemList[$index], 'amount', $lineNet);
                 $itemList[$index] = $this->itemSet($itemList[$index], 'taxAmount', $lineTax);
             } else {
                 $lineTax = round($lineTotal * $aliquota / 100, 2);
@@ -233,8 +236,12 @@ class QuotePricingCalculator
                 continue;
             }
 
-            $codiceNet = $this->resolveProductPrezzoCodiceNet($product, $aliquota);
-            $codiceIvi = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota);
+            $productPrice = $entity->getEntityType() === 'Quote'
+                ? $this->findActiveProductPrice($product, $entity)
+                : null;
+
+            $codiceNet = $this->resolveProductPrezzoCodiceNet($product, $aliquota, $productPrice);
+            $codiceIvi = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota, $productPrice);
 
             if ($codiceNet === null && $codiceIvi === null) {
                 continue;
@@ -285,34 +292,53 @@ class QuotePricingCalculator
 
     private function syncTotalsAndDerivedFields(Entity $entity, bool $isQuote): void
     {
-        $totalPrezzoCodice = $this->sumPrezzoCodiceFromItems($entity);
-
-        if ($totalPrezzoCodice <= 0) {
-            $totalPrezzoCodice = $this->floatOrNull($entity->get('totalPrezzoCodice')) ?? 0.0;
-        }
-
-        if ($totalPrezzoCodice <= 0) {
-            $totalPrezzoCodice = $this->floatOrNull($entity->get('prezzoCodiceIvaEsclusa')) ?? 0.0;
-        }
-
-        if ($totalPrezzoCodice <= 0) {
-            $totalPrezzoCodice = $this->sumPrezzoCodiceNetFromProductsOnItems($entity);
-        }
-
+        $taxInclusiveQuote = $isQuote && $this->isQuotePricesTaxInclusive($entity);
         $codiceNetFromProducts = $this->sumPrezzoCodiceNetFromProductsOnItems($entity);
+        $codiceIviFromProducts = $this->sumPrezzoCodiceIvaInclusaFromProductsOnItems($entity);
 
-        if ($codiceNetFromProducts > 0) {
-            $totalPrezzoCodice = $codiceNetFromProducts;
+        if ($taxInclusiveQuote) {
+            if ($codiceNetFromProducts > 0) {
+                $entity->set([
+                    'totalPrezzoCodice' => round($codiceNetFromProducts, 2),
+                    'prezzoCodiceIvaEsclusa' => round($codiceNetFromProducts, 2),
+                ]);
+            }
+
+            $codiceIvi = $codiceIviFromProducts > 0
+                ? $codiceIviFromProducts
+                : $this->sumPrezzoCodiceIvaInclusaFromItems($entity);
+
+            if ($codiceIvi > 0) {
+                $entity->set('prezzoCodiceIvaInclusa', round($codiceIvi, 2));
+            }
+        } else {
+            $totalPrezzoCodice = $this->sumPrezzoCodiceFromItems($entity);
+
+            if ($totalPrezzoCodice <= 0) {
+                $totalPrezzoCodice = $this->floatOrNull($entity->get('totalPrezzoCodice')) ?? 0.0;
+            }
+
+            if ($totalPrezzoCodice <= 0) {
+                $totalPrezzoCodice = $this->floatOrNull($entity->get('prezzoCodiceIvaEsclusa')) ?? 0.0;
+            }
+
+            if ($totalPrezzoCodice <= 0) {
+                $totalPrezzoCodice = $codiceNetFromProducts;
+            }
+
+            if ($codiceNetFromProducts > 0) {
+                $totalPrezzoCodice = $codiceNetFromProducts;
+            }
+
+            if ($totalPrezzoCodice > 0) {
+                $entity->set([
+                    'totalPrezzoCodice' => round($totalPrezzoCodice, 2),
+                    'prezzoCodiceIvaEsclusa' => round($totalPrezzoCodice, 2),
+                ]);
+            }
+
+            $this->syncPrezzoCodiceIvaInclusa($entity);
         }
-
-        if ($totalPrezzoCodice > 0) {
-            $entity->set([
-                'totalPrezzoCodice' => round($totalPrezzoCodice, 2),
-                'prezzoCodiceIvaEsclusa' => round($totalPrezzoCodice, 2),
-            ]);
-        }
-
-        $this->syncPrezzoCodiceIvaInclusa($entity);
         $this->syncListinoFromProducts($entity);
 
         if ($isQuote) {
@@ -406,8 +432,19 @@ class QuotePricingCalculator
         }
     }
 
-    public function resolveProductPrezzoCodiceNet(Entity $product, float $aliquotaPercent): ?float
-    {
+    public function resolveProductPrezzoCodiceNet(
+        Entity $product,
+        float $aliquotaPercent,
+        ?Entity $productPrice = null
+    ): ?float {
+        if ($productPrice) {
+            $fromPrice = $this->resolvePrezzoCodiceNetFromProductPrice($productPrice, $aliquotaPercent);
+
+            if ($fromPrice !== null && $fromPrice > 0) {
+                return $fromPrice;
+            }
+        }
+
         $net = $this->floatOrNull($product->get('prezzoCodice'));
 
         if ($net !== null && $net > 0) {
@@ -423,8 +460,19 @@ class QuotePricingCalculator
         return null;
     }
 
-    public function resolveProductPrezzoCodiceIvaInclusa(Entity $product, float $aliquotaPercent): ?float
-    {
+    public function resolveProductPrezzoCodiceIvaInclusa(
+        Entity $product,
+        float $aliquotaPercent,
+        ?Entity $productPrice = null
+    ): ?float {
+        if ($productPrice) {
+            $fromPrice = $this->resolvePrezzoCodiceIvaInclusaFromProductPrice($productPrice, $aliquotaPercent);
+
+            if ($fromPrice !== null && $fromPrice > 0) {
+                return $fromPrice;
+            }
+        }
+
         $ivi = $this->floatOrNull($product->get('prezzoCodiceIvaInclusa'));
 
         if ($ivi !== null && $ivi > 0) {
@@ -625,8 +673,24 @@ class QuotePricingCalculator
         return (bool) $entity->get('isTaxInclusive') || $this->isB2cContract($entity);
     }
 
-    public function resolveProductListinoIvaInclusa(Entity $product, float $aliquotaPercent): ?float
-    {
+    public function resolveProductListinoIvaInclusa(
+        Entity $product,
+        float $aliquotaPercent,
+        ?Entity $quote = null,
+        ?Entity $productPrice = null
+    ): ?float {
+        if ($productPrice === null && $quote !== null) {
+            $productPrice = $this->findActiveProductPrice($product, $quote);
+        }
+
+        if ($productPrice) {
+            $fromBook = $this->resolveListinoIvaInclusaFromProductPrice($productPrice, $aliquotaPercent);
+
+            if ($fromBook !== null && $fromBook > 0) {
+                return $fromBook;
+            }
+        }
+
         $ivi = $this->floatOrNull($product->get('prezzoListinoIvaInclusa'));
 
         if ($ivi !== null && $ivi > 0) {
@@ -637,6 +701,193 @@ class QuotePricingCalculator
 
         if ($net !== null && $net > 0) {
             return round($net * (1 + $aliquotaPercent / 100), 2);
+        }
+
+        return null;
+    }
+
+    public function resolveProductListinoNet(
+        Entity $product,
+        ?Entity $quote = null,
+        ?Entity $productPrice = null
+    ): ?float {
+        if ($productPrice === null && $quote !== null) {
+            $productPrice = $this->findActiveProductPrice($product, $quote);
+        }
+
+        if ($productPrice) {
+            $price = $this->floatOrNull($productPrice->get('price'));
+
+            if ($price !== null && $price > 0) {
+                $priceBook = $this->entityManager->getEntityById(
+                    'PriceBook',
+                    $productPrice->get('priceBookId')
+                );
+
+                if ($priceBook && (bool) $priceBook->get('isTaxInclusive')) {
+                    $aliquota = $quote
+                        ? $this->resolveAliquotaIva($quote)
+                        : self::DEFAULT_ALIQUOTA_IVA;
+
+                    return round($price / (1 + $aliquota / 100), 2);
+                }
+
+                return $price;
+            }
+        }
+
+        return $this->floatOrNull($product->get('listPrice'));
+    }
+
+    public function findActiveProductPrice(Entity $product, Entity $quote): ?Entity
+    {
+        $priceBookId = $quote->get('priceBookId');
+
+        if (!$priceBookId) {
+            return null;
+        }
+
+        $refDate = $this->resolveQuoteReferenceDate($quote);
+
+        $collection = $this->entityManager
+            ->getRDBRepository('ProductPrice')
+            ->where([
+                'productId' => $product->getId(),
+                'priceBookId' => $priceBookId,
+                'status' => 'Active',
+            ])
+            ->order('dateStart', 'DESC')
+            ->find();
+
+        foreach ($collection as $productPrice) {
+            if ($this->isProductPriceValidOnDate($productPrice, $refDate)) {
+                return $productPrice;
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveQuoteReferenceDate(Entity $quote): string
+    {
+        $dateQuoted = $quote->get('dateQuoted');
+
+        if ($dateQuoted instanceof \DateTimeInterface) {
+            return $dateQuoted->format('Y-m-d');
+        }
+
+        if (is_string($dateQuoted) && $dateQuoted !== '') {
+            return substr($dateQuoted, 0, 10);
+        }
+
+        $createdAt = $quote->get('createdAt');
+
+        if ($createdAt instanceof \DateTimeInterface) {
+            return $createdAt->format('Y-m-d');
+        }
+
+        if (is_string($createdAt) && $createdAt !== '') {
+            return substr($createdAt, 0, 10);
+        }
+
+        return date('Y-m-d');
+    }
+
+    private function isProductPriceValidOnDate(Entity $productPrice, string $refDate): bool
+    {
+        $start = $productPrice->get('dateStart');
+        $end = $productPrice->get('dateEnd');
+
+        if ($start) {
+            $startStr = $start instanceof \DateTimeInterface
+                ? $start->format('Y-m-d')
+                : substr((string) $start, 0, 10);
+
+            if ($startStr > $refDate) {
+                return false;
+            }
+        }
+
+        if ($end) {
+            $endStr = $end instanceof \DateTimeInterface
+                ? $end->format('Y-m-d')
+                : substr((string) $end, 0, 10);
+
+            if ($endStr < $refDate) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function resolveListinoIvaInclusaFromProductPrice(
+        Entity $productPrice,
+        float $aliquotaPercent
+    ): ?float {
+        $price = $this->floatOrNull($productPrice->get('price'));
+
+        if ($price === null || $price <= 0) {
+            return null;
+        }
+
+        $priceBook = $this->entityManager->getEntityById(
+            'PriceBook',
+            $productPrice->get('priceBookId')
+        );
+
+        if ($priceBook && (bool) $priceBook->get('isTaxInclusive')) {
+            return round($price, 2);
+        }
+
+        return round($price * (1 + $aliquotaPercent / 100), 2);
+    }
+
+    private function resolvePrezzoCodiceNetFromProductPrice(
+        Entity $productPrice,
+        float $aliquotaPercent
+    ): ?float {
+        $ivi = $this->floatOrNull($productPrice->get('prezzoCodiceIvaInclusa'));
+        $net = $this->floatOrNull($productPrice->get('prezzoCodice'));
+        $priceBook = $this->entityManager->getEntityById(
+            'PriceBook',
+            $productPrice->get('priceBookId')
+        );
+        $bookTaxInclusive = $priceBook && (bool) $priceBook->get('isTaxInclusive');
+
+        if ($ivi !== null && $ivi > 0) {
+            return $bookTaxInclusive
+                ? round($ivi / (1 + $aliquotaPercent / 100), 2)
+                : round($ivi, 2);
+        }
+
+        if ($net !== null && $net > 0) {
+            return round($net, 2);
+        }
+
+        return null;
+    }
+
+    private function resolvePrezzoCodiceIvaInclusaFromProductPrice(
+        Entity $productPrice,
+        float $aliquotaPercent
+    ): ?float {
+        $ivi = $this->floatOrNull($productPrice->get('prezzoCodiceIvaInclusa'));
+        $net = $this->floatOrNull($productPrice->get('prezzoCodice'));
+        $priceBook = $this->entityManager->getEntityById(
+            'PriceBook',
+            $productPrice->get('priceBookId')
+        );
+        $bookTaxInclusive = $priceBook && (bool) $priceBook->get('isTaxInclusive');
+
+        if ($ivi !== null && $ivi > 0) {
+            return round($ivi, 2);
+        }
+
+        if ($net !== null && $net > 0) {
+            return $bookTaxInclusive
+                ? round($net * (1 + $aliquotaPercent / 100), 2)
+                : round($net, 2);
         }
 
         return null;
@@ -781,7 +1032,10 @@ class QuotePricingCalculator
                 $product = $this->entityManager->getEntityById('Product', $productId);
 
                 if ($product) {
-                    $ivi = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota);
+                    $productPrice = $entity->getEntityType() === 'Quote'
+                        ? $this->findActiveProductPrice($product, $entity)
+                        : null;
+                    $ivi = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota, $productPrice);
 
                     if ($ivi !== null && $ivi > 0) {
                         $sum += $ivi * $qty;
@@ -829,11 +1083,54 @@ class QuotePricingCalculator
                 continue;
             }
 
-            $net = $this->resolveProductPrezzoCodiceNet($product, $aliquota);
+            $productPrice = $entity->getEntityType() === 'Quote'
+                ? $this->findActiveProductPrice($product, $entity)
+                : null;
+
+            $net = $this->resolveProductPrezzoCodiceNet($product, $aliquota, $productPrice);
             $qty = (float) ($this->itemValue($item, 'quantity') ?? 1);
 
             if ($net !== null && $net > 0 && $qty > 0) {
                 $sum += $net * $qty;
+            }
+        }
+
+        return $sum;
+    }
+
+    private function sumPrezzoCodiceIvaInclusaFromProductsOnItems(Entity $entity): float
+    {
+        $itemList = $entity->get('itemList');
+
+        if (!is_array($itemList)) {
+            return 0.0;
+        }
+
+        $aliquota = $this->resolveAliquotaIva($entity);
+        $sum = 0.0;
+
+        foreach ($itemList as $item) {
+            $productId = $this->itemValue($item, 'productId');
+
+            if (!$productId) {
+                continue;
+            }
+
+            $product = $this->entityManager->getEntityById('Product', $productId);
+
+            if (!$product) {
+                continue;
+            }
+
+            $productPrice = $entity->getEntityType() === 'Quote'
+                ? $this->findActiveProductPrice($product, $entity)
+                : null;
+
+            $ivi = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota, $productPrice);
+            $qty = (float) ($this->itemValue($item, 'quantity') ?? 1);
+
+            if ($ivi !== null && $ivi > 0 && $qty > 0) {
+                $sum += $ivi * $qty;
             }
         }
 
@@ -882,6 +1179,7 @@ class QuotePricingCalculator
             return 0.0;
         }
 
+        $aliquota = $this->resolveAliquotaIva($entity);
         $sum = 0.0;
 
         foreach ($itemList as $item) {
@@ -897,7 +1195,15 @@ class QuotePricingCalculator
                 continue;
             }
 
-            $ivi = $this->floatOrNull($product->get('prezzoListinoIvaInclusa'));
+            $productPrice = $entity->getEntityType() === 'Quote'
+                ? $this->findActiveProductPrice($product, $entity)
+                : null;
+            $ivi = $this->resolveProductListinoIvaInclusa(
+                $product,
+                $aliquota,
+                $entity->getEntityType() === 'Quote' ? $entity : null,
+                $productPrice
+            );
             $qty = (float) ($this->itemValue($item, 'quantity') ?? 1);
 
             if ($ivi !== null && $ivi > 0 && $qty > 0) {
