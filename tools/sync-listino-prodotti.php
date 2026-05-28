@@ -196,6 +196,12 @@ foreach ($rows as $i => $row) {
                 fwrite(STDOUT, "  prezzi: " . json_encode($pricePatch, JSON_UNESCAPED_UNICODE) . "\n");
             }
 
+            $catWarn = formatCategoryWarning($identity, $patch);
+
+            if ($catWarn !== null) {
+                fwrite(STDERR, "  ATTENZIONE: {$catWarn}\n");
+            }
+
             if ($ivaLog !== '') {
                 fwrite(STDOUT, "  {$ivaLog}\n");
             }
@@ -224,6 +230,12 @@ foreach ($rows as $i => $row) {
 
                 if ($ivaLog !== '') {
                     fwrite(STDOUT, "  {$ivaLog}\n");
+                }
+
+                $catWarn = formatCategoryWarning($identity, $patch);
+
+                if ($catWarn !== null) {
+                    fwrite(STDERR, "  ATTENZIONE: {$catWarn}\n");
                 }
 
                 $stats['updated']++;
@@ -595,16 +607,39 @@ function resolveProductCategory(
         return null;
     }
 
-    $where = ['name' => $categoryName];
+    foreach (categoryNameCandidates($categoryName) as $candidate) {
+        $where = ['name' => $candidate];
 
-    if ($brand) {
-        $where['productBrandId'] = $brand->getId();
+        if ($brand) {
+            $where['productBrandId'] = $brand->getId();
+        }
+
+        $category = $entityManager
+            ->getRDBRepository('ProductCategory')
+            ->where($where)
+            ->findOne();
+
+        if ($category) {
+            return $category;
+        }
     }
 
-    return $entityManager
-        ->getRDBRepository('ProductCategory')
-        ->where($where)
-        ->findOne();
+    return null;
+}
+
+/** @return list<string> */
+function categoryNameCandidates(string $categoryName): array
+{
+    $categoryName = trim($categoryName);
+    $aliases = [
+        'CALDAIE' => ['CALDAIE', 'CALDAIE A GAS'],
+        'STUFE' => ['STUFE', 'STUFE A PELLET'],
+        'CLIMATIZZAZIONE' => ['CLIMATIZZAZIONE', 'CLIMATIZZATORI'],
+    ];
+
+    $candidates = $aliases[$categoryName] ?? [$categoryName];
+
+    return array_values(array_unique($candidates));
 }
 
 function applyProductIdentity(
@@ -654,6 +689,19 @@ function buildIdentityPatch(
     }
 
     return $patch;
+}
+
+function formatCategoryWarning(array $identity, array $patch): ?string
+{
+    if ($identity['categoria'] === '') {
+        return null;
+    }
+
+    if (!empty($patch['categoryId'])) {
+        return null;
+    }
+
+    return "categoria CSV «{$identity['categoria']}» non trovata in ProductCategory (brand ARIEL)";
 }
 
 /**
