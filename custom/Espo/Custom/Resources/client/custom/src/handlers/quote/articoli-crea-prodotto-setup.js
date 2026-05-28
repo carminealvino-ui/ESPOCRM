@@ -98,18 +98,20 @@ define('custom:handlers/quote/articoli-crea-prodotto-setup', [], function () {
                 return $panel;
             }
 
+            var $fromTable = null;
+
             $root.find('table').each(function () {
                 var text = ($(this).text() || '').toLowerCase();
 
                 if (text.indexOf('prezzo codice') !== -1 || text.indexOf('prezzo di listino') !== -1) {
-                    $panel = $(this).closest('.panel, .bottom-panel, .tab-pane');
+                    $fromTable = $(this).closest('.panel, .bottom-panel, .tab-pane').first();
 
                     return false;
                 }
             });
 
-            if ($panel && $panel.length) {
-                return $panel;
+            if ($fromTable && $fromTable.length) {
+                return $fromTable;
             }
 
             return $root.find('.bottom-panel').filter(function () {
@@ -143,8 +145,8 @@ define('custom:handlers/quote/articoli-crea-prodotto-setup', [], function () {
             var $heading = $panel.find('.panel-heading, .panel-header, .panel-title-container').first();
 
             if ($heading.length) {
-                $heading.append(
-                    $('<div class="pull-right mec-crea-prodotto-slot" style="margin-left:12px;"></div>').append($btn)
+                $heading.prepend(
+                    $('<div class="pull-left mec-crea-prodotto-slot" style="margin-right:12px;"></div>').append($btn)
                 );
 
                 return;
@@ -154,7 +156,7 @@ define('custom:handlers/quote/articoli-crea-prodotto-setup', [], function () {
 
             if ($table.length) {
                 $table.before(
-                    $('<div class="mec-item-list-toolbar" style="margin-bottom:8px;text-align:right;"></div>').append($btn)
+                    $('<div class="mec-item-list-toolbar" style="margin-bottom:8px;"></div>').append($btn)
                 );
             }
         }

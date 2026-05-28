@@ -62,4 +62,4 @@ fi
 php command.php rebuild
 rm -rf data/cache/*
 echo ""
-echo "Fatto. Un solo pulsante «Crea prodotto» in testata (metadata). Cache browser: Ctrl+Shift+R"
+echo "Fatto. Solo «Crea prodotto» a sinistra nel pannello Articoli (no testata). Cache: Ctrl+Shift+R"

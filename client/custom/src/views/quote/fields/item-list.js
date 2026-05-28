@@ -118,14 +118,8 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 var $slot = $heading.find('.mec-crea-prodotto-slot').first();
 
                 if (!$slot.length) {
-                    $slot = $('<div class="pull-right mec-crea-prodotto-slot" style="margin-left:12px;"></div>');
-                    var $title = $heading.find('.panel-title, .strong').first();
-
-                    if ($title.length) {
-                        $title.after($slot);
-                    } else {
-                        $heading.append($slot);
-                    }
+                    $slot = $('<div class="pull-left mec-crea-prodotto-slot" style="margin-right:12px;"></div>');
+                    $heading.prepend($slot);
                 }
 
                 $slot.empty().append($button);
@@ -139,8 +133,8 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 var $labelSlot = $fieldLabel.find('.mec-crea-prodotto-slot').first();
 
                 if (!$labelSlot.length) {
-                    $labelSlot = $('<span class="mec-crea-prodotto-slot" style="float:right;"></span>');
-                    $fieldLabel.append($labelSlot);
+                    $labelSlot = $('<span class="mec-crea-prodotto-slot" style="margin-right:12px;"></span>');
+                    $fieldLabel.prepend($labelSlot);
                 }
 
                 $labelSlot.empty().append($button);
