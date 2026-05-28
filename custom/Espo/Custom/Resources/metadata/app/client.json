@@ -1,7 +1,6 @@
 {
     "scriptList": [
-        "__APPEND__",
-        "client/custom/src/custom-product-button.js"
+        "__APPEND__"
     ],
     "cssList": [
         "__APPEND__",

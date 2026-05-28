@@ -34,8 +34,7 @@
         },
         "minusPlus": {
             "type": "currency",
-            "isCustom": true,
-            "readOnly": true
+            "isCustom": true
         },
         "taxRate": {
             "decimalPlaces": 2
@@ -117,8 +116,7 @@
         },
         "prezzoCodiceIvaInclusa": {
             "type": "currency",
-            "isCustom": true,
-            "readOnly": true
+            "isCustom": true
         },
         "prezzoListinoIVAInclusa": {
             "type": "currency",

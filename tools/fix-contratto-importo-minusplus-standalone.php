@@ -104,8 +104,7 @@ if ($taxInclusive) {
     $gross = round($net + $taxAmt, 2);
 }
 
-$codiceNet = resolveCodiceNetto($em, $quote, $aliquota);
-$codiceIvi = $codiceNet > 0 ? round($codiceNet * (1 + $aliquota / 100), 2) : 0.0;
+[$codiceNet, $codiceIvi, $listinoNet, $listinoIvi] = resolvePrezziDaRiga($em, $quote, $aliquota);
 $minusPlus = $codiceNet > 0 ? round($net - $codiceNet, 2) : null;
 
 $itemList = $quote->get('itemList');

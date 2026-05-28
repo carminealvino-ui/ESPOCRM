@@ -1,13 +1,3 @@
 {
-    "controller": "controllers/record",
-    "actionHandlers": {
-        "calcolaProvvigioni": "custom:action-handlers/quote/calcola-provvigioni"
-    },
-    "buttonList": [],
-    "bottomPanels": {
-        "_delimiter_1": {
-            "disabled": true
-        }
-    },
-    "relationshipPanels": {}
+    "controller": "controllers/record"
 }

@@ -600,6 +600,19 @@ class QuotePricingCalculator
             return $taxRate < 1 ? $taxRate * 100 : $taxRate;
         }
 
+        if ($entity->getEntityType() === 'Quote' && $entity->get('taxId')) {
+            $tax = $this->entityManager->getEntityById('Tax', $entity->get('taxId'));
+
+            if ($tax) {
+                $rate = $this->floatOrNull($tax->get('rate'))
+                    ?? $this->floatOrNull($tax->get('taxRate'));
+
+                if ($rate !== null && $rate > 0) {
+                    return $rate < 1 ? $rate * 100 : $rate;
+                }
+            }
+        }
+
         return self::DEFAULT_ALIQUOTA_IVA;
     }
 
