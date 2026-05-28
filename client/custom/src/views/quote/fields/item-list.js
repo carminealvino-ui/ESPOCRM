@@ -41,25 +41,32 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 return;
             }
 
-            if (this.$createArticleButton && this.$createArticleButton.length) {
+            this.injectCreateArticleButton();
+            setTimeout(function () {
+                this.injectCreateArticleButton();
+            }.bind(this), 200);
+        },
+
+        injectCreateArticleButton: function () {
+            if (this.$el.find('.btn-create-article').length) {
                 return;
             }
 
-            var $container = this.$el.find('.array-add-container');
-
-            if (!$container.length) {
-                $container = this.$el;
-            }
+            var $anchorGroup = this.$el.find('.btn-group').first();
+            var $container = $anchorGroup.length ? $anchorGroup.parent() : this.$el;
 
             var $button = $('<button>')
                 .attr('type', 'button')
-                .addClass('btn btn-default btn-sm')
+                .addClass('btn btn-default btn-sm btn-create-article')
                 .css('margin-left', '8px')
                 .append($('<span>').addClass('fas fa-plus'))
                 .append(document.createTextNode(' Crea articolo'));
 
-            this.$createArticleButton = $button;
-            $container.append($button);
+            if ($anchorGroup.length) {
+                $anchorGroup.after($button);
+            } else {
+                $container.append($button);
+            }
 
             this.listenToDom($button, 'click', function () {
                 this.openCreateArticleModal();
