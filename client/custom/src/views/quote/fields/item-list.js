@@ -1,4 +1,4 @@
-// Contratto: lista articoli + pulsante «Crea prodotto». Deploy: client/custom/src/views/quote/fields/item-list.js
+// Contratto: lista articoli + pulsante «Crea prodotto» (anche in sola lettura).
 define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-list'], function (Dep) {
 
     return Dep.extend({
@@ -69,6 +69,9 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 this.injectCreateProductButton();
                 this.injectCreateProductMenuItem();
             }.bind(this), 200);
+            setTimeout(function () {
+                this.injectCreateProductButton();
+            }.bind(this), 800);
 
             if (!this._buttonObserver) {
                 this._buttonObserver = new MutationObserver(function () {
@@ -84,14 +87,36 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 return;
             }
 
-            var $anchorGroup = this.$el.find('.btn-group').first();
-            var $bar = $('<div class="mec-item-list-toolbar" style="margin-bottom:8px;"></div>');
             var $button = $('<button>')
                 .attr('type', 'button')
                 .addClass('btn btn-primary btn-sm btn-create-product')
                 .append($('<span>').addClass('fas fa-cube'))
                 .append(document.createTextNode(' Crea prodotto'));
 
+            this.listenToDom($button, 'click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.openCreateProductModal();
+            }.bind(this));
+
+            var $panel = this.$el.closest('.panel, .field[data-name="itemList"]');
+            var $heading = $panel.find('.panel-heading').first();
+
+            if ($heading.length) {
+                var $slot = $heading.find('.mec-crea-prodotto-slot').first();
+
+                if (!$slot.length) {
+                    $slot = $('<div class="pull-right mec-crea-prodotto-slot" style="margin-top:2px;"></div>');
+                    $heading.append($slot);
+                }
+
+                $slot.empty().append($button);
+
+                return;
+            }
+
+            var $anchorGroup = this.$el.find('.btn-group').first();
+            var $bar = $('<div class="mec-item-list-toolbar" style="margin-bottom:8px;"></div>');
             $bar.append($button);
 
             if ($anchorGroup.length) {
@@ -99,11 +124,6 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
             } else {
                 this.$el.prepend($bar);
             }
-
-            this.listenToDom($button, 'click', function (e) {
-                e.preventDefault();
-                this.openCreateProductModal();
-            }.bind(this));
         },
 
         injectCreateProductMenuItem: function () {

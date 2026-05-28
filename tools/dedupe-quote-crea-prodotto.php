@@ -1,7 +1,6 @@
 <?php
 /**
- * Rimuove definizioni duplicate «Crea prodotto» da clientDefs Quote (produzione).
- * Uso: php tools/dedupe-quote-crea-prodotto.php
+ * Rimuove solo duplicati «creaProdotto*» dentro ogni singola lista (non cancella menu vs buttonList).
  */
 declare(strict_types=1);
 
@@ -19,20 +18,20 @@ if (!is_array($data)) {
     exit(1);
 }
 
-$seen = false;
-$filterButtons = static function (array $buttons) use (&$seen): array {
+$isCreaProdotto = static function ($item): bool {
+    if (!is_array($item)) {
+        return false;
+    }
+    $name = (string) ($item['name'] ?? '');
+
+    return str_starts_with($name, 'creaProdotto');
+};
+
+$dedupeList = static function (array $buttons) use ($isCreaProdotto): array {
+    $seen = false;
     $out = [];
     foreach ($buttons as $item) {
-        if ($item === '__APPEND__') {
-            $out[] = $item;
-            continue;
-        }
-        if (!is_array($item)) {
-            $out[] = $item;
-            continue;
-        }
-        $name = $item['name'] ?? '';
-        if ($name === 'creaProdotto') {
+        if (is_array($item) && $isCreaProdotto($item)) {
             if ($seen) {
                 continue;
             }
@@ -40,44 +39,26 @@ $filterButtons = static function (array $buttons) use (&$seen): array {
         }
         $out[] = $item;
     }
+
     return $out;
 };
 
-foreach (['buttonList'] as $key) {
-    if (!empty($data[$key]) && is_array($data[$key])) {
-        $data[$key] = $filterButtons($data[$key]);
-    }
+if (!empty($data['buttonList']) && is_array($data['buttonList'])) {
+    $data['buttonList'] = $dedupeList($data['buttonList']);
 }
 
-foreach (['detail', 'edit'] as $view) {
-    if (empty($data['menu'][$view]['buttons']) || !is_array($data['menu'][$view]['buttons'])) {
-        continue;
-    }
-    $data['menu'][$view]['buttons'] = $filterButtons($data['menu'][$view]['buttons']);
+if (!empty($data['detailActionList']) && is_array($data['detailActionList'])) {
+    $data['detailActionList'] = $dedupeList($data['detailActionList']);
 }
 
-// Prefer single buttonList; drop duplicate menu entries for creaProdotto
-if (!empty($data['menu'])) {
+if (!empty($data['menu']) && is_array($data['menu'])) {
     foreach (['detail', 'edit'] as $view) {
-        if (empty($data['menu'][$view]['buttons'])) {
+        if (empty($data['menu'][$view]['buttons']) || !is_array($data['menu'][$view]['buttons'])) {
             continue;
         }
-        $data['menu'][$view]['buttons'] = array_values(array_filter(
-            $data['menu'][$view]['buttons'],
-            static function ($item) {
-                return $item === '__APPEND__'
-                    || !is_array($item)
-                    || ($item['name'] ?? '') !== 'creaProdotto';
-            }
-        ));
-        if ($data['menu'][$view]['buttons'] === ['__APPEND__']) {
-            unset($data['menu'][$view]['buttons']);
-        }
-    }
-    if (empty($data['menu']['detail']) && empty($data['menu']['edit'])) {
-        unset($data['menu']);
+        $data['menu'][$view]['buttons'] = $dedupeList($data['menu'][$view]['buttons']);
     }
 }
 
 file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
-echo "OK dedupe Quote.json — un solo creaProdotto in buttonList\n";
+echo "OK dedupe Quote.json (solo duplicati nella stessa lista)\n";
