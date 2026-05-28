@@ -175,7 +175,8 @@ foreach ($rows as $i => $row) {
 
         if (!$product && $createMissing) {
             $product = $entityManager->getNewEntity('Product');
-            applyProductIdentity($entityManager, $product, $identity, $brandId);
+            $identityPatch = buildIdentityPatch($entityManager, $product, $identity, $brandId);
+            $product->set($identityPatch);
             $product->set('status', 'Available');
             $product->set('type', 'Regular');
             $product->set('itemType', ($row['tipo'] ?? '') === 'servizio' ? 'Service' : 'Goods');
@@ -185,6 +186,8 @@ foreach ($rows as $i => $row) {
             if ($pricePatch !== []) {
                 $product->set($pricePatch);
             }
+
+            $patch = array_merge($identityPatch, $pricePatch);
 
             if (!$dryRun) {
                 $entityManager->saveEntity($product);

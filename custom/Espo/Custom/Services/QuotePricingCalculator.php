@@ -9,7 +9,8 @@ use Espo\ORM\EntityManager;
  * Passaggio 1 contratto: totali prezzo codice, minus/plus (plusvalenza), margine % su listino.
  *
  * Regola: minusPlus = imponibile IVA esclusa − prezzo codice totale IVA esclusa.
- * Positivo = plusvalenza, negativo = minusvalenza.
+ * L'imponibile è {@see importoContratto} (IVA escl.) quando valorizzato — non la somma
+ * automatica delle righe articolo (es. listino 5200 IVI → 4727,27).
  */
 class QuotePricingCalculator
 {
@@ -85,6 +86,8 @@ class QuotePricingCalculator
             $quote->set('prezzoCodiceIvaEsclusa', round($totalPrezzoCodice, 2));
         }
 
+        $this->syncAmountAndTaxFromImportoContratto($quote);
+
         $imponibile = $this->resolveImponibileNetto($quote);
 
         if ($imponibile === null) {
@@ -119,37 +122,48 @@ class QuotePricingCalculator
         }
     }
 
+    /**
+     * Importo contratto = imponibile negoziato (IVA escl.). Allinea amount, IVA e totale documento.
+     */
+    private function syncAmountAndTaxFromImportoContratto(Entity $quote): void
+    {
+        $net = $this->floatOrNull($quote->get('importoContratto'));
+
+        if ($net === null || $net <= 0) {
+            return;
+        }
+
+        $aliquota = $this->resolveAliquotaIva($quote);
+        $tax = round($net * $aliquota / 100, 2);
+        $gross = round($net + $tax, 2);
+
+        $quote->set([
+            'amount' => $net,
+            'taxAmount' => $tax,
+            'grandTotalAmount' => $gross,
+            'aliquotaIVA' => $aliquota,
+        ]);
+
+        if ($this->floatOrNull($quote->get('taxRate')) === null) {
+            $quote->set('taxRate', round($aliquota / 100, 4));
+        }
+    }
+
     private function resolveImponibileNetto(Entity $quote): ?float
     {
+        $importoContratto = $this->floatOrNull($quote->get('importoContratto'));
+
+        if ($importoContratto !== null && $importoContratto > 0) {
+            return $importoContratto;
+        }
+
         $amount = $this->floatOrNull($quote->get('amount'));
 
         if ($amount !== null && $amount > 0) {
             return $amount;
         }
 
-        $importoContratto = $this->floatOrNull($quote->get('importoContratto'));
         $taxAmount = $this->floatOrNull($quote->get('taxAmount')) ?? 0.0;
-
-        if ($importoContratto !== null && $importoContratto > 0) {
-            if ($taxAmount > 0 && $importoContratto > $taxAmount) {
-                return round($importoContratto - $taxAmount, 2);
-            }
-
-            $aliquota = $this->floatOrNull($quote->get('aliquotaIVA'));
-
-            if ($aliquota !== null && $aliquota > 0) {
-                return round($importoContratto / (1 + $aliquota / 100), 2);
-            }
-
-            $taxRate = $this->floatOrNull($quote->get('taxRate'));
-
-            if ($taxRate !== null && $taxRate > 0) {
-                return round($importoContratto / (1 + $taxRate), 2);
-            }
-
-            return $importoContratto;
-        }
-
         $grandTotal = $this->floatOrNull($quote->get('grandTotalAmount'));
 
         if ($grandTotal !== null && $grandTotal > 0 && $taxAmount > 0) {
@@ -157,6 +171,23 @@ class QuotePricingCalculator
         }
 
         return null;
+    }
+
+    private function resolveAliquotaIva(Entity $quote): float
+    {
+        $aliquota = $this->floatOrNull($quote->get('aliquotaIVA'));
+
+        if ($aliquota !== null && $aliquota > 0) {
+            return $aliquota;
+        }
+
+        $taxRate = $this->floatOrNull($quote->get('taxRate'));
+
+        if ($taxRate !== null && $taxRate > 0) {
+            return $taxRate < 1 ? $taxRate * 100 : $taxRate;
+        }
+
+        return 10.0;
     }
 
     private function sumPrezzoCodiceFromItems(Entity $quote): float

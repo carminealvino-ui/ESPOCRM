@@ -38,7 +38,8 @@
                     "name": "status"
                 },
                 {
-                    "name": "importoContratto"
+                    "name": "importoContratto",
+                    "customLabel": "Importo contratto (IVA escl.)"
                 }
             ],
             [

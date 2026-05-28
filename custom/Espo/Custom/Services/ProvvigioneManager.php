@@ -717,8 +717,8 @@ class ProvvigioneManager
 
     private function resolveImponibile(Entity $entity): ?float
     {
-        return $this->floatField($entity, 'amount')
-            ?? $this->floatField($entity, 'importoContratto')
+        return $this->floatField($entity, 'importoContratto')
+            ?? $this->floatField($entity, 'amount')
             ?? $this->floatField($entity, 'importoOpportunita')
             ?? $this->floatField($entity, 'importoImponibilePrevisto')
             ?? $this->floatField($entity, 'importoTrattativa');

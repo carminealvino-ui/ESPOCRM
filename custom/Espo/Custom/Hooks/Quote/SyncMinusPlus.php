@@ -12,7 +12,7 @@ use Espo\ORM\Repository\Option\SaveOptions;
  */
 class SyncMinusPlus implements BeforeSave
 {
-    public static int $order = 8;
+    public static int $order = 99;
 
     public function __construct(
         private QuotePricingCalculator $pricingCalculator

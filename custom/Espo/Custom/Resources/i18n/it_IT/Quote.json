@@ -30,7 +30,7 @@
         "prezzoCodice": "Prezzo Codice",
         "prezzoCodiceCurrency": "Prezzo Codice (Valuta)",
         "prezzoCodiceConverted": "Prezzo Codice (Convertito)",
-        "importoContratto": "Importo Contratto",
+        "importoContratto": "Importo contratto (IVA esclusa)",
         "importoContrattoCurrency": "Importo Contratto (Valuta)",
         "importoContrattoConverted": "Importo Contratto (Convertito)",
         "minusPlus": "Minus/Plus",
