@@ -52,6 +52,22 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
 
                 return originalCreateView(name, view, options, callback);
             };
+
+            this._onDocumentClick = function () {
+                setTimeout(function () {
+                    this.injectCreateProductMenuItemGlobal();
+                }.bind(this), 0);
+            }.bind(this);
+
+            $(document).on('click.create-product-menu-' + this.cid, this._onDocumentClick);
+        },
+
+        onRemove: function () {
+            if (this._onDocumentClick) {
+                $(document).off('click.create-product-menu-' + this.cid, this._onDocumentClick);
+            }
+
+            Dep.prototype.onRemove.call(this);
         },
 
         actionCreateProductDirect: function () {
@@ -69,10 +85,12 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
             setTimeout(function () {
                 this.injectCreateArticleButton();
                 this.injectCreateProductMenuItem();
+                this.injectCreateProductMenuItemGlobal();
             }.bind(this), 200);
 
             this.bindButtonObserver();
             this.injectCreateProductMenuItem();
+            this.injectCreateProductMenuItemGlobal();
         },
 
         bindButtonObserver: function () {
@@ -83,6 +101,7 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
             this._buttonObserver = new MutationObserver(function () {
                 this.injectCreateArticleButton();
                 this.injectCreateProductMenuItem();
+                this.injectCreateProductMenuItemGlobal();
             }.bind(this));
 
             this._buttonObserver.observe(this.el, { childList: true, subtree: true });
@@ -146,6 +165,44 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
 
                 if ($first.length) {
                     $first.after($item);
+                } else {
+                    $menu.append($item);
+                }
+
+                self.listenToDom($link, 'click', function (e) {
+                    e.preventDefault();
+                    self.openCreateArticleModal();
+                });
+            });
+        },
+
+        injectCreateProductMenuItemGlobal: function () {
+            var self = this;
+            var $menus = $('.dropdown-menu:visible');
+
+            $menus.each(function (i, menuEl) {
+                var $menu = $(menuEl);
+
+                if (!$menu.find('.action[data-action="addProducts"]').length) {
+                    return;
+                }
+
+                if ($menu.find('.action[data-action="createProductDirect"]').length) {
+                    return;
+                }
+
+                var $base = $menu.find('.action[data-action="addProducts"]').first().closest('li');
+                var $item = $('<li>');
+                var $link = $('<a>')
+                    .attr('href', 'javascript:')
+                    .addClass('action')
+                    .attr('data-action', 'createProductDirect')
+                    .text('Crea prodotto');
+
+                $item.append($link);
+
+                if ($base.length) {
+                    $base.after($item);
                 } else {
                     $menu.append($item);
                 }
