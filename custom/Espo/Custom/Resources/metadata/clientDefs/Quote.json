@@ -1,23 +1,21 @@
 {
     "controller": "controllers/record",
-    "viewSetupHandlerList": [
-        "__APPEND__",
-        "custom:handlers/quote/articoli-crea-prodotto-setup"
-    ],
-    "bottomPanels": {
+    "viewSetupHandlers": {
         "detail": [
             "__APPEND__",
-            {
-                "name": "items",
-                "view": "custom:views/quote/record/panels/items"
-            }
+            "custom:handlers/quote/articoli-crea-prodotto-setup"
         ],
         "edit": [
             "__APPEND__",
-            {
-                "name": "items",
-                "view": "custom:views/quote/record/panels/items"
-            }
+            "custom:handlers/quote/articoli-crea-prodotto-setup"
+        ],
+        "record/detail": [
+            "__APPEND__",
+            "custom:handlers/quote/articoli-crea-prodotto-setup"
+        ],
+        "record/edit": [
+            "__APPEND__",
+            "custom:handlers/quote/articoli-crea-prodotto-setup"
         ]
     },
     "menu": {

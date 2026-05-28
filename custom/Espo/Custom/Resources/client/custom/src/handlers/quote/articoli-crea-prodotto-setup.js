@@ -3,8 +3,8 @@ define('custom:handlers/quote/articoli-crea-prodotto-setup', [], function () {
 
     return class {
 
-        constructor(recordView) {
-            this.recordView = recordView;
+        constructor(view) {
+            this.recordView = view;
         }
 
         process() {
@@ -18,6 +18,16 @@ define('custom:handlers/quote/articoli-crea-prodotto-setup', [], function () {
             this.recordView.listenTo(this.recordView.model, 'sync', function () {
                 setTimeout(run, 400);
             });
+
+            var attempts = 0;
+            var timer = setInterval(function () {
+                attempts++;
+                run();
+
+                if (attempts >= 12 || $('.btn-create-product-articoli').length) {
+                    clearInterval(timer);
+                }
+            }, 500);
         }
 
         inject() {
@@ -45,7 +55,21 @@ define('custom:handlers/quote/articoli-crea-prodotto-setup', [], function () {
         }
 
         findItemsPanelView() {
-            var views = this.recordView.nestedViews || this.recordView.getNestedViews?.() || [];
+            var recordView = this.recordView;
+
+            if (recordView.getView) {
+                var direct = recordView.getView('items');
+
+                if (direct) {
+                    return direct;
+                }
+            }
+
+            var views = recordView.nestedViews || [];
+
+            if (typeof recordView.getNestedViews === 'function') {
+                views = recordView.getNestedViews();
+            }
 
             for (var i = 0; i < views.length; i++) {
                 var view = views[i];
@@ -66,30 +90,44 @@ define('custom:handlers/quote/articoli-crea-prodotto-setup', [], function () {
             return null;
         }
 
-        injectDomButton() {
+        findArticoliPanel() {
             var $root = this.recordView.$el;
-            var $panel = $root.find('.bottom-panel').filter(function () {
+            var $panel = $root.find('.panel[data-key="items"], .panel.panel-items').first();
+
+            if ($panel.length) {
+                return $panel;
+            }
+
+            $root.find('table').each(function () {
+                var text = ($(this).text() || '').toLowerCase();
+
+                if (text.indexOf('prezzo codice') !== -1 || text.indexOf('prezzo di listino') !== -1) {
+                    $panel = $(this).closest('.panel, .bottom-panel, .tab-pane');
+
+                    return false;
+                }
+            });
+
+            if ($panel && $panel.length) {
+                return $panel;
+            }
+
+            return $root.find('.bottom-panel').filter(function () {
                 var $p = $(this);
 
                 return $p.find('[data-name="itemList"]').length ||
                     $p.text().toLowerCase().indexOf('articoli') !== -1;
             }).first();
+        }
 
-            if (!$panel.length) {
-                $panel = $root.find('.field[data-name="itemList"]').closest('.panel, .bottom-panel').first();
-            }
-
-            if (!$panel.length) {
+        injectDomButton() {
+            if (this.recordView.$el.find('.btn-create-product-articoli').length) {
                 return;
             }
 
-            var $heading = $panel.find('.panel-heading, .panel-header').first();
+            var $panel = this.findArticoliPanel();
 
-            if (!$heading.length) {
-                return;
-            }
-
-            if ($heading.find('.btn-create-product-articoli').length) {
+            if (!$panel || !$panel.length) {
                 return;
             }
 
@@ -97,14 +135,28 @@ define('custom:handlers/quote/articoli-crea-prodotto-setup', [], function () {
             var $btn = $('<button type="button" class="btn btn-primary btn-sm btn-create-product-articoli">' +
                 '<span class="fas fa-cube"></span> Crea prodotto</button>');
 
-            $heading.append(
-                $('<div class="pull-right mec-crea-prodotto-slot" style="margin-left:12px;"></div>').append($btn)
-            );
-
             $btn.on('click', function (e) {
                 e.preventDefault();
                 self.openProductModal();
             });
+
+            var $heading = $panel.find('.panel-heading, .panel-header, .panel-title-container').first();
+
+            if ($heading.length) {
+                $heading.append(
+                    $('<div class="pull-right mec-crea-prodotto-slot" style="margin-left:12px;"></div>').append($btn)
+                );
+
+                return;
+            }
+
+            var $table = $panel.find('table').first();
+
+            if ($table.length) {
+                $table.before(
+                    $('<div class="mec-item-list-toolbar" style="margin-bottom:8px;text-align:right;"></div>').append($btn)
+                );
+            }
         }
 
         openProductModal() {
