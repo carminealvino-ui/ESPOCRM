@@ -628,7 +628,7 @@ class QuotePricingCalculator
     }
 
     /**
-     * Prezzo codice netto per Minus/Plus (es. 4.200 IVI → 3.818,18).
+     * Prezzo codice netto per Minus/Plus (es. 4.400 IVI → 4.000).
      */
     public function resolvePrezzoCodiceNetForMinusPlus(Entity $entity, ?Entity $opportunity = null): ?float
     {
