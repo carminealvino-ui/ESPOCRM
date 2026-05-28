@@ -23,6 +23,8 @@ echo "=== Deploy Crea prodotto ==="
 fetch "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
 fetch "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
 fetch "client/custom/src/action-handlers/quote/crea-prodotto.js"
+fetch "client/custom/src/handlers/quote/articoli-crea-prodotto-setup.js"
+fetch "client/custom/src/views/quote/record/panels/items.js"
 fetch "client/custom/src/views/quote/fields/item-list.js"
 fetch "client/custom/src/views/modals/select-product-for-quote.js"
 

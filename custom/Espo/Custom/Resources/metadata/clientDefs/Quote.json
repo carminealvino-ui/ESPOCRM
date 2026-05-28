@@ -1,5 +1,25 @@
 {
     "controller": "controllers/record",
+    "viewSetupHandlerList": [
+        "__APPEND__",
+        "custom:handlers/quote/articoli-crea-prodotto-setup"
+    ],
+    "bottomPanels": {
+        "detail": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "view": "custom:views/quote/record/panels/items"
+            }
+        ],
+        "edit": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "view": "custom:views/quote/record/panels/items"
+            }
+        ]
+    },
     "menu": {
         "detail": {
             "buttons": [
