@@ -289,7 +289,8 @@ foreach ($rows as $i => $row) {
                     $priceBook,
                     $prezzoPerProductPrice,
                     $dateStart,
-                    $dryRun
+                    $dryRun,
+                    $prezzoCodiceIvi
                 );
 
                 if ($ppResult) {
@@ -910,7 +911,8 @@ function upsertProductPrice(
     \Espo\ORM\Entity $priceBook,
     float $price,
     string $dateStart,
-    bool $dryRun
+    bool $dryRun,
+    ?float $prezzoCodiceIvi = null
 ): ?string {
     $productId = $product->getId();
 
@@ -960,6 +962,18 @@ function upsertProductPrice(
         'price' => $price,
         'status' => 'Active',
     ]);
+
+    if ($prezzoCodiceIvi !== null && $productPrice->hasAttribute('prezzoCodiceIvaInclusa')) {
+        $productPrice->set('prezzoCodiceIvaInclusa', $prezzoCodiceIvi);
+
+        if ($productPrice->hasAttribute('prezzoCodice')) {
+            $taxInclusive = (bool) $priceBook->get('isTaxInclusive');
+            $productPrice->set(
+                'prezzoCodice',
+                $taxInclusive ? round($prezzoCodiceIvi / 1.1, 2) : $prezzoCodiceIvi
+            );
+        }
+    }
 
     if ($productPrice->hasAttribute('dateStart')) {
         $productPrice->set('dateStart', $dateStart);

@@ -8,14 +8,14 @@ use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Allinea Product.listPrice (IVA escl.) con ProductPrice sul listino prezzi.
- *
- * Su listino ARIEL con is_tax_inclusive=1:
- * - tab Prezzi → price = 5200 IVI
- * - scheda prodotto listPrice = 4727,27 netti (provvigioni / margini)
+ * Allinea Product da riga listino (ProductPrice):
+ * - price → listPrice netto + prezzoListinoIvaInclusa
+ * - prezzoCodice / prezzoCodiceIvaInclusa → stessi campi sul prodotto
  */
 class SyncProductListPrices implements AfterSave
 {
+    private const ALIQUOTA_IVA = 10.0;
+
     public static int $order = 10;
 
     public function __construct(
@@ -36,7 +36,7 @@ class SyncProductListPrices implements AfterSave
         $priceBookId = $productPrice->get('priceBookId');
         $price = $productPrice->get('price');
 
-        if (!$productId || !$priceBookId || $price === null || $price === '') {
+        if (!$productId || !$priceBookId) {
             return;
         }
 
@@ -47,21 +47,28 @@ class SyncProductListPrices implements AfterSave
             return;
         }
 
-        $amount = (float) $price;
-        $aliquota = 10.0;
         $taxInclusive = (bool) $priceBook->get('isTaxInclusive');
-
         $patch = [];
 
-        if ($taxInclusive) {
-            $net = round($amount / (1 + $aliquota / 100), 2);
-            $patch['prezzoListinoIvaInclusa'] = round($amount, 2);
-            $patch['listPrice'] = $net;
-            $patch['unitPrice'] = $net;
-        } else {
-            $patch['listPrice'] = round($amount, 2);
-            $patch['unitPrice'] = round($amount, 2);
-            $patch['prezzoListinoIvaInclusa'] = round($amount * (1 + $aliquota / 100), 2);
+        if ($price !== null && $price !== '') {
+            $amount = (float) $price;
+
+            if ($taxInclusive) {
+                $net = round($amount / (1 + self::ALIQUOTA_IVA / 100), 2);
+                $patch['prezzoListinoIvaInclusa'] = round($amount, 2);
+                $patch['listPrice'] = $net;
+                $patch['unitPrice'] = $net;
+            } else {
+                $patch['listPrice'] = round($amount, 2);
+                $patch['unitPrice'] = round($amount, 2);
+                $patch['prezzoListinoIvaInclusa'] = round($amount * (1 + self::ALIQUOTA_IVA / 100), 2);
+            }
+        }
+
+        $this->applyPrezzoCodicePatch($productPrice, $product, $taxInclusive, $patch);
+
+        if ($patch === []) {
+            return;
         }
 
         $product->set($patch);
@@ -69,5 +76,57 @@ class SyncProductListPrices implements AfterSave
             'skipHooks' => true,
             'silent' => true,
         ]);
+    }
+
+    /**
+     * @param array<string, float> $patch
+     */
+    private function applyPrezzoCodicePatch(
+        Entity $productPrice,
+        Entity $product,
+        bool $taxInclusive,
+        array &$patch
+    ): void {
+        $codiceIvi = $this->floatOrNull($productPrice->get('prezzoCodiceIvaInclusa'));
+        $codiceNet = $this->floatOrNull($productPrice->get('prezzoCodice'));
+
+        if ($codiceIvi === null && $codiceNet === null) {
+            return;
+        }
+
+        if ($codiceIvi !== null && $codiceIvi > 0) {
+            if ($product->hasAttribute('prezzoCodiceIvaInclusa')) {
+                $patch['prezzoCodiceIvaInclusa'] = round($codiceIvi, 2);
+            }
+
+            if ($product->hasAttribute('prezzoCodice')) {
+                $patch['prezzoCodice'] = $taxInclusive
+                    ? round($codiceIvi / (1 + self::ALIQUOTA_IVA / 100), 2)
+                    : round($codiceIvi, 2);
+            }
+
+            return;
+        }
+
+        if ($codiceNet !== null && $codiceNet > 0) {
+            if ($product->hasAttribute('prezzoCodice')) {
+                $patch['prezzoCodice'] = round($codiceNet, 2);
+            }
+
+            if ($product->hasAttribute('prezzoCodiceIvaInclusa')) {
+                $patch['prezzoCodiceIvaInclusa'] = $taxInclusive
+                    ? round($codiceNet * (1 + self::ALIQUOTA_IVA / 100), 2)
+                    : round($codiceNet, 2);
+            }
+        }
+    }
+
+    private function floatOrNull(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return (float) $value;
     }
 }
