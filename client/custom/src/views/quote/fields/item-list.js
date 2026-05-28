@@ -1,4 +1,4 @@
-// Contratto: lista articoli + pulsante «Crea prodotto» (anche in sola lettura).
+// Contratto: «Crea prodotto» sotto il titolo Prodotti/Articoli (pulsante, a sinistra).
 define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-list'], function (Dep) {
 
     return Dep.extend({
@@ -69,17 +69,6 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 this.injectCreateProductButton();
                 this.injectCreateProductMenuItem();
             }.bind(this), 200);
-            setTimeout(function () {
-                this.injectCreateProductButton();
-            }.bind(this), 800);
-
-            if (!this._buttonObserver) {
-                this._buttonObserver = new MutationObserver(function () {
-                    this.injectCreateProductButton();
-                    this.injectCreateProductMenuItem();
-                }.bind(this));
-                this._buttonObserver.observe(this.el, { childList: true, subtree: true });
-            }
         },
 
         injectCreateProductButton: function () {
@@ -90,8 +79,7 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
             var $button = $('<button>')
                 .attr('type', 'button')
                 .addClass('btn btn-primary btn-sm btn-create-product')
-                .append($('<span>').addClass('fas fa-cube'))
-                .append(document.createTextNode(' Crea prodotto'));
+                .text('Crea prodotto');
 
             this.listenToDom($button, 'click', function (e) {
                 e.preventDefault();
@@ -99,58 +87,35 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 this.openCreateProductModal();
             }.bind(this));
 
-            var $panel = this.$el.closest('.panel, .bottom-panel, .field[data-name="itemList"]');
-            var $heading = $panel.find('.panel-heading, .panel-header').first();
+            var $panel = this.$el.closest('.panel, .bottom-panel');
 
-            if (!$heading.length) {
-                $panel.children().each(function () {
-                    var $child = $(this);
-                    var tag = (this.tagName || '').toLowerCase();
-
-                    if (tag === 'div' && ($child.hasClass('panel-heading') || $child.find('.panel-title').length)) {
-                        $heading = $child;
-                        return false;
-                    }
-                });
-            }
-
-            if ($heading.length) {
-                var $slot = $heading.find('.mec-crea-prodotto-slot').first();
-
-                if (!$slot.length) {
-                    $slot = $('<div class="pull-left mec-crea-prodotto-slot" style="margin-right:12px;"></div>');
-                    $heading.prepend($slot);
-                }
-
-                $slot.empty().append($button);
-
-                return;
-            }
-
-            var $fieldLabel = this.$el.closest('.field').find('> .field-label, .field-header').first();
-
-            if ($fieldLabel.length) {
-                var $labelSlot = $fieldLabel.find('.mec-crea-prodotto-slot').first();
-
-                if (!$labelSlot.length) {
-                    $labelSlot = $('<span class="mec-crea-prodotto-slot" style="margin-right:12px;"></span>');
-                    $fieldLabel.prepend($labelSlot);
-                }
-
-                $labelSlot.empty().append($button);
-
-                return;
-            }
-
-            var $anchorGroup = this.$el.find('.btn-group').first();
-            var $bar = $('<div class="mec-item-list-toolbar" style="margin-bottom:8px;"></div>');
-            $bar.append($button);
-
-            if ($anchorGroup.length) {
-                $anchorGroup.before($bar);
-            } else {
+            if (!$panel.length) {
+                var $bar = $('<div class="mec-crea-prodotto-toolbar" style="margin-bottom:10px;"></div>');
+                $bar.append($button);
                 this.$el.prepend($bar);
+
+                return;
             }
+
+            var $toolbar = $panel.children('.mec-crea-prodotto-toolbar').first();
+
+            if (!$toolbar.length) {
+                $toolbar = $('<div class="mec-crea-prodotto-toolbar" style="margin:0 0 12px 0;clear:both;"></div>');
+                var $heading = $panel.children('.panel-heading, .panel-header').first();
+
+                if ($heading.length) {
+                    $heading.after($toolbar);
+                } else {
+                    var $body = $panel.children('.panel-body').first();
+                    if ($body.length) {
+                        $body.prepend($toolbar);
+                    } else {
+                        $panel.prepend($toolbar);
+                    }
+                }
+            }
+
+            $toolbar.empty().append($button);
         },
 
         injectCreateProductMenuItem: function () {

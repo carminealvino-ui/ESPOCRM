@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pulsante «Crea prodotto» su Contratto — solo clientDefs + handler (no duplicati DOM)
+# «Crea prodotto»: pulsante sotto titolo Prodotti/Articoli (solo item-list custom).
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
@@ -7,6 +7,7 @@ BRANCH="${BRANCH:-cursor/provvigioni-manuali-fase-a-9999}"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 CLIENT_JSON="${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/app/client.json"
 LEGACY_SCRIPT="client/custom/src/custom-product-button.js"
+ARTICOLI_HANDLER="client/custom/src/handlers/quote/articoli-crea-prodotto-setup.js"
 
 cd "${CRM_ROOT}" || exit 1
 
@@ -18,22 +19,21 @@ fetch() {
   echo "OK ${rel}"
 }
 
-echo "=== Deploy Crea prodotto ==="
+echo "=== Deploy Crea prodotto (solo Articoli) ==="
 
 fetch "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
 fetch "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
-fetch "client/custom/src/action-handlers/quote/crea-prodotto.js"
-fetch "client/custom/src/handlers/quote/articoli-crea-prodotto-setup.js"
-fetch "client/custom/src/views/quote/record/panels/items.js"
 fetch "client/custom/src/views/quote/fields/item-list.js"
+fetch "client/custom/src/views/quote/record/panels/items.js"
 fetch "client/custom/src/views/modals/select-product-for-quote.js"
+
+rm -f "${CRM_ROOT}/${LEGACY_SCRIPT}" "${CRM_ROOT}/${ARTICOLI_HANDLER}"
+rm -f "${CRM_ROOT}/custom/Espo/Custom/Resources/client/custom/src/handlers/quote/articoli-crea-prodotto-setup.js"
 
 mkdir -p "${CRM_ROOT}/tools"
 curl -fsSL "${BASE}/tools/dedupe-quote-crea-prodotto.php?t=$(date +%s)" -o "${CRM_ROOT}/tools/dedupe-quote-crea-prodotto.php"
 CRM_ROOT="${CRM_ROOT}" php "${CRM_ROOT}/tools/dedupe-quote-crea-prodotto.php"
 
-# Rimuovi script DOM legacy (causava doppio pulsante in testata)
-rm -f "${CRM_ROOT}/${LEGACY_SCRIPT}"
 if [[ -f "${CLIENT_JSON}" ]]; then
   php -r "
     \$f = '${CLIENT_JSON}';
@@ -49,17 +49,9 @@ if [[ -f "${CLIENT_JSON}" ]]; then
     }
     file_put_contents(\$f, json_encode(\$j, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
   "
-  echo "OK rimosso ${LEGACY_SCRIPT} da app/client.json (se presente)"
-fi
-
-if [[ -f "${CRM_ROOT}/client/custom/src/action-handlers/quote/crea-prodotto.js" ]]; then
-  echo "Verifica: handler crea-prodotto installato"
-else
-  echo "ERRORE: handler mancante" >&2
-  exit 1
 fi
 
 php command.php rebuild
 rm -rf data/cache/*
 echo ""
-echo "Fatto. Solo «Crea prodotto» a sinistra nel pannello Articoli (no testata). Cache: Ctrl+Shift+R"
+echo "Fatto. Pulsante blu «Crea prodotto» sotto la scritta Prodotti/Articoli. Ctrl+Shift+R"

@@ -1,21 +1,3 @@
 {
-    "controller": "controllers/record",
-    "viewSetupHandlers": {
-        "detail": [
-            "__APPEND__",
-            "custom:handlers/quote/articoli-crea-prodotto-setup"
-        ],
-        "edit": [
-            "__APPEND__",
-            "custom:handlers/quote/articoli-crea-prodotto-setup"
-        ],
-        "record/detail": [
-            "__APPEND__",
-            "custom:handlers/quote/articoli-crea-prodotto-setup"
-        ],
-        "record/edit": [
-            "__APPEND__",
-            "custom:handlers/quote/articoli-crea-prodotto-setup"
-        ]
-    }
+    "controller": "controllers/record"
 }
