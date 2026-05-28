@@ -1,32 +1,74 @@
-// Pulsante «Crea prodotto» su Contratto (view + edit). Path deploy: client/custom/src/
+// Pulsante «Crea prodotto» su scheda Contratto (sempre visibile in testata + sezione Articoli).
 (function () {
     'use strict';
 
     var BTN_CLASS = 'mec-btn-crea-prodotto';
 
     function isQuotePage() {
-        var h = window.location.hash || '';
-        return /#Quote\/(view|edit)\//i.test(h);
+        var h = (window.location.hash || '').toLowerCase();
+        var p = (window.location.pathname || '').toLowerCase();
+
+        if (h.indexOf('quote') !== -1 && (h.indexOf('/view/') !== -1 || h.indexOf('/edit/') !== -1)) {
+            return true;
+        }
+
+        return p.indexOf('quote') !== -1;
     }
 
     function openCreateProduct() {
         if (window.Espo && Espo.Ui && typeof Espo.Ui.notify === 'function') {
-            Espo.Ui.notify('Apertura creazione prodotto...');
-        }
-
-        if (window.Espo && Espo.Ui && typeof Espo.Ui.openView === 'function') {
-            try {
-                Espo.Ui.openView({
-                    scope: 'Product',
-                    name: 'create',
-                });
-                return;
-            } catch (e) {
-                // fallback sotto
-            }
+            Espo.Ui.notify('Creazione prodotto...');
         }
 
         window.location.hash = '#Product/create';
+    }
+
+    function makeButton() {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-primary btn-sm ' + BTN_CLASS;
+        button.style.marginLeft = '8px';
+        button.innerHTML = '<span class="fas fa-cube"></span> Crea prodotto';
+        button.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            openCreateProduct();
+        });
+
+        return button;
+    }
+
+    /** In testata pagina, accanto a Modifica — sempre visibile */
+    function injectInPageHeader() {
+        if (!isQuotePage()) {
+            return;
+        }
+
+        var existing = document.querySelector('.' + BTN_CLASS + '-header');
+
+        if (existing) {
+            return;
+        }
+
+        var headerActions = document.querySelector(
+            '.header-buttons, .page-header .btn-group, .detail-button-container, .record-header .btn-group'
+        );
+
+        if (!headerActions) {
+            var editBtn = document.querySelector('.btn[data-action="edit"], a.btn[data-action="edit"]');
+
+            if (editBtn && editBtn.parentNode) {
+                headerActions = editBtn.parentNode;
+            }
+        }
+
+        if (!headerActions) {
+            return;
+        }
+
+        var button = makeButton();
+        button.classList.add(BTN_CLASS + '-header');
+        headerActions.appendChild(button);
     }
 
     function findArticoliAnchor() {
@@ -41,35 +83,20 @@
         for (var i = 0; i < tables.length; i++) {
             var text = (tables[i].textContent || '').toLowerCase();
 
-            if (text.indexOf('prezzo di listino') !== -1 || text.indexOf('prezzo codice') !== -1) {
-                var panel = tables[i].closest('.panel, .tab-pane, .field, .record-grid, .detail');
-
-                return panel || tables[i].parentElement;
-            }
-        }
-
-        var labels = document.querySelectorAll('.field-label, label, h4, .panel-heading');
-
-        for (var j = 0; j < labels.length; j++) {
-            var lbl = (labels[j].textContent || '').trim().toLowerCase();
-
-            if (lbl === 'articoli' || lbl.indexOf('articoli') === 0) {
-                return labels[j].closest('.field, .panel, .cell') || labels[j].parentElement;
+            if (text.indexOf('prezzo codice') !== -1 || text.indexOf('prezzo di listino') !== -1) {
+                return tables[i].closest('.panel, .tab-pane, .field') || tables[i].parentElement;
             }
         }
 
         return null;
     }
 
-    function injectButton() {
+    function injectInArticoli() {
         if (!isQuotePage()) {
-            document.querySelectorAll('.' + BTN_CLASS).forEach(function (el) {
-                el.remove();
-            });
             return;
         }
 
-        if (document.querySelector('.' + BTN_CLASS)) {
+        if (document.querySelector('.' + BTN_CLASS + '-articoli')) {
             return;
         }
 
@@ -79,42 +106,38 @@
             return;
         }
 
-        var bar = document.createElement('div');
-        bar.className = 'mec-articoli-toolbar';
-        bar.style.cssText = 'margin:8px 0 12px 0; display:flex; align-items:center; gap:8px; flex-wrap:wrap;';
-
-        var button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'btn btn-primary btn-sm ' + BTN_CLASS;
-        button.innerHTML = '<span class="fas fa-cube"></span> Crea prodotto';
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            openCreateProduct();
-        });
-
-        bar.appendChild(button);
+        var button = makeButton();
+        button.classList.add(BTN_CLASS + '-articoli');
 
         var btnGroup = anchor.querySelector('.btn-group');
 
         if (btnGroup && btnGroup.parentNode) {
-            btnGroup.parentNode.insertBefore(bar, btnGroup);
-        } else if (anchor.querySelector('table')) {
-            anchor.insertBefore(bar, anchor.querySelector('table'));
+            btnGroup.parentNode.insertBefore(button, btnGroup);
         } else {
-            anchor.insertBefore(bar, anchor.firstChild);
+            anchor.insertBefore(button, anchor.firstChild);
         }
     }
 
+    function injectAll() {
+        if (!isQuotePage()) {
+            document.querySelectorAll('.' + BTN_CLASS).forEach(function (el) {
+                el.remove();
+            });
+            return;
+        }
+
+        injectInPageHeader();
+        injectInArticoli();
+    }
+
     function boot() {
-        injectButton();
-        setInterval(injectButton, 800);
+        injectAll();
+        setInterval(injectAll, 600);
 
-        var obs = new MutationObserver(function () {
-            injectButton();
+        new MutationObserver(injectAll).observe(document.body, {
+            childList: true,
+            subtree: true,
         });
-
-        obs.observe(document.body, { childList: true, subtree: true });
     }
 
     if (document.readyState === 'loading') {
