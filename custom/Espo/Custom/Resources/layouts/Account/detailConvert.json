@@ -1,0 +1,110 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "stato"
+                },
+                {
+                    "name": "azienda"
+                }
+            ],
+            [
+                {
+                    "name": "segmento"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "b2B"
+                },
+                {
+                    "name": "partitaIVA"
+                }
+            ],
+            [
+                {
+                    "name": "billingAddress"
+                },
+                {
+                    "name": "shippingAddress"
+                }
+            ],
+            [
+                {
+                    "name": "phoneNumber"
+                },
+                {
+                    "name": "whatsApp"
+                }
+            ],
+            [
+                {
+                    "name": "emailAddress"
+                },
+                {
+                    "name": "website"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": "Overview"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "type"
+                },
+                {
+                    "name": "industry"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": "Details"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "codicePOS"
+                },
+                {
+                    "name": "codiceCliente"
+                }
+            ],
+            [
+                {
+                    "name": "consistenze"
+                }
+            ]
+        ],
+        "style": "default",
+        "dynamicLogicVisible": {
+            "conditionGroup": [
+                {
+                    "type": "in",
+                    "attribute": "segmento",
+                    "value": [
+                        "B2B"
+                    ]
+                }
+            ]
+        },
+        "hidden": false,
+        "customLabel": "Consistenze"
+    }
+]

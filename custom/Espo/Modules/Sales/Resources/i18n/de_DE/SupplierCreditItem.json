@@ -1,0 +1,30 @@
+{
+  "fields": {
+    "qty": "Mng",
+    "quantity": "Menge",
+    "quantityInt": "Menge (Int)",
+    "unitPrice": "Einzelpreis",
+    "amount": "Betrag",
+    "taxRate": "Steuersatz",
+    "product": "Produkt",
+    "order": "Positionsnummer",
+    "supplierCredit": "Eingangsgutschrift",
+    "weight": "Gewicht",
+    "unitWeight": "Einzelgewicht",
+    "description": "Beschreibung",
+    "amountConverted": "Betrag (konvertiert)",
+    "unitPriceConverted": "Einzelpreis (konvertiert)",
+    "unitPriceCurrency": "Einzelpreis Währung",
+    "amountCurrency": "Betragswährung",
+    "supplierCreditStatus": "Eingangsgutschrift Status",
+    "taxCode": "Steuercode",
+    "taxes": "Steuerbetrag",
+    "amountLocal": "Lokaler Betrag",
+    "dateIssued": "Ausstellungsdatum"
+  },
+  "links": {
+    "supplierCredit": "Eingangsgutschrift",
+    "product": "Produkt",
+    "taxCode": "Steuercode"
+  }
+}

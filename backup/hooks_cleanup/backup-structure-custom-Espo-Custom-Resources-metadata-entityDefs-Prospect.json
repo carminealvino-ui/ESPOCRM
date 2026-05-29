@@ -1,0 +1,357 @@
+{
+    "fields": {
+        "name": {
+            "type": "personName",
+            "isPersonalData": true
+        },
+        "salutationName": {
+            "type": "enum",
+            "options": [
+                "",
+                "Mr.",
+                "Ms.",
+                "Mrs.",
+                "Dr."
+            ]
+        },
+        "firstName": {
+            "type": "varchar",
+            "maxLength": 100,
+            "default": null,
+            "trim": true,
+            "options": []
+        },
+        "lastName": {
+            "type": "varchar",
+            "maxLength": 100,
+            "required": false,
+            "default": null,
+            "trim": true,
+            "options": []
+        },
+        "description": {
+            "type": "text"
+        },
+        "emailAddress": {
+            "type": "email",
+            "isPersonalData": true
+        },
+        "phoneNumber": {
+            "notStorable": true,
+            "type": "phone",
+            "typeList": [
+                "Mobile",
+                "Office",
+                "Home",
+                "Fax",
+                "Other"
+            ],
+            "defaultType": "Mobile",
+            "isPersonalData": true
+        },
+        "address": {
+            "type": "address",
+            "isPersonalData": true
+        },
+        "addressStreet": {
+            "type": "text",
+            "maxLength": 255,
+            "dbType": "varchar"
+        },
+        "addressCity": {
+            "type": "varchar",
+            "trim": true,
+            "default": "Roma"
+        },
+        "addressState": {
+            "type": "varchar",
+            "trim": true,
+            "default": "RM"
+        },
+        "addressCountry": {
+            "type": "varchar",
+            "trim": true,
+            "default": "Italia"
+        },
+        "addressPostalCode": {
+            "type": "varchar",
+            "trim": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true,
+            "view": "views/fields/user"
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true,
+            "view": "views/fields/user"
+        },
+        "assignedUser": {
+            "type": "link",
+            "required": false,
+            "view": "views/fields/assigned-user"
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "view": "views/fields/teams"
+        },
+        "cAP": {
+            "type": "link"
+        },
+        "appuntamenti": {
+            "type": "linkMultiple",
+            "layoutDetailDisabled": true,
+            "layoutMassUpdateDisabled": true,
+            "noLoad": true,
+            "importDisabled": true,
+            "isCustom": true
+        },
+        "b2B": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "codiceCAP": {
+            "readOnly": true,
+            "type": "foreign",
+            "link": "cAP",
+            "field": "codiceCAP",
+            "view": "views/fields/foreign-varchar",
+            "isCustom": true
+        },
+        "cAPDescrizione": {
+            "readOnly": true,
+            "type": "foreign",
+            "link": "cAP",
+            "field": "description",
+            "view": "views/fields/foreign-text",
+            "isCustom": true
+        },
+        "insegna": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "partitaIVA": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "ragioneSociale": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "referenteAziendale": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "telefono": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "whatsApp": {
+            "type": "url",
+            "isCustom": true
+        },
+        "whatsApp39": {
+            "type": "url",
+            "isCustom": true
+        },
+        "lead": {
+            "type": "link",
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "linkMultiple",
+            "layoutDetailDisabled": true,
+            "layoutMassUpdateDisabled": true,
+            "noLoad": true,
+            "importDisabled": true,
+            "isCustom": true
+        },
+        "middleName": {
+            "options": []
+        },
+        "origine": {
+            "type": "enum",
+            "options": [
+                "",
+                "Generazione Lead",
+                "Extractor",
+                "Assegnazione CB",
+                "Referenza Personale"
+            ],
+            "style": {
+                "": null,
+                "Generazione Lead": null,
+                "Extractor": null,
+                "Assegnazione CB": null,
+                "Referenza Personale": null
+            },
+            "maxLength": 100,
+            "isCustom": true
+        },
+        "azienda": {
+            "type": "enum",
+            "options": [
+                "",
+                "TELCALL",
+                "ARQUATI",
+                "GFB",
+                "ARTEL",
+                "PROGETTO",
+                "ARIEL"
+            ],
+            "style": {
+                "": null,
+                "TELCALL": null,
+                "ARQUATI": null,
+                "GFB": null,
+                "ARTEL": null,
+                "PROGETTO": null,
+                "ARIEL": null
+            },
+            "maxLength": 100,
+            "isCustom": true
+        },
+        "cliente": {
+            "type": "link"
+        }
+    },
+    "links": {
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "assignedUser": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "EntityTeam",
+            "layoutRelationshipsDisabled": true
+        },
+        "meetings": {
+            "type": "hasMany",
+            "entity": "Meeting",
+            "foreign": "parent",
+            "layoutRelationshipsDisabled": true
+        },
+        "calls": {
+            "type": "hasMany",
+            "entity": "Call",
+            "foreign": "parent",
+            "layoutRelationshipsDisabled": true
+        },
+        "tasks": {
+            "type": "hasChildren",
+            "entity": "Task",
+            "foreign": "parent",
+            "layoutRelationshipsDisabled": true
+        },
+        "cAP": {
+            "type": "belongsTo",
+            "foreign": "prospect",
+            "entity": "CAP",
+            "audited": false,
+            "isCustom": true
+        },
+        "appuntamenti": {
+            "type": "hasMany",
+            "foreign": "prospect",
+            "entity": "Appuntamento",
+            "audited": false,
+            "isCustom": true
+        },
+        "lead": {
+            "type": "belongsTo",
+            "foreign": "prospect",
+            "entity": "Lead",
+            "isCustom": true
+        },
+        "appuntamentoChildren": {
+            "type": "hasChildren",
+            "foreign": "parent",
+            "entity": "Appuntamento",
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "hasMany",
+            "foreign": "prospect",
+            "entity": "Opportunity",
+            "audited": false,
+            "isCustom": true
+        },
+        "contattiTelefonici": {
+            "type": "hasMany",
+            "foreign": "prospect",
+            "entity": "Call",
+            "audited": false,
+            "isCustom": true
+        },
+        "cliente": {
+            "type": "belongsTo",
+            "foreign": "prospect",
+            "entity": "Account",
+            "isCustom": true
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [
+            "name",
+            "firstName",
+            "lastName",
+            "phoneNumber",
+            "addressStreet",
+            "addressCity"
+        ],
+        "fullTextSearch": false,
+        "countDisabled": false
+    },
+    "indexes": {
+        "firstName": {
+            "columns": [
+                "firstName",
+                "deleted"
+            ]
+        },
+        "name": {
+            "columns": [
+                "firstName",
+                "lastName"
+            ]
+        },
+        "assignedUser": {
+            "columns": [
+                "assignedUserId",
+                "deleted"
+            ]
+        }
+    },
+    "optimisticConcurrencyControl": false
+}

@@ -1,0 +1,17 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "priority"
+    },
+    {
+        "name": "dateEnd",
+        "align": "right"
+    },
+    {
+        "name": "privato",
+        "align": "right"
+    }
+]

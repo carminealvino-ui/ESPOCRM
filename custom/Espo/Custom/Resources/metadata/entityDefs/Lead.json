@@ -1,0 +1,384 @@
+{
+    "fields": {
+        "prospect": {
+            "type": "linkOne",
+            "isCustom": true
+        },
+        "accountName": {
+            "options": []
+        },
+        "b2B": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "telefono": {
+            "readOnly": true,
+            "type": "foreign",
+            "link": "prospect",
+            "field": "telefono",
+            "view": "views/fields/foreign-varchar",
+            "isCustom": true
+        },
+        "cAP": {
+            "type": "link"
+        },
+        "cAPCodice": {
+            "readOnly": true,
+            "type": "foreign",
+            "link": "cAP",
+            "field": "codiceCAP",
+            "view": "views/fields/foreign-varchar",
+            "isCustom": true
+        },
+        "whatsApp": {
+            "readOnly": true,
+            "type": "foreign",
+            "link": "prospect",
+            "field": "whatsApp",
+            "view": "views/fields/foreign-url",
+            "isCustom": true
+        },
+        "whatsApp39": {
+            "readOnly": true,
+            "type": "foreign",
+            "link": "prospect",
+            "field": "whatsApp39",
+            "view": "views/fields/foreign-url",
+            "isCustom": true
+        },
+        "appuntamento": {
+            "type": "link"
+        },
+        "firstName": {
+            "default": null,
+            "options": []
+        },
+        "opportunita": {
+            "type": "linkMultiple",
+            "layoutDetailDisabled": true,
+            "layoutMassUpdateDisabled": true,
+            "importDisabled": true,
+            "isCustom": true
+        },
+        "insegna": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "partitaIVA": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "referenteAziendale": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "source": {
+            "options": [
+                "",
+                "Generazione Lead",
+                "Call Center",
+                "Call",
+                "Vodafone Assegnazione CB",
+                "D2D",
+                "Email",
+                "Existing Customer",
+                "Partner",
+                "Public Relations",
+                "Web Site",
+                "WhatsApp Massivo",
+                "Campaign",
+                "Other"
+            ],
+            "style": {
+                "": null,
+                "Generazione Lead": null,
+                "Call Center": null,
+                "Call": null,
+                "Vodafone Assegnazione CB": null,
+                "D2D": null,
+                "Email": null,
+                "Existing Customer": null,
+                "Partner": null,
+                "Public Relations": null,
+                "Web Site": null,
+                "WhatsApp Massivo": null,
+                "Campaign": null,
+                "Other": null
+            },
+            "default": "Call Center"
+        },
+        "title": {
+            "options": [
+                "Decisore d'Acquisto",
+                "Responsabile",
+                "Socio",
+                "Influenzatore",
+                "Segretaria"
+            ]
+        },
+        "meseImportazioneCB": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "cluster": {
+            "type": "enum",
+            "options": [
+                "",
+                "Micro",
+                "Small",
+                "Medium",
+                "Enterprise"
+            ],
+            "style": {
+                "": null,
+                "Micro": null,
+                "Small": null,
+                "Medium": null,
+                "Enterprise": null
+            },
+            "default": "",
+            "isCustom": true
+        },
+        "codiceCliente": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "codicePOS": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "consistenze": {
+            "type": "multiEnum",
+            "storeArrayValues": true,
+            "options": [
+                "VDF Voce",
+                "VDF Dati",
+                "VDF M2M",
+                "VDF DSL",
+                "VDF ONU",
+                "VDF ONA",
+                "VDF DEAL",
+                "VDF Digital"
+            ],
+            "style": {
+                "VDF Voce": null,
+                "VDF Dati": null,
+                "VDF M2M": null,
+                "VDF DSL": null,
+                "VDF ONU": null,
+                "VDF ONA": null,
+                "VDF DEAL": null,
+                "VDF Digital": null
+            },
+            "isCustom": true,
+            "default": []
+        },
+        "segmento": {
+            "type": "enum",
+            "options": [
+                "",
+                "B2C Appartamento",
+                "B2C Villa Multifamiliare",
+                "B2C Villa",
+                "B2B SOHO",
+                "B2B SME"
+            ],
+            "style": {
+                "": null,
+                "B2C Appartamento": null,
+                "B2C Villa Multifamiliare": null,
+                "B2C Villa": null,
+                "B2B SOHO": null,
+                "B2B SME": null
+            },
+            "default": "",
+            "isCustom": true
+        },
+        "pagamentiProvvigionali": {
+            "type": "linkMultiple",
+            "layoutDetailDisabled": true,
+            "layoutMassUpdateDisabled": true,
+            "noLoad": true,
+            "importDisabled": true,
+            "isCustom": true
+        },
+        "status": {
+            "options": [
+                "",
+                "In Process",
+                "Assegnato",
+                "Converted",
+                "Recycled",
+                "Dead",
+                "Riassegnato ad Altra Agenzia/Agente"
+            ],
+            "default": null,
+            "style": {
+                "": null,
+                "In Process": "info",
+                "Assegnato": "primary",
+                "Converted": "success",
+                "Recycled": "danger",
+                "Dead": "danger",
+                "Riassegnato ad Altra Agenzia/Agente": "danger"
+            }
+        },
+        "importoFattura": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "statoGestione": {
+            "type": "enum",
+            "options": [
+                "",
+                "In Gestione",
+                "Richiesta Assegnazione",
+                "Trattativa Aperta",
+                "Trattativa Chiusa"
+            ],
+            "style": {
+                "": null,
+                "In Gestione": null,
+                "Richiesta Assegnazione": null,
+                "Trattativa Aperta": null,
+                "Trattativa Chiusa": null
+            },
+            "maxLength": 100,
+            "isCustom": true
+        },
+        "azienda": {
+            "type": "enum",
+            "options": [
+                "",
+                "ARQUATI",
+                "GFB",
+                "ARIEL",
+                "ARTEL",
+                "PROGETTO"
+            ],
+            "style": {
+                "": null,
+                "ARQUATI": null,
+                "GFB": null,
+                "ARIEL": null,
+                "ARTEL": null,
+                "PROGETTO": null
+            },
+            "maxLength": 100,
+            "isCustom": true
+        },
+        "descrizioneOpportunitGenerata": {
+            "type": "text",
+            "rowsMin": 2,
+            "cutHeight": 200,
+            "isCustom": true
+        },
+        "fornitorePartner": {
+            "type": "link",
+            "view": "custom:views/fields/fornitore-partner-cascade",
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "link",
+            "view": "custom:views/fields/product-brand-by-partner",
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "link",
+            "view": "custom:views/fields/product-category-by-brand",
+            "isCustom": true
+        }
+    },
+    "links": {
+        "prospect": {
+            "type": "hasOne",
+            "foreign": "lead",
+            "entity": "Prospect",
+            "isCustom": true
+        },
+        "appuntamentoChildren": {
+            "type": "hasChildren",
+            "foreign": "parent",
+            "entity": "Appuntamento",
+            "isCustom": true,
+            "audited": false
+        },
+        "cAP": {
+            "type": "belongsTo",
+            "foreign": "lead",
+            "entity": "CAP",
+            "audited": false,
+            "isCustom": true
+        },
+        "appuntamento": {
+            "type": "belongsTo",
+            "foreign": "lead",
+            "entity": "Appuntamento",
+            "audited": false,
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "hasMany",
+            "foreign": "lead",
+            "entity": "Opportunity",
+            "audited": false,
+            "isCustom": true
+        },
+        "pagamentiProvvigionali": {
+            "type": "hasMany",
+            "foreign": "lead",
+            "entity": "PagamentiProvvigionali",
+            "audited": false,
+            "isCustom": true
+        },
+        "calls": {
+            "audited": false
+        },
+        "fornitorePartner": {
+            "type": "belongsTo",
+            "foreign": "leads",
+            "entity": "FornitorePartner",
+            "audited": false,
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "belongsTo",
+            "foreign": "leads",
+            "entity": "ProductBrand",
+            "audited": false,
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "belongsTo",
+            "foreign": "leads",
+            "entity": "ProductCategory",
+            "audited": false,
+            "isCustom": true
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [
+            "name",
+            "accountName",
+            "emailAddress"
+        ],
+        "fullTextSearch": false,
+        "countDisabled": false
+    },
+    "optimisticConcurrencyControl": false
+}

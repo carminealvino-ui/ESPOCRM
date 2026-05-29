@@ -1,0 +1,3 @@
+{
+    "beforeSaveCustomScript": "// Aggiorna dopo il salvataggio\nname = string\\upperCase(string\\concatenate(denominazione));"
+}

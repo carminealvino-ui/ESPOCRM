@@ -1,0 +1,12 @@
+{
+  "fields": {
+    "outlookCalendar": "Calendrier",
+    "tenant": "Locataire"
+  },
+  "help": {
+    "Outlook": "Obtenez les informations d'identification OAuth à partir du [Centre d'administration Azure Active Directory](https://aad.portal.azure.com)."
+  },
+  "tooltips": {
+    "outlookTenant": "Contrôle qui peut se connecter à l'application.\n\n* *common* - Permet aux utilisateurs disposant à la fois de comptes Microsoft personnels et de comptes professionnels / scolaires d'Azure AD de se connecter à l'application.\n* *organisations* - Autorise uniquement les utilisateurs disposant de comptes professionnels / scolaires d'Azure AD à se connecter à l'application.\n* *consommateurs* - Permet uniquement aux utilisateurs disposant de comptes Microsoft personnels (MSA) de se connecter à l'application.\n\nRemarque : Si votre application Azure n'est pas définie comme multi-locataire, la valeur *common* provoquera une erreur d'authentification. Vous devez utiliser une valeur appropriée."
+  }
+}

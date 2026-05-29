@@ -1,0 +1,29 @@
+{
+    "controller": "controllers/record",
+    "views": {
+        "detail": "crm:views/opportunity/detail"
+    },
+    "recordViews": {
+        "detail": "custom:views/opportunity/record/detail",
+        "edit": "crm:views/opportunity/record/edit",
+        "editSmall": "crm:views/opportunity/record/edit-small",
+        "list": "crm:views/opportunity/record/list",
+        "kanban": "crm:views/opportunity/record/kanban"
+    },
+    "menu": {
+        "detail": {
+            "buttons": [
+                "__APPEND__",
+                {
+                    "label": "Crea Contratto",
+                    "name": "createContratto",
+                    "style": "primary",
+                    "acl": "edit",
+                    "handler": "custom:action-handlers/opportunity/create-contratto",
+                    "initFunction": "initCreateContratto",
+                    "actionFunction": "createContratto"
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,27 @@
+{
+    "actions": {
+        "merge": {
+            "disabled": true
+        }
+    },
+    "massActions": {
+        "delete": {
+            "allowed": true
+        },
+        "update": {
+            "allowed": true
+        }
+    },
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentMandate\\BeforeSaveValidate"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentMandate\\BeforeSaveValidate"
+    ],
+    "saverClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldSavers\\PaymentMandate\\DataSaver"
+    ],
+    "readLoaderClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentMandate\\DataLoader"
+    ]
+}

@@ -1,0 +1,43 @@
+{
+  "fields": {
+    "variantSyncFieldList": "Campi di sincronizzazione delle varianti",
+    "doneStatusList": "Stati completati",
+    "canceledStatusList": "Stati annullati",
+    "softReserveStatusList": "Stati con riserva provvisoria",
+    "reserveStatusList": "Stati di riserva",
+    "failedStatusList": "Stati non riusciti",
+    "deliveryRequiredStatusList": "Stati di consegna obbligatori",
+    "lockableFieldList": "Blocca campi"
+  },
+  "tooltips": {
+    "lockableFieldList": "Campi che diventano di sola lettura quando un ordine è bloccato.",
+    "productVariantSyncFieldList": "Campi sincronizzati da un modello alle varianti di prodotto.",
+    "salesOrderSoftReserveStatusList": "Stati in base ai quali le scorte sono riservate provvisoriamente.",
+    "deliveryOrderSoftReserveStatusList": "Stati in base ai quali le scorte sono riservate provvisoriamente.",
+    "transferOrderSoftReserveStatusList": "Stati in base ai quali le scorte sono riservate provvisoriamente.",
+    "salesOrderDoneStatusList": "Stati che indicano che un ordine cliente è stato completato.",
+    "purchaseOrderDoneStatusList": "Stati che indicano che un ordine fornitore è stato completato.",
+    "purchaseOrderCanceledStatusList": "Stati che indicano che un ordine è stato annullato.",
+    "salesOrderCanceledStatusList": "Stati che indicano che un ordine è stato annullato.",
+    "receiptOrderDoneStatusList": "Stati che indicano che un ordine di ricevimento è stato completato.",
+    "receiptOrderCanceledStatusList": "Stati che indicano che un ordine di ricevimento è stato annullato.",
+    "invoiceDoneStatusList": "Stati che indicano che una fattura è stata completata.",
+    "invoiceCanceledStatusList": "Stati che indicano che una fattura è stata annullata.",
+    "invoicePreIssueStatusList": "Stati che indicano che una fattura non è emessa e non è annullata.",
+    "creditNoteDoneStatusList": "Stati che indicano che è stata eseguita una nota di credito.",
+    "creditNoteCanceledStatusList": "Stati che indicano che una nota di credito è stata annullata.",
+    "quoteDoneStatusList": "Stati che indicano che un preventivo è stato fatto.",
+    "quoteCanceledStatusList": "Stati che indicano che un preventivo è stato annullato.",
+    "deliveryRequiredStatusList": "Stati in base ai quali deve essere creato un ordine di consegna.",
+    "deliveryOrderCanceledStatusList": "Stati che indicano che un ordine di consegna è stato annullato. L'inventario viene automaticamente restituito al magazzino.",
+    "deliveryOrderReserveStatusList": "Stati nei quali l’inventario viene riservato.",
+    "transferOrderReserveStatusList": "Stati nei quali l’inventario viene riservato.",
+    "deliveryOrderFailedStatusList": "Stati che indicano che non è stato possibile consegnare un ordine di consegna. L'inventario non viene restituito automaticamente al magazzino. Potrebbe essere necessario un intervento manuale.",
+    "deliveryOrderDoneStatusList": "Stati che indicano che un ordine di consegna è stato completato.",
+    "transferOrderCanceledStatusList": "Stati che indicano che un ordine di trasferimento è stato annullato. L'inventario viene automaticamente restituito al magazzino.",
+    "transferOrderFailedStatusList": "Stati che indicano che non è stato possibile recapitare un ordine di trasferimento. L'inventario non viene restituito automaticamente al magazzino. Potrebbe essere necessario un intervento manuale.",
+    "transferOrderDoneStatusList": "Stati che indicano che un ordine di trasferimento è stato eseguito.",
+    "returnOrderDoneStatusList": "Stati che indicano che un ordine di reso è stato eseguito.",
+    "returnOrderCanceledStatusList": "Stati che indicano che un ordine di reso è stato annullato."
+  }
+}

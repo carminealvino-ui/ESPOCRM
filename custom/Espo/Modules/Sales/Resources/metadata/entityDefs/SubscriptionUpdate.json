@@ -1,0 +1,209 @@
+{
+    "fields": {
+        "number": {
+            "type": "autoincrement",
+            "dbType": "bigint"
+        },
+        "subscription": {
+            "type": "link",
+            "readOnlyAfterCreate": true,
+            "customizationDisabled": true
+        },
+        "billingPlanId": {
+            "type": "foreign",
+            "link": "subscription",
+            "field": "billingPlanId",
+            "utility": true
+        },
+        "priceBookId": {
+            "type": "foreign",
+            "link": "subscription",
+            "field": "priceBookId",
+            "utility": true
+        },
+        "isTaxInclusive": {
+            "type": "bool",
+            "notStorable": true,
+            "readOnly": true,
+            "utility": true
+        },
+        "date": {
+            "type": "date",
+            "required": true,
+            "default": "javascript: return this.dateTime.getToday();"
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Draft",
+                "Applied",
+                "Canceled"
+            ],
+            "displayAsLabel": true,
+            "labelType": "state",
+            "default": "Applied",
+            "maxLength": 8,
+            "style": {
+                "Applied": "success",
+                "Canceled": "info"
+            },
+            "audited": true
+        },
+        "billingStatus": {
+            "type": "enum",
+            "options": [
+                "Pending",
+                "Invoiced",
+                "Settled",
+                "Canceled"
+            ],
+            "default": "Pending",
+            "style": {
+                "Pending": "primary",
+                "Invoiced": "warning",
+                "Settled": "success",
+                "Canceled": "info"
+            },
+            "maxLength": 8,
+            "audited": true
+        },
+        "amount": {
+            "type": "currency",
+            "optimisticConcurrencyControlIgnore": true
+        },
+        "itemList": {
+            "type": "jsonArray",
+            "notStorable": true,
+            "layoutAvailabilityList": [],
+            "customizationDisabled": true,
+            "dynamicLogicVisibleDisabled": true,
+            "dynamicLogicInvalidDisabled": true,
+            "view": "modules/sales/views/quote/fields/item-list",
+            "templatePlaceholderDisabled": true,
+            "reportDisabled": true,
+            "workflowDisabled": true,
+            "massUpdateDisabled": true,
+            "duplicatorClassName": "Espo\\Modules\\Sales\\Classes\\FieldDuplicators\\Quote\\ItemList",
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\ItemListLoader",
+            "required": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\Subscription\\ItemList\\Required"
+            ]
+        },
+        "description": {
+            "type": "text"
+        },
+        "invoiceGrandTotalAmount": {
+            "type": "currency",
+            "notStorable": true,
+            "readOnly": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true
+        },
+        "creditNoteGrandTotalAmount": {
+            "type": "currency",
+            "notStorable": true,
+            "readOnly": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true
+        },
+        "netAmount": {
+            "type": "currency",
+            "notStorable": true,
+            "readOnly": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true
+        },
+        "billingAction": {
+            "type": "enum",
+            "options": [
+                "",
+                "Draft",
+                "Issue"
+            ],
+            "style": {
+                "Issue": "primary"
+            },
+            "notStorable": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true,
+            "exportDisabled": true
+        },
+        "createPaymentRequest": {
+            "type": "bool",
+            "notStorable": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true,
+            "exportDisabled": true
+        },
+        "sendPaymentRequest": {
+            "type": "bool",
+            "notStorable": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true,
+            "exportDisabled": true
+        },
+        "sendInvoice": {
+            "type": "bool",
+            "notStorable": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true,
+            "exportDisabled": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "items": {
+            "type": "hasMany",
+            "entity": "SubscriptionItem",
+            "foreign": "subscriptionUpdate",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "subscription": {
+            "type": "belongsTo",
+            "entity": "Subscription",
+            "foreign": "updates"
+        },
+        "invoices": {
+            "type": "hasMany",
+            "entity": "Invoice",
+            "foreign": "subscriptionUpdates"
+        },
+        "creditNotes": {
+            "type": "hasMany",
+            "entity": "CreditNote",
+            "foreign": "subscriptionUpdates"
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "number",
+        "order": "desc",
+        "textFilterFields": [
+            "number"
+        ]
+    }
+}

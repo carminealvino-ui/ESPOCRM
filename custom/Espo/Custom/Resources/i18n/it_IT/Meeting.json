@@ -1,0 +1,14 @@
+{
+    "presetFilters": {
+        "svolto": "Svolto",
+        "nonSvolto": "Non Svolto"
+    },
+    "options": {
+        "status": {
+            "Planned": "Pianificato",
+            "Held": "Svolto",
+            "Not Held": "Non Svolto",
+            "Ingestibile": "Ingestibile"
+        }
+    }
+}

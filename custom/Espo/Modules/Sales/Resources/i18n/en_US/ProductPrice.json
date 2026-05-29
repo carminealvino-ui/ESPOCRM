@@ -1,0 +1,44 @@
+{
+    "labels": {
+        "Create ProductPrice": "Create Price"
+    },
+    "fields": {
+        "priceBook": "Price Book",
+        "status": "Status",
+        "product": "Product",
+        "minQuantity": "Min. Quantity",
+        "price": "Price",
+        "priceCurrency": "Price Currency",
+        "dateStart": "Date Start",
+        "dateEnd": "Date End",
+        "minQty": "Min. Qty",
+        "partNumber": "Part Number",
+        "priceConverted": "Price Converted",
+        "interval": "Period",
+        "productIsSubscribable": "Product is Subscribable",
+        "productIsSellable": "Product is Sellable",
+        "timeline": "Effective Dates"
+    },
+    "links": {
+        "priceBook": "Price Book",
+        "product": "Product"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    },
+    "presetFilters": {
+        "active": "Active"
+    },
+    "tooltips": {
+        "minQuantity": "The price will be used only when the quantity of items being sold exceeds the specified value."
+    },
+    "messages": {
+        "priceMassUpdated": "Prices updated, count: {count}"
+    },
+    "massActions": {
+        "updatePrice": "Update Price"
+    }
+}

@@ -1,0 +1,22 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "parentPriceBook",
+        "width": 25
+    },
+    {
+        "name": "isTaxInclusive",
+        "width": 14
+    },
+    {
+        "name": "isDefault",
+        "width": 14
+    }
+]

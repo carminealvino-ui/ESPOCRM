@@ -1,0 +1,210 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Active",
+                "Inactive"
+            ],
+            "default": "Active",
+            "style": {
+                "Inactive": "info"
+            },
+            "audited": true,
+            "maxLength": 8
+        },
+        "gracePeriodDays": {
+            "type": "int",
+            "min": 0,
+            "required": true,
+            "default": 15,
+            "audited": true
+        },
+        "invoiceDuePeriodDays": {
+            "type": "int",
+            "min": 0,
+            "required": true,
+            "default": 15,
+            "audited": true
+        },
+        "invoiceLeadTimeDays": {
+            "type": "int",
+            "min": 0,
+            "required": true,
+            "default": 0,
+            "tooltip": true,
+            "audited": true
+        },
+        "interval": {
+            "type": "enum",
+            "maxLength": 4,
+            "required": true,
+            "audited": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\SubscriptionBillingPlan\\Interval\\Valid"
+            ],
+            "view": "modules/sales/views/subscription-billing-plan/fields/interval"
+        },
+        "intervalUnit": {
+            "type": "enum",
+            "options": [
+                "",
+                "M",
+                "Y",
+                "W",
+                "D"
+            ],
+            "translation": "SubscriptionBillingPlan.intervalUnits",
+            "notStorable": true,
+            "directUpdateDisabled": true,
+            "readOnly": true,
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\SubscriptionBillingPlan\\IntervalUnit"
+        },
+        "billingCycleLength": {
+            "type": "int",
+            "required": true,
+            "min": 1,
+            "max": 500,
+            "audited": true,
+            "default": 1,
+            "tooltip": true
+        },
+        "createPaymentRequests": {
+            "type": "bool",
+            "default": true,
+            "audited": true
+        },
+        "sendPaymentRequests": {
+            "type": "bool",
+            "default": true,
+            "audited": true
+        },
+        "sendInvoices": {
+            "type": "bool",
+            "audited": true
+        },
+        "alignmentType": {
+            "type": "enum",
+            "options": [
+                "",
+                "Immediate",
+                "Delayed"
+            ],
+            "maxLength": 9,
+            "audited": true,
+            "tooltip": true
+        },
+        "alignmentDays": {
+            "type": "jsonArray",
+            "view": "modules/sales/views/subscription-billing-plan/fields/alignment-days",
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\SubscriptionBillingPlan\\AlignmentDays\\Valid"
+            ],
+            "audited": true,
+            "validationList": [
+                "required"
+            ]
+        },
+        "alignmentWeekdays": {
+            "type": "jsonArray",
+            "view": "modules/sales/views/subscription-billing-plan/fields/alignment-weekdays",
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\SubscriptionBillingPlan\\AlignmentWeekdays\\Valid"
+            ],
+            "audited": true,
+            "validationList": [
+                "required"
+            ]
+        },
+        "alignmentProrationPolicy": {
+            "type": "enum",
+            "options": [
+                "",
+                "No Charge",
+                "Charge"
+            ],
+            "maxLength": 9,
+            "audited": true,
+            "tooltip": true
+        },
+        "alignmentChargeMinDays": {
+            "type": "int",
+            "min": 1,
+            "max": 30,
+            "audited": true,
+            "tooltip": true
+        },
+        "templates": {
+            "type": "linkMultiple",
+            "importDisabled": true,
+            "exportDisabled": true,
+            "noLoad": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "audited": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "subscriptions": {
+            "type": "hasMany",
+            "entity": "Subscription",
+            "foreign": "billingPlan",
+            "readOnly": true
+        },
+        "templates": {
+            "type": "hasMany",
+            "entity": "SubscriptionTemplate",
+            "foreign": "billingPlans",
+            "readOnly": true
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "EntityTeam",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "name",
+        "order": "asc",
+        "textFilterFields": [
+            "name"
+        ]
+    },
+    "indexes": {}
+}

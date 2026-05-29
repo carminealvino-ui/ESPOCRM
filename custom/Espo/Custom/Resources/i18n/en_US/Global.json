@@ -1,0 +1,26 @@
+{
+    "scopeNames": {
+        "CAP": "CAP",
+        "Area": "Area",
+        "Zona": "Zona",
+        "MacroArea": "Macro Area",
+        "Appuntamento": "Appuntamento",
+        "Prospect": "Prospect",
+        "PagamentiProvvigionali": "Pagamenti Provvigionali",
+        "Disponibilita": "Disponibilita",
+        "FornitorePartner": "Fornitore - Partner",
+        "Provvigione": "Provvigione"
+    },
+    "scopeNamesPlural": {
+        "CAP": "CAP",
+        "Area": "Area",
+        "Zona": "Zone",
+        "MacroArea": "Macro Area",
+        "Appuntamento": "Appuntamenti",
+        "Prospect": "Prospect",
+        "PagamentiProvvigionali": "Pagamenti Provvigionalis",
+        "Disponibilita": "Disponibilità",
+        "FornitorePartner": "Fornitore - Partners",
+        "Provvigione": "Provvigioni"
+    }
+}

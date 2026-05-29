@@ -1,0 +1,31 @@
+{
+    "fields": {
+        "status": "Stato",
+        "sottostato": "Sottostato",
+        "dateStart": "Data Appuntamento",
+        "name": "Nome",
+        "parent": "Relazionato a",
+        "productCategory": "Categoria prodotto",
+        "fornitorePartner": "Fornitore / Partner",
+        "productBrand": "Brand",
+        "cAPCodice": "CAP Codice",
+        "indirizzoCity": "Indirizzo Città",
+        "opportunita": "Opportunità"
+    },
+    "labels": {
+        "Create Appuntamento": "Crea Appuntamento",
+        "Appuntamenti": "Appuntamenti"
+    },
+    "options": {
+        "status": {
+            "Planned": "Pianificato",
+            "Held": "Svolto",
+            "Not Held": "Non Svolto",
+            "Ingestibile": "Ingestibile"
+        }
+    },
+    "presetFilters": {
+        "svolto": "Svolto",
+        "nonSvolto": "Non Svolto"
+    }
+}

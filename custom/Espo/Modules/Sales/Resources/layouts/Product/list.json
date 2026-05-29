@@ -1,0 +1,29 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "brand",
+        "width": 28
+    },
+    {
+        "name": "status",
+        "width": 12
+    },
+    {
+        "name": "type",
+        "width": 12,
+        "hidden": true
+    },
+    {
+        "name": "itemType",
+        "width": 12,
+        "hidden": true
+    },
+    {
+        "name": "quantityOnHand",
+        "width": 10,
+        "hidden": true
+    }
+]

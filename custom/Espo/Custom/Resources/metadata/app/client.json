@@ -1,0 +1,11 @@
+{
+    "scriptList": [
+        "__APPEND__",
+        "client/custom/src/custom-product-button.js"
+    ],
+    "cssList": [
+        "__APPEND__",
+        "client/custom/css/custom-ui.css",
+        "client/custom/css/selectize-dropdown-alignment.css"
+    ]
+}

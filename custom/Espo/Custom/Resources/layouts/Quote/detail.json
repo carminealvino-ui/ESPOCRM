@@ -1,0 +1,100 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "number"
+                },
+                {
+                    "name": "account"
+                }
+            ],
+            [
+                {
+                    "name": "opportunity"
+                }
+            ],
+            [
+                {
+                    "name": "fornitorePartner"
+                },
+                {
+                    "name": "productBrand"
+                }
+            ],
+            [
+                {
+                    "name": "productCategory"
+                }
+            ],
+            [
+                {
+                    "name": "dateQuoted"
+                },
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "importoContratto"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ],
+            [
+                {
+                    "name": "name"
+                },
+                false
+            ]
+        ],
+        "style": "default",
+        "label": "Overview"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "billingContact"
+                },
+                {
+                    "name": "shippingContact"
+                }
+            ],
+            [
+                {
+                    "name": "billingAddress"
+                },
+                {
+                    "name": "shippingAddress"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": "Details"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "tax"
+                },
+                {
+                    "name": "shippingProvider"
+                }
+            ],
+            [
+                {
+                    "name": "priceBook"
+                },
+                {
+                    "name": "isTaxInclusive"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": ""
+    }
+]

@@ -1,0 +1,11 @@
+{
+    "entity": true,
+    "layouts": true,
+    "tab": true,
+    "acl": true,
+    "aclLevelList": ["all", "no"],
+    "module": "Sales",
+    "customizable": true,
+    "importable": false,
+    "notifications": false
+}

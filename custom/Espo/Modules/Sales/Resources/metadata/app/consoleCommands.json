@@ -1,0 +1,14 @@
+{
+    "inventoryAclCheck": {
+        "className": "Espo\\Modules\\Sales\\Classes\\ConsoleCommands\\InventoryAclCheck",
+        "listed": false
+    },
+    "inventoryCompress": {
+        "className": "Espo\\Modules\\Sales\\Classes\\ConsoleCommands\\InventoryCompress",
+        "listed": true
+    },
+    "inventoryDetach": {
+        "className": "Espo\\Modules\\Sales\\Classes\\ConsoleCommands\\InventoryDetach",
+        "listed": true
+    }
+}

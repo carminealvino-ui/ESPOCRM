@@ -1,0 +1,31 @@
+[
+    {
+        "name": "datadisponibilita"
+    },
+    {
+        "name": "azienda"
+    },
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "dateStart"
+    },
+    {
+        "name": "dateEnd"
+    },
+    {
+        "name": "status"
+    },
+    {
+        "name": "assignedUsers",
+        "width": 16,
+        "notSortable": true
+    },
+    {
+        "name": "collaborators",
+        "width": 16,
+        "notSortable": true
+    }
+]

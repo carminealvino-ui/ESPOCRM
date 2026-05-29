@@ -1,0 +1,9 @@
+{
+  "fields": {
+    "accountHolder": "Kontoinhaber",
+    "accountNumber": "Kontoinhaber",
+    "bankName": "Bankname",
+    "bankCode": "Bankcode",
+    "bankAddress": "Bankadresse"
+  }
+}

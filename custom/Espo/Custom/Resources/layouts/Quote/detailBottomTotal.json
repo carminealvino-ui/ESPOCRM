@@ -1,0 +1,23 @@
+[
+    {
+        "name": "amount"
+    },
+    {
+        "name": "minusPlus"
+    },
+    {
+        "name": "totalPrezzoCodice"
+    },
+    {
+        "name": "taxAmount"
+    },
+    {
+        "name": "aliquotaIVA"
+    },
+    {
+        "name": "grandTotalAmount"
+    },
+    {
+        "name": "totaleProvvigioni"
+    }
+]

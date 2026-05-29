@@ -1,0 +1,13 @@
+/* ========================================
+   VERSIONE: 0.3.3
+   DATA: 2026-05-06
+   AUTORE: CARMINE ALVINO + CHATGPT
+======================================== */
+
+html {
+    font-size: 80% !important;
+}
+
+.navbar {
+    border-top: 5px solid red !important;
+}

@@ -1,0 +1,10 @@
+{
+    "primaryFilterClassNameMap": {
+        "actual": "Espo\\Modules\\Sales\\Classes\\Select\\Quote\\PrimaryFilters\\Actual",
+        "completed": "Espo\\Modules\\Sales\\Classes\\Select\\SalesOrder\\PrimaryFilters\\Completed"
+    },
+    "whereItemConverterClassNameMap": {
+        "productsIds_arrayAnyOf": "Espo\\Modules\\Sales\\Classes\\Select\\Quote\\WhereItemConverters\\Products",
+        "productsIds_arrayAllOf": "Espo\\Modules\\Sales\\Classes\\Select\\Quote\\WhereItemConverters\\Products"
+    }
+}

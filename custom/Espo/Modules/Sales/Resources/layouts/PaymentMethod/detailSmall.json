@@ -1,0 +1,34 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "isInbound"
+                },
+                {
+                    "name": "isOutbound"
+                }
+            ],
+            [
+                {
+                    "name": "channel"
+                },
+                false
+            ],
+            [
+
+                {
+                    "name": "description"
+                }
+            ]
+        ]
+    }
+]

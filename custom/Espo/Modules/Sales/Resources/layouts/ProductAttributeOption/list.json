@@ -1,0 +1,14 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "attribute",
+        "width": 35
+    },
+    {
+        "name": "color",
+        "width": 30
+    }
+]

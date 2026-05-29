@@ -1,0 +1,26 @@
+{
+    "fields": {
+        "macroArea": "Macro Area",
+        "area": "Area",
+        "zona": "Zona",
+        "appuntamento": "Appuntamenti",
+        "prospect": "Prospect",
+        "opportunita": "Opportunita",
+        "quote": "Quote",
+        "codiceCAP": "Codice CAP",
+        "lead": "Lead"
+    },
+    "links": {
+        "macroArea": "Macro Area",
+        "area": "Area",
+        "zona": "Zona",
+        "appuntamento": "Appuntamenti",
+        "prospect": "Prospect",
+        "opportunita": "Opportunita",
+        "quote": "Quote",
+        "lead": "Lead"
+    },
+    "labels": {
+        "Create CAP": "Create CAP"
+    }
+}

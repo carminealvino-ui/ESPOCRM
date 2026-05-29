@@ -1,0 +1,13 @@
+{
+  "layouts": {
+    "listItem": "Список (Пункт)",
+    "detailBottomTotal": "Підсумкові суми"
+  },
+  "fields": {
+    "useAutoincrement": "Автоінкремент",
+    "copyFieldList": "Які поля копіювати"
+  },
+  "templates": {
+    "salesEmailPdf": "Відправити ел. поштою (Sales)"
+  }
+}

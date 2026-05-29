@@ -1,0 +1,30 @@
+[
+    {
+        "name": "name",
+        "width": 18
+    },
+    {
+        "name": "addressCity",
+        "width": 12
+    },
+    {
+        "name": "fornitorePartner",
+        "width": 12
+    },
+    {
+        "name": "productBrand",
+        "width": 10
+    },
+    {
+        "name": "productCategory",
+        "width": 14
+    },
+    {
+        "name": "origine",
+        "width": 12
+    },
+    {
+        "name": "assignedUser",
+        "width": 12
+    }
+]

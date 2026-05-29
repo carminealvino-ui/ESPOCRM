@@ -1,0 +1,3 @@
+{
+    "beforeSaveCustomScript": "ifThen(\n    entity\\isNew() && !empty(productId),\n    prezzoCodice = product.prezzoCodice\n);"
+}

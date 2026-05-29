@@ -1,0 +1,9 @@
+{
+    "fields": {
+        "name": "Listino Prezzi",
+        "parentPriceBook": "Listino Prezzi Principale"
+    },
+    "labels": {
+        "Create PriceBook": "Crea Listino Prezzi"
+    }
+}

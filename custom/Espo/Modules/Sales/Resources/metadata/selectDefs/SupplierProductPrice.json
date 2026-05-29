@@ -1,0 +1,28 @@
+{
+    "selectAttributesDependencyMap": {
+        "productId": [
+            "status"
+        ],
+        "supplierId": [
+            "status"
+        ],
+        "name": [
+            "productId",
+            "productName"
+        ],
+        "id": [
+            "dateStart",
+            "dateEnd"
+        ]
+    },
+    "primaryFilterClassNameMap": {
+        "active": "Espo\\Modules\\Sales\\Classes\\Select\\ProductPrice\\PrimaryFilters\\Active"
+    },
+    "accessControlFilterClassNameMap": {
+        "onlyOwn": "Espo\\Modules\\Sales\\Classes\\Select\\SupplierProductPrice\\AccessControlFilters\\OnlyOwn",
+        "onlyTeam": "Espo\\Modules\\Sales\\Classes\\Select\\SupplierProductPrice\\AccessControlFilters\\OnlyTeam"
+    },
+    "ordererClassNameMap": {
+        "timeline": "Espo\\Modules\\Sales\\Select\\ProductPrice\\Order\\Timeline"
+    }
+}

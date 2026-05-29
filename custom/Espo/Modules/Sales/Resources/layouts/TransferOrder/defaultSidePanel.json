@@ -1,0 +1,17 @@
+[
+    {
+        "name": ":assignedUser"
+    },
+    {
+        "name": "teams"
+    },
+    {
+        "name": "inventoryStatus"
+    },
+    {
+        "name": "isLocked"
+    },
+    {
+        "name": "isHardLocked"
+    }
+]

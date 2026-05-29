@@ -1,0 +1,427 @@
+{
+    "fields": {
+        "cAP": {
+            "type": "link"
+        },
+        "appuntamento": {
+            "type": "link"
+        },
+        "dataOpportunit": {
+            "notNull": false,
+            "type": "date",
+            "isCustom": true,
+            "useNumericFormat": true
+        },
+        "iVA": {
+            "notNull": false,
+            "type": "float",
+            "isCustom": true,
+            "default": 10,
+            "decimalPlaces": 2
+        },
+        "iVAListino": {
+            "notNull": false,
+            "type": "float",
+            "isCustom": true,
+            "default": 10,
+            "decimalPlaces": 2
+        },
+        "importoOffertaIvaEsclusa": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "motivoDecisione": {
+            "type": "enum",
+            "options": [
+                "",
+                "Ottimo Rapporto Quaità/Prezzo",
+                "Fidelizzazione Brand",
+                "Soluzione Esclusiva",
+                "Prezzo Troppo Alto",
+                "Decisione Rinviata per Mancanza di Fondi",
+                "Decisione Rinviata per altre Priorità",
+                "Decisione Rinviata per Tempi di Consegna",
+                "Raffronto Concorrenza",
+                "Confronto con Marito-Moglie/Socio",
+                "Tempistica Decisione",
+                "Modalità di Pagamento",
+                "Detrazione non Possibile",
+                "Infattibilità Tecnica",
+                "Permessi"
+            ],
+            "style": {
+                "": null,
+                "Ottimo Rapporto Quaità/Prezzo": null,
+                "Fidelizzazione Brand": null,
+                "Soluzione Esclusiva": null,
+                "Prezzo Troppo Alto": null,
+                "Decisione Rinviata per Mancanza di Fondi": null,
+                "Decisione Rinviata per altre Priorità": null,
+                "Decisione Rinviata per Tempi di Consegna": null,
+                "Raffronto Concorrenza": null,
+                "Confronto con Marito-Moglie/Socio": null,
+                "Tempistica Decisione": null,
+                "Modalità di Pagamento": null,
+                "Detrazione non Possibile": null,
+                "Infattibilità Tecnica": null,
+                "Permessi": null
+            },
+            "default": "",
+            "isCustom": true
+        },
+        "name": {
+            "options": [],
+            "required": false
+        },
+        "note": {
+            "type": "text",
+            "rowsMin": 2,
+            "cutHeight": 200,
+            "isCustom": true
+        },
+        "prospect": {
+            "type": "link",
+            "autocompleteOnEmpty": true
+        },
+        "telefono": {
+            "readOnly": true,
+            "type": "foreign",
+            "link": "prospect",
+            "field": "phoneNumber",
+            "view": "views/fields/foreign-varchar",
+            "isCustom": true
+        },
+        "lead": {
+            "type": "link",
+            "autocompleteOnEmpty": true
+        },
+        "suPrezzoCodice": {
+            "notNull": false,
+            "type": "float",
+            "isCustom": true,
+            "decimalPlaces": 2
+        },
+        "prezzoListinoIVAInclusa": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "whatsApp": {
+            "type": "url",
+            "isCustom": true
+        },
+        "prezzoListinoIvaEsclusa": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "prezzoCodiceIvaEsclusa": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "prodotti": {
+            "type": "linkMultiple",
+            "layoutDetailDisabled": true,
+            "layoutMassUpdateDisabled": true,
+            "noLoad": true,
+            "importDisabled": true,
+            "isCustom": true
+        },
+        "stage": {
+            "style": {
+                "Prospecting": "info",
+                "Qualification": "info",
+                "Proposal": "primary",
+                "Negotiation": "primary",
+                "Closed Won": "success",
+                "Closed Lost": "danger"
+            },
+            "probabilityMap": {
+                "Prospecting": 0,
+                "Qualification": 3,
+                "Proposal": 10,
+                "Negotiation": 15,
+                "Closed Won": 100,
+                "Closed Lost": 0
+            }
+        },
+        "createdAt": {
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "modifiedAt": {
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "closeDate": {
+            "required": false,
+            "useNumericFormat": true
+        },
+        "prezzoCodiceIvaInclusa": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoOpportunit": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "amount": {
+            "required": false
+        },
+        "itemList": {
+            "name": "itemList",
+            "label": "Articoli",
+            "type": "jsonArray",
+            "notStorable": true,
+            "view": "sales:views/opportunity/fields/item-list",
+            "layoutFiltersDisabled": true,
+            "layoutListDisabled": true,
+            "reportDisabled": true,
+            "dynamicLogicVisible": null,
+            "dynamicLogicReadOnly": null,
+            "inlineEditDisabled": false,
+            "tooltip": false
+        },
+        "installazione": {
+            "notNull": false,
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "installatore": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "importoProvvigione": {
+            "type": "currency",
+            "onlyDefaultCurrency": true,
+            "isCustom": true
+        },
+        "provvigione": {
+            "notNull": false,
+            "type": "float",
+            "isCustom": true,
+            "decimalPlaces": null
+        },
+        "finanziamento": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "statoFinanziamento": {
+            "type": "enum",
+            "options": [
+                "",
+                "In lavorazione",
+                "In rivalutazione",
+                "In Attesa Documentazione",
+                "Approvato",
+                "Respinto",
+                "Annullato"
+            ],
+            "style": {
+                "": null,
+                "In lavorazione": null,
+                "In rivalutazione": null,
+                "In Attesa Documentazione": null,
+                "Approvato": null,
+                "Respinto": null,
+                "Annullato": null
+            },
+            "default": null,
+            "isCustom": true
+        },
+        "statoContratto": {
+            "type": "enum",
+            "options": [
+                "",
+                "In lavorazione",
+                "Inserito",
+                "Installato",
+                "Sospeso",
+                "Annullato",
+                "Recesso"
+            ],
+            "style": {
+                "": null,
+                "In lavorazione": null,
+                "Inserito": null,
+                "Installato": null,
+                "Sospeso": null,
+                "Annullato": null,
+                "Recesso": null
+            },
+            "default": null,
+            "isCustom": true
+        },
+        "pagamentiProvvigionali": {
+            "type": "linkMultiple",
+            "layoutDetailDisabled": true,
+            "layoutMassUpdateDisabled": true,
+            "noLoad": true,
+            "importDisabled": true,
+            "isCustom": true
+        },
+        "toDo": {
+            "type": "linkMultiple",
+            "layoutDetailDisabled": true,
+            "layoutMassUpdateDisabled": true,
+            "noLoad": true,
+            "importDisabled": true,
+            "isCustom": true
+        },
+        "plusMinus": {
+            "notNull": false,
+            "type": "float",
+            "default": 0,
+            "isCustom": true,
+            "decimalPlaces": null
+        },
+        "minusPlus": {
+            "type": "currency",
+            "isCustom": true,
+            "conversionDisabled": true
+        },
+        "lineaProdotto": {
+            "type": "enum",
+            "optionsReference": null,
+            "style": {
+                "": null,
+                "Tende da Sole": null,
+                "Pergole": null,
+                "Vetrate": null,
+                "Chiusure Verticali": null,
+                "Climatizzazione": null,
+                "Caldaie": null,
+                "Stufe": null,
+                "Fotovoltaico": null,
+                "TLC": null,
+                "Energia": null,
+                "Rental": null
+            },
+            "maxLength": 100,
+            "isCustom": true,
+            "default": null,
+            "options": [
+                "",
+                "Tende da Sole",
+                "Pergole",
+                "Vetrate",
+                "Chiusure Verticali",
+                "Climatizzazione",
+                "Caldaie",
+                "Stufe",
+                "Fotovoltaico",
+                "TLC",
+                "Energia",
+                "Rental"
+            ]
+        },
+        "azienda": {
+            "type": "enum",
+            "options": [
+                "",
+                "ARQUATI",
+                "GFB",
+                "ARTEL",
+                "PROGETTO",
+                "ARIEL"
+            ],
+            "style": {
+                "": null,
+                "ARQUATI": null,
+                "GFB": null,
+                "ARTEL": null,
+                "PROGETTO": null,
+                "ARIEL": null
+            },
+            "default": null,
+            "maxLength": 100,
+            "isCustom": true
+        },
+        "suPrezzoPromo": {
+            "notNull": false,
+            "type": "float",
+            "isCustom": true,
+            "decimalPlaces": 2
+        },
+        "descrizioneMotivazione": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
+        "provvigioneTotale": {
+            "notNull": false,
+            "type": "float",
+            "isCustom": true
+        },
+        "hookVersion": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        }
+    },
+    "links": {
+        "cAP": {
+            "type": "belongsTo",
+            "foreign": "opportunita",
+            "entity": "CAP",
+            "audited": false,
+            "isCustom": true
+        },
+        "appuntamento": {
+            "type": "belongsTo",
+            "foreign": "opportunita",
+            "entity": "Appuntamento",
+            "audited": false,
+            "isCustom": true
+        },
+        "prospect": {
+            "type": "belongsTo",
+            "foreign": "opportunita",
+            "entity": "Prospect",
+            "audited": false,
+            "isCustom": true
+        },
+        "lead": {
+            "type": "belongsTo",
+            "foreign": "opportunita",
+            "entity": "Lead",
+            "audited": false,
+            "isCustom": true
+        },
+        "prodotti": {
+            "type": "hasMany",
+            "foreign": "opportunita",
+            "entity": "Product",
+            "audited": false,
+            "isCustom": true
+        },
+        "pagamentiProvvigionali": {
+            "type": "hasMany",
+            "foreign": "opportunita",
+            "entity": "PagamentiProvvigionali",
+            "audited": false,
+            "isCustom": true
+        },
+        "toDo": {
+            "type": "hasMany",
+            "foreign": "opportunita",
+            "entity": "Task",
+            "audited": false,
+            "isCustom": true
+        }
+    },
+    "collection": {
+        "orderBy": "name",
+        "order": "desc",
+        "textFilterFields": [
+            "name"
+        ],
+        "fullTextSearch": false,
+        "countDisabled": false
+    },
+    "optimisticConcurrencyControl": true
+}

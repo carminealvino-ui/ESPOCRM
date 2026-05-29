@@ -1,0 +1,34 @@
+{
+  "labels": {
+    "Create PaymentTermsProfile": "Profil erstellen"
+  },
+  "fields": {
+    "order": "Auftrag",
+    "note": "Notiz",
+    "items": "Artikel"
+  },
+  "links": {
+    "invoices": "Rechnungen",
+    "items": "Artikel"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "tooltips": {
+    "note": "Informationstext für Kunden."
+  },
+  "otherFields": {
+    "percentage": "Prozentsatz",
+    "days": "Tage"
+  },
+  "messages": {
+    "itemsMustAddUpTo100": "Die Artikel müssen zusammen 100 ergeben.",
+    "daysMustBeInAscendingOrder": "Der Tageswert jedes Artikels muss größer sein als der des vorherigen."
+  },
+  "strings": {
+    "days": "Tage"
+  }
+}

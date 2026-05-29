@@ -1,0 +1,25 @@
+{
+  "fields": {
+    "name": "Nom",
+    "qty": "Qté",
+    "quantity": "Quantité",
+    "unitPrice": "Prix unitaire",
+    "amount": "Montant",
+    "product": "Produit",
+    "order": "Numéro de ligne",
+    "opportunity": "Opportunité",
+    "amountConverted": "Montant (converti)",
+    "unitPriceConverted": "Prix unitaire (converti)",
+    "opportunityStage": "Étape",
+      "listPriceCurrency": "Devise du prix catalogue",
+      "listPrice": "Prix catalogue",
+      "discount": "Remise (%)"
+  },
+  "links": {
+    "opportunity": "Opportunité",
+    "product": "Produit"
+  },
+  "labels": {
+    "Opportunities": "Opportunités"
+  }
+}

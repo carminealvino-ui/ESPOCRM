@@ -1,0 +1,11 @@
+[
+    "type",
+    "entityType",
+    "assignedUser",
+    "teams",
+    "category",
+    "chartType",
+    "emailSendingInterval",
+    "createdAt",
+    "modifiedAt"
+]

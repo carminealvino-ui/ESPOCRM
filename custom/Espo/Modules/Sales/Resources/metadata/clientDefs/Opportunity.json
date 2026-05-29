@@ -1,0 +1,68 @@
+{
+    "viewSetupHandlers": {
+        "record/detail": [
+            "__APPEND__",
+            "modules/sales/handlers/opportunity/setup-record-detail"
+        ],
+        "record/edit": [
+            "__APPEND__",
+            "modules/sales/handlers/opportunity/setup-record-detail"
+        ]
+    },
+    "relationshipPanels": {
+        "quotes": {
+            "createAction": "createRelatedQuote",
+            "view": "sales:views/opportunity/record/panels/quotes",
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true
+        },
+        "salesOrders": {
+            "createAction": "createRelatedSalesOrder",
+            "view": "sales:views/opportunity/record/panels/sales-orders",
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true
+        },
+        "invoices": {
+            "createAction": "createRelatedInvoice",
+            "view": "sales:views/opportunity/record/panels/invoices",
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true
+        },
+        "account": {
+            "selectFieldHandler": "sales:handlers/opportunity/select-account",
+            "selectMandatoryAttributeList": [
+                "priceBookId",
+                "priceBookName"
+            ]
+        }
+    },
+    "bottomPanels": {
+        "detail": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "sales:views/opportunity/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true,
+                "order": 1
+            }
+        ],
+        "edit": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "sales:views/opportunity/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true,
+                "order": 1
+            }
+        ]
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "primaryFilterClassNameMap": {
+        "applied": "Espo\\Modules\\Sales\\Classes\\Select\\SubscriptionUpdate\\PrimaryFilters\\Applied"
+    },
+    "accessControlFilterClassNameMap": {
+        "onlyOwn": "Espo\\Core\\Select\\AccessControl\\Filters\\ForeignOnlyOwn",
+        "onlyTeam": "Espo\\Core\\Select\\AccessControl\\Filters\\ForeignOnlyTeam",
+        "portalOnlyAccount": "Espo\\Modules\\Sales\\Classes\\Select\\SubscriptionUpdate\\AccessControlFilters\\OnlyAccount",
+        "portalOnlyContact": "Espo\\Modules\\Sales\\Classes\\Select\\SubscriptionUpdate\\AccessControlFilters\\OnlyContact",
+        "portalOnlyOwn": "Espo\\Core\\Select\\AccessControl\\Filters\\No"
+    },
+    "selectAttributesDependencyMap": {
+        "id": [
+            "date",
+            "status",
+            "subscriptionId"
+        ]
+    }
+}

@@ -1,0 +1,224 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "readOnly": true,
+            "notStorable": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "priceBook": {
+            "type": "link",
+            "required": true,
+            "view": "sales:views/product-price/fields/link-with-status",
+            "autocompleteOnEmpty": true
+        },
+        "target": {
+            "type": "enum",
+            "options": [
+                "Product Category",
+                "All",
+                "Conditional"
+            ],
+            "default": "Product Category",
+            "maxLength": 16,
+            "view": "sales:views/price-rule/fields/target"
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Active",
+                "Inactive"
+            ],
+            "maxLength": 8,
+            "default": "Active",
+            "style": {
+                "Inactive": "info"
+            }
+        },
+        "productCategory": {
+            "type": "link",
+            "view": "views/fields/link-category-tree",
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PriceRule\\ProductCategory\\Required"
+            ]
+        },
+        "conditionSelect": {
+            "type": "enum",
+            "notStorable": true,
+            "view": "sales:views/price-rule/fields/condition-select",
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "directUpdateDisabled": true,
+            "utility": true,
+            "validatorClassNameMap": {
+                "required": "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PriceRule\\ConditionSelect\\Required"
+            }
+        },
+        "condition": {
+            "type": "link",
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PriceRule\\Condition\\Required",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PriceRule\\Condition\\Exists"
+            ],
+            "sanitizerClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldSanitizers\\PriceRule\\Condition"
+            ]
+        },
+        "minQuantity": {
+            "type": "float",
+            "minValue": 0.0,
+            "tooltip": true
+        },
+        "basedOn": {
+            "type": "enum",
+            "options": [
+                "Unit",
+                "Price Book",
+                "Supplier",
+                "Cost"
+            ],
+            "default": "Unit",
+            "maxLength": 10,
+            "tooltip": true
+        },
+        "supplier": {
+            "type": "link",
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PriceRule\\Supplier\\Required"
+            ]
+        },
+        "price": {
+            "type": "base",
+            "notStorable": true,
+            "notSortable": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "view": "sales:views/price-rule/fields/price"
+        },
+        "percentage": {
+            "type": "base",
+            "notStorable": true,
+            "tooltip": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "view": "sales:views/price-rule/fields/percentage"
+        },
+        "discount": {
+            "type": "float",
+            "max": 100.0,
+            "tooltip": true,
+            "view": "sales:views/price-rule/fields/discount"
+        },
+        "roundingMethod": {
+            "type": "enum",
+            "options": [
+                "Half Up",
+                "Up",
+                "Down"
+            ],
+            "default": "Half Up",
+            "maxLength": 7
+        },
+        "roundingFactor": {
+            "type": "float",
+            "min": 0.001,
+            "required": true,
+            "tooltip": true,
+            "default": 0.01
+        },
+        "surcharge": {
+            "type": "float",
+            "tooltip": true
+        },
+        "currency": {
+            "type": "enum",
+            "maxLength": 3,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PriceRule\\Currency\\Valid"
+            ],
+            "view": "sales:views/price-rule/fields/currency",
+            "tooltip": true
+        },
+        "dateStart": {
+            "type": "date"
+        },
+        "dateEnd": {
+            "type": "date"
+        },
+        "timeline": {
+            "type": "base",
+            "view": "modules/sales/views/product-price/fields/timeline",
+            "layoutAvailabilityList": ["list"],
+            "fieldManagerParamList": [],
+            "readOnly": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true,
+            "notStorable": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "productCategory": {
+            "type": "belongsTo",
+            "entity": "ProductCategory"
+        },
+        "condition": {
+            "type": "belongsTo",
+            "entity": "PriceRuleCondition"
+        },
+        "priceBook": {
+            "type": "belongsTo",
+            "foreign": "rules",
+            "entity": "PriceBook"
+        },
+        "supplier": {
+            "type": "belongsTo",
+            "entity": "Supplier"
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": []
+    }
+}

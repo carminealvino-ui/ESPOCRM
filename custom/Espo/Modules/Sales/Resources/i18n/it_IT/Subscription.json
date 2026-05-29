@@ -1,0 +1,74 @@
+{
+  "labels": {
+    "Create Subscription": "Crea abbonamento",
+    "Add Item": "Aggiungi voce",
+    "Items": "Voci",
+    "Create with Template": "Crea da modello",
+    "Templates": "Modelli",
+    "Billing Plans": "Piani di fatturazione"
+  },
+  "fields": {
+    "status": "Stato",
+    "billingState": "Stato fatturazione",
+    "endDate": "Data fine",
+    "amount": "Importo",
+    "amountConverted": "Importo (convertito)",
+    "number": "Numero",
+    "account": "Azienda",
+    "billingContact": "Contatto di fatturazione",
+    "priceBook": "Listino prezzi",
+    "itemList": "Elenco voci",
+    "currency": "Valuta",
+    "billingPlan": "Piano di fatturazione",
+    "primaryProduct": "Prodotto principale",
+    "tax": "Profilo fiscale",
+    "anchorDay": "Giorno di ancoraggio",
+    "paymentMethod": "Metodo di pagamento",
+    "template": "Modello",
+    "startDate": "Data inizio",
+    "hasTrial": "Periodo di prova",
+    "intervalUnit": "Unità intervallo",
+    "alignmentType": "Allineamento",
+    "createPaymentRequests": "Crea richieste di pagamento",
+    "sendPaymentRequests": "Invia richieste di pagamento",
+    "sendInvoices": "Invia fatture",
+    "interval": "Periodo di addebito"
+  },
+  "links": {
+    "items": "Voci",
+    "account": "Azienda",
+    "billingContact": "Contatto di fatturazione",
+    "priceBook": "Listino prezzi",
+    "invoices": "Fatture",
+    "creditNotes": "Note di credito",
+    "billingPlan": "Piano di fatturazione",
+    "periods": "Periodi",
+    "primaryProduct": "Prodotto principale",
+    "tax": "Profilo fiscale",
+    "paymentMethod": "Metodo di pagamento",
+    "updates": "Aggiornamenti"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Trial": "Prova",
+      "Active": "Attivo",
+      "Paused": "In pausa",
+      "Stopped": "Interrotto"
+    },
+    "billingState": {
+      "Clear": "Pulisci",
+      "Due": "Scaduto",
+      "Past Due": "Scaduto"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperta",
+    "active": "Attivo"
+  },
+  "messages": {
+    "periodActiveForPast": "Un periodo con stato Attivo non può avere una data di fine nel passato.",
+    "periodScheduledForPast": "Un periodo con stato Pianificato non può avere una data di inizio nel passato.",
+    "periodOverlap": "L'intervallo del periodo si sovrappone a un periodo esistente."
+  }
+}

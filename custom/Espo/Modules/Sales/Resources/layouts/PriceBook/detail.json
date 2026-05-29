@@ -1,0 +1,28 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "isTaxInclusive"
+                },
+                {
+                    "name": "parentPriceBook"
+                }
+            ],
+            [
+
+                {
+                    "name": "description"
+                }
+            ]
+        ]
+    }
+]

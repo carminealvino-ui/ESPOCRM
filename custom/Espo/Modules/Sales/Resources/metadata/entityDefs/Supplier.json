@@ -1,0 +1,151 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "account": {
+            "type": "link",
+            "required": true,
+            "audited": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Active",
+                "Inactive"
+            ],
+            "default": "Active",
+            "style": {
+                "Inactive": "info"
+            },
+            "audited": true
+        },
+        "billingAddressStreet": {
+            "type": "foreign",
+            "link": "account",
+            "field": "billingAddressStreet",
+            "readOnly": true,
+            "view": "views/fields/foreign-text"
+        },
+        "billingAddressCity": {
+            "type": "foreign",
+            "link": "account",
+            "field": "billingAddressCity",
+            "readOnly": true,
+            "view": "views/fields/foreign-varchar"
+        },
+        "billingAddressState": {
+            "type": "foreign",
+            "link": "account",
+            "field": "billingAddressState",
+            "readOnly": true,
+            "view": "views/fields/foreign-varchar"
+        },
+        "billingAddressPostalCode": {
+            "type": "foreign",
+            "link": "account",
+            "field": "billingAddressPostalCode",
+            "readOnly": true,
+            "view": "views/fields/foreign-varchar"
+        },
+        "billingAddressCountry": {
+            "type": "foreign",
+            "link": "account",
+            "field": "billingAddressCountry",
+            "readOnly": true,
+            "view": "views/fields/foreign-varchar"
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "assignedUser": {
+            "type": "link",
+            "view": "views/fields/assigned-user"
+        },
+        "teams": {
+            "type": "linkMultiple"
+        }
+    },
+    "links": {
+        "account": {
+            "type": "belongsTo",
+            "foreign": "supplier",
+            "entity": "Account"
+        },
+        "purchaseOrders": {
+            "type": "hasMany",
+            "foreign": "supplier",
+            "entity": "PurchaseOrder",
+            "readOnly": true
+        },
+        "receiptOrders": {
+            "type": "hasMany",
+            "foreign": "supplier",
+            "entity": "ReceiptOrder",
+            "readOnly": true
+        },
+        "supplierBills": {
+            "type": "hasMany",
+            "foreign": "supplier",
+            "entity": "SupplierBill",
+            "readOnly": true
+        },
+        "supplierCredits": {
+            "type": "hasMany",
+            "foreign": "supplier",
+            "entity": "SupplierCredit",
+            "readOnly": true
+        },
+        "paymentEntries": {
+            "type": "hasMany",
+            "foreign": "supplier",
+            "entity": "PaymentEntry",
+            "readOnly": true
+        },
+        "prices": {
+            "type": "hasMany",
+            "foreign": "supplier",
+            "entity": "SupplierProductPrice",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "assignedUser": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "entityTeam",
+            "layoutRelationshipsDisabled": true
+        }
+    },
+    "collection": {
+        "orderBy": "name",
+        "order": "asc"
+    }
+}

@@ -1,0 +1,233 @@
+{
+    "fields": {
+        "duration": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isFalse",
+                        "attribute": "isAllDay"
+                    }
+                ]
+            }
+        },
+        "callCenter": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "has",
+                        "attribute": "tipo",
+                        "value": "Appuntamento Call Center"
+                    }
+                ]
+            }
+        }
+    },
+    "options": {
+        "sottostato": [
+            {
+                "optionList": [
+                    "",
+                    "Pending",
+                    "Non Interessato",
+                    "Gestito",
+                    "Chiuso Positivamente"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "status",
+                        "value": "Held"
+                    }
+                ]
+            },
+            {
+                "optionList": [
+                    "",
+                    "Non Confermato",
+                    "Non Gestito",
+                    "Annullato",
+                    "Non Ricevuto",
+                    "Rifissato"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "status",
+                        "value": "Not Held"
+                    }
+                ]
+            },
+            {
+                "optionList": [
+                    ""
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "status",
+                        "value": "Planned"
+                    }
+                ]
+            },
+            {
+                "optionList": [
+                    "",
+                    "Solo Informazioni",
+                    "Infattibilità Tecnica",
+                    "Prodotto non Conforme",
+                    "Fuori Target"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "status",
+                        "value": "Ingestibile"
+                    }
+                ]
+            }
+        ],
+        "azienda": [
+            {
+                "optionList": [
+                    "ARQUATI"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "callCenter",
+                        "value": "ARQUATI"
+                    }
+                ]
+            },
+            {
+                "optionList": [
+                    "ARTEL"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "callCenter",
+                        "value": "ARTEL"
+                    }
+                ]
+            },
+            {
+                "optionList": [
+                    "ARIEL"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "callCenter",
+                        "value": "ARIEL"
+                    }
+                ]
+            },
+            {
+                "optionList": [
+                    "PROGETTO"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "callCenter",
+                        "value": "PROGETTO"
+                    }
+                ]
+            },
+            {
+                "optionList": [
+                    "GFB"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "callCenter",
+                        "value": "GFB"
+                    }
+                ]
+            }
+        ],
+        "lineaProdotto": [
+            {
+                "optionList": [
+                    "",
+                    "Tende da Sole",
+                    "Pergole",
+                    "Vetrate",
+                    "Chiusure Verticali"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "azienda",
+                        "value": "ARQUATI"
+                    }
+                ]
+            },
+            {
+                "optionList": [
+                    "",
+                    "TLC - Vodafone",
+                    "Rental",
+                    "Energia"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "azienda",
+                        "value": "GFB"
+                    }
+                ]
+            },
+            {
+                "optionList": [
+                    "",
+                    "Climatizzazione",
+                    "Caldaie",
+                    "Stufe",
+                    "Fotovoltaico"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "azienda",
+                        "value": "ARTEL"
+                    }
+                ]
+            },
+            {
+                "optionList": [
+                    "",
+                    "Tende da Sole",
+                    "Pergole",
+                    "Vetrate",
+                    "Chiusure Verticali"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "azienda",
+                        "value": "PROGETTO"
+                    }
+                ]
+            },
+            {
+                "optionList": [
+                    "",
+                    "Climatizzazione",
+                    "Caldaie",
+                    "Stufe",
+                    "Bioetanolo"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "azienda",
+                        "value": "ARIEL"
+                    }
+                ]
+            }
+        ]
+    }
+}

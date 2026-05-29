@@ -1,0 +1,29 @@
+[
+    {
+        "rows": [
+            [{"name": "number"}, {"name": "account"}],
+            [{"name": "status"}, {"name": "amount"}],
+            [{"name": "billingState"}, false]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "template"}, {"name": "hasTrial"}],
+            [false, {"name": "startDate"}],
+            [{"name": "billingPlan"}, {"name": "endDate"}],
+            [{"name": "anchorDay"}, false]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "tax"}, {"name": "paymentMethod"}],
+            [{"name": "priceBook"}, {"name": "isTaxInclusive"}],
+            [{"name": "billingContact"}, false]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "description"}]
+        ]
+    }
+]

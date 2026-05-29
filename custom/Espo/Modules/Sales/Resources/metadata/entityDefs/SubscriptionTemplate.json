@@ -1,0 +1,170 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "index": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Active",
+                "Inactive"
+            ],
+            "default": "Active",
+            "style": {
+                "Inactive": "info"
+            },
+            "audited": true,
+            "maxLength": 8
+        },
+        "hasTrial": {
+            "type": "bool",
+            "audited": true
+        },
+        "trialPeriodDays": {
+            "type": "int",
+            "min": 0,
+            "default": 10,
+            "audited": true
+        },
+        "billingPlans": {
+            "type": "linkMultiple",
+            "autocompleteOnEmpty": true
+        },
+        "itemList": {
+            "type": "jsonArray",
+            "notStorable": true,
+            "layoutAvailabilityList": [],
+            "dynamicLogicVisibleDisabled": true,
+            "dynamicLogicInvalidDisabled": true,
+            "view": "modules/sales/views/quote/fields/item-list",
+            "templatePlaceholderDisabled": true,
+            "reportDisabled": true,
+            "workflowDisabled": true,
+            "massUpdateDisabled": true,
+            "duplicatorClassName": "Espo\\Modules\\Sales\\Classes\\FieldDuplicators\\Quote\\ItemList",
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\ItemListLoader",
+            "required": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\Subscription\\ItemList\\Required"
+            ],
+            "audited": true,
+            "auditView": "modules/sales/views/quote/fields/audit-item-list"
+        },
+        "primaryProduct": {
+            "type": "link",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited"
+            ]
+        },
+        "products": {
+            "type": "linkMultiple",
+            "entity": "Product",
+            "notStorable": true,
+            "customizationDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "layoutAvailabilityList": [
+                "filters"
+            ],
+            "view": "sales:views/quote/fields/products"
+        },
+        "hasTerm": {
+            "type": "bool",
+            "tooltip": true
+        },
+        "termUnit": {
+            "type": "enum",
+            "options": [
+                "",
+                "M",
+                "Y",
+                "W",
+                "D"
+            ],
+            "translation": "SubscriptionBillingPlan.intervalUnits",
+            "maxLength": 1
+        },
+        "termLength": {
+            "type": "int",
+            "min": 1
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "audited": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "hasQuantity": {
+            "type": "bool",
+            "readOnly": true,
+            "customizationDisabled": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "items": {
+            "type": "hasMany",
+            "entity": "SubscriptionTemplateItem",
+            "foreign": "subscriptionTemplate",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "billingPlans": {
+            "type": "hasMany",
+            "foreign": "templates",
+            "entity": "SubscriptionBillingPlan",
+            "readOnly": true,
+            "orderBy": "name",
+            "order": "asc"
+        },
+        "primaryProduct": {
+            "type": "belongsTo",
+            "entity": "Product"
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "EntityTeam",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "indexes": {},
+    "collection": {
+        "orderBy": "name",
+        "order": "asc"
+    }
+}

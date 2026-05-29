@@ -1,0 +1,35 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "quote",
+        "width": 27
+    },
+    {
+        "name": "quantity",
+        "width": 6,
+        "align": "left"
+    },
+    {
+        "name": "listPrice",
+        "width": 12,
+        "align": "right"
+    },
+    {
+        "name": "prezzoCodice",
+        "width": 12,
+        "align": "right"
+    },
+    {
+        "name": "unitPrice",
+        "width": 12,
+        "align": "right"
+    },
+    {
+        "name": "amount",
+        "width": 12,
+        "align": "right"
+    }
+]

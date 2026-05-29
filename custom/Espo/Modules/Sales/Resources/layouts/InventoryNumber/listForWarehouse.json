@@ -1,0 +1,22 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "product",
+        "width": 27
+    },
+    {
+        "name": "quantityWarehouseOnHand",
+        "label": "quantityOnHand",
+        "width": 18,
+        "notSortable": true
+    },
+    {
+        "name": "quantityWarehouseReserved",
+        "label": "quantityReserved",
+        "width": 18,
+        "notSortable": true
+    }
+]

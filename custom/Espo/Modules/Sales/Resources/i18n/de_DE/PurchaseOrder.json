@@ -1,0 +1,80 @@
+{
+  "labels": {
+    "Create PurchaseOrder": "Bestellung erstellen",
+    "Add Item": "Artikel hinzufügen",
+    "Items": "Artikel",
+    "Purchase Order Items": "Bestellpositionen",
+    "Create Receipt": "Erhalt erstellen"
+  },
+  "fields": {
+    "number": "Angebotsnummer",
+    "numberA": "Nummer (auto-inkrement)",
+    "account": "Firma",
+    "billingAddress": "Rechnungsadresse",
+    "shippingAddress": "Lieferadresse",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "shippingContact": "Kontakt f. Lieferadresse",
+    "supplierAddress": "Lieferantenadresse",
+    "supplierAddressStreet": "Straße (Lieferant)",
+    "supplierAddressCity": "Stadt (Lieferant)",
+    "supplierAddressState": "Bundesland (Lieferant)",
+    "supplierAddressCountry": "Land (Lieferant)",
+    "supplierAddressPostalCode": "PLZ (Lieferant)",
+    "tax": "Steuerprofil",
+    "taxRate": "Steuersatz",
+    "shippingProvider": "Versender",
+    "taxAmount": "Steuerbetrag",
+    "discountAmount": "Rabattbetrag",
+    "amount": "Betrag",
+    "preDiscountedAmount": "Betrag vor Rabatt",
+    "grandTotalAmount": "Gesamtbetrag",
+    "itemList": "Artikelliste",
+    "dateOrdered": "Bestelldatum",
+    "deliveryDate": "Lieferdatum",
+    "weight": "Gewicht",
+    "amountConverted": "Betrag (konvertiert)",
+    "taxAmountConverted": "Steuerbetrag (konvertiert)",
+    "preDiscountedAmountConverted": "Betrag vor Rabatt (konvertiert)",
+    "discountAmountConverted": "Rabattbetrag (konvertiert)",
+    "grandTotalAmountConverted": "Gesamtbetrag (konvertiert)",
+    "taxAmountCurrency": "Steuerbetrag Währung",
+    "discountAmountCurrency": "Rabattbetrag Währung",
+    "amountCurrency": "Betragswährung",
+    "preDiscountedAmountCurrency": "Betrag vor Rabatt Währung",
+    "grandTotalAmountCurrency": "Gesamtbetrag Währung",
+    "currency": "Währung",
+    "supplier": "Lieferant",
+    "warehouse": "Senden an Lager",
+    "isReceiptFullyCreated": "Erhalt vollständig erstellt",
+    "hasInventoryItems": "Hat Inventarartikel",
+    "isDone": "Erledigt"
+  },
+  "links": {
+    "items": "Artikel",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "shippingContact": "Kontakt f. Lieferadresse",
+    "shippingProvider": "Versender",
+    "account": "Firma",
+    "tax": "Steuerprofil",
+    "supplier": "Lieferant",
+    "inventoryTransactions": "Inventartransaktionen",
+    "receiptOrders": "Empfangsaufträge",
+    "supplierBills": "Eingangsrechnungen",
+    "warehouse": "Lager"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Released": "Veröffentlicht",
+      "Completed": "Abgeschlossen",
+      "Canceled": "Storniert"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "completed": "Abgeschlossen"
+  },
+  "messages": {
+    "cannotCreateReceiptInEditMode": "Im Bearbeitungsmodus können keine Empfangsaufträge erstellt werden."
+  }
+}

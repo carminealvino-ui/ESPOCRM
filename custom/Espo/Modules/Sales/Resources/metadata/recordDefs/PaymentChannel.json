@@ -1,0 +1,26 @@
+{
+    "actions": {
+        "merge": {
+            "disabled": true
+        }
+    },
+    "massActions": {
+        "delete": {
+            "allowed": true
+        }
+    },
+    "loadAdditionalFieldsAfterUpdate": true,
+    "duplicateWhereBuilderClassName": "Espo\\Classes\\DuplicateWhereBuilders\\General",
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentChannel\\BeforeSaveValidate"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentChannel\\BeforeSaveValidate"
+    ],
+    "saverClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldSavers\\PaymentChannel\\DataSaver"
+    ],
+    "readLoaderClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentChannel\\DataLoader"
+    ]
+}

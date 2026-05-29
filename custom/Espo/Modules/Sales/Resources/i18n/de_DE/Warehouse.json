@@ -1,0 +1,33 @@
+{
+  "labels": {
+    "Create Warehouse": "Lager erstellen"
+  },
+  "fields": {
+    "isAvailableForStock": "Verfügbar auf Lager",
+    "isStock": "Bestand",
+    "order": "Auftrag"
+  },
+  "links": {
+    "deliveryOrders": "Lieferungen",
+    "receiptOrders": "Empfangsaufträge",
+    "inventoryTransactions": "Inventartransaktionen",
+    "products": "Produkte",
+    "inventoryNumbers": "Inventarnummern",
+    "outboundTransferOrders": "Ausgehende Überweisungen",
+    "inboundTransferOrders": "Eingehende Überweisungen"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "presetFilters": {
+    "active": "Aktiv",
+    "stocked": "Lagergeführt"
+  },
+  "tabs": {
+    "inventory": "Inventar",
+    "orders": "Aufträge"
+  }
+}

@@ -1,0 +1,153 @@
+{
+    "fields": {
+        "closeDate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Won"
+                    }
+                ]
+            }
+        },
+        "motivoDecisione": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Won"
+                    },
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Lost"
+                    }
+                ]
+            }
+        },
+        "installazione": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Won"
+                    }
+                ]
+            }
+        },
+        "installatore": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Won"
+                    }
+                ]
+            }
+        },
+        "statoFinanziamento": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "statoContratto": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Won"
+                    }
+                ]
+            }
+        },
+        "finanziamento": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Won"
+                    }
+                ]
+            }
+        },
+        "originalLead": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Won"
+                    }
+                ]
+            }
+        },
+        "account": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Won"
+                    }
+                ]
+            }
+        },
+        "contact": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Won"
+                    }
+                ]
+            }
+        },
+        "contacts": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Won"
+                    }
+                ]
+            }
+        },
+        "itemList": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "notIn",
+                        "attribute": "stage",
+                        "value": [
+                            "Closed Won",
+                            "Chiuso Positivamente"
+                        ]
+                    }
+                ]
+            }
+        },
+        "productCategory": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "productBrandId"
+                    }
+                ]
+            }
+        }
+    }
+}

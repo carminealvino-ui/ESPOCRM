@@ -1,0 +1,8 @@
+{
+    "fields": {
+        "productCategory": "Categoria prodotto",
+        "fornitorePartner": "Fornitore / Partner",
+        "productBrand": "Brand",
+        "address": "Indirizzo"
+    }
+}

@@ -1,0 +1,24 @@
+/**
+ * Allineamento verticale testo nei menu Selectize (minimo).
+ * NON modifica padding/altezza del box ne' position del dropdown.
+ */
+
+.field .selectize-control.single .selectize-input > .item,
+.record .selectize-control.single .selectize-input > .item,
+.modal-body .selectize-control.single .selectize-input > .item,
+.edit .selectize-control.single .selectize-input > .item {
+    line-height: 1.4;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    margin-top: 0;
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+.field .selectize-dropdown .option,
+.record .selectize-dropdown .option,
+.modal-body .selectize-dropdown .option {
+    line-height: 1.4;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}

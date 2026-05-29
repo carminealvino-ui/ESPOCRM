@@ -1,0 +1,21 @@
+{
+    "fields": {
+        "privato": "Privato",
+        "videoCall": "VideoCall",
+        "sorgente": "Sorgente",
+        "appuntamenti": "Appuntamento",
+        "appuntamento": "Appuntamento",
+        "appuntamentoRef": "Appuntamento Riferimento"
+    },
+    "options": {
+        "sorgente": {
+            "Outlook": "Outlook",
+            "Google": "Google",
+            "Manuale": "Manuale"
+        }
+    },
+    "links": {
+        "appuntamenti": "Appuntamento",
+        "appuntamento": "Appuntamento"
+    }
+}

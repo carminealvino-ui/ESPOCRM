@@ -1,0 +1,19 @@
+{
+  "links": {
+    "quotesBilling": "Angebote (Rechnungsadresse)",
+    "quotesShipping": "Angebote (Lieferadresse)",
+    "salesOrdersBilling": "Kundenaufträge (Rechnungsadresse)",
+    "salesOrdersShipping": "Kundenaufträge (Lieferadresse)",
+    "invoicesBilling": "Rechnungen (Rechnungsadresse)",
+    "invoicesShipping": "Rechnungen (Lieferadresse)",
+    "purchaseOrdersBilling": "Bestellungen (Rechnungsadresse)",
+    "purchaseOrdersShipping": "Bestellungen (Lieferadresse)",
+    "deliveryOrdersShipping": "Lieferaufträge (Lieferadresse)",
+    "returnOrdersBilling": "Rücksendungen (Rechnungsadresse)",
+    "returnOrdersShipping": "Rücksendungen (Lieferadresse)",
+    "receiptOrdersShipping": "Empfangsaufträge (Lieferadresse)",
+    "creditNotesBilling": "Gutschriften (Rechnungswesen)",
+    "subscriptionsBilling": "Abonnements (Abrechnung)",
+    "supplierBillsBilling": "Eingangsrechnungen"
+  }
+}

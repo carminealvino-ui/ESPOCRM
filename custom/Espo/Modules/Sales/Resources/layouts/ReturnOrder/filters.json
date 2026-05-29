@@ -1,0 +1,18 @@
+[
+    "status",
+    "account",
+    "salesOrder",
+    "assignedUser",
+    "teams",
+    "dateOrdered",
+    "warehouse",
+    "createdAt",
+    "createdBy",
+    "number",
+    "amountConverted",
+    "grandTotalAmountConverted",
+    "products",
+    "shippingProvider",
+    "tax",
+    "isLocked"
+]

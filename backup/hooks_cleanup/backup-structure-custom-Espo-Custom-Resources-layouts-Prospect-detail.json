@@ -1,0 +1,68 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "azienda"
+                },
+                {
+                    "name": "origine"
+                }
+            ],
+            [
+                {
+                    "name": "b2B"
+                },
+                {
+                    "name": "partitaIVA"
+                }
+            ],
+            [
+                {
+                    "name": "insegna"
+                },
+                {
+                    "name": "ragioneSociale"
+                },
+                {
+                    "name": "referenteAziendale"
+                }
+            ],
+            [
+                {
+                    "name": "address"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "addressMap"
+                }
+            ],
+            [
+                {
+                    "name": "phoneNumber"
+                },
+                {
+                    "name": "emailAddress"
+                }
+            ],
+            [
+                {
+                    "name": "whatsApp"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": "Overview"
+    }
+]

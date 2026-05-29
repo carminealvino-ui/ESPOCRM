@@ -1,0 +1,9 @@
+{
+    "entity": false,
+    "layouts": false,
+    "tab": false,
+    "acl": "boolean",
+    "module": "Outlook",
+    "customizable": false,
+    "importable": false
+}

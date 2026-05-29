@@ -1,0 +1,27 @@
+{
+    "fields": {
+        "name": "Name",
+        "newQtyOnHand": "On-Hand Qty",
+        "qty": "Adjusted",
+        "newQuantityOnHand": "New On-Hand Quantity ",
+        "quantity": "Quantity",
+        "quantityInt": "Quantity (Int)",
+        "product": "Product",
+        "order": "Line Number",
+        "inventoryAdjustment": "Adjustment",
+        "description": "Description",
+        "inventoryAdjustmentStatus": "Inventory Adjustment Status",
+        "inventoryNumber": "Inventory Number",
+        "inventoryNumberType": "Inventory Number Type",
+        "isInventory": "Is Inventory",
+        "warehouse": "Warehouse"
+    },
+    "links": {
+        "inventoryAdjustment": "Adjustment",
+        "product": "Product",
+        "inventoryNumber": "Inventory Number"
+    },
+    "presetFilters": {
+        "completed": "Completed"
+    }
+}

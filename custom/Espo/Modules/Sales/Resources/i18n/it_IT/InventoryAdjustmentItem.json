@@ -1,0 +1,27 @@
+{
+  "fields": {
+    "name": "Nome",
+    "newQtyOnHand": "Qtà disponibile",
+    "qty": "Rettificato",
+    "newQuantityOnHand": "Nuova quantità disponibile ",
+    "quantity": "Quantità",
+    "quantityInt": "Quantità (Int)",
+    "product": "Prodotto",
+    "order": "Numero di riga",
+    "inventoryAdjustment": "Adeguamento",
+    "description": "Descrizione",
+    "inventoryAdjustmentStatus": "Stato di rettifica dell'inventario",
+    "inventoryNumber": "Numero di inventario",
+    "inventoryNumberType": "Tipologia di codice inventario",
+    "isInventory": "È un articolo di magazzino",
+    "warehouse": "Magazzino"
+  },
+  "links": {
+    "inventoryAdjustment": "Adeguamento",
+    "product": "Prodotto",
+    "inventoryNumber": "Numero di inventario"
+  },
+  "presetFilters": {
+    "completed": "Completato"
+  }
+}

@@ -1,0 +1,74 @@
+{
+    "aclDependencies": {
+        "entityDefs.PaymentAllocation": {
+            "scope": "PaymentEntry",
+            "anyScopeList": [
+                "PaymentEntry",
+                "WriteOffEntry",
+                "CreditNote",
+                "SupplierBill",
+                "SupplierCredit"
+            ]
+        },
+        "entityDefs.Subscription": {
+            "scope": "SubscriptionBillingPlan"
+        },
+        "entityDefs.TaxCode": {
+            "scope": "Product",
+            "anyScopeList": [
+                "Tax",
+                "Product",
+                "Quote",
+                "SalesOrder",
+                "Invoice",
+                "PurchaseOrder",
+                "ReturnOrder",
+                "CreditNote",
+                "SupplierBill",
+                "SupplierCredit"
+            ]
+        },
+        "entityDefs.TaxLineItem": {
+            "scope": "Product",
+            "anyScopeList": [
+                "Quote",
+                "SalesOrder",
+                "Invoice",
+                "PurchaseOrder",
+                "ReturnOrder",
+                "CreditNote",
+                "SupplierBill",
+                "SupplierCredit"
+            ]
+        },
+        "entityDefs.TaxTotalItem": {
+            "scope": "Product",
+            "anyScopeList": [
+                "Quote",
+                "SalesOrder",
+                "Invoice",
+                "PurchaseOrder",
+                "ReturnOrder",
+                "CreditNote",
+                "SupplierBill",
+                "SupplierCredit"
+            ]
+        },
+        "entityDefs.TaxAllocationItem": {
+            "scope": "Product",
+            "anyScopeList": [
+                "PaymentEntry",
+                "TaxTotalItem"
+            ]
+        },
+        "entityDefs.RoundingProfile": {
+            "scope": "Product",
+            "anyScopeList": [
+                "Tax",
+                "Product",
+                "Invoice",
+                "CreditNote"
+            ]
+        }
+    }
+}

@@ -1,0 +1,57 @@
+{
+    "mandatory": {
+        "scopeLevel": {
+            "QuoteItem": "Quote",
+            "SalesOrderItem": "SalesOrder",
+            "InvoiceItem": "Invoice",
+            "PurchaseOrderItem": "PurchaseOrder",
+            "DeliveryOrderItem": "DeliveryOrder",
+            "ReceiptOrderItem": "ReceiptOrder",
+            "ReceiptOrderReceivedItem": "ReceiptOrder",
+            "TransferOrderItem": "TransferOrder",
+            "ReturnOrderItem": "ReturnOrder",
+            "CreditNoteItem": "CreditNote",
+            "SupplierBillItem": "SupplierBill",
+            "SupplierCreditItem": "SupplierCredit",
+            "OpportunityItem": "Opportunity",
+            "InventoryAdjustmentItem": "InventoryAdjustment",
+            "SubscriptionItem": "Subscription",
+            "SubscriptionTemplateItem": "SubscriptionTemplate",
+            "SubscriptionPeriod": "Subscription",
+            "SubscriptionUpdate": "Subscription",
+            "ProductPrice": "PriceBook",
+            "PriceRule": "PriceBook",
+            "SupplierProductPrice": "Supplier",
+            "ProductAttributeOption": "ProductAttribute",
+            "TaxItemRule": "Tax"
+        }
+    },
+    "adminMandatory": {
+        "scopeLevel": {
+            "PaymentMethod": {
+                "create": "yes",
+                "read": "all",
+                "edit": "all",
+                "delete": "all"
+            },
+            "InventoryTransaction": {
+                "create": "yes",
+                "read": "all",
+                "edit": "all",
+                "delete": "all"
+            },
+            "PriceRuleCondition": {
+                "create": "yes",
+                "read": "all",
+                "edit": "all",
+                "delete": "all"
+            },
+            "TaxClass": {
+                "create": "yes",
+                "read": "all",
+                "edit": "all",
+                "delete": "all"
+            }
+        }
+    }
+}

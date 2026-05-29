@@ -1,0 +1,61 @@
+{
+    "links": {
+        "appuntamentoChildren": "Appuntamenti",
+        "pagamentiProvvigionali": "Pagamenti Provvigionali",
+        "prospect": "Prospect",
+        "provvigioni": "Provvigioni"
+    },
+    "fields": {
+        "codiceCliente": "Codice Cliente",
+        "partitaIVA": "Partita IVA",
+        "codicePOS": "Codice POS",
+        "meseImportazioneCB": "Mese Importazione CB",
+        "cluster": "Cluster",
+        "b2B": "B2B",
+        "consistenze": "Consistenze",
+        "segmento": "Segmento",
+        "whatsApp": "WhatsApp",
+        "stato": "Stato",
+        "pagamentiProvvigionali": "Pagamenti Provvigionali",
+        "azienda": "Azienda",
+        "prospect": "Prospect",
+        "provvigioni": "Provvigioni"
+    },
+    "options": {
+        "cluster": {
+            "": "",
+            "Micro": "Micro",
+            "Small": "Small",
+            "Medium": "Medium",
+            "Enterprise": "Enterprise"
+        },
+        "consistenze": {
+            "VDF Voce": "VDF Voce",
+            "VDF Dati": "VDF Dati",
+            "VDF M2M": "VDF M2M",
+            "VDF DSL": "VDF DSL",
+            "VDF ONU": "VDF ONU",
+            "VDF ONA": "VDF ONA",
+            "VDF DEAL": "VDF DEAL",
+            "VDF Digital": "VDF Digital"
+        },
+        "segmento": {
+            "": "",
+            "B2B": "B2B",
+            "B2C": "B2C"
+        },
+        "stato": {
+            "Customer Base": "Customer Base",
+            "Recuperato": "Recuperato",
+            "Perso": "Perso",
+            "Nuovo": "Nuovo"
+        },
+        "azienda": {
+            "ARQUATI": "ARQUATI",
+            "GFB": "GFB",
+            "ARTEL": "ARTEL",
+            "PROGETTO": "PROGETTO",
+            "ARIEL": "ARIEL"
+        }
+    }
+}

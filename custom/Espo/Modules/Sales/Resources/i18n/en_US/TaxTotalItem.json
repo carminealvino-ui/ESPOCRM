@@ -1,0 +1,16 @@
+{
+    "fields": {
+        "source": "Source",
+        "taxCode": "Tax Code",
+        "rate": "Rate",
+        "amount": "Tax",
+        "baseAmount": "Base",
+        "amountLocal": "Tax Local",
+        "baseAmountLocal": "Base Local",
+        "taxCodeLabel": "Tax Code Label"
+    },
+    "links": {
+        "taxCode": "Tax Code",
+        "source": "Source"
+    }
+}

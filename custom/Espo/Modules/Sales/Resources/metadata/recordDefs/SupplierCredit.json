@@ -1,0 +1,63 @@
+{
+    "loadAdditionalFieldsAfterUpdate": true,
+    "saverClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldSavers\\CreditNote\\AllocationsSaver"
+    ],
+    "readLoaderClassNameList": [
+        "__APPEND__",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\ItemListLoader",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Invoice\\AmountDue"
+    ],
+    "listLoaderClassNameList": [
+        "__APPEND__",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\ListItemListLoader"
+    ],
+    "earlyBeforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Quote\\EarlyBeforeSavePrepare"
+    ],
+    "earlyBeforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Quote\\EarlyBeforeSavePrepare"
+    ],
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Quote\\BeforeCreateValidation",
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\SupplierCredit\\BeforeSaveValidation"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Quote\\BeforeUpdateValidation",
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\SupplierCredit\\BeforeUpdateValidation",
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\SupplierCredit\\BeforeSaveValidation"
+    ],
+    "beforeDeleteHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Quote\\BeforeDeleteCheckLocked",
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Invoice\\BeforeDeleteCheckAllocations",
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\General\\BeforeDeleteCheckAllocations"
+    ],
+    "createInputFilterClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Order\\InputFilter",
+        "Espo\\Modules\\Sales\\Classes\\Record\\SupplierBill\\InputFilter"
+    ],
+    "updateInputFilterClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Order\\InputFilter",
+        "Espo\\Modules\\Sales\\Classes\\Record\\SupplierBill\\InputFilter"
+    ],
+    "deletedRestorerClassName": "Espo\\Modules\\Sales\\Classes\\Record\\SupplierCredit\\DeletedRestorer",
+    "actions": {
+        "convertCurrency": {
+            "disabled": true
+        },
+        "merge": {
+            "disabled": true
+        }
+    },
+    "massActions": {
+        "lock": {
+            "implementationClassName": "Espo\\Modules\\Sales\\Classes\\MassActions\\Lock"
+        },
+        "unlock": {
+            "implementationClassName": "Espo\\Modules\\Sales\\Classes\\MassActions\\Unlock"
+        },
+        "convertCurrency": {
+            "disabled": true
+        }
+    }
+}

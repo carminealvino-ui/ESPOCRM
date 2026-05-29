@@ -1,0 +1,40 @@
+{
+    "loadAdditionalFieldsAfterUpdate": true,
+    "duplicateWhereBuilderClassName": "Espo\\Classes\\DuplicateWhereBuilders\\General",
+    "saverClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldSavers\\WriteOffEntry\\AllocationsSaver"
+    ],
+    "readLoaderClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\WriteOffEntry\\Allocations",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\WriteOffEntry\\UnallocatedAmount"
+    ],
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\WriteOffEntry\\BeforeSaveValidation"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\WriteOffEntry\\BeforeSaveValidation"
+    ],
+    "beforeDeleteHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\General\\BeforeDeleteCheckAllocations"
+    ],
+    "actions": {
+        "merge": {
+            "disabled": true
+        },
+        "convertCurrency": {
+            "disabled": true
+        }
+    },
+    "massActions": {
+        "lock": {
+            "implementationClassName": "Espo\\Modules\\Sales\\Classes\\MassActions\\Lock"
+        },
+        "unlock": {
+            "implementationClassName": "Espo\\Modules\\Sales\\Classes\\MassActions\\Unlock"
+        },
+        "convertCurrency": {
+            "disabled": true
+        }
+    },
+    "deletedRestorerClassName": "Espo\\Modules\\Sales\\Classes\\Record\\WriteOffEntry\\DeletedRestorer"
+}

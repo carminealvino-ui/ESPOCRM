@@ -1,0 +1,32 @@
+{
+  "scopeNames": {
+    "Product": "Producto",
+    "ProductCategory": "Categoría del producto",
+    "ProductBrand": "Marca del producto",
+    "ReportCategory": "Categoría del informe",
+    "Quote": "Presupuesto",
+    "QuoteItem": "Artículo de presupuesto",
+    "SalesOrder": "Orden de venta",
+    "SalesOrderItem": "Artículo de orden de venta",
+    "Invoice": "Factura",
+    "InvoiceItem": "Artículo de factura",
+    "Tax": "Impuesto",
+    "ShippingProvider": "Proveedor de envío",
+    "OpportunityItem": "Artículo en oferta"
+  },
+  "scopeNamesPlural": {
+    "Product": "Productos",
+    "ProductCategory": "Categorías de productos",
+    "ReportCategory": "Categorías de informes",
+    "Quote": "Presupuestos",
+    "QuoteItem": "Artículos de presupuesto",
+    "SalesOrder": "Órdenes de venta",
+    "SalesOrderItem": "Artículos de orden de venta",
+    "Invoice": "Facturas",
+    "InvoiceItem": "Artículos de la factura",
+    "Tax": "Impuestos",
+    "ShippingProvider": "Proveedores de envío",
+    "OpportunityItem": "Artículos en oferta",
+    "ProductBrand": "Marcas de productos"
+  }
+}

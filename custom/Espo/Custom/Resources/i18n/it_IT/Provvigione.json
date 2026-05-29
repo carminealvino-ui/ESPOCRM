@@ -1,0 +1,36 @@
+{
+    "links": {
+        "meetings": "Riunioni",
+        "calls": "Chiamate",
+        "tasks": "Compiti",
+        "cliente": "Cliente",
+        "contratto": "Contratto",
+        "contrattoArticoli": "Contratto Articoli"
+    },
+    "labels": {
+        "Create Provvigione": "Crea Provvigione"
+    },
+    "fields": {
+        "name": "Provvigione",
+        "tipo": "Tipo",
+        "cliente": "Cliente",
+        "contratto": "Contratto",
+        "importo": "Importo",
+        "importoCurrency": "Importo (Valuta)",
+        "importoConverted": "Importo (Convertito)",
+        "tassoProvvigioni": "Tasso Provvigioni",
+        "contrattoArticoli": "Contratto Articoli",
+        "hookVersion": "HookVersion"
+    },
+    "options": {
+        "tipo": {
+            "Provvigione Base": "Provvigione Base",
+            "Bonus (Sabato-Domenica)": "Bonus (Sabato-Domenica)",
+            "Plus Provvigionale": "Plus Provvigionale",
+            "Minus Provvigionale": "Minus Provvigionale",
+            "Gara (Soglia >2.5k)": "Gara (Soglia >2.5k)",
+            "Gara (Soglia >3.5)": "Gara (Soglia >3.5)",
+            "Gara (Soglia >5k)": "Gara (Soglia >5k)"
+        }
+    }
+}

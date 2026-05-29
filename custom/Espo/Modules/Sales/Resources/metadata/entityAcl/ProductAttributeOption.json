@@ -1,0 +1,10 @@
+{
+    "links": {
+        "products": {
+            "readOnly": true
+        },
+        "productVariants": {
+            "readOnly": true
+        }
+    }
+}

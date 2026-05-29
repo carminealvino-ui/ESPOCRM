@@ -1,0 +1,8 @@
+{
+    "controller": "controllers/record",
+
+    "recordViews": {
+        "detail": "custom:views/opportunity/record/detail"
+    }
+}
+

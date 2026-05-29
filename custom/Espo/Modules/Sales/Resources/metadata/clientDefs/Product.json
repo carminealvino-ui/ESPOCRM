@@ -1,0 +1,219 @@
+{
+    "controller": "controllers/record",
+    "mergeDisabled": true,
+    "views": {
+        "list": "sales:views/product/list"
+    },
+    "viewSetupHandlers": {
+        "record/detail": ["modules/sales/handlers/product/setup-record-detail"],
+        "record/edit": ["modules/sales/handlers/product/setup-record-detail"]
+    },
+    "modalViews": {
+        "select": "views/modals/select-records-with-categories"
+    },
+    "detailActionList": [
+        {
+            "name": "viewPrice",
+            "label": "View Price",
+            "handler": "sales:handlers/product/view-price-action",
+            "data": {
+                "handler": "sales:handlers/product/view-price-action"
+            },
+            "actionFunction": "process",
+            "checkVisibilityFunction": "isVisible",
+            "configCheck": "priceBooksEnabled"
+        }
+    ],
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "label": "Categories",
+                    "link": "#ProductCategory",
+                    "acl": "edit",
+                    "aclScope": "ProductCategory"
+                },
+                {
+                    "label": "Brands",
+                    "link": "#ProductBrand",
+                    "acl": "read",
+                    "aclScope": "ProductBrand"
+                },
+                {
+                    "labelTranslation": "Product.links.attributes",
+                    "link": "#ProductAttribute",
+                    "acl": "read",
+                    "aclScope": "ProductAttribute"
+                },
+                false,
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.PriceBook",
+                    "link": "#PriceBook",
+                    "acl": "read",
+                    "aclScope": "PriceBook",
+                    "configCheck": "priceBooksEnabled"
+                },
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.Supplier",
+                    "link": "#Supplier",
+                    "acl": "read",
+                    "aclScope": "Supplier"
+                },
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.Tax",
+                    "link": "#Tax",
+                    "acl": "read",
+                    "aclScope": "Tax"
+                },
+                false,
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.Warehouse",
+                    "link": "#Warehouse",
+                    "acl": "read",
+                    "aclScope": "Warehouse",
+                    "configCheck": "warehousesEnabled"
+                },
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.InventoryNumber",
+                    "link": "#InventoryNumber",
+                    "acl": "read",
+                    "aclScope": "InventoryNumber",
+                    "configCheck": "inventoryTransactionsEnabled"
+                },
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.InventoryAdjustment",
+                    "link": "#InventoryAdjustment",
+                    "acl": "read",
+                    "aclScope": "InventoryAdjustment",
+                    "configCheck": "inventoryTransactionsEnabled"
+                },
+                false,
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.InventoryTransaction",
+                    "link": "#InventoryTransaction",
+                    "acl": "read",
+                    "aclScope": "InventoryTransaction",
+                    "configCheck": "inventoryTransactionsEnabled"
+                }
+            ]
+        }
+    },
+    "massActionList": [
+        "__APPEND__",
+        "updatePrice"
+    ],
+    "checkAllResultMassActionList": [
+        "__APPEND__",
+        "updatePrice"
+    ],
+    "massActionDefs": {
+        "updatePrice": {
+            "handler": "sales:handlers/product-price/mass-update-price",
+            "initFunction": "init",
+            "actionFunction": "process",
+            "acl": "edit",
+            "aclScope": "Product"
+        }
+    },
+    "filterList": [
+        "available"
+    ],
+    "dynamicHandler": "sales:product-dynamic-handler",
+    "bottomPanels": {
+        "detail": [
+            {
+                "name": "warehousesQuantity",
+                "label": "Warehouses",
+                "view": "sales:views/product/record/panels/warehouses-quantity"
+            },
+            {
+                "name": "orderItems",
+                "label": "Orders",
+                "view": "sales:views/product/record/panels/order-items",
+                "recordListView": "sales:views/quote-item/record/list-union"
+            }
+        ],
+        "detailSmall": [
+            {
+                "name": "warehousesQuantity",
+                "label": "Warehouses",
+                "view": "sales:views/product/record/panels/warehouses-quantity"
+            }
+        ]
+    },
+    "relationshipPanels": {
+        "prices": {
+            "layout": "listForProduct",
+            "unlinkDisabled": true,
+            "selectDisabled": true,
+            "createHandler": "sales:handlers/product/add-price",
+            "filterList": [
+                "all",
+                "active"
+            ]
+        },
+        "supplierPrices": {
+            "layout": "listForProduct",
+            "unlinkDisabled": true,
+            "selectDisabled": true,
+            "filterList": [
+                "all",
+                "active"
+            ]
+        },
+        "inventoryTransactions": {
+            "createDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": true
+        },
+        "inventoryNumbers": {
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "filterList": [
+                "all",
+                "onHand"
+            ],
+            "layout": "listForProduct",
+            "view": "sales:views/product/record/panels/inventory-numbers",
+            "createHandler": "sales:handlers/product/create-inventory-number"
+        },
+        "variants": {
+            "createDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "layout": "listVariant",
+            "view": "sales:views/product/record/panels/variants",
+            "primaryFilter": "allVariants",
+            "filterList": [
+                "allVariants",
+                "availableVariants"
+            ],
+            "orderBy": "variantOrder"
+        },
+        "inventoryAdjustmentItems": {
+            "createDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "removeDisabled": true,
+            "primaryFilter": "completed",
+            "layout": "listForProduct",
+            "orderBy": "createdAt",
+            "orderDirection": "desc"
+        }
+    },
+    "iconClass": "fas fa-cube",
+    "additionalLayouts": {
+        "listForAdd": {
+            "type": "listSmall"
+        },
+        "listForAddInventory": {
+            "type": "listSmall"
+        },
+        "listForWarehouse": {
+            "type": "listSmall"
+        },
+        "listVariant": {
+            "type": "listSmall"
+        }
+    }
+}

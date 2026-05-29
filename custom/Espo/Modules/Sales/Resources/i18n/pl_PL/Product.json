@@ -1,0 +1,39 @@
+{
+  "labels": {
+    "Create Product": "Utwórz produkt",
+    "Price": "Cena",
+    "Brands": "Marki",
+    "Categories": "Kategorie"
+  },
+  "fields": {
+    "status": "Status",
+    "brand": "Marka",
+    "partNumber": "Part Number",
+    "category": "Kategoria",
+    "pricingType": "Pricing Type",
+    "pricingFactor": "Pricing Factor",
+    "costPrice": "Koszt",
+    "listPrice": "List Price",
+    "unitPrice": "Cena jednostkowa",
+    "costPriceConverted": "Cost Price (Converted)",
+    "listPriceConverted": "List Price (Converted)",
+    "unitPriceConverted": "Unit Price (Converted)",
+    "url": "URL"
+  },
+  "links": {
+    "brand": "Marka",
+    "category": "Kategoria"
+  },
+  "options": {
+    "pricingType": {
+      "Same as List": "Same as List",
+      "Fixed": "Poprawione",
+      "Discount from List": "Wybierz rabat",
+      "Markup over Cost": "Markup over Cost",
+      "Profit Margin": "Margines marży"
+    }
+  },
+  "presetFilters": {
+    "available": "Dostępne"
+  }
+}

@@ -1,0 +1,162 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "appuntamento"
+                }
+            ],
+            [
+                {
+                    "name": "leadSource"
+                },
+                {
+                    "name": "fornitorePartner"
+                },
+                {
+                    "name": "productBrand"
+                }
+            ],
+            [
+                {
+                    "name": "productCategory"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "stage"
+                },
+                {
+                    "name": "motivoDecisione"
+                },
+                {
+                    "name": "closeDate"
+                }
+            ],
+            [
+                {
+                    "name": "probability"
+                },
+                false,
+                {
+                    "name": "lastStage"
+                }
+            ],
+            [
+                {
+                    "name": "statoContratto"
+                },
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "statoFinanziamento"
+                }
+            ],
+            [
+                {
+                    "name": "descrizioneMotivazione"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": ""
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "priceBook"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "prezzoListinoIvaEsclusa"
+                },
+                {
+                    "name": "iVAListino"
+                },
+                {
+                    "name": "prezzoListinoIVAInclusa"
+                }
+            ],
+            [
+                {
+                    "name": "prezzoCodiceIvaEsclusa"
+                },
+                false,
+                {
+                    "name": "prezzoCodiceIvaInclusa"
+                }
+            ],
+            [
+                false,
+                false,
+                {
+                    "name": "suPrezzoPromo"
+                }
+            ],
+            [
+                {
+                    "name": "importoOffertaIvaEsclusa"
+                },
+                {
+                    "name": "iVA"
+                },
+                {
+                    "name": "amount"
+                }
+            ],
+            [
+                {
+                    "name": "note"
+                }
+            ]
+        ],
+        "dynamicLogicVisible": null,
+        "style": "default",
+        "hidden": false,
+        "customLabel": "Formulazione Opportunit\u00e0"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "installazione"
+                },
+                {
+                    "name": "installatore"
+                }
+            ]
+        ],
+        "dynamicLogicVisible": {
+            "conditionGroup": [
+                {
+                    "type": "equals",
+                    "attribute": "stage",
+                    "value": "Closed Won"
+                },
+                {
+                    "type": "or",
+                    "value": [
+                        {
+                            "type": "notEquals",
+                            "attribute": "statoContratto",
+                            "value": "Annullato"
+                        }
+                    ]
+                }
+            ]
+        },
+        "style": "default",
+        "hidden": false,
+        "customLabel": "Installazione"
+    }
+]

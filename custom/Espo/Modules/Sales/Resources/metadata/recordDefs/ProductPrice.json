@@ -1,0 +1,13 @@
+{
+    "actions": {
+        "merge": {
+            "disabled": true
+        }
+    },
+    "massActions": {
+        "updatePrice": {
+            "allowed": true,
+            "implementationClassName": "Espo\\Modules\\Sales\\Tools\\Price\\MassUpdate\\UpdateProductPrice"
+        }
+    }
+}

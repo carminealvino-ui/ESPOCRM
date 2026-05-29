@@ -1,0 +1,23 @@
+{
+    "kanbanViewMode": false,
+    "color": null,
+    "iconClass": "fas fa-address-card",
+    "relationshipPanels": {
+        "calls": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        },
+        "opportunita": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        },
+        "fornitorePartner": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        },
+        "productBrand": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        }
+    }
+}

@@ -1,0 +1,67 @@
+{
+    "labels": {
+        "Create SupplierBill": "Create Bill",
+        "Items": "Items"
+    },
+    "fields": {
+        "status": "Status",
+        "reference": "Reference",
+        "number": "Number",
+        "numberA": "Number (auto-incremented)",
+        "account": "Account",
+        "supplier": "Supplier",
+        "purchaseOrder": "Purchase Order",
+        "billingAddress": "Billing Address",
+        "billingContact": "Billing Contact",
+        "supplierAddress": "Supplier Address",
+        "supplierAddressStreet": "Street (Supplier)",
+        "supplierAddressCity": "City (Supplier)",
+        "supplierAddressState": "State (Supplier)",
+        "supplierAddressCountry": "Country (Supplier)",
+        "supplierAddressPostalCode": "Postal Code (Supplier)",
+        "tax": "Tax Profile",
+        "taxRate": "Tax Rate",
+        "shippingProvider": "Shipping Provider",
+        "taxAmount": "Tax",
+        "amount": "Net Total",
+        "grandTotalAmount": "Grand Total",
+        "itemList": "Item List",
+        "dateInvoiced": "Date Invoiced",
+        "dateDue": "Due Date",
+        "amountConverted": "Net Total (converted)",
+        "taxAmountConverted": "Tax (converted)",
+        "grandTotalAmountConverted": "Grand Total (converted)",
+        "taxAmountCurrency": "Tax Currency",
+        "amountCurrency": "Amount Currency",
+        "currency": "Currency",
+        "isDone": "Is Done",
+
+        "amountDue": "Amount Due",
+        "amountDueCurrency": "Amount Due Currency",
+
+        "document": "Original Document"
+    },
+    "links": {
+        "items": "Items",
+        "purchaseOrder": "Purchase Order",
+        "billingContact": "Billing Contact",
+        "shippingProvider": "Shipping Provider",
+        "tax": "Tax Profile",
+        "account": "Account",
+        "supplier": "Supplier",
+        "supplierCredits": "Bill Credits"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Issued": "Issued",
+            "Paid": "Paid",
+            "Canceled": "Canceled"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "paid": "Paid",
+        "openIssued": "Open Issued"
+    }
+}

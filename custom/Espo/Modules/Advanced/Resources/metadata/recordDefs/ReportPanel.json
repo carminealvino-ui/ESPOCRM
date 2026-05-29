@@ -1,0 +1,15 @@
+{
+    "readLoaderClassNameList": [
+        "Espo\\Modules\\Advanced\\Classes\\FieldProcessing\\ReportPanel\\Additional"
+    ],
+    "forceSelectAllAttributes": true,
+    "afterCreateHookClassNameList": [
+        "Espo\\Modules\\Advanced\\Classes\\RecordHooks\\ReportPanel\\AfterSave"
+    ],
+    "afterUpdateHookClassNameList": [
+        "Espo\\Modules\\Advanced\\Classes\\RecordHooks\\ReportPanel\\AfterSave"
+    ],
+    "afterDeleteHookClassNameList": [
+        "Espo\\Modules\\Advanced\\Classes\\RecordHooks\\ReportPanel\\AfterDelete"
+    ]
+}

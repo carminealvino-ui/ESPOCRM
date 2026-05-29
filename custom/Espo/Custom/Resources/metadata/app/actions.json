@@ -1,0 +1,6 @@
+{
+    "Opportunity": {
+        "createContratto": "Espo\\Custom\\Actions\\Opportunity\\CreateContratto"
+    }
+}
+

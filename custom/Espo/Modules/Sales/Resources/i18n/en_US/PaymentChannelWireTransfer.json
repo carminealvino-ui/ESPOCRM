@@ -1,0 +1,11 @@
+{
+    "fields": {
+        "accountHolder": "Account Holder",
+        "iban": "IBAN",
+        "accountNumber": "Account Number",
+        "bankName": "Bank Name",
+        "bic": "SWIFT/BIC",
+        "bankCode": "Bank Code",
+        "bankAddress": "Bank Address"
+    }
+}

@@ -1,0 +1,24 @@
+{
+    "fields": {
+        "channel": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isInbound"
+                    }
+                ]
+            }
+        },
+        "instructions": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isInbound"
+                    }
+                ]
+            }
+        }
+    }
+}

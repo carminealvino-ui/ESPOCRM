@@ -1,0 +1,41 @@
+{
+  "labels": {
+    "Create Tax": "Crea profilo fiscale"
+  },
+  "fields": {
+    "rate": "Tasso",
+    "shippingMode": "Tassa di spedizione",
+    "status": "Stato",
+    "taxCode": "Codice imposta",
+    "basis": "Base",
+    "taxDisplay": "Imposta",
+    "shippingTaxCode": "Codice imposta spedizione"
+  },
+  "links": {
+    "itemRules": "Regole dell’articolo",
+    "taxCode": "Codice imposta",
+    "shippingTaxCode": "Codice imposta spedizione"
+  },
+  "options": {
+    "shippingMode": {
+      "Proportional": "Proporzionale",
+      "Fixed": "Fisso"
+    },
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  },
+  "presetFilters": {
+    "active": "Attivo"
+  },
+  "tooltips": {
+    "shippingMode": "Definisce come l'imposta viene applicata alle spese di spedizione.\n\n- Proporzionale – Le imposte delle righe sono distribuite proporzionalmente sulla spedizione.\n- Fissa – Viene applicato uno specifico codice imposta.",
+    "shippingTaxCode": "Questo codice imposta verrà sempre applicato alla spedizione.",
+    "taxCode": "Questo codice imposta verrà applicato alle righe che non corrispondono ad alcuna regola voce."
+  },
+  "messages": {
+    "cannotUseInactiveTaxCode": "Non è possibile usare un codice imposta inattivo.",
+    "cannotChangeBasis": "Non è possibile cambiare la base perché il Profilo fiscale ha regole voce."
+  }
+}

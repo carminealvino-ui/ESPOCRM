@@ -1,0 +1,5 @@
+{
+    "outlookIntegrity": {
+        "className": "Espo\\Modules\\Outlook\\Classes\\Cleanup\\Integrity"
+    }
+}

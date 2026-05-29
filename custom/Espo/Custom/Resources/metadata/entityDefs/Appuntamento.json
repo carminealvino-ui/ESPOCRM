@@ -1,0 +1,659 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": false,
+            "trim": true,
+            "options": []
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Planned",
+                "Held",
+                "Not Held",
+                "Ingestibile"
+            ],
+            "default": "Planned",
+            "style": {
+                "Planned": "info",
+                "Held": "success",
+                "Not Held": "danger",
+                "Ingestibile": "warning"
+            },
+            "audited": true
+        },
+        "dateStart": {
+            "type": "datetimeOptional",
+            "notNull": false,
+            "view": "crm:views/meeting/fields/date-start",
+            "required": true,
+            "default": "javascript: return this.dateTime.getNow(15);",
+            "audited": true,
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "dateEnd": {
+            "type": "datetimeOptional",
+            "notNull": false,
+            "view": "crm:views/meeting/fields/date-end",
+            "required": true,
+            "after": "dateStart",
+            "useNumericFormat": true,
+            "minuteStep": 30,
+            "suppressValidationList": [
+                "required"
+            ]
+        },
+        "isAllDay": {
+            "type": "bool",
+            "readOnly": false,
+            "layoutListDisabled": true,
+            "layoutDetailDisabled": true,
+            "layoutMassUpdateDisabled": true
+        },
+        "duration": {
+            "type": "duration",
+            "start": "dateStart",
+            "end": "dateEnd",
+            "options": [
+                300,
+                600,
+                900,
+                1800,
+                2700,
+                3600,
+                5400,
+                7200
+            ],
+            "default": 5400,
+            "notStorable": true,
+            "select": {
+                "select": "TIMESTAMPDIFF_SECOND:(dateStart, dateEnd)"
+            },
+            "order": {
+                "order": [
+                    [
+                        "TIMESTAMPDIFF_SECOND:(dateStart, dateEnd)",
+                        "{direction}"
+                    ]
+                ]
+            }
+        },
+        "parent": {
+            "type": "linkParent",
+            "entityList": [
+                "Prospect",
+                "Lead",
+                "Account",
+                "Contact",
+                "FornitorePartner",
+                "Provvigione"
+            ]
+        },
+        "description": {
+            "type": "text"
+        },
+        "reminders": {
+            "type": "jsonArray",
+            "notStorable": true,
+            "view": "crm:views/meeting/fields/reminders",
+            "layoutListDisabled": true
+        },
+        "createdAt": {
+            "notNull": false,
+            "type": "datetime",
+            "readOnly": true,
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "modifiedAt": {
+            "notNull": false,
+            "type": "datetime",
+            "readOnly": true,
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true,
+            "view": "views/fields/user"
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true,
+            "view": "views/fields/user"
+        },
+        "assignedUser": {
+            "type": "link",
+            "required": false,
+            "view": "views/fields/assigned-user",
+            "disabled": true
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "view": "views/fields/teams"
+        },
+        "cAP": {
+            "type": "link"
+        },
+        "prospect": {
+            "type": "link"
+        },
+        "cAPDescrizione": {
+            "readOnly": true,
+            "type": "foreign",
+            "link": "cAP",
+            "field": "description",
+            "view": "views/fields/foreign-text",
+            "isCustom": true
+        },
+        "color": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "dataAppuntamento": {
+            "notNull": false,
+            "type": "date",
+            "isCustom": true,
+            "useNumericFormat": true
+        },
+        "esito": {
+            "type": "enum",
+            "options": [
+                "",
+                "Rimandato dal Potenziale",
+                "Rimandato da cliente",
+                "Rimandato da consulente",
+                "Annullato dal Potenziale",
+                "Annullato dal Consulente",
+                "Annullato Azienda",
+                "Annullato Call Center",
+                "Cambio Telo",
+                "Casa Popolare/Affitto",
+                "Cliente Assente",
+                "Copertura Auto",
+                "Fuori Target",
+                "In ristrutturazione/In costruzione/Cantiere",
+                "In Trattativa",
+                "Infattibilità Tecnica",
+                "Modalità di pagamento",
+                "Marito/Moglie Assente",
+                "No Caparra",
+                "Non detraibile per età",
+                "Non detraibile per prodotto",
+                "Non detraibile per esposizione",
+                "Non Finanziabile",
+                "Permessi",
+                "Prezzo Elevato",
+                "Prodotto non Conforme",
+                "Ripasso per info",
+                "Solo informazioni",
+                "Solo Preventivo",
+                "Tenda a Capanno",
+                "Venduto Cartaceo",
+                "Venduto Tablet",
+                "Gestito",
+                "Appuntamento non in agenda"
+            ],
+            "style": {
+                "": null,
+                "Rimandato dal Potenziale": null,
+                "Rimandato da cliente": null,
+                "Rimandato da consulente": null,
+                "Annullato dal Potenziale": null,
+                "Annullato dal Consulente": null,
+                "Annullato Azienda": null,
+                "Annullato Call Center": null,
+                "Cambio Telo": null,
+                "Casa Popolare/Affitto": null,
+                "Cliente Assente": null,
+                "Copertura Auto": null,
+                "Fuori Target": null,
+                "In ristrutturazione/In costruzione/Cantiere": null,
+                "In Trattativa": null,
+                "Infattibilità Tecnica": null,
+                "Modalità di pagamento": null,
+                "Marito/Moglie Assente": null,
+                "No Caparra": null,
+                "Non detraibile per età": null,
+                "Non detraibile per prodotto": null,
+                "Non detraibile per esposizione": null,
+                "Non Finanziabile": null,
+                "Permessi": null,
+                "Prezzo Elevato": null,
+                "Prodotto non Conforme": null,
+                "Ripasso per info": null,
+                "Solo informazioni": null,
+                "Solo Preventivo": null,
+                "Tenda a Capanno": null,
+                "Venduto Cartaceo": null,
+                "Venduto Tablet": null,
+                "Gestito": null,
+                "Appuntamento non in agenda": null
+            },
+            "default": null,
+            "isCustom": true
+        },
+        "indirizzo": {
+            "type": "address",
+            "isCustom": true
+        },
+        "noteConsulente": {
+            "type": "text",
+            "rowsMin": 2,
+            "cutHeight": 200,
+            "isCustom": true
+        },
+        "noteEsito": {
+            "type": "text",
+            "rowsMin": 2,
+            "cutHeight": 200,
+            "isCustom": true
+        },
+        "sottostato": {
+            "type": "enum",
+            "options": [
+                "",
+                "Pending",
+                "Non Interessato",
+                "Gestito",
+                "Rifissato",
+                "Chiuso Positivamente",
+                "Non Confermato",
+                "Solo Informazioni",
+                "Non Ricevuto",
+                "Infattibilità Tecnica",
+                "Non Gestito",
+                "Annullato",
+                "Prodotto non Conforme",
+                "Fuori Target"
+            ],
+            "style": {
+                "": null,
+                "Pending": "warning",
+                "Non Interessato": "danger",
+                "Gestito": "primary",
+                "Rifissato": "info",
+                "Chiuso Positivamente": "success",
+                "Non Confermato": "primary",
+                "Solo Informazioni": "primary",
+                "Non Ricevuto": "warning",
+                "Infattibilità Tecnica": "warning",
+                "Non Gestito": "info",
+                "Annullato": "primary",
+                "Prodotto non Conforme": "warning",
+                "Fuori Target": "danger"
+            },
+            "default": null,
+            "isCustom": true
+        },
+        "telefono": {
+            "readOnly": true,
+            "type": "foreign",
+            "link": "prospect",
+            "field": "phoneNumber",
+            "view": "views/fields/foreign-phone",
+            "isCustom": true
+        },
+        "tipo": {
+            "type": "multiEnum",
+            "storeArrayValues": true,
+            "options": [
+                "",
+                "Appuntamento Call Center",
+                "Appuntamento da Gestione Lead",
+                "Appuntamento da Gestione CB",
+                "Affiancamento Passivo",
+                "Affiancamento Attivo",
+                "Referenza Personale",
+                "Ripasso"
+            ],
+            "style": {
+                "": null,
+                "Appuntamento Call Center": null,
+                "Appuntamento da Gestione Lead": null,
+                "Appuntamento da Gestione CB": null,
+                "Affiancamento Passivo": null,
+                "Affiancamento Attivo": null,
+                "Referenza Personale": null,
+                "Ripasso": null
+            },
+            "isCustom": true
+        },
+        "cAPCodice": {
+            "readOnly": true,
+            "type": "foreign",
+            "link": "cAP",
+            "field": "codiceCAP",
+            "view": "views/fields/foreign-varchar",
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "linkMultiple",
+            "layoutDetailDisabled": true,
+            "layoutMassUpdateDisabled": true,
+            "importDisabled": true,
+            "isCustom": true
+        },
+        "lead": {
+            "type": "linkMultiple",
+            "layoutDetailDisabled": true,
+            "layoutMassUpdateDisabled": true,
+            "noLoad": true,
+            "importDisabled": true,
+            "isCustom": true
+        },
+        "dateEndDate": {
+            "useNumericFormat": true
+        },
+        "dateStartDate": {
+            "useNumericFormat": true
+        },
+        "azienda": {
+            "type": "enum",
+            "options": [
+                "",
+                "ARQUATI",
+                "ARTEL",
+                "ARIEL",
+                "PROGETTO",
+                "GFB"
+            ],
+            "style": {
+                "": null,
+                "ARQUATI": null,
+                "ARTEL": null,
+                "ARIEL": null,
+                "PROGETTO": null,
+                "GFB": null
+            },
+            "default": null,
+            "isCustom": true
+        },
+        "videoCallTelefonico": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "callCenter": {
+            "type": "enum",
+            "options": [
+                "",
+                "TELCALL",
+                "ARQUATI",
+                "GFB",
+                "ARTEL",
+                "PROGETTO",
+                "ARIEL"
+            ],
+            "style": {
+                "": null,
+                "TELCALL": null,
+                "ARQUATI": null,
+                "GFB": null,
+                "ARTEL": null,
+                "PROGETTO": null,
+                "ARIEL": null
+            },
+            "default": null,
+            "isCustom": true
+        },
+        "location": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
+        "assignedUsers": {
+            "type": "linkMultiple",
+            "view": "views/fields/assigned-users",
+            "maxCount": 10
+        },
+        "collaborators": {
+            "type": "linkMultiple",
+            "view": "views/fields/collaborators",
+            "maxCount": 30,
+            "fieldManagerParamList": [
+                "readOnly",
+                "readOnlyAfterCreate",
+                "audited",
+                "autocompleteOnEmpty",
+                "maxCount",
+                "inlineEditDisabled",
+                "tooltipText"
+            ]
+        },
+        "zTL": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "sorgente": {
+            "type": "enum",
+            "options": [
+                "Outlook",
+                "Google",
+                "Manuale"
+            ],
+            "style": {
+                "Outlook": null,
+                "Google": null,
+                "Manuale": null
+            },
+            "default": "Outlook",
+            "maxLength": 100,
+            "isCustom": true
+        },
+        "impegno": {
+            "type": "link"
+        },
+        "meetingRef": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
+        "syncConGoogle": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true,
+            "default": false
+        },
+        "noteCallCenter": {
+            "type": "text",
+            "rowsMin": 2,
+            "cutHeight": 200,
+            "isCustom": true
+        },
+        "hookVersion": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
+        "fornitorePartner": {
+            "type": "link",
+            "view": "custom:views/fields/fornitore-partner-cascade",
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "link",
+            "view": "custom:views/fields/product-brand-by-partner",
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "link",
+            "view": "custom:views/fields/product-category-by-brand",
+            "isCustom": true
+        },
+        "dataInstallazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataAttivazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true,
+            "tooltip": true,
+            "tooltipText": "Attivazione servizio (buon fine). Determina competenza e liquidazione per molti brand."
+        },
+        "importoImponibilePrevisto": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoTrattativa": {
+            "type": "currency",
+            "isCustom": true
+        }
+    },
+    "links": {
+        "parent": {
+            "type": "belongsToParent",
+            "foreign": "appuntamentoChildren"
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "assignedUser": {
+            "type": "belongsTo",
+            "entity": "User",
+            "disabled": true
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "EntityTeam",
+            "layoutRelationshipsDisabled": true
+        },
+        "cAP": {
+            "type": "belongsTo",
+            "foreign": "appuntamento",
+            "entity": "CAP",
+            "audited": false,
+            "isCustom": true
+        },
+        "prospect": {
+            "type": "belongsTo",
+            "foreign": "appuntamenti",
+            "entity": "Prospect",
+            "audited": false,
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "hasMany",
+            "foreign": "appuntamento",
+            "entity": "Opportunity",
+            "audited": false,
+            "isCustom": true
+        },
+        "lead": {
+            "type": "belongsTo",
+            "foreign": "appuntamentoChildren",
+            "entity": "Lead",
+            "audited": false,
+            "isCustom": true
+        },
+        "assignedUsers": {
+            "type": "hasMany",
+            "entity": "User",
+            "relationName": "entityUser",
+            "layoutRelationshipsDisabled": true
+        },
+        "collaborators": {
+            "type": "hasMany",
+            "entity": "User",
+            "relationName": "entityCollaborator",
+            "layoutRelationshipsDisabled": true
+        },
+        "impegno": {
+            "type": "belongsTo",
+            "foreign": "appuntamenti",
+            "entity": "Meeting",
+            "audited": false,
+            "isCustom": true
+        },
+        "impegni": {
+            "type": "hasMany",
+            "foreign": "appuntamento",
+            "entity": "Meeting",
+            "audited": false,
+            "isCustom": true
+        },
+        "fornitorePartner": {
+            "type": "belongsTo",
+            "foreign": "appuntamenti",
+            "entity": "FornitorePartner",
+            "audited": false,
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "belongsTo",
+            "foreign": "appuntamenti",
+            "entity": "ProductBrand",
+            "audited": false,
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "belongsTo",
+            "foreign": "appuntamenti",
+            "entity": "ProductCategory",
+            "audited": false,
+            "isCustom": true
+        }
+    },
+    "collection": {
+        "orderBy": "dateStart",
+        "order": "desc",
+        "textFilterFields": [
+            "name",
+            "prospect.telefono",
+            "location",
+            "prospect.lastName",
+            "prospect.firstName"
+        ],
+        "fullTextSearch": false,
+        "countDisabled": false
+    },
+    "indexes": {
+        "dateStartStatus": {
+            "columns": [
+                "dateStart",
+                "status"
+            ]
+        },
+        "dateStart": {
+            "columns": [
+                "dateStart",
+                "deleted"
+            ]
+        },
+        "status": {
+            "columns": [
+                "status",
+                "deleted"
+            ]
+        },
+        "assignedUser": {
+            "columns": [
+                "assignedUserId",
+                "deleted"
+            ]
+        },
+        "assignedUserStatus": {
+            "columns": [
+                "assignedUserId",
+                "status"
+            ]
+        }
+    },
+    "optimisticConcurrencyControl": false
+}

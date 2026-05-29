@@ -1,0 +1,65 @@
+{
+  "labels": {
+    "Create SupplierBill": "Crea fattura fornitore",
+    "Items": "Voci"
+  },
+  "fields": {
+    "status": "Stato",
+    "reference": "Riferimento",
+    "number": "Numero",
+    "numberA": "Numero (incremento automatico)",
+    "account": "Azienda",
+    "supplier": "Fornitore",
+    "purchaseOrder": "Ordine d'acquisto",
+    "billingAddress": "Indirizzo di fatturazione",
+    "billingContact": "Contatto di fatturazione",
+    "supplierAddress": "Indirizzo fornitore",
+    "supplierAddressStreet": "Via (Fornitore)",
+    "supplierAddressCity": "Città (Fornitore)",
+    "supplierAddressState": "Provincia/Stato (Fornitore)",
+    "supplierAddressCountry": "Paese (Fornitore)",
+    "supplierAddressPostalCode": "CAP (Fornitore)",
+    "tax": "Profilo fiscale",
+    "taxRate": "Aliquota imposta",
+    "shippingProvider": "Corriere",
+    "taxAmount": "Imposta",
+    "amount": "Totale netto",
+    "grandTotalAmount": "Totale complessivo",
+    "itemList": "Elenco voci",
+    "dateInvoiced": "Data fatturazione",
+    "dateDue": "Data scadenza",
+    "amountConverted": "Totale netto (convertito)",
+    "taxAmountConverted": "Imposta (convertita)",
+    "grandTotalAmountConverted": "Totale complessivo (convertito)",
+    "taxAmountCurrency": "Valuta imposta",
+    "amountCurrency": "Valuta importo",
+    "currency": "Valuta",
+    "isDone": "Completato",
+    "amountDue": "Importo dovuto",
+    "amountDueCurrency": "Valuta importo dovuto",
+    "document": "Documento originale"
+  },
+  "links": {
+    "items": "Voci",
+    "purchaseOrder": "Ordine d'acquisto",
+    "billingContact": "Contatto di fatturazione",
+    "shippingProvider": "Corriere",
+    "tax": "Profilo fiscale",
+    "account": "Azienda",
+    "supplier": "Fornitore",
+    "supplierCredits": "Note di credito fornitore"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Issued": "Emessa",
+      "Paid": "Pagato",
+      "Canceled": "Annullato"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperta",
+    "paid": "Pagato",
+    "openIssued": "Emessa, aperta"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "massActions": {
+    "pushToOutlook": "Pousser vers Outlook"
+  },
+  "actions": {
+    "pushToOutlook": "Pousser vers Outlook"
+  },
+  "messages": {
+    "confirmationOutlookContactsPush": "Voulez-vous pousser les clients potentiels vers les contacts Outlook ?",
+    "successOutlookContactsPush": "{count} enregistrement(s) poussé(s) avec succès. Le reste est sur le point d'être poussé en mode veille."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "labels": {
+    "Create ProductCategory": "Створити категорію",
+    "Manage Categories": "Управління категоріями",
+    "Products": "Продукти"
+  },
+  "fields": {
+    "order": "Порядок",
+    "childList": "Дочірні елементи"
+  },
+  "links": {
+    "products": "Продукти"
+  }
+}

@@ -1,0 +1,11 @@
+[
+    "status",
+    "type",
+    "billingStatus",
+    "subscription",
+    "startDate",
+    "endDate",
+    "invoiceAutomatically",
+    "createdAt",
+    "createdBy"
+]

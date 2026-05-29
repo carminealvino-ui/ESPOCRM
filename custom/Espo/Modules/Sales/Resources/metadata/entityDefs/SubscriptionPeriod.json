@@ -1,0 +1,166 @@
+{
+    "fields": {
+        "startDate": {
+            "type": "date",
+            "audited": true,
+            "required": true
+        },
+        "endDate": {
+            "type": "date",
+            "audited": true,
+            "after": "startDate",
+            "required": true,
+            "tooltip": true
+        },
+        "subscription": {
+            "type": "link",
+            "readOnlyAfterCreate": true
+        },
+        "type": {
+            "type": "enum",
+            "options": [
+                "Regular",
+                "Pause",
+                "Trial"
+            ],
+            "style": {
+                "Regular": "primary",
+                "Pause": "warning"
+            },
+            "default": "Regular",
+            "maxLength": 7,
+            "readOnlyAfterCreate": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Scheduled",
+                "Active",
+                "Ended",
+                "Canceled"
+            ],
+            "default": "Scheduled",
+            "style": {
+                "Active": "primary",
+                "Ended": "success",
+                "Canceled": "info"
+            },
+            "displayAsLabel": true,
+            "labelType": "state",
+            "maxLength": 9,
+            "audited": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\SubscriptionPeriod\\Status\\IsValid"
+            ]
+        },
+        "billingStatus": {
+            "type": "enum",
+            "options": [
+                "Pending",
+                "Invoiced",
+                "Settled",
+                "Canceled"
+            ],
+            "default": "Pending",
+            "style": {
+                "Pending": "primary",
+                "Invoiced": "warning",
+                "Settled": "success",
+                "Canceled": "info"
+            },
+            "maxLength": 8,
+            "audited": true
+        },
+        "invoiceAutomatically": {
+            "type": "bool",
+            "audited": true
+        },
+        "holdUntilBillingComplete": {
+            "type": "bool",
+            "tooltip": true,
+            "audited": true
+        },
+        "timeline": {
+            "type": "base",
+            "view": "modules/sales/views/subscription-period/fields/timeline",
+            "layoutAvailabilityList": ["list"],
+            "fieldManagerParamList": [],
+            "readOnly": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true,
+            "notStorable": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "subscription": {
+            "type": "belongsTo",
+            "entity": "Subscription",
+            "foreign": "periods"
+        },
+        "invoices": {
+            "type": "hasMany",
+            "entity": "Invoice",
+            "foreign": "subscriptionPeriods"
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "indexes": {
+        "statusEndDate": {
+            "columns": [
+                "status",
+                "endDate"
+            ]
+        },
+        "statusStartDate": {
+            "columns": [
+                "status",
+                "startDate"
+            ]
+        },
+        "subscriptionIdEndDate": {
+            "columns": [
+                "subscriptionId",
+                "endDate"
+            ]
+        },
+        "billingStatusStartDate": {
+            "columns": [
+                "billingStatus",
+                "startDate"
+            ]
+        },
+        "startDate": {
+            "columns": [
+                "startDate"
+            ]
+        }
+    },
+    "collection": {
+        "orderBy": "startDate",
+        "order": "desc",
+        "textFilterFields": []
+    }
+}

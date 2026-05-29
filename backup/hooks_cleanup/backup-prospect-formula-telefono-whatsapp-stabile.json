@@ -1,0 +1,3 @@
+{
+    "beforeSaveCustomScript": "lastName=string\\upperCase(lastName);\nfirstName=string\\upperCase(firstName);\n\n// Aggiorna CAP\n$capRecordId = record\\findOne('CAP', null, null, 'name=', addressPostalCode);\n\nif ($capRecordId) {\n    cAPId = $capRecordId\n}\n\n// Imposta il numero di telefono\nwhatsApp = string\\concatenate('https://wa.me/', phoneNumber);\nwhatsApp39 = string\\concatenate('https://wa.me/', \"+39\", phoneNumber);\n//azienda= lead.azienda;"
+}

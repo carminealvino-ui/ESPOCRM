@@ -1,0 +1,195 @@
+{
+    "fields": {
+        "cAP": {
+            "type": "link"
+        },
+        "number": {
+            "readOnly": false
+        },
+        "dateQuoted": {
+            "useNumericFormat": true
+        },
+        "createdAt": {
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "dateInvoiced": {
+            "useNumericFormat": true
+        },
+        "dateOrdered": {
+            "useNumericFormat": true
+        },
+        "name": {
+            "readOnly": false,
+            "syncWithNumber": false,
+            "options": []
+        },
+        "prezzoCodice": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoContratto": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "minusPlus": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "taxRate": {
+            "decimalPlaces": 2
+        },
+        "aliquotaIVA": {
+            "notNull": false,
+            "type": "float",
+            "isCustom": true,
+            "decimalPlaces": 2
+        },
+        "numberA": {
+            "prefix": "Contratto_",
+            "nextNumber": 2
+        },
+        "totalPrezzoCodice": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "totaleProvvigioni": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "hookVersion": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
+        "fornitorePartner": {
+            "type": "link",
+            "entity": "FornitorePartner",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "link",
+            "entity": "ProductBrand",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "link",
+            "entity": "ProductCategory",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "dataInstallazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataAttivazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataCompetenza": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "link",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "numeroPod": {
+            "type": "int",
+            "minValue": 0,
+            "isCustom": true
+        },
+        "prezzoListinoIvaEsclusa": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "prezzoCodiceIvaEsclusa": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "margineSuListino": {
+            "type": "float",
+            "decimalPlaces": 2,
+            "readOnly": true,
+            "isCustom": true
+        },
+        "contattoPersonaleArquati": {
+            "type": "bool",
+            "default": false,
+            "isCustom": true
+        },
+        "integrazionePncPercentuale": {
+            "type": "float",
+            "decimalPlaces": 2,
+            "isCustom": true
+        },
+        "ordineIncompletoAriel": {
+            "type": "bool",
+            "default": false,
+            "isCustom": true
+        }
+    },
+    "links": {
+        "cAP": {
+            "type": "belongsTo",
+            "foreign": "quote",
+            "entity": "CAP",
+            "audited": false,
+            "isCustom": true
+        },
+        "prodotti": {
+            "type": "hasMany",
+            "relationName": "prodotticontratti",
+            "foreign": "contratti",
+            "entity": "Product",
+            "audited": false,
+            "isCustom": true
+        },
+        "provvigioni": {
+            "type": "hasMany",
+            "foreign": "contratto",
+            "entity": "Provvigione",
+            "audited": false,
+            "isCustom": true
+        },
+        "fornitorePartner": {
+            "type": "belongsTo",
+            "entity": "FornitorePartner",
+            "foreign": "quotes",
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "belongsTo",
+            "entity": "ProductBrand",
+            "foreign": "quotes",
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "belongsTo",
+            "entity": "ProductCategory",
+            "foreign": "quotes",
+            "isCustom": true
+        },
+        "itemList": {
+            "view": "custom:views/quote/fields/item-list"
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [
+            "name",
+            "number"
+        ],
+        "fullTextSearch": false,
+        "countDisabled": false
+    },
+    "optimisticConcurrencyControl": true
+}

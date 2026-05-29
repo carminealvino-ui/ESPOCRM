@@ -1,0 +1,28 @@
+{
+    "fields": {
+        "qty": "Qty",
+        "quantity": "Quantity",
+        "quantityInt": "Quantity (Int)",
+        "unitPrice": "Unit Price",
+        "amount": "Amount",
+        "product": "Product",
+        "order": "Line Number",
+        "subscription": "Subscription",
+        "subscriptionStatus": "Subscription Status",
+        "description": "Description",
+        "amountConverted": "Amount (Converted)",
+        "unitPriceConverted": "Unit Price (Converted)",
+        "account": "Account",
+        "unitPriceCurrency": "Unit Price Currency",
+        "amountCurrency": "Amount Currency",
+        "subscriptionUpdate": "Subscription Update",
+        "inventoryNumberType": "Inventory Number Type",
+        "isInventory": "Is Inventory"
+    },
+    "links": {
+        "subscription": "Subscription",
+        "product": "Product",
+        "account": "Account",
+        "subscriptionUpdate": "Subscription Update"
+    }
+}

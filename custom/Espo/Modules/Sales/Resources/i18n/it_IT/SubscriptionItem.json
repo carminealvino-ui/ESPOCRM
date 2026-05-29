@@ -1,0 +1,28 @@
+{
+  "fields": {
+    "qty": "Qtà",
+    "quantity": "Quantità",
+    "quantityInt": "Quantità (int)",
+    "unitPrice": "Prezzo unitario",
+    "amount": "Importo",
+    "product": "Prodotto",
+    "order": "Numero riga",
+    "subscription": "Abbonamento",
+    "subscriptionStatus": "Stato abbonamento",
+    "description": "Descrizione",
+    "amountConverted": "Importo (convertito)",
+    "unitPriceConverted": "Prezzo unitario (convertito)",
+    "account": "Azienda",
+    "unitPriceCurrency": "Valuta prezzo unitario",
+    "amountCurrency": "Valuta importo",
+    "subscriptionUpdate": "Aggiornamento abbonamento",
+    "inventoryNumberType": "Tipo numero di magazzino",
+    "isInventory": "È magazzino"
+  },
+  "links": {
+    "subscription": "Abbonamento",
+    "product": "Prodotto",
+    "account": "Azienda",
+    "subscriptionUpdate": "Aggiornamento abbonamento"
+  }
+}

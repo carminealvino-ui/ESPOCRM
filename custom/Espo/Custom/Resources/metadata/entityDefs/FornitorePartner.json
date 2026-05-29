@@ -1,0 +1,265 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "pattern": "$noBadCharacters",
+            "options": []
+        },
+        "description": {
+            "type": "text"
+        },
+        "website": {
+            "type": "url",
+            "strip": true
+        },
+        "emailAddress": {
+            "type": "email"
+        },
+        "phoneNumber": {
+            "type": "phone",
+            "typeList": [
+                "Office",
+                "Mobile",
+                "Fax",
+                "Other"
+            ],
+            "defaultType": "Office"
+        },
+        "billingAddress": {
+            "type": "address"
+        },
+        "billingAddressStreet": {
+            "type": "text",
+            "maxLength": 255,
+            "dbType": "varchar"
+        },
+        "billingAddressCity": {
+            "type": "varchar"
+        },
+        "billingAddressState": {
+            "type": "varchar"
+        },
+        "billingAddressCountry": {
+            "type": "varchar"
+        },
+        "billingAddressPostalCode": {
+            "type": "varchar"
+        },
+        "shippingAddress": {
+            "type": "address",
+            "view": "crm:views/account/fields/shipping-address"
+        },
+        "shippingAddressStreet": {
+            "type": "text",
+            "maxLength": 255,
+            "dbType": "varchar"
+        },
+        "shippingAddressCity": {
+            "type": "varchar"
+        },
+        "shippingAddressState": {
+            "type": "varchar"
+        },
+        "shippingAddressCountry": {
+            "type": "varchar"
+        },
+        "shippingAddressPostalCode": {
+            "type": "varchar"
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true,
+            "view": "views/fields/user"
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true,
+            "view": "views/fields/user"
+        },
+        "assignedUser": {
+            "type": "link",
+            "required": false,
+            "view": "views/fields/assigned-user",
+            "disabled": true
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "view": "views/fields/teams"
+        },
+        "assignedUsers": {
+            "type": "linkMultiple",
+            "view": "views/fields/assigned-users",
+            "maxCount": 10
+        },
+        "collaborators": {
+            "type": "linkMultiple",
+            "view": "views/fields/collaborators",
+            "maxCount": 30,
+            "fieldManagerParamList": [
+                "readOnly",
+                "readOnlyAfterCreate",
+                "audited",
+                "autocompleteOnEmpty",
+                "maxCount",
+                "inlineEditDisabled",
+                "tooltipText"
+            ]
+        },
+        "color": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
+        "disponibilita": {
+            "type": "link"
+        }
+    },
+    "links": {
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "assignedUser": {
+            "type": "belongsTo",
+            "entity": "User",
+            "disabled": true
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "entityTeam",
+            "layoutRelationshipsDisabled": true
+        },
+        "meetings": {
+            "type": "hasMany",
+            "entity": "Meeting",
+            "foreign": "parent"
+        },
+        "calls": {
+            "type": "hasMany",
+            "entity": "Call",
+            "foreign": "parent"
+        },
+        "tasks": {
+            "type": "hasChildren",
+            "entity": "Task",
+            "foreign": "parent"
+        },
+        "assignedUsers": {
+            "type": "hasMany",
+            "entity": "User",
+            "relationName": "entityUser",
+            "layoutRelationshipsDisabled": true
+        },
+        "collaborators": {
+            "type": "hasMany",
+            "entity": "User",
+            "relationName": "entityCollaborator",
+            "layoutRelationshipsDisabled": true
+        },
+        "referente": {
+            "type": "hasMany",
+            "foreign": "fornitorePartner",
+            "entity": "Contact",
+            "audited": false,
+            "isCustom": true
+        },
+        "disponibilita": {
+            "type": "belongsTo",
+            "foreign": "fornitorePartner",
+            "entity": "Disponibilita",
+            "audited": false,
+            "isCustom": true
+        },
+        "productBrands": {
+            "type": "hasMany",
+            "foreign": "fornitorePartner",
+            "entity": "ProductBrand",
+            "audited": false,
+            "isCustom": true
+        },
+        "prospects": {
+            "type": "hasMany",
+            "foreign": "fornitorePartner",
+            "entity": "Prospect",
+            "audited": false,
+            "isCustom": true
+        },
+        "appuntamenti": {
+            "type": "hasMany",
+            "foreign": "fornitorePartner",
+            "entity": "Appuntamento",
+            "audited": false,
+            "isCustom": true
+        },
+        "leads": {
+            "type": "hasMany",
+            "foreign": "fornitorePartner",
+            "entity": "Lead",
+            "audited": false,
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "hasMany",
+            "foreign": "fornitorePartner",
+            "entity": "Opportunity",
+            "audited": false,
+            "isCustom": true
+        },
+        "quotes": {
+            "type": "hasMany",
+            "foreign": "fornitorePartner",
+            "entity": "Quote",
+            "audited": false,
+            "isCustom": true
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [],
+        "fullTextSearch": false,
+        "countDisabled": false
+    },
+    "indexes": {
+        "name": {
+            "columns": [
+                "name",
+                "deleted"
+            ]
+        },
+        "assignedUser": {
+            "columns": [
+                "assignedUserId",
+                "deleted"
+            ]
+        },
+        "createdAt": {
+            "columns": [
+                "createdAt"
+            ]
+        },
+        "createdAtId": {
+            "unique": true,
+            "columns": [
+                "createdAt",
+                "id"
+            ]
+        }
+    },
+    "optimisticConcurrencyControl": false
+}
