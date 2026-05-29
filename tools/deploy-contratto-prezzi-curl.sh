@@ -15,6 +15,7 @@ cd "${CRM_ROOT}" || exit 1
 FILES=(
   "custom/Espo/Custom/Services/QuotePricingCalculator.php"
   "custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php"
+  "custom/Espo/Custom/Hooks/Quote/SyncContractPricingAfterSave.php"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
   "custom/Espo/Custom/Resources/layouts/Quote/detail.json"
   "tools/fix-contratto-importo-minusplus-standalone.php"

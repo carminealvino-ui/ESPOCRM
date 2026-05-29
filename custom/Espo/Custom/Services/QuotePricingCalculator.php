@@ -162,6 +162,20 @@ class QuotePricingCalculator
 
     private function ensureImportoContrattoOnQuote(Entity $quote): void
     {
+        $current = $this->floatOrNull($quote->get('importoContratto'));
+
+        if ($current !== null && $current > 0) {
+            return;
+        }
+
+        $fromOpportunity = $this->resolveImportoContrattoFromOpportunityOnly($quote);
+
+        if ($fromOpportunity !== null && $fromOpportunity > 0) {
+            $quote->set('importoContratto', $fromOpportunity);
+
+            return;
+        }
+
         $resolved = $this->resolveImportoContrattoForQuote($quote);
 
         if ($resolved !== null && $resolved > 0) {
@@ -170,11 +184,32 @@ class QuotePricingCalculator
     }
 
     /**
+     * Totale contratto IVI: solo opportunità (importoOpportunit / importoContratto).
+     */
+    public function resolveImportoContrattoFromOpportunityOnly(Entity $quote): ?float
+    {
+        if (!$quote->get('opportunityId')) {
+            return null;
+        }
+
+        $opportunity = $this->entityManager->getEntityById(
+            'Opportunity',
+            $quote->get('opportunityId')
+        );
+
+        if (!$opportunity) {
+            return null;
+        }
+
+        return $this->resolveImportoVendutoFromOpportunity($quote, $opportunity);
+    }
+
+    /**
      * Regole contratto IVA inclusa:
-     * - listino riga = listino catalogo IVI (es. 5200)
-     * - prezzo codice riga = codice IVI (es. 4400)
-     * - prezzo unitario/importo riga = importoContratto ripartito in proporzione al listino
-     * - importoContratto = grandTotalAmount (es. 4500 IVI)
+     * - listino/codice riga = catalogo
+     * - unitario/importo riga = importo opportunità ripartito sul listino
+     * - amount/taxAmount testata = somma righe articolo
+     * - grandTotalAmount / importoContratto = importo opportunità (es. 4500 IVI)
      */
     private function syncItemListLinePricingFromImportoContratto(Entity $quote): void
     {
@@ -285,17 +320,55 @@ class QuotePricingCalculator
         }
 
         $quote->set('itemList', $itemList);
+
+        $lineTotals = $this->sumTotalsFromItemList($itemList, $taxInclusive);
+        $importoLordo = round($split['gross'], 2);
+
         $quote->set([
-            'amount' => $split['net'],
-            'taxAmount' => $split['tax'],
-            'grandTotalAmount' => $split['gross'],
-            'importoContratto' => $split['gross'],
+            'amount' => $lineTotals['net'],
+            'taxAmount' => $lineTotals['tax'],
+            'grandTotalAmount' => $importoLordo,
+            'importoContratto' => $importoLordo,
             'aliquotaIVA' => $aliquota,
         ]);
 
         if ($this->floatOrNull($quote->get('taxRate')) === null && $aliquota > 0) {
             $quote->set('taxRate', round($aliquota / 100, 4));
         }
+    }
+
+    /**
+     * @param array<int, mixed> $itemList
+     * @return array{net: float, tax: float, gross: float}
+     */
+    private function sumTotalsFromItemList(array $itemList, bool $taxInclusive): array
+    {
+        $net = 0.0;
+        $tax = 0.0;
+
+        foreach ($itemList as $item) {
+            $lineNet = $this->floatOrNull($this->itemValue($item, 'amount')) ?? 0.0;
+            $lineTax = $this->floatOrNull($this->itemValue($item, 'taxAmount')) ?? 0.0;
+
+            if ($taxInclusive && $lineNet > 0 && $lineTax <= 0) {
+                $qty = (float) ($this->itemValue($item, 'quantity') ?? 1);
+                $unit = $this->floatOrNull($this->itemValue($item, 'unitPrice')) ?? 0.0;
+                $gross = $unit * ($qty > 0 ? $qty : 1);
+
+                if ($gross > $lineNet) {
+                    $lineTax = round($gross - $lineNet, 2);
+                }
+            }
+
+            $net += $lineNet;
+            $tax += $lineTax;
+        }
+
+        return [
+            'net' => round($net, 2),
+            'tax' => round($tax, 2),
+            'gross' => round($net + $tax, 2),
+        ];
     }
 
     public function syncOpportunityOnBeforeSave(Entity $opportunity): void
@@ -591,25 +664,37 @@ class QuotePricingCalculator
 
     private function syncAmountAndTaxFromImportoContratto(Entity $quote): void
     {
-        $importoContratto = $this->floatOrNull($quote->get('importoContratto'));
+        $importoLordo = $this->floatOrNull($quote->get('importoContratto'));
 
-        if ($importoContratto === null || $importoContratto <= 0) {
+        if ($importoLordo === null || $importoLordo <= 0) {
+            $importoLordo = $this->resolveImportoContrattoFromOpportunityOnly($quote);
+        }
+
+        if ($importoLordo === null || $importoLordo <= 0) {
             return;
         }
 
         $aliquota = $this->resolveAliquotaIva($quote);
-        $split = $this->splitImportoContratto(
-            $importoContratto,
-            $aliquota,
-            $this->isQuotePricesTaxInclusive($quote)
-        );
+        $taxInclusive = $this->isQuotePricesTaxInclusive($quote);
+        $itemList = $quote->get('itemList');
 
-        $quote->set([
-            'amount' => $split['net'],
-            'taxAmount' => $split['tax'],
-            'grandTotalAmount' => $split['gross'],
+        $patch = [
+            'grandTotalAmount' => round($importoLordo, 2),
+            'importoContratto' => round($importoLordo, 2),
             'aliquotaIVA' => $aliquota,
-        ]);
+        ];
+
+        if (is_array($itemList) && $itemList !== []) {
+            $lineTotals = $this->sumTotalsFromItemList($itemList, $taxInclusive);
+            $patch['amount'] = $lineTotals['net'];
+            $patch['taxAmount'] = $lineTotals['tax'];
+        } else {
+            $split = $this->splitImportoContratto($importoLordo, $aliquota, $taxInclusive);
+            $patch['amount'] = $split['net'];
+            $patch['taxAmount'] = $split['tax'];
+        }
+
+        $quote->set($patch);
 
         if ($this->floatOrNull($quote->get('taxRate')) === null) {
             $quote->set('taxRate', round($aliquota / 100, 4));
@@ -618,6 +703,14 @@ class QuotePricingCalculator
 
     public function resolveImponibileNetto(Entity $entity): ?float
     {
+        if ($entity->getEntityType() === 'Quote') {
+            $amount = $this->floatOrNull($entity->get('amount'));
+
+            if ($amount !== null && $amount > 0) {
+                return $amount;
+            }
+        }
+
         $importoLordo = $this->resolveImportoVenditaLordo($entity);
 
         if ($importoLordo !== null && $importoLordo > 0) {

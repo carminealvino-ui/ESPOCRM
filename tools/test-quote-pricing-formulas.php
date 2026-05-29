@@ -18,8 +18,12 @@ $imponibile = round($importoIvi / (1 + $aliquota / 100), 2);
 $codiceNet = round(4400.0 / (1 + $aliquota / 100), 2);
 $minusPlus = round($imponibile - $codiceNet, 2);
 
+$sumNet = round($line1Net + $line2Net, 2);
+$sumTax = round(($line1Gross - $line1Net) + ($line2Gross - $line2Net), 2);
+
 $ok = abs($line1Gross + $line2Gross - $importoIvi) < 0.02
-    && abs($line1Net + $line2Net - $imponibile) < 0.02
+    && abs($sumNet - $imponibile) < 0.02
+    && abs($sumNet + $sumTax - $importoIvi) < 0.02
     && abs($codiceNet - 4000.0) < 0.02
     && abs($minusPlus - 90.91) < 0.02;
 
