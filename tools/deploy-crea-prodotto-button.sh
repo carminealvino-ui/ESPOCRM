@@ -14,6 +14,8 @@ LEGACY_SCRIPT="client/custom/src/custom-product-button.js"
 
 cd "${CRM_ROOT}" || exit 1
 
+bash "${CRM_ROOT}/tools/backup-quote-layouts.sh" 2>/dev/null || true
+
 fetch() {
   local rel="$1"
   local dest="${CRM_ROOT}/${rel}"
@@ -29,9 +31,19 @@ fetch "custom/Espo/Custom/Resources/metadata/formula/Quote.json"
 fetch "client/custom/src/handlers/quote/crea-prodotto-articoli.js"
 fetch "client/custom/src/views/modals/select-product-for-quote.js"
 
-# entityDefs senza view itemList custom (evita pagina bianca su Contratto)
-curl -fsSL "${BASE}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json?t=$(date +%s)" \
-  -o "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
+# entityDefs: solo rimuove view itemList custom sul server (non sovrascrive tutto il file da git)
+ENTITY_DEFS="${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
+if [[ -f "${ENTITY_DEFS}" ]]; then
+  php -r "
+    \$f = '${ENTITY_DEFS}';
+    \$j = json_decode(file_get_contents(\$f), true);
+    if (is_array(\$j) && isset(\$j['fields']['itemList']['view'])) {
+      unset(\$j['fields']['itemList']['view']);
+      file_put_contents(\$f, json_encode(\$j, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
+      echo 'OK entityDefs: rimossa view itemList custom' . PHP_EOL;
+    }
+  "
+fi
 
 rm -f "${CRM_ROOT}/${LEGACY_SCRIPT}"
 rm -f "${CRM_ROOT}/client/custom/src/handlers/quote/calculation-handler.js"
