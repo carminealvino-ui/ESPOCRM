@@ -25,6 +25,6 @@ $ok = abs($line1Gross + $line2Gross - $importoIvi) < 0.02
 
 fwrite(STDOUT, "Riga1 IVI {$line1Gross} net {$line1Net}\n");
 fwrite(STDOUT, "Riga2 IVI {$line2Gross} net {$line2Net}\n");
-fwrite(STDOUT, "Imponibile {$imponibile} − codice net {$codiceNet} = {$minusPlus} (≈272,73) → " . ($ok ? 'OK' : 'FAIL') . PHP_EOL);
+fwrite(STDOUT, "Imponibile {$imponibile} − codice net {$codiceNet} = {$minusPlus} (≈91) → " . ($ok ? 'OK' : 'FAIL') . PHP_EOL);
 
 exit($ok ? 0 : 1);

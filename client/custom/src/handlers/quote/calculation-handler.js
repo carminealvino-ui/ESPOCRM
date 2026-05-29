@@ -29,15 +29,58 @@ define('custom:handlers/quote/calculation-handler', ['sales:handlers/quote-calcu
             return null;
         }
 
-        shouldApplyImportoContratto(model) {
-            const importo = parseFloat(model.get('importoContratto'));
+        resolveImportoContratto(model) {
+            let importo = parseFloat(model.get('importoContratto'));
 
-            if (!importo || importo <= 0) {
+            if (importo > 0) {
+                return importo;
+            }
+
+            const name = model.get('name') || '';
+            let match = name.match(/€\.?\s*([\d.,]+)/);
+
+            if (match) {
+                importo = this.parseItalianAmount(match[1]);
+
+                if (importo > 0) {
+                    return importo;
+                }
+            }
+
+            match = name.match(/([\d.,]+)\s*€/);
+
+            if (match) {
+                importo = this.parseItalianAmount(match[1]);
+
+                if (importo > 0) {
+                    return importo;
+                }
+            }
+
+            return 0;
+        },
+
+        parseItalianAmount(raw) {
+            let s = String(raw).trim().replace(/\s/g, '');
+
+            if (s.indexOf(',') !== -1 && s.indexOf('.') !== -1) {
+                s = s.replace(/\./g, '').replace(',', '.');
+            } else if (s.indexOf(',') !== -1) {
+                s = s.replace(',', '.');
+            } else if (/^\d{1,3}(\.\d{3})+$/.test(s)) {
+                s = s.replace(/\./g, '');
+            }
+
+            return parseFloat(s) || 0;
+        },
+
+        shouldApplyImportoContratto(model) {
+            if (!model.get('isTaxInclusive')) {
                 return false;
             }
 
-            return !!model.get('isTaxInclusive');
-        }
+            return this.resolveImportoContratto(model) > 0;
+        },
 
         getAliquotaPercent(model) {
             const aliquota = parseFloat(model.get('aliquotaIVA'));
@@ -60,7 +103,12 @@ define('custom:handlers/quote/calculation-handler', ['sales:handlers/quote-calcu
                 return;
             }
 
-            const importoGross = parseFloat(model.get('importoContratto'));
+            const importoGross = this.resolveImportoContratto(model);
+
+            if (importoGross > 0 && !parseFloat(model.get('importoContratto'))) {
+                model.set('importoContratto', importoGross);
+            }
+
             const itemList = Espo.Utils.cloneDeep(model.get('itemList') || []);
 
             if (!itemList.length) {

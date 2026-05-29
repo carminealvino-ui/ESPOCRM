@@ -8,7 +8,7 @@ use Espo\ORM\EntityManager;
 /**
  * Contratto / Opportunity: prezzo codice da prodotto, Minus/Plus GDL (B2C).
  *
- * COMBO 9+9: codice 4.200 IVI → netto 3.818,18; importo 4.500 IVI → imponibile 4.090,91 → minusPlus ≈ 272,73.
+ * COMBO 9+9: codice 4.400 IVI → netto 4.000; importo 4.500 IVI → imponibile 4.090,91 → minusPlus ≈ 91.
  * GDL: minusPlus = imponibile netto − prezzo codice netto (IVA escl.), mai lordo − codice IVI.
  */
 class QuotePricingCalculator
@@ -48,12 +48,10 @@ class QuotePricingCalculator
             );
 
             if ($opportunity) {
-                foreach (['importoOpportunit', 'importoContratto', 'amount'] as $field) {
-                    $val = $this->floatOrNull($opportunity->get($field));
+                $fromOpportunity = $this->resolveImportoVendutoFromOpportunity($quote, $opportunity);
 
-                    if ($val !== null && $val > 0) {
-                        return $val;
-                    }
+                if ($fromOpportunity !== null && $fromOpportunity > 0) {
+                    return $fromOpportunity;
                 }
             }
         }
@@ -69,6 +67,41 @@ class QuotePricingCalculator
         }
 
         return null;
+    }
+
+    /**
+     * Importo venduto da opportunità: non usare amount se coincide col listino IVI (es. 5200).
+     */
+    private function resolveImportoVendutoFromOpportunity(Entity $quote, Entity $opportunity): ?float
+    {
+        foreach (['importoOpportunit', 'importoContratto'] as $field) {
+            $val = $this->floatOrNull($opportunity->get($field));
+
+            if ($val !== null && $val > 0) {
+                return $val;
+            }
+        }
+
+        $amount = $this->floatOrNull($opportunity->get('amount'));
+
+        if ($amount === null || $amount <= 0) {
+            return null;
+        }
+
+        $listinoIvi = $this->sumListinoIvaInclusaFromProductsOnItems($quote);
+
+        if ($listinoIvi > 0 && abs($amount - $listinoIvi) < 0.02) {
+            return null;
+        }
+
+        $grandTotal = $this->floatOrNull($quote->get('grandTotalAmount'));
+
+        if ($grandTotal !== null && abs($amount - $grandTotal) < 0.02 && $listinoIvi > 0
+            && abs($grandTotal - $listinoIvi) < 0.02) {
+            return null;
+        }
+
+        return $amount;
     }
 
     /**
@@ -116,6 +149,14 @@ class QuotePricingCalculator
             return true;
         }
 
+        $codiceIviProducts = $this->sumPrezzoCodiceIvaInclusaFromProductsOnItems($quote);
+        $codiceIviStored = $this->floatOrNull($quote->get('prezzoCodiceIvaInclusa'));
+
+        if ($codiceIviProducts > 0 && $codiceIviStored !== null
+            && abs($codiceIviProducts - $codiceIviStored) > 0.02) {
+            return true;
+        }
+
         return abs($grandTotal - $importo) > 0.02;
     }
 
@@ -131,7 +172,7 @@ class QuotePricingCalculator
     /**
      * Regole contratto IVA inclusa:
      * - listino riga = listino catalogo IVI (es. 5200)
-     * - prezzo codice riga = codice IVI (es. 4200)
+     * - prezzo codice riga = codice IVI (es. 4400)
      * - prezzo unitario/importo riga = importoContratto ripartito in proporzione al listino
      * - importoContratto = grandTotalAmount (es. 4500 IVI)
      */
@@ -356,12 +397,14 @@ class QuotePricingCalculator
                 ]);
             }
 
-            $codiceIvi = $codiceIviFromProducts > 0
-                ? $codiceIviFromProducts
-                : $this->sumPrezzoCodiceIvaInclusaFromItems($entity);
+            if ($codiceIviFromProducts > 0) {
+                $entity->set('prezzoCodiceIvaInclusa', round($codiceIviFromProducts, 2));
+            } else {
+                $codiceIvi = $this->sumPrezzoCodiceIvaInclusaFromItems($entity);
 
-            if ($codiceIvi > 0) {
-                $entity->set('prezzoCodiceIvaInclusa', round($codiceIvi, 2));
+                if ($codiceIvi > 0) {
+                    $entity->set('prezzoCodiceIvaInclusa', round($codiceIvi, 2));
+                }
             }
         } else {
             $totalPrezzoCodice = $this->sumPrezzoCodiceFromItems($entity);
