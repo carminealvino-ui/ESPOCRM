@@ -1,14 +1,13 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record/edit-small'], function (MeetingEditSmallModule) {
+define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'], function (Dep) {
 
-    const Parent = MeetingEditSmallModule.default || MeetingEditSmallModule;
     const DEFAULT_DURATION_SECONDS = 5400;
 
-    return class AppuntamentoEditSmallView extends Parent {
+    return Dep.extend({
 
-        setup() {
-            super.setup();
+        setup: function () {
+            Dep.prototype.setup.call(this);
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
@@ -20,12 +19,10 @@ define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record
 
             this.once('after:render', () => {
                 this.applyDefaultDuration();
-                setTimeout(() => this.applyDefaultDuration(), 0);
-                setTimeout(() => this.applyDefaultDuration(), 150);
             });
-        }
+        },
 
-        applyDefaultDuration() {
+        applyDefaultDuration: function () {
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
             }
@@ -43,7 +40,7 @@ define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record
 
             this.model.set({
                 dateEnd: dateEnd,
-            }, {updatedByDuration: true});
-        }
-    };
+            });
+        },
+    });
 });

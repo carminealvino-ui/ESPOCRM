@@ -1,11 +1,11 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit', ['crm:views/meeting/record/edit'], function (Dep) {
+define('custom:views/appuntamento/record/edit', ['views/record/edit'], function (Dep) {
 
     return Dep.extend({
 
         setup: function () {
-            Dep.prototype.setup.call(this, arguments);
+            Dep.prototype.setup.call(this);
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
