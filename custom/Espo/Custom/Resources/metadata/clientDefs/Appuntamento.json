@@ -6,12 +6,12 @@
     },
     "recordViews": {
         "list": "crm:views/meeting/record/list",
-        "detail": "crm:views/meeting/record/detail",
-        "edit": "crm:views/meeting/record/edit",
-        "editSmall": "crm:views/meeting/record/edit-small"
+        "detail": "custom:views/appuntamento/record/detail",
+        "edit": "custom:views/appuntamento/record/edit",
+        "editSmall": "custom:views/appuntamento/record/edit-small"
     },
     "modalViews": {
-        "detail": "crm:views/meeting/modals/detail"
+        "detail": "custom:views/appuntamento/modals/detail"
     },
     "filterList": [
         {
