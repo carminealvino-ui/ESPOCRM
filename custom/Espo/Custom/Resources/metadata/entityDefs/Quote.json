@@ -205,9 +205,6 @@
             "entity": "ProductCategory",
             "foreign": "quotes",
             "isCustom": true
-        },
-        "itemList": {
-            "view": "custom:views/quote/fields/item-list"
         }
     },
     "collection": {

@@ -61,14 +61,6 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 this.injectCreateProductButton();
                 this.injectCreateProductMenuItem();
             }.bind(this), 200);
-
-            if (!this._buttonObserver) {
-                this._buttonObserver = new MutationObserver(function () {
-                    this.injectCreateProductButton();
-                    this.injectCreateProductMenuItem();
-                }.bind(this));
-                this._buttonObserver.observe(this.el, { childList: true, subtree: true });
-            }
         },
 
         injectCreateProductButton: function () {

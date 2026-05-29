@@ -25,12 +25,13 @@ fetch() {
 echo "=== Deploy Crea prodotto (senza calculation-handler) ==="
 
 fetch "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
-fetch "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
 fetch "custom/Espo/Custom/Resources/metadata/formula/Quote.json"
 fetch "client/custom/src/handlers/quote/crea-prodotto-articoli.js"
-fetch "client/custom/src/views/quote/fields/item-list.js"
-fetch "client/custom/src/views/quote/record/panels/items.js"
 fetch "client/custom/src/views/modals/select-product-for-quote.js"
+
+# entityDefs senza view itemList custom (evita pagina bianca su Contratto)
+curl -fsSL "${BASE}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json?t=$(date +%s)" \
+  -o "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
 
 rm -f "${CRM_ROOT}/${LEGACY_SCRIPT}"
 rm -f "${CRM_ROOT}/client/custom/src/handlers/quote/calculation-handler.js"
