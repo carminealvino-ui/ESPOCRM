@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-# «Crea prodotto» a sinistra del + nella tabella articoli (come originale).
+# «Crea prodotto» a sinistra del + nella tabella articoli. NON installa calculationHandler.
+#
+#   cd ~/public_html/crm/mec-group
+#   curl -fsSL ".../cursor/quote-prezzi-iva-inclusa-9999/tools/deploy-crea-prodotto-button.sh?t=$(date +%s)" -o /tmp/deploy-btn.sh
+#   bash /tmp/deploy-btn.sh
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${BRANCH:-cursor/provvigioni-manuali-fase-a-9999}"
+BRANCH="${BRANCH:-cursor/quote-prezzi-iva-inclusa-9999}"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 CLIENT_JSON="${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/app/client.json"
 LEGACY_SCRIPT="client/custom/src/custom-product-button.js"
@@ -18,22 +22,32 @@ fetch() {
   echo "OK ${rel}"
 }
 
-echo "=== Deploy Crea prodotto (originale) ==="
+echo "=== Deploy Crea prodotto (senza calculation-handler) ==="
 
 fetch "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
 fetch "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
+fetch "custom/Espo/Custom/Resources/metadata/formula/Quote.json"
 fetch "client/custom/src/handlers/quote/crea-prodotto-articoli.js"
 fetch "client/custom/src/views/quote/fields/item-list.js"
 fetch "client/custom/src/views/quote/record/panels/items.js"
 fetch "client/custom/src/views/modals/select-product-for-quote.js"
 
 rm -f "${CRM_ROOT}/${LEGACY_SCRIPT}"
+rm -f "${CRM_ROOT}/client/custom/src/handlers/quote/calculation-handler.js"
 rm -f "${CRM_ROOT}/client/custom/src/handlers/quote/articoli-crea-prodotto-setup.js"
-rm -f "${CRM_ROOT}/client/custom/src/handlers/quote/articoli-crea-prodotto-setup.js"
+
+QUOTE_DEFS="${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
+php -r "
+  \$f = '${QUOTE_DEFS}';
+  \$j = json_decode(file_get_contents(\$f), true);
+  if (!is_array(\$j)) { exit(1); }
+  unset(\$j['calculationHandler']);
+  file_put_contents(\$f, json_encode(\$j, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
+"
 
 mkdir -p "${CRM_ROOT}/tools"
 curl -fsSL "${BASE}/tools/dedupe-quote-crea-prodotto.php?t=$(date +%s)" -o "${CRM_ROOT}/tools/dedupe-quote-crea-prodotto.php"
-CRM_ROOT="${CRM_ROOT}" php "${CRM_ROOT}/tools/dedupe-quote-crea-prodotto.php"
+CRM_ROOT="${CRM_ROOT}" php "${CRM_ROOT}/tools/dedupe-quote-crea-prodotto.php" 2>/dev/null || true
 
 if [[ -f "${CLIENT_JSON}" ]]; then
   php -r "
@@ -53,5 +67,5 @@ fi
 php command.php rebuild
 rm -rf data/cache/*
 echo ""
-echo "Fatto. Pulsante «Crea prodotto» a sinistra del + (tabella Articoli). Ctrl+Shift+R"
-echo "Se il pannello non usa la view custom: Admin > Layout Manager > Quote > Bottom Panels > Items > view custom:views/quote/record/panels/items"
+echo "Fatto: Crea prodotto + formula Quote 1.5.1 (nome senza grandTotalAmount)."
+echo "Ctrl+Shift+R sul browser."

@@ -206,7 +206,9 @@
             "foreign": "quotes",
             "isCustom": true
         },
-        "itemList": {}
+        "itemList": {
+            "view": "custom:views/quote/fields/item-list"
+        }
     },
     "collection": {
         "orderBy": "createdAt",
