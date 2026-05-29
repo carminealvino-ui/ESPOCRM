@@ -1,0 +1,27 @@
+{
+    "fields": {
+        "order": "Line Index",
+        "taxCode": "Tax Code",
+        "component": "Component",
+        "paymentEntry": "Payment Entry",
+        "allocation": "Allocation",
+        "product": "Product",
+        "source": "Source",
+        "rate": "Rate",
+        "percentage": "Portion",
+        "amount": "Tax",
+        "baseAmount": "Base",
+        "amountLocal": "Tax Local",
+        "baseAmountLocal": "Base Local",
+        "amountPrecise": "Tax (Precise)",
+        "amountLocalPrecise": "Tax Local (Precise)",
+        "baseAmountLocalPrecise": "Base Local (Precise)"
+    },
+    "links": {
+        "taxCode": "Tax Code",
+        "paymentEntry": "Payment Entry",
+        "allocation": "Allocation",
+        "source": "Source",
+        "product": "Product"
+    }
+}

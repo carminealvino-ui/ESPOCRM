@@ -1,0 +1,10 @@
+{
+  "links": {
+    "quotesBilling": "Devis (facturation)",
+    "quotesShipping": "Devis (livraison)",
+    "salesOrdersBilling": "Commandes client (facturation)",
+    "salesOrdersShipping": "Commandes client (livraison)",
+    "invoicesBilling": "Factures (facturation)",
+    "invoicesShipping": "Factures (livraison)"
+  }
+}

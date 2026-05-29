@@ -1,0 +1,46 @@
+{
+    "_delimiter_": {
+        "disabled": true
+    },
+    "_tabBreak_0": {
+        "index": 0,
+        "tabBreak": true,
+        "tabLabel": "$inventory"
+    },
+    "warehousesQuantity": {
+        "index": 1
+    },
+    "inventoryNumbers": {
+        "index": 2
+    },
+    "_tabBreak_1": {
+        "index": 3,
+        "tabBreak": true,
+        "tabLabel": "$prices"
+    },
+    "prices": {
+        "index": 4
+    },
+    "supplierPrices": {
+        "index": 5
+    },
+    "_tabBreak_2": {
+        "index": 6,
+        "tabBreak": true,
+        "tabLabel": "$variants"
+    },
+    "variants": {
+        "index": 7
+    },
+    "_tabBreak_3": {
+        "index": 8,
+        "tabBreak": true,
+        "tabLabel": "$orders"
+    },
+    "orderItems": {
+        "index": 9
+    },
+    "inventoryAdjustmentItems": {
+        "index": 10
+    }
+}

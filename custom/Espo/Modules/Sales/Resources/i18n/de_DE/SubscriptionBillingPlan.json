@@ -1,0 +1,49 @@
+{
+  "labels": {
+    "Create SubscriptionBillingPlan": "Abrechnungsplan erstellen"
+  },
+  "fields": {
+    "interval": "Abrechnungszeiträume",
+    "billingCycleLength": "Abrechnungsintervall",
+    "gracePeriodDays": "Kulanzzeitraum (in Tagen)",
+    "invoiceDuePeriodDays": "Fälligkeit der Rechnung (in Tagen)",
+    "invoiceLeadTimeDays": "Rechnungs-Vorlaufzeit (in Tagen)",
+    "createPaymentRequests": "Zahlungsaufforderung erstellen",
+    "sendPaymentRequests": "Zahlungsaufforderung senden",
+    "sendInvoices": "Rechnungen senden",
+    "alignmentType": "Ausrichtung",
+    "alignmentDays": "Ausrichtungstage",
+    "alignmentWeekdays": "Ausrichtungswochentage",
+    "alignmentProrationPolicy": "Anteilsregelung zur Ausrichtung",
+    "alignmentChargeMinDays": "Mindesttage für Ausrichtungsgebühr",
+    "intervalUnit": "Intervalleinheit",
+    "templates": "Vorlagen"
+  },
+  "links": {
+    "subscriptions": "Abonnements",
+    "templates": "Vorlagen"
+  },
+  "tooltips": {
+    "alignmentChargeMinDays": "Für anteilige Ausrichtungszeiträume, die kürzer als die angegebene Anzahl von Tagen sind, werden keine Gebühren erhoben.",
+    "alignmentProrationPolicy": "Steuert, ob anteilige Ausrichtungszeiträume berechnet werden.",
+    "alignmentType": "Aktiviert die Ausrichtung des Abrechnungszyklus.\n\nSofort. Zunächst wird ein anteilig Ausrichtungszeiträum erstellt, um den Abrechnungszyklus auszurichten. Der folgende Zeitraum ist ein normaler Abrechnungszeitraum.\n\nVerzögert. Zunächst wird ein normaler Abrechnungszeitraum erstellt. Der folgende Zeitraum wird anteilig berechnet, um den Abrechnungszyklus auszurichten.",
+    "invoiceLeadTimeDays": "Tage vor Beginn des nächsten Abrechnungszyklus, an denen die Rechnung erstellt wird.",
+    "billingCycleLength": "Anzahl der Abrechnungszeiträume innerhalb eines Abrechnungszyklus. Wenn die Zykluslänge beispielsweise auf 12 und der Abrechnungszeitraum auf 1 Monat eingestellt ist, erhält der Kunde eine Rechnung pro Jahr."
+  },
+  "intervalUnits": {
+    "Y": "Jahr",
+    "M": "Monat",
+    "D": "Tag",
+    "W": "Woche"
+  },
+  "options": {
+    "alignmentType": {
+      "Immediate": "Sofort",
+      "Delayed": "Verzögert"
+    },
+    "alignmentProrationPolicy": {
+      "Immediate": "Keine Gebühr",
+      "Delayed": "Gebühr"
+    }
+  }
+}

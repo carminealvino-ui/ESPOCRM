@@ -1,0 +1,19 @@
+[
+    {
+        "rows": [
+            [{"name": "number"}, {"name": "account"}],
+            [{"name": "status"}, {"name": "amount"}],
+            [{"name": "billingState"}, false]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "billingPlan"}, {"name": "endDate"}]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "description"}]
+        ]
+    }
+]

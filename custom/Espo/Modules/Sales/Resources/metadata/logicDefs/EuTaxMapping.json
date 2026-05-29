@@ -1,0 +1,41 @@
+{
+    "fields": {
+        "exemptionCode": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "categoryCode",
+                        "value": [
+                            "E"
+                        ]
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "categoryCode",
+                        "value": [
+                            "E"
+                        ]
+                    }
+                ]
+            }
+        },
+        "exemptionReason": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "categoryCode",
+                        "value": [
+                            "E"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

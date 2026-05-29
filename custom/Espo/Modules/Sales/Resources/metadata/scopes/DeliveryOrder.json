@@ -1,0 +1,50 @@
+{
+    "entity": true,
+    "layouts": true,
+    "tab": true,
+    "acl": true,
+    "aclPortal": true,
+    "aclPortalLevelList":  [
+        "all",
+        "account",
+        "contact",
+        "no"
+    ],
+    "module": "Sales",
+    "customizable": true,
+    "importable": true,
+    "notifications": true,
+    "object": true,
+    "preserveAuditLog": true,
+    "currencyConversionAccessRequiredFieldList": ["shippingCost"],
+    "lockableFieldList": [
+        "status",
+        "itemList",
+        "warehouse",
+        "shippingCost",
+        "dateOrdered",
+        "shippingDate",
+        "deliveryDate",
+        "account",
+        "salesOrder",
+        "shippingAddress",
+        "shippingProvider",
+        "amount",
+        "shippingContact"
+    ],
+    "softReserveStatusList": [
+        "Draft"
+    ],
+    "reserveStatusList": [
+        "Ready"
+    ],
+    "canceledStatusList": [
+        "Canceled"
+    ],
+    "doneStatusList": [
+        "Completed"
+    ],
+    "failedStatusList": [
+        "Failed"
+    ]
+}

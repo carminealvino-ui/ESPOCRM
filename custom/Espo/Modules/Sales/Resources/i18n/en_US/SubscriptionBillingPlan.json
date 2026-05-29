@@ -1,0 +1,50 @@
+{
+    "labels": {
+        "Create SubscriptionBillingPlan": "Create Billing Plan"
+    },
+    "fields": {
+        "status": "Status",
+        "interval": "Charge Period",
+        "billingCycleLength": "Billing Cycle Length",
+        "gracePeriodDays": "Grace Period Days",
+        "invoiceDuePeriodDays": "Invoice Due Period Days",
+        "invoiceLeadTimeDays": "Invoice Lead Time Days",
+        "createPaymentRequests": "Create Payment Requests",
+        "sendPaymentRequests": "Send Payment Requests",
+        "sendInvoices": "Send Invoices",
+        "alignmentType": "Alignment",
+        "alignmentDays": "Alignment Days",
+        "alignmentWeekdays": "Alignment Weekdays",
+        "alignmentProrationPolicy": "Alignment Proration Policy",
+        "alignmentChargeMinDays": "Alignment Charge Min. Days",
+        "intervalUnit": "Interval Unit",
+        "templates": "Templates"
+    },
+    "links": {
+        "subscriptions": "Subscriptions",
+        "templates": "Templates"
+    },
+    "tooltips": {
+        "alignmentChargeMinDays": "Alignment prorated periods shorter than the specified number of days won't be charged.",
+        "alignmentProrationPolicy": "Controls whether alignment prorated periods are charged.",
+        "alignmentType": "Enables billing cycle alignment.\n\nImmediate. A prorated period is created first to align the billing cycle. The following period is a normal billing period.\n\nDelayed. A normal billing period is created first. The following period is prorated to align the billing cycle.",
+        "invoiceLeadTimeDays": "How many days in advance of the next billing cycle the invoice is created.",
+        "billingCycleLength": "Number of charge periods within a billing cycle. For example, if the cycle length is set to 12 and the charge period is 1 month, the customer will receive one invoice per year."
+    },
+    "intervalUnits": {
+        "Y": "Year",
+        "M": "Month",
+        "D": "Day",
+        "W": "Week"
+    },
+    "options": {
+        "alignmentType": {
+            "Immediate": "Immediate",
+            "Delayed": "Delayed"
+        },
+        "alignmentProrationPolicy": {
+            "Immediate": "No Charge",
+            "Delayed": "Charge"
+        }
+    }
+}

@@ -1,0 +1,33 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "account",
+        "width": 25
+    },
+    {
+        "name": "salesOrder",
+        "width": 14,
+        "hidden": true
+    },
+    {
+        "name": "dateOrdered",
+        "width": 11
+    },
+    {
+        "name": "deliveryDate",
+        "width": 11,
+        "hidden": true
+    },
+    {
+        "name": "amount",
+        "width": 12,
+        "align": "right"
+    }
+]

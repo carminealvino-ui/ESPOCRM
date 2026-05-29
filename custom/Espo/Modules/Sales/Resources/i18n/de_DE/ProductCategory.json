@@ -1,0 +1,14 @@
+{
+  "labels": {
+    "Create ProductCategory": "Neue Kategorie",
+    "Manage Categories": "Kategorien verwalten",
+    "Products": "Produkte"
+  },
+  "fields": {
+    "order": "Auftrag",
+    "childList": "Kinderliste"
+  },
+  "links": {
+    "products": "Produkte"
+  }
+}

@@ -1,0 +1,16 @@
+{
+    "massActions": {
+        "delete": {
+            "allowed": true
+        },
+        "update": {
+            "allowed": true
+        }
+    },
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\TaxItemRule\\BeforeSave"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\TaxItemRule\\BeforeSave"
+    ]
+}

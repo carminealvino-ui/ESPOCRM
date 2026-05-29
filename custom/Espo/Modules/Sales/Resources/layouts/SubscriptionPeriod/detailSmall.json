@@ -1,0 +1,10 @@
+[
+    {
+        "rows": [
+            [{"name": "type"}, {"name": "status"}],
+            [{"name": "billingStatus"}, {"name": "subscription"}],
+            [{"name": "startDate"}, {"name": "endDate"}],
+            [{"name": "invoiceAutomatically"}, {"name": "holdUntilBillingComplete"}]
+        ]
+    }
+]

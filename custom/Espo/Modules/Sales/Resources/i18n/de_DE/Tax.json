@@ -1,0 +1,39 @@
+{
+  "labels": {
+    "Create Tax": "Steuerprofil erstellen"
+  },
+  "fields": {
+    "rate": "Satz",
+    "shippingMode": "Versandsteuermodus",
+    "taxCode": "Steuercode",
+    "taxDisplay": "Steuerbetrag",
+    "shippingTaxCode": "Versandsteuercode"
+  },
+  "links": {
+    "itemRules": "Positionsregeln",
+    "taxCode": "Steuercode",
+    "shippingTaxCode": "Versandsteuercode"
+  },
+  "options": {
+    "shippingMode": {
+      "Proportional": "proportional",
+      "Fixed": "Fest"
+    },
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  },
+  "tooltips": {
+    "shippingMode": "Legt fest, wie die Steuerbetrag auf die Versandkosten angewendet wird.\n\n- Proportional: Die Steuern der einzelnen Positionen werden proportional auf die Versandkosten verteilt.\n\n- Fest: Es wird ein bestimmter Steuercode angewendet.",
+    "shippingTaxCode": "Dieser Steuercode wird immer auf den Versand angewendet.",
+    "taxCode": "Dieser Steuercode wird auf Positionen angewendet, die keiner Positionsregel entsprechen."
+  },
+  "messages": {
+    "cannotUseInactiveTaxCode": "Ein inaktiver Steuercode kann nicht verwendet werden.",
+    "cannotChangeBasis": "Die Basis kann nicht geändert werden, da das Steuerprofil Positionsregeln enthält."
+  }
+}

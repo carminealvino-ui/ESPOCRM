@@ -12,23 +12,7 @@
         "prezzoCodice": {
             "type": "currency",
             "isCustom": true,
-            "onlyDefaultCurrency": true,
-            "tooltip": true
-        },
-        "prezzoCodiceIvaInclusa": {
-            "type": "currency",
-            "isCustom": true,
-            "onlyDefaultCurrency": true,
-            "tooltip": true
-        },
-        "prezzoListinoIvaInclusa": {
-            "type": "currency",
-            "isCustom": true,
-            "onlyDefaultCurrency": true,
-            "tooltip": true
-        },
-        "listPrice": {
-            "tooltip": true
+            "onlyDefaultCurrency": true
         },
         "name": {
             "required": false,

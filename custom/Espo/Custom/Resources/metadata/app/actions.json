@@ -1,11 +1,6 @@
 {
     "Opportunity": {
         "createContratto": "Espo\\Custom\\Actions\\Opportunity\\CreateContratto"
-    },
-    "InvitoAFatturare": {
-        "generaDaProvvigioni": "Espo\\Custom\\Actions\\InvitoAFatturare\\GeneraDaProvvigioni"
-    },
-    "Quote": {
-        "calcolaProvvigioni": "Espo\\Custom\\Actions\\Quote\\CalcolaProvvigioni"
     }
 }
+

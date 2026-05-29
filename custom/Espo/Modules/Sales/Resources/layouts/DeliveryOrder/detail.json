@@ -1,0 +1,19 @@
+[
+    {
+        "label": "Overview",
+        "rows": [
+            [{"name": "number"}, {"name": "account"}],
+            [{"name": "status"}, {"name": "salesOrder"}],
+            [{"name": "dateOrdered"}, false],
+            [{"name": "shippingDate"}, {"name": "deliveryDate"}]
+        ]
+    },
+    {
+        "label": "Details",
+        "rows": [
+            [{"name": "warehouse"}, {"name": "shippingContact"}],
+            [{"name": "shippingAddress"}, {"name": "shippingProvider"}],
+            [{"name": "description"}]
+        ]
+    }
+]

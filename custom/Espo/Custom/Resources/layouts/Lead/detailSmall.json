@@ -1,0 +1,76 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                }
+            ],
+            [
+                {
+                    "name": "fornitorePartner"
+                },
+                {
+                    "name": "productBrand"
+                }
+            ],
+            [
+                {
+                    "name": "b2B"
+                },
+                {
+                    "name": "partitaIVA"
+                }
+            ],
+            [
+                {
+                    "name": "insegna"
+                },
+                {
+                    "name": "accountName"
+                }
+            ],
+            [
+                {
+                    "name": "emailAddress"
+                }
+            ],
+            [
+                {
+                    "name": "phoneNumber"
+                }
+            ],
+            [
+                {
+                    "name": "title"
+                },
+                {
+                    "name": "website"
+                }
+            ],
+            [
+                {
+                    "name": "addressCity"
+                },
+                {
+                    "name": "addressCountry"
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "source"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": ""
+    }
+]

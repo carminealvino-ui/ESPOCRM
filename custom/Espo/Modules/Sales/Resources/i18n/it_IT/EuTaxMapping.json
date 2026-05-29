@@ -1,0 +1,31 @@
+{
+  "labels": {
+    "Create EuTaxMapping": "Crea voce di mappatura"
+  },
+  "fields": {
+    "order": "Ordine",
+    "taxCode": "Codice imposta",
+    "taxClass": "Classe imposta",
+    "categoryCode": "Codice categoria",
+    "exemptionCode": "Codice esenzione",
+    "exemptionReason": "Motivo esenzione"
+  },
+  "links": {
+    "taxCode": "Codice imposta",
+    "taxClass": "Classe imposta"
+  },
+  "options": {
+    "categoryCode": {
+      "AE": "AE – Inversione contabile",
+      "E": "E – Esente",
+      "Z": "Z – Aliquota zero",
+      "G": "G – Articolo di esportazione esente",
+      "O": "O – Servizi non soggetti a imposta",
+      "K": "K – Esente per cessione intracomunitaria SEE"
+    }
+  },
+  "tooltips": {
+    "exemptionCode": "Codice VATEX.",
+    "categoryCode": "Codice [UNCL5305](https://docs.peppol.eu/poacc/billing/3.0/codelist/UNCL5305/). Utilizzato nelle fatture elettroniche. Se il codice non viene specificato, viene usato *S* per le imposte con aliquota diversa da zero e *Z* per le imposte ad aliquota zero."
+  }
+}

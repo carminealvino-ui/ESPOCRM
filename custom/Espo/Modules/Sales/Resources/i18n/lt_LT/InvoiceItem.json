@@ -1,0 +1,35 @@
+{
+    "fields": {
+        "name": "Pavadinimas",
+        "qty": "Kiekis",
+        "quantity": "Kiekis",
+        "quantityInt": "Kiekis (Int)",
+        "listPrice": "Sąrašo kaina",
+        "unitPrice": "Vieneto kaina",
+        "amount": "Suma",
+        "taxRate": "Mokesčių tarifas",
+        "product": "Produktas",
+        "order": "Linijos numeris",
+        "invoice": "Sąskaita faktūra",
+        "weight": "Svoris",
+        "unitWeight": "Vieneto svoris",
+        "description": "Aprašymas",
+        "discount": "Nuolaida (%)",
+        "amountConverted": "Suma (perskaičiuota)",
+        "unitPriceConverted": "Vieneto kaina (perskaičiuota)",
+        "listPriceConverted": "Sąrašo kaina (perskaičiuota)",
+        "account": "Sąskaita",
+        "listPriceCurrency": "Sąrašo kaina Valiuta",
+        "unitPriceCurrency": "Vieneto kaina Valiuta",
+        "amountCurrency": "Suma Valiuta",
+        "invoiceStatus": "Sąskaitos faktūros būsena"
+    },
+    "links": {
+        "invoice": "Sąskaita faktūra",
+        "product": "Produktas",
+        "account": "Sąskaita"
+    },
+    "labels": {
+        "Invoices": "Sąskaitos faktūros"
+    }
+}

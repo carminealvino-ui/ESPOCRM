@@ -1,0 +1,6 @@
+{
+    "Microsoft": {
+        "enabled": true,
+        "aclScope": "OutlookCalendar"
+    }
+}

@@ -1,0 +1,75 @@
+{
+  "labels": {
+    "Create PriceRule": "Regel erstellen"
+  },
+  "fields": {
+    "priceBook": "Preisbuch",
+    "productCategory": "Produktkategorie",
+    "minQuantity": "Mindestmenge",
+    "price": "Preis",
+    "dateStart": "Startdatum",
+    "dateEnd": "Enddatum",
+    "minQty": "Min. Mng",
+    "percentage": "Prozentsatz",
+    "discount": "Rabatt",
+    "target": "Ziel",
+    "condition": "Bedingung",
+    "conditionSelect": "Bedingung auswählen",
+    "roundingMethod": "Rundungsmethode",
+    "roundingFactor": "Rundungsfaktor",
+    "surcharge": "Zuschlag",
+    "currency": "Währung",
+    "basedOn": "Bezogen auf",
+    "supplier": "Lieferant",
+    "timeline": "Gültigkeitsdaten"
+  },
+  "links": {
+    "supplier": "Lieferant",
+    "productCategory": "Produktkategorie",
+    "condition": "Bedingung",
+    "priceBook": "Preisbuch",
+    "product": "Produkt"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    },
+    "basedOn": {
+      "Unit": "Einzel",
+      "Price Book": "Preisbuch",
+      "Supplier": "Lieferant",
+      "Cost": "Einstand"
+    },
+    "basedOnShort": {
+      "Unit": "ENZ",
+      "Supplier": "L",
+      "Cost": "ENST"
+    },
+    "target": {
+      "All": "Alle",
+      "Product Category": "Produktkategorie",
+      "Conditional": "Bedingt"
+    },
+    "percentageType": {
+      "Discount": "Rabatt",
+      "Markup": "Aufschlag"
+    },
+    "roundingFactor": {
+      "Half Up": "Halb-Hoch",
+      "Up": "Hoch",
+      "Down": "Runter"
+    }
+  },
+  "tooltips": {
+    "minQuantity": "Die Regel wird nur angewendet, wenn die Menge der verkauften Artikel den angegebenen Wert überschreitet.",
+    "currency": "Der Betrag wird vor der Rundung in die angegebene Währung umgerechnet. Definiert außerdem die Währung des Zuschlags.",
+    "basedOn": "Was als Grundpreis verwendet werden soll.\n\n* Einzel – der im Preisbuch oder im Produktdatensatz definierte Einzelpreis; Die Preisbuchregeln werden nicht angewendet.\n* Preisbuch – wird aus demselben Preisbuch bezogen; Regeln werden angewendet;\n* Lieferant – der Preis des Lieferanten;\n* Einstand – die im Produktdatensatz angegebenen Kosten.",
+    "surcharge": "Ein Betrag, der hinzugefügt werden soll, nachdem Prozentsatz und Rundung angewendet wurden. Verwenden Sie zum Subtrahieren eine negative Zahl.",
+    "roundingFactor": "Der Betrag wird auf das Vielfache des angegebenen Wertes gerundet.",
+    "percentage": "Ein Prozentsatz des Standardpreises, der subtrahieren oder hinzugefügt werden soll."
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  }
+}

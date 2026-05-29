@@ -1,0 +1,71 @@
+{
+    "fields": {
+        "invoiceAutomatically": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "billingStatus",
+                        "value": [
+                            "Pending"
+                        ]
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "type",
+                        "value": [
+                            "Regular"
+                        ]
+                    }
+                ]
+            }
+        },
+        "holdUntilBillingComplete": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "type",
+                        "value": [
+                            "Regular"
+                        ]
+                    }
+                ]
+            },
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "billingStatus",
+                        "value": [
+                            "Settled"
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "options": {
+        "billingStatus": [
+            {
+                "optionList": [
+                    "Settled"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "type",
+                        "value": [
+                            "Trial",
+                            "Pause"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

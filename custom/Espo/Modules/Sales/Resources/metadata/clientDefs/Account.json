@@ -1,0 +1,121 @@
+{
+    "relationshipPanels": {
+        "quotes": {
+            "createAction": "createRelatedQuote",
+            "view": "modules/sales/views/account/record/panels/quotes",
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "filterList": [
+                "all",
+                "approved"
+            ]
+        },
+        "salesOrders": {
+            "createAction": "createRelatedQuote",
+            "view": "modules/sales/views/account/record/panels/quotes",
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "filterList": [
+                "all",
+                "completed"
+            ]
+        },
+        "invoices": {
+            "createAction": "createRelatedQuote",
+            "view": "modules/sales/views/account/record/panels/quotes",
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "filterList": [
+                "all",
+                "issued"
+            ]
+        },
+        "deliveryOrders": {
+            "createAction": "createRelatedQuote",
+            "view": "modules/sales/views/account/record/panels/quotes",
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "filterList": [
+                "all",
+                "completed"
+            ]
+        },
+        "purchaseOrders": {
+            "createAction": "createRelatedPurchaseOrder",
+            "view": "modules/sales/views/account/record/panels/purchase-orders",
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "createDisabled": true,
+            "filterList": [
+                "all",
+                "completed"
+            ]
+        },
+        "creditNotes": {
+            "createAction": "createRelatedQuote",
+            "view": "modules/sales/views/account/record/panels/quotes",
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "filterList": [
+                "all",
+                "issued"
+            ]
+        },
+        "writeOffs": {
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "createAttributeMap": {
+                "id": "accountId",
+                "name": "accountName"
+            },
+            "filterList": [
+                "all",
+                "issued"
+            ]
+        },
+        "paymentEntries": {
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "createAttributeMap": {
+                "id": "accountId",
+                "name": "accountName"
+            },
+            "filterList": [
+                "all",
+                "issued"
+            ]
+        },
+        "paymentRequests": {
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "createAttributeMap": {
+                "id": "accountId",
+                "name": "accountName"
+            },
+            "createHandler": "sales:handlers/account/create-payment-request",
+            "filterList": [
+                "all",
+                "actual",
+                "paid"
+            ]
+        },
+        "opportunities": {
+            "createHandler": "sales:handlers/account/create-opportunity"
+        },
+        "paymentMethods": {
+            "selectPrimaryFilterName": "activeInbound"
+        },
+        "paymentMethod": {
+            "selectPrimaryFilterName": "activeInbound"
+        }
+    }
+}

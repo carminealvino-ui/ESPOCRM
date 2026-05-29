@@ -1,0 +1,13 @@
+{
+  "labels": {
+    "Items": "Položky",
+    "Select Product": "Vybrat produkt",
+    "Add Item": "Přidat položku"
+  },
+  "links": {
+    "quotes": "Nabídky"
+  },
+  "fields": {
+    "itemList": "Seznam položek"
+  }
+}

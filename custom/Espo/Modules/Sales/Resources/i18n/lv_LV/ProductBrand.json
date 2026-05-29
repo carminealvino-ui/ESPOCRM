@@ -1,0 +1,11 @@
+{
+    "labels": {
+        "Create ProductBrand": "Izveidot zīmolu"
+    },
+    "fields": {
+        "website": "Tīmekļa vietne"
+    },
+    "links": {
+        "products": "Produkti"
+    }
+}

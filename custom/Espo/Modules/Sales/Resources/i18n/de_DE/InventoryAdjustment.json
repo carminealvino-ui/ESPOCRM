@@ -1,0 +1,49 @@
+{
+  "labels": {
+    "Create InventoryAdjustment": "Anpassung erstellen",
+    "Add Item": "Artikel hinzufügen",
+    "Items": "Artikel"
+  },
+  "fields": {
+    "number": "Nummer",
+    "numberA": "Nummer (auto-inkrement)",
+    "amount": "Betrag",
+    "itemList": "Artikelliste",
+    "date": "Datum",
+    "reason": "Grund",
+    "warehouse": "Lager",
+    "isDone": "Erledigt",
+    "doneAt": "Erledigt am"
+  },
+  "links": {
+    "items": "Artikel",
+    "inventoryTransactions": "Inventartransaktionen",
+    "warehouse": "Lager"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Started": "Gestartet",
+      "Completed": "Abgeschlossen",
+      "Canceled": "Storniert"
+    },
+    "reason": {
+      "Stocktaking": "Bestandsaufnahme",
+      "Write-off": "Ausbuchung",
+      "Waste": "Abfall",
+      "Shrinkage": "Schwindung",
+      "Damage": "Schaden",
+      "Internal": "Intern"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "completed": "Abgeschlossen"
+  },
+  "messages": {
+    "itemProductIsNotInventory": "Produkt {name} ist kein Inventar.",
+    "emptyNewQuantityInItem": "Für einen Artikel ist keine verfügbare Menge angegeben.",
+    "sameItemsInAnotherAdjustment": "Die gleichen Atikel befinden sich in einer anderen gestarteten Anpassung.",
+    "duplicateItems": "Eine Anpassung kann nicht dieselben Artikeln enthalten."
+  }
+}

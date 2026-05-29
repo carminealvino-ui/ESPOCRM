@@ -61,10 +61,6 @@
             "type": "date",
             "useNumericFormat": true,
             "isCustom": true
-        },
-        "invitoAFatturare": {
-            "type": "link",
-            "isCustom": true
         }
     },
     "links": {
@@ -105,12 +101,6 @@
             "foreign": "pagamentiProvvigionali",
             "entity": "Lead",
             "audited": false,
-            "isCustom": true
-        },
-        "invitoAFatturare": {
-            "type": "belongsTo",
-            "foreign": "pagamentoProvvigionale",
-            "entity": "InvitoAFatturare",
             "isCustom": true
         }
     },

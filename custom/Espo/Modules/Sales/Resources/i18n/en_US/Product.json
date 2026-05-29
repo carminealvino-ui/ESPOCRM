@@ -1,0 +1,140 @@
+{
+    "labels": {
+        "Create Product": "Create Product",
+        "Price": "Price",
+        "Brands": "Brands",
+        "Categories": "Categories",
+        "Price Books": "Price Books",
+        "Quantity": "Quantity",
+        "Warehouses": "Warehouses",
+        "Generate": "Generate",
+        "Orders": "Orders",
+        "Select Variant": "Select Variant",
+        "Select Variants": "Select Variants",
+        "Select Template": "Select Template",
+        "View Price": "View Price"
+    },
+    "fields": {
+        "status": "Status",
+        "brand": "Brand",
+        "partNumber": "Part Number",
+        "category": "Category",
+        "pricingType": "Pricing Type",
+        "pricingFactor": "Pricing Factor",
+        "costPrice": "Cost Price",
+        "listPrice": "List Price",
+        "unitPrice": "Unit Price",
+        "costPriceCurrency": "Cost Price Currency",
+        "listPriceCurrency": "List Price Currency",
+        "unitPriceCurrency": "Unit Price Currency",
+        "costPriceConverted": "Cost Price (Converted)",
+        "listPriceConverted": "List Price (Converted)",
+        "unitPriceConverted": "Unit Price (Converted)",
+        "url": "URL",
+        "isTaxFree": "Tax-free",
+        "weight": "Weight",
+        "suppliers": "Suppliers",
+        "unitPriceSelect": "Unit Price (Select)",
+        "unitPriceSelectCurrency": "Unit Price (Select) (Currency)",
+        "allowFractionalQuantity": "Allow Fractional Quantity",
+        "quantity": "Available",
+        "quantityReserved": "Reserved",
+        "quantitySoftReserved": "Soft-Reserved",
+        "quantityOnHand": "On Hand",
+        "quantityInTransit": "In Transit",
+        "quantityOnOrder": "On Order",
+        "quantityWarehouse": "Available in Warehouse",
+        "quantityWarehouseOnHand": "On Hand in Warehouse",
+        "quantityWarehouseReserved": "Reserved in Warehouse",
+        "qty": "Qty",
+        "isInventory": "Track Inventory",
+        "inventoryNumberType": "Inventory Number Type",
+        "warehousesOnHand": "Warehouses (On Hand)",
+        "type": "Type",
+        "template": "Template",
+        "attributes": "Attributes",
+        "variantAttributeOptions": "Attribute Values",
+        "variantOrder": "Variant Order",
+        "expirationDays": "Expiration Days",
+        "removalStrategy": "Removal Strategy",
+        "taxClasses": "Tax Classes",
+        "isSubscribable": "Subscribable",
+        "isSellable": "Sellable",
+        "isPurchasable": "Purchasable",
+        "itemType": "Item Type"
+    },
+    "links": {
+        "brand": "Brand",
+        "category": "Category",
+        "prices": "Prices",
+        "supplierPrices": "Supplier Prices",
+        "inventoryNumbers": "Inventory Numbers",
+        "inventoryTransactions": "Inventory Transactions",
+        "attributes": "Attributes",
+        "attributeOptions": "Attribute Options",
+        "variantAttributeOptions": "Variant Attribute Options",
+        "template": "Template",
+        "variants": "Variants",
+        "variantInventoryNumbers": "Variant Inventory Numbers",
+        "inventoryAdjustmentItems": "Adjustments",
+        "taxClasses": "Tax Classes"
+    },
+    "options": {
+        "status": {
+            "Available": "Active",
+            "Unavailable": "Inactive"
+        },
+        "itemType": {
+            "Goods": "Goods",
+            "Service": "Service"
+        },
+        "pricingType": {
+            "Same as List": "Same as List",
+            "Fixed": "Fixed",
+            "Discount from List": "Discount from List",
+            "Markup over Cost": "Markup over Cost",
+            "Profit Margin": "Profit Margin"
+        },
+        "inventoryNumberType": {
+            "Batch": "Batch",
+            "Serial": "Serial"
+        },
+        "type": {
+            "Regular": "Regular",
+            "Template": "Template",
+            "Variant": "Variant"
+        },
+        "removalStrategy": {
+            "FIFO": "FIFO",
+            "FEFO": "FEFO",
+            "LIFO": "LIFO"
+        }
+    },
+    "presetFilters": {
+        "available": "Active",
+        "inventory": "Inventory",
+        "allVariants": "All Variants",
+        "availableVariants": "Active Variants",
+        "subscribable": "Subscribable",
+        "sellable": "Sellable",
+        "purchasable": "Purchasable",
+        "invoiceable": "Invoiceable",
+        "availableGoods": "Goods"
+    },
+    "tabs": {
+        "inventory": "Inventory",
+        "prices": "Prices",
+        "variants": "Variants",
+        "template": "Template",
+        "orders": "Orders"
+    },
+    "messages": {
+        "generateVariantsConfirmation": "Generate all possible variant combinations?",
+        "variantsGenerated": "Done. {count} variants generated.",
+        "attributesRequired": "At least one attribute is required",
+        "optionsRequired": "Options are required"
+    },
+    "massActions": {
+        "updatePrice": "Update Price"
+    }
+}

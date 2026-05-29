@@ -658,33 +658,6 @@ class CreateContratto
             'importoContratto' =>
                 $amount,
 
-            'prezzoListinoIvaEsclusa' =>
-                $opportunity->get('prezzoListinoIvaEsclusa'),
-
-            'prezzoCodiceIvaEsclusa' =>
-                $opportunity->get('prezzoCodiceIvaEsclusa'),
-
-            'prezzoCodiceIvaInclusa' =>
-                $opportunity->get('prezzoCodiceIvaInclusa'),
-
-            'prezzoListinoIVAInclusa' =>
-                $opportunity->get('prezzoListinoIVAInclusa'),
-
-            'margineSuListino' =>
-                $this->resolveMargineSuListino($opportunity, $amount),
-
-            'contattoPersonaleArquati' =>
-                (bool) $opportunity->get('contattoPersonaleArquati'),
-
-            'integrazionePncPercentuale' =>
-                $opportunity->get('integrazionePncPercentuale'),
-
-            'ordineIncompletoAriel' =>
-                (bool) $opportunity->get('ordineIncompletoAriel'),
-
-            'minusPlus' =>
-                $this->resolveMinusPlusForQuote($opportunity, $amount, $accountForQuote),
-
             // =================================================
             // DATA
             // =================================================
@@ -1359,73 +1332,6 @@ class CreateContratto
         $this->entityManager->saveEntity($fresh, [
             'skipHooks' => true,
         ]);
-    }
-
-    private function resolveMinusPlusForQuote($opportunity, $amount, $account = null): ?float
-    {
-        $stored = $opportunity->get('minusPlus');
-
-        if ($stored !== null && $stored !== '') {
-            return round((float) $stored, 2);
-        }
-
-        $aliquota = 10.0;
-        $iva = $opportunity->get('iVA') ?? $opportunity->get('iVAListino');
-
-        if ($iva !== null && $iva !== '') {
-            $aliquota = (float) $iva;
-        }
-
-        $calculator = new \Espo\Custom\Services\QuotePricingCalculator($this->entityManager);
-
-        return $calculator->resolveMinusPlusFromValues(
-            $amount ? (float) $amount : null,
-            $this->floatOrNull($opportunity->get('prezzoCodiceIvaInclusa')),
-            $this->floatOrNull($opportunity->get('prezzoCodiceIvaEsclusa')),
-            $aliquota,
-            $this->isB2cAccount($account)
-        );
-    }
-
-    private function floatOrNull(mixed $value): ?float
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-
-        return (float) $value;
-    }
-
-    private function isB2cAccount($account): bool
-    {
-        if (!$account) {
-            return true;
-        }
-
-        if ($account->get('type') === 'B2C') {
-            return true;
-        }
-
-        $segmento = (string) $account->get('segmento');
-
-        return $segmento === 'B2C' || str_starts_with(strtoupper($segmento), 'B2C');
-    }
-
-    private function resolveMargineSuListino($opportunity, $amount): ?float
-    {
-        $stored = $opportunity->get('suPrezzoCodice');
-
-        if ($stored !== null && $stored !== '') {
-            return round((float) $stored, 2);
-        }
-
-        $listino = $opportunity->get('prezzoListinoIvaEsclusa');
-
-        if (!$amount || !$listino || (float) $listino <= 0) {
-            return null;
-        }
-
-        return round((((float) $amount - (float) $listino) / (float) $listino) * 100, 2);
     }
 
     private function buildContractDisplayName(

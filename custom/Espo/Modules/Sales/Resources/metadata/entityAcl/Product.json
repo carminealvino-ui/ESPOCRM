@@ -1,0 +1,28 @@
+{
+    "links": {
+        "prices": {
+            "readOnly": true
+        },
+        "supplierPrices": {
+            "readOnly": true
+        },
+        "inventoryTransactions": {
+            "readOnly": true
+        },
+        "attributes": {
+            "readOnly": true
+        },
+        "attributeOptions": {
+            "readOnly": true
+        },
+        "variantAttributeOptions": {
+            "readOnly": true
+        },
+        "variants": {
+            "readOnly": true
+        },
+        "inventoryAdjustmentItems": {
+            "readOnly": true
+        }
+    }
+}

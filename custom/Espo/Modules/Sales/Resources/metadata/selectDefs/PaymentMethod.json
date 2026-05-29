@@ -1,0 +1,7 @@
+{
+    "primaryFilterClassNameMap": {
+        "active": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentMethod\\PrimaryFilters\\Active",
+        "activeInbound": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentMethod\\PrimaryFilters\\ActiveInbound",
+        "activeOutbound": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentMethod\\PrimaryFilters\\ActiveOutbound"
+    }
+}

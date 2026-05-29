@@ -1,0 +1,10 @@
+[
+    {
+        "rows": [
+            [{"name": "name"}, {"name":"type", "readOnly": true}],
+            [{"name": "category"}, {"name": "entityType", "readOnly": true}],
+            [{"name": "joinedReports"}, {"name": "internalClassName"}],
+            [{"name": "description"}]
+        ]
+    }
+]

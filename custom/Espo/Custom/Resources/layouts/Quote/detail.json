@@ -16,18 +16,15 @@
             ],
             [
                 {
-                    "name": "fornitorePartner",
-                    "customLabel": "Fornitore / Partner"
+                    "name": "fornitorePartner"
                 },
                 {
-                    "name": "productBrand",
-                    "customLabel": "Brand"
+                    "name": "productBrand"
                 }
             ],
             [
                 {
-                    "name": "productCategory",
-                    "customLabel": "Categoria prodotto"
+                    "name": "productCategory"
                 }
             ],
             [
@@ -36,6 +33,9 @@
                 },
                 {
                     "name": "status"
+                },
+                {
+                    "name": "importoContratto"
                 }
             ],
             [
@@ -92,12 +92,6 @@
                 {
                     "name": "isTaxInclusive"
                 }
-            ],
-            [
-                {
-                    "name": "importoContratto"
-                },
-                false
             ]
         ],
         "style": "default",

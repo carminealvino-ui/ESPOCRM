@@ -1,0 +1,8 @@
+{
+    "accountLink": "account",
+    "linkCheckerClassNameMap": {
+        "supplier": "Espo\\Modules\\Sales\\Classes\\Acl\\ReceiptOrder\\LinkCheckers\\SupplierChecker",
+        "shippingContact": "Espo\\Modules\\Sales\\Classes\\Acl\\ReceiptOrder\\LinkCheckers\\ShippingContactChecker",
+        "shippingProvider": "Espo\\Modules\\Sales\\Classes\\Acl\\ReceiptOrder\\LinkCheckers\\ShippingProviderChecker"
+    }
+}

@@ -1,0 +1,163 @@
+{
+    "fields": {
+        "number": {
+            "type": "autoincrement",
+            "index": true,
+            "dbType": "bigint",
+            "readOnly": true,
+            "customizationDisabled": true
+        },
+        "amount": {
+            "type": "currency",
+            "decimal": true,
+            "min": 0,
+            "required": true,
+            "readOnly": true,
+            "conversionDisabled": true
+        },
+        "amountLocal": {
+            "type": "currency",
+            "decimal": true,
+            "min": 0,
+            "readOnly": true,
+            "conversionDisabled": true
+        },
+        "fxGainLoss": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "decimalPlaces": 3,
+            "precision": 13,
+            "scale": 3,
+            "readOnly": true,
+            "view": "modules/sales/views/invoice/fields/grand-total-amount-local"
+        },
+        "creditNote": {
+            "type": "link",
+            "readOnlyAfterCreate": true
+        },
+        "dateIssued": {
+            "type": "foreign",
+            "link": "creditNote",
+            "field": "dateIssued",
+            "view": "views/fields/foreign-date"
+        },
+        "paymentEntry": {
+            "type": "link",
+            "readOnlyAfterCreate": true
+        },
+        "writeOffEntry": {
+            "type": "link",
+            "readOnlyAfterCreate": true
+        },
+        "date": {
+            "type": "date",
+            "readOnly": true
+        },
+        "datePaid": {
+            "type": "foreign",
+            "link": "paymentEntry",
+            "field": "datePaid",
+            "view": "views/fields/foreign-date"
+        },
+        "sourceDate": {
+            "type": "date",
+            "notStorable": true,
+            "select": {
+                "select": "COALESCE:(creditNote.dateIssued, paymentEntry.datePaid, writeOffEntry.date, supplierCredit.dateIssued)",
+                "leftJoins": [
+                    ["creditNote"],
+                    ["paymentEntry"],
+                    ["writeOffEntry"],
+                    ["supplierCredit"]
+                ]
+            },
+            "order": {
+                "order": [
+                    ["COALESCE:(creditNote.dateIssued, paymentEntry.datePaid, writeOffEntry.date, supplierCredit.dateIssued)", "{direction}"]
+                ],
+                "leftJoins": [
+                    ["creditNote"],
+                    ["paymentEntry"],
+                    ["writeOffEntry"],
+                    ["supplierCredit"]
+                ]
+            },
+            "readOnly": true
+        },
+        "source": {
+            "type": "base",
+            "notStorable": true,
+            "readOnlyAfterCreate": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true,
+            "view": "modules/sales/views/payment-allocation/fields/source"
+        },
+        "target": {
+            "type": "linkParent",
+            "readOnlyAfterCreate": true,
+            "required": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "paymentEntry": {
+            "type": "belongsTo",
+            "entity": "PaymentEntry",
+            "foreign": "allocations",
+            "foreignName": "number"
+        },
+        "writeOffEntry": {
+            "type": "belongsTo",
+            "entity": "WriteOffEntry",
+            "foreign": "allocations",
+            "foreignName": "number"
+        },
+        "creditNote": {
+            "type": "belongsTo",
+            "entity": "CreditNote",
+            "foreign": "allocations"
+        },
+        "supplierCredit": {
+            "type": "belongsTo",
+            "entity": "SupplierCredit",
+            "foreign": "allocations"
+        },
+        "target": {
+            "type": "belongsToParent",
+            "entityList": [
+                "Invoice",
+                "CreditNote",
+                "SupplierBill",
+                "SupplierCredit"
+            ],
+            "foreign": "paymentAllocations"
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "number",
+        "order": "desc"
+    }
+}

@@ -1,0 +1,26 @@
+{
+    "controller": "controllers/record",
+    "viewSetupHandlers": {
+        "list": ["sales:handlers/info"]
+    },
+    "relationshipPanels": {
+        "product": {
+            "selectPrimaryFilterName": "inventory",
+            "createDisabled": true
+        },
+        "inventoryNumber": {
+            "selectHandler": "sales:handlers/inventory-transaction/select-inventory-number"
+        }
+    },
+    "inlineEditDisabled": true,
+    "massUpdateDisabled": true,
+    "convertCurrencyDisabled": true,
+    "mergeDisabled": true,
+    "layoutMassUpdateDisabled": true,
+    "layoutBottomPanelsDetailDisabled": true,
+    "layoutSidePanelsDetailDisabled": true,
+    "layoutSidePanelsEditDisabled": true,
+    "layoutSidePanelsDetailSmallDisabled": true,
+    "layoutSidePanelsEditSmallDisabled": true,
+    "iconClass": "fas fa-retweet"
+}

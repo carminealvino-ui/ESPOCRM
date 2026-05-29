@@ -39,43 +39,6 @@ class BeforeSave implements BeforeSaveHook
         if ((string) $entity->get('name') !== $target) {
             $entity->set('name', $target);
         }
-
-        $this->syncPrezzoCodiceIvaInclusa($entity);
-    }
-
-    /**
-     * Mantiene prezzo codice IVI (minus/plus B2C) allineato al netto su scheda prodotto.
-     */
-    private function syncPrezzoCodiceIvaInclusa(Entity $entity): void
-    {
-        if (!$entity->hasAttribute('prezzoCodiceIvaInclusa')) {
-            return;
-        }
-
-        $aliquota = 10.0;
-        $net = $entity->get('prezzoCodice');
-        $ivi = $entity->get('prezzoCodiceIvaInclusa');
-
-        if ($entity->isAttributeChanged('prezzoCodiceIvaInclusa')
-            && $ivi !== null
-            && $ivi !== ''
-            && !$entity->isAttributeChanged('prezzoCodice')) {
-            $entity->set('prezzoCodice', round((float) $ivi / (1 + $aliquota / 100), 2));
-
-            return;
-        }
-
-        if ($net === null || $net === '') {
-            return;
-        }
-
-        if ($entity->isAttributeChanged('prezzoCodice')
-            || !$entity->get('prezzoCodiceIvaInclusa')) {
-            $entity->set(
-                'prezzoCodiceIvaInclusa',
-                round((float) $net * (1 + $aliquota / 100), 2)
-            );
-        }
     }
 
     private function resolveLinkedName(

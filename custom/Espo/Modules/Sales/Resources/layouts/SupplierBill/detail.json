@@ -1,0 +1,33 @@
+[
+    {
+        "label": "Overview",
+        "rows": [
+            [{"name": "number"}, {"name": "supplier"}],
+            [{"name": "status"}, {"name": "purchaseOrder"}],
+            [{"name": "grandTotalAmount"}, false],
+            [{"name": "dateInvoiced"}, {"name": "dateDue"}]
+
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "reference"}, {"name": "document"}]
+        ]
+    },
+    {
+        "label": "Details",
+        "rows": [
+            [{"name": "supplierAddress"}, {"name": "billingContact"}]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "tax"}, {"name": "shippingProvider"}]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "description"}]
+        ]
+    }
+]

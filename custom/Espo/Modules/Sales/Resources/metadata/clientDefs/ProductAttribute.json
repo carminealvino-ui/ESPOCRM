@@ -1,0 +1,26 @@
+{
+    "controller": "controllers/record",
+    "recordViews": {
+        "list": "sales:views/product-attribute/record/list"
+    },
+    "massRemoveDisabled": true,
+    "massUpdateDisabled": true,
+    "mergeDisabled": true,
+    "relationshipPanels": {
+        "options": {
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "view": "sales:views/product-attribute/record/panels/options",
+            "recordListView": "sales:views/product-attribute-option/record/list-for-attribute",
+            "rowActionsView": "sales:views/product-attribute/record/row-actions/default",
+            "orderBy": "order",
+            "orderDirection": "asc",
+            "layout": "listForAttribute"
+        },
+        "products": {
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "createDisabled": true
+        }
+    }
+}

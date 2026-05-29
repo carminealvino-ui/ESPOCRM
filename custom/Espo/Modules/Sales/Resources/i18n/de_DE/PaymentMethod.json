@@ -1,0 +1,33 @@
+{
+  "labels": {
+    "Create PaymentMethod": "Art erstellen"
+  },
+  "fields": {
+    "channel": "Kanal",
+    "instructions": "Anweisungen",
+    "accounts": "Firmen",
+    "provider": "Anbieter",
+    "isInbound": "Eingehend",
+    "isOutbound": "Ausgehend"
+  },
+  "links": {
+    "paymentEntries": "Zahlungen",
+    "requests": "Zahlungsaufforderungen",
+    "channel": "Kanal",
+    "invoices": "Rechnungen",
+    "accounts": "Firmen",
+    "subscriptions": "Abonnements"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  },
+  "tooltips": {
+    "instructions": "Text, der dem Kunden auf der Zahlungsseite angezeigt wird.\n\nVerfügbare Platzhalter:\n* `{number}` – Zahlungsaufforderungnummer\n* `{invoiceNumbers}` – Rechnungsnummern"
+  }
+}

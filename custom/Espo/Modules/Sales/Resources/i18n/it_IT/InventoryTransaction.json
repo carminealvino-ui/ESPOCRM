@@ -1,0 +1,27 @@
+{
+  "labels": {
+    "Create InventoryTransaction": "Crea transazione"
+  },
+  "fields": {
+    "number": "Numero",
+    "type": "Tipo",
+    "parent": "Genitore",
+    "quantity": "Quantità",
+    "product": "Prodotto",
+    "warehouse": "Magazzino",
+    "inventoryNumber": "Numero di inventario"
+  },
+  "links": {
+    "parent": "Genitore",
+    "product": "Prodotto",
+    "warehouse": "Magazzino",
+    "inventoryNumber": "Numero di inventario"
+  },
+  "options": {
+    "type": {
+      "Transfer": "Trasferimento",
+      "Reserve": "Prenota",
+      "Soft Reserve": "Riserva provvisoria"
+    }
+  }
+}

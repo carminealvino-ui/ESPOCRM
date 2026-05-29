@@ -1,0 +1,6 @@
+{
+  "fields": {
+    "accountHolder": "Kontoinhaber",
+    "creditorIdentifier": "Gläubiger-Identifikationsnummer"
+  }
+}

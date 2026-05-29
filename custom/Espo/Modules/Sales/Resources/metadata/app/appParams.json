@@ -1,0 +1,17 @@
+{
+    "defaultTaxRateQuote": {
+        "className": "Espo\\Modules\\Sales\\AppParams\\DefaultTaxRateQuote"
+    },
+    "defaultTaxRateSalesOrder": {
+        "className": "Espo\\Modules\\Sales\\AppParams\\DefaultTaxRateSalesOrder"
+    },
+    "defaultTaxRateInvoice": {
+        "className": "Espo\\Modules\\Sales\\AppParams\\DefaultTaxRateInvoice"
+    },
+    "defaultTaxRatePurchaseOrder": {
+        "className": "Espo\\Modules\\Sales\\AppParams\\DefaultTaxRatePurchaseOrder"
+    },
+    "salesParams": {
+        "className": "Espo\\Modules\\Sales\\AppParams\\SalesParams"
+    }
+}

@@ -1,11 +1,5 @@
 /* global define */
 
-/**
- * NON registrare in clientDefs finche' non serve.
- * Uso: recordViews.editSmall in Appuntamento.json
- *
- * Applica durata 1h30 solo se diversa da quella attuale (evita loop UI).
- */
 define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record/edit-small'], function (MeetingEditSmallModule) {
 
     const Parent = MeetingEditSmallModule.default || MeetingEditSmallModule;
@@ -20,16 +14,18 @@ define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record
                 return;
             }
 
+            this.listenTo(this.model, 'change:dateStart', () => {
+                this.applyDefaultDuration();
+            });
+
             this.once('after:render', () => {
-                this.applyDefaultDurationOnce();
+                this.applyDefaultDuration();
+                setTimeout(() => this.applyDefaultDuration(), 0);
+                setTimeout(() => this.applyDefaultDuration(), 150);
             });
         }
 
-        applyDefaultDurationOnce() {
-            if (this._defaultDurationApplied) {
-                return;
-            }
-
+        applyDefaultDuration() {
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
             }
@@ -40,27 +36,14 @@ define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record
                 return;
             }
 
-            const dateEnd = this.getExpectedDateEnd(dateStart);
-            const currentEnd = this.model.get('dateEnd');
-
-            if (currentEnd === dateEnd) {
-                this._defaultDurationApplied = true;
-
-                return;
-            }
-
-            this._defaultDurationApplied = true;
+            const dateEnd = this.getDateTime()
+                .toMoment(dateStart)
+                .add(DEFAULT_DURATION_SECONDS, 'seconds')
+                .format(this.getDateTime().internalDateTimeFormat);
 
             this.model.set({
                 dateEnd: dateEnd,
             }, {updatedByDuration: true});
-        }
-
-        getExpectedDateEnd(dateStart) {
-            return this.getDateTime()
-                .toMoment(dateStart)
-                .add(DEFAULT_DURATION_SECONDS, 'seconds')
-                .format(this.getDateTime().internalDateTimeFormat);
         }
     };
 });

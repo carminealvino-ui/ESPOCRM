@@ -1,0 +1,26 @@
+{
+    "fields": {
+        "entity": {
+            "type": "linkParent"
+        },
+        "contactId": {
+            "type": "varchar",
+            "maxLength": 230,
+            "index": true
+        },
+        "outlookUserId": {
+            "type": "varchar",
+            "maxLength": 230,
+            "index": true
+        },
+        "user": {
+            "type": "link"
+        }
+    },
+    "links": {
+        "user": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    }
+}

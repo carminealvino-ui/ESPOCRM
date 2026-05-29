@@ -1,0 +1,8 @@
+{
+  "labels": {
+    "Create Tax": "Vytvořit daň"
+  },
+  "fields": {
+    "rate": "Sazba"
+  }
+}

@@ -1,0 +1,30 @@
+{
+    "fields": {
+        "name": "Nosaukums",
+        "qty": "Daudzums",
+        "quantity": "Daudzums",
+        "quantityInt": "Daudzums (Int)",
+        "unitPrice": "Vienības cena",
+        "amount": "Summa",
+        "amountCurrency": "Summa (valūta)",
+        "unitPriceCurrency": "Vienības cena (valūta)",
+        "product": "Produkts",
+        "order": "Līnijas numurs",
+        "opportunity": "Iespēja",
+        "description": "Apraksts",
+        "amountConverted": "Summa (konvertētā)",
+        "unitPriceConverted": "Vienības cena (konvertēta)",
+        "opportunityStage": "Posms",
+        "listPriceConverted": "Saraksta cena (konvertēta)",
+        "listPrice": "Saraksta cena",
+        "listPriceCurrency": "Saraksta cena Valūta",
+        "discount": "Atlaide (%)"
+    },
+    "links": {
+        "opportunity": "Iespēja",
+        "product": "Produkts"
+    },
+    "labels": {
+        "Opportunities": "Iespējas"
+    }
+}

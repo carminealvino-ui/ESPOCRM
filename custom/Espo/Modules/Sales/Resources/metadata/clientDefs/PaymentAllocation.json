@@ -1,0 +1,10 @@
+{
+    "controller": "controllers/record",
+    "acl": "modules/sales/acl/payment-allocation",
+    "nameAttribute": "number",
+    "viewSetupHandlers": {
+        "record/detail": [
+            "modules/sales/handlers/payment-allocation/setup-record-detail"
+        ]
+    }
+}

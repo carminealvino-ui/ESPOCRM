@@ -1,0 +1,36 @@
+{
+    "options": {
+        "calendarDirection": {
+            "": "None",
+            "EspoToOutlook": "Espo to Microsoft",
+            "OutlookToEspo": "Microsoft to Espo",
+            "Both": "Two-way"
+        }
+    },
+    "messages": {
+        "disconnectConfirmation": "Do you really want to disconnect?",
+        "noOutlookPanels": "No Microsoft services available."
+    },
+    "fields": {
+        "calendarStartDate": "Sync since",
+        "calendarEntityTypes": "Sync Entities and Identification Labels",
+        "calendarDirection": "Direction",
+        "calendarMonitoredCalendars": "Other Calendars",
+        "calendarMainCalendar": "Main Calendar",
+        "calendarDefaultEntity": "Default Entity",
+        "contactsGroups": "Add Contacts to Groups",
+        "dontSyncEventAttendees": "Don't sync event attendees",
+        "removeOutlookCalendarEventIfRemovedInEspo": "Remove Microsoft event upon removal in EspoCRM",
+        "contactFolder": "Contacts Folder",
+        "calendarCreateContacts": "Create contacts for attendees in EspoCRM",
+        "calendarSkipPrivate": "Don't sync private events",
+        "calendarDontPushPastEvents": "Don't push old events to Microsoft",
+        "calendarSyncAttendees": "Sync attendees from Espo to Microsoft"
+    },
+    "tooltips": {
+        "calendarEntityTypes": "For type recognizing event name has to start from identification label. Label for default entity can be empty. Recommendation: Do not change identification labels after you saved sync setting",
+        "calendarDefaultEntity": "Unrecognized Event will be loaded as selected entity.",
+        "calendarDontPushPastEvents": "If checked, only recently created events will be pushed to Microsoft.",
+        "calendarSyncAttendees": "In enabled, attendees of meetings and calls created in Espo will be synced to Microsoft.\n\nAttendees are always synced if an online meeting is created regardless of the parameter value.\n\nUser attendees are always synced regardless of the parameter value."
+    }
+}

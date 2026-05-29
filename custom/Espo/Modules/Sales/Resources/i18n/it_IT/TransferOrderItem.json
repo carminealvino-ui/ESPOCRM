@@ -1,0 +1,26 @@
+{
+  "fields": {
+    "name": "Nome",
+    "qty": "Quantità",
+    "qtyReceived": "Qtà RCV",
+    "quantity": "Quantità",
+    "quantityInt": "Quantità (Int)",
+    "quantityReceived": "Quantità ricevuta",
+    "quantityReceivedInt": "Quantità ricevuta (int)",
+    "product": "Prodotto",
+    "order": "Numero di riga",
+    "transferOrder": "Ordine di trasferimento",
+    "weight": "Peso",
+    "unitWeight": "Peso unitario",
+    "description": "Descrizione",
+    "transferOrderStatus": "Stato dell'ordine di trasferimento",
+    "inventoryNumber": "Numero di inventario",
+    "inventoryNumberType": "Tipologia di codice inventario",
+    "isInventory": "È un articolo di magazzino"
+  },
+  "links": {
+    "transferOrder": "Ordine di trasferimento",
+    "product": "Prodotto",
+    "inventoryNumber": "Numero di inventario"
+  }
+}

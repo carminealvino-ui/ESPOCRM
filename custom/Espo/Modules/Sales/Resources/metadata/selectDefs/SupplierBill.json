@@ -1,0 +1,40 @@
+{
+    "primaryFilterClassNameMap": {
+        "actual": "Espo\\Modules\\Sales\\Classes\\Select\\SupplierBill\\PrimaryFilters\\Actual",
+        "paid": "Espo\\Modules\\Sales\\Classes\\Select\\SupplierBill\\PrimaryFilters\\Paid",
+        "openIssued": "Espo\\Modules\\Sales\\Classes\\Select\\SupplierBill\\PrimaryFilters\\OpenIssued",
+        "issued": "Espo\\Modules\\Sales\\Classes\\Select\\General\\PrimaryFilters\\Issued"
+    },
+    "additionalApplierClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\AdditionalAppliers\\AmountDue"
+    ],
+    "whereItemConverterClassNameMap": {
+        "productsIds_arrayAnyOf": "Espo\\Modules\\Sales\\Classes\\Select\\Quote\\WhereItemConverters\\Products",
+        "productsIds_arrayAllOf": "Espo\\Modules\\Sales\\Classes\\Select\\Quote\\WhereItemConverters\\Products",
+        "amountDue_greaterThan": "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\WhereItemConverters\\AmountDue",
+        "amountDue_greaterThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\WhereItemConverters\\AmountDue",
+        "amountDue_lessThan": "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\WhereItemConverters\\AmountDue",
+        "amountDue_lessThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\WhereItemConverters\\AmountDue",
+        "amountDue_equals": "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\WhereItemConverters\\AmountDue",
+        "amountDue_notEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\WhereItemConverters\\AmountDue",
+        "amountDue_isNull": "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\WhereItemConverters\\AmountDue",
+        "amountDue_isNotNull": "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\WhereItemConverters\\AmountDue",
+        "amountDue_between": "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\WhereItemConverters\\AmountDue"
+    },
+    "selectAttributesDependencyMap": {
+        "dateDue": [
+            "isDone",
+            "isNotActual"
+        ],
+        "grandTotalAmountLocal": [
+            "amountLocalCurrency"
+        ],
+        "shippingAmountLocal": [
+            "amountLocalCurrency"
+        ],
+        "amountDue": [
+            "grandTotalAmount",
+            "amountCurrency"
+        ]
+    }
+}

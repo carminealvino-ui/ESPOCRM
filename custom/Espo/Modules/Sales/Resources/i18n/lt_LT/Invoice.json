@@ -1,0 +1,74 @@
+{
+    "labels": {
+        "Create Invoice": "Sukurti sąskaitą faktūrą",
+        "Taxes": "Mokesčiai",
+        "Shipping Providers": "Pristatymo paslaugų teikėjai",
+        "Add Item": "Pridėti elementą",
+        "Templates": "Šablonai",
+        "Items": "Prekės",
+        "Invoice Items": "Sąskaitos faktūros elementai"
+    },
+    "fields": {
+        "status": "Statusas",
+        "number": "Numeris",
+        "numberA": "Skaičius (automatiškai didinamas)",
+        "account": "Sąskaita",
+        "opportunity": "Galimybė",
+        "quote": "Citata",
+        "salesOrder": "Pardavimo užsakymas",
+        "billingAddress": "Atsiskaitymo adresas",
+        "shippingAddress": "Pristatymo adresas",
+        "billingContact": "Atsiskaitymo kontaktinis asmuo",
+        "shippingContact": "Pristatymas Kontaktai",
+        "tax": "Mokesčiai",
+        "taxRate": "Mokesčių tarifas",
+        "shippingCost": "Pristatymo išlaidos",
+        "shippingProvider": "Pristatymo paslaugų teikėjas",
+        "taxAmount": "Mokesčių suma",
+        "discountAmount": "Nuolaidos suma",
+        "amount": "Suma",
+        "preDiscountedAmount": "Išankstinė nuolaidos suma",
+        "grandTotalAmount": "Bendra suma",
+        "itemList": "Elementų sąrašas",
+        "dateInvoiced": "Sąskaitos faktūros išrašymo data",
+        "weight": "Svoris",
+        "amountConverted": "Suma (konvertuota)",
+        "taxAmountConverted": "Mokesčio suma (perskaičiuota)",
+        "shippingCostConverted": "Pristatymo išlaidos (perskaičiuotos)",
+        "preDiscountedAmountConverted": "Suma prieš nuolaidą (perskaičiuota)",
+        "discountAmountConverted": "Diskonto suma (konvertuota)",
+        "grandTotalAmountConverted": "Bendra suma (perskaičiuota)",
+        "shippingCostCurrency": "Pristatymo išlaidos Valiuta",
+        "taxAmountCurrency": "Mokesčio suma Valiuta",
+        "discountAmountCurrency": "Diskonto suma Valiuta",
+        "amountCurrency": "Suma Valiuta",
+        "preDiscountedAmountCurrency": "Suma prieš nuolaidą Valiuta",
+        "grandTotalAmountCurrency": "Bendra suma Valiuta",
+        "currency": "Valiuta"
+    },
+    "links": {
+        "items": "Prekės",
+        "billingContact": "Atsiskaitymo kontaktinis asmuo",
+        "shippingContact": "Pristatymas Kontaktai",
+        "shippingProvider": "Pristatymo paslaugų teikėjas",
+        "opportunity": "Galimybė",
+        "account": "Sąskaita",
+        "tax": "Mokesčiai",
+        "quote": "Citata",
+        "salesOrder": "Pardavimo užsakymas"
+    },
+    "options": {
+        "status": {
+            "Draft": "Projektas",
+            "In Review": "Apžvalga",
+            "Confirmed": "Patvirtinta",
+            "Paid": "Apmokėta",
+            "Rejected": "Atmesta",
+            "Canceled": "Atšauktas"
+        }
+    },
+    "presetFilters": {
+        "actual": "Tikrasis",
+        "paid": "Apmokėta"
+    }
+}

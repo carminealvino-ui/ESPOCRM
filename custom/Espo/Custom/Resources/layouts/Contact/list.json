@@ -1,0 +1,33 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "accounts",
+        "width": 16,
+        "notSortable": true
+    },
+    {
+        "name": "accountType",
+        "width": 16
+    },
+    {
+        "name": "originalLead",
+        "width": 16
+    },
+    {
+        "name": "emailAddress",
+        "width": 20,
+        "notSortable": true
+    },
+    {
+        "name": "phoneNumber",
+        "width": 18,
+        "notSortable": true
+    },
+    {
+        "name": "doNotCall",
+        "width": 16
+    }
+]

@@ -1,0 +1,48 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "number"
+                },
+                {
+                    "name": "account"
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "invoices"
+                }
+            ],
+            [
+                {
+                    "name": "expirationDate"
+                },
+                false
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "method"
+                },
+                {
+                    "name": "amount"
+                }
+            ],
+            [
+                {
+                    "name": "paymentUrl"
+                },
+                {
+                    "name": "referenceId"
+                }
+            ]
+        ]
+    }
+]

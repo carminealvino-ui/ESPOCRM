@@ -1,0 +1,109 @@
+{
+    "WireTransfer": {
+        "entityType": "PaymentChannelWireTransfer",
+        "record": {
+            "view": null,
+            "layout": [
+                {
+                    "rows": [
+                        [
+                            {
+                                "name": "accountHolder"
+                            },
+                            false
+                        ],
+                        [
+                            {
+                                "name": "iban"
+                            },
+                            {
+                                "name": "accountNumber"
+                            }
+                        ],
+                        [
+                            {
+                                "name": "bic"
+                            },
+                            {
+                                "name": "bankCode"
+                            }
+                        ],
+                        [
+                            {
+                                "name": "bankName"
+                            },
+                            {
+                                "name": "bankAddress"
+                            }
+                        ]
+                    ]
+                }
+            ]
+        },
+        "paymentLink": {
+            "dataProviderClassName": "Espo\\Modules\\Sales\\Tools\\PaymentRequest\\WireTransfer\\WireTransferPaymentLinkDataProvider",
+            "view": "modules/sales/views/payment-channel-wire-transfer/link"
+        }
+    },
+    "SepaCreditTransfer": {
+        "entityType": "PaymentChannelSepaCreditTransfer",
+        "record": {
+            "view": null,
+            "layout": [
+                {
+                    "rows": [
+                        [
+                            {
+                                "name": "accountHolder"
+                            },
+                            false
+                        ],
+                        [
+                            {
+                                "name": "iban"
+                            },
+                            false
+                        ],
+                        [
+                            {
+                                "name": "bic"
+                            },
+                            false
+                        ]
+                    ]
+                }
+            ]
+        },
+        "paymentLink": {
+            "dataProviderClassName": "Espo\\Modules\\Sales\\Tools\\PaymentRequest\\SepaCreditTransfer\\SepaCreditTransferPaymentLinkDataProvider",
+            "view": "modules/sales/views/payment-channel-wire-transfer/link"
+        }
+    },
+    "SepaDirectDebit": {
+        "entityType": "PaymentChannelSepaDirectDebit",
+        "record": {
+            "view": null,
+            "layout": [
+                {
+                    "rows": [
+                        [
+                            {
+                                "name": "creditorIdentifier"
+                            },
+                            {
+                                "name": "accountHolder"
+                            }
+                        ],
+                        [
+                            {
+                                "name": "iban"
+                            },
+                            false
+                        ]
+                    ]
+                }
+            ]
+        },
+        "paymentLink": {}
+    }
+}

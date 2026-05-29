@@ -1,0 +1,32 @@
+{
+    "stream": false,
+    "disabled": true,
+    "statusField": null,
+    "kanbanStatusIgnoreList": null,
+    "stars": false,
+    "preserveAuditLog": true,
+    "collaborators": false,
+    "assignedUsers": false,
+    "doneStatusList": [
+        "Completed"
+    ],
+    "canceledStatusList": [
+        "Canceled"
+    ],
+    "lockableFieldList": [
+        "status",
+        "itemList",
+        "receivedItemList",
+        "number",
+        "dateOrdered",
+        "dateReceived",
+        "account",
+        "supplier",
+        "purchaseOrder",
+        "returnOrder",
+        "warehouse",
+        "shippingContact",
+        "shippingProvider",
+        "shippingCost"
+    ]
+}

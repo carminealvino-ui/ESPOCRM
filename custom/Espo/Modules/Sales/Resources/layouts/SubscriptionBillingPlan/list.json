@@ -1,0 +1,18 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "interval",
+        "width": 15
+    },
+    {
+        "name": "billingCycleLength",
+        "width": 15
+    }
+]

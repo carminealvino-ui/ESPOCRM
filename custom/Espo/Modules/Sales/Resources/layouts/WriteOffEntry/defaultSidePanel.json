@@ -1,0 +1,14 @@
+[
+    {
+        "name": "teams"
+    },
+    {
+        "name": "postingDate"
+    },
+    {
+        "name": "isIssued"
+    },
+    {
+        "name": "isLocked"
+    }
+]

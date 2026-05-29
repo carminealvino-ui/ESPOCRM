@@ -1,0 +1,17 @@
+{
+  "fields": {
+    "qty": "Qtà",
+    "quantity": "Quantità",
+    "quantityInt": "Quantità (int)",
+    "product": "Prodotto",
+    "order": "Numero riga",
+    "subscriptionTemplate": "Modello abbonamento",
+    "subscriptionTemplateStatus": "Stato modello abbonamento",
+    "fixedQuantity": "Quantità fissa",
+    "description": "Descrizione",
+    "fixedQty": "Qtà fissa"
+  },
+  "links": {
+    "subscriptionTemplate": "Modello abbonamento"
+  }
+}

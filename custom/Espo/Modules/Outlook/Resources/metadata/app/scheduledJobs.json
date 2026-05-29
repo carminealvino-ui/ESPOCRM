@@ -1,0 +1,7 @@
+{
+    "OutlookJob": {
+        "isSystem": true,
+        "scheduling": "10 2 * * *",
+        "jobClassName": "Espo\\Modules\\Outlook\\Classes\\App\\Job"
+    }
+}

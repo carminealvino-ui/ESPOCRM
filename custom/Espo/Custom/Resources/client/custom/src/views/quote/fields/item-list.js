@@ -1,17 +1,33 @@
-// Contratto: «Crea prodotto» a sinistra del + (come implementazione originale item-list).
+// ========================================
+// VERSIONE: 1.1.0
+// DATA: 2026-05-26
+// FILE: custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
+// ========================================
+
+/* global define */
+
 define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-list'], function (Dep) {
 
     return Dep.extend({
+        events: {
+            'click .btn-group .dropdown-toggle': function () {
+                setTimeout(function () {
+                    this.injectCreateProductMenuItem();
+                }.bind(this), 0);
+            },
+        },
 
         setup: function () {
             Dep.prototype.setup.call(this);
 
             this.dropdownItemList = this.dropdownItemList || [];
 
-            if (!this.dropdownItemList.some(function (item) {
+            var hasCreateProductAction = this.dropdownItemList.some(function (item) {
                 return item && item.name === 'createProductDirect';
-            })) {
-                var idx = this.dropdownItemList.findIndex(function (item) {
+            });
+
+            if (!hasCreateProductAction) {
+                var addProductsIndex = this.dropdownItemList.findIndex(function (item) {
                     return item && item.name === 'addProducts';
                 });
 
@@ -20,8 +36,8 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                     label: 'Crea prodotto',
                 };
 
-                if (idx >= 0) {
-                    this.dropdownItemList.splice(idx + 1, 0, menuItem);
+                if (addProductsIndex >= 0) {
+                    this.dropdownItemList.splice(addProductsIndex + 1, 0, menuItem);
                 } else {
                     this.dropdownItemList.unshift(menuItem);
                 }
@@ -33,8 +49,11 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 options = options || {};
 
                 var viewStr = typeof view === 'string' ? view : '';
+                var isSelectRecords = viewStr.indexOf('select-records') !== -1;
 
-                if (viewStr.indexOf('select-records') !== -1) {
+                // Nel contesto item-list del contratto, la modale select-records
+                // viene usata per i prodotti: forziamo scope Product.
+                if (isSelectRecords) {
                     options.entityType = 'Product';
                     options.scope = 'Product';
                     options.createButton = true;
@@ -43,64 +62,93 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
 
                 return originalCreateView(name, view, options, callback);
             };
+
+            this._onDocumentClick = function () {
+                setTimeout(function () {
+                    this.injectCreateProductMenuItemGlobal();
+                }.bind(this), 0);
+            }.bind(this);
+
+            $(document).on('click.create-product-menu-' + this.cid, this._onDocumentClick);
+        },
+
+        onRemove: function () {
+            if (this._onDocumentClick) {
+                $(document).off('click.create-product-menu-' + this.cid, this._onDocumentClick);
+            }
+
+            Dep.prototype.onRemove.call(this);
         },
 
         actionCreateProductDirect: function () {
-            this.openCreateProductModal();
+            this.openCreateArticleModal();
         },
 
         afterRender: function () {
             Dep.prototype.afterRender.call(this);
 
-            if (this.mode === 'list' || this.mode === 'listLinked') {
+            if (this.mode !== 'edit') {
                 return;
             }
 
-            this.injectCreateProductButton();
+            this.injectCreateArticleButton();
             setTimeout(function () {
-                this.injectCreateProductButton();
+                this.injectCreateArticleButton();
                 this.injectCreateProductMenuItem();
+                this.injectCreateProductMenuItemGlobal();
             }.bind(this), 200);
 
-            if (!this._buttonObserver) {
-                this._buttonObserver = new MutationObserver(function () {
-                    this.injectCreateProductButton();
-                    this.injectCreateProductMenuItem();
-                }.bind(this));
-                this._buttonObserver.observe(this.el, { childList: true, subtree: true });
-            }
+            this.bindButtonObserver();
+            this.injectCreateProductMenuItem();
+            this.injectCreateProductMenuItemGlobal();
         },
 
-        injectCreateProductButton: function () {
-            if (this.$el.find('.btn-create-product').length) {
+        bindButtonObserver: function () {
+            if (this._buttonObserver) {
+                return;
+            }
+
+            this._buttonObserver = new MutationObserver(function () {
+                this.injectCreateArticleButton();
+                this.injectCreateProductMenuItem();
+                this.injectCreateProductMenuItemGlobal();
+            }.bind(this));
+
+            this._buttonObserver.observe(this.el, { childList: true, subtree: true });
+        },
+
+        injectCreateArticleButton: function () {
+            if (this.$el.find('.btn-create-article').length) {
                 return;
             }
 
             var $anchorGroup = this.$el.find('.btn-group').first();
+            var $container = $anchorGroup.length ? $anchorGroup.parent() : this.$el;
 
             var $button = $('<button>')
                 .attr('type', 'button')
-                .addClass('btn btn-primary btn-sm btn-create-product')
-                .css('margin-right', '8px')
+                .addClass('btn btn-primary btn-sm btn-create-article')
+                .css('margin-left', '8px')
                 .append($('<span>').addClass('fas fa-plus'))
-                .append(document.createTextNode(' Crea prodotto'));
-
-            this.listenToDom($button, 'click', function (e) {
-                e.preventDefault();
-                this.openCreateProductModal();
-            }.bind(this));
+                .append(document.createTextNode(' Crea articolo'));
 
             if ($anchorGroup.length) {
-                $anchorGroup.before($button);
+                $anchorGroup.after($button);
             } else {
-                var $bar = $('<div class="mec-item-list-actions" style="margin-bottom:8px;"></div>');
-                $bar.append($button);
-                this.$el.prepend($bar);
+                $container.append($button);
             }
+
+            this.listenToDom($button, 'click', function () {
+                this.openCreateArticleModal();
+            }.bind(this));
         },
 
         injectCreateProductMenuItem: function () {
-            var $menus = this.$el.find('.dropdown-menu:visible');
+            var $menus = this.$el.find('.dropdown.open .dropdown-menu:visible');
+
+            if (!$menus.length) {
+                $menus = this.$el.find('.dropdown-menu');
+            }
 
             if (!$menus.length) {
                 return;
@@ -110,6 +158,44 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
 
             $menus.each(function (i, menuEl) {
                 var $menu = $(menuEl);
+
+                if ($menu.find('.action[data-action="createProductDirect"]').length) {
+                    return;
+                }
+
+                var $first = $menu.find('li, .list-group-item').first();
+                var $item = $('<li>');
+                var $link = $('<a>')
+                    .attr('href', 'javascript:')
+                    .addClass('action')
+                    .attr('data-action', 'createProductDirect')
+                    .text('Crea prodotto');
+
+                $item.append($link);
+
+                if ($first.length) {
+                    $first.after($item);
+                } else {
+                    $menu.append($item);
+                }
+
+                self.listenToDom($link, 'click', function (e) {
+                    e.preventDefault();
+                    self.openCreateArticleModal();
+                });
+            });
+        },
+
+        injectCreateProductMenuItemGlobal: function () {
+            var self = this;
+            var $menus = $('.dropdown-menu:visible');
+
+            $menus.each(function (i, menuEl) {
+                var $menu = $(menuEl);
+
+                if (!$menu.find('.action[data-action="addProducts"]').length) {
+                    return;
+                }
 
                 if ($menu.find('.action[data-action="createProductDirect"]').length) {
                     return;
@@ -128,17 +214,17 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 if ($base.length) {
                     $base.after($item);
                 } else {
-                    $menu.prepend($item);
+                    $menu.append($item);
                 }
 
                 self.listenToDom($link, 'click', function (e) {
                     e.preventDefault();
-                    self.openCreateProductModal();
+                    self.openCreateArticleModal();
                 });
             });
         },
 
-        openCreateProductModal: function () {
+        openCreateArticleModal: function () {
             this.createView(
                 'quickCreateProductModal',
                 'views/modals/edit',
@@ -148,7 +234,7 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 },
                 function (view) {
                     this.listenToOnce(view, 'after:save', function () {
-                        Espo.Ui.success('Prodotto creato. Aggiungilo con + nella lista articoli.');
+                        Espo.Ui.success('Articolo creato. Ora selezionalo con il tasto + nella lista articoli.');
                     }, this);
 
                     view.render();

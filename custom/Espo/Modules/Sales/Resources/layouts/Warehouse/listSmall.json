@@ -1,0 +1,14 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "addressCity",
+        "width": 35
+    },
+    {
+        "name": "status",
+        "width": 25
+    }
+]

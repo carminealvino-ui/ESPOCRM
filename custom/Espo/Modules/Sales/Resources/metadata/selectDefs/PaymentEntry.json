@@ -1,0 +1,28 @@
+{
+    "primaryFilterClassNameMap": {
+        "actual": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\PrimaryFilters\\Actual",
+        "completed": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\PrimaryFilters\\Completed",
+        "openIssued": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\PrimaryFilters\\OpenIssued",
+        "issued": "Espo\\Modules\\Sales\\Classes\\Select\\General\\PrimaryFilters\\Issued"
+    },
+    "additionalApplierClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\AdditionalAppliers\\UnallocatedAmount"
+    ],
+    "whereItemConverterClassNameMap": {
+        "unallocatedAmount_greaterThan": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_greaterThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_lessThan": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_lessThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_equals": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_notEquals": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_isNull": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_isNotNull": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_between": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\WhereItemConverters\\UnallocatedAmount"
+    },
+    "selectAttributesDependencyMap": {
+        "unallocatedAmount": [
+            "amount",
+            "amountCurrency"
+        ]
+    }
+}

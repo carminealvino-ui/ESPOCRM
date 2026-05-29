@@ -1,0 +1,19 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 20
+    },
+    {
+        "name": "supplier",
+        "width": 30
+    },
+    {
+        "name": "amount",
+        "width": 16,
+        "align": "right"
+    }
+]

@@ -1,0 +1,423 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "duplicateIgnore": true,
+            "readOnly": true,
+            "syncWithNumber": true,
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "syncWithNumber",
+                    "type": "bool"
+                }
+            ],
+            "fieldManagerParamList": [
+                "syncWithNumber",
+                "options",
+                "required",
+                "readOnly",
+                "readOnlyAfterCreate",
+                "audited",
+                "pattern",
+                "copyToClipboard",
+                "inlineEditDisabled"
+            ]
+        },
+        "number": {
+            "type": "number",
+            "prefix": "SUB-",
+            "padLength": 5,
+            "index": true,
+            "duplicateIgnore": true
+        },
+        "account": {
+            "type": "link",
+            "audited": true
+        },
+        "billingContact": {
+            "type": "link",
+            "audited": true,
+            "view": "modules/sales/views/quote/fields/contact"
+        },
+        "priceBook": {
+            "type": "link",
+            "autocompleteOnEmpty": true,
+            "audited": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\Quote\\PriceBook\\IsActive"
+            ]
+        },
+        "isTaxInclusive": {
+            "type": "foreign",
+            "link": "priceBook",
+            "field": "isTaxInclusive",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "view": "views/fields/foreign-bool"
+        },
+        "paymentMethod": {
+            "type": "link",
+            "required": false,
+            "audited": true,
+            "autocompleteOnEmpty": true
+        },
+        "billingPlan": {
+            "type": "link",
+            "autocompleteOnEmpty": true,
+            "audited": true,
+            "required": true,
+            "fieldManagerParamList": [
+                "audited",
+                "autocompleteOnEmpty",
+                "default"
+            ],
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\Subscription\\BillingPlan\\Active"
+            ]
+        },
+        "interval": {
+            "type": "foreign",
+            "link": "billingPlan",
+            "field": "interval",
+            "view": "views/fields/foreign-enum"
+        },
+        "alignmentType": {
+            "type": "foreign",
+            "link": "billingPlan",
+            "field": "alignmentType",
+            "view": "views/fields/foreign-enum"
+        },
+        "createPaymentRequests": {
+            "type": "foreign",
+            "link": "billingPlan",
+            "field": "createPaymentRequests",
+            "view": "views/fields/foreign-bool"
+        },
+        "sendPaymentRequests": {
+            "type": "foreign",
+            "link": "billingPlan",
+            "field": "sendPaymentRequests",
+            "view": "views/fields/foreign-bool"
+        },
+        "sendInvoices": {
+            "type": "foreign",
+            "link": "billingPlan",
+            "field": "sendInvoices",
+            "view": "views/fields/foreign-bool"
+        },
+        "primaryProduct": {
+            "type": "link",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited"
+            ]
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Draft",
+                "Trial",
+                "Active",
+                "Paused",
+                "Stopped"
+            ],
+            "default": "Draft",
+            "style": {
+                "Active": "primary",
+                "Paused": "warning",
+                "Stopped": "info"
+            },
+            "displayAsLabel": true,
+            "labelType": "state",
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited",
+                "default"
+            ],
+            "maxLength": 7,
+            "duplicateIgnore": true
+        },
+        "billingState": {
+            "type": "enum",
+            "options": [
+                "Clear",
+                "Due",
+                "Past Due"
+            ],
+            "style": {
+                "Due": "warning",
+                "Past Due": "danger"
+            },
+            "default": "Clear",
+            "displayAsLabel": true,
+            "maxLength": 8,
+            "audited": true,
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "audited"
+            ],
+            "duplicateIgnore": true
+        },
+        "endDate": {
+            "type": "date",
+            "audited": true
+        },
+        "amount": {
+            "type": "currency",
+            "optimisticConcurrencyControlIgnore": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited"
+            ]
+        },
+        "products": {
+            "type": "linkMultiple",
+            "entity": "Product",
+            "notStorable": true,
+            "customizationDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "layoutAvailabilityList": [
+                "filters"
+            ],
+            "view": "sales:views/quote/fields/products"
+        },
+        "template": {
+            "type": "link",
+            "entity": "SubscriptionTemplate",
+            "notStorable": true,
+            "readOnlyAfterCreate": true,
+            "directAccessDisabled": true,
+            "customizationDisabled": true
+        },
+        "startDate": {
+            "type": "date",
+            "notStorable": true,
+            "directAccessDisabled": true,
+            "customizationDisabled": true,
+            "readOnlyAfterCreate": true
+        },
+        "hasTrial": {
+            "type": "bool",
+            "notStorable": true,
+            "directAccessDisabled": true,
+            "customizationDisabled": true,
+            "readOnlyAfterCreate": true
+        },
+        "intervalUnit": {
+            "type": "enum",
+            "options": [
+                "",
+                "M",
+                "Y",
+                "W",
+                "D"
+            ],
+            "translation": "SubscriptionBillingPlan.intervalUnits",
+            "notStorable": true,
+            "directUpdateDisabled": true,
+            "readOnly": true,
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Subscription\\IntervalUnit",
+            "layoutAvailabilityList": [],
+            "customizationDisabled": true
+        },
+        "buyerReference": {
+            "type": "varchar",
+            "maxLength": 50,
+            "audited": true
+        },
+        "purchaseOrderReference": {
+            "type": "varchar",
+            "maxLength": 50,
+            "audited": true
+        },
+        "itemList": {
+            "type": "jsonArray",
+            "notStorable": true,
+            "layoutAvailabilityList": [],
+            "dynamicLogicVisibleDisabled": true,
+            "dynamicLogicInvalidDisabled": true,
+            "view": "modules/sales/views/quote/fields/item-list",
+            "templatePlaceholderDisabled": true,
+            "reportDisabled": true,
+            "workflowDisabled": true,
+            "massUpdateDisabled": true,
+            "duplicatorClassName": "Espo\\Modules\\Sales\\Classes\\FieldDuplicators\\Quote\\ItemList",
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\ItemListLoader",
+            "required": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\Subscription\\ItemList\\Required"
+            ],
+            "dynamicLogicDisabled": true,
+            "isCompactForm": false,
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "isCompactForm",
+                    "type": "bool"
+                },
+                {
+                    "name": "audited",
+                    "type": "bool"
+                }
+            ],
+            "audited": true,
+            "auditView": "modules/sales/views/quote/fields/audit-item-list"
+        },
+        "assignedUser": {
+            "type": "link",
+            "view": "views/fields/assigned-user",
+            "audited": true
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "audited": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "hasPaymentMethod": {
+            "type": "bool",
+            "notStorable": true,
+            "readOnly": true,
+            "utility": true,
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Subscription\\HasPaymentMethod"
+        },
+        "lastPeriodEndDate": {
+            "type": "date",
+            "notStorable": true,
+            "readOnly": true,
+            "utility": true,
+            "fieldManagerParamList": [],
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Subscription\\LastPeriodEndDate"
+        },
+        "anchorDay": {
+            "type": "int",
+            "min": 1,
+            "max": 31,
+            "customizationDisabled": true,
+            "dynamicLogicDisabled": true,
+            "audited": true
+        },
+        "tax": {
+            "type": "link",
+            "autocompleteOnEmpty": true,
+            "inlineEditDisabled": true,
+            "required": true,
+            "audited": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "account": {
+            "type": "belongsTo",
+            "entity": "Account",
+            "foreign": "quotes"
+        },
+        "items": {
+            "type": "hasMany",
+            "entity": "SubscriptionItem",
+            "foreign": "subscription",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "billingPlan": {
+            "type": "belongsTo",
+            "entity": "SubscriptionBillingPlan",
+            "foreign": "subscriptions"
+        },
+        "primaryProduct": {
+            "type": "belongsTo",
+            "entity": "Product"
+        },
+        "periods": {
+            "type": "hasMany",
+            "entity": "SubscriptionPeriod",
+            "foreign": "subscription",
+            "readOnly": true
+        },
+        "priceBook": {
+            "type": "belongsTo",
+            "entity": "PriceBook"
+        },
+        "billingContact": {
+            "type": "belongsTo",
+            "entity": "Contact",
+            "foreign": "subscriptionsBilling"
+        },
+        "tax": {
+            "type": "belongsTo",
+            "entity": "Tax"
+        },
+        "paymentMethod": {
+            "type": "belongsTo",
+            "entity": "PaymentMethod",
+            "foreign": "subscriptions"
+        },
+        "updates": {
+            "type": "hasMany",
+            "entity": "SubscriptionUpdate",
+            "foreign": "subscription",
+            "readOnly": true,
+            "foreignName": "number"
+        },
+        "assignedUser": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "EntityTeam",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [
+            "name",
+            "number"
+        ]
+    },
+    "indexes": {
+        "createdAt": {
+            "columns": [
+                "createdAt"
+            ]
+        }
+    },
+    "optimisticConcurrencyControl": true
+}

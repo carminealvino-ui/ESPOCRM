@@ -1,0 +1,10 @@
+[
+    {
+        "rows": [
+            [{"name": "number"}, false],
+            [{"name": "status"}, {"name": "dateOrdered"}],
+            [{"name": "fromWarehouse"}, {"name": "toWarehouse"}],
+            [{"name": "shippingDate"}, {"name": "deliveryDate"}]
+        ]
+    }
+]

@@ -1,0 +1,48 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name",
+                    "fullWidth": true
+                }
+            ],
+            [
+                {
+                    "name": "quantity"
+                },
+                {
+                    "name": "transferOrder"
+                }
+            ],
+            [
+                {
+                    "name": "quantityReceived"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "product"
+                },
+                {
+                    "name": "inventoryNumber"
+                }
+            ],
+            [
+                {
+                    "name": "unitWeight"
+                },
+                {
+                    "name": "weight"
+                }
+            ],
+            [
+                {
+                    "name": "description",
+                    "fullWidth": true
+                }
+            ]
+        ]
+    }
+]

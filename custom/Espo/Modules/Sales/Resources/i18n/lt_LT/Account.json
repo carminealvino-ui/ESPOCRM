@@ -1,0 +1,10 @@
+{
+    "links": {
+        "quotes": "Citatos",
+        "quoteItems": "Citatos elementai",
+        "salesOrders": "Pardavimo užsakymai",
+        "salesOrderItems": "Pardavimo užsakymo elementai",
+        "invoices": "Sąskaitos faktūros",
+        "invoiceItems": "Sąskaitos faktūros elementai"
+    }
+}

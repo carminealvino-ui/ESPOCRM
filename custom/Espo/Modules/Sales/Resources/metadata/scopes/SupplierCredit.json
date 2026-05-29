@@ -1,0 +1,79 @@
+{
+    "module": "Sales",
+    "entity": true,
+    "layouts": true,
+    "tab": true,
+    "acl": true,
+    "aclPortal": true,
+    "aclPortalLevelList":  [
+        "all",
+        "account",
+        "contact",
+        "no"
+    ],
+    "aclPortalActionList": [
+        "read"
+    ],
+    "customizable": true,
+    "importable": true,
+    "notifications": true,
+    "object": true,
+    "preserveAuditLog": true,
+    "currencyConversionAccessRequiredFieldList": ["amount"],
+    "lockableFieldList": [
+        "supplier",
+        "account",
+        "status",
+        "itemList",
+        "shippingCost",
+        "number",
+        "reference",
+        "amount",
+        "allocations",
+        "dateIssued",
+        "dateDue",
+        "supplierBill",
+        "supplierAddress",
+        "billingContact",
+        "tax",
+        "taxRate",
+        "currencyRate",
+        "shippingProvider",
+        "document",
+        "postingDate"
+    ],
+    "issuanceLockableFieldList": [
+        "supplier",
+        "account",
+        "itemList",
+        "shippingCost",
+        "number",
+        "reference",
+        "amount",
+        "dateIssued",
+        "dateDue",
+        "supplierAddress",
+        "tax",
+        "taxRate",
+        "currencyRate",
+        "postingDate",
+        "shippingAmount",
+        "grandTotalAmount",
+        "amountLocal",
+        "grandTotalAmountLocal",
+        "shippingAmountLocal",
+        "taxAmountLocal",
+        "roundingAmountLocal",
+        "issuedAt",
+        "issuedBy"
+    ],
+    "doneStatusList": [
+        "Resolved"
+    ],
+    "canceledStatusList": [
+        "Canceled"
+    ],
+    "preIssueStatusList": [
+        "Draft"
+    ]
+}

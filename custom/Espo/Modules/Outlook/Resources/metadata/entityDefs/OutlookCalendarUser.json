@@ -1,0 +1,47 @@
+{
+    "fields": {
+        "calendar": {
+            "type": "link",
+            "required": true
+        },
+        "type": {
+            "type": "enum",
+            "options": ["main", "monitored"]
+        },
+        "active": {
+            "type": "bool",
+            "default": true
+        },
+        "deltaToken": {
+            "type": "text"
+        },
+        "skipToken": {
+            "type": "text"
+        },
+        "lastLookedAt": {
+            "type": "datetime"
+        },
+        "lastSyncedAt": {
+            "type": "datetime"
+        },
+        "user": {
+            "type": "link",
+            "required": true
+        },
+        "outlookCalendarId": {
+            "type": "foreign",
+            "field": "calendarId",
+            "link": "calendar"
+        }
+    },
+    "links": {
+        "user": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "calendar": {
+            "type": "belongsTo",
+            "entity": "OutlookCalendar"
+        }
+    }
+}

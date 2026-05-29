@@ -1,0 +1,5 @@
+{
+    "ownershipCheckerClassName": "Espo\\Modules\\Sales\\Classes\\Acl\\ProductPrice\\OwnershipChecker",
+    "portalOwnershipCheckerClassName": "Espo\\Modules\\Sales\\Classes\\AclPortal\\ProductPrice\\OwnershipChecker",
+    "accessCheckerClassName": "Espo\\Modules\\Sales\\Classes\\Acl\\ProductPrice\\AccessChecker"
+}

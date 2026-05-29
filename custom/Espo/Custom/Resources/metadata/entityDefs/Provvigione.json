@@ -1,199 +1,186 @@
 {
     "fields": {
-        "statoProvvigione": {
-            "type": "enum",
-            "options": [
-                "Prevista",
-                "Consolidata",
-                "InInvito",
-                "Fatturata",
-                "Stornata"
-            ],
-            "style": {
-                "Prevista": "info",
-                "Consolidata": "primary",
-                "InInvito": "warning",
-                "Fatturata": "success",
-                "Stornata": "danger"
-            },
-            "default": "Consolidata",
-            "isCustom": true
+        "name": {
+            "type": "varchar",
+            "required": false,
+            "pattern": "$noBadCharacters",
+            "options": []
         },
-        "regimeProvvigione": {
-            "type": "enum",
-            "options": [
-                "",
-                "ARQUATI_PNC",
-                "ARIEL_2026",
-                "GFB_VODAFONE_COEFF",
-                "GFB_FASTWEB_POD",
-                "GFB_RS_BIMESTRE",
-                "SOLUTION_ENEL_GETTONE",
-                "GENERICO"
-            ],
-            "isCustom": true
+        "description": {
+            "type": "text"
         },
-        "dataInstallazione": {
-            "type": "date",
-            "useNumericFormat": true,
-            "isCustom": true
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
         },
-        "dataAttivazione": {
-            "type": "date",
-            "useNumericFormat": true,
-            "isCustom": true
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
         },
-        "dataCompetenza": {
-            "type": "date",
-            "useNumericFormat": true,
-            "isCustom": true
-        },
-        "dataLiquidazionePrevista": {
-            "type": "date",
-            "readOnly": true,
-            "useNumericFormat": true,
-            "isCustom": true
-        },
-        "dataLiquidazioneEffettiva": {
-            "type": "date",
-            "useNumericFormat": true,
-            "isCustom": true
-        },
-        "importoPrevisto": {
-            "type": "currency",
-            "isCustom": true
-        },
-        "importoConsolidato": {
-            "type": "currency",
-            "isCustom": true
-        },
-        "scostamentoImporto": {
-            "type": "currency",
-            "readOnly": true,
-            "isCustom": true
-        },
-        "giorniLiquidazioneDaAttivazione": {
-            "type": "int",
-            "readOnly": true,
-            "isCustom": true
-        },
-        "appuntamento": {
-            "type": "link",
-            "isCustom": true
-        },
-        "opportunita": {
-            "type": "link",
-            "isCustom": true
-        },
-        "productCategory": {
-            "type": "link",
-            "isCustom": true
-        },
-        "invitoAFatturare": {
-            "type": "link",
-            "isCustom": true
-        },
-        "fornitorePartner": {
-            "type": "link",
-            "isCustom": true
-        },
-        "productBrand": {
-            "type": "link",
-            "isCustom": true
-        },
-        "regolaProvvigionale": {
+        "createdBy": {
             "type": "link",
             "readOnly": true,
-            "isCustom": true
+            "view": "views/fields/user"
         },
-        "contratto": {
+        "modifiedBy": {
             "type": "link",
             "readOnly": true,
-            "isCustom": true
+            "view": "views/fields/user"
         },
-        "cliente": {
+        "assignedUser": {
             "type": "link",
-            "readOnly": true,
-            "isCustom": true
+            "required": false,
+            "view": "views/fields/assigned-user"
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "view": "views/fields/teams"
         },
         "tipo": {
             "type": "enum",
             "options": [
                 "Provvigione Base",
+                "Bonus (Sabato-Domenica)",
                 "Plus Provvigionale",
                 "Minus Provvigionale",
-                "Bonus (Sabato-Domenica)",
                 "Gara (Soglia >2.5k)",
                 "Gara (Soglia >3.5)",
                 "Gara (Soglia >5k)"
             ],
+            "style": {
+                "Provvigione Base": null,
+                "Bonus (Sabato-Domenica)": null,
+                "Plus Provvigionale": null,
+                "Minus Provvigionale": null,
+                "Gara (Soglia >2.5k)": null,
+                "Gara (Soglia >3.5)": null,
+                "Gara (Soglia >5k)": null
+            },
+            "default": "Provvigione Base",
+            "maxLength": 100,
             "isCustom": true
+        },
+        "cliente": {
+            "type": "link"
+        },
+        "contratto": {
+            "type": "link"
         },
         "importo": {
             "type": "currency",
             "isCustom": true
         },
         "tassoProvvigioni": {
+            "notNull": false,
             "type": "float",
-            "decimalPlaces": 2,
-            "readOnly": true,
+            "isCustom": true
+        },
+        "contrattoArticoli": {
+            "type": "link"
+        },
+        "hookVersion": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
             "isCustom": true
         }
     },
     "links": {
-        "appuntamento": {
+        "createdBy": {
             "type": "belongsTo",
-            "foreign": "provvigioni",
-            "entity": "Appuntamento",
-            "isCustom": true
+            "entity": "User"
         },
-        "opportunita": {
+        "modifiedBy": {
             "type": "belongsTo",
-            "foreign": "provvigioni",
-            "entity": "Opportunity",
-            "isCustom": true
+            "entity": "User"
         },
-        "productCategory": {
+        "assignedUser": {
             "type": "belongsTo",
-            "foreign": "provvigioni",
-            "entity": "ProductCategory",
-            "isCustom": true
+            "entity": "User"
         },
-        "invitoAFatturare": {
-            "type": "belongsTo",
-            "foreign": "provvigioni",
-            "entity": "InvitoAFatturare",
-            "isCustom": true
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "entityTeam",
+            "layoutRelationshipsDisabled": true
         },
-        "fornitorePartner": {
-            "type": "belongsTo",
-            "foreign": "provvigioni",
-            "entity": "FornitorePartner",
-            "isCustom": true
+        "meetings": {
+            "type": "hasMany",
+            "entity": "Meeting",
+            "foreign": "parent"
         },
-        "productBrand": {
-            "type": "belongsTo",
-            "foreign": "provvigioni",
-            "entity": "ProductBrand",
-            "isCustom": true
+        "calls": {
+            "type": "hasMany",
+            "entity": "Call",
+            "foreign": "parent"
         },
-        "regolaProvvigionale": {
+        "tasks": {
+            "type": "hasChildren",
+            "entity": "Task",
+            "foreign": "parent"
+        },
+        "emails": {
+            "type": "hasChildren",
+            "entity": "Email",
+            "foreign": "parent",
+            "layoutRelationshipsDisabled": true
+        },
+        "cliente": {
             "type": "belongsTo",
             "foreign": "provvigioni",
-            "entity": "RegolaProvvigionale",
+            "entity": "Account",
+            "audited": false,
             "isCustom": true
         },
         "contratto": {
             "type": "belongsTo",
             "foreign": "provvigioni",
             "entity": "Quote",
+            "audited": false,
             "isCustom": true
         },
-        "cliente": {
+        "contrattoArticoli": {
             "type": "belongsTo",
             "foreign": "provvigioni",
-            "entity": "Account",
+            "entity": "QuoteItem",
+            "audited": false,
             "isCustom": true
         }
-    }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [
+            "name"
+        ],
+        "fullTextSearch": false,
+        "countDisabled": false
+    },
+    "indexes": {
+        "name": {
+            "columns": [
+                "name",
+                "deleted"
+            ]
+        },
+        "assignedUser": {
+            "columns": [
+                "assignedUserId",
+                "deleted"
+            ]
+        },
+        "createdAt": {
+            "columns": [
+                "createdAt"
+            ]
+        },
+        "createdAtId": {
+            "unique": true,
+            "columns": [
+                "createdAt",
+                "id"
+            ]
+        }
+    },
+    "optimisticConcurrencyControl": false
 }

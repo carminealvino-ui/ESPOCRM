@@ -1,0 +1,3 @@
+Espo\Custom\FieldType\FloatExtendedType:
+    tags:
+        - { name: fieldType, type: floatExtended }

@@ -24,5 +24,8 @@
             "label": "Non Svolto",
             "style": "danger"
         }
-    ]
+    ],
+    "kanbanViewMode": false,
+    "color": null,
+    "iconClass": "fas fa-table-list"
 }

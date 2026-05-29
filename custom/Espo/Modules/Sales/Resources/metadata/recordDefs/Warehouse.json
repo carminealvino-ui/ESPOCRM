@@ -1,0 +1,13 @@
+{
+    "merge": {
+        "disabled": true
+    },
+    "massActions": {
+        "delete": {
+            "allowed": true
+        },
+        "update": {
+            "allowed": true
+        }
+    }
+}

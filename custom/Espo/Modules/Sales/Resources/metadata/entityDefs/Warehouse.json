@@ -1,0 +1,122 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "index": true,
+            "audited": true
+        },
+        "order": {
+            "type": "int",
+            "default": 1,
+            "readOnly": true,
+            "index": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Active",
+                "Inactive"
+            ],
+            "default": "Active",
+            "style": {
+                "Inactive": "info"
+            },
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText",
+                "inlineEditDisabled"
+            ],
+            "audited": true
+        },
+        "address": {
+            "type": "address",
+            "audited": true
+        },
+        "isAvailableForStock": {
+            "type": "bool",
+            "default": true,
+            "index": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited",
+                "default",
+                "tooltipText",
+                "inlineEditDisabled"
+            ]
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "audited": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "inventoryTransactions": {
+            "type": "hasMany",
+            "foreign": "warehouse",
+            "entity": "InventoryTransaction",
+            "readOnly": true
+        },
+        "deliveryOrders": {
+            "type": "hasMany",
+            "entity": "DeliveryOrder",
+            "foreign": "warehouse",
+            "readOnly": true
+        },
+        "receiptOrders": {
+            "type": "hasMany",
+            "entity": "ReceiptOrder",
+            "foreign": "warehouse",
+            "readOnly": true
+        },
+        "outboundTransferOrders": {
+            "type": "hasMany",
+            "entity": "TransferOrder",
+            "foreign": "fromWarehouse",
+            "readOnly": true
+        },
+        "inboundTransferOrders": {
+            "type": "hasMany",
+            "entity": "TransferOrder",
+            "foreign": "toWarehouse",
+            "readOnly": true
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "EntityTeam",
+            "layoutRelationshipsDisabled": true
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "order",
+        "order": "asc"
+    }
+}

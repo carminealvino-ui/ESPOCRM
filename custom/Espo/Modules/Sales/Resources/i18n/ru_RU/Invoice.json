@@ -1,0 +1,75 @@
+{
+  "labels": {
+    "Create Invoice": "Создать счёт-фактуру",
+    "Taxes": "Налоги",
+    "Shipping Providers": "Службы доставок",
+    "Add Item": "Добавить пункт",
+    "Templates": "Шаблоны",
+    "Items": "Пункты",
+    "Send in Email": "Отправить по почте",
+    "Invoice Items": "Пункты счёт-фактуры"
+  },
+  "fields": {
+    "status": "Статус",
+    "number": "Номер",
+    "numberA": "Номер (автоинкрементный)",
+    "account": "Контрагент",
+    "opportunity": "Сделка",
+    "quote": "Предложение",
+    "salesOrder": "Заказ",
+    "billingAddress": "Платёжный адрес",
+    "shippingAddress": "Адрес доставки",
+    "billingContact": "Контакт по платежам",
+    "shippingContact": "Контакт по доставке",
+    "tax": "Налог",
+    "taxRate": "Налог (%)",
+    "shippingCost": "Стоимость доставки",
+    "shippingProvider": "Служба доставки",
+    "taxAmount": "Сумма налога",
+    "discountAmount": "Сумма скидки",
+    "amount": "Сумма",
+    "preDiscountedAmount": "Сумма до скидки",
+    "grandTotalAmount": "Общая сумма",
+    "itemList": "Список пунктов",
+    "dateInvoiced": "Дата фактуры",
+    "weight": "Вес",
+    "amountConverted": "Сумма (сконвертированная)",
+    "taxAmountConverted": "Сумма налога (сконвертированная)",
+    "shippingCostConverted": "Стоимость доставки (сконвертированная)",
+    "preDiscountedAmountConverted": "Сумма до скидки (сконвертированная)",
+    "discountAmountConverted": "Сумма скидки (сконвертированная)",
+    "grandTotalAmountConverted": "Общая сумма (сконвертированная)",
+    "shippingCostCurrency": "Валюта стоимости доставки",
+    "taxAmountCurrency": "Валюта суммы налога",
+    "discountAmountCurrency": "Валюта суммы скидки",
+    "amountCurrency": "Валюта суммы",
+    "preDiscountedAmountCurrency": "Валюта суммы до скидки",
+    "grandTotalAmountCurrency": "Валюта общей суммы",
+    "currency": "Валюта"
+  },
+  "links": {
+    "items": "Пункты",
+    "billingContact": "Контакт по платежам",
+    "shippingContact": "Контакт по доставке",
+    "shippingProvider": "Служба доставки",
+    "opportunity": "Сделка",
+    "account": "Контрагент",
+    "tax": "Налог",
+    "quote": "Предложение",
+    "salesOrder": "Заказ"
+  },
+  "options": {
+    "status": {
+      "Draft": "Черновик",
+      "In Review": "На рассмотрении",
+      "Confirmed": "Подтверждено",
+      "Paid": "Оплачено",
+      "Rejected": "Отклонено",
+      "Canceled": "Отменено"
+    }
+  },
+  "presetFilters": {
+    "actual": "Актуальные",
+    "paid": "Оплачено"
+  }
+}

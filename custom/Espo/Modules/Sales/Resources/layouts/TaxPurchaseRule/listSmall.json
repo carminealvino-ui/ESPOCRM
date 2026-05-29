@@ -1,0 +1,17 @@
+[
+    {
+        "name": "name",
+        "notSortable": true,
+        "link": true
+    },
+    {
+        "name": "tax",
+        "notSortable": true,
+        "width": 35
+    },
+    {
+        "name": "status",
+        "width": 25,
+        "notSortable": true
+    }
+]

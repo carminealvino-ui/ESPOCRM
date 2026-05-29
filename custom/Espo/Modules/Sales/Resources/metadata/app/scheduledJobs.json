@@ -1,0 +1,27 @@
+{
+    "SalesJob": {
+        "isSystem": true,
+        "scheduling": "3 5 * * *",
+        "jobClassName": "Espo\\Modules\\Sales\\Classes\\App\\Job"
+    },
+    "InventoryCompress": {
+        "scheduling": "10 0 * * 6",
+        "jobClassName": "Espo\\Modules\\Sales\\Classes\\Jobs\\InventoryCompress"
+    },
+    "NotActualOrderLocking": {
+        "scheduling": "10 1 * * 6",
+        "jobClassName": "Espo\\Modules\\Sales\\Classes\\Jobs\\NotActualOrderLocking"
+    },
+    "InventoryDetach": {
+        "scheduling": "10 2 * * 6",
+        "jobClassName": "Espo\\Modules\\Sales\\Classes\\Jobs\\InventoryDetach"
+    },
+    "ControlPaymentRequests": {
+        "scheduling": "10 1 * * *",
+        "jobClassName": "Espo\\Modules\\Sales\\Classes\\Jobs\\ControlPaymentRequests"
+    },
+    "ControlSubscriptions": {
+        "scheduling": "20 0 * * *",
+        "jobClassName": "Espo\\Modules\\Sales\\Classes\\Jobs\\ControlSubscriptions"
+    }
+}

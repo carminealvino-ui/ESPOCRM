@@ -1,0 +1,31 @@
+{
+  "labels": {
+    "Create PaymentMandate": "Crea mandato",
+    "Parameters": "Parametri"
+  },
+  "fields": {
+    "status": "Stato",
+    "account": "Cliente",
+    "accountHolder": "Titolare del conto",
+    "referenceId": "ID riferimento",
+    "type": "Tipo",
+    "dateSigned": "Data di firma",
+    "expirationDate": "Data di scadenza",
+    "data": "Dati",
+    "record": "Registra"
+  },
+  "links": {
+    "account": "Cliente",
+    "record": "Registra"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Active": "Attivo",
+      "Canceled": "Annullato"
+    }
+  },
+  "presetFilters": {
+    "active": "Attivo"
+  }
+}

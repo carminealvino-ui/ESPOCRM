@@ -1,0 +1,19 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 19
+    },
+    {
+        "name": "dateIssued",
+        "width": 19
+    },
+    {
+        "name": "grandTotalAmount",
+        "width": 19,
+        "align": "right"
+    }
+]

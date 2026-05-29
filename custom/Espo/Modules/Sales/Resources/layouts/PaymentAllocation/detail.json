@@ -1,0 +1,58 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "target"
+                },
+                {
+                    "name": "sourceDate"
+                }
+            ],
+            [
+                {
+                    "name": "creditNote"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "paymentEntry"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "writeOffEntry"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "supplierCredit"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "amount"
+                },
+                {
+                    "name": "date"
+                }
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "amountLocal"
+                },
+                {
+                    "name": "fxGainLoss"
+                }
+            ]
+        ]
+    }
+]

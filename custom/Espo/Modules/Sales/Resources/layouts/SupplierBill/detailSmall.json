@@ -1,0 +1,10 @@
+[
+    {
+        "rows": [
+            [{"name": "number"}, {"name": "reference"}],
+            [{"name": "status"}, {"name": "dateInvoiced"}],
+            [{"name": "supplier"}, {"name": "purchaseOrder"}],
+            [{"name": "grandTotalAmount"}, {"name": "dateDue"}]
+        ]
+    }
+]

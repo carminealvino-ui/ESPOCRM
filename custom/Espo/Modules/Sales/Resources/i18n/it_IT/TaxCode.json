@@ -1,0 +1,69 @@
+{
+  "labels": {
+    "Create TaxCode": "Crea codice imposta"
+  },
+  "fields": {
+    "code": "Codice",
+    "status": "Stato",
+    "type": "Tipo",
+    "label": "Etichetta",
+    "rate": "Tasso",
+    "amount": "Importo",
+    "applyToProportionalShipping": "Applica alla spedizione proporzionale",
+    "includedInPrice": "Incluso nel prezzo",
+    "roundingLevel": "Livello di arrotondamento",
+    "roundingFactor": "Fattore di arrotondamento",
+    "items": "Voci",
+    "order": "Ordine",
+    "isSelectable": "Selezionabile",
+    "isForSales": "Per vendite",
+    "isForPurchases": "Per acquisti",
+    "country": "Paese"
+  },
+  "links": {
+    "taxes": "Imposte",
+    "taxItemRules": "Regole voce imposta",
+    "parentItems": "Voci padre",
+    "items": "Voci"
+  },
+  "options": {
+    "type": {
+      "Percentage": "Percentuale",
+      "Fixed": "Fisso",
+      "Composite": "Composito"
+    },
+    "base": {
+      "Net Amount": "Importo netto",
+      "Cumulative Total": "Totale cumulativo",
+      "Previous Tax": "Imposta precedente"
+    },
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    },
+    "roundingLevel": {
+      "Line": "Riga",
+      "Total": "Totale"
+    }
+  },
+  "presetFilters": {
+    "active": "Attivo",
+    "selectableSales": "Per vendite",
+    "selectablePurchases": "Per acquisti",
+    "groupable": "Raggruppabile",
+    "salesNonComposite": "Vendite non composite",
+    "purchaseNonComposite": "Acquisti non compositi"
+  },
+  "tooltips": {
+    "includedInPrice": "Indica se l'importo dell'imposta è incluso nel prezzo unitario.\n\nPotrebbe essere necessario abilitare questo parametro per imposte come le accise. Per imposte come IVA o GST, di norma questo parametro dovrebbe essere disabilitato.",
+    "roundingLevel": "Definisce come vengono arrotondati gli importi delle imposte.\n\n- Riga – Gli importi vengono arrotondati su ogni riga\n- Totale – Gli importi precisi a livello riga vengono sommati e poi arrotondati",
+    "base": "Specifica quale valore viene usato come base imponibile.\n\n- Importo netto – L'importo al netto delle imposte\n- Totale cumulativo – L'importo netto più tutte le imposte applicate in precedenza\n\nIl Totale cumulativo ha effetto solo quando il codice imposta è usato in un'imposta composita.",
+    "applyToProportionalShipping": "Se abilitato, questo codice imposta sarà incluso nei calcoli proporzionali dell'imposta sulla spedizione. Potrebbe essere necessario disabilitare questo parametro per alcuni codici imposta usati in un'imposta composita.\n\nSe il metodo proporzionale non viene usato, questo parametro non ha effetto.",
+    "roundingFactor": "Se non specificato, il sistema arrotonderà all'unità minima della valuta.\n\nEsempi:\n- 1 – al numero intero\n- 0.5 – a 50 centesimi\n- 0.01 – a 1 centesimo",
+    "label": "Un'etichetta facoltativa mostrata ai clienti."
+  },
+  "messages": {
+    "cannotRemoveUsedInComposite": "Non è possibile rimuoverlo perché è usato in un codice imposta composito. Puoi invece renderlo non selezionabile.",
+    "cannotRemoveUsedInIssuedDocument": "Non è possibile rimuoverlo perché è usato in un documento emesso. Puoi invece cambiarne lo stato in inattivo."
+  }
+}

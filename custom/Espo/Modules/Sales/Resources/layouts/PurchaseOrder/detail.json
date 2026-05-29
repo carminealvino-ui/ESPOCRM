@@ -1,0 +1,29 @@
+[
+    {
+        "label": "Overview",
+        "rows": [
+            [{"name": "number"}, {"name": "supplier"}],
+            [{"name": "status"}, false],
+            [{"name": "grandTotalAmount"}, false],
+            [{"name": "dateOrdered"}, {"name": "deliveryDate"}]
+        ]
+    },
+    {
+        "label": "Details",
+        "rows": [
+            [false, {"name": "warehouse"}],
+            [{"name": "supplierAddress"}, {"name": "shippingAddress"}],
+            [{"name": "billingContact"}, {"name": "shippingContact"}]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "tax"}, {"name": "shippingProvider"}]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "description"}]
+        ]
+    }
+]

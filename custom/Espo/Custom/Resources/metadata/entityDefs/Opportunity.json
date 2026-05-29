@@ -157,8 +157,7 @@
         },
         "prezzoCodiceIvaInclusa": {
             "type": "currency",
-            "isCustom": true,
-            "readOnly": true
+            "isCustom": true
         },
         "importoOpportunit": {
             "type": "currency",
@@ -280,13 +279,7 @@
         "minusPlus": {
             "type": "currency",
             "isCustom": true,
-            "conversionDisabled": true,
-            "readOnly": true
-        },
-        "ordineIncompletoAriel": {
-            "type": "bool",
-            "default": false,
-            "isCustom": true
+            "conversionDisabled": true
         },
         "azienda": {
             "type": "enum",
@@ -346,11 +339,6 @@
         "productCategory": {
             "type": "link",
             "view": "custom:views/fields/product-category-by-brand",
-            "isCustom": true
-        },
-        "dataAttivazione": {
-            "type": "date",
-            "useNumericFormat": true,
             "isCustom": true
         }
     },

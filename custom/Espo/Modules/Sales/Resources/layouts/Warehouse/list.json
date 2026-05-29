@@ -1,0 +1,19 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "addressCity",
+        "width": 25
+    },
+    {
+        "name": "status",
+        "width": 20
+    },
+    {
+        "name": "isAvailableForStock",
+        "width": 10,
+        "label": "isStock"
+    }
+]

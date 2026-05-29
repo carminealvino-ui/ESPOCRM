@@ -1,0 +1,17 @@
+[
+    {
+        "name": "number",
+        "widthPx": 110
+    },
+    {
+        "name": "product"
+    },
+    {
+        "name": "quantity",
+        "width": 22
+    },
+    {
+        "name": "createdAt",
+        "width": 22
+    }
+]

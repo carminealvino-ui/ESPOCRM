@@ -1,0 +1,13 @@
+[
+    "status",
+    "assignedUser",
+    "teams",
+    "warehouse",
+    "date",
+    "reason",
+    "createdAt",
+    "createdBy",
+    "number",
+    "products",
+    "inventoryNumbers"
+]

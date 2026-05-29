@@ -1,0 +1,24 @@
+[
+    {
+        "name": "code",
+        "width": 13,
+        "link": true
+    },
+    {
+        "name": "name"
+    },
+    {
+        "name": "type",
+        "width": 15
+    },
+    {
+        "name": "rate",
+        "width": 16,
+        "align": "right"
+    },
+    {
+        "name": "amount",
+        "width": 16,
+        "align": "right"
+    }
+]

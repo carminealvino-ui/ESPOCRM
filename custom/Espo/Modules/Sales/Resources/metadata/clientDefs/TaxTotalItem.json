@@ -1,0 +1,9 @@
+{
+    "controller": "controllers/record",
+    "acl": "modules/sales/acl/tax-line-item",
+    "createDisabled": true,
+    "editDisabled": true,
+    "removeDisabled": true,
+    "mergeDisabled": true,
+    "textFilterDisabled": true
+}

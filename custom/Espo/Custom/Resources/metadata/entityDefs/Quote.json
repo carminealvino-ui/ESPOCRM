@@ -114,14 +114,6 @@
             "type": "currency",
             "isCustom": true
         },
-        "prezzoCodiceIvaInclusa": {
-            "type": "currency",
-            "isCustom": true
-        },
-        "prezzoListinoIVAInclusa": {
-            "type": "currency",
-            "isCustom": true
-        },
         "margineSuListino": {
             "type": "float",
             "decimalPlaces": 2,
@@ -141,20 +133,6 @@
         "ordineIncompletoAriel": {
             "type": "bool",
             "default": false,
-            "isCustom": true
-        },
-        "modalitaCalcoloProvvigioni": {
-            "type": "enum",
-            "options": [
-                "Manuale",
-                "Automatico"
-            ],
-            "default": "Manuale",
-            "isCustom": true
-        },
-        "regoleProvvigionali": {
-            "type": "linkMultiple",
-            "entity": "RegolaProvvigionale",
             "isCustom": true
         }
     },
@@ -181,13 +159,6 @@
             "audited": false,
             "isCustom": true
         },
-        "regoleProvvigionali": {
-            "type": "hasMany",
-            "relationName": "quoteRegolaProvvigionale",
-            "foreign": "quotes",
-            "entity": "RegolaProvvigionale",
-            "isCustom": true
-        },
         "fornitorePartner": {
             "type": "belongsTo",
             "entity": "FornitorePartner",
@@ -205,6 +176,9 @@
             "entity": "ProductCategory",
             "foreign": "quotes",
             "isCustom": true
+        },
+        "itemList": {
+            "view": "custom:views/quote/fields/item-list"
         }
     },
     "collection": {

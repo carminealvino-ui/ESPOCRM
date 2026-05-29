@@ -1,0 +1,94 @@
+{
+    "links": {
+        "quotesBilling": {
+            "type": "hasMany",
+            "entity": "Quote",
+            "foreign": "billingContact",
+            "readOnly": true
+        },
+        "quotesShipping": {
+            "type": "hasMany",
+            "entity": "Quote",
+            "foreign": "shippingContact",
+            "readOnly": true
+        },
+        "salesOrdersBilling": {
+            "type": "hasMany",
+            "entity": "SalesOrder",
+            "foreign": "billingContact",
+            "readOnly": true
+        },
+        "salesOrdersShipping": {
+            "type": "hasMany",
+            "entity": "SalesOrder",
+            "foreign": "shippingContact",
+            "readOnly": true
+        },
+        "invoicesBilling": {
+            "type": "hasMany",
+            "entity": "Invoice",
+            "foreign": "billingContact",
+            "readOnly": true
+        },
+        "invoicesShipping": {
+            "type": "hasMany",
+            "entity": "Invoice",
+            "foreign": "shippingContact",
+            "readOnly": true
+        },
+        "purchaseOrdersBilling": {
+            "type": "hasMany",
+            "entity": "PurchaseOrder",
+            "foreign": "billingContact",
+            "readOnly": true
+        },
+        "purchaseOrdersShipping": {
+            "type": "hasMany",
+            "entity": "PurchaseOrder",
+            "foreign": "shippingContact",
+            "readOnly": true
+        },
+        "supplierBillsBilling": {
+            "type": "hasMany",
+            "entity": "SupplierBill",
+            "foreign": "billingContact",
+            "readOnly": true
+        },
+        "deliveryOrdersShipping": {
+            "type": "hasMany",
+            "entity": "DeliveryOrder",
+            "foreign": "shippingContact",
+            "readOnly": true
+        },
+        "receiptOrdersShipping": {
+            "type": "hasMany",
+            "entity": "ReceiptOrder",
+            "foreign": "shippingContact",
+            "readOnly": true
+        },
+        "returnOrdersBilling": {
+            "type": "hasMany",
+            "entity": "ReturnOrder",
+            "foreign": "billingContact",
+            "readOnly": true
+        },
+        "returnOrdersShipping": {
+            "type": "hasMany",
+            "entity": "ReturnOrder",
+            "foreign": "shippingContact",
+            "readOnly": true
+        },
+        "creditNotesBilling": {
+            "type": "hasMany",
+            "entity": "CreditNote",
+            "foreign": "billingContact",
+            "readOnly": true
+        },
+        "subscriptionsBilling": {
+            "type": "hasMany",
+            "entity": "Subscription",
+            "foreign": "billingContact",
+            "readOnly": true
+        }
+    }
+}

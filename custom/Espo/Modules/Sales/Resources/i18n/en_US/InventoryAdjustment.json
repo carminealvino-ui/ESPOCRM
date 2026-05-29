@@ -1,0 +1,50 @@
+{
+    "labels": {
+        "Create InventoryAdjustment": "Create Adjustment",
+        "Add Item": "Add Item",
+        "Items": "Items"
+    },
+    "fields": {
+        "status": "Status",
+        "number": "Number",
+        "numberA": "Number (auto-incremented)",
+        "amount": "Amount",
+        "itemList": "Item List",
+        "date": "Date",
+        "reason": "Reason",
+        "warehouse": "Warehouse",
+        "isDone": "Is Done",
+        "doneAt": "Done At"
+    },
+    "links": {
+        "items": "Items",
+        "inventoryTransactions": "Inventory Transactions",
+        "warehouse": "Warehouse"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Started": "Started",
+            "Completed": "Completed",
+            "Canceled": "Canceled"
+        },
+        "reason": {
+            "Stocktaking": "Stocktaking",
+            "Write-off": "Write-off",
+            "Waste": "Waste",
+            "Shrinkage": "Shrinkage",
+            "Damage": "Damage",
+            "Internal": "Internal"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "completed": "Completed"
+    },
+    "messages": {
+        "itemProductIsNotInventory": "Product {name} is not inventory.",
+        "emptyNewQuantityInItem": "On-hand quantity is not specified for an item.",
+        "sameItemsInAnotherAdjustment": "The same items are in another started adjustment.",
+        "duplicateItems": "Can't have the same items in an adjustment."
+    }
+}

@@ -1,0 +1,9 @@
+{
+    "controller": "controllers/record",
+    "acl": "sales:acl/price-rule",
+    "filterList": [
+        "active"
+    ],
+    "textFilterDisabled": true,
+    "mergeDisabled": true
+}

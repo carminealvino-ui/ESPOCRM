@@ -1,0 +1,50 @@
+{
+  "labels": {
+    "Create SubscriptionPeriod": "Crea periodo"
+  },
+  "fields": {
+    "startDate": "Data inizio",
+    "endDate": "Data fine",
+    "type": "Tipo",
+    "subscription": "Abbonamento",
+    "status": "Stato",
+    "billingStatus": "Stato fatturazione",
+    "invoiceAutomatically": "Fattura automaticamente",
+    "holdUntilBillingComplete": "Attiva solo se pagato",
+    "timeline": "Intervallo date"
+  },
+  "links": {
+    "subscription": "Abbonamento",
+    "invoices": "Fatture"
+  },
+  "options": {
+    "status": {
+      "Scheduled": "Pianificato",
+      "Active": "Attivo",
+      "Ended": "Terminato",
+      "Canceled": "Annullato"
+    },
+    "type": {
+      "Regular": "Regolare",
+      "Trial": "Prova",
+      "Pause": "Pausa"
+    },
+    "billingStatus": {
+      "Invoiced": "Fatturato",
+      "Paid": "Pagato",
+      "Canceled": "Annullato"
+    }
+  },
+  "tooltips": {
+    "endDate": "Una data esclusiva. Il periodo successivo inizia in questa data.",
+    "holdUntilBillingComplete": "Se non selezionato, l'abbonamento passa sempre ad Attivo all'inizio del periodo.\n\nSe selezionato, il passaggio ad Attivo richiede anche che lo Stato fatturazione sia Completato."
+  },
+  "actions": {
+    "processBilling": "Elabora fatturazione"
+  },
+  "otherFields": {
+    "createPaymentRequest": "Crea richiesta di pagamento",
+    "sendPaymentRequest": "Invia richiesta di pagamento",
+    "sendInvoice": "Invia fattura"
+  }
+}

@@ -1,0 +1,32 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "maxLength": 64
+        },
+        "order": {
+            "type": "int",
+            "readOnly": true
+        },
+        "description": {
+            "type": "text"
+        }
+    },
+    "links": {
+        "options": {
+            "type": "hasMany",
+            "foreign": "attribute",
+            "entity": "ProductAttributeOption"
+        },
+        "products": {
+            "type": "hasMany",
+            "foreign": "attributes",
+            "entity": "Product"
+        }
+    },
+    "collection": {
+        "orderBy": "order",
+        "order": "asc"
+    }
+}

@@ -1,0 +1,94 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "maxLength": 100,
+            "index": true,
+            "audited": true
+        },
+        "provider": {
+            "type": "enum",
+            "maxLength": 100,
+            "required": true,
+            "readOnlyAfterCreate": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PaymentChannel\\Provider\\Valid"
+            ],
+            "view": "modules/sales/views/payment-channel/fields/provider"
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Active",
+                "Inactive"
+            ],
+            "maxLength": 8,
+            "default": "Active",
+            "style": {
+                "Inactive": "info"
+            },
+            "audited": true
+        },
+        "data": {
+            "type": "jsonObject",
+            "notStorable": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "record": {
+            "type": "linkParent",
+            "readOnly": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "record": {
+            "type": "belongsToParent"
+        },
+        "methods": {
+            "type": "hasMany",
+            "entity": "PaymentMethod",
+            "foreign": "channel",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "name",
+        "order": "asc",
+        "textFilterFields": [
+            "name"
+        ]
+    }
+}

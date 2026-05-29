@@ -1,0 +1,29 @@
+{
+    "fields": {
+        "name": "Pavadinimas",
+        "qty": "Kiekis",
+        "quantity": "Kiekis",
+        "quantityInt": "Kiekis (Int)",
+        "unitPrice": "Vieneto kaina",
+        "amount": "Suma",
+        "amountCurrency": "Suma (valiuta)",
+        "unitPriceCurrency": "Vieneto kaina (valiuta)",
+        "product": "Produktas",
+        "order": "Linijos numeris",
+        "opportunity": "Galimybė",
+        "description": "Aprašymas",
+        "amountConverted": "Suma (perskaičiuota)",
+        "unitPriceConverted": "Vieneto kaina (perskaičiuota)",
+        "opportunityStage": "Etapas",
+        "listPriceConverted": "Sąrašo kaina (perskaičiuota)",
+        "listPrice": "Sąrašo kaina",
+        "discount": "Nuolaida (%)"
+    },
+    "links": {
+        "opportunity": "Galimybė",
+        "product": "Produktas"
+    },
+    "labels": {
+        "Opportunities": "Galimybės"
+    }
+}

@@ -1,0 +1,28 @@
+[
+    {
+        "name": "component",
+        "notSortable": true,
+        "width": 15
+    },
+    {
+        "name": "item",
+        "notSortable": true
+    },
+    {
+        "name": "taxCode",
+        "notSortable": true,
+        "width": 14
+    },
+    {
+        "name": "baseAmount",
+        "notSortable": true,
+        "width": 20,
+        "align": "right"
+    },
+    {
+        "name": "amount",
+        "notSortable": true,
+        "width": 20,
+        "align": "right"
+    }
+]

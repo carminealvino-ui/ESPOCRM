@@ -1,0 +1,76 @@
+{
+  "labels": {
+    "Create Quote": "Создать предложение",
+    "Taxes": "Налоги",
+    "Shipping Providers": "Службы доставок",
+    "Add Item": "Добавить пункт",
+    "Templates": "Шаблоны",
+    "Items": "Пункты",
+    "Send in Email": "Отправить по почте",
+    "Quote Items": "Пункты предложения"
+  },
+  "fields": {
+    "status": "Статус",
+    "number": "Номер предложения",
+    "numberA": "Номер предложения (автоинкрементный)",
+    "invoiceNumber": "Номер счёт-фактуры",
+    "account": "Контрагент",
+    "opportunity": "Сделка",
+    "billingAddress": "Платёжный адрес",
+    "shippingAddress": "Адрес доставки",
+    "billingContact": "Контакт по платежам",
+    "shippingContact": "Контакт по доставке",
+    "tax": "Налог",
+    "taxRate": "Налог (%)",
+    "shippingCost": "Стоимость доставки",
+    "shippingProvider": "Служба доставки",
+    "taxAmount": "Сумма налога",
+    "discountAmount": "Сумма скидки",
+    "amount": "Сумма",
+    "preDiscountedAmount": "Сумма до скидки",
+    "grandTotalAmount": "Общая сумма",
+    "itemList": "Список пунктов",
+    "dateQuoted": "Дата предложения",
+    "dateOrdered": "Дата заказа",
+    "dateInvoiced": "Дата фактуры",
+    "weight": "Вес",
+    "amountConverted": "Сумма (сконвертированная)",
+    "taxAmountConverted": "Сумма налога (сконвертированная)",
+    "shippingCostConverted": "Стоимость доставки (сконвертированная)",
+    "preDiscountedAmountConverted": "Сумма до скидки (сконвертированная)",
+    "discountAmountConverted": "Сумма скидки (сконвертированная)",
+    "grandTotalAmountConverted": "Общая сумма (сконвертированная)",
+    "shippingCostCurrency": "Валюта стоимости доставки",
+    "taxAmountCurrency": "Валюта суммы налога",
+    "discountAmountCurrency": "Валюта суммы скидки",
+    "amountCurrency": "Валюта суммы",
+    "preDiscountedAmountCurrency": "Валюта суммы до скидки",
+    "grandTotalAmountCurrency": "Валюта общей суммы",
+    "currency": "Валюта"
+  },
+  "links": {
+    "items": "Пункты",
+    "billingContact": "Контакт по платежам",
+    "shippingContact": "Контакт по доставке",
+    "shippingProvider": "Служба доставки",
+    "opportunity": "Сделка",
+    "account": "Контрагент",
+    "tax": "Налог",
+    "salesOrders": "Заказы",
+    "invoices": "Счёт-фактуры"
+  },
+  "options": {
+    "status": {
+      "Draft": "Черновик",
+      "In Review": "На рассмотрении",
+      "Presented": "Предложено",
+      "Approved": "Утверждено",
+      "Rejected": "Отклонено",
+      "Canceled": "Отменено"
+    }
+  },
+  "presetFilters": {
+    "actual": "Актуальные",
+    "approved": "Утверждённые"
+  }
+}

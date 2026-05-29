@@ -1,0 +1,16 @@
+[
+    {
+        "name": "name",
+        "width": 35,
+        "link": "true"
+    },
+    {
+        "name": "description"
+    },
+    {
+        "name": "status"
+    },
+    {
+        "name": "dateStart"
+    }
+]

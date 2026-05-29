@@ -1,16 +1,8 @@
 {
     "fields": {
-        "price": "Prezzo di listino (listino prezzi)",
-        "prezzoCodice": "Prezzo codice (IVA escl.)",
-        "prezzoCodiceIvaInclusa": "Prezzo codice (IVA incl.)"
-    },
-    "tooltips": {
-        "price": "Prezzo di listino come da comunicato Ariel (sul listino ARIEL Energia di solito IVA 10% inclusa, es. 5.200 €).",
-        "prezzoCodiceIvaInclusa": "Prezzo a codice dal listino PDF (es. 4.400 € IVI per COMBO 9+9). Obbligatorio per Minus/Plus sui contratti B2C.",
-        "prezzoCodice": "Importo netto (es. 4.000 €); si calcola dal prezzo codice IVI se il listino è IVA inclusa."
-    },
-    "labels": {
-        "Create ProductPrice": "Crea prezzo listino",
-        "ProductPrices": "Listino prezzo - Aggiornamenti"
+        "price": "Prezzo di Listino",
+        "name": "Listino Prezzi - Aggiornamento",
+        "priceConverted": "Prezzo di Listino (convertito)",
+        "priceCurrency": "Prezzo di Listino (valuta)"
     }
 }

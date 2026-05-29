@@ -1,0 +1,34 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "macroArea"
+                }
+            ],
+            [
+                {
+                    "name": "area"
+                },
+                {
+                    "name": "zona"
+                }
+            ],
+            [
+                {
+                    "name": "codiceCAP"
+                },
+                {
+                    "name": "name"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": ""
+    }
+]

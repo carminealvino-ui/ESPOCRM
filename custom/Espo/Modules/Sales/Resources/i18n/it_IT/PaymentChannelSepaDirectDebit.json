@@ -1,0 +1,6 @@
+{
+  "fields": {
+    "accountHolder": "Titolare del conto",
+    "creditorIdentifier": "Identificativo del creditore assegnato alla banca"
+  }
+}

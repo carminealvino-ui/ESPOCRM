@@ -1,0 +1,71 @@
+{
+    "labels": {
+        "Create ReceiptOrder": "Create Receipt Order",
+        "Add Item": "Add Item",
+        "Items": "Items",
+        "Received Inventory": "Received Inventory",
+        "Import Serial Numbers": "Import Serial Numbers",
+        "CSV File": "CSV File"
+    },
+    "fields": {
+        "status": "Status",
+        "number": "Number",
+        "numberA": "Number (auto-incremented)",
+        "account": "Account",
+        "supplier": "Supplier",
+        "purchaseOrder": "Purchase Order",
+        "returnOrder": "Return Order",
+        "shippingContact": "Shipping Contact",
+        "amount": "Amount",
+        "shippingProvider": "Shipping Provider",
+        "amountCurrency": "Amount Currency",
+        "itemList": "Item List",
+        "receivedItemList": "Received Item List",
+        "dateOrdered": "Date Ordered",
+        "dateReceived": "Date Received",
+        "weight": "Weight",
+        "currency": "Currency",
+        "isDone": "Is Done",
+        "warehouse": "Warehouse",
+        "fieldDelimiter": "Field Delimiter",
+        "textQualifier": "Text Qualifier",
+        "headerRow": "Header Row",
+        "columnNumber": "Column Number",
+        "preview": "Preview"
+    },
+    "links": {
+        "items": "Items",
+        "receivedItems": "Received Items",
+        "shippingContact": "Shipping Contact",
+        "shippingProvider": "Shipping Provider",
+        "purchaseOrder": "Purchase Order",
+        "returnOrder": "Return Order",
+        "account": "Account",
+        "supplier": "Supplier",
+        "inventoryTransactions": "Inventory Transactions",
+        "warehouse": "Warehouse"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Ready": "Ready",
+            "Completed": "Completed",
+            "Canceled": "Canceled"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "completed": "Completed"
+    },
+    "messages": {
+        "inventoryIsInAdjustment": "Can't save as inventory is currently in a started adjustment.",
+        "serialNumbersExists": "Some serial numbers already exists.\n\n{numbers}",
+        "serialNumberImportLimitExceeded": "Cannot import more than {maxSize} serial numbers.",
+        "serialNumberAlreadyInStock": "Serial number already in stock.\n\n{numbers}",
+        "receivedSerialNumberNotOne": "Quantity of a received item with a serial number should be one.",
+        "receivedInventoryNumberProductMismatch": "Inventory number does not correspond to the product.",
+        "receivedInventoryNumberIsEmpty": "Not specified inventory number.",
+        "receivedQuantityMismatch": "Received quantity mismatch.",
+        "emptyQuantityReceived": "Need to specify Quantity Received before completing the order."
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "entity": true,
+    "object": false,
+    "tab": true,
+    "acl": true,
+    "aclPortal": false,
+    "aclLevelList": [
+        "all",
+        "team",
+        "no"
+    ],
+    "module": "Sales",
+    "customizable": false,
+    "layouts": false,
+    "importable": true,
+    "preserveAuditLog": true,
+    "currencyConversionAccessRequiredFieldList": []
+}

@@ -1,0 +1,34 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 20
+    },
+    {
+        "name": "basis",
+        "width": 16
+    },
+    {
+        "name": "taxCode",
+        "width": 16
+    },
+    {
+        "name": "taxDisplay",
+        "width": 20
+    },
+    {
+        "name": "rate",
+        "width": 16
+    },
+    {
+        "name": "shippingTaxCode",
+        "width": 16
+    },
+    {
+        "name": "shippingMode",
+        "width": 20
+    }
+]

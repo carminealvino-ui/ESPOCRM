@@ -1,0 +1,30 @@
+{
+  "fields": {
+    "name": "Betreff",
+    "qty": "Mng",
+    "quantity": "Menge",
+    "quantityInt": "Menge (Int)",
+    "unitPrice": "Einzelpreis",
+    "amount": "Betrag",
+    "amountCurrency": "Betrag (Währung)",
+    "unitPriceCurrency": "Einzelpreis (Währung)",
+    "product": "Produkt",
+    "order": "Positionsnummer",
+    "opportunity": "Verkaufschance",
+    "description": "Beschreibung",
+    "discount": "Rabatt (%)",
+    "amountConverted": "Betrag (konvertiert)",
+    "unitPriceConverted": "Einzelpreis (konvertiert)",
+    "listPrice": "Listpreis",
+    "listPriceConverted": "Listpreis (konvertiert)",
+    "listPriceCurrency": "Listpreis Währung",
+    "opportunityStage": "Verkaufsphase"
+  },
+  "links": {
+    "opportunity": "Verkaufschance",
+    "product": "Produkt"
+  },
+  "labels": {
+    "Opportunities": "Verkaufschancen"
+  }
+}

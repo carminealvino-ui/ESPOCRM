@@ -1,15 +1,20 @@
 {
     "fields": {
-        "listPrice": "Prezzo di listino (IVA escl.)",
-        "unitPrice": "Prezzo unitario (IVA escl.)",
-        "prezzoCodice": "Prezzo codice (IVA escl.)",
-        "prezzoCodiceIvaInclusa": "Prezzo codice (IVA incl.)",
-        "prezzoListinoIvaInclusa": "Prezzo listino da listino prezzi (IVA incl.)"
+        "denominazione": "Denominazione",
+        "opportunita": "Opportunità",
+        "prezzoCodice": "Prezzo Codice",
+        "prezzoCodiceCurrency": "Prezzo Codice (Valuta)",
+        "prezzoCodiceConverted": "Prezzo Codice (Convertito)",
+        "name": "Prodotto",
+        "contratti": "Contratti",
+        "brand": "Brand",
+        "listPrice": "Prezzo di Listino",
+        "listPriceConverted": "Prezzo di Listino (convertito)",
+        "listPriceCurrency": "Prezzo di Listino (valuta)"
     },
-    "tooltips": {
-        "listPrice": "Importo netto sulla scheda prodotto (base provvigioni e margini). Non coincide con la colonna «Prezzo di listino» nella tab Prezzi del listino ARIEL quando il listino è IVA inclusa (es. 5.200 € IVI → 4.727,27 € qui).",
-        "prezzoCodice": "Prezzo a codice dal PDF listino, IVA esclusa (es. 4.000 € da 4.400 € IVI). Usato sui contratti; se vuoto, verificare denominazione prodotto vs CSV listino.",
-        "prezzoCodiceIvaInclusa": "Prezzo a codice come da listino PDF (IVA 10% inclusa). Usato per Minus/Plus B2C sul contratto.",
-        "prezzoListinoIvaInclusa": "Allineato al prezzo nella tab Prezzi del listino ARIEL (IVA inclusa). Aggiornato automaticamente quando si modifica una riga ProductPrice su listino IVA inclusa."
+    "links": {
+        "opportunita": "Opportunità",
+        "contratti": "Contratti",
+        "brand": "Brand"
     }
 }

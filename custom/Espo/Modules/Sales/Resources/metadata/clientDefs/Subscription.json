@@ -1,0 +1,178 @@
+{
+    "controller": "controllers/record",
+    "modelDefaultsPreparator": "modules/sales/handlers/order/model-defaults-preparator",
+    "mergeDisabled": true,
+    "boolFilterList": [
+        "onlyMy"
+    ],
+    "filterList": [
+        "actual",
+        "active"
+    ],
+    "recordViews": {
+        "detail": "sales:views/quote/record/detail",
+        "edit": "sales:views/quote/record/edit",
+        "detailSmall": "sales:views/quote/record/detail-small",
+        "editSmall": "sales:views/quote/record/edit-small"
+    },
+    "viewSetupHandlers": {
+        "list": ["sales:handlers/info"],
+        "record/detail": [
+            "sales:handlers/quote/setup-record-detail",
+            "modules/sales/handlers/subscription/setup-record-detail"
+        ],
+        "record/edit": [
+            "sales:handlers/quote/setup-record-detail",
+            "modules/sales/handlers/subscription/setup-record-detail"
+        ]
+    },
+    "bottomPanels": {
+        "detail": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "sales:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            },
+            {
+                "name": "invoices",
+                "view": "modules/sales/views/subscription/record/panels/invoices",
+                "aclScope": "Invoice"
+            },
+            {
+                "name": "creditNotes",
+                "view": "modules/sales/views/subscription/record/panels/credit-notes",
+                "aclScope": "CreditNote"
+            }
+        ],
+        "edit": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "sales:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "detailSmall": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "editSmall": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ]
+    },
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "name": "createFromTemplate",
+                    "label": "Create with Template",
+                    "handler": "modules/sales/handlers/subscription/create-from-template-button",
+                    "checkVisibilityFunction": "isVisible",
+                    "actionFunction": "action"
+                },
+                false,
+                {
+                    "label": "Billing Plans",
+                    "link": "#SubscriptionBillingPlan",
+                    "acl": "read",
+                    "aclScope": "SubscriptionBillingPlan"
+                },
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.SubscriptionTemplate",
+                    "link": "#SubscriptionTemplate",
+                    "acl": "read",
+                    "aclScope": "SubscriptionTemplate"
+                },
+                false,
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.SubscriptionItem",
+                    "link": "#SubscriptionItem",
+                    "acl": "read",
+                    "aclScope": "SubscriptionItem"
+                },
+                {
+                    "labelTranslation": "Subscription.links.periods",
+                    "link": "#SubscriptionPeriod",
+                    "acl": "read",
+                    "aclScope": "SubscriptionPeriod"
+                }
+            ]
+        }
+    },
+    "relationshipPanels": {
+        "account": {
+            "selectMandatoryAttributeList": [
+                "priceBookId",
+                "priceBookName",
+                "paymentMethodId",
+                "paymentMethodName"
+            ],
+            "selectFieldHandler": "modules/sales/handlers/subscription/select-account-field"
+        },
+        "tax": {
+            "selectMandatoryAttributeList": [
+                "rate",
+                "basis",
+                "taxCodeId",
+                "taxCodeName",
+                "shippingMode"
+            ],
+            "selectFieldHandler": "modules/sales/handlers/quote/select-tax-field"
+        },
+        "periods": {
+            "layout": "listForSubscription",
+            "unlinkDisabled": true,
+            "createAttributeMap": {
+                "lastPeriodEndDate": "startDate"
+            },
+            "rowActionList": [
+                "processBilling"
+            ]
+        },
+        "updates": {
+            "layout": "listForSubscription",
+            "unlinkDisabled": true,
+            "createAttributeMap": {
+                "billingPlanId": "billingPlanId",
+                "priceBookId": "priceBookId",
+                "isTaxInclusive": "isTaxInclusive",
+                "amount": "amount",
+                "amountCurrency": "amountCurrency",
+                "sendInvoices": "sendInvoice",
+                "interval": "interval"
+            },
+            "createHandler": "modules/sales/handlers/subscription/create-update"
+        },
+        "priceBook": {
+            "selectFieldHandler": "modules/sales/handlers/quote/select-price-book-field"
+        },
+        "paymentMethod": {
+            "selectPrimaryFilterName": "activeInbound"
+        }
+    },
+    "additionalLayouts": {},
+    "calculationHandler": "sales:quote-calculation-handler",
+    "iconClass": "fas fa-pen-nib"
+}

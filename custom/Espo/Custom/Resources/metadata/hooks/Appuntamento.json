@@ -1,0 +1,8 @@
+{
+    "beforeSave": {
+        "globalLogic": {
+            "className": "Espo\\Custom\\Hooks\\Appuntamento\\GlobalLogic",
+            "order": 9
+        }
+    }
+}

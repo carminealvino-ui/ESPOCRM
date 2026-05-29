@@ -1,0 +1,15 @@
+{
+    "fields": {
+        "dateInvoiced": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "status",
+                        "value": "Approved"
+                    }
+                ]
+            }
+        }
+    }
+}
