@@ -22,10 +22,6 @@ FILES=(
   "tools/fix-contratto-importo-minusplus-standalone.php"
 )
 
-CLIENT_FILES=(
-  "client/custom/src/handlers/quote/calculation-handler.js"
-)
-
 for rel in "${FILES[@]}"; do
   dest="${CRM_ROOT}/${rel}"
   mkdir -p "$(dirname "${dest}")"
@@ -33,12 +29,7 @@ for rel in "${FILES[@]}"; do
   echo "OK ${rel}"
 done
 
-for rel in "${CLIENT_FILES[@]}"; do
-  dest="${CRM_ROOT}/${rel}"
-  mkdir -p "$(dirname "${dest}")"
-  curl -fsSL "${BASE}/${rel}?t=$(date +%s)" -o "${dest}"
-  echo "OK ${rel}"
-done
+rm -f "${CRM_ROOT}/client/custom/src/handlers/quote/calculation-handler.js"
 
 php command.php rebuild
 rm -rf data/cache/*

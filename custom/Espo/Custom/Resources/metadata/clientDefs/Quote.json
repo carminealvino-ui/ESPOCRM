@@ -1,6 +1,5 @@
 {
     "controller": "controllers/record",
-    "calculationHandler": "custom:handlers/quote/calculation-handler",
     "viewSetupHandlers": {
         "record/detail": [
             "__APPEND__",
