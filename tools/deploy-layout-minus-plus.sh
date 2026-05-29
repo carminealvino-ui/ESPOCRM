@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 # =============================================================================
+# ATTENZIONE: questo script SOVRASCRIVE detail.json Quote/Opportunity sul server.
+# Preferire: backup-quote-layouts.sh + Layout Manager, oppure apply-quote-detail-prezzi-sample.sh
+# I deploy prezzi sicuri sono deploy-contratto-prezzi-curl.sh (NON toccano layout).
+# =============================================================================
 # Layout Contratto (Quote): solo prezzi + Minus/Plus — NESSUN campo provvigioni
 # Layout Opportunità: importo venduto + Minus/Plus
 #
