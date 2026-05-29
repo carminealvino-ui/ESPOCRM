@@ -2,8 +2,9 @@
 # Deploy SOLO PHP prezzi contratto — NON tocca layout, clientDefs, entityDefs.
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL ".../cursor/quote-prezzi-iva-inclusa-9999/tools/deploy-contratto-prezzi-curl.sh?t=$(date +%s)" -o /tmp/deploy-prezzi.sh
-#   bash /tmp/deploy-prezzi.sh
+# Se tools/ non esiste sul server:
+#   curl -fsSL ".../tools/bootstrap-server-tools.sh?t=$(date +%s)" | bash
+#   bash tools/deploy-contratto-prezzi-curl.sh
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"

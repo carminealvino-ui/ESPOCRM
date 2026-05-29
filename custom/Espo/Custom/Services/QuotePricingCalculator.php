@@ -780,8 +780,21 @@ class QuotePricingCalculator
         $ivi = $this->floatOrNull($entity->get('prezzoCodiceIvaInclusa'))
             ?? $this->floatOrNull($opportunity?->get('prezzoCodiceIvaInclusa'));
 
-        if ($net !== null && $net > 0 && $ivi !== null && $ivi > 0 && abs($net - $ivi) < 0.02) {
-            return round($ivi / (1 + $aliquota / 100), 2);
+        if ($ivi !== null && $ivi > 0) {
+            $fromIvi = round($ivi / (1 + $aliquota / 100), 2);
+
+            if ($net === null || $net <= 0) {
+                return $fromIvi;
+            }
+
+            if (abs($net - $ivi) < 0.02) {
+                return $fromIvi;
+            }
+
+            // Campo «IVA escl.» con vecchio lordo errato (es. 4200 con codice IVI 4400 → netto 4000).
+            if ($net > $fromIvi + 0.02 && $net < $ivi - 0.02) {
+                return $fromIvi;
+            }
         }
 
         if (($net === null || $net <= 0) && $ivi !== null && $ivi > 0) {

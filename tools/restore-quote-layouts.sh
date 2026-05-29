@@ -13,9 +13,18 @@ BACKUP_ROOT="${CRM_ROOT}/custom/backup-layouts"
 LAYOUT_DEST="${CRM_ROOT}/custom/Espo/Custom/Resources/layouts/Quote"
 
 if [[ ! -d "${BACKUP_ROOT}" ]]; then
-  echo "ERRORE: nessuna cartella ${BACKUP_ROOT}"
-  echo "Esegui prima: bash tools/backup-quote-layouts.sh"
-  echo "Se non hai mai fatto backup, ripristina da Admin → Layout Manager → Quote."
+  echo "ERRORE: nessun backup in ${BACKUP_ROOT} (non esiste ancora)."
+  echo ""
+  echo "Scarica gli script sul server:"
+  echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/quote-prezzi-iva-inclusa-9999/tools/bootstrap-server-tools.sh?t=\$(date +%s)\" | bash"
+  echo ""
+  if [[ -d "${LAYOUT_DEST}" ]]; then
+    STAMP="$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "${BACKUP_ROOT}/${STAMP}/Quote"
+    cp -a "${LAYOUT_DEST}/." "${BACKUP_ROOT}/${STAMP}/Quote/"
+    echo "Salvato comunque lo stato ATTUALE in: ${BACKUP_ROOT}/${STAMP}/Quote"
+    echo "(non c'è un backup vecchio da ripristinare — solo Layout Manager o apply-quote-detail-prezzi-sample.sh)"
+  fi
   exit 1
 fi
 

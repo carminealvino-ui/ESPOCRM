@@ -9,6 +9,17 @@ Gli script **`deploy-contratto-prezzi-curl.sh`** e **`deploy-emergency-restore-c
 | `deploy-layout-minus-plus.sh` | Sostituisce `detail.json` (e Opportunità) con la versione nel repo |
 | Deploy vecchi / branch `provvigioni-manuali-fase-a-9999` con layout nel curl | Stesso problema |
 
+## Prima volta sul server (cartella `tools/` assente)
+
+Gli script **non** sono nella installazione Espo: vanno scaricati da GitHub:
+
+```bash
+cd ~/public_html/crm/mec-group
+curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/quote-prezzi-iva-inclusa-9999/tools/bootstrap-server-tools.sh?t=$(date +%s)" | bash
+```
+
+Poi `bash tools/backup-quote-layouts.sh` funziona.
+
 ## Backup prima di qualsiasi modifica
 
 ```bash

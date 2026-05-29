@@ -99,6 +99,8 @@ fwrite(STDOUT, json_encode([
     'grandTotalAmount' => $fresh->get('grandTotalAmount'),
     'amount' => $fresh->get('amount'),
     'taxAmount' => $fresh->get('taxAmount'),
+    'prezzoCodiceIvaEsclusa' => $fresh->get('prezzoCodiceIvaEsclusa'),
+    'prezzoCodiceIvaInclusa' => $fresh->get('prezzoCodiceIvaInclusa'),
     'minusPlus' => $fresh->get('minusPlus'),
     'riga' => $first ? [
         'listPrice' => $first['listPrice'] ?? null,
