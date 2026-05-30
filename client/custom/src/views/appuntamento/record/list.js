@@ -10,6 +10,8 @@ define('custom:views/appuntamento/record/list', ['views/record/list'], function 
 
         checkAllResultMassActionList: [],
 
+        rowActionsColumnWidth: 22,
+
         setup: function () {
             Dep.prototype.setup.call(this);
 
@@ -22,6 +24,7 @@ define('custom:views/appuntamento/record/list', ['views/record/list'], function 
         afterRender: function () {
             Dep.prototype.afterRender.call(this);
 
+            this.$el.addClass('list-appuntamento-fullwidth');
             this.$el.find('th.checkbox-cell, td.checkbox-cell').addClass('hidden');
         },
     });
