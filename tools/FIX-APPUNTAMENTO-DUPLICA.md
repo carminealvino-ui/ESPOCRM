@@ -22,7 +22,7 @@ Su server **non esiste** `client/modules/crm/` né il file transpiled → il pac
 
 ```bash
 cd ~/public_html/crm/mec-group
-curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-fix-appuntamento-duplica.sh?t=$(date +%s)" | bash
+curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-appuntamento-produzione.sh?t=$(date +%s)" | bash
 ```
 
 Oppure dopo merge su `main`, sostituire il branch nell’URL con `main`.

@@ -10,7 +10,13 @@ Non è il database: sono i **metadata client** che puntano a viste inesistenti.
 
 ```bash
 cd ~/public_html/crm/mec-group
-curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-appuntamento-emergenza-produzione.sh?t=$(date +%s)" | bash
+curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-appuntamento-produzione.sh?t=$(date +%s)" | bash
+```
+
+Verifica (solo lettura):
+
+```bash
+bash tools/verifica-appuntamento-produzione.sh
 ```
 
 1. Salva copia in `custom/backup-layouts/YYYYMMDD-HHMMSS/`
