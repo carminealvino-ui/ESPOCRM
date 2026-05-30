@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # PRODUZIONE — ripristina gestione Appuntamenti (Crea, Modifica, Duplica, scheda).
 # Non usa crm:views/meeting/* (modulo client CRM assente su molti server MEC).
+# NON tocca i18n/it_IT — vedi tools/REGOLE-DEPLOY-NO-I18N.md
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-appuntamento-produzione.sh?t=$(date +%s)" | bash

@@ -10,7 +10,8 @@ LABEL="${1:-deploy}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 DEST="${CRM_ROOT}/custom/backup-layouts/${STAMP}"
 
-# File Appuntamento funzionante in produzione (rollback deploy)
+# File Appuntamento funzionante in produzione (rollback deploy).
+# i18n/it_IT escluso di proposito — file etichette separato, vedi REGOLE-DEPLOY-NO-I18N.md
 BACKUP_PATHS=(
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
