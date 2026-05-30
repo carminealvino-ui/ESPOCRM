@@ -8,7 +8,7 @@
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-LABEL="${1:-appuntamento-stabile-funzionante}"
+LABEL="${1:-appuntamento-elenco-ok-$(date +%Y%m%d)}"
 FIX="appuntamento-produzione-ok"
 DATA="$(date +%Y%m%d-%H%M%S)"
 
@@ -63,9 +63,20 @@ copy_dev layouts "custom/Espo/Custom/Resources/layouts/Appuntamento/massUpdate.j
 copy_dev metadata/clientDefs "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json" "Appuntamento.json"
 copy_dev metadata/entityDefs "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json" "Appuntamento.json"
 copy_dev metadata/logicDefs "custom/Espo/Custom/Resources/metadata/logicDefs/Appuntamento.json" "Appuntamento.json"
+copy_dev client/detail "client/custom/src/views/appuntamento/record/list.js" "list.js"
 copy_dev client/detail "client/custom/src/views/appuntamento/record/detail.js" "detail.js"
 copy_dev client/detail "client/custom/src/views/appuntamento/record/edit.js" "edit.js"
 copy_dev client/detail "client/custom/src/views/appuntamento/record/edit-small.js" "edit-small.js"
+copy_dev metadata/clientDefs "custom/Espo/Custom/Resources/metadata/app/client.json" "client.json"
+
+mkdir -p "${CRM_ROOT}/backup_dev/client/css"
+for css in custom-ui.css appuntamento-list.css; do
+  src="${CRM_ROOT}/client/custom/css/${css}"
+  if [[ -f "${src}" ]]; then
+    cp -a "${src}" "${CRM_ROOT}/backup_dev/client/css/${DATA}_${FIX}_${css}"
+    echo "OK backup_dev/client/css/${DATA}_${FIX}_${css}"
+  fi
+done
 
 mkdir -p "${CRM_ROOT}/backup_dev/client/fields"
 for f in fornitore-partner-cascade product-brand-by-partner product-category-by-brand reminders-disabled; do
