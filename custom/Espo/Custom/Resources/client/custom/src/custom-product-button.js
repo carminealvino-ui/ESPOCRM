@@ -1,10 +1,4 @@
-// ========================================
-// VERSIONE: 1.0.3
-// DATA: 2026-05-28
-// FILE: custom/Espo/Custom/Resources/client/custom/src/custom-product-button.js
-// ----------------------------------------
-// Bottone "Crea prodotto" nella sezione Articoli del Contratto.
-// ========================================
+// DEPRECATO — non caricare da app/client.json scriptList.
 
 (function () {
     'use strict';
