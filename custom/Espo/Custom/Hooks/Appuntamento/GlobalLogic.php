@@ -49,7 +49,7 @@
 // ✔ NON sovrascrive dati manuali gia' presenti
 //
 // ROLLBACK:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-appuntamento-globallogic-1.6.0-prospect-lead-stabile.php
 //
 // 1.6.2
@@ -66,7 +66,7 @@
 // - altri sottostati Held -> In Process
 //
 // ROLLBACK:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-appuntamento-globallogic-1.6.1-held-lead-stabile.php
 //
 // 1.6.3
@@ -77,7 +77,7 @@
 // ✔ Campo UI: Descrizione Attività
 //
 // ROLLBACK:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-appuntamento-globallogic-1.6.2-description-prospect-stabile.php
 //
 // 1.6.4
@@ -90,7 +90,7 @@
 // ✔ NON sovrascrive dati manuali gia' presenti sul Lead
 //
 // ROLLBACK:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-appuntamento-globallogic-1.6.3-brand-partner-sync-stabile.php
 //
 // 1.6.5
@@ -101,7 +101,7 @@
 // ✔ Compila anche fornitorePartner dal brand
 //
 // ROLLBACK:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-appuntamento-globallogic-1.6.4-brand-fallback-stabile.php
 //
 // 1.7.1

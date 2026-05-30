@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Sposta backup dalla root piatta di hooks_cleanup → sottocartelle per entità.
+# Sposta backup dalla root piatta di backup_dev → sottocartelle per entità.
 # Sicuro: non cancella, solo mv. Eseguire da CRM_ROOT.
 #
 #   cd ~/public_html/crm/mec-group
-#   bash backup/hooks_cleanup/_scripts/migra-struttura-server.sh
+#   bash backup_dev/_scripts/migra-struttura-server.sh
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$(pwd)}"
-ROOT="${CRM_ROOT}/backup/hooks_cleanup"
+ROOT="${CRM_ROOT}/backup_dev"
 
 if [[ ! -d "${ROOT}" ]]; then
   echo "ERRORE: ${ROOT} non trovata"

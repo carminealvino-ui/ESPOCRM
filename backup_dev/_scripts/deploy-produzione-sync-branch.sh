@@ -1,9 +1,9 @@
 #!/bin/bash
 # ========================================
 # Deploy produzione — sync branch GitHub → CRM
-# Uso: bash backup/hooks_cleanup/_scripts/deploy-produzione-sync-branch.sh
+# Uso: bash backup_dev/_scripts/deploy-produzione-sync-branch.sh
 # Root CRM: ~/public_html/crm/mec-group
-# Archivi completi: backup/hooks_cleanup/_archives/
+# Archivi completi: backup_dev/_archives/
 # ========================================
 
 set -euo pipefail
@@ -12,7 +12,7 @@ BRANCH="${DEPLOY_BRANCH:-cursor/opportunity-globallogic-9999}"
 REPO="${DEPLOY_REPO:-carminealvino-ui/ESPOCRM}"
 CRM_ROOT="${CRM_ROOT:-$(pwd)}"
 TS="$(date +%Y-%m-%d-%H%M)"
-BACKUP_DIR="${CRM_ROOT}/backup/hooks_cleanup/_archives"
+BACKUP_DIR="${CRM_ROOT}/backup_dev/_archives"
 TMP_DIR="$(mktemp -d)"
 
 cd "${CRM_ROOT}"

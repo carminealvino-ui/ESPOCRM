@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Ripristino Appuntamento da backup/hooks_cleanup (struttura per entità) + fix Crea/Duplica.
+# Ripristino Appuntamento da backup_dev + fix Crea/Duplica.
 #
 #   cd ~/public_html/crm/mec-group
-#   bash backup/hooks_cleanup/_scripts/migra-struttura-server.sh   # se file ancora in root
+#   bash backup_dev/_scripts/migra-struttura-server.sh
 #   curl -fsSL ".../tools/restore-appuntamento-da-backup-hooks-cleanup.sh?t=$(date +%s)" | bash
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-HOOK_ROOT="${CRM_ROOT}/backup/hooks_cleanup"
+HOOK_ROOT="${CRM_ROOT}/backup_dev"
 APP="${HOOK_ROOT}/Appuntamento"
 BRANCH="${BRANCH:-main}"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
@@ -15,7 +15,7 @@ BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 cd "${CRM_ROOT}" || exit 1
 
 mkdir -p tools custom/backup-layouts
-for tool in backup-produzione.sh rollback-produzione.sh backup-hooks-cleanup-save.sh; do
+for tool in backup-produzione.sh rollback-produzione.sh backup-dev-save.sh; do
   curl -fsSL "${BASE}/tools/${tool}?t=$(date +%s)" -o "${CRM_ROOT}/tools/${tool}" 2>/dev/null || true
   chmod +x "${CRM_ROOT}/tools/${tool}" 2>/dev/null || true
 done
