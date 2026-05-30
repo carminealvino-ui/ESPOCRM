@@ -173,7 +173,7 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.7.3'
+                '1.7.4'
             );
 
             $this->applyDefaultDurationOnCreate($entity);
@@ -305,6 +305,8 @@ class GlobalLogic
                     $leadName
                 );
             }
+
+            $this->syncAccountLink($entity, $lead, $prospect);
 
             // ========================================
             // SYNC FORNITORE / BRAND (1.6.4)
@@ -924,6 +926,44 @@ class GlobalLogic
                 $category->get('productBrandName')
             );
         }
+    }
+
+    /**
+     * Collega l'appuntamento al Cliente (Account) per il subpanel in scheda Account.
+     */
+    private function syncAccountLink(Entity $entity, ?Entity $lead, ?Entity $prospect): void
+    {
+        $accountId = null;
+
+        if ($entity->get('parentType') === 'Account' && $entity->get('parentId')) {
+            $accountId = $entity->get('parentId');
+        }
+
+        if (!$accountId && $prospect && $prospect->get('clienteId')) {
+            $candidate = $prospect->get('clienteId');
+            if ($this->entityManager->getEntityById('Account', $candidate)) {
+                $accountId = $candidate;
+            }
+        }
+
+        if (!$accountId && $lead && $lead->get('createdAccountId')) {
+            $candidate = $lead->get('createdAccountId');
+            if ($this->entityManager->getEntityById('Account', $candidate)) {
+                $accountId = $candidate;
+            }
+        }
+
+        if (!$accountId) {
+            return;
+        }
+
+        $account = $this->entityManager->getEntityById('Account', $accountId);
+        if (!$account) {
+            return;
+        }
+
+        $entity->set('accountId', $accountId);
+        $entity->set('accountName', $account->get('name'));
     }
 
 }

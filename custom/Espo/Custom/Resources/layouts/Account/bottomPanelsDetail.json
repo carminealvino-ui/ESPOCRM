@@ -5,19 +5,25 @@
     "_delimiter_": {
         "disabled": true
     },
-    "appuntamentoChildren": {
+    "appuntamenti": {
         "index": 0
     },
-    "contacts": {
+    "appuntamentoChildren": {
         "index": 1
     },
-    "opportunities": {
+    "quotes": {
         "index": 2
     },
-    "cases": {
+    "contacts": {
         "index": 3
     },
-    "documents": {
+    "opportunities": {
         "index": 4
+    },
+    "cases": {
+        "index": 5
+    },
+    "documents": {
+        "index": 6
     }
 }

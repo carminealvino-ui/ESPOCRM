@@ -137,6 +137,11 @@
         "prospect": {
             "type": "link"
         },
+        "account": {
+            "type": "link",
+            "entity": "Account",
+            "isCustom": true
+        },
         "cAPDescrizione": {
             "readOnly": true,
             "type": "foreign",
@@ -542,6 +547,13 @@
             "type": "belongsTo",
             "foreign": "appuntamenti",
             "entity": "Prospect",
+            "audited": false,
+            "isCustom": true
+        },
+        "account": {
+            "type": "belongsTo",
+            "foreign": "appuntamenti",
+            "entity": "Account",
             "audited": false,
             "isCustom": true
         },
