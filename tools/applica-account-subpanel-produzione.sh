@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 # Subpanel Appuntamenti + Contratti (Quote) su scheda Cliente (Account).
 #
-#   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/account-subpanel-appuntamenti-contratti-9999/tools/applica-account-subpanel-produzione.sh?t=$(date +%s)" -o /tmp/applica-account.sh
+# ATTENZIONE: repo GitHub PRIVATO → curl raw.githubusercontent.com = 404 dal server.
+# Usare invece:
+#   bash tools/deploy-bundles/account-subpanel/applica-locale.sh
+# (dopo aver caricato la cartella deploy-bundles/account-subpanel via SFTP)
+#
+# Se raw funziona (repo pubblico o token):
+#   curl -fsSL ".../tools/applica-account-subpanel-produzione.sh" -o /tmp/applica-account.sh
 #   bash /tmp/applica-account.sh
 set -euo pipefail
 

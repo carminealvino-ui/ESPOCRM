@@ -1,0 +1,29 @@
+{
+    "stream": {
+        "disabled": true
+    },
+    "_delimiter_": {
+        "disabled": true
+    },
+    "appuntamenti": {
+        "index": 0
+    },
+    "appuntamentoChildren": {
+        "index": 1
+    },
+    "quotes": {
+        "index": 2
+    },
+    "contacts": {
+        "index": 3
+    },
+    "opportunities": {
+        "index": 4
+    },
+    "cases": {
+        "index": 5
+    },
+    "documents": {
+        "index": 6
+    }
+}

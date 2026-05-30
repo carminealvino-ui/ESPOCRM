@@ -1,0 +1,244 @@
+{
+    "links": {
+        "appuntamenti": {
+            "type": "hasMany",
+            "foreign": "account",
+            "entity": "Appuntamento",
+            "audited": false,
+            "isCustom": true
+        },
+        "appuntamentoChildren": {
+            "type": "hasChildren",
+            "foreign": "parent",
+            "entity": "Appuntamento",
+            "isCustom": true
+        },
+        "pagamentiProvvigionali": {
+            "type": "hasMany",
+            "foreign": "cliente",
+            "entity": "PagamentiProvvigionali",
+            "audited": false,
+            "isCustom": true
+        },
+        "prospect": {
+            "type": "hasOne",
+            "foreign": "cliente",
+            "entity": "Prospect",
+            "isCustom": true
+        },
+        "provvigioni": {
+            "type": "hasMany",
+            "foreign": "cliente",
+            "entity": "Provvigione",
+            "audited": false,
+            "isCustom": true
+        }
+    },
+    "fields": {
+        "industry": {
+            "options": [
+                "",
+                "Construction",
+                "Consulting",
+                "Electronics",
+                "Entertainment & Leisure",
+                "Healthcare",
+                "Hospitality",
+                "Real Estate",
+                "Retail",
+                "Service",
+                "Travel",
+                "Wholesale",
+                "Ristorazione"
+            ],
+            "style": {
+                "": null,
+                "Construction": null,
+                "Consulting": null,
+                "Electronics": null,
+                "Entertainment & Leisure": null,
+                "Healthcare": null,
+                "Hospitality": null,
+                "Real Estate": null,
+                "Retail": null,
+                "Service": null,
+                "Travel": null,
+                "Wholesale": null,
+                "Ristorazione": null
+            }
+        },
+        "name": {
+            "options": [],
+            "required": false
+        },
+        "codiceCliente": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "partitaIVA": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "codicePOS": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "type": {
+            "options": [
+                "",
+                "B2B",
+                "B2C"
+            ],
+            "style": {
+                "": null,
+                "B2B": null,
+                "B2C": null
+            }
+        },
+        "meseImportazioneCB": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "cluster": {
+            "type": "enum",
+            "options": [
+                "",
+                "Micro",
+                "Small",
+                "Medium",
+                "Enterprise"
+            ],
+            "style": {
+                "": null,
+                "Micro": null,
+                "Small": null,
+                "Medium": null,
+                "Enterprise": null
+            },
+            "default": null,
+            "isCustom": true
+        },
+        "b2B": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "consistenze": {
+            "type": "multiEnum",
+            "storeArrayValues": true,
+            "options": [
+                "VDF Voce",
+                "VDF Dati",
+                "VDF M2M",
+                "VDF DSL",
+                "VDF ONU",
+                "VDF ONA",
+                "VDF DEAL",
+                "VDF Digital"
+            ],
+            "style": {
+                "VDF Voce": null,
+                "VDF Dati": null,
+                "VDF M2M": null,
+                "VDF DSL": null,
+                "VDF ONU": null,
+                "VDF ONA": null,
+                "VDF DEAL": null,
+                "VDF Digital": null
+            },
+            "isCustom": true,
+            "default": []
+        },
+        "segmento": {
+            "type": "enum",
+            "options": [
+                "",
+                "B2B",
+                "B2C"
+            ],
+            "style": {
+                "": null,
+                "B2B": null,
+                "B2C": null
+            },
+            "default": "",
+            "isCustom": true
+        },
+        "whatsApp": {
+            "type": "url",
+            "isCustom": true
+        },
+        "stato": {
+            "type": "enum",
+            "options": [
+                "Nuovo",
+                "Customer Base",
+                "Recuperato",
+                "Perso"
+            ],
+            "style": {
+                "Nuovo": null,
+                "Customer Base": null,
+                "Recuperato": null,
+                "Perso": null
+            },
+            "default": "Nuovo",
+            "isCustom": true
+        },
+        "shippingAddress": {
+            "viewMap": true
+        },
+        "pagamentiProvvigionali": {
+            "type": "linkMultiple",
+            "layoutDetailDisabled": true,
+            "layoutMassUpdateDisabled": true,
+            "noLoad": true,
+            "importDisabled": true,
+            "isCustom": true
+        },
+        "azienda": {
+            "type": "multiEnum",
+            "storeArrayValues": true,
+            "options": [
+                "ARQUATI",
+                "GFB",
+                "ARTEL",
+                "PROGETTO",
+                "ARIEL"
+            ],
+            "style": {
+                "ARQUATI": null,
+                "GFB": null,
+                "ARTEL": null,
+                "PROGETTO": null,
+                "ARIEL": null
+            },
+            "isCustom": true
+        },
+        "prospect": {
+            "type": "linkOne"
+        },
+        "originalLead": {
+            "readOnly": false
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [
+            "name",
+            "emailAddress"
+        ],
+        "fullTextSearch": false,
+        "countDisabled": false
+    },
+    "optimisticConcurrencyControl": true
+}
