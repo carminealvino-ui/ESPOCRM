@@ -6,18 +6,8 @@
     },
     {
         "name": "name",
-        "width": 17,
+        "width": 25,
         "link": true,
-        "align": "left"
-    },
-    {
-        "name": "parent",
-        "width": 11,
-        "align": "left"
-    },
-    {
-        "name": "indirizzoCity",
-        "width": 6,
         "align": "left"
     },
     {
@@ -51,8 +41,13 @@
         "align": "left"
     },
     {
+        "name": "esito",
+        "width": 8,
+        "align": "left"
+    },
+    {
         "name": "opportunita",
-        "width": 12,
+        "width": 11,
         "link": true,
         "align": "left"
     }
