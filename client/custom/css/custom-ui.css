@@ -26,40 +26,6 @@ html {
     max-width: 100%;
 }
 
-/* Elenco Appuntamenti: tabella a tutta larghezza, colonna Opportunità senza troncamento */
-.list-appuntamento-fullwidth .list {
-    max-width: 100%;
-}
-
-.list-appuntamento-fullwidth .list > table {
-    width: 100% !important;
-    table-layout: fixed;
-}
-
-.list-appuntamento-fullwidth .list > table th[data-name="opportunita"],
-.list-appuntamento-fullwidth .list > table td[data-name="opportunita"] {
-    width: 49% !important;
-    white-space: normal !important;
-    word-break: break-word;
-    overflow: visible !important;
-    text-overflow: clip !important;
-}
-
-.list-appuntamento-fullwidth .list > table td[data-name="opportunita"] a,
-.list-appuntamento-fullwidth .list > table td[data-name="opportunita"] .cell-content,
-.list-appuntamento-fullwidth .list > table td[data-name="opportunita"] .link-multiple {
-    white-space: normal !important;
-    overflow: visible !important;
-    text-overflow: unset !important;
-    max-width: none !important;
-}
-
-.list-appuntamento-fullwidth .list > table th.field-header-cell:not([data-name="opportunita"]):not(.checkbox-cell),
-.list-appuntamento-fullwidth .list > table td.field-cell:not([data-name="opportunita"]):not(.checkbox-cell) {
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 /* Record: usa spazio orizzontale (mantiene colonna destra se presente) */
 .record .record-grid {
     max-width: var(--record-grid-max-width) !important;

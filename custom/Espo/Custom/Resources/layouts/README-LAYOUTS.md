@@ -11,7 +11,8 @@ I file in `custom/Espo/Custom/Resources/layouts/{Entità}/` **non vanno sovrascr
 
 | File | Uso |
 |------|-----|
-| `list.json` | Elenco principale (colonne essenziali, larghezze % che sommano ~100) |
+| `list.json` | Elenco principale |
+| `list-default-20260529.json` (in `backup_dev/`) | Copia di riferimento layout elenco originale MEC |
 | `listSmall.json` | Elenco compatto / relazioni |
 | `detail.json` | Scheda dettaglio |
 | `detailSmall.json` | Scheda ridotta |

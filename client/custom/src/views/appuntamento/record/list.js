@@ -24,7 +24,6 @@ define('custom:views/appuntamento/record/list', ['views/record/list'], function 
         afterRender: function () {
             Dep.prototype.afterRender.call(this);
 
-            this.$el.addClass('list-appuntamento-fullwidth');
             this.$el.find('th.checkbox-cell, td.checkbox-cell').addClass('hidden');
         },
     });
