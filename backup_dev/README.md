@@ -51,10 +51,19 @@ bash tools/backup-dev-save.sh Appuntamento duplica-appuntamento hooks GlobalLogi
 
 ---
 
-## 4. Migrazione da vecchia cartella `backup/hooks_cleanup`
+## 4. Migrazione / ordinamento file in root
+
+Il primo script sposta solo nomi tipo `backup-appuntamento-*`, `backup-opportunity-*`.
+
+I file **`backup-prod-*`**, **`.sql`**, **`.tar.gz`**, `GlobalLogic_OLD_*` richiedono la **seconda passata**:
 
 ```bash
 cd ~/public_html/crm/mec-group
-mv backup/hooks_cleanup backup_dev   # se esiste ancora
+mv backup/hooks_cleanup backup_dev   # una tantum, se serve
 bash backup_dev/_scripts/migra-struttura-server.sh
+bash backup_dev/_scripts/organizza-file-legacy-root.sh
 ```
+
+Dopo la seconda passata la root di `backup_dev` non dovrebbe avere file sparsi (solo cartelle).
+
+Tabella destinazioni: [`DESTINAZIONI-BACKUP.md`](DESTINAZIONI-BACKUP.md)
