@@ -5,6 +5,11 @@
         "list": "views/list"
     },
     "massSelect": false,
+    "massActionList": [],
+    "massUpdateDisabled": true,
+    "massRemoveDisabled": true,
+    "exportDisabled": true,
+    "mergeDisabled": true,
     "recordViews": {
         "list": "custom:views/appuntamento/record/list",
         "detail": "custom:views/appuntamento/record/detail",
