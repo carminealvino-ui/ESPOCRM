@@ -20,6 +20,8 @@ curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/qu
 
 Poi `bash tools/backup-quote-layouts.sh` funziona.
 
+**Importante:** il backup layout **non** salva i valori Cliente / Contraente / Contatto installazione sul record (sono colonne nel database). Se quei campi risultano «Nessuno», serve ripristino dati (`tools/ripristina-cliente-contratto-da-opportunita.php`) o backup MySQL. Per deploy contratto usare anche `bash tools/backup-contratto-prima-deploy.sh`.
+
 ## Backup prima di qualsiasi modifica
 
 ```bash
