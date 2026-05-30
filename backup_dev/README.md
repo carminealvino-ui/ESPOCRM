@@ -61,7 +61,9 @@ I file **`backup-prod-*`**, **`.sql`**, **`.tar.gz`**, `GlobalLogic_OLD_*` richi
 cd ~/public_html/crm/mec-group
 mv backup/hooks_cleanup backup_dev   # una tantum, se serve
 bash backup_dev/_scripts/migra-struttura-server.sh
+bash backup_dev/_scripts/organizza-file-legacy-root.sh --dry-run
 bash backup_dev/_scripts/organizza-file-legacy-root.sh
+find backup_dev -maxdepth 1 -type f   # atteso: nessun output
 ```
 
 Dopo la seconda passata la root di `backup_dev` non dovrebbe avere file sparsi (solo cartelle).
