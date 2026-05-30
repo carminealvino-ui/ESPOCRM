@@ -44,6 +44,10 @@ FILES=(
   "client/custom/src/views/fields/fornitore-partner-cascade.js"
   "client/custom/src/views/fields/product-brand-by-partner.js"
   "client/custom/src/views/fields/product-category-by-brand.js"
+  "client/custom/src/views/fields/reminders-disabled.js"
+  "custom/Espo/Custom/Resources/layouts/Appuntamento/detail.json"
+  "custom/Espo/Custom/Resources/layouts/Appuntamento/detailSmall.json"
+  "custom/Espo/Custom/Resources/layouts/Appuntamento/massUpdate.json"
 )
 
 for rel in "${FILES[@]}"; do
@@ -61,13 +65,22 @@ php -r "
 \$f = '${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json';
 \$j = json_decode(file_get_contents(\$f), true);
 if (!is_array(\$j)) { exit(0); }
-foreach (['dateStart', 'dateEnd', 'reminders'] as \$field) {
+foreach (['dateStart', 'dateEnd'] as \$field) {
   if (isset(\$j['fields'][\$field]['view'])) {
     unset(\$j['fields'][\$field]['view']);
   }
 }
+if (isset(\$j['fields']['reminders'])) {
+  \$rv = \$j['fields']['reminders']['view'] ?? '';
+  if (\$rv === '' || str_contains(\$rv, 'crm:')) {
+    \$j['fields']['reminders']['view'] = 'custom:views/fields/reminders-disabled';
+  }
+  \$j['fields']['reminders']['layoutDetailDisabled'] = true;
+  \$j['fields']['reminders']['layoutDetailSmallDisabled'] = true;
+  \$j['fields']['reminders']['layoutMassUpdateDisabled'] = true;
+}
 file_put_contents(\$f, json_encode(\$j, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
-echo 'OK entityDefs: nessuna view crm:meeting su date/reminders' . PHP_EOL;
+echo 'OK entityDefs: date senza crm:meeting; reminders con vista sicura' . PHP_EOL;
 "
 
 echo ""

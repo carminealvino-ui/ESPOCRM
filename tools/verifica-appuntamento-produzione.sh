@@ -44,6 +44,19 @@ check_yes() {
 check_no "clientDefs senza crm:meeting" "${CLIENT_DEFS}" 'crm:views/meeting'
 check_yes "clientDefs edit configurato" "${CLIENT_DEFS}" '"edit":\s*"(views/record/edit|custom:views/appuntamento/record/edit)"'
 check_no "entityDefs date senza crm meeting fields" "${ENTITY_DEFS}" 'crm:views/meeting/fields'
+check_no "entityDefs reminders senza view json-array implicita" "${ENTITY_DEFS}" '"reminders"[^}]*crm:views/meeting'
+DETAIL_LAYOUT="custom/Espo/Custom/Resources/layouts/Appuntamento/detail.json"
+if [[ -f "${DETAIL_LAYOUT}" ]] && grep -q '"reminders"' "${DETAIL_LAYOUT}"; then
+  echo "FAIL layout detail contiene ancora reminders (404 json-array.js)"
+  fail=$((fail + 1))
+else
+  echo "OK   layout detail senza reminders"
+fi
+if [[ -f "client/custom/src/views/fields/reminders-disabled.js" ]]; then
+  echo "OK   reminders-disabled.js presente"
+else
+  echo "WARN reminders-disabled.js assente"
+fi
 
 for f in \
   "client/custom/src/views/appuntamento/record/edit.js" \

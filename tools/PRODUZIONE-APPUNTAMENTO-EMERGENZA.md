@@ -6,6 +6,8 @@ Il CRM cerca file JavaScript del modulo **CRM Meeting** (`crm:views/meeting/reco
 
 Non è il database: sono i **metadata client** che puntano a viste inesistenti.
 
+Apertura scheda: il campo **Promemoria** (`reminders`, tipo `jsonArray`) nel layout detail richiede `views/fields/json-array.js`, che **non esiste** in Espo open source → 404 e pagina bloccata.
+
 ## Fix (con backup automatico)
 
 ```bash
