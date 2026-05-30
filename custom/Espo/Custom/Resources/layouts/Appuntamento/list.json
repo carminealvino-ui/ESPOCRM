@@ -1,12 +1,12 @@
 [
     {
         "name": "dataAppuntamento",
-        "width": 8,
+        "width": 6,
         "align": "left"
     },
     {
         "name": "name",
-        "width": 12,
+        "width": 17,
         "link": true,
         "align": "left"
     },
@@ -17,42 +17,42 @@
     },
     {
         "name": "indirizzoCity",
-        "width": 8,
-        "align": "left"
-    },
-    {
-        "name": "cAPCodice",
         "width": 6,
         "align": "left"
     },
     {
+        "name": "cAPCodice",
+        "width": 5,
+        "align": "left"
+    },
+    {
         "name": "fornitorePartner",
-        "width": 8,
+        "width": 6,
         "align": "left"
     },
     {
         "name": "productBrand",
-        "width": 8,
+        "width": 6,
         "align": "left"
     },
     {
         "name": "productCategory",
-        "width": 9,
-        "align": "left"
-    },
-    {
-        "name": "status",
         "width": 8,
         "align": "left"
     },
     {
+        "name": "status",
+        "width": 7,
+        "align": "left"
+    },
+    {
         "name": "sottostato",
-        "width": 9,
+        "width": 7,
         "align": "left"
     },
     {
         "name": "opportunita",
-        "width": 13,
+        "width": 12,
         "link": true,
         "align": "left"
     }
