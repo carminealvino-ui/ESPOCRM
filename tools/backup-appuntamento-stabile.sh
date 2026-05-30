@@ -56,6 +56,7 @@ copy_dev() {
 }
 
 copy_dev hooks "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php" "GlobalLogic.php"
+copy_dev layouts "custom/Espo/Custom/Resources/layouts/Appuntamento/list.json" "list.json"
 copy_dev layouts "custom/Espo/Custom/Resources/layouts/Appuntamento/detail.json" "detail.json"
 copy_dev layouts "custom/Espo/Custom/Resources/layouts/Appuntamento/detailSmall.json" "detailSmall.json"
 copy_dev layouts "custom/Espo/Custom/Resources/layouts/Appuntamento/massUpdate.json" "massUpdate.json"

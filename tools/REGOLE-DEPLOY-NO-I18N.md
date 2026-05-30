@@ -30,3 +30,5 @@ rm -rf data/cache/*
 Poi Ctrl+F5.
 
 Documentazione completa: [`custom/Espo/Custom/Resources/i18n/it_IT/README-ETICHETTE.md`](../custom/Espo/Custom/Resources/i18n/it_IT/README-ETICHETTE.md)
+
+Panoramica etichette + layout: [`REGOLE-DEPLOY-VISUALIZZAZIONI.md`](REGOLE-DEPLOY-VISUALIZZAZIONI.md)

@@ -5,7 +5,7 @@
 **I file in `custom/Espo/Custom/Resources/i18n/it_IT/` non vanno mai sovrascritti da script di deploy, sync da GitHub o export ZIP.**
 
 - Fonte ufficiale: **solo questo repository**, modifica manuale o commit dedicato `i18n(it_IT): ...`.
-- Deploy tecnici (Appuntamento, Opportunity, Quote, …) toccano **metadata, layouts, client, hooks** — **mai** `i18n/`.
+- Deploy tecnici (Appuntamento, Opportunity, Quote, …) toccano **metadata, client, hooks** — **mai** `i18n/` né `layouts/`.
 
 ## Perché compaiono etichette in inglese
 

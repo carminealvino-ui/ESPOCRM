@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # PRODUZIONE — ripristina gestione Appuntamenti (Crea, Modifica, Duplica, scheda).
 # Non usa crm:views/meeting/* (modulo client CRM assente su molti server MEC).
-# NON tocca i18n/it_IT — vedi tools/REGOLE-DEPLOY-NO-I18N.md
+# NON tocca i18n/it_IT né layouts/ — vedi tools/REGOLE-DEPLOY-VISUALIZZAZIONI.md
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-appuntamento-produzione.sh?t=$(date +%s)" | bash
@@ -46,9 +46,6 @@ FILES=(
   "client/custom/src/views/fields/product-brand-by-partner.js"
   "client/custom/src/views/fields/product-category-by-brand.js"
   "client/custom/src/views/fields/reminders-disabled.js"
-  "custom/Espo/Custom/Resources/layouts/Appuntamento/detail.json"
-  "custom/Espo/Custom/Resources/layouts/Appuntamento/detailSmall.json"
-  "custom/Espo/Custom/Resources/layouts/Appuntamento/massUpdate.json"
 )
 
 for rel in "${FILES[@]}"; do
