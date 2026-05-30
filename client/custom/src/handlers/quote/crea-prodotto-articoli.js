@@ -36,6 +36,9 @@ define('custom:handlers/quote/crea-prodotto-articoli', [], function () {
                 return;
             }
 
+            // Legacy global script (custom-product-button.js) — rimuovi se ancora in cache browser
+            $field.find('.custom-new-product-btn').remove();
+
             if ($field.find('.btn-create-product').length) {
                 return;
             }
