@@ -1,37 +1,38 @@
-# Cartella `backup/` — panoramica
+# Cartella `backup/`
 
 | Percorso | Contenuto |
 |----------|-----------|
-| **`hooks_cleanup/`** | Backup **mirati** per entità (hook, layout, metadata, client) — struttura principale |
-| `create-contratto-2026-05-25/` | Snapshot storico CreateContratto / formula Quote |
-| `provvigioni-2026-05-26/` | PHP provvigioni (fase branch) |
+| **`hooks_cleanup/`** | Backup mirati per **entità** — vedi sotto |
+| `create-contratto-2026-05-25/` | Storico CreateContratto |
+| `provvigioni-2026-05-26/` | PHP provvigioni |
 | `pre-upgrade-9.3.7/` | Pre-aggiornamento Espo |
-| `custom/backup-layouts/` (sul **server**, non sempre in git) | Layout Quote timestamp |
 
-## hooks_cleanup — struttura rapida
+Sul server esiste anche **`custom/backup-layouts/`** (snapshot prima deploy, non in questa cartella).
 
-Vedi [`hooks_cleanup/README.md`](hooks_cleanup/README.md).
+---
+
+## `hooks_cleanup` — in sintesi
+
+**Cartelle** = entità CRM (`Appuntamento`, `Opportunity`, `Quote`, …)  
+**Sottocartelle** = tipo file (`hooks`, `layouts`, `entityDefs`, `client-handlers`, …)  
+**Nome file** = `DATA_FIX_AGGIORNAMENTO_OBIETTIVO.ext`
+
+Esempio:
 
 ```
-hooks_cleanup/
-  Appuntamento/hooks|layouts|metadata|client/
-  Opportunity/...
-  Prospect/ Lead/ Quote/ ...
-  _scripts/   _archives/
+Appuntamento/hooks/20260529-143052_duplica-appuntamento_hooks_GlobalLogic.php
 ```
 
-## Sul server (prima volta dopo pull)
+Guida completa: [`hooks_cleanup/README.md`](hooks_cleanup/README.md)
+
+### Salvataggio rapido
 
 ```bash
-cd ~/public_html/crm/mec-group
-git pull   # quando disponibile
+bash tools/backup-hooks-cleanup-save.sh Appuntamento duplica-appuntamento hooks GlobalLogic.php
+```
+
+### Allineare server (file ancora in root piatta)
+
+```bash
 bash backup/hooks_cleanup/_scripts/migra-struttura-server.sh
-```
-
-Sposta i file `backup-appuntamento-*.php` ancora in root verso le sottocartelle.
-
-## Salvare un nuovo backup prima di una modifica
-
-```bash
-bash tools/backup-hooks-cleanup-save.sh Appuntamento hooks GlobalLogic.php
 ```

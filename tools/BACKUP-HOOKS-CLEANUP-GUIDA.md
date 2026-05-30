@@ -1,25 +1,20 @@
 # Backup `backup/hooks_cleanup` — guida
 
-## Struttura (dopo riorganizzazione)
+## Struttura cartelle + nome file
+
+**Path:** `backup/hooks_cleanup/{Entità}/{AGGIORNAMENTO}/`  
+**Nome file:** `{DATA}_{FIX}_{AGGIORNAMENTO}_{OBIETTIVO}.ext`
+
+Vedi [`backup/hooks_cleanup/README.md`](../backup/hooks_cleanup/README.md).
 
 ```
 backup/hooks_cleanup/
-├── Appuntamento/
-│   ├── hooks/              ← GlobalLogic.php, ...
-│   ├── layouts/            ← detail.json, ...
-│   ├── metadata/
-│   │   ├── entityDefs/
-│   │   ├── logicDefs/
-│   │   └── clientDefs/
-│   └── client/
-├── Opportunity/
-│   ├── hooks/
-│   ├── layouts/
-│   ├── metadata/...
-│   └── client/detail|handlers|runtime/
-├── Prospect/ Lead/ Quote/ ...
-├── _scripts/
-└── _archives/              ← tar.gz deploy completi
+├── Appuntamento/hooks/
+│   └── 20260529-143052_duplica-appuntamento_hooks_GlobalLogic.php
+├── Opportunity/client/handlers/
+│   └── 20260525_create-contratto_client-handlers_handler.js
+└── Quote/layouts/
+    └── 20260529_layout-quote_layouts_detail.json
 ```
 
 ## Sul server — allineare cartella piatta
@@ -34,8 +29,8 @@ bash backup/hooks_cleanup/_scripts/migra-struttura-server.sh
 ## Salvare prima di ogni modifica
 
 ```bash
-bash tools/backup-hooks-cleanup-save.sh Appuntamento hooks GlobalLogic.php
-bash tools/backup-hooks-cleanup-save.sh Quote layouts detail.json
+bash tools/backup-hooks-cleanup-save.sh Appuntamento duplica-appuntamento hooks GlobalLogic.php
+bash tools/backup-hooks-cleanup-save.sh Quote layout-quote layouts detail.json
 ```
 
 ## Appuntamento — file da ripristinare (logica business)

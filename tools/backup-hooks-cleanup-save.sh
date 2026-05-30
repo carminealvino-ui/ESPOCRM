@@ -1,32 +1,49 @@
 #!/usr/bin/env bash
-# Copia un file live in backup/hooks_cleanup/{Entità}/{tipo}/ con timestamp.
+# Salva backup in backup/hooks_cleanup/{Entità}/{AGGIORNAMENTO}/
+# Nome file: {DATA}_{FIX}_{AGGIORNAMENTO}_{OBIETTIVO}.{ext}
 #
-#   bash tools/backup-hooks-cleanup-save.sh Appuntamento hooks GlobalLogic.php
-#   bash tools/backup-hooks-cleanup-save.sh Opportunity metadata/entityDefs Opportunity.json
-#   bash tools/backup-hooks-cleanup-save.sh Quote layouts detail.json
+#   bash tools/backup-hooks-cleanup-save.sh Appuntamento duplica-appuntamento hooks GlobalLogic.php
+#   bash tools/backup-hooks-cleanup-save.sh Quote layout-quote layouts detail.json
+#   bash tools/backup-hooks-cleanup-save.sh Opportunity create-contratto client-handlers create-contratto.js
 set -euo pipefail
+
+slug() {
+  echo "$1" | tr '[:upper:]' '[:lower:]' | tr ' _/' '-' | tr -cd 'a-z0-9.-'
+}
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 ENTITY="${1:?Entità es. Appuntamento}"
-TYPE="${2:?Tipo: hooks | layouts | metadata/entityDefs | client/detail | ...}"
-REL="${3:?Nome file, es. GlobalLogic.php o detail.json}"
+FIX_RAW="${2:?FIX es. duplica-appuntamento o layout-quote}"
+AGGIORNAMENTO_RAW="${3:?AGGIORNAMENTO es. hooks | layouts | entityDefs | client-handlers}"
+REL="${4:?File sorgente es. GlobalLogic.php o detail.json}"
 
-STAMP="$(date +%Y%m%d-%H%M%S)"
-DEST_DIR="${CRM_ROOT}/backup/hooks_cleanup/${ENTITY}/${TYPE}"
+DATA="$(date +%Y%m%d-%H%M%S)"
+FIX="$(slug "${FIX_RAW}")"
+AGGIORNAMENTO="$(slug "${AGGIORNAMENTO_RAW}")"
+
+DEST_DIR="${CRM_ROOT}/backup/hooks_cleanup/${ENTITY}/${AGGIORNAMENTO}"
 mkdir -p "${DEST_DIR}"
 
-if [[ "${TYPE}" == "hooks" ]]; then
+if [[ "${AGGIORNAMENTO}" == "hooks" ]]; then
   SRC="${CRM_ROOT}/custom/Espo/Custom/Hooks/${ENTITY}/${REL}"
-elif [[ "${TYPE}" == "layouts" ]]; then
+elif [[ "${AGGIORNAMENTO}" == "layouts" ]]; then
   SRC="${CRM_ROOT}/custom/Espo/Custom/Resources/layouts/${ENTITY}/${REL}"
-elif [[ "${TYPE}" == client/* ]] || [[ "${TYPE}" == client* ]]; then
-  SUB="${TYPE#client/}"
-  SRC="${CRM_ROOT}/client/custom/src/views/${ENTITY,,}/${SUB}/${REL}"
+elif [[ "${AGGIORNAMENTO}" == client-* ]]; then
+  SUB="${AGGIORNAMENTO#client-}"
+  entity_lower="$(echo "${ENTITY}" | tr '[:upper:]' '[:lower:]')"
+  SRC="${CRM_ROOT}/client/custom/src/views/${entity_lower}/${SUB}/${REL}"
   if [[ ! -f "${SRC}" ]]; then
     SRC="${CRM_ROOT}/client/custom/src/${REL}"
   fi
 else
-  SRC="${CRM_ROOT}/custom/Espo/Custom/Resources/${TYPE}/${REL}"
+  # entityDefs, logicDefs, clientDefs, formula, ...
+  SRC="${CRM_ROOT}/custom/Espo/Custom/Resources/${AGGIORNAMENTO}/${REL}"
+  if [[ ! -f "${SRC}" ]] && [[ -f "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/${AGGIORNAMENTO}/${REL}" ]]; then
+    SRC="${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/${AGGIORNAMENTO}/${REL}"
+    AGGIORNAMENTO="metadata-${AGGIORNAMENTO}"
+    DEST_DIR="${CRM_ROOT}/backup/hooks_cleanup/${ENTITY}/${AGGIORNAMENTO}"
+    mkdir -p "${DEST_DIR}"
+  fi
 fi
 
 if [[ ! -f "${SRC}" ]]; then
@@ -37,10 +54,14 @@ fi
 base="$(basename "${REL}")"
 name="${base%.*}"
 ext="${base##*.}"
-OUT="${DEST_DIR}/${name}-${STAMP}"
-if [[ "${name}" != "${ext}" ]]; then
-  OUT="${OUT}.${ext}"
+OBIETTIVO="$(slug "${name}")"
+
+if [[ "${name}" == "${ext}" ]]; then
+  OUT="${DEST_DIR}/${DATA}_${FIX}_${AGGIORNAMENTO}_${OBIETTIVO}"
+else
+  OUT="${DEST_DIR}/${DATA}_${FIX}_${AGGIORNAMENTO}_${OBIETTIVO}.${ext}"
 fi
 
 cp -a "${SRC}" "${OUT}"
 echo "Backup: ${OUT}"
+echo "  DATA=${DATA} FIX=${FIX} AGGIORNAMENTO=${AGGIORNAMENTO} OBIETTIVO=${OBIETTIVO}"
