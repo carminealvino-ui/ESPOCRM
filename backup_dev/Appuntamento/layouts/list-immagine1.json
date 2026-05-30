@@ -1,12 +1,12 @@
 [
     {
         "name": "dataAppuntamento",
-        "width": 4,
+        "width": 6,
         "align": "left"
     },
     {
         "name": "name",
-        "width": 14,
+        "width": 20,
         "link": true,
         "align": "left"
     },
@@ -27,27 +27,27 @@
     },
     {
         "name": "productCategory",
-        "width": 6,
+        "width": 7,
         "align": "left"
     },
     {
         "name": "status",
-        "width": 5,
-        "align": "left"
-    },
-    {
-        "name": "sottostato",
-        "width": 5,
-        "align": "left"
-    },
-    {
-        "name": "esito",
         "width": 6,
         "align": "left"
     },
     {
+        "name": "sottostato",
+        "width": 9,
+        "align": "left"
+    },
+    {
+        "name": "esito",
+        "width": 10,
+        "align": "left"
+    },
+    {
         "name": "opportunita",
-        "width": 49,
+        "width": 31,
         "link": true,
         "align": "left"
     }

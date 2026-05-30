@@ -36,15 +36,28 @@ html {
     table-layout: fixed;
 }
 
+/* Colonne testo lungo: mai troncare (Nome, Sottostato, Esito, Opportunità, Data) */
+.list-appuntamento-fullwidth .list > table th[data-name="dataAppuntamento"],
+.list-appuntamento-fullwidth .list > table td[data-name="dataAppuntamento"],
+.list-appuntamento-fullwidth .list > table th[data-name="name"],
+.list-appuntamento-fullwidth .list > table td[data-name="name"],
+.list-appuntamento-fullwidth .list > table th[data-name="sottostato"],
+.list-appuntamento-fullwidth .list > table td[data-name="sottostato"],
+.list-appuntamento-fullwidth .list > table th[data-name="esito"],
+.list-appuntamento-fullwidth .list > table td[data-name="esito"],
 .list-appuntamento-fullwidth .list > table th[data-name="opportunita"],
 .list-appuntamento-fullwidth .list > table td[data-name="opportunita"] {
-    width: 49% !important;
     white-space: normal !important;
     word-break: break-word;
     overflow: visible !important;
-    text-overflow: clip !important;
+    text-overflow: unset !important;
 }
 
+.list-appuntamento-fullwidth .list > table td[data-name="name"] a,
+.list-appuntamento-fullwidth .list > table td[data-name="name"] .cell-content,
+.list-appuntamento-fullwidth .list > table td[data-name="sottostato"] .cell-content,
+.list-appuntamento-fullwidth .list > table td[data-name="sottostato"] .label,
+.list-appuntamento-fullwidth .list > table td[data-name="esito"] .cell-content,
 .list-appuntamento-fullwidth .list > table td[data-name="opportunita"] a,
 .list-appuntamento-fullwidth .list > table td[data-name="opportunita"] .cell-content,
 .list-appuntamento-fullwidth .list > table td[data-name="opportunita"] .link-multiple {
@@ -54,8 +67,17 @@ html {
     max-width: none !important;
 }
 
-.list-appuntamento-fullwidth .list > table th.field-header-cell:not([data-name="opportunita"]):not(.checkbox-cell),
-.list-appuntamento-fullwidth .list > table td.field-cell:not([data-name="opportunita"]):not(.checkbox-cell) {
+/* Solo colonne corte: ellissi ammessa */
+.list-appuntamento-fullwidth .list > table th[data-name="cAPCodice"],
+.list-appuntamento-fullwidth .list > table td[data-name="cAPCodice"],
+.list-appuntamento-fullwidth .list > table th[data-name="fornitorePartner"],
+.list-appuntamento-fullwidth .list > table td[data-name="fornitorePartner"],
+.list-appuntamento-fullwidth .list > table th[data-name="productBrand"],
+.list-appuntamento-fullwidth .list > table td[data-name="productBrand"],
+.list-appuntamento-fullwidth .list > table th[data-name="productCategory"],
+.list-appuntamento-fullwidth .list > table td[data-name="productCategory"],
+.list-appuntamento-fullwidth .list > table th[data-name="status"],
+.list-appuntamento-fullwidth .list > table td[data-name="status"] {
     overflow: hidden;
     text-overflow: ellipsis;
 }
