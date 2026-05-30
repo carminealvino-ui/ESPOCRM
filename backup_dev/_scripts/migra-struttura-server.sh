@@ -116,8 +116,9 @@ if [[ -f deploy-produzione-sync-branch.sh ]]; then
 fi
 
 echo ""
-echo "Migrazione completata. Elenco:"
-find Appuntamento Opportunity Prospect Lead -type f 2>/dev/null | head -40
-echo "..."
-echo "File rimasti in root:"
-find . -maxdepth 1 -type f | head -20
+echo "=== Passata 2: file legacy (backup-prod-*, .sql, …) ==="
+if [[ -f "${ROOT}/_scripts/organizza-file-legacy-root.sh" ]]; then
+  bash "${ROOT}/_scripts/organizza-file-legacy-root.sh"
+else
+  echo "Esegui: bash backup_dev/_scripts/organizza-file-legacy-root.sh"
+fi
