@@ -29,5 +29,5 @@ Poi Ctrl+F5.
 
 ## Elenco “scombinato”
 
-Troppe colonne o `width` troppo piccoli (8, 12 senza %) costringono scroll orizzontale e testo troncato.  
-Preferire **8 colonne max** in `list.json` e larghezze in **percentuale** (come `listSmall.json`).
+Di solito `width` non in **percentuale** o colonne senza allineamento.  
+**Non rimuovere campi** dal layout: tutte le colonne richieste dall’operatività restano in `list.json`; si aggiustano solo le larghezze % (somma ~100) e l’ordine se serve.

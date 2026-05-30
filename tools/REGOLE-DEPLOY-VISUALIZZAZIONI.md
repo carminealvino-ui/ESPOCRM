@@ -17,6 +17,10 @@ Aggiornamenti **solo** con commit dedicati e copia manuale (o export da Layout M
 
 Script: `tools/deploy-appuntamento-produzione.sh` (non include `layouts/` né `i18n/`).
 
+## Elenco Appuntamenti — colonne
+
+Tutti i campi operativi restano in `list.json` (nessuna rimozione da script/deploy). Eventuali aggiustamenti = solo larghezze % e ordine, con commit dedicato.
+
 ## Applicare solo elenco Appuntamenti (manuale)
 
 ```bash
