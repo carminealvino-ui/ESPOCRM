@@ -9,12 +9,12 @@ BRANCH="${2:-cursor/opportunity-globallogic-9999}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 
+# NON includere i18n/it_IT/* — vedi custom/.../i18n/it_IT/README-ETICHETTE.md
 FILES=(
   "custom/Espo/Custom/Classes/Select/Appuntamento/PrimaryFilters/Svolto.php"
   "custom/Espo/Custom/Classes/Select/Appuntamento/PrimaryFilters/NonSvolto.php"
   "custom/Espo/Custom/Resources/metadata/selectDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
-  "custom/Espo/Custom/Resources/i18n/it_IT/Appuntamento.json"
 )
 
 for rel in "${FILES[@]}"; do

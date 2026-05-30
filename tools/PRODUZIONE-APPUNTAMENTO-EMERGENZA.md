@@ -6,11 +6,19 @@ Il CRM cerca file JavaScript del modulo **CRM Meeting** (`crm:views/meeting/reco
 
 Non è il database: sono i **metadata client** che puntano a viste inesistenti.
 
+Apertura scheda: il campo **Promemoria** (`reminders`, tipo `jsonArray`) nel layout detail richiede `views/fields/json-array.js`, che **non esiste** in Espo open source → 404 e pagina bloccata.
+
 ## Fix (con backup automatico)
 
 ```bash
 cd ~/public_html/crm/mec-group
-curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-appuntamento-emergenza-produzione.sh?t=$(date +%s)" | bash
+curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-appuntamento-produzione.sh?t=$(date +%s)" | bash
+```
+
+Verifica (solo lettura):
+
+```bash
+bash tools/verifica-appuntamento-produzione.sh
 ```
 
 1. Salva copia in `custom/backup-layouts/YYYYMMDD-HHMMSS/`
@@ -30,10 +38,21 @@ bash tools/rollback-produzione.sh 20260529-143000
 
 Ultimo backup salvato anche in: `custom/backup-layouts/LAST_APPUNTAMENTO_BACKUP.txt`
 
-## Solo backup (senza deploy)
+## Backup stato funzionante (dopo che Crea / scheda / Duplica ok)
 
 ```bash
-bash tools/backup-produzione.sh manuale
+cd ~/public_html/crm/mec-group
+curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/backup-appuntamento-stabile.sh?t=$(date +%s)" -o tools/backup-appuntamento-stabile.sh
+chmod +x tools/backup-appuntamento-stabile.sh
+bash tools/backup-appuntamento-stabile.sh
+```
+
+Salva in `custom/backup-layouts/YYYYMMDD-HHMMSS/` (rollback) e copie in `backup_dev/Appuntamento/`.
+
+Solo snapshot layouts (senza backup_dev):
+
+```bash
+bash tools/backup-produzione.sh appuntamento-stabile
 ```
 
 ## Dopo il fix

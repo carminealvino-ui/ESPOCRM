@@ -4,11 +4,17 @@
         "detail": "views/detail",
         "list": "views/list"
     },
+    "massSelect": false,
+    "massActionList": [],
+    "massUpdateDisabled": true,
+    "massRemoveDisabled": true,
+    "exportDisabled": true,
+    "mergeDisabled": true,
     "recordViews": {
-        "list": "views/record/list",
+        "list": "custom:views/appuntamento/record/list",
         "detail": "custom:views/appuntamento/record/detail",
-        "edit": "views/record/edit",
-        "editSmall": "views/record/edit-small"
+        "edit": "custom:views/appuntamento/record/edit",
+        "editSmall": "custom:views/appuntamento/record/edit-small"
     },
     "modalViews": {
         "detail": "views/modals/detail"

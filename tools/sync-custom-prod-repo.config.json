@@ -27,7 +27,8 @@
         "/custom/Espo/Custom/client/custom-views/cache"
     ],
     "excludePathRegex": [
-        "#/i18n/(?!it_IT/)#"
+        "#/i18n/#",
+        "#/layouts/#"
     ],
     "github": {
         "repository": "carminealvino-ui/ESPOCRM",

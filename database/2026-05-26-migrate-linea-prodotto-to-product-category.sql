@@ -7,9 +7,9 @@
 -- Migra il vecchio campo linea_prodotto → product_category_id / product_category_name
 -- su opportunity, appuntamento, lead, prospect (solo righe senza categoria).
 --
--- PRIMA: backup in backup/hooks_cleanup/
+-- PRIMA: backup in backup_dev/
 --   mysqldump -u USER -p telcalli_espo opportunity appuntamento lead prospect product_category \
---     > backup/hooks_cleanup/backup-linea-prodotto-migrate-YYYY-MM-DD-HHMM.sql
+--     > backup_dev/backup-linea-prodotto-migrate-YYYY-MM-DD-HHMM.sql
 --
 -- ========================================
 
