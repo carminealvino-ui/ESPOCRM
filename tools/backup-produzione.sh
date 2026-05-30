@@ -10,17 +10,26 @@ LABEL="${1:-deploy}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 DEST="${CRM_ROOT}/custom/backup-layouts/${STAMP}"
 
-# File toccati da fix Appuntamento / deploy emergenza (aggiungere qui altri path se serve)
+# File Appuntamento funzionante in produzione (rollback deploy)
 BACKUP_PATHS=(
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
+  "custom/Espo/Custom/Resources/metadata/logicDefs/Appuntamento.json"
+  "custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json"
+  "custom/Espo/Custom/Resources/metadata/selectDefs/Appuntamento.json"
+  "custom/Espo/Custom/Resources/metadata/scopes/Appuntamento.json"
+  "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detail.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detailSmall.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/massUpdate.json"
+  "custom/Espo/Custom/Resources/layouts/Appuntamento/list.json"
   "client/custom/src/views/appuntamento/record/edit.js"
   "client/custom/src/views/appuntamento/record/edit-small.js"
   "client/custom/src/views/appuntamento/record/detail.js"
-  "client/custom/src/views/appuntamento/modals/detail.js"
+  "client/custom/src/views/fields/fornitore-partner-cascade.js"
+  "client/custom/src/views/fields/product-brand-by-partner.js"
+  "client/custom/src/views/fields/product-category-by-brand.js"
+  "client/custom/src/views/fields/reminders-disabled.js"
   "client/custom/src/views/calendar/modals/edit.js"
   "client/custom/src/views/calendar/calendar.js"
 )
