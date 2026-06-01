@@ -9,15 +9,19 @@ Export ZIP interi di `custom/` → `exports/custom/` o `custom/backup-layouts/`.
 
 ## 1. Struttura cartelle
 
+Guida completa (obbligatoria per i fix): **[`STRUTTURA-CARTELLE.md`](STRUTTURA-CARTELLE.md)**  
+Regole produzione: [`../REGOLE-PRODUZIONE/04-STRUTTURA-BACKUP-DEV.md`](../REGOLE-PRODUZIONE/04-STRUTTURA-BACKUP-DEV.md)
+
 ```
 backup_dev/
 ├── _scripts/
 ├── _archives/
+├── client/              # solo backup globali (css, app client.json) — NON è client/ live
 ├── Appuntamento/
 │   ├── hooks/
 │   ├── layouts/
 │   ├── metadata/entityDefs|logicDefs|clientDefs/
-│   └── client/detail|handlers|runtime/
+│   └── client/detail|handlers|runtime/   → client/custom/src/views/...
 ├── Opportunity/
 ├── Quote/
 └── …

@@ -11,9 +11,14 @@ La cartella `REGOLE-PRODUZIONE/` va nella **root CRM**, accanto a `backup_dev/` 
 └── …
 ```
 
-## Una tantum (da PC con repo, o SFTP)
+## Una tantum (da GitHub branch **main** — non usare branch feature tipo account-subpanel)
 
-Copiare l’intera cartella `REGOLE-PRODUZIONE/` dal repository in `mec-group/`.
+```bash
+cd ~/public_html/crm/mec-group
+curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/bootstrap-regole-produzione.sh?t=$(date +%s)" | bash
+```
+
+Oppure copiare l’intera cartella `REGOLE-PRODUZIONE/` dal repository (SFTP).
 
 ## Verifica
 

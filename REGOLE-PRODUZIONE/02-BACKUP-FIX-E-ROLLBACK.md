@@ -2,6 +2,8 @@
 
 ## Prima di qualsiasi modifica
 
+Leggere la struttura cartelle: [`04-STRUTTURA-BACKUP-DEV.md`](04-STRUTTURA-BACKUP-DEV.md).
+
 ### A) File singoli (hook, PHP, JS, metadata JSON)
 
 ```bash

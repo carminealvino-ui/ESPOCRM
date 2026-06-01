@@ -49,6 +49,16 @@ Dettaglio: [`03-ISTRUZIONI-COMPLETE.md`](03-ISTRUZIONI-COMPLETE.md)
 
 ---
 
+## Regola 4 — Struttura `backup_dev/` (cartelle per entità)
+
+- `backup_dev/` non è una copia generica di `custom/`: ha **sottocartelle per entità** (`Appuntamento/`, `Opportunity/`, `Quote/`, …) e tipi (`hooks/`, `layouts/`, `metadata/`, `client/`).
+- La cartella **`backup_dev/client/`** (in root) serve solo per backup **globali** CSS/metadata — **non** sostituisce `mec-group/client/` live.
+- I JS di dettaglio/handler vanno in `backup_dev/{Entità}/client/...`.
+
+Dettaglio: [`04-STRUTTURA-BACKUP-DEV.md`](04-STRUTTURA-BACKUP-DEV.md) e [`backup_dev/STRUTTURA-CARTELLE.md`](../backup_dev/STRUTTURA-CARTELLE.md)
+
+---
+
 ## Ordine obbligatorio di lavoro
 
 Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
