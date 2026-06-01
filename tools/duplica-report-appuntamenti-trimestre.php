@@ -1,17 +1,17 @@
 #!/usr/bin/env php
 <?php
 /**
- * Duplica report "Appuntamenti Mese - …" → "Appuntamenti Ultimo Trimestre - …"
- * e copia il layout del tab dashboard da "Appuntamenti Mese" a "Appuntamenti Ultimo Trimestre"
- * (Preferenze utente + config di sistema).
+ * Duplica report "Appuntamenti Mese - …" verso un periodo (trimestre o mese precedente)
+ * e tab dashboard corrispondente.
  *
- *   php tools/duplica-report-appuntamenti-trimestre.php --dry-run
- *   php tools/duplica-report-appuntamenti-trimestre.php --reports-only --force   # passo 1: elenco Report
- *   php tools/duplica-report-appuntamenti-trimestre.php --dashboard-only --force # passo 2: tab dashboard
- *   php tools/duplica-report-appuntamenti-trimestre.php --force                  # entrambi
- *   php tools/duplica-report-appuntamenti-trimestre.php --fix-filters-only       # corregge filtri data (lastQuarter)
- *   php tools/duplica-report-appuntamenti-trimestre.php --diagnose
- *   php tools/duplica-report-appuntamenti-trimestre.php --reports-only --force --user=admin
+ * Profili (--profile=…, default trimestre):
+ *   trimestre        → Appuntamenti Ultimo Trimestre (filtro lastQuarter)
+ *   mese-precedente  → Appuntamenti Mese Precedente (filtro lastMonth)
+ *
+ *   php tools/duplica-report-appuntamenti-trimestre.php --profile=mese-precedente --reports-only --force
+ *   php tools/duplica-report-appuntamenti-mese-precedente.php --reports-only --force
+ *   php tools/duplica-report-appuntamenti-trimestre.php --dashboard-only --force --user=carmine_alvino
+ *   php tools/duplica-report-appuntamenti-trimestre.php --fix-filters-only --profile=mese-precedente
  *
  * Usa lo stesso meccanismo del pulsante Duplica in CRM (getDuplicateAttributes + create).
  */
@@ -37,20 +37,95 @@ use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
 const SOURCE_PREFIX = 'Appuntamenti Mese - ';
-const TARGET_PREFIX = 'Appuntamenti Ultimo Trimestre - ';
 const TAB_SOURCE = 'Appuntamenti Mese';
-const TAB_TARGET = 'Appuntamenti Ultimo Trimestre';
-const SCRIPT_VERSION = '2026-05-30-build-grid';
 
-/** Solo sul campo JSON "type" del filtro data (non su altri campi). */
-const DATE_FILTER_TYPE_MAP = [
-    'currentMonth' => 'lastQuarter',
-    'thisMonth' => 'lastQuarter',
-    'nextMonth' => 'lastQuarter',
-    'previousQuarter' => 'lastQuarter',
-];
+/** @var array<string, mixed> */
+$PROFILE = [];
 
 $argv = $GLOBALS['argv'] ?? [];
+
+/**
+ * @return array<string, mixed>
+ */
+function resolveProfile(array $argv): array
+{
+    $name = 'trimestre';
+
+    foreach ($argv as $arg) {
+        if (str_starts_with($arg, '--profile=')) {
+            $name = substr($arg, 10);
+        }
+    }
+
+    $profiles = [
+        'trimestre' => [
+            'name' => 'trimestre',
+            'targetPrefix' => 'Appuntamenti Ultimo Trimestre - ',
+            'tabTarget' => 'Appuntamenti Ultimo Trimestre',
+            'suffixFrom' => ' Mese',
+            'suffixTo' => ' Trimestre',
+            'titleFrom' => ' Mese',
+            'titleTo' => ' Trimestre',
+            'dateFilterMap' => [
+                'currentMonth' => 'lastQuarter',
+                'thisMonth' => 'lastQuarter',
+                'nextMonth' => 'lastQuarter',
+                'previousQuarter' => 'lastQuarter',
+            ],
+            'filterTypeLabel' => 'lastQuarter',
+            'backupDirPart' => 'report-trimestre',
+            'version' => '2026-05-30-build-grid',
+        ],
+        'mese-precedente' => [
+            'name' => 'mese-precedente',
+            'targetPrefix' => 'Appuntamenti Mese Precedente - ',
+            'tabTarget' => 'Appuntamenti Mese Precedente',
+            'suffixFrom' => ' Mese',
+            'suffixTo' => ' Mese Precedente',
+            'titleFrom' => ' Mese',
+            'titleTo' => ' Mese Precedente',
+            'dateFilterMap' => [
+                'currentMonth' => 'lastMonth',
+                'thisMonth' => 'lastMonth',
+                'nextMonth' => 'lastMonth',
+                'lastQuarter' => 'lastMonth',
+                'previousQuarter' => 'lastMonth',
+            ],
+            'filterTypeLabel' => 'lastMonth',
+            'backupDirPart' => 'report-mese-precedente',
+            'version' => '2026-05-30-mese-precedente',
+        ],
+    ];
+
+    if (!isset($profiles[$name])) {
+        fail('Profile sconosciuto: ' . $name . '. Usare: trimestre, mese-precedente');
+    }
+
+    return $profiles[$name];
+}
+
+function profileTargetPrefix(): string
+{
+    global $PROFILE;
+
+    return $PROFILE['targetPrefix'];
+}
+
+function profileTabTarget(): string
+{
+    global $PROFILE;
+
+    return $PROFILE['tabTarget'];
+}
+
+function profileDateFilterMap(): array
+{
+    global $PROFILE;
+
+    return $PROFILE['dateFilterMap'];
+}
+
+$PROFILE = resolveProfile($argv);
 $dryRun = in_array('--dry-run', $argv, true);
 $diagnose = in_array('--diagnose', $argv, true);
 $force = in_array('--force', $argv, true);
@@ -82,10 +157,12 @@ function transformReportName(string $name): ?string
         return null;
     }
 
-    $suffix = substr($name, strlen(SOURCE_PREFIX));
-    $suffix = str_replace(' Mese', ' Trimestre', $suffix);
+    global $PROFILE;
 
-    return TARGET_PREFIX . $suffix;
+    $suffix = substr($name, strlen(SOURCE_PREFIX));
+    $suffix = str_replace($PROFILE['suffixFrom'], $PROFILE['suffixTo'], $suffix);
+
+    return $PROFILE['targetPrefix'] . $suffix;
 }
 
 /**
@@ -97,8 +174,10 @@ function transformReportName(string $name): ?string
 function mapDateFilterValues($data, ?string $parentKey = null)
 {
     if (is_string($data)) {
-        if ($parentKey === 'type' && isset(DATE_FILTER_TYPE_MAP[$data])) {
-            return DATE_FILTER_TYPE_MAP[$data];
+        $map = profileDateFilterMap();
+
+        if ($parentKey === 'type' && isset($map[$data])) {
+            return $map[$data];
         }
 
         return $data;
@@ -183,7 +262,8 @@ function setupRunUser(Container $container, EntityManager $em, array $argv): voi
 
 setupRunUser($container, $em, $argv);
 
-echo 'Script duplica-report-appuntamenti-trimestre v' . SCRIPT_VERSION . "\n";
+echo 'Script duplica-report-appuntamenti-periodo profile=' . $PROFILE['name']
+    . ' v' . $PROFILE['version'] . "\n";
 
 if ($fixFiltersOnly) {
     echo "Modalità: --fix-filters-only\n\n";
@@ -303,7 +383,8 @@ function remapLayoutReportIds($layout, array $reportIdMap, EntityManager $em)
             }
 
             if (!empty($opts['title']) && is_string($opts['title'])) {
-                $opts['title'] = str_replace(' Mese', ' Trimestre', $opts['title']);
+                global $PROFILE;
+                $opts['title'] = str_replace($PROFILE['titleFrom'], $PROFILE['titleTo'], $opts['title']);
             }
         }
 
@@ -348,7 +429,7 @@ function syncTrimestreTab($tabs, array $reportIdMap, EntityManager $em, ?array $
         }
 
         if (tabNameIsTargetTab((string) ($tab['name'] ?? ''))) {
-            $tabs[$i]['name'] = TAB_TARGET;
+            $tabs[$i]['name'] = profileTabTarget();
             $tabs[$i]['layout'] = $newLayout;
             $targetFound = true;
             $changed = true;
@@ -358,7 +439,7 @@ function syncTrimestreTab($tabs, array $reportIdMap, EntityManager $em, ?array $
 
     if (!$targetFound) {
         $tabs[] = [
-            'name' => TAB_TARGET,
+            'name' => profileTabTarget(),
             'layout' => $newLayout,
         ];
         $changed = true;
@@ -506,21 +587,22 @@ function findDashboardTabsArrayInBlob($value): ?array
  *
  * @return array<int, array<string, mixed>>|null
  */
-function buildTrimestreTabLayoutFromDb(EntityManager $em): ?array
+function buildTargetTabLayoutFromDb(EntityManager $em): ?array
 {
     $reportRepo = $em->getRDBRepository('Report');
     $items = [];
+    $prefix = profileTargetPrefix();
 
     foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->order('name')->find() as $report) {
         $name = (string) $report->get('name');
 
-        if (!str_starts_with($name, TARGET_PREFIX)) {
+        if (!str_starts_with($name, $prefix)) {
             continue;
         }
 
         $items[] = [
             'id' => $report->getId(),
-            'title' => substr($name, strlen(TARGET_PREFIX)),
+            'title' => substr($name, strlen($prefix)),
         ];
     }
 
@@ -662,16 +744,25 @@ function tabNameIsSourceTab(string $name): bool
 
     return str_contains($lower, 'appuntament')
         && str_contains($lower, 'mese')
-        && !str_contains($lower, 'trimestre');
+        && !str_contains($lower, 'trimestre')
+        && !str_contains($lower, 'precedente');
 }
 
 function tabNameIsTargetTab(string $name): bool
 {
-    if ($name === TAB_TARGET) {
+    global $PROFILE;
+
+    if ($name === profileTabTarget()) {
         return true;
     }
 
     $lower = mb_strtolower($name);
+
+    if ($PROFILE['name'] === 'mese-precedente') {
+        return str_contains($lower, 'appuntament')
+            && str_contains($lower, 'mese')
+            && str_contains($lower, 'precedente');
+    }
 
     return str_contains($lower, 'appuntament')
         && str_contains($lower, 'trimestre');
@@ -804,7 +895,7 @@ function findBestSourceTabLayout(EntityManager $em, Config $config, ?string $pre
     }
 
     if ($best === null) {
-        $built = buildTrimestreTabLayoutFromDb($em);
+        $built = buildTargetTabLayoutFromDb($em);
 
         if ($built !== null) {
             $count = countReportDashlets($built);
@@ -875,7 +966,7 @@ function diagnosePreferencesScan(EntityManager $em): void
 
                 if (
                     str_contains($blob, 'Appuntamenti Mese')
-                    || str_contains($blob, 'Appuntamenti Ultimo Trimestre')
+                    || str_contains($blob, profileTabTarget())
                 ) {
                     $found[] = (string) $row['id'];
                 }
@@ -1019,7 +1110,7 @@ if ($diagnose) {
         }
     }
 
-    $built = buildTrimestreTabLayoutFromDb($em);
+    $built = buildTargetTabLayoutFromDb($em);
 
     if ($best !== null) {
         echo "\nMiglior sorgente trovata: {$best[1]} con {$best[2]} dashlet Report\n";
@@ -1040,7 +1131,9 @@ $recordServiceContainer = $container->getByClass(RecordServiceContainer::class);
 $reportService = $recordServiceContainer->get('Report');
 
 if ($fixFiltersOnly) {
-    echo "Correzione filtri data su report \"" . TARGET_PREFIX . "*\" (tipo lastQuarter).\n\n";
+    global $PROFILE;
+    echo "Correzione filtri data su report \"" . profileTargetPrefix() . '*" (tipo '
+        . $PROFILE['filterTypeLabel'] . ").\n\n";
 
     $fixed = 0;
     $unchanged = 0;
@@ -1049,7 +1142,7 @@ if ($fixFiltersOnly) {
     foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $report) {
         $name = (string) $report->get('name');
 
-        if (!str_starts_with($name, TARGET_PREFIX)) {
+        if (!str_starts_with($name, profileTargetPrefix())) {
             continue;
         }
 
@@ -1171,7 +1264,7 @@ $listed = 0;
 foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $report) {
     $name = (string) $report->get('name');
 
-    if (!str_starts_with($name, TARGET_PREFIX)) {
+    if (!str_starts_with($name, profileTargetPrefix())) {
         continue;
     }
 
@@ -1179,14 +1272,14 @@ foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $report
     $listed++;
 }
 
-echo "Totale \"" . TARGET_PREFIX . "*\": {$listed} (attesi 8)\n";
+echo "Totale \"" . profileTargetPrefix() . "*\": {$listed} (attesi 8)\n";
 
 try {
     $pdo = $em->getPDO();
     $stmt = $pdo->prepare(
         'SELECT COUNT(*) FROM `report` WHERE deleted = 0 AND name LIKE :prefix'
     );
-    $stmt->execute(['prefix' => TARGET_PREFIX . '%']);
+    $stmt->execute(['prefix' => profileTargetPrefix() . '%']);
     $sqlCount = (int) $stmt->fetchColumn();
     echo "Verifica SQL tabella report: {$sqlCount} righe con prefisso trimestre.\n";
 } catch (Throwable $e) {
@@ -1222,7 +1315,7 @@ if ($dashboardOnly && $listed < 8) {
     exit(1);
 }
 
-$backupDir = $root . '/backup_dev/Appuntamento/report-trimestre-' . date('Ymd-His');
+$backupDir = $root . '/backup_dev/Appuntamento/' . $PROFILE['backupDirPart'] . '-' . date('Ymd-His');
 mkdir($backupDir, 0755, true);
 
 $prefUpdated = 0;
@@ -1236,7 +1329,7 @@ if (!$runUser) {
 $sourceFound = findBestSourceTabLayout($em, $config, $runUser->getId());
 
 if ($sourceFound === null) {
-    $built = buildTrimestreTabLayoutFromDb($em);
+    $built = buildTargetTabLayoutFromDb($em);
 
     if ($built === null) {
         echo "\nERRORE: impossibile costruire il tab trimestre (servono 8 report in CRM).\n";
@@ -1293,7 +1386,7 @@ $applyToUser = function (Entity $user) use (
     $em->saveEntity($pref);
     $prefUpdated++;
 
-    echo "PREFERENZE: {$user->get('userName')} → tab \"" . TAB_TARGET . "\" con {$dashletCount} dashlet (da {$sourceLabel})\n";
+    echo "PREFERENZE: {$user->get('userName')} → tab \"" . profileTabTarget() . "\" con {$dashletCount} dashlet (da {$sourceLabel})\n";
 };
 
 $applyToUser($runUser);
@@ -1342,7 +1435,7 @@ foreach (['dashboardLayout'] as $configKey) {
     if ($changed) {
         $configWriter->set($configKey, $newTabs);
         $configChanged = true;
-        echo "CONFIG {$configKey}: tab \"" . TAB_TARGET . "\" con {$dashletCount} dashlet Report\n";
+        echo "CONFIG {$configKey}: tab \"" . profileTabTarget() . "\" con {$dashletCount} dashlet Report\n";
     }
 }
 
@@ -1385,7 +1478,7 @@ echo "\nBackup: {$backupDir}\n";
 echo "Report creati: {$created}, aggiornati: {$updated}, già presenti: {$skipped}\n";
 echo "Preferenze utente aggiornate: {$prefUpdated}\n";
 echo "Eseguire: php clear_cache.php && php rebuild.php\n";
-echo "Poi Ctrl+F5 (o logout/login) sul tab Appuntamenti Ultimo Trimestre.\n";
+echo 'Poi Ctrl+F5 (o logout/login) sul tab ' . profileTabTarget() . ".\n";
 
 if ($dashboardOnly) {
     echo "\nPasso 2 completato.\n";
