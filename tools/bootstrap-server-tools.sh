@@ -37,6 +37,7 @@ TOOL_FILES=(
   "tools/backfill-appuntamento-account-link.php"
   "tools/sync-custom-prod-repo.php"
   "tools/sync-custom-prod-repo.config.json"
+  "tools/bootstrap-regole-produzione.sh"
   "tools/fix-contratto-importo-minusplus-standalone.php"
   "tools/layouts-samples/Quote/detail-prezzi-minusplus.json"
 )
