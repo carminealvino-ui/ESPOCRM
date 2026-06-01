@@ -40,7 +40,7 @@ const SOURCE_PREFIX = 'Appuntamenti Mese - ';
 const TARGET_PREFIX = 'Appuntamenti Ultimo Trimestre - ';
 const TAB_SOURCE = 'Appuntamenti Mese';
 const TAB_TARGET = 'Appuntamenti Ultimo Trimestre';
-const SCRIPT_VERSION = '2026-05-30-prefs-no-deleted';
+const SCRIPT_VERSION = '2026-05-30-layout-by-report';
 
 /** Solo sul campo JSON "type" del filtro data (non su altri campi). */
 const DATE_FILTER_TYPE_MAP = [
@@ -400,9 +400,32 @@ function normalizeDashboardTabs($tabs): ?array
 }
 
 /**
+ * @return array<string, mixed>|null
+ */
+function fetchPreferenceDataBlob(EntityManager $em, string $prefId): ?array
+{
+    try {
+        $pdo = $em->getPDO();
+        $stmt = $pdo->prepare('SELECT data FROM `preferences` WHERE id = ?');
+        $stmt->execute([$prefId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row || !isset($row['data']) || $row['data'] === '') {
+            return null;
+        }
+
+        $decoded = json_decode((string) $row['data'], true);
+
+        return is_array($decoded) ? $decoded : null;
+    } catch (Throwable $e) {
+        return null;
+    }
+}
+
+/**
  * @return array<int, array<string, mixed>>|null
  */
-function getPreferenceDashboardTabs(Entity $pref): ?array
+function getPreferenceDashboardTabs(Entity $pref, EntityManager $em): ?array
 {
     $tabs = normalizeDashboardTabs($pref->get('dashboardLayout'));
 
@@ -413,14 +436,112 @@ function getPreferenceDashboardTabs(Entity $pref): ?array
     $data = $pref->get('data');
 
     if (is_object($data) && isset($data->dashboardLayout)) {
-        return normalizeDashboardTabs($data->dashboardLayout);
+        $tabs = normalizeDashboardTabs($data->dashboardLayout);
+
+        if ($tabs !== null) {
+            return $tabs;
+        }
     }
 
     if (is_array($data) && isset($data['dashboardLayout'])) {
-        return normalizeDashboardTabs($data['dashboardLayout']);
+        $tabs = normalizeDashboardTabs($data['dashboardLayout']);
+
+        if ($tabs !== null) {
+            return $tabs;
+        }
+    }
+
+    $blob = fetchPreferenceDataBlob($em, $pref->getId());
+
+    if ($blob !== null && isset($blob['dashboardLayout'])) {
+        return normalizeDashboardTabs($blob['dashboardLayout']);
     }
 
     return null;
+}
+
+/**
+ * @return array<string, true>
+ */
+function buildMeseReportIdSet(EntityManager $em): array
+{
+    $set = [];
+
+    foreach ($em->getRDBRepository('Report')->where(['entityType' => 'Appuntamento'])->find() as $report) {
+        if (str_starts_with((string) $report->get('name'), SOURCE_PREFIX)) {
+            $set[$report->getId()] = true;
+        }
+    }
+
+    return $set;
+}
+
+/**
+ * @param mixed $layout
+ * @param array<string, true> $meseReportIds
+ */
+function countMeseReportDashletsInLayout($layout, array $meseReportIds): int
+{
+    if (!is_array($layout)) {
+        return 0;
+    }
+
+    $count = 0;
+
+    foreach ($layout as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+
+        if (($item['name'] ?? null) === 'Report') {
+            $reportId = $item['options']['reportId'] ?? null;
+
+            if (is_string($reportId) && isset($meseReportIds[$reportId])) {
+                $count++;
+            }
+        }
+
+        foreach ($item as $value) {
+            if (is_array($value)) {
+                $count += countMeseReportDashletsInLayout($value, $meseReportIds);
+            }
+        }
+    }
+
+    return $count;
+}
+
+/**
+ * Tab con più dashlet Report "Appuntamenti Mese - …" (anche se il tab ha altro nome).
+ *
+ * @param array<int, array<string, mixed>> $tabs
+ * @param array<string, true> $meseReportIds
+ */
+function findSourceTabLayoutByMeseReports(array $tabs, array $meseReportIds): ?array
+{
+    $bestLayout = null;
+    $bestCount = 0;
+
+    foreach ($tabs as $tab) {
+        if (!is_array($tab)) {
+            continue;
+        }
+
+        $layout = $tab['layout'] ?? null;
+
+        if (!is_array($layout)) {
+            continue;
+        }
+
+        $count = countMeseReportDashletsInLayout($layout, $meseReportIds);
+
+        if ($count > $bestCount) {
+            $bestCount = $count;
+            $bestLayout = $layout;
+        }
+    }
+
+    return $bestCount >= 4 ? $bestLayout : null;
 }
 
 function tabNameIsSourceTab(string $name): bool
@@ -478,9 +599,16 @@ function findTabLayoutByMatcher(array $tabs, callable $matcher): ?array
 function findBestSourceTabLayout(EntityManager $em, Config $config, ?string $preferUserId = null): ?array
 {
     $best = null;
+    $meseReportIds = buildMeseReportIdSet($em);
 
-    $consider = function (array $tabs, string $label) use (&$best): void {
+    $consider = function (array $tabs, string $label) use (&$best, $meseReportIds): void {
         $layout = findTabLayoutByMatcher($tabs, 'tabNameIsSourceTab');
+        $suffix = '';
+
+        if ($layout === null && $meseReportIds !== []) {
+            $layout = findSourceTabLayoutByMeseReports($tabs, $meseReportIds);
+            $suffix = ' [via report Mese]';
+        }
 
         if ($layout === null) {
             return;
@@ -489,7 +617,7 @@ function findBestSourceTabLayout(EntityManager $em, Config $config, ?string $pre
         $count = countReportDashlets($layout);
 
         if ($best === null || $count > $best[2]) {
-            $best = [$layout, $label, $count];
+            $best = [$layout, $label . $suffix, $count];
         }
     };
 
@@ -497,7 +625,7 @@ function findBestSourceTabLayout(EntityManager $em, Config $config, ?string $pre
         $pref = $em->getEntityById('Preferences', $preferUserId);
 
         if ($pref) {
-            $tabs = getPreferenceDashboardTabs($pref);
+            $tabs = getPreferenceDashboardTabs($pref, $em);
 
             if ($tabs !== null) {
                 $user = $em->getEntityById('User', $preferUserId);
@@ -508,7 +636,7 @@ function findBestSourceTabLayout(EntityManager $em, Config $config, ?string $pre
     }
 
     foreach (iterateAllPreferences($em) as $pref) {
-        $tabs = getPreferenceDashboardTabs($pref);
+        $tabs = getPreferenceDashboardTabs($pref, $em);
 
         if ($tabs === null) {
             continue;
@@ -639,7 +767,7 @@ function diagnosePreferencesScan(EntityManager $em): void
         echo 'Scan preferences (fallback ORM): ' . $e->getMessage() . "\n";
 
         foreach (iterateAllPreferences($em) as $pref) {
-            $tabs = getPreferenceDashboardTabs($pref);
+            $tabs = getPreferenceDashboardTabs($pref, $em);
 
             if ($tabs === null) {
                 continue;
@@ -678,15 +806,18 @@ if ($diagnose) {
     $runUser = $em->getRDBRepository('User')->where(['userName' => $runUserName])->findOne();
     $runUserId = $runUser ? $runUser->getId() : null;
 
+    $meseReportIds = buildMeseReportIdSet($em);
+
     foreach (iterateAllPreferences($em) as $pref) {
-        $tabs = getPreferenceDashboardTabs($pref);
+        $tabs = getPreferenceDashboardTabs($pref, $em);
 
         if ($tabs === null || $tabs === []) {
             continue;
         }
 
         $names = listTabNames($tabs);
-        $hasMese = findTabLayoutByMatcher($tabs, 'tabNameIsSourceTab') !== null;
+        $hasMese = findTabLayoutByMatcher($tabs, 'tabNameIsSourceTab') !== null
+            || findSourceTabLayoutByMeseReports($tabs, $meseReportIds) !== null;
         $hasTrim = findTabLayoutByMatcher($tabs, 'tabNameIsTargetTab') !== null;
 
         if (!$hasMese && !$hasTrim) {
@@ -750,11 +881,31 @@ if ($diagnose) {
 
     $best = findBestSourceTabLayout($em, $config, $runUserId);
 
+    if ($runUserId !== null) {
+        $pref = $em->getEntityById('Preferences', $runUserId);
+        $tabs = $pref ? getPreferenceDashboardTabs($pref, $em) : null;
+
+        if ($tabs !== null && $tabs !== []) {
+            echo "\nTab nel tuo utente (--user): " . implode(' | ', listTabNames($tabs)) . "\n";
+
+            foreach ($tabs as $tab) {
+                if (!is_array($tab)) {
+                    continue;
+                }
+
+                $name = (string) ($tab['name'] ?? '');
+                $cnt = countReportDashlets($tab['layout'] ?? []);
+                $meseCnt = countMeseReportDashletsInLayout($tab['layout'] ?? [], $meseReportIds);
+                echo "  · {$name}: {$cnt} dashlet Report ({$meseCnt} report \"Appuntamenti Mese\")\n";
+            }
+        }
+    }
+
     if ($best !== null) {
         echo "\nMiglior sorgente trovata: {$best[1]} con {$best[2]} dashlet Report\n";
     } else {
         echo "\nNessun layout sorgente \"Appuntamenti Mese\" trovato in DB/config.\n";
-        echo "Aprire il tab Appuntamenti Mese in CRM e salvare la dashboard (o copiare da un altro utente).\n";
+        echo "Aprire il tab Appuntamenti Mese in CRM, verificare 8 widget, poi Salva dashboard.\n";
     }
 
     exit(0);
@@ -989,7 +1140,7 @@ $applyToUser = function (Entity $user) use (
         return;
     }
 
-    $tabs = getPreferenceDashboardTabs($pref);
+    $tabs = getPreferenceDashboardTabs($pref, $em);
 
     if ($tabs === null || $tabs === []) {
         $tabs = defaultDashboardTabsForUser($config, $user);
@@ -1020,9 +1171,16 @@ foreach (iterateAllPreferences($em) as $pref) {
         continue;
     }
 
-    $tabs = getPreferenceDashboardTabs($pref);
+    $tabs = getPreferenceDashboardTabs($pref, $em);
 
-    if ($tabs === null || findTabLayoutByMatcher($tabs, 'tabNameIsSourceTab') === null) {
+    if ($tabs === null) {
+        continue;
+    }
+
+    $hasSource = findTabLayoutByMatcher($tabs, 'tabNameIsSourceTab') !== null
+        || findSourceTabLayoutByMeseReports($tabs, buildMeseReportIdSet($em)) !== null;
+
+    if (!$hasSource) {
         continue;
     }
 
