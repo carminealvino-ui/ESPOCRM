@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# LEGGI PRIMA: ../REGOLE-PRODUZIONE/README.md (un passo alla volta, backup, istruzioni complete)
+#
 # Scarica script tools/ sul server (la cartella tools/ NON è parte del deploy Espo).
 #
 #   cd ~/public_html/crm/mec-group

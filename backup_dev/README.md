@@ -1,5 +1,7 @@
 # Backup sviluppo — `backup_dev/`
 
+**Regole operative (obbligatorie):** [`../REGOLE-PRODUZIONE/README.md`](../REGOLE-PRODUZIONE/README.md)
+
 Copie **prima di modifiche mirate** (hook, layout, metadata, client).  
 Sul server: `~/public_html/crm/mec-group/backup_dev/`
 
