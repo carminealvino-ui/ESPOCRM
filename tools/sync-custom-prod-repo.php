@@ -624,12 +624,6 @@ function runPushDelta(string $crmRoot, string $deltaPath, array $config, array $
 {
     $deltaPath = resolveDeltaPath($crmRoot, $deltaPath);
 
-    $token = getenv('GITHUB_TOKEN') ?: '';
-
-    if ($token === '') {
-        fail('GITHUB_TOKEN mancante. Creare un PAT GitHub (scope repo) e: export GITHUB_TOKEN=ghp_...');
-    }
-
     $repository = getenv('GITHUB_REPOSITORY') ?: $config['github']['repository'];
     $branch = getenv('GITHUB_BRANCH') ?: $config['github']['branch'];
     $dryRun = !empty($options['dry_run']);
@@ -655,8 +649,14 @@ function runPushDelta(string $crmRoot, string $deltaPath, array $config, array $
     echo "File da pubblicare: " . count($files) . "\n";
 
     if ($dryRun) {
-        echo "DRY-RUN: nessun push.\n";
+        echo "DRY-RUN: nessun push (token non richiesto).\n";
         return;
+    }
+
+    $token = getenv('GITHUB_TOKEN') ?: '';
+
+    if ($token === '') {
+        fail('GITHUB_TOKEN mancante. Creare un PAT GitHub (scope repo) e: export GITHUB_TOKEN=ghp_...');
     }
 
     if (trim((string) shell_exec('which git 2>/dev/null')) === '') {
