@@ -48,6 +48,8 @@ rm -rf exports/sync/.cache/repo-main
 php tools/sync-custom-prod-repo.php status --branch=main --refresh
 ```
 
+Se in `exports/sync/.cache/repo-main/` compare una sottocartella `ESPOCRM-main/` (invece di `client/custom` direttamente sotto `repo-main`), la cache è **annidata** e va cancellata come sopra.
+
 Atteso: migliaia di **Identici**, pochi **Diversi** / **Solo prod**.
 
 Verifica alternativa (clone già usato per il push):

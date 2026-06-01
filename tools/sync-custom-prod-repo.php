@@ -176,6 +176,13 @@ function runStatus(string $crmRoot, array $config, array $options): void
     $prodIndex = buildFileIndex($crmRoot, $config, 'production');
     $repoIndex = buildFileIndex($repoRoot, $config, 'repo');
 
+    if ($repoIndex === [] && $prodIndex !== []) {
+        fail(
+            'Indice repository vuoto: cache GitHub probabilmente corrotta o annidata. ' .
+            'Eseguire: rm -rf exports/sync/.cache/repo-main && status --refresh'
+        );
+    }
+
     $onlyProd = array_diff_key($prodIndex, $repoIndex);
     $onlyRepo = array_diff_key($repoIndex, $prodIndex);
     $common = array_intersect_key($prodIndex, $repoIndex);
@@ -392,7 +399,7 @@ function resolveRepoRoot(string $crmRoot, array $config, array $options = []): s
 
     $remoteSha = fetchRemoteBranchCommitSha($repo, $branch);
 
-    if (is_dir($extracted . '/custom/Espo/Custom')) {
+    if (isRepoCacheLayoutValid($extracted)) {
         if ($remoteSha === '') {
             return $extracted;
         }
@@ -405,6 +412,9 @@ function resolveRepoRoot(string $crmRoot, array $config, array $options = []): s
         }
 
         echo "Cache obsoleta (commit remoto cambiato), nuovo download...\n";
+        removeDirectory($extracted);
+    } elseif (is_dir($extracted)) {
+        echo "Cache non valida (struttura errata o annidata), ricreo...\n";
         removeDirectory($extracted);
     }
 
@@ -445,14 +455,48 @@ function resolveRepoRoot(string $crmRoot, array $config, array $options = []): s
         mkdir($cacheDir, 0755, true);
     }
 
+    if (is_dir($extracted)) {
+        removeDirectory($extracted);
+    }
+
     rename($src, $extracted);
     removeDirectory($tmp);
+
+    if (!isRepoCacheLayoutValid($extracted)) {
+        removeDirectory($extracted);
+        fail(
+            'Cache estratta non valida (manca custom/Espo/Custom o client/custom). ' .
+            'Eliminare exports/sync/.cache/repo-main e riprovare.'
+        );
+    }
 
     if ($remoteSha !== '') {
         file_put_contents($shaMarker, $remoteSha . PHP_EOL);
     }
 
     return $extracted;
+}
+
+/**
+ * La cache deve essere la root del repo (non una sottocartella ESPOCRM-main annidata).
+ */
+function isRepoCacheLayoutValid(string $extracted): bool
+{
+    if (!is_dir($extracted . '/custom/Espo/Custom')) {
+        return false;
+    }
+
+    foreach (scandir($extracted) ?: [] as $entry) {
+        if ($entry === '.' || $entry === '..') {
+            continue;
+        }
+
+        if (preg_match('/^ESPOCRM-/i', $entry) && is_dir($extracted . '/' . $entry . '/custom/Espo/Custom')) {
+            return false;
+        }
+    }
+
+    return is_dir($extracted . '/client/custom');
 }
 
 /**
