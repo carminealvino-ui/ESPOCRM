@@ -1,12 +1,13 @@
 #!/usr/bin/env php
 <?php
 /**
- * Duplica i report "Appuntamenti Mese - …" in "Appuntamenti Ultimo Trimestre - …"
- * e allinea il layout del dashboard "Appuntamenti Ultimo Trimestre" a quello "Appuntamenti Mese".
+ * Duplica report "Appuntamenti Mese - …" → "Appuntamenti Ultimo Trimestre - …"
+ * e copia il layout del tab dashboard da "Appuntamenti Mese" a "Appuntamenti Ultimo Trimestre"
+ * (Preferenze utente + config di sistema).
  *
  *   php tools/duplica-report-appuntamenti-trimestre.php --dry-run
- *   php tools/duplica-report-appuntamenti-trimestre.php
- *   php tools/duplica-report-appuntamenti-trimestre.php --inspect
+ *   php tools/duplica-report-appuntamenti-trimestre.php --force
+ *   php tools/duplica-report-appuntamenti-trimestre.php --diagnose
  */
 declare(strict_types=1);
 
@@ -20,14 +21,15 @@ if (!is_file($root . '/bootstrap.php')) {
 require_once $root . '/bootstrap.php';
 
 use Espo\Core\Application;
+use Espo\Core\Utils\Config;
 use Espo\ORM\Entity;
+use Espo\ORM\EntityManager;
 
 const SOURCE_PREFIX = 'Appuntamenti Mese - ';
 const TARGET_PREFIX = 'Appuntamenti Ultimo Trimestre - ';
-const DASHBOARD_SOURCE = 'Appuntamenti Mese';
-const DASHBOARD_TARGET = 'Appuntamenti Ultimo Trimestre';
+const TAB_SOURCE = 'Appuntamenti Mese';
+const TAB_TARGET = 'Appuntamenti Ultimo Trimestre';
 
-/** Valori filtro data tipici EspoCRM (mese → trimestre precedente). */
 const DATE_VALUE_MAP = [
     'currentMonth' => 'previousQuarter',
     'thisMonth' => 'previousQuarter',
@@ -36,37 +38,16 @@ const DATE_VALUE_MAP = [
 
 $argv = $GLOBALS['argv'] ?? [];
 $dryRun = in_array('--dry-run', $argv, true);
-$inspect = in_array('--inspect', $argv, true);
+$diagnose = in_array('--diagnose', $argv, true);
 $force = in_array('--force', $argv, true);
-
-function backupDashboardLayouts($em, string $crmRoot): string
-{
-    $ts = date('Ymd-His');
-    $dir = $crmRoot . '/backup_dev/Appuntamento/report-trimestre-' . $ts;
-    mkdir($dir, 0755, true);
-
-    $dashboardRepo = $em->getRDBRepository('Dashboard');
-
-    foreach ([DASHBOARD_SOURCE, DASHBOARD_TARGET] as $name) {
-        $dash = $dashboardRepo->where(['name' => $name])->findOne();
-
-        if (!$dash) {
-            continue;
-        }
-
-        $file = $dir . '/dashboard-' . preg_replace('/\s+/', '-', $name) . '.json';
-        file_put_contents(
-            $file,
-            json_encode($dash->get('layout'), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . PHP_EOL
-        );
-    }
-
-    return $dir;
-}
 
 $app = new Application();
 $app->setupSystemUser();
-$em = $app->getContainer()->get('entityManager');
+$container = $app->getContainer();
+/** @var EntityManager $em */
+$em = $container->get('entityManager');
+/** @var Config $config */
+$config = $container->get('config');
 
 function transformReportName(string $name): ?string
 {
@@ -119,11 +100,7 @@ function copyReportFields(Entity $source, Entity $target): void
     ];
 
     foreach ($source->getAttributeList() as $attribute) {
-        if (in_array($attribute, $skip, true)) {
-            continue;
-        }
-
-        if (!$source->has($attribute)) {
+        if (in_array($attribute, $skip, true) || !$source->has($attribute)) {
             continue;
         }
 
@@ -137,80 +114,256 @@ function copyReportFields(Entity $source, Entity $target): void
     }
 }
 
-function transformDashletOptions(object $options, array $reportIdMap): object
+function buildReportIdMap(EntityManager $em): array
 {
-    $options = clone $options;
+    $map = [];
+    $reportRepo = $em->getRDBRepository('Report');
 
-    if (isset($options->reportId) && isset($reportIdMap[$options->reportId])) {
-        $options->reportId = $reportIdMap[$options->reportId];
+    foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $source) {
+        $targetName = transformReportName((string) $source->get('name'));
+
+        if ($targetName === null) {
+            continue;
+        }
+
+        $target = $reportRepo->where(['name' => $targetName])->findOne();
+
+        if ($target) {
+            $map[$source->getId()] = $target->getId();
+        }
     }
 
-    if (isset($options->title) && is_string($options->title)) {
-        $options->title = str_replace(' Mese', ' Trimestre', $options->title);
-        $options->title = str_replace('Mese', 'Trimestre', $options->title);
+    return $map;
+}
+
+/**
+ * @param mixed $layout
+ */
+function countReportDashlets($layout): int
+{
+    if (!is_array($layout)) {
+        return 0;
     }
 
-    return $options;
+    $count = 0;
+
+    foreach ($layout as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+
+        if (($item['name'] ?? null) === 'Report') {
+            $count++;
+        }
+
+        foreach ($item as $value) {
+            if (is_array($value)) {
+                $count += countReportDashlets($value);
+            }
+        }
+    }
+
+    return $count;
 }
 
 /**
  * @param mixed $layout
  * @return mixed
  */
-function transformDashboardLayout($layout, array $reportIdMap)
+function remapLayoutReportIds($layout, array $reportIdMap, EntityManager $em)
 {
     if (!is_array($layout)) {
         return $layout;
     }
 
-    $out = [];
+    $reportRepo = $em->getRDBRepository('Report');
 
-    foreach ($layout as $cell) {
-        if (!is_array($cell) && !is_object($cell)) {
-            $out[] = $cell;
-            continue;
+    $walk = function (array &$node) use (&$walk, $reportIdMap, $reportRepo): void {
+        if (($node['name'] ?? null) === 'Report' && isset($node['options']) && is_array($node['options'])) {
+            $opts = &$node['options'];
+
+            if (!empty($opts['reportId'])) {
+                $oldId = $opts['reportId'];
+
+                if (isset($reportIdMap[$oldId])) {
+                    $opts['reportId'] = $reportIdMap[$oldId];
+                } else {
+                    $report = $reportRepo->getById($oldId);
+
+                    if ($report) {
+                        $targetName = transformReportName((string) $report->get('name'));
+
+                        if ($targetName) {
+                            $target = $reportRepo->where(['name' => $targetName])->findOne();
+
+                            if ($target) {
+                                $opts['reportId'] = $target->getId();
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!empty($opts['title']) && is_string($opts['title'])) {
+                $opts['title'] = str_replace(' Mese', ' Trimestre', $opts['title']);
+            }
         }
 
-        $cell = json_decode(json_encode($cell), false);
-
-        if (($cell->name ?? null) === 'Report' && isset($cell->options)) {
-            $cell->options = transformDashletOptions($cell->options, $reportIdMap);
+        foreach ($node as &$value) {
+            if (is_array($value)) {
+                $walk($value);
+            }
         }
+    };
 
-        $out[] = $cell;
-    }
+    $copy = json_decode(json_encode($layout), true);
+    $walk($copy);
 
-    return $out;
+    return $copy;
 }
 
-$reportRepo = $em->getRDBRepository('Report');
-
-if ($inspect) {
-    echo "=== Report Mese (esempio) ===\n";
-    foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $report) {
-        $name = (string) $report->get('name');
-        if (!str_starts_with($name, SOURCE_PREFIX)) {
-            continue;
-        }
-        echo $name . "\n";
-        echo json_encode($report->get('filtersDataList'), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n\n";
-        break;
+/**
+ * @param mixed $tabs
+ * @return array{0: mixed, 1: bool, 2: int}
+ */
+function syncTrimestreTab($tabs, array $reportIdMap, EntityManager $em): array
+{
+    if (!is_array($tabs)) {
+        return [$tabs, false, 0];
     }
 
-    echo "=== Report Trimestre esistente (esempio) ===\n";
-    foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $report) {
-        $name = (string) $report->get('name');
-        if (!str_contains($name, 'Trimestre')) {
+    $sourceLayout = null;
+
+    foreach ($tabs as $tab) {
+        if (!is_array($tab)) {
             continue;
         }
-        echo $name . "\n";
-        echo json_encode($report->get('filtersDataList'), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n\n";
-        break;
+
+        if (($tab['name'] ?? '') === TAB_SOURCE) {
+            $sourceLayout = $tab['layout'] ?? null;
+            break;
+        }
+    }
+
+    if ($sourceLayout === null) {
+        return [$tabs, false, 0];
+    }
+
+    $newLayout = remapLayoutReportIds($sourceLayout, $reportIdMap, $em);
+    $dashletCount = countReportDashlets($newLayout);
+    $changed = false;
+    $targetFound = false;
+
+    foreach ($tabs as $i => $tab) {
+        if (!is_array($tab)) {
+            continue;
+        }
+
+        if (($tab['name'] ?? '') === TAB_TARGET) {
+            $tabs[$i]['layout'] = $newLayout;
+            $targetFound = true;
+            $changed = true;
+            break;
+        }
+    }
+
+    if (!$targetFound) {
+        $tabs[] = [
+            'name' => TAB_TARGET,
+            'layout' => $newLayout,
+        ];
+        $changed = true;
+    }
+
+    return [$tabs, $changed, $dashletCount];
+}
+
+function listTabNames($tabs): array
+{
+    if (!is_array($tabs)) {
+        return [];
+    }
+
+    $names = [];
+
+    foreach ($tabs as $tab) {
+        if (is_array($tab) && isset($tab['name'])) {
+            $names[] = (string) $tab['name'];
+        }
+    }
+
+    return $names;
+}
+
+function backupJson(string $dir, string $file, $data): void
+{
+    file_put_contents(
+        $dir . '/' . $file,
+        json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . PHP_EOL
+    );
+}
+
+if ($diagnose) {
+    echo "=== Diagnostica dashboard ===\n\n";
+
+    $prefRepo = $em->getRDBRepository('Preferences');
+    $n = 0;
+
+    foreach ($prefRepo->find() as $pref) {
+        $tabs = $pref->get('dashboardLayout');
+
+        if (!is_array($tabs) || $tabs === []) {
+            continue;
+        }
+
+        $names = listTabNames($tabs);
+        $hasMese = in_array(TAB_SOURCE, $names, true);
+        $hasTrim = in_array(TAB_TARGET, $names, true);
+
+        if (!$hasMese && !$hasTrim) {
+            continue;
+        }
+
+        $n++;
+        $userId = $pref->getId();
+        $user = $em->getEntityById('User', $userId);
+        $userName = $user ? $user->get('userName') : $userId;
+
+        echo "User: {$userName}\n";
+        echo '  Tab: ' . implode(' | ', $names) . "\n";
+
+        foreach ($tabs as $tab) {
+            if (!is_array($tab)) {
+                continue;
+            }
+
+            $name = $tab['name'] ?? '';
+
+            if ($name === TAB_SOURCE || $name === TAB_TARGET) {
+                $cnt = countReportDashlets($tab['layout'] ?? []);
+                echo "  {$name}: {$cnt} dashlet Report\n";
+            }
+        }
+
+        echo "\n";
+    }
+
+    echo "Preferenze con tab Mese/Trimestre: {$n}\n";
+
+    $cfgLayout = $config->get('dashboardLayout');
+    if (is_array($cfgLayout)) {
+        echo "\nConfig dashboardLayout tab: " . implode(' | ', listTabNames($cfgLayout)) . "\n";
+    }
+
+    $defaultLayouts = $config->get('defaultDashboardLayouts');
+    if (is_array($defaultLayouts)) {
+        echo "Config defaultDashboardLayouts chiavi: " . implode(', ', array_keys($defaultLayouts)) . "\n";
     }
 
     exit(0);
 }
 
+$reportRepo = $em->getRDBRepository('Report');
 $reportIdMap = [];
 $created = 0;
 $updated = 0;
@@ -226,7 +379,7 @@ foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $source
 
     $existing = $reportRepo->where(['name' => $targetName])->findOne();
 
-    if ($existing && !$force) {
+    if ($existing && !$force && !$dryRun) {
         $reportIdMap[$source->getId()] = $existing->getId();
         $skipped++;
         echo "ESISTE: {$targetName}\n";
@@ -259,39 +412,106 @@ foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $source
 }
 
 if ($dryRun) {
-    echo "\nDRY-RUN: nessuna modifica al database.\n";
-    echo "Report da duplicare: vedi elenco sopra.\n";
+    echo "\nDRY-RUN: nessuna modifica.\n";
+    echo "Poi: php tools/duplica-report-appuntamenti-trimestre.php --force\n";
     exit(0);
 }
 
 if ($reportIdMap === []) {
-    fwrite(STDERR, "Nessun report mappato. Verificare nomi con prefisso \"" . SOURCE_PREFIX . "\".\n");
+    $reportIdMap = buildReportIdMap($em);
+}
+
+if ($reportIdMap === []) {
+    fwrite(STDERR, "Nessun report mappato.\n");
     exit(1);
 }
 
-$backupDir = backupDashboardLayouts($em, $root);
-echo "Backup layout dashboard: {$backupDir}\n";
+$backupDir = $root . '/backup_dev/Appuntamento/report-trimestre-' . date('Ymd-His');
+mkdir($backupDir, 0755, true);
 
-$dashboardRepo = $em->getRDBRepository('Dashboard');
-$sourceDash = $dashboardRepo->where(['name' => DASHBOARD_SOURCE])->findOne();
-$targetDash = $dashboardRepo->where(['name' => DASHBOARD_TARGET])->findOne();
+$prefUpdated = 0;
+$prefRepo = $em->getRDBRepository('Preferences');
 
-if (!$sourceDash) {
-    fwrite(STDERR, "Dashboard non trovata: " . DASHBOARD_SOURCE . "\n");
-    exit(1);
+foreach ($prefRepo->find() as $pref) {
+    $tabs = $pref->get('dashboardLayout');
+
+    if (!is_array($tabs) || !in_array(TAB_SOURCE, listTabNames($tabs), true)) {
+        continue;
+    }
+
+    backupJson($backupDir, 'preferences-' . $pref->getId() . '-before.json', $tabs);
+
+    [$newTabs, $changed, $dashletCount] = syncTrimestreTab($tabs, $reportIdMap, $em);
+
+    if (!$changed) {
+        continue;
+    }
+
+    $pref->set('dashboardLayout', $newTabs);
+    $em->saveEntity($pref);
+    $prefUpdated++;
+
+    $user = $em->getEntityById('User', $pref->getId());
+    $userName = $user ? $user->get('userName') : $pref->getId();
+    echo "PREFERENZE: {$userName} → tab \"" . TAB_TARGET . "\" con {$dashletCount} dashlet Report\n";
 }
 
-if (!$targetDash) {
-    fwrite(STDERR, "Dashboard non trovata: " . DASHBOARD_TARGET . "\n");
-    exit(1);
+$configWriter = $container->get('configWriter');
+$configChanged = false;
+
+foreach (['dashboardLayout'] as $configKey) {
+    $tabs = $config->get($configKey);
+
+    if (!is_array($tabs) || !in_array(TAB_SOURCE, listTabNames($tabs), true)) {
+        continue;
+    }
+
+    backupJson($backupDir, 'config-' . $configKey . '-before.json', $tabs);
+
+    [$newTabs, $changed, $dashletCount] = syncTrimestreTab($tabs, $reportIdMap, $em);
+
+    if ($changed) {
+        $configWriter->set($configKey, $newTabs);
+        $configChanged = true;
+        echo "CONFIG {$configKey}: tab \"" . TAB_TARGET . "\" con {$dashletCount} dashlet Report\n";
+    }
 }
 
-$sourceLayout = $sourceDash->get('layout');
-$newLayout = transformDashboardLayout($sourceLayout, $reportIdMap);
-$targetDash->set('layout', $newLayout);
-$em->saveEntity($targetDash);
+$defaultLayouts = $config->get('defaultDashboardLayouts');
 
-echo "\nDashboard \"" . DASHBOARD_TARGET . "\" aggiornata (" . count(is_array($newLayout) ? $newLayout : []) . " dashlet).\n";
+if (is_array($defaultLayouts)) {
+    foreach ($defaultLayouts as $layoutKey => $tabs) {
+        if (!is_array($tabs) || !in_array(TAB_SOURCE, listTabNames($tabs), true)) {
+            continue;
+        }
+
+        backupJson($backupDir, 'config-defaultDashboardLayouts-' . $layoutKey . '-before.json', $tabs);
+
+        [$newTabs, $changed, $dashletCount] = syncTrimestreTab($tabs, $reportIdMap, $em);
+
+        if ($changed) {
+            $defaultLayouts[$layoutKey] = $newTabs;
+            echo "CONFIG defaultDashboardLayouts[{$layoutKey}]: {$dashletCount} dashlet\n";
+            $configChanged = true;
+        }
+    }
+
+    if ($configChanged) {
+        $configWriter->set('defaultDashboardLayouts', $defaultLayouts);
+    }
+}
+
+if ($configChanged) {
+    $configWriter->save();
+}
+
+if ($prefUpdated === 0 && !$configChanged) {
+    echo "\nATTENZIONE: nessuna preferenza/config con tab \"" . TAB_SOURCE . "\" trovata.\n";
+    echo "Eseguire: php tools/duplica-report-appuntamenti-trimestre.php --diagnose\n";
+}
+
+echo "\nBackup: {$backupDir}\n";
 echo "Report creati: {$created}, aggiornati: {$updated}, già presenti: {$skipped}\n";
+echo "Preferenze utente aggiornate: {$prefUpdated}\n";
 echo "Eseguire: php clear_cache.php && php rebuild.php\n";
-echo "Poi Ctrl+F5 sul tab Appuntamenti Ultimo Trimestre.\n";
+echo "Poi Ctrl+F5 (o logout/login) sul tab Appuntamenti Ultimo Trimestre.\n";
