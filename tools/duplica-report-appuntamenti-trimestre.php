@@ -598,7 +598,7 @@ function diagnosePreferencesSql(EntityManager $em): void
     try {
         $pdo = $em->getPDO();
         $stmt = $pdo->query(
-            "SELECT id FROM preferences WHERE deleted = 0 AND (
+            "SELECT id FROM preferences WHERE (
                 data LIKE '%Appuntamenti Mese%' OR
                 data LIKE '%Appuntamenti Ultimo Trimestre%' OR
                 data LIKE '%\"name\":\"Appuntamenti%'
