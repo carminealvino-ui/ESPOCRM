@@ -29,6 +29,7 @@ use Espo\Core\Application;
 use Espo\Core\ApplicationUser;
 use Espo\Core\Container;
 use Espo\Core\Record\CreateParams;
+use Espo\Core\Record\DeleteParams;
 use Espo\Core\Record\ServiceContainer as RecordServiceContainer;
 use Espo\Core\Utils\Config;
 use Espo\ORM\Entity;
@@ -438,11 +439,11 @@ if (!$dashboardOnly) {
 
         if ($existing && $force) {
             try {
-                $reportService->delete($existing->getId());
+                $reportService->delete($existing->getId(), DeleteParams::create());
                 echo "ELIMINATO (rigenero): {$targetName}\n";
             } catch (Throwable $e) {
-                echo "ERRORE DELETE {$targetName}: {$e->getMessage()}\n";
-                continue;
+                $em->removeEntity($existing);
+                echo "ELIMINATO (repo): {$targetName}\n";
             }
         }
 
