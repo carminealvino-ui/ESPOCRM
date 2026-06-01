@@ -9,6 +9,7 @@
  *   php tools/duplica-report-appuntamenti-trimestre.php --reports-only --force   # passo 1: elenco Report
  *   php tools/duplica-report-appuntamenti-trimestre.php --dashboard-only --force # passo 2: tab dashboard
  *   php tools/duplica-report-appuntamenti-trimestre.php --force                  # entrambi
+ *   php tools/duplica-report-appuntamenti-trimestre.php --fix-filters-only       # corregge filtri data (lastQuarter)
  *   php tools/duplica-report-appuntamenti-trimestre.php --diagnose
  *   php tools/duplica-report-appuntamenti-trimestre.php --reports-only --force --user=admin
  *
@@ -40,10 +41,12 @@ const TARGET_PREFIX = 'Appuntamenti Ultimo Trimestre - ';
 const TAB_SOURCE = 'Appuntamenti Mese';
 const TAB_TARGET = 'Appuntamenti Ultimo Trimestre';
 
-const DATE_VALUE_MAP = [
-    'currentMonth' => 'previousQuarter',
-    'thisMonth' => 'previousQuarter',
-    'lastMonth' => 'previousQuarter',
+/** Solo sul campo JSON "type" del filtro data (non su altri campi). */
+const DATE_FILTER_TYPE_MAP = [
+    'currentMonth' => 'lastQuarter',
+    'thisMonth' => 'lastQuarter',
+    'nextMonth' => 'lastQuarter',
+    'previousQuarter' => 'lastQuarter',
 ];
 
 $argv = $GLOBALS['argv'] ?? [];
@@ -53,9 +56,15 @@ $force = in_array('--force', $argv, true);
 $reportsOnly = in_array('--reports-only', $argv, true);
 $dashboardOnly = in_array('--dashboard-only', $argv, true);
 $verbose = in_array('--verbose', $argv, true);
+$fixFiltersOnly = in_array('--fix-filters-only', $argv, true);
 
 if ($reportsOnly && $dashboardOnly) {
     fwrite(STDERR, "Usare solo uno tra --reports-only e --dashboard-only.\n");
+    exit(1);
+}
+
+if ($fixFiltersOnly && ($reportsOnly || $dashboardOnly)) {
+    fwrite(STDERR, "--fix-filters-only non va combinato con --reports-only o --dashboard-only.\n");
     exit(1);
 }
 
@@ -79,18 +88,25 @@ function transformReportName(string $name): ?string
 }
 
 /**
+ * Converte filtro mese → ultimo trimestre (tipo Espo: lastQuarter, non previousQuarter).
+ *
  * @param mixed $data
  * @return mixed
  */
-function mapDateFilterValues($data)
+function mapDateFilterValues($data, ?string $parentKey = null)
 {
     if (is_string($data)) {
-        return DATE_VALUE_MAP[$data] ?? $data;
+        if ($parentKey === 'type' && isset(DATE_FILTER_TYPE_MAP[$data])) {
+            return DATE_FILTER_TYPE_MAP[$data];
+        }
+
+        return $data;
     }
 
     if (is_array($data)) {
         foreach ($data as $key => $value) {
-            $data[$key] = mapDateFilterValues($value);
+            $childKey = is_string($key) ? $key : $parentKey;
+            $data[$key] = mapDateFilterValues($value, $childKey);
         }
 
         return $data;
@@ -98,11 +114,28 @@ function mapDateFilterValues($data)
 
     if (is_object($data)) {
         foreach (get_object_vars($data) as $key => $value) {
-            $data->$key = mapDateFilterValues($value);
+            $data->$key = mapDateFilterValues($value, $key);
         }
     }
 
     return $data;
+}
+
+function applyDateFilterMapToReport(Entity $report): void
+{
+    foreach (['filtersData', 'filtersDataList', 'filters', 'data'] as $attribute) {
+        if (!$report->has($attribute)) {
+            continue;
+        }
+
+        $value = $report->get($attribute);
+
+        if ($value === null || $value === [] || $value === (object) []) {
+            continue;
+        }
+
+        $report->set($attribute, mapDateFilterValues($value));
+    }
 }
 
 function parseRunUserName(array $argv): string
@@ -148,6 +181,23 @@ function setupRunUser(Container $container, EntityManager $em, array $argv): voi
 }
 
 setupRunUser($container, $em, $argv);
+
+function reportJsonContainsFilterType($data, string $needle): bool
+{
+    if (is_string($data)) {
+        return $data === $needle;
+    }
+
+    if (is_array($data) || is_object($data)) {
+        foreach ($data as $value) {
+            if (reportJsonContainsFilterType($value, $needle)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
 
 function buildReportIdMap(EntityManager $em): array
 {
@@ -414,6 +464,56 @@ if ($dashboardOnly) {
 $recordServiceContainer = $container->getByClass(RecordServiceContainer::class);
 $reportService = $recordServiceContainer->get('Report');
 
+if ($fixFiltersOnly) {
+    echo "Correzione filtri data su report \"" . TARGET_PREFIX . "*\" (tipo lastQuarter).\n\n";
+
+    $fixed = 0;
+    $unchanged = 0;
+    $errors = 0;
+
+    foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $report) {
+        $name = (string) $report->get('name');
+
+        if (!str_starts_with($name, TARGET_PREFIX)) {
+            continue;
+        }
+
+        $hadBadType = reportJsonContainsFilterType($report->get('filtersData'), 'previousQuarter')
+            || reportJsonContainsFilterType($report->get('filtersDataList'), 'previousQuarter')
+            || reportJsonContainsFilterType($report->get('filters'), 'previousQuarter')
+            || reportJsonContainsFilterType($report->get('data'), 'previousQuarter')
+            || reportJsonContainsFilterType($report->get('filtersData'), 'currentMonth')
+            || reportJsonContainsFilterType($report->get('filtersDataList'), 'currentMonth');
+
+        applyDateFilterMapToReport($report);
+
+        if ($dryRun) {
+            echo ($hadBadType ? 'AGGIORNA' : 'OK') . ": {$name}\n";
+            continue;
+        }
+
+        if (!$hadBadType) {
+            $unchanged++;
+            echo "OK (già corretto): {$name}\n";
+            continue;
+        }
+
+        try {
+            $em->saveEntity($report);
+            $fixed++;
+            echo "FILTRI AGGIORNATI: {$name}\n";
+        } catch (Throwable $e) {
+            $errors++;
+            echo "ERRORE {$name}: {$e->getMessage()}\n";
+        }
+    }
+
+    echo "\nReport corretti: {$fixed}, già ok: {$unchanged}\n";
+    echo "Eseguire: php clear_cache.php\n";
+    echo "Poi aprire un report trimestre in CRM e verificare che non compaia l'errore previousQuarter.\n";
+    exit($errors > 0 ? 1 : 0);
+}
+
 if (!$dashboardOnly) {
     foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $source) {
         $sourceName = (string) $source->get('name');
@@ -450,7 +550,7 @@ if (!$dashboardOnly) {
         try {
             $attributes = $reportService->getDuplicateAttributes($source->getId());
             $attributes->name = $targetName;
-            mapDateFilterValues($attributes);
+            $attributes = mapDateFilterValues($attributes);
 
             $createParams = CreateParams::create()
                 ->withDuplicateSourceId($source->getId())
