@@ -27,7 +27,7 @@ use Espo\Core\Record\ServiceContainer as RecordServiceContainer;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
-const ROLLBACK_VERSION = '2026-05-30-rollback';
+const ROLLBACK_VERSION = '2026-05-30-restore';
 
 const TABS_TO_REMOVE = [
     'Appuntamenti Ultimo Trimestre',
@@ -44,10 +44,16 @@ $dryRun = in_array('--dry-run', $argv, true);
 $deleteReports = in_array('--delete-reports', $argv, true);
 $force = in_array('--force', $argv, true);
 $restoreFrom = null;
+$restoreDir = null;
+$listBackups = in_array('--list-backups', $argv, true);
+$resetDefault = in_array('--reset-default', $argv, true);
 
 foreach ($argv as $arg) {
     if (str_starts_with($arg, '--restore-from=')) {
         $restoreFrom = substr($arg, 15);
+    }
+    if (str_starts_with($arg, '--restore-dir=')) {
+        $restoreDir = substr($arg, 14);
     }
 }
 
@@ -249,6 +255,125 @@ function removeTargetTabs(array $tabs): array
     return [$kept, $removed];
 }
 
+/**
+ * @return array<int, array<string, mixed>>|null
+ */
+function loadTabsFromBackupFile(string $path): ?array
+{
+    $decoded = json_decode((string) file_get_contents($path), true);
+
+    if (!is_array($decoded)) {
+        return null;
+    }
+
+    if ($decoded !== [] && array_is_list($decoded)) {
+        $first = $decoded[0] ?? null;
+
+        if (is_array($first) && (isset($first['name']) || isset($first['layout']))) {
+            return $decoded;
+        }
+    }
+
+    if (isset($decoded['dashboardLayout'])) {
+        return normalizeDashboardTabs($decoded['dashboardLayout']);
+    }
+
+    return null;
+}
+
+function restorePreferencesFromBackupDir(Entity $pref, EntityManager $em, string $dir): bool
+{
+    $rawFile = rtrim($dir, '/') . '/preferences-data-raw.json';
+    $layoutFile = rtrim($dir, '/') . '/dashboard-layout.json';
+
+    if (is_file($rawFile)) {
+        $blob = json_decode((string) file_get_contents($rawFile), true);
+
+        if (is_array($blob) && $blob !== []) {
+            $pref->set('data', $blob);
+
+            if (isset($blob['dashboardLayout'])) {
+                $pref->set('dashboardLayout', $blob['dashboardLayout']);
+            }
+
+            return true;
+        }
+    }
+
+    if (is_file($layoutFile)) {
+        $tabs = loadTabsFromBackupFile($layoutFile);
+
+        if ($tabs !== null && $tabs !== []) {
+            savePreferenceDashboardTabs($pref, $em, $tabs);
+
+            return true;
+        }
+    }
+
+  // Cerca backup script duplica (preferences-xxx-before.json)
+    foreach (glob(rtrim($dir, '/') . '/preferences-*-before.json') ?: [] as $file) {
+        $tabs = loadTabsFromBackupFile($file);
+
+        if ($tabs !== null && $tabs !== []) {
+            savePreferenceDashboardTabs($pref, $em, $tabs);
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function listAvailableBackups(string $root): void
+{
+    $base = $root . '/backup_dev/Appuntamento';
+
+    if (!is_dir($base)) {
+        echo "Nessuna cartella {$base}\n";
+
+        return;
+    }
+
+    $dirs = glob($base . '/*', GLOB_ONLYDIR);
+
+    if ($dirs === false || $dirs === []) {
+        echo "Nessun backup in {$base}\n";
+
+        return;
+    }
+
+    rsort($dirs);
+
+    echo "Backup trovati (più recente prima):\n\n";
+
+    foreach ($dirs as $dir) {
+        $name = basename($dir);
+        $meta = $dir . '/meta.json';
+        $layout = $dir . '/dashboard-layout.json';
+        $raw = $dir . '/preferences-data-raw.json';
+        $before = glob($dir . '/preferences-*-before.json');
+
+        echo "  {$dir}\n";
+
+        if (is_file($meta)) {
+            $m = json_decode((string) file_get_contents($meta), true);
+
+            if (is_array($m) && isset($m['tabNames'])) {
+                echo '    tab: ' . implode(' | ', $m['tabNames']) . "\n";
+            }
+        } elseif (is_file($layout)) {
+            $tabs = loadTabsFromBackupFile($layout);
+            echo '    tab: ' . implode(' | ', listTabNames($tabs ?? [])) . "\n";
+        } elseif ($before !== false && $before !== []) {
+            echo '    file: ' . basename($before[0]) . "\n";
+        } elseif (is_file($raw)) {
+            echo "    (solo preferences-data-raw.json)\n";
+        }
+
+        echo "\n";
+    }
+}
+
 $app = new Application();
 $container = $app->getContainer();
 /** @var EntityManager $em */
@@ -258,6 +383,11 @@ setupRunUser($container, $em, $argv);
 
 echo 'Rollback v' . ROLLBACK_VERSION . ($dryRun ? " (DRY-RUN)\n\n" : "\n\n");
 
+if ($listBackups) {
+    listAvailableBackups($root);
+    exit(0);
+}
+
 $runUser = $em->getRDBRepository('User')->where(['userName' => parseRunUserName($argv)])->findOne();
 $pref = $em->getEntityById('Preferences', $runUser->getId());
 
@@ -265,17 +395,67 @@ if (!$pref) {
     fail('Preferenze non trovate');
 }
 
+if ($restoreDir !== null && is_dir($restoreDir)) {
+    if ($dryRun) {
+        echo "DRY-RUN: ripristinerei da cartella {$restoreDir}\n";
+        exit(0);
+    }
+
+    if (!restorePreferencesFromBackupDir($pref, $em, $restoreDir)) {
+        fail('Nessun dato ripristinabile in ' . $restoreDir);
+    }
+
+    $em->saveEntity($pref);
+    $tabs = getPreferenceDashboardTabs($pref, $em);
+    echo "Ripristinato da: {$restoreDir}\n";
+    echo 'Tab ora: ' . implode(' | ', listTabNames($tabs ?? [])) . "\n";
+    echo "\nphp clear_cache.php — logout/login.\n";
+    exit(0);
+}
+
+if ($resetDefault) {
+    $config = $container->get('config');
+    $layouts = $config->get('defaultDashboardLayouts');
+    $tabs = null;
+
+    if (is_array($layouts)) {
+        $tabs = normalizeDashboardTabs($layouts['Standard'] ?? $layouts['Admin'] ?? null);
+    }
+
+    if ($tabs === null || $tabs === []) {
+        fail('defaultDashboardLayouts non trovato in config');
+    }
+
+    echo 'Reset alla dashboard Standard (' . count(listTabNames($tabs)) . " tab)\n";
+
+    if (!$dryRun) {
+        savePreferenceDashboardTabs($pref, $em, $tabs);
+        $em->saveEntity($pref);
+        echo "Salvato.\n";
+    }
+
+    echo "\nphp clear_cache.php\n";
+    exit(0);
+}
+
 $tabs = getPreferenceDashboardTabs($pref, $em);
 
 if ($restoreFrom !== null && is_file($restoreFrom)) {
-    $decoded = json_decode((string) file_get_contents($restoreFrom), true);
+    $tabs = loadTabsFromBackupFile($restoreFrom);
 
-    if (!is_array($decoded)) {
+    if ($tabs === null) {
         fail('Backup non valido: ' . $restoreFrom);
     }
 
-    $tabs = $decoded;
-    echo "Ripristino da: {$restoreFrom}\n";
+    echo "Ripristino da file: {$restoreFrom}\n";
+
+    if (!$dryRun) {
+        savePreferenceDashboardTabs($pref, $em, $tabs);
+        $em->saveEntity($pref);
+        echo 'Tab: ' . implode(' | ', listTabNames($tabs)) . "\n";
+        echo "\nphp clear_cache.php\n";
+        exit(0);
+    }
 }
 
 if ($tabs === null || $tabs === []) {
