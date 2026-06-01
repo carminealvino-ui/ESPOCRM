@@ -456,7 +456,9 @@ if (!$dashboardOnly) {
                 ->withSkipDuplicateCheck(true);
 
             $createResult = $reportService->create($attributes, $createParams);
-            $newEntity = $createResult->getEntity();
+            $newEntity = $createResult instanceof Entity
+                ? $createResult
+                : $createResult->getEntity();
             $reportIdMap[$source->getId()] = $newEntity->getId();
             $created++;
             echo "DUPLICATO (come CRM): {$targetName} (id={$newEntity->getId()})\n";
