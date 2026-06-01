@@ -15,11 +15,6 @@
     },
     "filterList": [
         {
-            "name": "pianificato",
-            "label": "Pianificato",
-            "style": "info"
-        },
-        {
             "name": "svolto",
             "label": "Svolto",
             "style": "success"
@@ -28,11 +23,6 @@
             "name": "nonSvolto",
             "label": "Non Svolto",
             "style": "danger"
-        },
-        {
-            "name": "ingestibile",
-            "label": "Ingestibile",
-            "style": "warning"
         }
     ],
     "kanbanViewMode": false,
