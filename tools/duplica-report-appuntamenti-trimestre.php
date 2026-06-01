@@ -40,6 +40,7 @@ const SOURCE_PREFIX = 'Appuntamenti Mese - ';
 const TARGET_PREFIX = 'Appuntamenti Ultimo Trimestre - ';
 const TAB_SOURCE = 'Appuntamenti Mese';
 const TAB_TARGET = 'Appuntamenti Ultimo Trimestre';
+const SCRIPT_VERSION = '2026-05-29-lastQuarter';
 
 /** Solo sul campo JSON "type" del filtro data (non su altri campi). */
 const DATE_FILTER_TYPE_MAP = [
@@ -181,6 +182,18 @@ function setupRunUser(Container $container, EntityManager $em, array $argv): voi
 }
 
 setupRunUser($container, $em, $argv);
+
+echo 'Script duplica-report-appuntamenti-trimestre v' . SCRIPT_VERSION . "\n";
+
+if ($fixFiltersOnly) {
+    echo "Modalità: --fix-filters-only\n\n";
+} elseif ($diagnose) {
+    echo "Modalità: --diagnose\n\n";
+} elseif ($dashboardOnly) {
+    echo "Modalità: --dashboard-only\n\n";
+} elseif ($reportsOnly) {
+    echo "Modalità: --reports-only\n\n";
+}
 
 function reportJsonContainsFilterType($data, string $needle): bool
 {
@@ -449,16 +462,6 @@ if ($diagnose) {
 }
 
 $reportRepo = $em->getRDBRepository('Report');
-$reportIdMap = [];
-$created = 0;
-$updated = 0;
-$skipped = 0;
-
-if ($dashboardOnly) {
-    echo "Passo 2: aggiornamento dashboard (report già in elenco).\n\n";
-} else {
-    echo "Passo 1: creazione report in elenco CRM.\n\n";
-}
 
 /** @var RecordServiceContainer $recordServiceContainer */
 $recordServiceContainer = $container->getByClass(RecordServiceContainer::class);
@@ -512,6 +515,17 @@ if ($fixFiltersOnly) {
     echo "Eseguire: php clear_cache.php\n";
     echo "Poi aprire un report trimestre in CRM e verificare che non compaia l'errore previousQuarter.\n";
     exit($errors > 0 ? 1 : 0);
+}
+
+$reportIdMap = [];
+$created = 0;
+$updated = 0;
+$skipped = 0;
+
+if ($dashboardOnly) {
+    echo "Passo 2: aggiornamento dashboard (report già in elenco).\n\n";
+} else {
+    echo "Passo 1: creazione report in elenco CRM.\n\n";
 }
 
 if (!$dashboardOnly) {
