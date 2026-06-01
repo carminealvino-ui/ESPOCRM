@@ -40,7 +40,7 @@ const SOURCE_PREFIX = 'Appuntamenti Mese - ';
 const TARGET_PREFIX = 'Appuntamenti Ultimo Trimestre - ';
 const TAB_SOURCE = 'Appuntamenti Mese';
 const TAB_TARGET = 'Appuntamenti Ultimo Trimestre';
-const SCRIPT_VERSION = '2026-05-30-dashboard-source';
+const SCRIPT_VERSION = '2026-05-30-prefs-no-deleted';
 
 /** Solo sul campo JSON "type" del filtro data (non su altri campi). */
 const DATE_FILTER_TYPE_MAP = [
@@ -477,7 +477,6 @@ function findTabLayoutByMatcher(array $tabs, callable $matcher): ?array
  */
 function findBestSourceTabLayout(EntityManager $em, Config $config, ?string $preferUserId = null): ?array
 {
-    $prefRepo = $em->getRDBRepository('Preferences');
     $best = null;
 
     $consider = function (array $tabs, string $label) use (&$best): void {
@@ -508,7 +507,7 @@ function findBestSourceTabLayout(EntityManager $em, Config $config, ?string $pre
         }
     }
 
-    foreach ($prefRepo->find() as $pref) {
+    foreach (iterateAllPreferences($em) as $pref) {
         $tabs = getPreferenceDashboardTabs($pref);
 
         if ($tabs === null) {
@@ -593,26 +592,71 @@ function defaultDashboardTabsForUser(Config $config, Entity $user): array
     return $tabs ?? [];
 }
 
-function diagnosePreferencesSql(EntityManager $em): void
+/**
+ * La tabella preferences non ha colonna deleted: non usare Repository::find().
+ *
+ * @return iterable<Entity>
+ */
+function iterateAllPreferences(EntityManager $em): iterable
 {
+    $pdo = $em->getPDO();
+    $stmt = $pdo->query('SELECT id FROM `preferences`');
+
+    if ($stmt === false) {
+        return;
+    }
+
+    while ($id = $stmt->fetchColumn()) {
+        $pref = $em->getEntityById('Preferences', $id);
+
+        if ($pref) {
+            yield $pref;
+        }
+    }
+}
+
+function diagnosePreferencesScan(EntityManager $em): void
+{
+    $found = [];
+
     try {
         $pdo = $em->getPDO();
-        $stmt = $pdo->query(
-            "SELECT id FROM preferences WHERE (
-                data LIKE '%Appuntamenti Mese%' OR
-                data LIKE '%Appuntamenti Ultimo Trimestre%' OR
-                data LIKE '%\"name\":\"Appuntamenti%'
-            ) LIMIT 15"
-        );
-        $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        $stmt = $pdo->query('SELECT id, data FROM `preferences`');
 
-        if ($ids === []) {
-            echo "SQL preferences: nessuna riga con 'Appuntamenti' nel JSON data.\n";
-        } else {
-            echo 'SQL preferences (id utente con Appuntamenti nel JSON): ' . implode(', ', $ids) . "\n";
+        if ($stmt !== false) {
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $blob = (string) ($row['data'] ?? '');
+
+                if (
+                    str_contains($blob, 'Appuntamenti Mese')
+                    || str_contains($blob, 'Appuntamenti Ultimo Trimestre')
+                ) {
+                    $found[] = (string) $row['id'];
+                }
+            }
         }
     } catch (Throwable $e) {
-        echo 'SQL preferences: ' . $e->getMessage() . "\n";
+        echo 'Scan preferences (fallback ORM): ' . $e->getMessage() . "\n";
+
+        foreach (iterateAllPreferences($em) as $pref) {
+            $tabs = getPreferenceDashboardTabs($pref);
+
+            if ($tabs === null) {
+                continue;
+            }
+
+            $names = implode(' ', listTabNames($tabs));
+
+            if (str_contains($names, 'Appuntamenti')) {
+                $found[] = $pref->getId();
+            }
+        }
+    }
+
+    if ($found === []) {
+        echo "Preferences: nessun utente con tab Appuntamenti nel JSON.\n";
+    } else {
+        echo 'Preferences con Appuntamenti nel layout (id utente): ' . implode(', ', array_slice($found, 0, 15)) . "\n";
     }
 }
 
@@ -627,15 +671,14 @@ function backupJson(string $dir, string $file, $data): void
 if ($diagnose) {
     echo "=== Diagnostica dashboard ===\n\n";
 
-    diagnosePreferencesSql($em);
+    diagnosePreferencesScan($em);
 
-    $prefRepo = $em->getRDBRepository('Preferences');
     $n = 0;
     $runUserName = parseRunUserName($argv);
     $runUser = $em->getRDBRepository('User')->where(['userName' => $runUserName])->findOne();
     $runUserId = $runUser ? $runUser->getId() : null;
 
-    foreach ($prefRepo->find() as $pref) {
+    foreach (iterateAllPreferences($em) as $pref) {
         $tabs = getPreferenceDashboardTabs($pref);
 
         if ($tabs === null || $tabs === []) {
@@ -910,7 +953,6 @@ $backupDir = $root . '/backup_dev/Appuntamento/report-trimestre-' . date('Ymd-Hi
 mkdir($backupDir, 0755, true);
 
 $prefUpdated = 0;
-$prefRepo = $em->getRDBRepository('Preferences');
 $runUserName = parseRunUserName($argv);
 $runUser = $em->getRDBRepository('User')->where(['userName' => $runUserName])->findOne();
 
@@ -973,7 +1015,7 @@ $applyToUser = function (Entity $user) use (
 
 $applyToUser($runUser);
 
-foreach ($prefRepo->find() as $pref) {
+foreach (iterateAllPreferences($em) as $pref) {
     if ($pref->getId() === $runUser->getId()) {
         continue;
     }
