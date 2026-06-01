@@ -10,6 +10,9 @@
  *   php tools/duplica-report-appuntamenti-trimestre.php --dashboard-only --force # passo 2: tab dashboard
  *   php tools/duplica-report-appuntamenti-trimestre.php --force                  # entrambi
  *   php tools/duplica-report-appuntamenti-trimestre.php --diagnose
+ *   php tools/duplica-report-appuntamenti-trimestre.php --reports-only --force --user=admin
+ *
+ * Usa lo stesso meccanismo del pulsante Duplica in CRM (getDuplicateAttributes + create).
  */
 declare(strict_types=1);
 
@@ -23,6 +26,10 @@ if (!is_file($root . '/bootstrap.php')) {
 require_once $root . '/bootstrap.php';
 
 use Espo\Core\Application;
+use Espo\Core\ApplicationUser;
+use Espo\Core\Container;
+use Espo\Core\Record\CreateParams;
+use Espo\Core\Record\ServiceContainer as RecordServiceContainer;
 use Espo\Core\Utils\Config;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
@@ -52,7 +59,6 @@ if ($reportsOnly && $dashboardOnly) {
 }
 
 $app = new Application();
-$app->setupSystemUser();
 $container = $app->getContainer();
 /** @var EntityManager $em */
 $em = $container->get('entityManager');
@@ -98,59 +104,49 @@ function mapDateFilterValues($data)
     return $data;
 }
 
-function resolveAppuntamentiCategoryId(EntityManager $em, Entity $source): ?string
+function parseRunUserName(array $argv): string
 {
-    if ($source->get('categoryId')) {
-        return $source->get('categoryId');
-    }
-
-    $catRepo = $em->getRDBRepository('ReportCategory');
-
-    foreach (['Appuntamenti', 'appuntamenti'] as $label) {
-        $cat = $catRepo->where(['name' => $label])->findOne();
-
-        if ($cat) {
-            return $cat->getId();
+    foreach ($argv as $arg) {
+        if (str_starts_with($arg, '--user=')) {
+            return substr($arg, 7);
         }
     }
 
-    foreach ($catRepo->find() as $cat) {
-        if (stripos((string) $cat->get('name'), 'appuntament') !== false) {
-            return $cat->getId();
-        }
-    }
+    $fromEnv = getenv('ESPO_USER');
 
-    return null;
+    return is_string($fromEnv) && $fromEnv !== '' ? $fromEnv : 'admin';
 }
 
-function copyReportFields(Entity $source, Entity $target): void
+function setupRunUser(Container $container, EntityManager $em, array $argv): void
 {
-    $skip = [
-        'id',
-        'createdAt',
-        'modifiedAt',
-        'createdById',
-        'modifiedById',
-        'deleted',
-        'isInternal',
-        'internalClassName',
-        'internalParams',
-    ];
+    $userName = parseRunUserName($argv);
+    $appUser = $container->getByClass(ApplicationUser::class);
 
-    foreach ($source->getAttributeList() as $attribute) {
-        if (in_array($attribute, $skip, true) || !$source->has($attribute)) {
-            continue;
-        }
+    if ($userName === 'system') {
+        $appUser->setupSystemUser();
+        echo "Utente esecuzione: system\n\n";
 
-        $value = $source->get($attribute);
-
-        if (in_array($attribute, ['filtersData', 'filtersDataList', 'filters', 'data', 'columnsData', 'chartDataList'], true)) {
-            $value = mapDateFilterValues($value);
-        }
-
-        $target->set($attribute, $value);
+        return;
     }
+
+    $user = $em->getRDBRepository('User')->where(['userName' => $userName])->findOne();
+
+    if (!$user) {
+        $user = $em->getRDBRepository('User')
+            ->where(['type' => 'admin', 'isActive' => true])
+            ->order('userName')
+            ->findOne();
+    }
+
+    if (!$user) {
+        fail('Nessun utente admin trovato. Usare --user=NOMEUTENTE');
+    }
+
+    $appUser->setUser($user);
+    echo 'Utente esecuzione: ' . $user->get('userName') . "\n\n";
 }
+
+setupRunUser($container, $em, $argv);
 
 function buildReportIdMap(EntityManager $em): array
 {
@@ -413,76 +409,64 @@ if ($dashboardOnly) {
     echo "Passo 1: creazione report in elenco CRM.\n\n";
 }
 
+/** @var RecordServiceContainer $recordServiceContainer */
+$recordServiceContainer = $container->getByClass(RecordServiceContainer::class);
+$reportService = $recordServiceContainer->get('Report');
+
 if (!$dashboardOnly) {
-foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $source) {
-    $sourceName = (string) $source->get('name');
-    $targetName = transformReportName($sourceName);
+    foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $source) {
+        $sourceName = (string) $source->get('name');
+        $targetName = transformReportName($sourceName);
 
-    if ($targetName === null) {
-        continue;
-    }
-
-    $existing = $reportRepo->where(['name' => $targetName])->findOne();
-
-    if ($existing && !$force && !$dryRun) {
-        $reportIdMap[$source->getId()] = $existing->getId();
-        $skipped++;
-        echo "ESISTE: {$targetName}\n";
-        continue;
-    }
-
-    if ($dryRun) {
-        echo ($existing ? 'AGGIORNA' : 'CREA') . ": {$sourceName}\n  -> {$targetName}\n";
-        continue;
-    }
-
-    $categoryId = resolveAppuntamentiCategoryId($em, $source);
-
-    if ($existing) {
-        $target = $existing;
-        copyReportFields($source, $target);
-        $target->set('name', $targetName);
-
-        if ($categoryId) {
-            $target->set('categoryId', $categoryId);
-        }
-
-        try {
-            $em->saveEntity($target);
-        } catch (Throwable $e) {
-            echo "ERRORE AGGIORNA {$targetName}: {$e->getMessage()}\n";
+        if ($targetName === null) {
             continue;
         }
 
-        $reportIdMap[$source->getId()] = $target->getId();
-        $updated++;
-        echo "AGGIORNATO: {$targetName}" . ($categoryId ? '' : ' (senza categoria!)') . "\n";
-        continue;
-    }
+        $existing = $reportRepo->where(['name' => $targetName])->findOne();
 
-    $target = $em->newEntity('Report');
-    copyReportFields($source, $target);
-    $target->set('name', $targetName);
-    $target->set('entityType', 'Appuntamento');
-
-    if ($categoryId) {
-        $target->set('categoryId', $categoryId);
-    }
-
-    try {
-        $em->saveEntity($target);
-    } catch (Throwable $e) {
-        echo "ERRORE CREA {$targetName}: {$e->getMessage()}\n";
-        if ($verbose) {
-            echo $e->getTraceAsString() . "\n";
+        if ($existing && !$force && !$dryRun) {
+            $reportIdMap[$source->getId()] = $existing->getId();
+            $skipped++;
+            echo "ESISTE: {$targetName}\n";
+            continue;
         }
-        continue;
-    }
 
-    $reportIdMap[$source->getId()] = $target->getId();
-    $created++;
-    echo "CREATO: {$targetName} (id={$target->getId()})" . ($categoryId ? '' : ' ATTENZIONE: categoria Appuntamenti non trovata') . "\n";
-}
+        if ($dryRun) {
+            echo ($existing ? 'RIGENERA' : 'DUPLICA') . ": {$sourceName}\n  -> {$targetName}\n";
+            continue;
+        }
+
+        if ($existing && $force) {
+            try {
+                $reportService->delete($existing->getId());
+                echo "ELIMINATO (rigenero): {$targetName}\n";
+            } catch (Throwable $e) {
+                echo "ERRORE DELETE {$targetName}: {$e->getMessage()}\n";
+                continue;
+            }
+        }
+
+        try {
+            $attributes = $reportService->getDuplicateAttributes($source->getId());
+            $attributes->name = $targetName;
+            mapDateFilterValues($attributes);
+
+            $createParams = CreateParams::create()
+                ->withDuplicateSourceId($source->getId())
+                ->withSkipDuplicateCheck(true);
+
+            $createResult = $reportService->create($attributes, $createParams);
+            $newEntity = $createResult->getEntity();
+            $reportIdMap[$source->getId()] = $newEntity->getId();
+            $created++;
+            echo "DUPLICATO (come CRM): {$targetName} (id={$newEntity->getId()})\n";
+        } catch (Throwable $e) {
+            echo "ERRORE DUPLICA {$targetName}: {$e->getMessage()}\n";
+            if ($verbose) {
+                echo $e->getTraceAsString() . "\n";
+            }
+        }
+    }
 }
 
 if ($dryRun) {
@@ -641,4 +625,10 @@ echo "Poi Ctrl+F5 (o logout/login) sul tab Appuntamenti Ultimo Trimestre.\n";
 
 if ($dashboardOnly) {
     echo "\nPasso 2 completato.\n";
+}
+
+function fail(string $message): void
+{
+    fwrite(STDERR, "ERRORE: {$message}\n");
+    exit(1);
 }
