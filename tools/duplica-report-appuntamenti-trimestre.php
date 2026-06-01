@@ -40,7 +40,7 @@ const SOURCE_PREFIX = 'Appuntamenti Mese - ';
 const TARGET_PREFIX = 'Appuntamenti Ultimo Trimestre - ';
 const TAB_SOURCE = 'Appuntamenti Mese';
 const TAB_TARGET = 'Appuntamenti Ultimo Trimestre';
-const SCRIPT_VERSION = '2026-05-30-layout-by-report';
+const SCRIPT_VERSION = '2026-05-30-build-grid';
 
 /** Solo sul campo JSON "type" del filtro data (non su altri campi). */
 const DATE_FILTER_TYPE_MAP = [
@@ -453,11 +453,119 @@ function getPreferenceDashboardTabs(Entity $pref, EntityManager $em): ?array
 
     $blob = fetchPreferenceDataBlob($em, $pref->getId());
 
-    if ($blob !== null && isset($blob['dashboardLayout'])) {
-        return normalizeDashboardTabs($blob['dashboardLayout']);
+    if ($blob !== null) {
+        if (isset($blob['dashboardLayout'])) {
+            $tabs = normalizeDashboardTabs($blob['dashboardLayout']);
+
+            if ($tabs !== null && $tabs !== []) {
+                return $tabs;
+            }
+        }
+
+        $tabs = findDashboardTabsArrayInBlob($blob);
+
+        if ($tabs !== null) {
+            return $tabs;
+        }
     }
 
     return null;
+}
+
+/**
+ * @param mixed $value
+ * @return array<int, array<string, mixed>>|null
+ */
+function findDashboardTabsArrayInBlob($value): ?array
+{
+    if (!is_array($value)) {
+        return null;
+    }
+
+    if ($value !== [] && array_is_list($value)) {
+        $first = $value[0] ?? null;
+
+        if (is_array($first) && (isset($first['name']) || isset($first['layout']))) {
+            return $value;
+        }
+    }
+
+    foreach ($value as $child) {
+        $found = findDashboardTabsArrayInBlob($child);
+
+        if ($found !== null) {
+            return $found;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Griglia 4×2 con gli 8 report trimestre (se il tab Mese non è leggibile dal DB).
+ *
+ * @return array<int, array<string, mixed>>|null
+ */
+function buildTrimestreTabLayoutFromDb(EntityManager $em): ?array
+{
+    $reportRepo = $em->getRDBRepository('Report');
+    $items = [];
+
+    foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->order('name')->find() as $report) {
+        $name = (string) $report->get('name');
+
+        if (!str_starts_with($name, TARGET_PREFIX)) {
+            continue;
+        }
+
+        $items[] = [
+            'id' => $report->getId(),
+            'title' => substr($name, strlen(TARGET_PREFIX)),
+        ];
+    }
+
+    if (count($items) < 8) {
+        return null;
+    }
+
+    $layout = [];
+    $col = 0;
+    $row = 0;
+
+    foreach ($items as $item) {
+        $layout[] = [
+            'id' => 'trim-' . substr(md5($item['id']), 0, 10),
+            'name' => 'Report',
+            'x' => $col * 2,
+            'y' => $row * 2,
+            'width' => 2,
+            'height' => 2,
+            'options' => [
+                'reportId' => $item['id'],
+                'title' => $item['title'],
+            ],
+        ];
+        $col++;
+
+        if ($col >= 4) {
+            $col = 0;
+            $row++;
+        }
+    }
+
+    return $layout;
+}
+
+function savePreferenceDashboardTabs(Entity $pref, EntityManager $em, array $tabs): void
+{
+    $pref->set('dashboardLayout', $tabs);
+
+    $blob = fetchPreferenceDataBlob($em, $pref->getId());
+
+    if ($blob !== null) {
+        $blob['dashboardLayout'] = $tabs;
+        $pref->set('data', $blob);
+    }
 }
 
 /**
@@ -695,6 +803,16 @@ function findBestSourceTabLayout(EntityManager $em, Config $config, ?string $pre
         }
     }
 
+    if ($best === null) {
+        $built = buildTrimestreTabLayoutFromDb($em);
+
+        if ($built !== null) {
+            $count = countReportDashlets($built);
+
+            return [$built, 'generato da 8 report trimestre in CRM', $count];
+        }
+    }
+
     return $best;
 }
 
@@ -901,11 +1019,15 @@ if ($diagnose) {
         }
     }
 
+    $built = buildTrimestreTabLayoutFromDb($em);
+
     if ($best !== null) {
         echo "\nMiglior sorgente trovata: {$best[1]} con {$best[2]} dashlet Report\n";
+    } elseif ($built !== null) {
+        echo "\nTab Mese non trovato nel JSON preferenze.\n";
+        echo 'Fallback disponibile: griglia con ' . countReportDashlets($built) . " dashlet (--dashboard-only).\n";
     } else {
-        echo "\nNessun layout sorgente \"Appuntamenti Mese\" trovato in DB/config.\n";
-        echo "Aprire il tab Appuntamenti Mese in CRM, verificare 8 widget, poi Salva dashboard.\n";
+        echo "\nNessun layout sorgente trovato.\n";
     }
 
     exit(0);
@@ -1114,10 +1236,15 @@ if (!$runUser) {
 $sourceFound = findBestSourceTabLayout($em, $config, $runUser->getId());
 
 if ($sourceFound === null) {
-    echo "\nERRORE: nessun tab \"" . TAB_SOURCE . "\" con dashlet trovato.\n";
-    echo "Eseguire: php tools/duplica-report-appuntamenti-trimestre.php --diagnose --user={$runUserName}\n";
-    echo "In CRM: aprire tab Appuntamenti Mese (8 report), poi rieseguire --dashboard-only.\n";
-    exit(1);
+    $built = buildTrimestreTabLayoutFromDb($em);
+
+    if ($built === null) {
+        echo "\nERRORE: impossibile costruire il tab trimestre (servono 8 report in CRM).\n";
+        exit(1);
+    }
+
+    $sourceFound = [$built, 'generato da 8 report trimestre in CRM', countReportDashlets($built)];
+    echo "Uso layout generato dai report trimestre (tab Mese non letto dal DB).\n\n";
 }
 
 [$sourceLayout, $sourceLabel, $sourceDashletCount] = $sourceFound;
@@ -1143,6 +1270,11 @@ $applyToUser = function (Entity $user) use (
     $tabs = getPreferenceDashboardTabs($pref, $em);
 
     if ($tabs === null || $tabs === []) {
+        $blob = fetchPreferenceDataBlob($em, $pref->getId());
+        $tabs = $blob ? findDashboardTabsArrayInBlob($blob) : null;
+    }
+
+    if ($tabs === null || $tabs === []) {
         $tabs = defaultDashboardTabsForUser($config, $user);
         echo "  (dashboard da default, preferenze vuote)\n";
     }
@@ -1157,7 +1289,7 @@ $applyToUser = function (Entity $user) use (
         return;
     }
 
-    $pref->set('dashboardLayout', $newTabs);
+    savePreferenceDashboardTabs($pref, $em, $newTabs);
     $em->saveEntity($pref);
     $prefUpdated++;
 
