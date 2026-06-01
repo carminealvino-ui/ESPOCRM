@@ -14,7 +14,12 @@
                         ]
                     ]
                 }
-            ]
+            ],
+            "fields": {
+                "scheme": {
+                    "lockable": true
+                }
+            }
         }
     }
 }

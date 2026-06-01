@@ -95,7 +95,11 @@
         "reminders": {
             "type": "jsonArray",
             "notStorable": true,
-            "layoutListDisabled": true
+            "view": "custom:views/fields/reminders-disabled",
+            "layoutListDisabled": true,
+            "layoutDetailDisabled": true,
+            "layoutDetailSmallDisabled": true,
+            "layoutMassUpdateDisabled": true
         },
         "createdAt": {
             "notNull": false,
@@ -446,12 +450,6 @@
         },
         "impegno": {
             "type": "link"
-        },
-        "meetingRef": {
-            "type": "varchar",
-            "maxLength": 100,
-            "options": [],
-            "isCustom": true
         },
         "syncConGoogle": {
             "notNull": true,

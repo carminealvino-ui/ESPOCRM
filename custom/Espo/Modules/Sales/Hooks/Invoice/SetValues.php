@@ -20,6 +20,7 @@ namespace Espo\Modules\Sales\Hooks\Invoice;
 
 use Espo\Core\Utils\Metadata;
 use Espo\Modules\Sales\Entities\Invoice;
+use Espo\Modules\Sales\Tools\Invoice\MirrorFieldsHelper;
 use Espo\Modules\Sales\Tools\Sales\OrderEntity;
 use Espo\Modules\Sales\Tools\Sales\PostingDateHelper;
 use RuntimeException;
@@ -32,6 +33,7 @@ class SetValues
     public function __construct(
         private Metadata $metadata,
         private PostingDateHelper $postingDateHelper,
+        private MirrorFieldsHelper $mirrorFieldsHelper,
     ) {}
 
     /**
@@ -62,5 +64,6 @@ class SetValues
         $entity->set('isNotActual', $isNotActual);
 
         $this->postingDateHelper->process($entity);
+        $this->mirrorFieldsHelper->process($entity);
     }
 }

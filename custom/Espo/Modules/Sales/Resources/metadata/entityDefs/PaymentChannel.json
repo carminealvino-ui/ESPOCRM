@@ -39,7 +39,8 @@
                 "nextNumber",
                 "padLength"
             ],
-            "dynamicLogicDisabled": true
+            "dynamicLogicDisabled": true,
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentChannel\\DataLoader"
         },
         "record": {
             "type": "linkParent",
@@ -90,5 +91,6 @@
         "textFilterFields": [
             "name"
         ]
-    }
+    },
+    "transactionalSave": true
 }

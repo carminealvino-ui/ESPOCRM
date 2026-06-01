@@ -51,5 +51,9 @@ class Prepare implements BeforeSave
         if ($entity->getBillingStatus() === SubscriptionPeriod::BILLING_STATUS_SETTLED) {
             $entity->setHoldUntilBillingComplete(false);
         }
+
+        if (!$entity->invoiceAutomatically()) {
+            $entity->setInvoiceDate(null);
+        }
     }
 }

@@ -38,7 +38,27 @@
                         ]
                     ]
                 }
-            ]
+            ],
+            "fields": {
+                "accountHolder": {
+                    "lockable": true
+                },
+                "iban": {
+                    "lockable": true
+                },
+                "accountNumber": {
+                    "lockable": true
+                },
+                "bic": {
+                    "lockable": true
+                },
+                "bankName": {
+                    "lockable": true
+                },
+                "bankCode": {
+                    "lockable": true
+                }
+            }
         },
         "paymentLink": {
             "dataProviderClassName": "Espo\\Modules\\Sales\\Tools\\PaymentRequest\\WireTransfer\\WireTransferPaymentLinkDataProvider",
@@ -72,7 +92,18 @@
                         ]
                     ]
                 }
-            ]
+            ],
+            "fields": {
+                "accountHolder": {
+                    "lockable": true
+                },
+                "iban": {
+                    "lockable": true
+                },
+                "bic": {
+                    "lockable": true
+                }
+            }
         },
         "paymentLink": {
             "dataProviderClassName": "Espo\\Modules\\Sales\\Tools\\PaymentRequest\\SepaCreditTransfer\\SepaCreditTransferPaymentLinkDataProvider",
@@ -102,7 +133,18 @@
                         ]
                     ]
                 }
-            ]
+            ],
+            "fields": {
+                "creditorIdentifier": {
+                    "lockable": true
+                },
+                "accountHolder": {
+                    "lockable": true
+                },
+                "iban": {
+                    "lockable": true
+                }
+            }
         },
         "paymentLink": {}
     }

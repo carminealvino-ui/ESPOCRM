@@ -1,5 +1,10 @@
 [
     {
+        "route": "Invoice/:id/paymentMeansItems",
+        "method": "get",
+        "actionClassName": "Espo\\Modules\\Sales\\Tools\\Invoice\\Api\\GetPaymentMeansItems"
+    },
+    {
         "route": "Invoice/:id/installments",
         "method": "get",
         "actionClassName": "Espo\\Modules\\Sales\\Tools\\PaymentTerms\\Api\\GetInvoiceInstallments"

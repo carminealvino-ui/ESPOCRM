@@ -20,6 +20,30 @@
                 ]
             }
         },
+        "invoiceDate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "billingStatus",
+                        "value": [
+                            "Pending"
+                        ]
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "type",
+                        "value": [
+                            "Regular"
+                        ]
+                    },
+                    {
+                        "type": "isTrue",
+                        "attribute": "invoiceAutomatically"
+                    }
+                ]
+            }
+        },
         "holdUntilBillingComplete": {
             "visible": {
                 "conditionGroup": [

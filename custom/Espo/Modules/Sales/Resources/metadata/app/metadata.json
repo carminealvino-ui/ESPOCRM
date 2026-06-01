@@ -69,6 +69,11 @@
                 "Invoice",
                 "CreditNote"
             ]
+        },
+        "entityDefs.PaymentMeansItem": {
+            "anyScopeList": [
+                "Invoice"
+            ]
         }
     }
 }

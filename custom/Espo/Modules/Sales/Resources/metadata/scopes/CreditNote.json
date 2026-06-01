@@ -44,6 +44,7 @@
     "issuanceLockableFieldList": [
         "account",
         "itemList",
+        "invoice",
         "shippingCost",
         "number",
         "amount",
@@ -68,7 +69,21 @@
         "roundingAmountLocal",
         "currencyRate",
         "issuedAt",
-        "issuedBy"
+        "issuedBy",
+        "buyerName",
+        "buyerElectronicAddressScheme",
+        "buyerElectronicAddressIdentifier",
+        "buyerTaxNumber",
+        "sellerName",
+        "sellerElectronicAddressScheme",
+        "sellerElectronicAddressIdentifier",
+        "sellerTaxNumber",
+        "sellerTaxRegistrationScheme",
+        "sellerTaxRegistrationIdentifier",
+        "sellerAddress",
+        "sellerContactName",
+        "sellerContactEmailAddress",
+        "sellerContactPhoneNumber"
     ],
     "doneStatusList": [
         "Resolved"

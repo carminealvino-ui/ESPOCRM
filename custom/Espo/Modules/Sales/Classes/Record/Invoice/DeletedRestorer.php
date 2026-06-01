@@ -24,6 +24,7 @@ use Espo\Core\Record\Deleted\Restorer;
 use Espo\Modules\Sales\Classes\Record\Quote\DeletedRestorer as QuoteRestorer;
 use Espo\Modules\Sales\Entities\Invoice;
 use Espo\Modules\Sales\Entities\PaymentInstallment;
+use Espo\Modules\Sales\Entities\PaymentMeansItem;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 use Espo\ORM\Name\Attribute;
@@ -50,6 +51,7 @@ class DeletedRestorer implements Restorer
         }
 
         $this->restorePaymentInstallments($entity, $modifiedAt);
+        $this->restorePaymentMeansItems($entity, $modifiedAt);
     }
 
     private function restorePaymentInstallments(Invoice $entity, DateTime $modifiedAt): void
@@ -59,6 +61,25 @@ class DeletedRestorer implements Restorer
             ->where([
                 PaymentInstallment::FIELD_SOURCE . 'Type' => $entity->getEntityType(),
                 PaymentInstallment::FIELD_SOURCE . 'Id' => $entity->getId(),
+                Attribute::DELETED => true,
+                Field::MODIFIED_AT . '>=' => $modifiedAt->toString(),
+            ])
+            ->set([
+                Attribute::DELETED => false,
+                Field::MODIFIED_AT => DateTime::createNow()->toString(),
+            ])
+            ->build();
+
+        $this->entityManager->getQueryExecutor()->execute($update);
+    }
+
+    private function restorePaymentMeansItems(Invoice $entity, DateTime $modifiedAt): void
+    {
+        $update = UpdateBuilder::create()
+            ->in(PaymentMeansItem::ENTITY_TYPE)
+            ->where([
+                PaymentMeansItem::FIELD_SOURCE . 'Type' => $entity->getEntityType(),
+                PaymentMeansItem::FIELD_SOURCE . 'Id' => $entity->getId(),
                 Attribute::DELETED => true,
                 Field::MODIFIED_AT . '>=' => $modifiedAt->toString(),
             ])

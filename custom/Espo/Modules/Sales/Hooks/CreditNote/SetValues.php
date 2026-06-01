@@ -21,6 +21,7 @@ namespace Espo\Modules\Sales\Hooks\CreditNote;
 use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\Core\Utils\Metadata;
 use Espo\Modules\Sales\Entities\CreditNote;
+use Espo\Modules\Sales\Tools\Invoice\MirrorFieldsHelper;
 use Espo\Modules\Sales\Tools\Sales\OrderEntity;
 use Espo\Modules\Sales\Tools\Sales\PostingDateHelper;
 use Espo\ORM\Entity;
@@ -35,6 +36,7 @@ class SetValues implements BeforeSave
     public function __construct(
         private Metadata $metadata,
         private PostingDateHelper $postingDateHelper,
+        private MirrorFieldsHelper $mirrorFieldsHelper,
     ) {}
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
@@ -57,5 +59,6 @@ class SetValues implements BeforeSave
         $entity->set('isNotActual', $isNotActual);
 
         $this->postingDateHelper->process($entity);
+        $this->mirrorFieldsHelper->process($entity);
     }
 }

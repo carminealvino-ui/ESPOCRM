@@ -46,6 +46,7 @@ class DataLoader implements Loader
         $this->prepareData($record, $data);
 
         $entity->set('data', $data);
+        $entity->setFetched('data', $data);
     }
 
     private function prepareData(Entity $record, stdClass $data): void

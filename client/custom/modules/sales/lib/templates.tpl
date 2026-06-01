@@ -1,8 +1,8 @@
-_delimiter_wbzq6xi7jnj
+_delimiter_of7l8n4odg
 custom/modules/sales/res/templates/quote-item/fields/name/list-link.tpl
 <a href="#{{model.entityType}}/view/{{model.id}}">{{value}}</a>
 
-_delimiter_wbzq6xi7jnj
+_delimiter_of7l8n4odg
 custom/modules/sales/res/templates/quote-item/fields/name/edit.tpl
 <div
     class=" {{#if hasSelectProductAndNoProduct}} input-group {{/if}} "
@@ -43,7 +43,7 @@ custom/modules/sales/res/templates/quote-item/fields/name/edit.tpl
 
 </div>
 
-_delimiter_wbzq6xi7jnj
+_delimiter_of7l8n4odg
 custom/modules/sales/res/templates/quote-item/fields/name/detail.tpl
 {{#if isProduct}}
     <span data-role="inventory-quantity">{{{inventoryQuantity}}}</span>
@@ -55,7 +55,7 @@ custom/modules/sales/res/templates/quote-item/fields/name/detail.tpl
     {{value}}
 {{/if}}
 
-_delimiter_wbzq6xi7jnj
+_delimiter_of7l8n4odg
 custom/modules/sales/res/templates/quote/record/item.tpl
 {{#each listLayout}}
     <td
@@ -129,7 +129,7 @@ custom/modules/sales/res/templates/quote/record/item.tpl
 </td>
 {{/if}}
 
-_delimiter_wbzq6xi7jnj
+_delimiter_of7l8n4odg
 custom/modules/sales/res/templates/quote/record/item-list.tpl
 <!--suppress CssUnusedSymbol, CssOverwrittenProperties -->
 <style>
@@ -377,14 +377,14 @@ custom/modules/sales/res/templates/quote/record/item-list.tpl
 </table>
 {{/if}}
 
-_delimiter_wbzq6xi7jnj
+_delimiter_of7l8n4odg
 custom/modules/sales/res/templates/quote/record/panels/items.tpl
 <div class="cell cell-itemList" data-name="itemList">
     <label class="field-label"></label>
     <div class="field field-itemList" data-name="itemList">{{{itemListField}}}</div>
 </div>
 
-_delimiter_wbzq6xi7jnj
+_delimiter_of7l8n4odg
 custom/modules/sales/res/templates/quote/fields/item-list/edit.tpl
 <!--suppress CssUnusedSymbol -->
 <style>
@@ -539,7 +539,7 @@ custom/modules/sales/res/templates/quote/fields/item-list/edit.tpl
     </div>
 {{/if}}
 
-_delimiter_wbzq6xi7jnj
+_delimiter_of7l8n4odg
 custom/modules/sales/res/templates/quote/fields/item-list/detail.tpl
 <!--suppress CssUnusedSymbol -->
 <style>
@@ -627,7 +627,7 @@ custom/modules/sales/res/templates/quote/fields/item-list/detail.tpl
     </div>
 {{/if}}
 
-_delimiter_wbzq6xi7jnj
+_delimiter_of7l8n4odg
 custom/modules/sales/res/templates/opportunity/fields/item-list/edit.tpl
 <div
     class="item-list-container list no-side-margin no-focus-outline {{#if isCompactForm}} compact-form {{/if}} "
@@ -682,7 +682,7 @@ custom/modules/sales/res/templates/opportunity/fields/item-list/edit.tpl
 {{/if}}
 
 
-_delimiter_wbzq6xi7jnj
+_delimiter_of7l8n4odg
 custom/modules/sales/res/templates/opportunity/fields/item-list/detail.tpl
 {{#if isEmpty}}
     {{#ifNotEqual mode 'edit'}}

@@ -7,8 +7,8 @@
     "recordViews": {
         "list": "views/record/list",
         "detail": "custom:views/appuntamento/record/detail",
-        "edit": "views/record/edit",
-        "editSmall": "views/record/edit-small"
+        "edit": "custom:views/appuntamento/record/edit",
+        "editSmall": "custom:views/appuntamento/record/edit-small"
     },
     "modalViews": {
         "detail": "views/modals/detail"

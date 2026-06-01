@@ -199,6 +199,13 @@
             "directAccessDisabled": true,
             "customizationDisabled": true
         },
+        "templateHasTrial": {
+            "type": "bool",
+            "utility": true,
+            "notStorable": true,
+            "readOnlyAfterCreate": true,
+            "directAccessDisabled": true
+        },
         "startDate": {
             "type": "date",
             "notStorable": true,

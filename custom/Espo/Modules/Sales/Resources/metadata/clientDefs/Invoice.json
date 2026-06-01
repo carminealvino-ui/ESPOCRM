@@ -104,6 +104,14 @@
             "actionFunction": "action",
             "checkVisibilityFunction": "isVisible",
             "groupIndex": 7
+        },
+        {
+            "name": "viewPaymentMeans",
+            "label": "View Payment Means",
+            "handler": "modules/sales/handlers/invoice/view-payment-means",
+            "actionFunction": "action",
+            "checkVisibilityFunction": "isVisible",
+            "groupIndex": 7
         }
     ],
     "bottomPanels": {

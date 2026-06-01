@@ -65,7 +65,8 @@
             ],
             "dynamicLogicDisabled": true,
             "providerField": "type",
-            "metadataPath": "app.salesPaymentMandates"
+            "metadataPath": "app.salesPaymentMandates",
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentMandate\\DataLoader"
         },
         "record": {
             "type": "linkParent",
@@ -114,5 +115,6 @@
         ],
         "orderBy": "createdAt",
         "order": "desc"
-    }
+    },
+    "transactionalSave": true
 }

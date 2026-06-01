@@ -84,7 +84,21 @@
         "taxAmountLocal",
         "currencyRate",
         "issuedAt",
-        "issuedBy"
+        "issuedBy",
+        "buyerName",
+        "buyerElectronicAddressScheme",
+        "buyerElectronicAddressIdentifier",
+        "buyerTaxNumber",
+        "sellerName",
+        "sellerElectronicAddressScheme",
+        "sellerElectronicAddressIdentifier",
+        "sellerTaxNumber",
+        "sellerTaxRegistrationScheme",
+        "sellerTaxRegistrationIdentifier",
+        "sellerAddress",
+        "sellerContactName",
+        "sellerContactEmailAddress",
+        "sellerContactPhoneNumber"
     ],
     "doneStatusList": [
         "Paid"

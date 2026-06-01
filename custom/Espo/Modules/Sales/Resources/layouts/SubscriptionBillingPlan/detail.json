@@ -17,8 +17,8 @@
     },
     {
         "rows": [
-            [{"name": "createPaymentRequests"}, false],
-            [{"name": "sendPaymentRequests"}, {"name": "sendInvoices"}]
+            [{"name": "createPaymentRequests"}, {"name": "sendInvoices"}],
+            [{"name": "sendPaymentRequests"}, false]
         ]
     },
     {

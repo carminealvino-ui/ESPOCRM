@@ -22,6 +22,7 @@ use Espo\Core\FieldValidation\Exceptions\ValidationError;
 use Espo\Core\FieldValidation\FieldValidationManager;
 use Espo\Core\Record\Hook\SaveHook;
 use Espo\Modules\Sales\Entities\PaymentMandate;
+use Espo\Modules\Sales\Tools\PaymentMandate\LockValidationHelper;
 use Espo\Modules\Sales\Tools\PaymentMandate\RecordProvider;
 use Espo\ORM\Entity;
 
@@ -33,6 +34,7 @@ class BeforeSaveValidate implements SaveHook
     public function __construct(
         private RecordProvider $recordProvider,
         private FieldValidationManager $fieldValidationManager,
+        private LockValidationHelper $lockValidationHelper,
     ) {}
 
     /**
@@ -40,6 +42,15 @@ class BeforeSaveValidate implements SaveHook
      * @throws ValidationError
      */
     public function process(Entity $entity): void
+    {
+        $this->lockValidationHelper->process($entity);
+        $this->validateRecord($entity);
+    }
+
+    /**
+     * @throws ValidationError
+     */
+    private function validateRecord(PaymentMandate $entity): void
     {
         $record = $this->recordProvider->get($entity);
 

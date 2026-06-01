@@ -73,7 +73,13 @@
         },
         "invoiceAutomatically": {
             "type": "bool",
-            "audited": true
+            "audited": true,
+            "tooltip": true
+        },
+        "invoiceDate": {
+            "type": "date",
+            "audited": true,
+            "tooltip": true
         },
         "holdUntilBillingComplete": {
             "type": "bool",

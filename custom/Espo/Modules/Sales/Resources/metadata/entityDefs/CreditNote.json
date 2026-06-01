@@ -530,6 +530,163 @@
             "maxLength": 4000,
             "audited": true
         },
+        "buyerName": {
+            "type": "varchar",
+            "maxLength": 255,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "buyerElectronicAddressScheme": {
+            "type": "enum",
+            "maxLength": 4,
+            "view": "modules/sales/views/fields/electronic-address-scheme",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "buyerElectronicAddressIdentifier": {
+            "type": "varchar",
+            "maxLength": 255,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "buyerTaxNumber": {
+            "type": "varchar",
+            "maxLength": 32,
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerName": {
+            "type": "varchar",
+            "dbType": "text",
+            "maxLength": 255,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerElectronicAddressScheme": {
+            "type": "enum",
+            "maxLength": 4,
+            "view": "modules/sales/views/fields/electronic-address-scheme",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerElectronicAddressIdentifier": {
+            "type": "varchar",
+            "dbType": "text",
+            "maxLength": 255,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerTaxNumber": {
+            "type": "varchar",
+            "maxLength": 32,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerTaxRegistrationScheme": {
+            "type": "enum",
+            "maxLength": 4,
+            "view": "modules/sales/views/fields/electronic-address-scheme",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerTaxRegistrationIdentifier": {
+            "type": "varchar",
+            "dbType": "text",
+            "maxLength": 255,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerAddress": {
+            "type": "address",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerAddressStreet": {
+            "dbType": "text"
+        },
+        "sellerAddressCity": {
+            "dbType": "text"
+        },
+        "sellerAddressState": {
+            "dbType": "text"
+        },
+        "sellerAddressCountry": {
+            "dbType": "text"
+        },
+        "sellerAddressPostalCode": {
+            "dbType": "text"
+        },
+        "sellerContactName": {
+            "type": "varchar",
+            "dbType": "text",
+            "maxLength": 150,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerContactEmailAddress": {
+            "type": "varchar",
+            "dbType": "text",
+            "maxLength": 255,
+            "view": "views/fields/email-address",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerContactPhoneNumber": {
+            "type": "varchar",
+            "dbType": "text",
+            "maxLength": 100,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "billingAddress": {
+            "type": "address",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
         "isDone": {
             "type": "bool",
             "readOnly": true,

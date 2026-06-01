@@ -17,10 +17,10 @@
     "beforeUpdateHookClassNameList": [
         "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentChannel\\BeforeSaveValidate"
     ],
+    "beforeDeleteHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentChannel\\BeforeDeleteValidate"
+    ],
     "saverClassNameList": [
         "Espo\\Modules\\Sales\\Classes\\FieldSavers\\PaymentChannel\\DataSaver"
-    ],
-    "readLoaderClassNameList": [
-        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentChannel\\DataLoader"
     ]
 }

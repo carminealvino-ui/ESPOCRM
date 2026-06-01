@@ -23,6 +23,12 @@
                 }
             ],
             [
+                false,
+                {
+                    "name": "productCategory"
+                }
+            ],
+            [
                 {
                     "name": "b2B"
                 },
