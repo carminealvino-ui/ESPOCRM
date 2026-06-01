@@ -26,6 +26,7 @@
 //   --repo=owner/name
 //   --local-repo=PATH     usa repo locale invece di scaricare GitHub
 //   --limit=N             limita righe in output status (default 80)
+//   --refresh             forza nuovo download branch (invalida cache .cache/repo-*)
 // =============================================================================
 
 declare(strict_types=1);
@@ -106,6 +107,8 @@ function parseOptions(array $argv): array
             $options['dry_run'] = true;
         } elseif ($arg === '--exclude-client-modules') {
             $options['exclude_client_modules'] = true;
+        } elseif ($arg === '--refresh') {
+            $options['refresh'] = true;
         }
     }
 
@@ -169,9 +172,16 @@ function findEspoRoot(): string
 
 function runStatus(string $crmRoot, array $config, array $options): void
 {
-    $repoRoot = resolveRepoRoot($crmRoot, $config);
+    $repoRoot = resolveRepoRoot($crmRoot, $config, $options);
     $prodIndex = buildFileIndex($crmRoot, $config, 'production');
     $repoIndex = buildFileIndex($repoRoot, $config, 'repo');
+
+    if ($repoIndex === [] && $prodIndex !== []) {
+        fail(
+            'Indice repository vuoto: cache GitHub probabilmente corrotta o annidata. ' .
+            'Eseguire: rm -rf exports/sync/.cache/repo-main && status --refresh'
+        );
+    }
 
     $onlyProd = array_diff_key($prodIndex, $repoIndex);
     $onlyRepo = array_diff_key($repoIndex, $prodIndex);
@@ -230,12 +240,12 @@ function runStatus(string $crmRoot, array $config, array $options): void
     echo "\nManifest: {$manifestPath}\n";
     echo "\nProssimo passo:\n";
     echo "  php tools/sync-custom-prod-repo.php export-delta\n";
-    echo "  php tools/sync-custom-prod-repo.php push-delta {$deltaDir}   # GitHub diretto (GITHUB_TOKEN)\n";
+    echo "  php tools/sync-custom-prod-repo.php push-delta exports/sync/delta-YYYYMMDD-HHMMSS\n";
 }
 
 function runExportDelta(string $crmRoot, array $config, array $options): void
 {
-    $repoRoot = resolveRepoRoot($crmRoot, $config);
+    $repoRoot = resolveRepoRoot($crmRoot, $config, $options);
     $prodIndex = buildFileIndex($crmRoot, $config, 'production');
     $repoIndex = buildFileIndex($repoRoot, $config, 'repo');
 
@@ -369,7 +379,7 @@ function runApplyDelta(string $crmRoot, string $deltaPath, array $options): void
     echo "\nVerifica con: git status\n";
 }
 
-function resolveRepoRoot(string $crmRoot, array $config): string
+function resolveRepoRoot(string $crmRoot, array $config, array $options = []): string
 {
     if (!empty($config['local_repo']) && is_dir($config['local_repo'])) {
         return $config['local_repo'];
@@ -380,9 +390,32 @@ function resolveRepoRoot(string $crmRoot, array $config): string
     $cacheDir = $crmRoot . '/exports/sync/.cache';
     $cacheKey = preg_replace('/[^a-zA-Z0-9_-]+/', '-', $branch);
     $extracted = "{$cacheDir}/repo-{$cacheKey}";
+    $shaMarker = "{$extracted}/.sync-branch-sha";
 
-    if (is_dir($extracted . '/custom/Espo/Custom')) {
-        return $extracted;
+    if (!empty($options['refresh']) && is_dir($extracted)) {
+        echo "Cache invalidata (--refresh).\n";
+        removeDirectory($extracted);
+    }
+
+    $remoteSha = fetchRemoteBranchCommitSha($repo, $branch);
+
+    if (isRepoCacheLayoutValid($extracted)) {
+        if ($remoteSha === '') {
+            return $extracted;
+        }
+
+        if (
+            is_file($shaMarker)
+            && trim((string) file_get_contents($shaMarker)) === $remoteSha
+        ) {
+            return $extracted;
+        }
+
+        echo "Cache obsoleta (commit remoto cambiato), nuovo download...\n";
+        removeDirectory($extracted);
+    } elseif (is_dir($extracted)) {
+        echo "Cache non valida (struttura errata o annidata), ricreo...\n";
+        removeDirectory($extracted);
     }
 
     if (!is_dir($cacheDir)) {
@@ -422,10 +455,86 @@ function resolveRepoRoot(string $crmRoot, array $config): string
         mkdir($cacheDir, 0755, true);
     }
 
+    if (is_dir($extracted)) {
+        removeDirectory($extracted);
+    }
+
     rename($src, $extracted);
     removeDirectory($tmp);
 
+    if (!isRepoCacheLayoutValid($extracted)) {
+        removeDirectory($extracted);
+        fail(
+            'Cache estratta non valida (manca custom/Espo/Custom o client/custom). ' .
+            'Eliminare exports/sync/.cache/repo-main e riprovare.'
+        );
+    }
+
+    if ($remoteSha !== '') {
+        file_put_contents($shaMarker, $remoteSha . PHP_EOL);
+    }
+
     return $extracted;
+}
+
+/**
+ * La cache deve essere la root del repo (non una sottocartella ESPOCRM-main annidata).
+ */
+function isRepoCacheLayoutValid(string $extracted): bool
+{
+    if (!is_dir($extracted . '/custom/Espo/Custom')) {
+        return false;
+    }
+
+    foreach (scandir($extracted) ?: [] as $entry) {
+        if ($entry === '.' || $entry === '..') {
+            continue;
+        }
+
+        if (preg_match('/^ESPOCRM-/i', $entry) && is_dir($extracted . '/' . $entry . '/custom/Espo/Custom')) {
+            return false;
+        }
+    }
+
+    return is_dir($extracted . '/client/custom');
+}
+
+/**
+ * Ultimo commit del branch su GitHub (per invalidare la cache locale).
+ */
+function fetchRemoteBranchCommitSha(string $repository, string $branch): string
+{
+    $url = 'https://api.github.com/repos/' . $repository . '/commits/' . rawurlencode($branch);
+    $token = getenv('GITHUB_TOKEN') ?: '';
+
+    $headers = [
+        'Accept: application/vnd.github+json',
+        'User-Agent: espo-sync-prod-repo',
+    ];
+
+    if ($token !== '') {
+        $headers[] = 'Authorization: Bearer ' . $token;
+    }
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_TIMEOUT => 60,
+    ]);
+    $body = curl_exec($ch);
+    $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($body === false || $code >= 400) {
+        echo "Avviso: impossibile leggere commit remoto (HTTP {$code}), cache solo per path.\n";
+        return '';
+    }
+
+    $json = json_decode($body, true);
+
+    return is_array($json) && isset($json['sha']) ? (string) $json['sha'] : '';
 }
 
 function findExtractedRepoRoot(string $tmp): string
