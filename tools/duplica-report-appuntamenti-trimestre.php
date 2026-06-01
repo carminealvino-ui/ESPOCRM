@@ -6,7 +6,9 @@
  * (Preferenze utente + config di sistema).
  *
  *   php tools/duplica-report-appuntamenti-trimestre.php --dry-run
- *   php tools/duplica-report-appuntamenti-trimestre.php --force
+ *   php tools/duplica-report-appuntamenti-trimestre.php --reports-only --force   # passo 1: elenco Report
+ *   php tools/duplica-report-appuntamenti-trimestre.php --dashboard-only --force # passo 2: tab dashboard
+ *   php tools/duplica-report-appuntamenti-trimestre.php --force                  # entrambi
  *   php tools/duplica-report-appuntamenti-trimestre.php --diagnose
  */
 declare(strict_types=1);
@@ -40,6 +42,13 @@ $argv = $GLOBALS['argv'] ?? [];
 $dryRun = in_array('--dry-run', $argv, true);
 $diagnose = in_array('--diagnose', $argv, true);
 $force = in_array('--force', $argv, true);
+$reportsOnly = in_array('--reports-only', $argv, true);
+$dashboardOnly = in_array('--dashboard-only', $argv, true);
+
+if ($reportsOnly && $dashboardOnly) {
+    fwrite(STDERR, "Usare solo uno tra --reports-only e --dashboard-only.\n");
+    exit(1);
+}
 
 $app = new Application();
 $app->setupSystemUser();
@@ -395,6 +404,11 @@ foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $source
         $target = $existing;
         copyReportFields($source, $target);
         $target->set('name', $targetName);
+
+        if ($source->get('categoryId')) {
+            $target->set('categoryId', $source->get('categoryId'));
+        }
+
         $em->saveEntity($target);
         $reportIdMap[$source->getId()] = $target->getId();
         $updated++;
@@ -405,16 +419,44 @@ foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $source
     $target = $em->newEntity('Report');
     copyReportFields($source, $target);
     $target->set('name', $targetName);
+
+    if ($source->get('categoryId')) {
+        $target->set('categoryId', $source->get('categoryId'));
+    }
+
     $em->saveEntity($target);
     $reportIdMap[$source->getId()] = $target->getId();
     $created++;
     echo "CREATO: {$targetName}\n";
 }
+}
 
 if ($dryRun) {
     echo "\nDRY-RUN: nessuna modifica.\n";
-    echo "Poi: php tools/duplica-report-appuntamenti-trimestre.php --force\n";
+    echo "Passo 1: php tools/duplica-report-appuntamenti-trimestre.php --reports-only --force\n";
+    echo "Passo 2: php tools/duplica-report-appuntamenti-trimestre.php --dashboard-only --force\n";
     exit(0);
+}
+
+echo "\n=== Report in CRM (Report > Appuntamenti) ===\n";
+$listed = 0;
+
+foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $report) {
+    $name = (string) $report->get('name');
+
+    if (!str_starts_with($name, TARGET_PREFIX)) {
+        continue;
+    }
+
+    echo "  - {$name}\n";
+    $listed++;
+}
+
+echo "Totale \"" . TARGET_PREFIX . "*\": {$listed} (attesi 8)\n";
+
+if ($reportsOnly) {
+    echo "\nPasso 1 completato. Verificare l'elenco in CRM, poi eseguire --dashboard-only --force\n";
+    exit($listed >= 8 ? 0 : 1);
 }
 
 if ($reportIdMap === []) {
@@ -422,7 +464,12 @@ if ($reportIdMap === []) {
 }
 
 if ($reportIdMap === []) {
-    fwrite(STDERR, "Nessun report mappato.\n");
+    fwrite(STDERR, "Nessun report mappato. Eseguire prima --reports-only --force\n");
+    exit(1);
+}
+
+if ($dashboardOnly && $listed < 8) {
+    fwrite(STDERR, "Solo {$listed}/8 report trimestre in elenco. Completare passo 1.\n");
     exit(1);
 }
 
@@ -515,3 +562,7 @@ echo "Report creati: {$created}, aggiornati: {$updated}, già presenti: {$skippe
 echo "Preferenze utente aggiornate: {$prefUpdated}\n";
 echo "Eseguire: php clear_cache.php && php rebuild.php\n";
 echo "Poi Ctrl+F5 (o logout/login) sul tab Appuntamenti Ultimo Trimestre.\n";
+
+if ($dashboardOnly) {
+    echo "\nPasso 2 completato.\n";
+}
