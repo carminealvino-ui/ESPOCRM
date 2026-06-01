@@ -39,19 +39,16 @@ curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tool
 
 ## Passo 2 — Stato differenze (solo lettura)
 
+Vedi [`07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md`](07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md).
+
 **Comando:**
 
 ```bash
-php tools/sync-custom-prod-repo.php status --branch=main --limit=150
+php tools/sync-custom-prod-repo.php status --branch=main
 ```
 
-**Verifica attesa:**
-
-- Riepilogo: `Diversi`, `Solo prod`, `Solo repo`
-- File `exports/sync/status-YYYYMMDD-HHMMSS.json`
-
 Controllare se ci sono `layouts/` che volete portare su Git.  
-→ Screenshot elenco (prime righe + totali), poi Passo 3.
+→ Screenshot con i quattro totali, poi Passo 3.
 
 ---
 
