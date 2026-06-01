@@ -44,6 +44,7 @@ $diagnose = in_array('--diagnose', $argv, true);
 $force = in_array('--force', $argv, true);
 $reportsOnly = in_array('--reports-only', $argv, true);
 $dashboardOnly = in_array('--dashboard-only', $argv, true);
+$verbose = in_array('--verbose', $argv, true);
 
 if ($reportsOnly && $dashboardOnly) {
     fwrite(STDERR, "Usare solo uno tra --reports-only e --dashboard-only.\n");
@@ -97,6 +98,31 @@ function mapDateFilterValues($data)
     return $data;
 }
 
+function resolveAppuntamentiCategoryId(EntityManager $em, Entity $source): ?string
+{
+    if ($source->get('categoryId')) {
+        return $source->get('categoryId');
+    }
+
+    $catRepo = $em->getRDBRepository('ReportCategory');
+
+    foreach (['Appuntamenti', 'appuntamenti'] as $label) {
+        $cat = $catRepo->where(['name' => $label])->findOne();
+
+        if ($cat) {
+            return $cat->getId();
+        }
+    }
+
+    foreach ($catRepo->find() as $cat) {
+        if (stripos((string) $cat->get('name'), 'appuntament') !== false) {
+            return $cat->getId();
+        }
+    }
+
+    return null;
+}
+
 function copyReportFields(Entity $source, Entity $target): void
 {
     $skip = [
@@ -106,6 +132,9 @@ function copyReportFields(Entity $source, Entity $target): void
         'createdById',
         'modifiedById',
         'deleted',
+        'isInternal',
+        'internalClassName',
+        'internalParams',
     ];
 
     foreach ($source->getAttributeList() as $attribute) {
@@ -378,6 +407,13 @@ $created = 0;
 $updated = 0;
 $skipped = 0;
 
+if ($dashboardOnly) {
+    echo "Passo 2: aggiornamento dashboard (report già in elenco).\n\n";
+} else {
+    echo "Passo 1: creazione report in elenco CRM.\n\n";
+}
+
+if (!$dashboardOnly) {
 foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $source) {
     $sourceName = (string) $source->get('name');
     $targetName = transformReportName($sourceName);
@@ -400,34 +436,52 @@ foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $source
         continue;
     }
 
+    $categoryId = resolveAppuntamentiCategoryId($em, $source);
+
     if ($existing) {
         $target = $existing;
         copyReportFields($source, $target);
         $target->set('name', $targetName);
 
-        if ($source->get('categoryId')) {
-            $target->set('categoryId', $source->get('categoryId'));
+        if ($categoryId) {
+            $target->set('categoryId', $categoryId);
         }
 
-        $em->saveEntity($target);
+        try {
+            $em->saveEntity($target);
+        } catch (Throwable $e) {
+            echo "ERRORE AGGIORNA {$targetName}: {$e->getMessage()}\n";
+            continue;
+        }
+
         $reportIdMap[$source->getId()] = $target->getId();
         $updated++;
-        echo "AGGIORNATO: {$targetName}\n";
+        echo "AGGIORNATO: {$targetName}" . ($categoryId ? '' : ' (senza categoria!)') . "\n";
         continue;
     }
 
     $target = $em->newEntity('Report');
     copyReportFields($source, $target);
     $target->set('name', $targetName);
+    $target->set('entityType', 'Appuntamento');
 
-    if ($source->get('categoryId')) {
-        $target->set('categoryId', $source->get('categoryId'));
+    if ($categoryId) {
+        $target->set('categoryId', $categoryId);
     }
 
-    $em->saveEntity($target);
+    try {
+        $em->saveEntity($target);
+    } catch (Throwable $e) {
+        echo "ERRORE CREA {$targetName}: {$e->getMessage()}\n";
+        if ($verbose) {
+            echo $e->getTraceAsString() . "\n";
+        }
+        continue;
+    }
+
     $reportIdMap[$source->getId()] = $target->getId();
     $created++;
-    echo "CREATO: {$targetName}\n";
+    echo "CREATO: {$targetName} (id={$target->getId()})" . ($categoryId ? '' : ' ATTENZIONE: categoria Appuntamenti non trovata') . "\n";
 }
 }
 
@@ -453,6 +507,28 @@ foreach ($reportRepo->where(['entityType' => 'Appuntamento'])->find() as $report
 }
 
 echo "Totale \"" . TARGET_PREFIX . "*\": {$listed} (attesi 8)\n";
+
+try {
+    $pdo = $em->getPDO();
+    $stmt = $pdo->prepare(
+        'SELECT COUNT(*) FROM `report` WHERE deleted = 0 AND name LIKE :prefix'
+    );
+    $stmt->execute(['prefix' => TARGET_PREFIX . '%']);
+    $sqlCount = (int) $stmt->fetchColumn();
+    echo "Verifica SQL tabella report: {$sqlCount} righe con prefisso trimestre.\n";
+} catch (Throwable $e) {
+    echo "Verifica SQL non disponibile: {$e->getMessage()}\n";
+}
+
+if ($listed === 0) {
+    echo "\nCerco report con 'Trimestre' nel nome (qualsiasi prefisso):\n";
+    foreach ($reportRepo->find() as $report) {
+        $name = (string) $report->get('name');
+        if (stripos($name, 'trimestre') !== false && stripos($name, 'appuntament') !== false) {
+            echo "  - {$name} (categoryId=" . ($report->get('categoryId') ?: 'NULL') . ")\n";
+        }
+    }
+}
 
 if ($reportsOnly) {
     echo "\nPasso 1 completato. Verificare l'elenco in CRM, poi eseguire --dashboard-only --force\n";
