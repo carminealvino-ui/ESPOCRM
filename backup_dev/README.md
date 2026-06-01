@@ -49,6 +49,12 @@ Esempio:
 bash tools/backup-dev-save.sh Appuntamento duplica-appuntamento hooks GlobalLogic.php
 ```
 
+Dopo fix produzione funzionante (tutto in un colpo):
+
+```bash
+bash tools/backup-appuntamento-stabile.sh
+```
+
 ---
 
 ## 4. Migrazione / ordinamento file in root

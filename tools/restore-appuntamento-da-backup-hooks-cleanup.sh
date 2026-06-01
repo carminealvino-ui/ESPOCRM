@@ -88,22 +88,11 @@ else
 fi
 
 echo ""
-echo "=== 3/4 clientDefs standard (Crea / Duplica) ==="
-curl -fsSL "${BASE}/custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json?t=$(date +%s)" \
-  -o "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
-
-curl -fsSL "${BASE}/client/custom/src/views/appuntamento/record/detail.js?t=$(date +%s)" \
-  -o "${CRM_ROOT}/client/custom/src/views/appuntamento/record/detail.js" 2>/dev/null || true
-
-rm -f "${CRM_ROOT}/client/custom/src/views/appuntamento/record/edit.js" \
-      "${CRM_ROOT}/client/custom/src/views/appuntamento/record/edit-small.js" 2>/dev/null || true
+echo "=== 3/4 Deploy fix client da main (Crea / Duplica) ==="
+curl -fsSL "${BASE}/tools/deploy-appuntamento-produzione.sh?t=$(date +%s)" -o /tmp/deploy-appuntamento-produzione.sh
+chmod +x /tmp/deploy-appuntamento-produzione.sh
+CRM_ROOT="${CRM_ROOT}" BRANCH="${BRANCH}" bash /tmp/deploy-appuntamento-produzione.sh
 
 echo ""
-echo "=== 4/4 Rebuild ==="
-php command.php rebuild
-php command.php clearCache 2>/dev/null || true
-rm -rf data/cache/*
-
-echo ""
-echo "Fatto. Ctrl+F5."
+echo "Fatto (include rebuild). Ctrl+F5."
 echo "Rollback: bash tools/rollback-produzione.sh ${STAMP}"

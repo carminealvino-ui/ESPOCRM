@@ -26,6 +26,62 @@ html {
     max-width: 100%;
 }
 
+/* Elenco Appuntamenti — layout “immagine 1” (Opportunità leggibile, no Relazionato a / Città) */
+.list-appuntamento-fullwidth .list {
+    max-width: 100%;
+}
+
+.list-appuntamento-fullwidth .list > table {
+    width: 100% !important;
+    table-layout: fixed;
+}
+
+/* Colonne testo lungo: mai troncare (Nome, Sottostato, Esito, Opportunità, Data) */
+.list-appuntamento-fullwidth .list > table th[data-name="dataAppuntamento"],
+.list-appuntamento-fullwidth .list > table td[data-name="dataAppuntamento"],
+.list-appuntamento-fullwidth .list > table th[data-name="name"],
+.list-appuntamento-fullwidth .list > table td[data-name="name"],
+.list-appuntamento-fullwidth .list > table th[data-name="sottostato"],
+.list-appuntamento-fullwidth .list > table td[data-name="sottostato"],
+.list-appuntamento-fullwidth .list > table th[data-name="esito"],
+.list-appuntamento-fullwidth .list > table td[data-name="esito"],
+.list-appuntamento-fullwidth .list > table th[data-name="opportunita"],
+.list-appuntamento-fullwidth .list > table td[data-name="opportunita"] {
+    white-space: normal !important;
+    word-break: break-word;
+    overflow: visible !important;
+    text-overflow: unset !important;
+}
+
+.list-appuntamento-fullwidth .list > table td[data-name="name"] a,
+.list-appuntamento-fullwidth .list > table td[data-name="name"] .cell-content,
+.list-appuntamento-fullwidth .list > table td[data-name="sottostato"] .cell-content,
+.list-appuntamento-fullwidth .list > table td[data-name="sottostato"] .label,
+.list-appuntamento-fullwidth .list > table td[data-name="esito"] .cell-content,
+.list-appuntamento-fullwidth .list > table td[data-name="opportunita"] a,
+.list-appuntamento-fullwidth .list > table td[data-name="opportunita"] .cell-content,
+.list-appuntamento-fullwidth .list > table td[data-name="opportunita"] .link-multiple {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    max-width: none !important;
+}
+
+/* Solo colonne corte: ellissi ammessa */
+.list-appuntamento-fullwidth .list > table th[data-name="cAPCodice"],
+.list-appuntamento-fullwidth .list > table td[data-name="cAPCodice"],
+.list-appuntamento-fullwidth .list > table th[data-name="fornitorePartner"],
+.list-appuntamento-fullwidth .list > table td[data-name="fornitorePartner"],
+.list-appuntamento-fullwidth .list > table th[data-name="productBrand"],
+.list-appuntamento-fullwidth .list > table td[data-name="productBrand"],
+.list-appuntamento-fullwidth .list > table th[data-name="productCategory"],
+.list-appuntamento-fullwidth .list > table td[data-name="productCategory"],
+.list-appuntamento-fullwidth .list > table th[data-name="status"],
+.list-appuntamento-fullwidth .list > table td[data-name="status"] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* Record: usa spazio orizzontale (mantiene colonna destra se presente) */
 .record .record-grid {
     max-width: var(--record-grid-max-width) !important;

@@ -51,7 +51,7 @@
 // Rollback:
 //
 // ripristinare il file stabile da:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-opportunity-globallogic-2.1.1-sync-appuntamento-stabile.php
 //
 // =====================================================
@@ -79,7 +79,7 @@
 // Rollback:
 //
 // ripristinare il file stabile da:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-opportunity-globallogic-2.1.2-lead-mapping-stabile.php
 //
 // 2.1.4
@@ -101,7 +101,7 @@
 // Rollback:
 //
 // ripristinare il file stabile da:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-opportunity-globallogic-2.1.3-brand-partner-sync-stabile.php
 //
 // 2.1.5
@@ -114,7 +114,7 @@
 // Rollback:
 //
 // ripristinare il file stabile da:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-opportunity-globallogic-2.1.4-brand-fallback-stabile.php
 //
 // FIX 2.2.3
@@ -133,7 +133,7 @@
 // - beforeSave richiama sync anche con leadId
 //
 // Rollback:
-// backup/hooks_cleanup/backup-opportunity-globallogic-2.2.2-category-cascade-stabile.php
+// backup_dev/backup-opportunity-globallogic-2.2.2-category-cascade-stabile.php
 //
 // FIX 2.2.5
 // -----------------------------------------------------

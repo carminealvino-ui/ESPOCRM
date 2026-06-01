@@ -1,53 +1,56 @@
 [
     {
         "name": "dataAppuntamento",
-        "width": 6,
+        "width": 8,
         "align": "left"
     },
     {
         "name": "name",
-        "width": 20,
-        "link": true,
+        "link": true
+    },
+    {
+        "name": "parent",
+        "width": 12,
+        "align": "left"
+    },
+    {
+        "name": "indirizzoCity",
+        "width": 8,
         "align": "left"
     },
     {
         "name": "cAPCodice",
-        "width": 3,
-        "align": "left"
-    },
-    {
-        "name": "fornitorePartner",
-        "width": 4,
-        "align": "left"
-    },
-    {
-        "name": "productBrand",
-        "width": 4,
-        "align": "left"
-    },
-    {
-        "name": "productCategory",
-        "width": 7,
-        "align": "left"
-    },
-    {
-        "name": "status",
         "width": 6,
         "align": "left"
     },
     {
-        "name": "sottostato",
-        "width": 9,
+        "name": "fornitorePartner",
+        "width": 8,
         "align": "left"
     },
     {
-        "name": "esito",
+        "name": "productBrand",
+        "width": 8,
+        "align": "left"
+    },
+    {
+        "name": "productCategory",
         "width": 10,
         "align": "left"
     },
     {
+        "name": "status",
+        "width": 8,
+        "align": "left"
+    },
+    {
+        "name": "sottostato",
+        "width": 8,
+        "align": "left"
+    },
+    {
         "name": "opportunita",
-        "width": 31,
+        "width": 16,
         "link": true,
         "align": "left"
     }
