@@ -290,7 +290,8 @@ foreach ($rows as $i => $row) {
                     $prezzoPerProductPrice,
                     $dateStart,
                     $dryRun,
-                    $prezzoCodiceIvi
+                    $prezzoCodiceIvi,
+                    $aliquotaIva
                 );
 
                 if ($ppResult) {
@@ -912,7 +913,8 @@ function upsertProductPrice(
     float $price,
     string $dateStart,
     bool $dryRun,
-    ?float $prezzoCodiceIvi = null
+    ?float $prezzoCodiceIvi = null,
+    float $aliquotaIva = 10.0
 ): ?string {
     $productId = $product->getId();
 
@@ -956,21 +958,33 @@ function upsertProductPrice(
     }
 
     $productPrice = $entityManager->getNewEntity('ProductPrice');
+    $taxInclusive = (bool) $priceBook->get('isTaxInclusive');
+    $listinoIvi = $taxInclusive ? $price : round($price * (1 + $aliquotaIva / 100), 2);
+    $listinoNet = $taxInclusive ? round($price / (1 + $aliquotaIva / 100), 2) : $price;
+
     $productPrice->set([
         'productId' => $product->getId(),
         'priceBookId' => $priceBook->getId(),
         'price' => $price,
         'status' => 'Active',
+        'aliquotaIva' => $aliquotaIva,
     ]);
+
+    if ($productPrice->hasAttribute('prezzoListinoIvaInclusa')) {
+        $productPrice->set('prezzoListinoIvaInclusa', $listinoIvi);
+    }
+
+    if ($productPrice->hasAttribute('prezzoListinoIvaEsclusa')) {
+        $productPrice->set('prezzoListinoIvaEsclusa', $listinoNet);
+    }
 
     if ($prezzoCodiceIvi !== null && $productPrice->hasAttribute('prezzoCodiceIvaInclusa')) {
         $productPrice->set('prezzoCodiceIvaInclusa', $prezzoCodiceIvi);
 
         if ($productPrice->hasAttribute('prezzoCodice')) {
-            $taxInclusive = (bool) $priceBook->get('isTaxInclusive');
             $productPrice->set(
                 'prezzoCodice',
-                $taxInclusive ? round($prezzoCodiceIvi / 1.1, 2) : $prezzoCodiceIvi
+                round($prezzoCodiceIvi / (1 + $aliquotaIva / 100), 2)
             );
         }
     }

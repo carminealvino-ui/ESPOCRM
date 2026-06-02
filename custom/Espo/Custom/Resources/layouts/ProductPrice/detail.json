@@ -1,0 +1,69 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "product"
+                },
+                {
+                    "name": "priceBook"
+                }
+            ],
+            [
+                {
+                    "name": "prezzoListinoIvaEsclusa"
+                },
+                {
+                    "name": "prezzoListinoIvaInclusa"
+                }
+            ],
+            [
+                {
+                    "name": "prezzoCodice"
+                },
+                {
+                    "name": "prezzoCodiceIvaInclusa"
+                }
+            ],
+            [
+                {
+                    "name": "aliquotaIva"
+                },
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "interval"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "price"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "minQuantity"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "dateStart"
+                },
+                {
+                    "name": "dateEnd"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ]
+    }
+]

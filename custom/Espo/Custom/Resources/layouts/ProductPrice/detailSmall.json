@@ -1,0 +1,40 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "product"
+                }
+            ],
+            [
+                {
+                    "name": "prezzoListinoIvaEsclusa"
+                },
+                {
+                    "name": "prezzoListinoIvaInclusa"
+                }
+            ],
+            [
+                {
+                    "name": "prezzoCodice"
+                },
+                {
+                    "name": "prezzoCodiceIvaInclusa"
+                }
+            ],
+            [
+                {
+                    "name": "aliquotaIva"
+                },
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "price"
+                }
+            ]
+        ]
+    }
+]

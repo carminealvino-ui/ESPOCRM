@@ -14,6 +14,16 @@
             "isCustom": true,
             "onlyDefaultCurrency": true
         },
+        "prezzoCodiceIvaInclusa": {
+            "type": "currency",
+            "isCustom": true,
+            "onlyDefaultCurrency": true
+        },
+        "prezzoListinoIvaInclusa": {
+            "type": "currency",
+            "isCustom": true,
+            "onlyDefaultCurrency": true
+        },
         "name": {
             "required": false,
             "options": []

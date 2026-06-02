@@ -1,8 +1,13 @@
 {
     "fields": {
-        "price": "Prezzo di Listino",
+        "price": "Prezzo listino (campo Sales)",
         "name": "Listino Prezzi - Aggiornamento",
         "priceConverted": "Prezzo di Listino (convertito)",
-        "priceCurrency": "Prezzo di Listino (valuta)"
+        "priceCurrency": "Prezzo di Listino (valuta)",
+        "prezzoListinoIvaEsclusa": "Listino (IVA esclusa)",
+        "prezzoListinoIvaInclusa": "Listino (IVA inclusa)",
+        "prezzoCodice": "Prezzo codice (IVA esclusa)",
+        "prezzoCodiceIvaInclusa": "Prezzo codice (IVA inclusa)",
+        "aliquotaIva": "Aliquota IVA %"
     }
 }

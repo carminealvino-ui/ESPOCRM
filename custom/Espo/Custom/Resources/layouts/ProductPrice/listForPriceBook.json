@@ -1,0 +1,33 @@
+[
+    {
+        "name": "product"
+    },
+    {
+        "name": "interval",
+        "width": 12
+    },
+    {
+        "name": "timeline",
+        "width": 20
+    },
+    {
+        "name": "prezzoListinoIvaEsclusa",
+        "width": 12,
+        "align": "right"
+    },
+    {
+        "name": "prezzoListinoIvaInclusa",
+        "width": 12,
+        "align": "right"
+    },
+    {
+        "name": "prezzoCodice",
+        "width": 12,
+        "align": "right"
+    },
+    {
+        "name": "prezzoCodiceIvaInclusa",
+        "width": 12,
+        "align": "right"
+    }
+]
