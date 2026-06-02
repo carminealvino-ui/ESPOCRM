@@ -71,5 +71,8 @@
             "Available": "Disponibile",
             "Not Available": "Non Disponibile"
         }
+    },
+    "tooltips": {
+        "aliquotaIVA": "Calcolata automaticamente dal profilo fiscale (Imposte). Se il profilo non è impostato, si usa il codice imposta della riga o 10%."
     }
 }

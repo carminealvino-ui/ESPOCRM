@@ -43,7 +43,9 @@
             "notNull": false,
             "type": "float",
             "isCustom": true,
-            "decimalPlaces": 2
+            "decimalPlaces": 2,
+            "readOnly": true,
+            "tooltip": true
         },
         "numberA": {
             "prefix": "Contratto_",
