@@ -16,16 +16,11 @@ class QuotePricingCalculator
     private const DEFAULT_ALIQUOTA_IVA = 10.0;
 
     public function __construct(
-        private EntityManager $entityManager,
-        private FiscalProfileRateResolver $fiscalProfileRateResolver
+        private EntityManager $entityManager
     ) {}
 
     public function syncOnBeforeSave(Entity $quote): void
     {
-        if ($quote->getEntityType() === 'Quote') {
-            $this->syncAliquotaIvaFromFiscalProfile($quote);
-        }
-
         $this->ensureImportoContrattoOnQuote($quote);
         $this->syncItemListLinePricingFromImportoContratto($quote);
         $this->syncTotalsAndDerivedFields($quote, true);
@@ -1189,31 +1184,12 @@ class QuotePricingCalculator
         return ['net' => $net, 'tax' => $tax, 'gross' => $gross];
     }
 
-    private function syncAliquotaIvaFromFiscalProfile(Entity $quote): void
-    {
-        $aliquota = $this->resolveAliquotaIva($quote);
-
-        $quote->set('aliquotaIVA', $aliquota);
-
-        if ($aliquota > 0) {
-            $quote->set('taxRate', round($aliquota / 100, 4));
-        }
-    }
-
     private function resolveAliquotaIva(Entity $entity): float
     {
-        if ($entity->getEntityType() === 'Quote') {
-            $fromFiscal = $this->fiscalProfileRateResolver->resolveForQuote($entity);
+        $aliquota = $this->floatOrNull($entity->get('aliquotaIVA'));
 
-            if ($fromFiscal !== null && $fromFiscal > 0) {
-                return $fromFiscal;
-            }
-        } else {
-            $fromFiscal = $this->fiscalProfileRateResolver->resolveFromTaxProfile($entity);
-
-            if ($fromFiscal !== null && $fromFiscal > 0) {
-                return $fromFiscal;
-            }
+        if ($aliquota !== null && $aliquota > 0) {
+            return $aliquota;
         }
 
         if ($entity->hasAttribute('iVA')) {
@@ -1224,23 +1200,22 @@ class QuotePricingCalculator
             }
         }
 
-        $aliquota = $this->floatOrNull($entity->get('aliquotaIVA'));
-
-        if ($aliquota !== null && $aliquota > 0) {
-            return $aliquota;
-        }
-
         $taxRate = $this->floatOrNull($entity->get('taxRate'));
 
         if ($taxRate !== null && $taxRate > 0) {
             return $taxRate < 1 ? $taxRate * 100 : $taxRate;
         }
 
-        if ($entity->getEntityType() === 'Quote') {
-            $fromCode = $this->fiscalProfileRateResolver->resolveFromTaxCodeId($entity->get('taxCodeId'));
+        if ($entity->getEntityType() === 'Quote' && $entity->get('taxId')) {
+            $tax = $this->entityManager->getEntityById('Tax', $entity->get('taxId'));
 
-            if ($fromCode !== null && $fromCode > 0) {
-                return $fromCode;
+            if ($tax) {
+                $rate = $this->floatOrNull($tax->get('rate'))
+                    ?? $this->floatOrNull($tax->get('taxRate'));
+
+                if ($rate !== null && $rate > 0) {
+                    return $rate < 1 ? $rate * 100 : $rate;
+                }
             }
         }
 
