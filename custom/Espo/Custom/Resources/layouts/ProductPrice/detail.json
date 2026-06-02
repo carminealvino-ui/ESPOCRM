@@ -27,11 +27,17 @@
             ],
             [
                 {
-                    "name": "aliquotaIva"
+                    "name": "taxCodeListino"
                 },
                 {
-                    "name": "status"
+                    "name": "aliquotaIva"
                 }
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                false
             ],
             [
                 {

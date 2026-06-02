@@ -87,7 +87,6 @@ $dryRun = array_key_exists('dry-run', $options);
 $createMissing = !array_key_exists('no-create-missing', $options);
 $dateStart = $options['date-start'] ?? '2026-05-07';
 $brandId = $options['product-brand-id'] ?? null;
-$aliquotaIva = isset($options['aliquota-iva']) ? (float) $options['aliquota-iva'] : 10.0;
 $convertiIvaEsclusa = !array_key_exists('prezzi-iva-esclusa', $options);
 
 $priceBook = resolvePriceBook($entityManager, $options);
@@ -97,7 +96,12 @@ if (!$priceBook) {
     exit(1);
 }
 
+$aliquotaIva = isset($options['aliquota-iva'])
+    ? (float) $options['aliquota-iva']
+    : resolveAliquotaFromPriceBook($entityManager, $priceBook);
+
 fwrite(STDOUT, "Listino: {$priceBook->get('name')} ({$priceBook->getId()})\n");
+fwrite(STDOUT, "Aliquota IVA listino: {$aliquotaIva}%\n");
 fwrite(STDOUT, "CSV: {$csvPath}\n");
 
 $priceBookIvaInclusa = (bool) $priceBook->get('isTaxInclusive');
@@ -377,6 +381,40 @@ function resolvePriceBook($entityManager, array $options): ?\Espo\ORM\Entity
         ])
         ->order('name', 'DESC')
         ->findOne();
+}
+
+/**
+ * Aliquota % dal codice IVA del listino (TaxCode collegato a PriceBook), default 10.
+ */
+function resolveAliquotaFromPriceBook($entityManager, \Espo\ORM\Entity $priceBook): float
+{
+    if (!$priceBook->hasAttribute('taxCodeId')) {
+        return 10.0;
+    }
+
+    $taxCodeId = $priceBook->get('taxCodeId');
+
+    if (!$taxCodeId) {
+        fwrite(STDERR, "ATTENZIONE: listino senza codice IVA (taxCode); uso 10%.\n");
+
+        return 10.0;
+    }
+
+    $taxCode = $entityManager->getEntityById('TaxCode', $taxCodeId);
+
+    if (!$taxCode) {
+        return 10.0;
+    }
+
+    $rate = $taxCode->get('rate');
+
+    if ($rate === null || $rate === '' || !is_numeric($rate)) {
+        return 10.0;
+    }
+
+    $f = (float) $rate;
+
+    return $f > 0 && $f < 1 ? round($f * 100, 3) : round($f, 3);
 }
 
 function readCsv(string $path): array

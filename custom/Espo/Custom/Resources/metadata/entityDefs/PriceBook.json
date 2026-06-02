@@ -5,6 +5,21 @@
         },
         "isTaxInclusive": {
             "readOnlyAfterCreate": false
+        },
+        "taxCode": {
+            "type": "link",
+            "entity": "TaxCode",
+            "required": true,
+            "audited": true,
+            "isCustom": true,
+            "autocompleteOnEmpty": true
+        }
+    },
+    "links": {
+        "taxCode": {
+            "type": "belongsTo",
+            "entity": "TaxCode",
+            "isCustom": true
         }
     }
 }

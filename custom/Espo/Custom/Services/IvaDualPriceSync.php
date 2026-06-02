@@ -194,8 +194,50 @@ class IvaDualPriceSync
         return $entity->isAttributeChanged($iviField) || $entity->isAttributeChanged($netField);
     }
 
+    public function resolveAliquotaFromPriceBookId(?string $priceBookId): ?float
+    {
+        if (!$priceBookId) {
+            return null;
+        }
+
+        $priceBook = $this->entityManager->getEntityById('PriceBook', $priceBookId);
+
+        if (!$priceBook) {
+            return null;
+        }
+
+        return $this->resolveAliquotaFromPriceBook($priceBook);
+    }
+
+    public function resolveAliquotaFromPriceBook(Entity $priceBook): ?float
+    {
+        $taxCodeId = $priceBook->get('taxCodeId');
+
+        if (!$taxCodeId) {
+            return null;
+        }
+
+        $taxCode = $this->entityManager->getEntityById('TaxCode', $taxCodeId);
+
+        if (!$taxCode || $taxCode->get('status') === 'Inactive') {
+            return null;
+        }
+
+        if ((string) ($taxCode->get('type') ?? '') !== 'Percentage') {
+            return null;
+        }
+
+        return self::parseTaxCodeRate($taxCode->get('rate'));
+    }
+
     private function resolveAliquotaForProductPrice(Entity $entity): float
     {
+        $fromBook = $this->resolveAliquotaFromPriceBookId($entity->get('priceBookId'));
+
+        if ($fromBook !== null && $fromBook > 0) {
+            return $fromBook;
+        }
+
         $aliquota = $this->floatOrNull($entity->get('aliquotaIva'));
 
         if ($aliquota !== null && $aliquota > 0) {
@@ -203,6 +245,32 @@ class IvaDualPriceSync
         }
 
         return self::DEFAULT_ALIQUOTA_IVA;
+    }
+
+    /**
+     * @param mixed $value Tasso TaxCode (es. 10.000, 22.000)
+     */
+    public static function parseTaxCodeRate(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        $f = (float) $value;
+
+        if ($f <= 0) {
+            return null;
+        }
+
+        if ($f > 0 && $f < 1) {
+            return round($f * 100, 3);
+        }
+
+        return round($f, 3);
     }
 
     private function isPriceBookTaxInclusive(Entity $entity): bool

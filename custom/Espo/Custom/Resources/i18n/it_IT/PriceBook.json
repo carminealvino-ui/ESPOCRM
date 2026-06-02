@@ -1,9 +1,15 @@
 {
     "fields": {
         "name": "Listino Prezzi",
-        "parentPriceBook": "Listino Prezzi Principale"
+        "parentPriceBook": "Listino Prezzi Principale",
+        "taxCode": "Codice IVA listino",
+        "taxCodeName": "Codice IVA listino"
     },
     "labels": {
         "Create PriceBook": "Crea Listino Prezzi"
+    },
+    "tooltips": {
+        "taxCode": "Codice imposta di riferimento per tutti i prezzi caricati in questo listino (IVA10, IVA22, …).",
+        "isTaxInclusive": "Se attivo, i prezzi in listino sono IVA inclusa (tipico B2C); se disattivo, IVA esclusa (tipico B2B)."
     }
 }

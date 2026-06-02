@@ -8,6 +8,10 @@
         "prezzoListinoIvaInclusa": "Listino (IVA inclusa)",
         "prezzoCodice": "Prezzo codice (IVA esclusa)",
         "prezzoCodiceIvaInclusa": "Prezzo codice (IVA inclusa)",
-        "aliquotaIva": "Aliquota IVA %"
+        "aliquotaIva": "Aliquota IVA %",
+        "taxCodeListino": "Codice IVA (dal listino)"
+    },
+    "tooltips": {
+        "aliquotaIva": "Derivata dal codice IVA impostato sul listino prezzi (es. IVA10 → 10%, IVA22 → 22%)."
     }
 }
