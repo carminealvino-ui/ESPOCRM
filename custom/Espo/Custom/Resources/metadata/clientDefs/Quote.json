@@ -1,5 +1,8 @@
 {
     "controller": "controllers/record",
+    "recordViews": {
+        "detail": "custom:views/quote/record/detail"
+    },
     "viewSetupHandlers": {
         "record/detail": [
             "__APPEND__",

@@ -20,7 +20,7 @@ class SyncQuoteTotaleProvvigioni implements AfterSave
 
     public function afterSave(Entity $entity, SaveOptions $options): void
     {
-        if ($options->get('skipHooks') || $options->get('silent')) {
+        if ($options->get('skipHooks')) {
             return;
         }
 
