@@ -8,8 +8,8 @@ use Espo\ORM\EntityManager;
 /**
  * Contratto / Opportunity: prezzo codice da prodotto, Minus/Plus, totali provvigioni.
  *
- * Contratto (Quote): minusPlus = totalPrezzoCodice − importo totale contratto (grandTotalAmount).
- * Esempio: codice 4.400, importo 4.500 → minusPlus = −100.
+ * Contratto (Quote): minusPlus = totalPrezzoCodice − imponibile (entrambi IVA esclusa).
+ * Esempio: codice 4.400, imponibile 4.090,91 → minusPlus = 309,09.
  *
  * Opportunity: minusPlus = imponibile netto − prezzo codice netto (IVA escl.).
  */
@@ -778,34 +778,32 @@ class QuotePricingCalculator
     }
 
     /**
-     * Contratto: Prezzo Codice Totale − Importo totale (IVA inclusa).
+     * Contratto: Prezzo Codice Totale − Importo imponibile (IVA esclusa).
      */
     public function resolveMinusPlusForQuote(Entity $quote): ?float
     {
-        $prezzoCodice = $this->floatOrNull($quote->get('totalPrezzoCodice'));
+        $prezzoCodiceNet = $this->floatOrNull($quote->get('totalPrezzoCodice'));
 
-        if ($prezzoCodice === null || $prezzoCodice <= 0) {
-            $prezzoCodice = $this->floatOrNull($quote->get('prezzoCodiceIvaEsclusa'));
+        if ($prezzoCodiceNet === null || $prezzoCodiceNet <= 0) {
+            $prezzoCodiceNet = $this->floatOrNull($quote->get('prezzoCodiceIvaEsclusa'));
         }
 
-        if ($prezzoCodice === null || $prezzoCodice <= 0) {
+        if ($prezzoCodiceNet === null || $prezzoCodiceNet <= 0) {
             $fromProducts = $this->sumPrezzoCodiceNetFromProductsOnItems($quote);
 
             if ($fromProducts > 0) {
-                $prezzoCodice = $fromProducts;
+                $prezzoCodiceNet = $fromProducts;
             }
         }
 
-        $importoTotale = $this->floatOrNull($quote->get('grandTotalAmount'))
-            ?? $this->floatOrNull($quote->get('importoContratto'))
-            ?? $this->resolveImportoContrattoForQuote($quote);
+        $importoNet = $this->resolveImponibileNetto($quote);
 
-        if ($prezzoCodice === null || $prezzoCodice <= 0
-            || $importoTotale === null || $importoTotale <= 0) {
+        if ($prezzoCodiceNet === null || $prezzoCodiceNet <= 0
+            || $importoNet === null || $importoNet <= 0) {
             return null;
         }
 
-        return round($prezzoCodice - $importoTotale, 2);
+        return round($prezzoCodiceNet - $importoNet, 2);
     }
 
     /**
