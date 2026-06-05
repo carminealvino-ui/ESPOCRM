@@ -1,0 +1,12 @@
+{
+    "forceSelectAllAttributes": true,
+    "afterCreateHookClassNameList": [
+        "Espo\\Modules\\Advanced\\Classes\\RecordHooks\\ReportFilter\\AfterSave"
+    ],
+    "afterUpdateHookClassNameList": [
+        "Espo\\Modules\\Advanced\\Classes\\RecordHooks\\ReportFilter\\AfterSave"
+    ],
+    "afterDeleteHookClassNameList": [
+        "Espo\\Modules\\Advanced\\Classes\\RecordHooks\\ReportFilter\\AfterDelete"
+    ]
+}

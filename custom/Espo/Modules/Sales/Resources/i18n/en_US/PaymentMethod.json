@@ -1,0 +1,36 @@
+{
+    "labels": {
+        "Create PaymentMethod": "Create Method"
+    },
+    "fields": {
+        "status": "Status",
+        "channel": "Channel",
+        "instructions": "Instructions",
+        "accounts": "Accounts",
+        "provider": "Provider",
+        "isInbound": "Inbound",
+        "isOutbound": "Outbound"
+    },
+    "links": {
+        "paymentEntries": "Payments",
+        "requests": "Payment Requests",
+        "channel": "Channel",
+        "invoices": "Invoices",
+        "accounts": "Accounts",
+        "subscriptions": "Subscriptions"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    },
+    "presetFilters": {
+        "active": "Active",
+        "activeInbound": "Active Inbound",
+        "activeOutbound": "Active Outbound"
+    },
+    "tooltips": {
+        "instructions": "Text to display to the customer on the payment page.\n\nAvailable placeholders:\n* `{number}` – payment request number\n* `{invoiceNumbers}` – invoice numbers"
+    }
+}

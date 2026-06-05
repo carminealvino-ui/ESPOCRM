@@ -1,0 +1,54 @@
+{
+    "loadAdditionalFieldsAfterUpdate": true,
+    "duplicateWhereBuilderClassName": "Espo\\Classes\\DuplicateWhereBuilders\\General",
+    "saverClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldSavers\\PaymentEntry\\AllocationsSaver"
+    ],
+    "readLoaderClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentEntry\\Allocations",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentEntry\\UnallocatedAmount"
+    ],
+    "earlyBeforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentEntry\\EarlyBeforeSaveValidation"
+    ],
+    "earlyBeforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentEntry\\EarlyBeforeSaveValidation"
+    ],
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentEntry\\BeforeSave",
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentEntry\\BeforeSaveValidation"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentEntry\\BeforeSave",
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentEntry\\BeforeSaveValidation"
+    ],
+    "beforeDeleteHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\General\\BeforeDeleteCheckAllocations"
+    ],
+    "createInputFilterClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\PaymentEntry\\InputFilter"
+    ],
+    "updateInputFilterClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\PaymentEntry\\InputFilter"
+    ],
+    "actions": {
+        "merge": {
+            "disabled": true
+        },
+        "convertCurrency": {
+            "disabled": true
+        }
+    },
+    "massActions": {
+        "lock": {
+            "implementationClassName": "Espo\\Modules\\Sales\\Classes\\MassActions\\Lock"
+        },
+        "unlock": {
+            "implementationClassName": "Espo\\Modules\\Sales\\Classes\\MassActions\\Unlock"
+        },
+        "convertCurrency": {
+            "disabled": true
+        }
+    },
+    "deletedRestorerClassName": "Espo\\Modules\\Sales\\Classes\\Record\\PaymentEntry\\DeletedRestorer"
+}

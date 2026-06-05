@@ -1,0 +1,28 @@
+{
+    "fields": {
+        "billingAddress": "Billing Address",
+        "shippingAddress": "Shipping Address",
+        "website": "Website",
+        "referente": "Referente",
+        "color": "Color",
+        "disponibilita": "Disponibilita",
+        "appuntamenti": "Appuntamenti",
+        "opportunita": "Opportunità",
+        "productBrands": "Brand",
+        "prospects": "Prospects"
+    },
+    "links": {
+        "meetings": "Meetings",
+        "calls": "Calls",
+        "tasks": "Tasks",
+        "referente": "Referente",
+        "disponibilita": "Disponibilita",
+        "appuntamenti": "Appuntamenti",
+        "opportunita": "Opportunità",
+        "productBrands": "Brand",
+        "prospects": "Prospects"
+    },
+    "labels": {
+        "Create FornitorePartner": "Create Fornitore - Partner"
+    }
+}

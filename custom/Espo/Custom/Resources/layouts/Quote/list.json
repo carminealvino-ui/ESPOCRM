@@ -1,0 +1,38 @@
+[
+    {
+        "name": "number",
+        "width": 16,
+        "link": true,
+        "align": "left"
+    },
+    {
+        "name": "status",
+        "width": 15,
+        "align": "left"
+    },
+    {
+        "name": "account",
+        "width": 23,
+        "align": "left"
+    },
+    {
+        "name": "dateQuoted",
+        "width": 12,
+        "align": "left"
+    },
+    {
+        "name": "importoContratto",
+        "width": 16,
+        "align": "left"
+    },
+    {
+        "name": "minusPlus",
+        "width": 16,
+        "align": "left"
+    },
+    {
+        "name": "amount",
+        "width": 12,
+        "align": "right"
+    }
+]

@@ -1,0 +1,3 @@
+{
+    "beforeSaveCustomScript": "unitPrice=(((opportunity.importoOpportunit-amount)/prezzoCodice)*opportunity.suPrezzoCodice;"
+}

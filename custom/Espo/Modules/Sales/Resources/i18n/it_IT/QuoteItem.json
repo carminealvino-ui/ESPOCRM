@@ -1,0 +1,44 @@
+{
+  "fields": {
+    "name": "Nome",
+    "qty": "Quantità",
+    "quantity": "Quantità",
+    "quantityInt": "Quantità (Int)",
+    "listPrice": "Listino prezzi",
+    "unitPrice": "Prezzo Unitario",
+    "amount": "Importo",
+    "taxRate": "Aliquota Fiscale",
+    "product": "Prodotto",
+    "order": "Numero di riga",
+    "quote": "Preventivo",
+    "weight": "Peso",
+    "unitWeight": "Peso unitario",
+    "description": "Descrizione",
+    "discount": "Sconto (%)",
+    "amountConverted": "Importo (convertito)",
+    "unitPriceConverted": "Prezzo unitario (convertito)",
+    "listPriceConverted": "Prezzo di listino (convertito)",
+    "account": "Cliente",
+    "listPriceCurrency": "Prezzo di listino Valuta",
+    "unitPriceCurrency": "Prezzo unitario Valuta",
+    "amountCurrency": "Importo Valuta",
+    "quoteStatus": "Stato preventivo",
+    "inventoryNumberType": "Tipologia di codice inventario",
+    "isInventory": "È un articolo di magazzino",
+    "taxCode": "Codice imposta",
+    "taxes": "Imposta"
+  },
+  "links": {
+    "quote": "Preventivo",
+    "product": "Prodotto",
+    "account": "Cliente",
+    "taxCode": "Codice imposta"
+  },
+  "labels": {
+    "Quotes": "Preventivi"
+  },
+  "presetFilters": {
+    "actual": "Aperto",
+    "completed": "Completato"
+  }
+}

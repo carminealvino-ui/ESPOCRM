@@ -1,0 +1,6 @@
+[
+    {"name": "product", "link": true},
+    {"name": "subscriptionTemplate", "width": 20},
+    {"name": "subscriptionTemplate", "width": 12},
+    {"name": "quantity", "width": 4}
+]

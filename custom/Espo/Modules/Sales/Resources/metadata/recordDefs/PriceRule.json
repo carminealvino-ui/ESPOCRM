@@ -1,0 +1,18 @@
+{
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PriceRule\\BeforeCreate"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PriceRule\\BeforeUpdate"
+    ],
+    "actions": {
+        "merge": {
+            "disabled": true
+        }
+    },
+    "relationships": {
+        "condition": {
+            "linkForeignAccessCheckDisabled": true
+        }
+    }
+}

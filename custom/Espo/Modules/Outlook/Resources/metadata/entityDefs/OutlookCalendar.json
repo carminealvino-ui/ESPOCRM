@@ -1,0 +1,18 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar"
+        },
+        "calendarId": {
+            "type": "varchar",
+            "required": true
+        }
+    },
+    "links": {
+        "calendarUsers": {
+            "type": "hasMany",
+            "entity": "OutlookCalendarUser",
+            "foreign": "calendar"
+        }
+    }
+}

@@ -1,0 +1,5 @@
+[
+    {"name": "name", "link": true},
+    {"name": "deliveryOrder", "width": 27},
+    {"name": "quantity", "width": 6}
+]

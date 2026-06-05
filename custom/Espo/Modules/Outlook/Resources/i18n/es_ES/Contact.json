@@ -1,0 +1,12 @@
+{
+  "massActions": {
+    "pushToOutlook": "Enviar a Outlook"
+  },
+  "actions": {
+    "pushToOutlook": "Enviar a Outlook"
+  },
+  "messages": {
+    "confirmationOutlookContactsPush": "¿Desea insertar los contactos seleccionados en los contactos de Outlook?",
+    "successOutlookContactsPush": "{count} registro(s) enviado(s) correctamente. El resto está a punto de ser puesto en inactivo."
+  }
+}

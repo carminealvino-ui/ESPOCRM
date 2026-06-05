@@ -1,0 +1,29 @@
+{
+  "labels": {
+    "Create PaymentChannel": "Crea canale di pagamento",
+    "Provider Settings": "Impostazioni del provider"
+  },
+  "fields": {
+    "status": "Stato",
+    "data": "Dati",
+    "record": "Registra"
+  },
+  "links": {
+    "paymentEntries": "Pagamenti",
+    "methods": "Metodi di pagamento"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    },
+    "provider": {
+      "WireTransfer": "Bonifico Bancario",
+      "SepaCreditTransfer": "Bonifico SEPA",
+      "SepaDirectDebit": "Addebito diretto SEPA"
+    }
+  },
+  "presetFilters": {
+    "active": "Attivo"
+  }
+}

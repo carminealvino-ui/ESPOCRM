@@ -1,0 +1,5 @@
+{
+    "jobSchedulingMap": {
+        "SyncOutlookCalendar": "*/3 * * * *"
+    }
+}

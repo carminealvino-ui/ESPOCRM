@@ -1,0 +1,9 @@
+{
+    "beforeSave": [
+        "Espo\\Custom\\Hooks\\Common\\GlobalLogic"
+    ],
+    "afterSave": [
+        "Espo\\Custom\\Hooks\\Common\\GlobalLogic"
+    ]
+}
+

@@ -1,0 +1,27 @@
+{
+  "fields": {
+    "paymentEntry": "Zahlung",
+    "writeOffEntry": "Ausbuchung",
+    "creditNote": "Gutschrift",
+    "supplierCredit": "Eingangsgutschrift",
+    "target": "Ziel",
+    "amount": "Betrag",
+    "datePaid": "Zahlungsdatum",
+    "dateIssued": "Ausstellungsdatum",
+    "sourceDate": "Datum",
+    "source": "Quelle",
+    "amountLocal": "Lokaler Betrag",
+    "fxGainLoss": "Währungsgewinn/-verlust",
+    "date": "Zuordnungsdatum"
+  },
+  "links": {
+    "creditNote": "Gutschrift",
+    "paymentEntry": "Zahlung",
+    "writeOffEntry": "Ausbuchung",
+    "supplierCredit": "Eingangsgutschrift",
+    "target": "Ziel"
+  },
+  "messages": {
+    "cannotBeZero": "Der Betrag muss größer als 0 sein."
+  }
+}

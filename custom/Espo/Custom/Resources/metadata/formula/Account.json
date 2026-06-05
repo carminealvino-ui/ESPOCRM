@@ -1,0 +1,3 @@
+{
+    "beforeSaveCustomScript": "// Imposta il numero di whatsapp\nwhatsApp = string\\concatenate('https://wa.me/', phoneNumber);\n\n//Aggiorna Nome\nname=originalLead.name;"
+}

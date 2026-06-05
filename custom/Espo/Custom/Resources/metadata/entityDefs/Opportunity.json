@@ -281,11 +281,6 @@
             "isCustom": true,
             "conversionDisabled": true
         },
-        "ordineIncompletoAriel": {
-            "type": "bool",
-            "default": false,
-            "isCustom": true
-        },
         "azienda": {
             "type": "enum",
             "options": [
@@ -344,11 +339,6 @@
         "productCategory": {
             "type": "link",
             "view": "custom:views/fields/product-category-by-brand",
-            "isCustom": true
-        },
-        "dataAttivazione": {
-            "type": "date",
-            "useNumericFormat": true,
             "isCustom": true
         }
     },

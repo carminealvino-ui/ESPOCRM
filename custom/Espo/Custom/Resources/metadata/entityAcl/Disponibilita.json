@@ -1,0 +1,10 @@
+{
+    "links": {
+        "assignedUsers": {
+            "readOnly": true
+        },
+        "collaborators": {
+            "readOnly": true
+        }
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "massActions": {
+        "delete": {
+            "allowed": true
+        },
+        "update": {
+            "allowed": true
+        }
+    },
+    "earlyBeforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\SubscriptionBillingPlan\\EarlyBeforeSavePrepare"
+    ],
+    "earlyBeforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\SubscriptionBillingPlan\\EarlyBeforeSavePrepare"
+    ]
+}

@@ -1,0 +1,75 @@
+{
+  "labels": {
+    "Create CreditNote": "Gutschrift erstellen",
+    "Taxes": "Steuern",
+    "Add Item": "Artikel hinzufügen",
+    "Templates": "Vorlagen",
+    "Items": "Artikel",
+    "E-Credit Note": "E-Gutschrift"
+  },
+  "fields": {
+    "number": "Nummer",
+    "numberA": "Nummer (auto-inkrement)",
+    "account": "Firma",
+    "invoice": "Vorherige Rechnung",
+    "tax": "Steuerprofil",
+    "taxRate": "Steuersatz",
+    "taxAmount": "Steuerbetrag",
+    "amount": "Betrag",
+    "itemList": "Artikelliste",
+    "dateIssued": "Ausstellungsdatum",
+    "dateDue": "Fälligkeitsdatum",
+    "amountConverted": "Betrag (konvertiert)",
+    "taxAmountConverted": "Steuerbetrag (konvertiert)",
+    "taxAmountCurrency": "Steuerbetrag Währung",
+    "amountCurrency": "Betragswährung",
+    "currency": "Währung",
+    "buyerReference": "Käuferreferenz",
+    "purchaseOrderReference": "Bestellreferenz",
+    "note": "Notiz",
+    "amountDue": "Fälliger Betrag",
+    "amountDueCurrency": "Fälliger Betrag Währung",
+    "grandTotalAmountConverted": "Gesamtbetrag (konvertiert)",
+    "grandTotalAmount": "Gesamtbetrag",
+    "grandTotalAmountCurrency": "Gesamtbetrag Währung",
+    "discountAmountCurrency": "Rabattbetrag Währung",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "allocations": "Zuordnungen",
+    "unallocatedAmount": "Nicht zugeordneter Betrag",
+    "roundingProfile": "Rundungsprofil"
+  },
+  "links": {
+    "items": "Artikel",
+    "account": "Firma",
+    "tax": "Steuerprofil",
+    "invoice": "Vorherige Rechnung",
+    "priceBook": "Preisbuch",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "allocations": "Zuordnungen",
+    "subscriptionUpdates": "Abonnement-Updates",
+    "roundingProfile": "Rundungsprofile"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Issued": "Ausgestellt",
+      "Resolved": "Erledigt",
+      "Canceled": "Storniert"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "resolved": "Erledigt",
+    "openIssued": "Offen Ausgestellt"
+  },
+  "messages": {
+    "amountDueMustNotBeLessThanZero": "Der fällige Betrag darf nicht kleiner als null sein. Der zugeordnete Betrag übersteigt den Transaktionsbetrag.",
+    "cannotApplyToDoneInvoice": "Anwendung auf eine bezahlte Rechnung nicht möglich.",
+    "creditNoteDifferentCurrency": "Die Währung der Gutschrift darf nicht von der Rechnungswährung abweichen.",
+    "cannotCompleteWithAmountDue": "Abschluss nicht möglich, da der fällige Betrag nicht ausgeglichen ist. Weisen Sie die Gutschrift zuerst einer Rechnung zu oder erstellen Sie eine ausgehende Zahlung und ordnen Sie diese dieser Gutschrift zu.",
+    "cannotCancelWithAmountDue": "Eine ausgestellte Gutschrift kann nicht storniert werden, da der fällige Betrag nicht ausgeglichen ist. Weisen Sie die Gutschrift zuerst einer Rechnung oder einer Lastschrift zu. Erstellen Sie bei Bedarf eine entsprechende Lastschrift über den ausstehenden Betrag. Markieren Sie die Gutschrift anschließend als erledigt."
+  },
+  "panels": {
+    "allocation": "Rechnungszuordnung"
+  }
+}

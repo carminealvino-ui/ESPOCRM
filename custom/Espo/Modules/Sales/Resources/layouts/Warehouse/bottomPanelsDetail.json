@@ -1,0 +1,33 @@
+{
+    "_delimiter_": {
+        "disabled": true
+    },
+    "_tabBreak_0": {
+        "index": 0,
+        "tabBreak": true,
+        "tabLabel": "$inventory"
+    },
+    "products": {
+        "index": 1
+    },
+    "inventoryNumbers": {
+        "index": 2
+    },
+    "_tabBreak_1": {
+        "index": 3,
+        "tabBreak": true,
+        "tabLabel": "$orders"
+    },
+    "deliveryOrders": {
+        "index": 4
+    },
+    "receiptOrders": {
+        "index": 5
+    },
+    "inboundTransferOrders": {
+        "index": 6
+    },
+    "outboundTransferOrders": {
+        "index": 7
+    }
+}

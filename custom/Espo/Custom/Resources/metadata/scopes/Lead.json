@@ -1,0 +1,16 @@
+{
+    "stream": true,
+    "disabled": false,
+    "statusField": "status",
+    "kanbanStatusIgnoreList": null,
+    "stars": false,
+    "preserveAuditLog": true,
+    "duplicateCheckFieldList": [
+        "name",
+        "emailAddress",
+        "phoneNumber",
+        "partitaIVA"
+    ],
+    "collaborators": false,
+    "assignedUsers": false
+}

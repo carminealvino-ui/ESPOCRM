@@ -1,0 +1,12 @@
+{
+    "fields": {
+        "prezzoCodice": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "prezzoListino": {
+            "type": "currency",
+            "isCustom": true
+        }
+    }
+}

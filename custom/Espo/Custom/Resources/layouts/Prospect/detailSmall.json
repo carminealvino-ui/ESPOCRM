@@ -1,0 +1,86 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                }
+            ],
+            [
+                {
+                    "name": "azienda"
+                },
+                {
+                    "name": "origine"
+                }
+            ],
+            [
+                {
+                    "name": "fornitorePartner"
+                },
+                {
+                    "name": "productBrand"
+                }
+            ],
+            [
+                false,
+                {
+                    "name": "productCategory"
+                }
+            ],
+            [
+                {
+                    "name": "b2B"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "insegna"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "ragioneSociale"
+                },
+                {
+                    "name": "referenteAziendale"
+                }
+            ],
+            [
+                {
+                    "name": "partitaIVA"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "address"
+                }
+            ],
+            [
+                {
+                    "name": "addressMap"
+                }
+            ],
+            [
+                {
+                    "name": "phoneNumber"
+                }
+            ],
+            [
+                {
+                    "name": "emailAddress"
+                }
+            ],
+            [
+                {
+                    "name": "whatsApp"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": ""
+    }
+]

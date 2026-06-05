@@ -1,0 +1,15 @@
+{
+    "entity": true,
+    "layouts": true,
+    "tab": false,
+    "acl": true,
+    "aclPortal": true,
+    "aclLevelList": ["all", "team", "no"],
+    "aclPortalLevelList": ["all", "no"],
+    "aclPortalActionList": ["read"],
+    "module": "Sales",
+    "customizable": true,
+    "importable": false,
+    "type": "CategoryTree",
+    "notifications": false
+}

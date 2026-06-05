@@ -1,0 +1,8 @@
+{
+    "fields": {
+        "price": "Prezzo di Listino",
+        "name": "Listino Prezzi - Aggiornamento",
+        "priceConverted": "Prezzo di Listino (convertito)",
+        "priceCurrency": "Prezzo di Listino (valuta)"
+    }
+}

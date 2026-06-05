@@ -5,7 +5,7 @@
 -- ========================================
 --
 -- Valorizza Brand + gruppo provvigione sulle categorie (fix definitivo filtro UI).
--- Eseguire dopo backup DB in backup/hooks_cleanup/
+-- Eseguire dopo backup DB in backup_dev/
 --
 -- ========================================
 

@@ -1,0 +1,13 @@
+[
+    {
+        "rows": [
+            [{"name": "number"}, false],
+            [{"name": "status"}, {"name": "dateInvoiced"}],
+            [{"name": "account"}],
+            [{"name": "salesOrder"}, {"name": "quote"}],
+            [{"name": "opportunity"}, {"name": "precedingInvoice"}],
+            [{"name": "paymentTermsProfile"}, {"name": "dateDue"}],
+            [{"name": "grandTotalAmount"}, false]
+        ]
+    }
+]

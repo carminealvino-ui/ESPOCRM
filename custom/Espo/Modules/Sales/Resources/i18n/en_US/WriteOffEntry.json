@@ -1,0 +1,32 @@
+{
+    "labels": {
+        "Create WriteOffEntry": "Create Write-Off"
+    },
+    "fields": {
+        "number": "Number",
+        "numberA": "Number (auto-incremented)",
+        "account": "Account",
+        "status": "Status",
+        "date": "Date",
+        "amount": "Amount",
+        "amountConverted": "Amount (converted)",
+        "amountCurrency": "Amount Currency",
+        "allocations": "Allocations",
+        "unallocatedAmount": "Unallocated Amount"
+    },
+    "links": {
+        "account": "Account",
+        "allocations": "Allocations"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Applied": "Applied",
+            "Canceled": "Canceled"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "completed": "Completed"
+    }
+}

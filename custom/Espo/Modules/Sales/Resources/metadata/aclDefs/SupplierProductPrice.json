@@ -1,0 +1,3 @@
+{
+    "ownershipCheckerClassName": "Espo\\Modules\\Sales\\Classes\\Acl\\SupplierProductPrice\\OwnershipChecker"
+}

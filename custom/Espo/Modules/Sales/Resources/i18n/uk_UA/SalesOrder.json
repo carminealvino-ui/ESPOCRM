@@ -1,0 +1,75 @@
+{
+  "labels": {
+    "Create SalesOrder": "Створити замовлення",
+    "Taxes": "Податки",
+    "Shipping Providers": "Служби доставки",
+    "Add Item": "Додати пункт",
+    "Templates": "Шаблони",
+    "Items": "Пункти",
+    "Sales Order Items": "Пункти замовлення"
+  },
+  "fields": {
+    "status": "Статус",
+    "number": "Номер",
+    "numberA": "Номер (автоінкрементний)",
+    "account": "Контрагент",
+    "opportunity": "Угода",
+    "quote": "Пропозиція",
+    "billingAddress": "Платіжна адреса",
+    "shippingAddress": "Адреса доставки",
+    "billingContact": "Контакт по оплаті",
+    "shippingContact": "Контакт по доставці",
+    "tax": "Податок",
+    "taxRate": "Податок (%)",
+    "shippingCost": "Вартість доставки",
+    "shippingProvider": "Служба доставки",
+    "taxAmount": "Сума податку",
+    "discountAmount": "Сума знижки",
+    "amount": "Сума",
+    "preDiscountedAmount": "Сума без знижки",
+    "grandTotalAmount": "Загальна сума",
+    "itemList": "Список пунктів",
+    "dateOrdered": "Дата замовлення",
+    "dateInvoiced": "Дата фактури",
+    "weight": "Вага",
+    "amountConverted": "Сума (конвертована)",
+    "taxAmountConverted": "Сума податку (конвертована)",
+    "shippingCostConverted": "Вартість доставки (конвертована)",
+    "preDiscountedAmountConverted": "Сума без знижки (конвертована)",
+    "discountAmountConverted": "Сума знижки (конвертована)",
+    "grandTotalAmountConverted": "Загальна сума (конвертована)",
+    "shippingCostCurrency": "Валюта вартості доставки",
+    "taxAmountCurrency": "Валюта суми податку",
+    "discountAmountCurrency": "Валюта суми знижки",
+    "amountCurrency": "Валюта суми",
+    "preDiscountedAmountCurrency": "Валюта суми без знижки",
+    "grandTotalAmountCurrency": "Валюта загальної суми",
+    "currency": "Валюта"
+  },
+  "links": {
+    "items": "Пункти",
+    "billingContact": "Контакт по оплаті",
+    "shippingContact": "Контакт по доставці",
+    "shippingProvider": "Служба доставки",
+    "opportunity": "Угода",
+    "account": "Контрагент",
+    "tax": "Податок",
+    "quote": "Пропозиція",
+    "invoices": "Рахунки-фактури"
+  },
+  "options": {
+    "status": {
+      "Draft": "Чернетка",
+      "Ready": "Готово",
+      "Active": "Активне",
+      "Approved": "Затверджено",
+      "Completed": "Завершено",
+      "Rejected": "Відхилено",
+      "Canceled": "Скасовано"
+    }
+  },
+  "presetFilters": {
+    "actual": "Актуальні",
+    "completed": "Завершені"
+  }
+}

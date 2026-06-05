@@ -1,0 +1,50 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "product"
+                }
+            ],
+            [
+                {
+                    "name": "deliveryOrder"
+                },
+                {
+                    "name": "account"
+                }
+            ],
+            [
+                {
+                    "name": "quantity"
+                },
+                {
+                    "name": "deliveryOrderStatus"
+                }
+            ],
+            [
+                {
+                    "name": "inventoryNumber"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "unitWeight"
+                },
+                {
+                    "name": "weight"
+                }
+            ],
+            [
+                {
+                    "name": "description",
+                    "fullWidth": true
+                }
+            ]
+        ]
+    }
+]

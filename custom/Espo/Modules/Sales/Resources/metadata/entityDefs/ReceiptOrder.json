@@ -1,0 +1,422 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "duplicateIgnore": true,
+            "readOnly": true,
+            "syncWithNumber": true,
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "syncWithNumber",
+                    "type": "bool"
+                }
+            ],
+            "fieldManagerParamList": [
+                "syncWithNumber",
+                "options",
+                "required",
+                "readOnly",
+                "readOnlyAfterCreate",
+                "audited",
+                "pattern",
+                "copyToClipboard",
+                "inlineEditDisabled"
+            ]
+        },
+        "number": {
+            "type": "varchar",
+            "maxLength": 100,
+            "index": true,
+            "readOnly": true,
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "useAutoincrement",
+                    "type": "bool"
+                }
+            ],
+            "fieldManagerParamList": [
+                "useAutoincrement",
+                "required",
+                "readOnly",
+                "readOnlyAfterCreate",
+                "audited",
+                "pattern",
+                "copyToClipboard",
+                "inlineEditDisabled"
+            ],
+            "dynamicLogicDisabled": true,
+            "useAutoincrement": true,
+            "duplicateIgnore": true
+        },
+        "numberA": {
+            "type": "number",
+            "prefix": "RO-",
+            "padLength": 5,
+            "layoutAvailabilityList": [],
+            "textFilterDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Draft",
+                "Ready",
+                "Completed",
+                "Canceled"
+            ],
+            "style": {
+                "Ready": "primary",
+                "Completed": "success",
+                "Canceled": "info"
+            },
+            "default": "Draft",
+            "displayAsLabel": true,
+            "labelType": "state",
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "notActualOptions",
+                    "view": "sales:views/admin/field-manager/fields/not-actual-options"
+                }
+            ],
+            "notActualOptions": ["Completed", "Canceled"],
+            "index": true,
+            "audited": true,
+            "duplicateIgnore": true
+        },
+        "dateOrdered": {
+            "type": "date",
+            "default": "javascript: return this.dateTime.getToday();",
+            "audited": true
+        },
+        "dateReceived": {
+            "type": "date",
+            "audited": true,
+            "duplicateIgnore": true
+        },
+        "account": {
+            "type": "link",
+            "readOnly": true,
+            "audited": true
+        },
+        "supplier": {
+            "type": "link",
+            "autocompleteOnEmpty": true,
+            "audited": true
+        },
+        "purchaseOrder": {
+            "type": "link",
+            "view": "sales:views/receipt-order/fields/purchase-order",
+            "audited": true
+        },
+        "returnOrder": {
+            "type": "link",
+            "view": "sales:views/receipt-order/fields/return-order",
+            "audited": true
+        },
+        "warehouse": {
+            "type": "link",
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\DeliveryOrder\\Warehouse\\Required"
+            ],
+            "autocompleteOnEmpty": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "shippingContact": {
+            "type": "link",
+            "view": "sales:views/quote/fields/contact",
+            "audited": true
+        },
+        "shippingProvider": {
+            "type": "link",
+            "autocompleteOnEmpty": true,
+            "audited": true
+        },
+        "shippingCost": {
+            "type": "currency",
+            "layoutAvailabilityList": [
+                "list",
+                "filters"
+            ],
+            "audited": true
+        },
+        "amount": {
+            "type": "currency",
+            "notStorable": true,
+            "readOnly": true,
+            "utility": true,
+            "directAccessDisabled": true,
+            "dynamicLogicDisabled": true,
+            "customizationDisabled": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited"
+            ]
+        },
+        "amountConverted": {
+            "utility": true,
+            "readOnly": true
+        },
+        "amountCurrency": {
+            "utility": true
+        },
+        "weight": {
+            "type": "float",
+            "min": 0,
+            "decimalPlaces": 2,
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "audited",
+                "decimalPlaces",
+                "tooltipText"
+            ],
+            "view": "modules/sales/views/fields/weight"
+        },
+        "shippingCostCurrency": {
+            "customizationDisabled": true
+        },
+        "itemList": {
+            "type": "jsonArray",
+            "notStorable": true,
+            "layoutAvailabilityList": [],
+            "dynamicLogicVisibleDisabled": true,
+            "dynamicLogicInvalidDisabled": true,
+            "view": "sales:views/quote/fields/item-list",
+            "templatePlaceholderDisabled": true,
+            "reportDisabled": true,
+            "workflowDisabled": true,
+            "massUpdateDisabled": true,
+            "inlineEditDisabled": true,
+            "duplicatorClassName": "Espo\\Modules\\Sales\\Classes\\FieldDuplicators\\Quote\\ItemList",
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\ItemListLoader",
+            "isCompactForm": false,
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "isCompactForm",
+                    "type": "bool"
+                },
+                {
+                    "name": "audited",
+                    "type": "bool"
+                }
+            ],
+            "audited": true,
+            "auditView": "modules/sales/views/quote/fields/audit-item-list"
+        },
+        "receivedItemList": {
+            "type": "jsonArray",
+            "notStorable": true,
+            "layoutAvailabilityList": [],
+            "dynamicLogicVisibleDisabled": true,
+            "dynamicLogicInvalidDisabled": true,
+            "templatePlaceholderDisabled": true,
+            "reportDisabled": true,
+            "workflowDisabled": true,
+            "massUpdateDisabled": true,
+            "inlineEditDisabled": true,
+            "duplicatorClassName": "Espo\\Modules\\Sales\\Classes\\FieldDuplicators\\ReceiptOrder\\ReceivedItemList",
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "audited",
+                    "type": "bool"
+                }
+            ],
+            "audited": true,
+            "auditView": "modules/sales/views/receipt-order/fields/audit-received-item-list"
+        },
+        "isDone": {
+            "type": "bool",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true
+        },
+        "isNotActual": {
+            "type": "bool",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true
+        },
+        "isLocked": {
+            "type": "bool",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true,
+            "view": "modules/sales/views/quote/fields/is-locked"
+        },
+        "isHardLocked": {
+            "type": "bool",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true
+        },
+        "products": {
+            "type": "linkMultiple",
+            "entity": "Product",
+            "notStorable": true,
+            "customizationDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "layoutAvailabilityList": [
+                "filters"
+            ],
+            "view": "sales:views/quote/fields/products"
+        },
+        "inventoryNumbers": {
+            "type": "linkMultiple",
+            "entity": "InventoryNumber",
+            "notStorable": true,
+            "customizationDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "layoutAvailabilityList": [
+                "filters"
+            ],
+            "view": "sales:views/quote/fields/inventory-numbers"
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "assignedUser": {
+            "type": "link",
+            "view": "views/fields/assigned-user",
+            "audited": true
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "audited": true
+        }
+    },
+    "links": {
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "shippingProvider": {
+            "type": "belongsTo",
+            "entity": "ShippingProvider"
+        },
+        "account": {
+            "type": "belongsTo",
+            "entity": "Account",
+            "foreign": "receiptOrders"
+        },
+        "supplier": {
+            "type": "belongsTo",
+            "entity": "Supplier"
+        },
+        "purchaseOrder": {
+            "type": "belongsTo",
+            "entity": "PurchaseOrder",
+            "foreign": "receiptOrders"
+        },
+        "returnOrder": {
+            "type": "belongsTo",
+            "entity": "ReturnOrder",
+            "foreign": "receiptOrders"
+        },
+        "shippingContact": {
+            "type": "belongsTo",
+            "entity": "Contact",
+            "foreign": "receiptOrdersShipping"
+        },
+        "warehouse": {
+            "type": "belongsTo",
+            "entity": "Warehouse"
+        },
+        "items": {
+            "type": "hasMany",
+            "entity": "ReceiptOrderItem",
+            "foreign": "receiptOrder",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "receivedItems": {
+            "type": "hasMany",
+            "entity": "ReceiptOrderReceivedItem",
+            "foreign": "receiptOrder",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "inventoryTransactions": {
+            "type": "hasChildren",
+            "entity": "InventoryTransaction",
+            "foreign": "parent"
+        },
+        "assignedUser": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "EntityTeam",
+            "layoutRelationshipsDisabled": true
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": ["name", "number"]
+    },
+    "indexes": {
+        "createdAt": {
+            "columns": [
+                "createdAt"
+            ]
+        }
+    },
+    "optimisticConcurrencyControl": true
+}

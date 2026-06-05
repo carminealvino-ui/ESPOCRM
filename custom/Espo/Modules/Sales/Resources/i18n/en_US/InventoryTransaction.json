@@ -1,0 +1,27 @@
+{
+    "labels": {
+        "Create InventoryTransaction": "Create Transaction"
+    },
+    "fields": {
+        "number": "Number",
+        "type": "Type",
+        "parent": "Parent",
+        "quantity": "Quantity",
+        "product": "Product",
+        "warehouse": "Warehouse",
+        "inventoryNumber": "Inventory Number"
+    },
+    "links": {
+        "parent": "Parent",
+        "product": "Product",
+        "warehouse": "Warehouse",
+        "inventoryNumber": "Inventory Number"
+    },
+    "options": {
+        "type": {
+            "Transfer": "Transfer",
+            "Reserve": "Reserve",
+            "Soft Reserve": "Soft Reserve"
+        }
+    }
+}

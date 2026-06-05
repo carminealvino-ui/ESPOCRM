@@ -1,0 +1,11 @@
+{
+    "kanbanViewMode": false,
+    "color": null,
+    "iconClass": "fas fa-id-badge",
+    "relationshipPanels": {
+        "fornitorePartner": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        }
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "items": {
+        "index": 0
+    },
+    "paymentAllocations": {
+        "index": 1
+    },
+    "supplierCredits": {
+        "index": 2
+    }
+}

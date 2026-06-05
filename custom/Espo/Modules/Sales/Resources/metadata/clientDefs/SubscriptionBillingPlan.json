@@ -1,0 +1,25 @@
+{
+    "controller": "controllers/record",
+    "filterList": [
+        "active"
+    ],
+    "selectDefaultFilters": {
+        "filter": "active"
+    },
+    "mergeDisabled": true,
+    "viewSetupHandlers": {
+        "list": ["modules/sales/handlers/info"]
+    },
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.Subscription",
+                    "link": "#Subscription",
+                    "acl": "read",
+                    "aclScope": "Subscription"
+                }
+            ]
+        }
+    }
+}

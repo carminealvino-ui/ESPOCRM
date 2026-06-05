@@ -1,0 +1,8 @@
+[
+    {"name":"name", "link": true},
+    {"name":"invoice", "width": 20},
+    {"name":"invoiceStatus", "width": 12},
+    {"name":"quantity", "width": 4},
+    {"name":"unitPrice", "align": "right", "width": 16},
+    {"name":"amount", "align": "right", "width": 16}
+]

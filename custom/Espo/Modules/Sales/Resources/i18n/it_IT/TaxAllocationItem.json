@@ -1,0 +1,26 @@
+{
+  "fields": {
+    "order": "Indice riga",
+    "taxCode": "Codice imposta",
+    "component": "Componente",
+    "paymentEntry": "Movimento di pagamento",
+    "allocation": "Allocazione",
+    "product": "Prodotto",
+    "source": "Origine",
+    "rate": "Tasso",
+    "percentage": "Quota",
+    "amount": "Imposta",
+    "amountLocal": "Imposta in valuta locale",
+    "baseAmountLocal": "Base in valuta locale",
+    "amountPrecise": "Imposta (precisa)",
+    "amountLocalPrecise": "Imposta in valuta locale (precisa)",
+    "baseAmountLocalPrecise": "Base in valuta locale (precisa)"
+  },
+  "links": {
+    "taxCode": "Codice imposta",
+    "paymentEntry": "Movimento di pagamento",
+    "allocation": "Allocazione",
+    "source": "Origine",
+    "product": "Prodotto"
+  }
+}

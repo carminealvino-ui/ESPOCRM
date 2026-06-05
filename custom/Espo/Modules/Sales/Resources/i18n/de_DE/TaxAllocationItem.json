@@ -1,0 +1,26 @@
+{
+  "fields": {
+    "order": "Positionsindex",
+    "taxCode": "Steuercode",
+    "component": "Komponente",
+    "paymentEntry": "Zahlungseingang",
+    "allocation": "Zuordnung",
+    "product": "Produkt",
+    "source": "Quelle",
+    "rate": "Satz",
+    "amount": "Steuerbetrag",
+    "baseAmount": "Basis",
+    "amountLocal": "Lokaler Steuerbetrag",
+    "baseAmountLocal": "Basis lokal",
+    "amountPrecise": "Steuerbetrag (präzise)",
+    "amountLocalPrecise": "Lokaler Steuerbetrag (präzise)",
+    "baseAmountLocalPrecise": "Basis lokal (Präzise)"
+  },
+  "links": {
+    "taxCode": "Steuercode",
+    "paymentEntry": "Zahlungseingang",
+    "allocation": "Zuordnung",
+    "source": "Quelle",
+    "product": "Produkt"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "labels": {
+    "Create DeliveryOrder": "Crea ordine di consegna",
+    "Add Item": "Aggiungi Articolo",
+    "Items": "Articoli",
+    "Valid": "Valido",
+    "Invalid": "Non valido",
+    "Show Availability": "Mostra disponibilità",
+    "Availability": "Disponibilità",
+    "Total": "Totale"
+  },
+  "fields": {
+    "status": "Stato",
+    "number": "Numero",
+    "numberA": "Numero (incrementato automaticamente)",
+    "account": "Cliente",
+    "salesOrder": "Ordine di Vendita",
+    "shippingAddress": "Indirizzo di spedizione",
+    "shippingContact": "Contatto di spedizione",
+    "amount": "Importo",
+    "amountCurrency": "Importo Valuta",
+    "shippingProvider": "Corriere per la spedizione",
+    "taxAmount": "Ammontare dell’imposta",
+    "itemList": "Lista articoli",
+    "dateOrdered": "Data Ordine",
+    "shippingDate": "Data di spedizione",
+    "deliveryDate": "Data Consegna",
+    "weight": "Peso",
+    "currency": "Valuta",
+    "inventoryData": "Dati di inventario",
+    "inventoryStatus": "Stato Giacenza",
+    "warehouse": "Magazzino",
+    "isDone": "Fatto"
+  },
+  "links": {
+    "items": "Articoli",
+    "shippingContact": "Contatto di spedizione",
+    "shippingProvider": "Corriere per la spedizione",
+    "salesOrder": "Ordine di Vendita",
+    "account": "Cliente",
+    "tax": "Profilo fiscale",
+    "inventoryTransactions": "Transazioni di magazzino",
+    "warehouse": "Magazzino"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Ready": "Pronto",
+      "In Progress": "In Corso",
+      "Completed": "Completato",
+      "Canceled": "Annullato",
+      "Failed": "Fallito"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperto",
+    "completed": "Completato"
+  },
+  "messages": {
+    "inventoryIsInAdjustment": "Impossibile salvare perché l'inventario è attualmente in fase di rettifica avviata.",
+    "notAvailableInventory": "L'inventario disponibile non è sufficiente.",
+    "notAvailableInventoryStatusChanged": "L'inventario disponibile non è sufficiente. Impossibile modificare lo stato."
+  },
+  "texts": {
+    "itemTooMany": "{number} elementi extra devono essere rimossi",
+    "itemTooFew": "Aggiungi altri {number} elementi"
+  }
+}

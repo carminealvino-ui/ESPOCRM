@@ -1,0 +1,21 @@
+{
+    "massActions": {
+        "delete": {
+            "allowed": true
+        },
+        "update": {
+            "allowed": true
+        }
+    },
+    "relationships": {
+        "invoices": {
+            "linkRequiredForeignAccess": "edit"
+        }
+    },
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\SubscriptionPeriod\\BeforeSaveValidation"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\SubscriptionPeriod\\BeforeSaveValidation"
+    ]
+}

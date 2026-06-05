@@ -1,0 +1,8 @@
+{
+    "accountLink": "account",
+    "contactLink": "billingContact",
+    "linkCheckerClassNameMap": {
+        "priceBook": "Espo\\Modules\\Sales\\Classes\\Acl\\Quote\\LinkCheckers\\PriceBookChecker",
+        "tax": "Espo\\Modules\\Sales\\Classes\\Acl\\Quote\\LinkCheckers\\TaxChecker"
+    }
+}

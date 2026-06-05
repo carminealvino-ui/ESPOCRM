@@ -1,0 +1,26 @@
+{
+  "labels": {
+    "Create TaxRule": "Steuerregel"
+  },
+  "fields": {
+    "logic": "Bedingungen",
+    "tax": "Steuerprofil",
+    "order": "Auftrag"
+  },
+  "links": {
+    "tax": "Steuerprofil"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  },
+  "tooltips": {
+    "tax": "Steuerprofil, das durch diese Regel angewendet wird.",
+    "logic": "Bedingungen für die Anwendung dieser Regel"
+  }
+}

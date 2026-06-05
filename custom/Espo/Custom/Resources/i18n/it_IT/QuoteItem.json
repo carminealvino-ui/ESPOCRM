@@ -1,0 +1,27 @@
+{
+    "fields": {
+        "quoteStatus": "Stato Contratto",
+        "prezzoCodice": "Prezzo Codice",
+        "prezzoCodiceCurrency": "Prezzo Codice (Valuta)",
+        "prezzoCodiceConverted": "Prezzo Codice (Convertito)",
+        "name": "Voce",
+        "provvigioni": "Provvigioni",
+        "quote": "Contratto",
+        "amountCurrency": "Importo (valuta)",
+        "listPrice": "Prezzo di Listino",
+        "listPriceConverted": "Prezzo di Listino (convertito)",
+        "listPriceCurrency": "Prezzo di Listino (valuta)",
+        "productType": "Prodotto - Tipologia",
+        "unitPriceConverted": "Prezzo Unitario (convertito)",
+        "unitPriceCurrency": "Prezzo Unitario (valuta)"
+    },
+    "links": {
+        "provvigioni": "Provvigioni",
+        "quote": "Contratto",
+        "taxCode": "Imposta - Codice"
+    },
+    "labels": {
+        "Quotes": "Contratto",
+        "Create QuoteItem": "Crea Voce Contratto"
+    }
+}

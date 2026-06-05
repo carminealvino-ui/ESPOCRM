@@ -1,0 +1,44 @@
+{
+  "labels": {
+    "Create SubscriptionTemplate": "Crea modello",
+    "Add Item": "Aggiungi voce",
+    "Items": "Voci"
+  },
+  "fields": {
+    "status": "Stato",
+    "hasTrial": "Periodo di prova",
+    "trialPeriodDays": "Giorni periodo di prova",
+    "billingPlans": "Piani di fatturazione",
+    "itemList": "Elenco voci",
+    "primaryProduct": "Prodotto principale",
+    "products": "Prodotti",
+    "hasTerm": "Durata fissa",
+    "termUnit": "Unità durata",
+    "termLength": "Lunghezza durata",
+    "hasQuantity": "Ha quantità"
+  },
+  "links": {
+    "items": "Voci",
+    "billingPlans": "Piani di fatturazione",
+    "billingContact": "Contatto di fatturazione",
+    "priceBook": "Listino prezzi",
+    "invoices": "Fatture",
+    "billingPlan": "Piano di fatturazione",
+    "periods": "Periodi",
+    "primaryProduct": "Prodotto principale",
+    "products": "Prodotti"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperta",
+    "active": "Attivo"
+  },
+  "tooltips": {
+    "hasTerm": "Gli abbonamenti avranno una durata fissa."
+  }
+}

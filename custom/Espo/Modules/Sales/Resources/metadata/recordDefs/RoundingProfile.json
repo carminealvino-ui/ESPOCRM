@@ -1,0 +1,16 @@
+{
+    "actions": {
+        "merge": {
+            "disabled": true
+        }
+    },
+    "massActions": {
+        "delete": {
+            "allowed": false
+        },
+        "update": {
+            "allowed": true
+        }
+    },
+    "duplicateWhereBuilderClassName": "Espo\\Classes\\DuplicateWhereBuilders\\General"
+}

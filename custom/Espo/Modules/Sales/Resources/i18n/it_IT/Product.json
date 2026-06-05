@@ -1,0 +1,134 @@
+{
+  "labels": {
+    "Create Product": "Crea prodotto",
+    "Price": "Prezzo",
+    "Brands": "Marchi",
+    "Categories": "Categorie",
+    "Price Books": "Listini Prezzo",
+    "Quantity": "Quantità",
+    "Warehouses": "Magazzini",
+    "Generate": "Genera",
+    "Orders": "Ordini",
+    "Select Variant": "Seleziona la variante",
+    "Select Variants": "Seleziona le varianti",
+    "Select Template": "Seleziona modello",
+    "View Price": "Vedi Prezzo"
+  },
+  "fields": {
+    "status": "Stato",
+    "brand": "Marchio",
+    "partNumber": "Numero parte",
+    "category": "Categoria",
+    "pricingType": "Tipo Prezzo",
+    "pricingFactor": "Determinazione di prezzo",
+    "costPrice": "Prezzo di costo",
+    "listPrice": "Listino prezzi",
+    "unitPrice": "Prezzo Unitario",
+    "costPriceCurrency": "Prezzo di costo valuta",
+    "listPriceCurrency": "Prezzo di listino Valuta",
+    "unitPriceCurrency": "Prezzo unitario valuta",
+    "costPriceConverted": "Prezzo di costo (convertito)",
+    "listPriceConverted": "Prezzo di listino (convertito)",
+    "unitPriceConverted": "Prezzo unitario (convertito)",
+    "isTaxFree": "Esentasse",
+    "weight": "Peso",
+    "suppliers": "Fornitori",
+    "unitPriceSelect": "Prezzo unitario (Select)",
+    "unitPriceSelectCurrency": "Prezzo unitario (Seleziona) (Valuta)",
+    "allowFractionalQuantity": "Consenti quantità frazionaria",
+    "quantity": "Disponibile",
+    "quantityReserved": "Riservato",
+    "quantitySoftReserved": "Prenotato (non confermato)",
+    "quantityOnHand": "A Disposizione",
+    "quantityInTransit": "In transito",
+    "quantityOnOrder": "Su Ordine",
+    "quantityWarehouse": "Disponibile in Magazzino",
+    "quantityWarehouseOnHand": "A portata di mano in magazzino",
+    "quantityWarehouseReserved": "Prenotato in Magazzino",
+    "qty": "Quantità",
+    "isInventory": "È un articolo di magazzino",
+    "inventoryNumberType": "Tipologia di codice inventario",
+    "warehousesOnHand": "Magazzini (Disponibile)",
+    "type": "Tipo",
+    "template": "Modello",
+    "attributes": "Attributi",
+    "variantAttributeOptions": "Valori degli attributi",
+    "variantOrder": "Variante Ordine",
+    "expirationDays": "Giorno di Scadenza",
+    "removalStrategy": "Strategia di rimozione",
+    "taxClasses": "Classi fiscali",
+    "isSubscribable": "Sottoscrivibile",
+    "isSellable": "Vendibile",
+    "isPurchasable": "Acquistabile",
+    "itemType": "Tipo voce"
+  },
+  "links": {
+    "brand": "Marchio",
+    "category": "Categoria",
+    "prices": "Prezzi",
+    "supplierPrices": "Prezzi dei fornitori",
+    "inventoryNumbers": "Numeri di inventario",
+    "inventoryTransactions": "Transazioni di magazzino",
+    "attributes": "Attributi",
+    "attributeOptions": "Opzioni attributo",
+    "variantAttributeOptions": "Opzioni dell’attributo variante",
+    "template": "Modello",
+    "variants": "Varianti",
+    "variantInventoryNumbers": "Numeri di inventario delle varianti",
+    "inventoryAdjustmentItems": "Correzioni",
+    "taxClasses": "Classi fiscali"
+  },
+  "options": {
+    "status": {
+      "Available": "Attivo",
+      "Unavailable": "Inattivo"
+    },
+    "itemType": {
+      "Goods": "Merci",
+      "Service": "Servizio"
+    },
+    "pricingType": {
+      "Same as List": "Stesso elenco",
+      "Fixed": "Fisso",
+      "Discount from List": "Sconto dalla lista",
+      "Markup over Cost": "Ricarico sul costo",
+      "Profit Margin": "Margine di profitto"
+    },
+    "inventoryNumberType": {
+      "Batch": "Gruppo",
+      "Serial": "Seriale"
+    },
+    "type": {
+      "Regular": "Regolare",
+      "Template": "Modello",
+      "Variant": "Variante"
+    }
+  },
+  "presetFilters": {
+    "available": "Disponibile",
+    "inventory": "Inventario",
+    "allVariants": "Tutte le Varianti",
+    "availableVariants": "Varianti attive",
+    "subscribable": "Sottoscrivibile",
+    "sellable": "Vendibile",
+    "purchasable": "Acquistabile",
+    "invoiceable": "Fatturabile",
+    "availableGoods": "Merci"
+  },
+  "tabs": {
+    "inventory": "Inventario",
+    "prices": "Prezzi",
+    "variants": "Varianti",
+    "template": "Modello",
+    "orders": "Ordini"
+  },
+  "messages": {
+    "generateVariantsConfirmation": "Generare tutte le possibili combinazioni di varianti?",
+    "variantsGenerated": "Fatto. {count} varianti generate.",
+    "attributesRequired": "È richiesto almeno un attributo",
+    "optionsRequired": "Sono necessarie opzioni"
+  },
+  "massActions": {
+    "updatePrice": "Aggiornare il prezzo"
+  }
+}

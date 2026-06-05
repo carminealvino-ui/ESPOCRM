@@ -175,16 +175,25 @@ foreach ($rows as $i => $row) {
 
         if (!$product && $createMissing) {
             $product = $entityManager->getNewEntity('Product');
-            applyProductIdentity($entityManager, $product, $identity, $brandId);
+            $identityPatch = buildIdentityPatch($entityManager, $product, $identity, $brandId);
+            $product->set($identityPatch);
             $product->set('status', 'Available');
             $product->set('type', 'Regular');
             $product->set('itemType', ($row['tipo'] ?? '') === 'servizio' ? 'Service' : 'Goods');
 
-            $pricePatch = buildProductPricePatch($entityManager, $prezzoListino, $prezzoCodice);
+            $pricePatch = buildProductPricePatch(
+                $entityManager,
+                $prezzoListino,
+                $prezzoCodice,
+                $prezzoListinoIvi,
+                $prezzoCodiceIvi
+            );
 
             if ($pricePatch !== []) {
                 $product->set($pricePatch);
             }
+
+            $patch = array_merge($identityPatch, $pricePatch);
 
             if (!$dryRun) {
                 $entityManager->saveEntity($product);
@@ -217,7 +226,17 @@ foreach ($rows as $i => $row) {
             $label = $product->get('name') ?: $identity['denominazione'];
 
             $identityPatch = buildIdentityPatch($entityManager, $product, $identity, $brandId);
-            $patch = array_merge($patch, $identityPatch, buildProductPricePatch($entityManager, $prezzoListino, $prezzoCodice));
+            $patch = array_merge(
+                $patch,
+                $identityPatch,
+                buildProductPricePatch(
+                    $entityManager,
+                    $prezzoListino,
+                    $prezzoCodice,
+                    $prezzoListinoIvi,
+                    $prezzoCodiceIvi
+                )
+            );
 
             if ($patch !== []) {
                 $product->set($patch);
@@ -239,10 +258,25 @@ foreach ($rows as $i => $row) {
                 }
 
                 $stats['updated']++;
+
+                $priceOnlyPatch = buildProductPricePatch(
+                    $entityManager,
+                    $prezzoListino,
+                    $prezzoCodice,
+                    $prezzoListinoIvi,
+                    $prezzoCodiceIvi
+                );
+                $stats['updated'] += syncAliasProductsPrices(
+                    $entityManager,
+                    $product,
+                    $identity,
+                    $priceOnlyPatch,
+                    $dryRun
+                );
             }
         }
 
-        if ($prezzoPerProductPrice !== null && metadataHasEntity($entityManager, 'ProductPrice')) {
+        if ($product && $prezzoPerProductPrice !== null && metadataHasEntity($entityManager, 'ProductPrice')) {
             $productId = $product->getId();
 
             if ($dryRun && !$productId) {
@@ -255,7 +289,8 @@ foreach ($rows as $i => $row) {
                     $priceBook,
                     $prezzoPerProductPrice,
                     $dateStart,
-                    $dryRun
+                    $dryRun,
+                    $prezzoCodiceIvi
                 );
 
                 if ($ppResult) {
@@ -279,23 +314,33 @@ exit($stats['errors'] > 0 ? 1 : 0);
  */
 function buildProductPricePatch(
     \Espo\ORM\EntityManager $entityManager,
-    ?float $prezzoListino,
-    ?float $prezzoCodice
+    ?float $prezzoListinoNetto,
+    ?float $prezzoCodiceNetto,
+    ?float $prezzoListinoIvi = null,
+    ?float $prezzoCodiceIvi = null
 ): array {
     $patch = [];
 
-    if ($prezzoListino !== null) {
+    if ($prezzoListinoNetto !== null) {
         if (defsHasAttribute($entityManager, 'Product', 'listPrice')) {
-            $patch['listPrice'] = $prezzoListino;
+            $patch['listPrice'] = $prezzoListinoNetto;
         }
 
         if (defsHasAttribute($entityManager, 'Product', 'unitPrice')) {
-            $patch['unitPrice'] = $prezzoListino;
+            $patch['unitPrice'] = $prezzoListinoNetto;
         }
     }
 
-    if ($prezzoCodice !== null && defsHasAttribute($entityManager, 'Product', 'prezzoCodice')) {
-        $patch['prezzoCodice'] = $prezzoCodice;
+    if ($prezzoListinoIvi !== null && defsHasAttribute($entityManager, 'Product', 'prezzoListinoIvaInclusa')) {
+        $patch['prezzoListinoIvaInclusa'] = $prezzoListinoIvi;
+    }
+
+    if ($prezzoCodiceNetto !== null && defsHasAttribute($entityManager, 'Product', 'prezzoCodice')) {
+        $patch['prezzoCodice'] = $prezzoCodiceNetto;
+    }
+
+    if ($prezzoCodiceIvi !== null && defsHasAttribute($entityManager, 'Product', 'prezzoCodiceIvaInclusa')) {
+        $patch['prezzoCodiceIvaInclusa'] = $prezzoCodiceIvi;
     }
 
     return $patch;
@@ -519,6 +564,79 @@ function parseEuro(mixed $value): ?float
     return round((float) $s, 2);
 }
 
+/**
+ * Chiave per abbinare PROMO 1+1 / COMBO / OMAGGIO alla stessa riga listino.
+ */
+function normalizeDenominazioneKey(string $denominazione): string
+{
+    $s = strtoupper(trim($denominazione));
+    $s = preg_replace('/\s+/', ' ', $s);
+    $s = str_replace(' OMAGGIO', '', $s);
+    $s = preg_replace('/\bBTU\b/', '', $s);
+    $s = preg_replace('/\bPROMO\s*1\s*\+\s*1\b/', 'COMBO', $s);
+
+    return trim(preg_replace('/\s+/', ' ', $s));
+}
+
+function extractDenominazioneFromProduct(\Espo\ORM\Entity $product): string
+{
+    $denominazione = trim((string) ($product->get('denominazione') ?? ''));
+
+    if ($denominazione !== '') {
+        return $denominazione;
+    }
+
+    $name = (string) ($product->get('name') ?? '');
+    $parts = preg_split('/\s+-\s+/', $name, 3);
+
+    if (is_array($parts) && count($parts) === 3) {
+        return trim($parts[2]);
+    }
+
+    return $name;
+}
+
+/**
+ * @return \Espo\ORM\Entity[]
+ */
+function findProductsByDenomKey(
+    \Espo\ORM\EntityManager $entityManager,
+    string $denomKey,
+    ?string $brandId,
+    ?string $categoryId
+): array {
+    if ($denomKey === '') {
+        return [];
+    }
+
+    $where = [];
+
+    if ($brandId) {
+        $where['brandId'] = $brandId;
+    }
+
+    if ($categoryId) {
+        $where['categoryId'] = $categoryId;
+    }
+
+    $collection = $entityManager
+        ->getRDBRepository('Product')
+        ->where($where)
+        ->find();
+
+    $matched = [];
+
+    foreach ($collection as $product) {
+        $candidateKey = normalizeDenominazioneKey(extractDenominazioneFromProduct($product));
+
+        if ($candidateKey === $denomKey) {
+            $matched[$product->getId()] = $product;
+        }
+    }
+
+    return array_values($matched);
+}
+
 function findProductByIdentity(\Espo\ORM\EntityManager $entityManager, array $identity): ?\Espo\ORM\Entity
 {
     $name = $identity['name'] ?? '';
@@ -541,16 +659,18 @@ function findProductByIdentity(\Espo\ORM\EntityManager $entityManager, array $id
 
     $brand = resolveProductBrand($entityManager, $identity['brand']);
     $category = resolveProductCategory($entityManager, $identity['categoria'], $brand);
+    $brandId = $brand?->getId();
+    $categoryId = $category?->getId();
 
     // Denominazione + brand (+ categoria se risolta)
     $where = ['denominazione' => $denominazione];
 
     if ($brand) {
-        $where['brandId'] = $brand->getId();
+        $where['brandId'] = $brandId;
     }
 
     if ($category) {
-        $where['categoryId'] = $category->getId();
+        $where['categoryId'] = $categoryId;
     }
 
     $product = $entityManager
@@ -562,11 +682,19 @@ function findProductByIdentity(\Espo\ORM\EntityManager $entityManager, array $id
         return $product;
     }
 
+    // Alias CRM: COMBO 9000+9000 ↔ PROMO 1+1 9000+9000 OMAGGIO (stesso listino)
+    $denomKey = normalizeDenominazioneKey($denominazione);
+    $aliases = findProductsByDenomKey($entityManager, $denomKey, $brandId, $categoryId);
+
+    if ($aliases !== []) {
+        return $aliases[0];
+    }
+
     // Fallback: nome contiene denominazione (prodotti creati senza denominazione in sync precedenti)
     $fallbackWhere = ['name*' => $denominazione];
 
     if ($brand) {
-        $fallbackWhere['brandId'] = $brand->getId();
+        $fallbackWhere['brandId'] = $brandId;
     }
 
     $collection = $entityManager
@@ -584,6 +712,58 @@ function findProductByIdentity(\Espo\ORM\EntityManager $entityManager, array $id
     }
 
     return null;
+}
+
+/**
+ * Aggiorna anche prodotti con denominazione equivalente (es. COMBO vs PROMO 1+1).
+ *
+ * @return int numero prodotti aggiuntivi aggiornati
+ */
+function syncAliasProductsPrices(
+    \Espo\ORM\EntityManager $entityManager,
+    \Espo\ORM\Entity $primaryProduct,
+    array $identity,
+    array $pricePatch,
+    bool $dryRun
+): int {
+    if ($pricePatch === []) {
+        return 0;
+    }
+
+    $brand = resolveProductBrand($entityManager, $identity['brand']);
+    $category = resolveProductCategory($entityManager, $identity['categoria'], $brand);
+    $denomKey = normalizeDenominazioneKey($identity['denominazione'] ?? '');
+
+    if ($denomKey === '') {
+        return 0;
+    }
+
+    $aliases = findProductsByDenomKey(
+        $entityManager,
+        $denomKey,
+        $brand?->getId(),
+        $category?->getId()
+    );
+
+    $count = 0;
+
+    foreach ($aliases as $aliasProduct) {
+        if ($aliasProduct->getId() === $primaryProduct->getId()) {
+            continue;
+        }
+
+        $aliasProduct->set($pricePatch);
+
+        if (!$dryRun) {
+            $entityManager->saveEntity($aliasProduct);
+        }
+
+        $label = $aliasProduct->get('name') ?: extractDenominazioneFromProduct($aliasProduct);
+        fwrite(STDOUT, "[{$label}] AGGIORNATO (alias denominazione): " . json_encode($pricePatch, JSON_UNESCAPED_UNICODE) . "\n");
+        $count++;
+    }
+
+    return $count;
 }
 
 function resolveProductBrand(\Espo\ORM\EntityManager $entityManager, string $brandName): ?\Espo\ORM\Entity
@@ -731,7 +911,8 @@ function upsertProductPrice(
     \Espo\ORM\Entity $priceBook,
     float $price,
     string $dateStart,
-    bool $dryRun
+    bool $dryRun,
+    ?float $prezzoCodiceIvi = null
 ): ?string {
     $productId = $product->getId();
 
@@ -781,6 +962,18 @@ function upsertProductPrice(
         'price' => $price,
         'status' => 'Active',
     ]);
+
+    if ($prezzoCodiceIvi !== null && $productPrice->hasAttribute('prezzoCodiceIvaInclusa')) {
+        $productPrice->set('prezzoCodiceIvaInclusa', $prezzoCodiceIvi);
+
+        if ($productPrice->hasAttribute('prezzoCodice')) {
+            $taxInclusive = (bool) $priceBook->get('isTaxInclusive');
+            $productPrice->set(
+                'prezzoCodice',
+                $taxInclusive ? round($prezzoCodiceIvi / 1.1, 2) : $prezzoCodiceIvi
+            );
+        }
+    }
 
     if ($productPrice->hasAttribute('dateStart')) {
         $productPrice->set('dateStart', $dateStart);

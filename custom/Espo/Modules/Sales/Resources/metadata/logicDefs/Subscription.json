@@ -1,0 +1,135 @@
+{
+    "fields": {
+        "itemList": {
+            "readOnlySaved": {
+                "conditionGroup": [
+                    {
+
+                        "type": "in",
+                        "attribute": "status",
+                        "value": ["Stopped"]
+                    }
+                ]
+            }
+        },
+        "number": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "template": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    },
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "templateId"
+                    }
+                ]
+            },
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    },
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "templateId"
+                    }
+                ]
+            }
+        },
+        "startDate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    },
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "templateId"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    },
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "templateId"
+                    }
+                ]
+            }
+        },
+        "hasTrial": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    },
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "templateId"
+                    },
+                    {
+                        "type": "isTrue",
+                        "attribute": "templateHasTrial"
+                    }
+                ]
+            }
+        },
+        "status": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    },
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "templateId",
+                        "data": {
+                            "field": "template"
+                        }
+                    }
+                ]
+            }
+        },
+        "anchorDay": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "intervalUnit",
+                        "value": [
+                            "M",
+                            "Y"
+                        ]
+                    },
+                    {
+                        "type": "isEmpty",
+                        "attribute": "alignmentType"
+                    }
+                ]
+            }
+        }
+    }
+}

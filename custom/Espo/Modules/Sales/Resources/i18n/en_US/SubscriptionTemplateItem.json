@@ -1,0 +1,17 @@
+{
+    "fields": {
+        "qty": "Qty",
+        "quantity": "Quantity",
+        "quantityInt": "Quantity (Int)",
+        "product": "Product",
+        "order": "Line Number",
+        "subscriptionTemplate": "Subscription Template",
+        "subscriptionTemplateStatus": "Subscription Template Status",
+        "fixedQuantity": "Fixed Quantity",
+        "description": "Description",
+        "fixedQty": "Fixed Qty"
+    },
+    "links": {
+        "subscriptionTemplate": "Subscription Template"
+    }
+}

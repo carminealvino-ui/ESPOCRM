@@ -1,0 +1,14 @@
+{
+    "labels": {
+        "Create ProductCategory": "Create Category",
+        "Manage Categories": "Manage Categories",
+        "Products": "Products"
+    },
+    "fields": {
+        "order": "Order",
+        "childList": "Child List"
+    },
+    "links": {
+        "products": "Products"
+    }
+}

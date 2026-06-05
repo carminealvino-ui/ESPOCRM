@@ -1,0 +1,68 @@
+{
+    "controller": "controllers/record",
+    "acl": "modules/sales/acl/subscription-update",
+    "filterList": [
+        "applied"
+    ],
+    "mergeDisabled": true,
+    "duplicateDisabled": true,
+    "massUpdateDisabled": true,
+    "convertCurrencyDisabled": true,
+    "viewSetupHandlers": {
+        "list": ["modules/sales/handlers/info"],
+        "record/detail": [
+            "modules/sales/handlers/quote/setup-record-detail",
+            "modules/sales/handlers/subscription-update/setup-record-detail"
+        ],
+        "record/edit": [
+            "modules/sales/handlers/quote/setup-record-detail",
+            "modules/sales/handlers/subscription-update/setup-record-detail"
+        ]
+    },
+    "bottomPanels": {
+        "detail": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "edit": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "detailSmall": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "editSmall": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ]
+    }
+}

@@ -1,0 +1,35 @@
+{
+    "labels": {
+        "Create PaymentTermsProfile": "Create Profile"
+    },
+    "fields": {
+        "order": "Order",
+        "status": "Status",
+        "note": "Note",
+        "items": "Items"
+    },
+    "links": {
+        "invoices": "Invoices",
+        "items": "Items"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    },
+    "tooltips": {
+        "note": "Informational text for the customer."
+    },
+    "otherFields": {
+        "percentage": "Percentage",
+        "days": "Days"
+    },
+    "messages": {
+        "itemsMustAddUpTo100": "Items must add up to 100",
+        "daysMustBeInAscendingOrder": "Each item's day value must be greater than the previous one"
+    },
+    "strings": {
+        "days": "days"
+    }
+}

@@ -1,0 +1,7 @@
+{
+    "psr-4": {
+        "UXML\\": "custom/Espo/Modules/Sales/vendor/josemmo/uxml/src",
+        "Einvoicing\\": "custom/Espo/Modules/Sales/vendor/josemmo/einvoicing/src",
+        "Digitick\\Sepa\\": "custom/Espo/Modules/Sales/vendor/digitick/sepa-xml/src"
+    }
+}

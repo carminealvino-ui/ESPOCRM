@@ -1,0 +1,12 @@
+{
+    "massActions": {
+        "pushToOutlook": "Push to Outlook"
+    },
+    "actions": {
+        "pushToOutlook": "Push to Outlook"
+    },
+    "messages": {
+        "confirmationOutlookContactsPush": "Do you want to push selected leads to Outlook Contacts?",
+        "successOutlookContactsPush": "{count} record(s) successfully pushed. The rest is about to be pushed in idle."
+    }
+}

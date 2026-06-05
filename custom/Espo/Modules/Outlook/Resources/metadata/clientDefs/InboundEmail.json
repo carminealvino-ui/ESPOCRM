@@ -1,0 +1,17 @@
+{
+    "sidePanels": {
+        "detail": [
+            "__APPEND__",
+            {
+                "name": "outlook",
+                "label": "Outlook",
+                "view": "outlook:views/inbound-email/panels/outlook",
+                "hidden": true
+            }
+        ]
+    },
+    "dynamicHandlerList": [
+        "__APPEND__",
+        "outlook:inbound-email-dynamic-handler"
+    ]
+}

@@ -1,0 +1,13 @@
+[
+    {
+        "name": "name",
+        "width": 80,
+        "link": true,
+        "align": "left"
+    },
+    {
+        "name": "listPriceConverted",
+        "width": 20,
+        "align": "left"
+    }
+]

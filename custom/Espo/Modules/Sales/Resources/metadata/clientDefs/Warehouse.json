@@ -1,0 +1,97 @@
+{
+    "controller": "controllers/record",
+    "searchPanelDisabled": false,
+    "filterList": [
+        "active"
+    ],
+    "selectDefaultFilters": {
+        "filter": "active"
+    },
+    "viewSetupHandlers": {
+        "list": ["sales:handlers/info"],
+        "record/detail": ["sales:handlers/warehouse/setup-record-detail"]
+    },
+    "mergeDisabled": true,
+    "rowActionDefs": {
+        "moveToTop": {
+            "labelTranslation": "ProductAttribute.labels.Move to Top",
+            "handler": "modules/sales/handlers/tax-rule/move",
+            "acl": "edit"
+        },
+        "moveUp": {
+            "labelTranslation": "ProductAttribute.labels.Move Up",
+            "handler": "modules/sales/handlers/tax-rule/move",
+            "acl": "edit"
+        },
+        "moveDown": {
+            "labelTranslation": "ProductAttribute.labels.Move Down",
+            "handler": "modules/sales/handlers/tax-rule/move",
+            "acl": "edit"
+        },
+        "moveToBottom": {
+            "labelTranslation": "ProductAttribute.labels.Move to Bottom",
+            "handler": "modules/sales/handlers/tax-rule/move",
+            "acl": "edit"
+        }
+    },
+    "rowActionList": [
+        "moveToTop",
+        "moveUp",
+        "moveDown",
+        "moveToBottom"
+    ],
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.TransferOrder",
+                    "link": "#TransferOrder",
+                    "acl": "read",
+                    "aclScope": "TransferOrder"
+                }
+            ]
+        }
+    },
+    "bottomPanels": {
+        "detail": [
+            {
+                "name": "products",
+                "view": "modules/sales/views/warehouse/record/panels/products"
+            },
+            {
+                "name": "inventoryNumbers",
+                "view": "modules/sales/views/warehouse/record/panels/inventory-numbers"
+            }
+        ]
+    },
+    "relationshipPanels": {
+        "inventoryTransactions": {
+            "createDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": true
+        },
+        "deliveryOrders": {
+            "createDisabled": true,
+            "unlinkDisabled": true,
+            "removeDisabled": true
+        },
+        "receiptOrders": {
+            "createDisabled": true,
+            "unlinkDisabled": true,
+            "removeDisabled": true
+        },
+        "inboundTransferOrders": {
+            "createDisabled": true,
+            "unlinkDisabled": true,
+            "removeDisabled": true,
+            "layout": "listForWarehouseInbound"
+        },
+        "outboundTransferOrders": {
+            "createDisabled": true,
+            "unlinkDisabled": true,
+            "removeDisabled": true,
+            "layout": "listForWarehouseOutbound"
+        }
+    },
+    "iconClass": "fas fa-warehouse"
+}

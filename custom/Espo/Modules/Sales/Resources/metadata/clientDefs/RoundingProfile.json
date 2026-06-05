@@ -1,0 +1,40 @@
+{
+    "controller": "controllers/record",
+    "filterList": [
+        "active"
+    ],
+    "selectDefaultFilters": {
+        "filter": "active"
+    },
+    "forceListViewSettings": true,
+    "mergeDisabled": true,
+    "massRemoveDisabled": true,
+    "rowActionDefs": {
+        "moveToTop": {
+            "labelTranslation": "ProductAttribute.labels.Move to Top",
+            "handler": "modules/sales/handlers/tax-rule/move",
+            "acl": "edit"
+        },
+        "moveUp": {
+            "labelTranslation": "ProductAttribute.labels.Move Up",
+            "handler": "modules/sales/handlers/tax-rule/move",
+            "acl": "edit"
+        },
+        "moveDown": {
+            "labelTranslation": "ProductAttribute.labels.Move Down",
+            "handler": "modules/sales/handlers/tax-rule/move",
+            "acl": "edit"
+        },
+        "moveToBottom": {
+            "labelTranslation": "ProductAttribute.labels.Move to Bottom",
+            "handler": "modules/sales/handlers/tax-rule/move",
+            "acl": "edit"
+        }
+    },
+    "rowActionList": [
+        "moveToTop",
+        "moveUp",
+        "moveDown",
+        "moveToBottom"
+    ]
+}

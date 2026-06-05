@@ -1,0 +1,10 @@
+{
+    "links": {
+        "quotesBilling": "Citāti (rēķini)",
+        "quotesShipping": "Citāti (piegāde)",
+        "salesOrdersBilling": "Pārdošanas pasūtījumi (rēķini)",
+        "salesOrdersShipping": "Pārdošanas pasūtījumi (piegāde)",
+        "invoicesBilling": "Rēķini (rēķini)",
+        "invoicesShipping": "Rēķini (piegāde)"
+    }
+}

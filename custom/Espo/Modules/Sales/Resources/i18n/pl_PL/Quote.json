@@ -1,0 +1,54 @@
+{
+  "labels": {
+    "Create Quote": "Utwórz wycenę",
+    "Taxes": "Podatki",
+    "Shipping Providers": "Kurierzy",
+    "Add Item": "Dodaj element",
+    "Templates": "Szablony"
+  },
+  "fields": {
+    "status": "Status",
+    "number": "Numer oferty",
+    "invoiceNumber": "Numer faktury",
+    "account": "Konto",
+    "opportunity": "Szansa",
+    "billingAddress": "Adres rozliczeniowy",
+    "shippingAddress": "Adres dostawy",
+    "billingContact": "Kontakt rozliczeniowy",
+    "shippingContact": "Kontakt dostawy",
+    "tax": "Podatek",
+    "taxRate": "Wysokość podatku",
+    "shippingCost": "Koszt dostawy",
+    "shippingProvider": "Kurier",
+    "taxAmount": "Wartość podatku",
+    "discountAmount": "Wartość rabatu",
+    "amount": "Kwota",
+    "preDiscountedAmount": "Kwota przed rabatem",
+    "grandTotalAmount": "Podsuma",
+    "itemList": "Lista elementów",
+    "dateQuoted": "Data oferty",
+    "dateInvoiced": "Data faktury"
+  },
+  "links": {
+    "items": "Elementy",
+    "billingContact": "Kontakt rozliczeniowy",
+    "shippingContact": "Kontakt dostawy",
+    "opportunity": "Szansa",
+    "account": "Konto",
+    "tax": "Podatek"
+  },
+  "options": {
+    "status": {
+      "Draft": "Szkic",
+      "In Review": "W recenzji",
+      "Presented": "Przedstawione",
+      "Approved": "Zatwierdzone",
+      "Rejected": "Odrzucone",
+      "Canceled": "Anulowane"
+    }
+  },
+  "presetFilters": {
+    "actual": "Obecne",
+    "approved": "Zatwierdzone"
+  }
+}

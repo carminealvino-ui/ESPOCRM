@@ -1,0 +1,77 @@
+{
+    "labels": {
+        "Create PriceRule": "Create Rule"
+    },
+    "fields": {
+        "priceBook": "Price Book",
+        "status": "Status",
+        "productCategory": "Product Category",
+        "minQuantity": "Min. Quantity",
+        "price": "Price",
+        "dateStart": "Date Start",
+        "dateEnd": "Date End",
+        "minQty": "Min. Qty",
+        "percentage": "Percentage",
+        "discount": "Discount",
+        "target": "Target",
+        "condition": "Condition",
+        "conditionSelect": "Condition Select",
+        "roundingMethod": "Rounding Method",
+        "roundingFactor": "Rounding Factor",
+        "surcharge": "Surcharge",
+        "currency": "Currency",
+        "basedOn": "Based On",
+        "supplier": "Supplier",
+        "timeline": "Effective Dates"
+    },
+    "links": {
+        "supplier": "Supplier",
+        "productCategory": "Product Category",
+        "condition": "Condition",
+        "priceBook": "Price Book",
+        "product": "Product"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        },
+        "basedOn": {
+            "Unit": "Unit",
+            "Price Book": "Price Book",
+            "Supplier": "Supplier",
+            "Cost": "Cost"
+        },
+        "basedOnShort": {
+            "Unit": "U",
+            "Price Book": "PB",
+            "Supplier": "S",
+            "Cost": "C"
+        },
+        "target": {
+            "All": "All",
+            "Product Category": "Product Category",
+            "Conditional": "Conditional"
+        },
+        "percentageType": {
+            "Discount": "Discount",
+            "Markup": "Markup"
+        },
+        "roundingFactor": {
+            "Half Up": "Half Up",
+            "Up": "Up",
+            "Down": "Down"
+        }
+    },
+    "tooltips": {
+        "minQuantity": "The rule will be applied only if the quantity of items being sold exceeds the specified value.",
+        "currency": "The amount will be converted to the specified currency before rounding. Also defines the currency of the surcharge.",
+        "basedOn": "What to use as a base price.\n\n* Unit – the unit price defined in the Price Book or defined in the Product record; Price Book rules are not applied;\n* Price Book – is obtained from the same Price Book; rules are applied;\n* Supplier – the price of the Supplier;\n* Cost – the cost specified in the Product record.",
+        "surcharge": "An amount to add after percentage and rounding are applied. Use a negative number to subtract.",
+        "roundingFactor": "The amount will be round off to the multiple of the specified value.",
+        "percentage": "A percentage of the standard price to deduct or add."
+    },
+    "presetFilters": {
+        "active": "Active"
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "controller": "controllers/record",
+    "viewSetupHandlers": {
+        "record/detail": [
+            "__APPEND__",
+            "custom:handlers/quote/crea-prodotto-articoli"
+        ],
+        "record/edit": [
+            "__APPEND__",
+            "custom:handlers/quote/crea-prodotto-articoli"
+        ]
+    }
+}

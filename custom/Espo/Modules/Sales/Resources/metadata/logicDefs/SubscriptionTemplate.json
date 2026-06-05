@@ -1,0 +1,58 @@
+{
+    "fields": {
+        "trialPeriodDays": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "hasTrial"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "hasTrial"
+                    }
+                ]
+            }
+        },
+        "termUnit": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "hasTerm"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "hasTerm"
+                    }
+                ]
+            }
+        },
+        "termLength": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "hasTerm"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "hasTerm"
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,17 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "condition"
+                }
+            ]
+        ]
+    }
+]

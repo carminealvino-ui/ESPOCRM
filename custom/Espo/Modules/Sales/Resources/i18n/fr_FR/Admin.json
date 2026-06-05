@@ -1,0 +1,13 @@
+{
+  "layouts": {
+    "listItem": "Liste (article)",
+    "detailBottomTotal": "Total inférieur"
+  },
+  "fields": {
+    "useAutoincrement": "Incrémentation automatique",
+    "copyFieldList": "Champs à copier"
+  },
+  "templates": {
+    "salesEmailPdf": "Envoyer le PDF par E-mail (ventes)"
+  }
+}

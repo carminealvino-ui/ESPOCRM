@@ -1,0 +1,58 @@
+{
+  "labels": {
+    "Price Rule Conditions": "Preisregelbedingungen",
+    "Tax Profiles": "Steuerprofile",
+    "Tax Rules": "Steuerregeln",
+    "Tax Codes": "Steuercoden",
+    "Tax Purchase Rules": "Einkaufssteuerregeln",
+    "Tax Classes": "Steuerklassen",
+    "Payment Channels": "Zahlungskanäle",
+    "Payment Methods": "Zahlungsarten",
+    "Subscription Periods": "Abonnementzeiträume",
+    "Rounding Profiles": "Rundungsprofile",
+    "EN 16931 Tax Mapping": "EN 16931 Steuer-Mapping",
+    "Payment Terms Profiles": "Zahlungsbedingungen Profile"
+  },
+  "layouts": {
+    "listItem": "Liste (Artikel)",
+    "detailBottomTotal": "Bottom Summe",
+    "listForAdd": "Liste (Für Artikel auswählen)",
+    "listForAddInventory": "Liste (Inventar auswählen)",
+    "detailCreateFromSalesOrder": "Aus Kundenauftrag erstellen",
+    "detailCreateFromPurchaseOrder": "Aus Bestellung erstellen",
+    "listForProduct": "Liste für Produkt",
+    "listForTemplateProduct": "Liste für Vorlagenprodukt",
+    "listForWarehouse": "Liste für Lager",
+    "listVariant": "Varianten der Liste",
+    "listForAllocationSelect": "Zuordnungsliste",
+    "listForWarehouseInbound": "Liste für Lager (Eingehend)",
+    "listForWarehouseOutbound": "Liste für Lager (Ausgehend)"
+  },
+  "fields": {
+    "useAutoincrement": "Auto-Inkrement",
+    "copyFieldList": "Zu kopierende Felder",
+    "isCompactForm": "Kompakte Form",
+    "syncWithNumber": "Mit Nummer synchronisieren"
+  },
+  "templates": {
+    "salesEmailPdf": "E-Mail-PDF (Verkauf)"
+  },
+  "keywords": {
+    "salesPack": "Preis, Preisbuch, Preisbücher"
+  },
+  "descriptions": {
+    "euTaxMapping": "Zuordnung von Steuerkategorien und Befreiungscodes in E-Rechnungen.",
+    "salesPackSettings": "Parameter für Verkaufs- und Einkaufsfunktionen.",
+    "priceRuleConditions": "Formelbedingungen für Preisregeln.",
+    "taxCodes": "Steuern konfigurieren, die auf einzelne Positionen angewendet werden können.",
+    "taxProfiles": "Profile für spezifische Steuerregime erstellen.",
+    "taxRules": "Regeln, die das anwendbare Steuerprofil für ein bestimmtes Firma bestimmen.",
+    "taxPurchaseRules": "Regeln, die das anwendbare Steuerprofil für ein bestimmtes Firma bei Einkäufen bestimmen.",
+    "taxClasses": "Steuerklassen ermöglichen die Zuordnung von Produkten zu bestimmten Steuersätzen.",
+    "paymentChannels": "Zahlungsanbieter und Einstellungen.",
+    "paymentMethods": "Verfügbare Zahlungsarten für Ihre Kunden.",
+    "subscriptionIntervals": "Für Abonnementprodukte sind Abrechnungszeiträume verfügbar.",
+    "roundingProfiles": "Rundungsmethoden für Rechnungen konfigurieren.",
+    "paymentTermsProfiles": "Zahlungsbedingungen für Rechnungen konfigurieren"
+  }
+}

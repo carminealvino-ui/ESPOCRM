@@ -1,0 +1,22 @@
+{
+    "entity": true,
+    "object": false,
+    "layouts": false,
+    "tab": true,
+    "acl": true,
+    "aclActionList": [
+        "read"
+    ],
+    "aclLevelList": [
+        "all",
+        "no"
+    ],
+    "aclPortal": false,
+    "module": "Sales",
+    "customizable": false,
+    "importable": true,
+    "preserveAuditLog": true,
+    "duplicateCheckFieldList": [
+        "name"
+    ]
+}

@@ -1,0 +1,14 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 30
+    },
+    {
+        "name": "isTaxInclusive",
+        "width": 20
+    }
+]

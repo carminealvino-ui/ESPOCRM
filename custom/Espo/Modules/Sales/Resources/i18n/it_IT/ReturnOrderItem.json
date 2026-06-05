@@ -1,0 +1,38 @@
+{
+  "fields": {
+    "name": "Nome",
+    "qty": "Q.tà",
+    "quantity": "Quantità",
+    "quantityInt": "Quantità (Int)",
+    "listPrice": "Listini Prezzo",
+    "unitPrice": "Prezzo Unitario",
+    "amount": "Importo",
+    "taxRate": "Aliquota Fiscale",
+    "product": "Prodotto",
+    "inventoryNumber": "Numero di inventario",
+    "order": "Numero di riga",
+    "returnOrder": "Ordine di Reso",
+    "weight": "Peso",
+    "unitWeight": "Peso unitario",
+    "description": "Descrizione",
+    "discount": "Sconto (%)",
+    "amountConverted": "Importo (convertito)",
+    "unitPriceConverted": "Prezzo unitario (convertito)",
+    "listPriceConverted": "Prezzo di listino (convertito)",
+    "account": "Cliente",
+    "listPriceCurrency": "Prezzo di listino Valuta",
+    "unitPriceCurrency": "Prezzo unitario Valuta",
+    "amountCurrency": "Importo Valuta",
+    "returnOrderStatus": "Stato dell'ordine di reso",
+    "inventoryNumberType": "Tipologia di codice inventario",
+    "taxCode": "Codice imposta",
+    "taxes": "Imposta",
+    "itemType": "Tipo voce"
+  },
+  "links": {
+    "returnOrder": "Ordine di Reso",
+    "product": "Prodotto",
+    "account": "Cliente",
+    "taxCode": "Codice imposta"
+  }
+}

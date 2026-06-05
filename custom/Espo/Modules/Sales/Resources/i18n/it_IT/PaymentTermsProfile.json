@@ -1,0 +1,35 @@
+{
+  "labels": {
+    "Create PaymentTermsProfile": "Crea profilo"
+  },
+  "fields": {
+    "order": "Ordine",
+    "status": "Stato",
+    "note": "Nota",
+    "items": "Voci"
+  },
+  "links": {
+    "invoices": "Fatture",
+    "items": "Voci"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  },
+  "tooltips": {
+    "note": "Testo informativo per il cliente."
+  },
+  "otherFields": {
+    "percentage": "Percentuale",
+    "days": "Giorni"
+  },
+  "messages": {
+    "itemsMustAddUpTo100": "Le voci devono totalizzare 100",
+    "daysMustBeInAscendingOrder": "Il valore in giorni di ogni voce deve essere maggiore del precedente"
+  },
+  "strings": {
+    "days": "giorni"
+  }
+}

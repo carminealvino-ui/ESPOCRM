@@ -1,0 +1,71 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                }
+            ],
+            [
+                false,
+                {
+                    "name": "partitaIVA"
+                }
+            ],
+            [
+                {
+                    "name": "azienda"
+                }
+            ],
+            [
+                {
+                    "name": "billingAddress"
+                }
+            ],
+            [
+                {
+                    "name": "shippingAddress"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "phoneNumber"
+                }
+            ],
+            [
+                {
+                    "name": "emailAddress"
+                }
+            ],
+            [
+                {
+                    "name": "website"
+                }
+            ],
+            [
+                {
+                    "name": "billingAddressCity"
+                },
+                {
+                    "name": "billingAddressCountry"
+                }
+            ],
+            [
+                {
+                    "name": "type"
+                },
+                {
+                    "name": "industry"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": ""
+    }
+]

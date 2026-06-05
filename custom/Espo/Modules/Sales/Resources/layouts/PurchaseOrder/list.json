@@ -1,0 +1,34 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "supplier",
+        "width": 25
+    },
+    {
+        "name": "dateOrdered",
+        "width": 11
+    },
+    {
+        "name": "deliveryDate",
+        "width": 11,
+        "hidden": true
+    },
+    {
+        "name": "amount",
+        "width": 12,
+        "align": "right",
+        "hidden": true
+    },
+    {
+        "name": "grandTotalAmount",
+        "width": 12,
+        "align": "right"
+    }
+]

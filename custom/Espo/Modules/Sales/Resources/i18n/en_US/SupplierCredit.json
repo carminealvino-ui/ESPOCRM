@@ -1,0 +1,74 @@
+{
+    "labels": {
+        "Create SupplierCredit": "Create Bill Credit",
+        "Items": "Items"
+    },
+    "fields": {
+        "status": "Status",
+        "reference": "Reference",
+        "number": "Number",
+        "numberA": "Number (auto-incremented)",
+        "account": "Account",
+        "supplier": "Supplier",
+        "supplierBill": "Bill",
+        "billingAddress": "Billing Address",
+        "billingContact": "Billing Contact",
+        "supplierAddress": "Supplier Address",
+        "supplierAddressStreet": "Street (Supplier)",
+        "supplierAddressCity": "City (Supplier)",
+        "supplierAddressState": "State (Supplier)",
+        "supplierAddressCountry": "Country (Supplier)",
+        "supplierAddressPostalCode": "Postal Code (Supplier)",
+        "tax": "Tax Profile",
+        "taxRate": "Tax Rate",
+        "shippingProvider": "Shipping Provider",
+        "taxAmount": "Tax",
+        "amount": "Net Total",
+        "grandTotalAmount": "Grand Total",
+        "itemList": "Item List",
+        "dateIssued": "Date Issued",
+        "dateDue": "Due Date",
+        "amountConverted": "Net Total (converted)",
+        "taxAmountConverted": "Tax (converted)",
+        "grandTotalAmountConverted": "Grand Total (converted)",
+        "taxAmountCurrency": "Tax Currency",
+        "amountCurrency": "Amount Currency",
+        "currency": "Currency",
+        "isDone": "Is Done",
+
+        "amountDue": "Amount Due",
+        "amountDueCurrency": "Amount Due Currency",
+
+        "allocations": "Allocations",
+        "unallocatedAmount": "Unallocated Amount",
+
+        "document": "Original Document"
+    },
+    "links": {
+        "items": "Items",
+        "supplierBill": "Bill",
+        "billingContact": "Billing Contact",
+        "shippingProvider": "Shipping Provider",
+        "tax": "Tax Profile",
+        "account": "Account",
+        "supplier": "Supplier",
+        "allocations": "Allocations"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Issued": "Issued",
+            "Resolved": "Resolved",
+            "Canceled": "Canceled"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "resolved": "Resolved",
+        "openIssued": "Open Issued"
+    },
+    "message": {
+        "cannotCompleteWithAmountDue": "Cannot resolve as the amount due is not cleared. Allocate the supplier credit to a supplier bill first. Or create an inbound payment and allocate it to this supplier credit.",
+        "cannotCancelWithAmountDue": "Cannot cancel an issued supplier credit – as amount due is not cleared. Allocate the supplier credit to a supplier bill first."
+    }
+}

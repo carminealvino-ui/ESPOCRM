@@ -1,0 +1,56 @@
+{
+  "internalReports": {
+    "Sales:SalesRevenue": "Umsatzerlöse",
+    "Sales:SalesByCustomer": "Umsatz nach Kunde",
+    "Sales:SalesByProduct": "Umsatz nach Produkt",
+    "Sales:SalesByProductCategory": "Umsatz nach Produktkategorie",
+    "Sales:CustomerBalances": "Kundensalden",
+    "Sales:CustomerAging": "Kundenalterung",
+    "Sales:SalesTaxSummary": "Zusammenfassung der Umsatzsteuer",
+    "Sales:PurchaseTaxSummary": "Zusammenfassung der Kaufsteuer",
+    "Sales:TaxSalesList": "Verkaufsliste nach Steuercode",
+    "Sales:SupplierBalances": "Lieferantensalden",
+    "Sales:PurchaseExpenditure": "Einkaufsausgaben",
+    "Sales:PurchasesByProduct": "Einkäufe nach Produkt"
+  },
+  "salesReportParams": {
+    "includeShipping": "Versandkosten einschließen",
+    "includeZero": "Null einschließen",
+    "maxSize": "Max. Anzahl an Datensätzen"
+  },
+  "salesReportFields": {
+    "asOfDate": "Stand vom",
+    "date": "Datum"
+  },
+  "salesReportOptions": {
+    "taxBasis": {
+      "Cash": "Barzahlung"
+    },
+    "basis": {
+      "dateDue": "Fällig am",
+      "installmentDateDue": "Fälligkeitsdatum der Rate",
+      "dateInvoiced": "Rechnungsdatum"
+    },
+    "groupBy": {
+      "Month": "Monat",
+      "Quarter": "Quartal",
+      "Year": "Jahr",
+      "Fiscal Quarter": "Geschäftsquartal",
+      "Fiscal Year": "Geschäftsjahr",
+      "Week": "Woche"
+    },
+    "orderByField": {
+      "amount": "Betrag",
+      "productCategory": "Produktkategorie",
+      "account": "Firma",
+      "supplier": "Lieferant"
+    }
+  },
+  "salesReportColumns": {
+    "amountOpening": "Anfangssaldo",
+    "amountClosing": "Endsaldo",
+    "amount": "Betrag",
+    "debits": "Lastschriften",
+    "credits": "Gutschriften"
+  }
+}

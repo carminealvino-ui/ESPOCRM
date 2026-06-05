@@ -1,0 +1,16 @@
+{
+    "entityConverterClassNameMap": {
+        "Quote": "Espo\\Modules\\Sales\\Classes\\EntityCurrencyConverters\\QuoteConverter",
+        "SalesOrder": "Espo\\Modules\\Sales\\Classes\\EntityCurrencyConverters\\QuoteConverter",
+        "Invoice": "Espo\\Modules\\Sales\\Classes\\EntityCurrencyConverters\\QuoteConverter",
+        "PurchaseOrder": "Espo\\Modules\\Sales\\Classes\\EntityCurrencyConverters\\QuoteConverter",
+        "DeliveryOrder": "Espo\\Modules\\Sales\\Classes\\EntityCurrencyConverters\\QuoteConverter",
+        "ReceiptOrder": "Espo\\Modules\\Sales\\Classes\\EntityCurrencyConverters\\QuoteConverter",
+        "TransferOrder": "Espo\\Modules\\Sales\\Classes\\EntityCurrencyConverters\\QuoteConverter",
+        "ReturnOrder": "Espo\\Modules\\Sales\\Classes\\EntityCurrencyConverters\\QuoteConverter",
+        "CreditNote": "Espo\\Modules\\Sales\\Classes\\EntityCurrencyConverters\\CreditNote",
+        "Opportunity": "Espo\\Modules\\Sales\\Classes\\EntityCurrencyConverters\\QuoteConverter",
+        "Subscription": "Espo\\Modules\\Sales\\Classes\\EntityCurrencyConverters\\QuoteConverter",
+        "PaymentEntry": "Espo\\Modules\\Sales\\Classes\\EntityCurrencyConverters\\PaymentEntryConverter"
+    }
+}

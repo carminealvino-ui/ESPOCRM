@@ -1,0 +1,6 @@
+{
+    "entity": true,
+    "object": false,
+    "module": "Sales",
+    "preserveAuditLog": true
+}

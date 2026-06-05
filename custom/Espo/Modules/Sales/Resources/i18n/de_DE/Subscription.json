@@ -1,0 +1,73 @@
+{
+  "labels": {
+    "Create Subscription": "Abonnement erstellen",
+    "Add Item": "Artikel hinzufügen",
+    "Items": "Artikel",
+    "Create with Template": "Aus Vorlage erstellen",
+    "Templates": "Vorlagen",
+    "Billing Plans": "Abrechnungspläne"
+  },
+  "fields": {
+    "billingState": "Abrechnungsstatus",
+    "endDate": "Enddatum",
+    "amount": "Betrag",
+    "amountConverted": "Betrag (konvertiert)",
+    "number": "Nummer",
+    "account": "Firma",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "priceBook": "Preisbuch",
+    "itemList": "Artikelliste",
+    "currency": "Währung",
+    "billingPlan": "Abrechnungsplan",
+    "primaryProduct": "Hauptprodukt",
+    "tax": "Steuerprofil",
+    "anchorDay": "Ankertag",
+    "paymentMethod": "Zahlungsart",
+    "template": "Vorlage",
+    "startDate": "Startdatum",
+    "hasTrial": "Probezeit",
+    "intervalUnit": "Intervalleinheit",
+    "alignmentType": "Ausrichtung",
+    "createPaymentRequests": "Zahlungsaufforderung erstellen",
+    "sendPaymentRequests": "Zahlungsaufforderung senden",
+    "sendInvoices": "Rechnungen senden",
+    "buyerReference": "Käuferreferenz",
+    "purchaseOrderReference": "Bestellreferenz"
+  },
+  "links": {
+    "items": "Artikel",
+    "account": "Firma",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "priceBook": "Preisbuch",
+    "invoices": "Rechnungen",
+    "creditNotes": "Gutschriften",
+    "billingPlan": "Abrechnungsplan",
+    "periods": "Zeiträume",
+    "primaryProduct": "Hauptprodukt",
+    "tax": "Steuerprofil",
+    "paymentMethod": "Zahlungsart"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Trial": "Probe",
+      "Active": "Aktiv",
+      "Paused": "Pausiert",
+      "Stopped": "Beendet"
+    },
+    "billingState": {
+      "Clear": "Ausgeglichen",
+      "Due": "Fällig",
+      "Past Due": "Überfällig"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "active": "Aktiv"
+  },
+  "messages": {
+    "periodActiveForPast": "Zeiträume mit dem Status „Aktiv“ dürfen kein Enddatum in der Vergangenheit haben.",
+    "periodScheduledForPast": "Zeiträume mit dem Status Geplant dürfen kein Startdatum in der Vergangenheit haben.",
+    "periodOverlap": "Der Zeitraum überschneidet sich mit einem bestehenden Zeitraum."
+  }
+}

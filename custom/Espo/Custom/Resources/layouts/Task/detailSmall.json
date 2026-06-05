@@ -1,0 +1,54 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "privato"
+                }
+            ],
+            [
+                {
+                    "name": "parent"
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "priority"
+                }
+            ],
+            [
+                {
+                    "name": "dateStart"
+                }
+            ],
+            [
+                {
+                    "name": "dateEnd"
+                }
+            ],
+            [
+                {
+                    "name": "reminders"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ],
+            [
+                {
+                    "name": "attachments"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": ""
+    }
+]

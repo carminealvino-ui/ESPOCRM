@@ -1,0 +1,76 @@
+{
+    "fields": {
+        "supplier": {
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "basedOn",
+                        "value": [
+                            "Supplier"
+                        ]
+                    }
+                ]
+            },
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "basedOn",
+                        "value": [
+                            "Supplier"
+                        ]
+                    }
+                ]
+            }
+        },
+        "productCategory": {
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "target",
+                        "value": [
+                            "Product Category"
+                        ]
+                    }
+                ]
+            },
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "target",
+                        "value": [
+                            "Product Category"
+                        ]
+                    }
+                ]
+            }
+        },
+        "conditionSelect": {
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "target",
+                        "value": [
+                            "Conditional"
+                        ]
+                    }
+                ]
+            },
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "target",
+                        "value": [
+                            "Conditional"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

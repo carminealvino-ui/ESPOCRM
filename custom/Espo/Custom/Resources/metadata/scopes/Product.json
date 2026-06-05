@@ -1,0 +1,12 @@
+{
+    "stream": false,
+    "disabled": false,
+    "statusField": "status",
+    "kanbanStatusIgnoreList": null,
+    "stars": false,
+    "preserveAuditLog": false,
+    "variantSyncFieldList": [
+        "isTaxFree",
+        "status"
+    ]
+}

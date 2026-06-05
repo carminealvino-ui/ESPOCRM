@@ -1,0 +1,43 @@
+{
+  "fields": {
+    "name": "Betreff",
+    "qty": "Mng",
+    "quantity": "Menge",
+    "quantityInt": "Menge (Int)",
+    "listPrice": "Listpreis",
+    "unitPrice": "Einzelpreis",
+    "amount": "Betrag",
+    "taxRate": "Steuersatz",
+    "product": "Produkt",
+    "order": "Positionsnummer",
+    "invoice": "Rechnung",
+    "weight": "Gewicht",
+    "unitWeight": "Einzelgewicht",
+    "description": "Beschreibung",
+    "discount": "Rabatt (%)",
+    "amountConverted": "Betrag (konvertiert)",
+    "unitPriceConverted": "Einzelpreis (konvertiert)",
+    "listPriceConverted": "Listpreis (konvertiert)",
+    "account": "Firma",
+    "listPriceCurrency": "Listpreis Währung",
+    "unitPriceCurrency": "Einzelpreis Währung",
+    "amountCurrency": "Betragswährung",
+    "invoiceStatus": "Rechnungsstatus",
+    "productIsSubscribable": "Produkt ist abonnierbar",
+    "periodStartDate": "Zeitraum Startdatum",
+    "periodEndDate": "Zeitraum Enddatum",
+    "taxCode": "Steuercode",
+    "taxes": "Steuerbetrag",
+    "amountLocal": "Lokaler Betrag",
+    "dateInvoiced": "Rechnungsdatum"
+  },
+  "links": {
+    "invoice": "Rechnung",
+    "product": "Produkt",
+    "account": "Firma",
+    "taxCode": "Steuercode"
+  },
+  "labels": {
+    "Invoices": "Rechnungen"
+  }
+}

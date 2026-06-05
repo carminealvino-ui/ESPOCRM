@@ -1,0 +1,34 @@
+{
+    "fields": {
+        "name": "Name",
+        "qty": "Qty",
+        "quantity": "Quantity",
+        "quantityInt": "Quantity (Int)",
+        "unitPrice": "Unit Price",
+        "amount": "Amount",
+        "taxRate": "Tax Rate",
+        "product": "Product",
+        "order": "Line Number",
+        "creditNote": "Credit Note",
+        "creditNoteStatus": "Credit Note Status",
+        "description": "Description",
+        "amountConverted": "Amount (Converted)",
+        "unitPriceConverted": "Unit Price (Converted)",
+        "account": "Account",
+        "unitPriceCurrency": "Unit Price Currency",
+        "amountCurrency": "Amount Currency",
+        "productIsSubscribable": "Product is Subscribable",
+        "periodStartDate": "Period Start Date",
+        "periodEndDate": "Period End Date",
+        "taxCode": "Tax Code",
+        "taxes": "Tax",
+        "amountLocal": "Amount Local",
+        "dateIssued": "Date Issued"
+    },
+    "links": {
+        "creditNote": "Credit Note",
+        "product": "Product",
+        "account": "Account",
+        "taxCode": "Tax Code"
+    }
+}

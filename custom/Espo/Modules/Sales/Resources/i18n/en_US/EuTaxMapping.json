@@ -1,0 +1,32 @@
+{
+    "labels": {
+        "Create EuTaxMapping" : "Create Mapping Entry"
+    },
+    "fields": {
+        "order": "Order",
+        "taxCode": "Tax Code",
+        "taxClass": "Tax Class",
+        "categoryCode": "Category Code",
+        "exemptionCode": "Exemption Code",
+        "exemptionReason": "Exemption Reason"
+    },
+    "links": {
+        "taxCode": "Tax Code",
+        "taxClass": "Tax Class"
+    },
+    "options": {
+        "categoryCode": {
+            "S": "S – Standard",
+            "AE": "AE – Reverse charge",
+            "E": "E – Exempt",
+            "Z": "Z – Zero rated",
+            "G": "G – Free export item",
+            "O": "O – Services not subject to tax",
+            "K": "K – Exempt for EEA intra-community supply"
+        }
+    },
+    "tooltips": {
+        "exemptionCode": "VATEX code.",
+        "categoryCode": "[UNCL5305](https://docs.peppol.eu/poacc/billing/3.0/codelist/UNCL5305/) code. Used in E-Invoices. If the code is not specified, *S* is used for non-zero rate taxes and *Z* for zero-rate taxes."
+    }
+}

@@ -1,0 +1,16 @@
+{
+  "labels": {
+    "Create ProductAttributeOption": "Option erstellen"
+  },
+  "fields": {
+    "order": "Auftrag",
+    "attribute": "Attribut",
+    "color": "Farbe",
+    "attributeOrder": "Attributreihenfolge"
+  },
+  "links": {
+    "attribute": "Attribut",
+    "products": "Produkte",
+    "productVariants": "Produktvarianten"
+  }
+}

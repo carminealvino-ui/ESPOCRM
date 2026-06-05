@@ -1,0 +1,22 @@
+{
+    "labels": {
+        "Items": "Items",
+        "Select Product": "Select Product",
+        "Add Item": "Add Item",
+        "Add Products": "Add Products"
+    },
+    "fields": {
+        "itemList": "Item List",
+        "priceBook": "Price Book"
+    },
+    "links": {
+        "quotes": "Quotes",
+        "salesOrders": "Sales Orders",
+        "invoices": "Invoices",
+        "items": "Items",
+        "priceBook": "Price Book"
+    },
+    "panels": {
+        "items": "Items"
+    }
+}
