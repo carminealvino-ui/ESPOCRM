@@ -28,9 +28,21 @@ Usare questa sequenza per **ogni** intervento (fix, deploy, layout).
 └─────────────────┬───────────────────┘
                   ▼
 ┌─────────────────────────────────────┐
-│ 5. Commit Git / export-delta (opz.) │
+│ 5. Allineamento prod → GitHub       │
+│    (vedi 05-SYNC: export SEMPRE     │
+│     per primo, poi PC apply+push)   │
 └─────────────────────────────────────┘
 ```
+
+## Allineamento produzione → repository
+
+Sequenza fissa (dettaglio in [`05-SYNC-REPO-DAL-SERVER.md`](05-SYNC-REPO-DAL-SERVER.md)):
+
+1. **`export-delta`** sul server (obbligatorio, primo passo operativo).
+2. Scarica ZIP sul PC.
+3. **`apply-delta`** + `git commit` + `git push` sul PC.
+
+Non saltare l’export usando delta vecchi.
 
 ## Checklist rapida (spuntare mentalmente)
 

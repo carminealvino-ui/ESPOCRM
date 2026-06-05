@@ -73,10 +73,11 @@ Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
 | `tools/LAYOUT-NON-SOVRASCRIVERE.md` | Deploy che non toccano layout Contratto |
 | `backup_dev/README.md` | Struttura backup per entità |
 | `docs/PRODUZIONE-SYNC-LAYOUT-20260601.md` | Sync repo ↔ server (panoramica) |
-| `05-SYNC-REPO-DAL-SERVER.md` | Procedura passo-passo prod → GitHub (via PC) |
+| `05-SYNC-REPO-DAL-SERVER.md` | Prod → GitHub: **export-delta sempre per primo**, poi ZIP → PC → apply → push |
+| `08-AVVIO-SYNC-CPANEL.md` | **Checklist cPanel** (token.txt, export → apply → push script) |
 | `06-PUSH-GITHUB-DAL-SERVER.md` | Push delta su GitHub dal server (PAT) |
 | `07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md` | Verifica allineamento: `status --branch=main` |
 
 ---
 
-*Ultimo aggiornamento regole: 2026-06-01*
+*Ultimo aggiornamento regole: 2026-06-02*
