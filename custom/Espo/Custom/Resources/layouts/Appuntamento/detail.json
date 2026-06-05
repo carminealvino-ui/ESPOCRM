@@ -21,9 +21,7 @@
                 }
             ],
             [
-                {
-                    "name": "lineaProdotto"
-                },
+                false,
                 false,
                 {
                     "name": "productCategory"

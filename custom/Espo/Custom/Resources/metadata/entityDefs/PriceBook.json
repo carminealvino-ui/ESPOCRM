@@ -2,6 +2,9 @@
     "fields": {
         "name": {
             "options": []
+        },
+        "isTaxInclusive": {
+            "readOnlyAfterCreate": false
         }
     }
 }

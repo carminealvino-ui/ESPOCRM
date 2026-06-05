@@ -17,7 +17,10 @@
     "activity": true,
     "notifications": true,
     "activityStatusList": [
-        "Planned"
+        "Planned",
+        "Held",
+        "Not Held",
+        "Ingestibile"
     ],
     "historyStatusList": [
         "Held",

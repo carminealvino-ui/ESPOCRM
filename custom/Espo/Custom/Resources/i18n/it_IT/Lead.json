@@ -37,7 +37,8 @@
         "createdOpportunity": "Opportunità Creata",
         "fornitorePartner": "Fornitore/Partner",
         "productBrand": "Brand",
-        "productCategory": "Prodotto - Categoria"
+        "productCategory": "Prodotto - Categoria",
+        "acceptanceStatusMeetings": "Stato Accettazione (Impegno)"
     },
     "links": {
         "prospect": "Prospect",

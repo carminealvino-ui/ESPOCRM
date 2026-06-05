@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// VERSIONE: 1.7.3
+// VERSIONE: 1.7.4
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
@@ -118,6 +118,11 @@
 // ✔ Nuovo appuntamento: dateEnd = dateStart + 1h30 (5400 sec)
 //    (calendario / dettaglio piccolo; backup server-side)
 //
+// 1.7.4 (01-06-2026)
+// ----------------------------------------
+// ✔ FIX: in aggiornamento non sovrascrivere fornitore/brand/categoria
+//    gia impostati su Appuntamento (sync da Lead/Prospect solo se vuoti)
+//
 // 1.7.0 (25-05-2026)
 // -----------------------------------------------------
 // - Sync Lead completo da Prospect (email, WhatsApp, telefono da wa.me)
@@ -173,7 +178,7 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.7.3'
+                '1.7.4'
             );
 
             $this->applyDefaultDurationOnCreate($entity);
@@ -702,11 +707,34 @@ class GlobalLogic
                 continue;
             }
 
-            $entity->set(
+            $this->setEntityFieldIfEmpty(
+                $entity,
                 $field,
                 $source->get($field)
             );
         }
+    }
+
+    private function setEntityFieldIfEmpty(
+        Entity $entity,
+        string $field,
+        mixed $value
+    ): void {
+        if ($value === null || $value === '') {
+            return;
+        }
+
+        if (!$entity->hasAttribute($field)) {
+            return;
+        }
+
+        $current = $entity->get($field);
+
+        if ($current !== null && $current !== '') {
+            return;
+        }
+
+        $entity->set($field, $value);
     }
 
     // ========================================
