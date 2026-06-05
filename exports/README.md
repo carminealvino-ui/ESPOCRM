@@ -25,8 +25,11 @@ Procedura completa: [`REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md`](../REGOLE-P
 ### Ordine obbligatorio (prod → repo)
 
 1. **`export-delta`** sul server (sempre per primo, ogni sessione).
-2. Scarica `exports/sync/delta-….zip` sul PC.
-3. **`apply-delta`** sul clone Git + `git commit` + `git push`.
+2. **`apply-delta`** sul clone Git + **`commit` + `push`**.
+
+**cPanel (server):** procedura completa in [`REGOLE-PRODUZIONE/08-AVVIO-SYNC-CPANEL.md`](../REGOLE-PRODUZIONE/08-AVVIO-SYNC-CPANEL.md) — token in `exports/sync/token.txt` (resta sul server).
+
+**PC:** scarica `delta-….zip` e `apply-delta` sul clone locale.
 
 `status` è opzionale (solo diagnosi); non sostituisce l’export.
 
