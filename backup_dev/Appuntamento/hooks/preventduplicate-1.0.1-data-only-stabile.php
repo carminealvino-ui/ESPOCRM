@@ -17,7 +17,6 @@
 namespace Espo\Custom\Hooks\Appuntamento;
 
 use Espo\Core\Exceptions\Error;
-use Espo\Core\Hook\Hook\AfterSave;
 use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
@@ -25,9 +24,8 @@ use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
  * @implements BeforeSave<Entity>
- * @implements AfterSave<Entity>
  */
-class PreventDuplicate implements BeforeSave, AfterSave
+class PreventDuplicate implements BeforeSave
 {
     public function __construct(
         private EntityManager $entityManager
@@ -95,21 +93,5 @@ class PreventDuplicate implements BeforeSave, AfterSave
         }
 
         return null;
-    }
-
-    public function afterSave(Entity $entity, SaveOptions $options): void
-    {
-        $operation = $entity->isNew() ? 'CREATE' : 'UPDATE';
-        $log = date('Y-m-d H:i:s') .
-            ' | Appuntamento | ' . $operation .
-            ' | ID: ' . $entity->getId() .
-            ' | START: ' . $entity->get('dateStart') .
-            ' | END: ' . $entity->get('dateEnd') . PHP_EOL;
-
-        $logPath = 'data/logs/custom.log';
-
-        if (is_writable(dirname($logPath)) || is_file($logPath)) {
-            file_put_contents($logPath, $log, FILE_APPEND);
-        }
     }
 }
