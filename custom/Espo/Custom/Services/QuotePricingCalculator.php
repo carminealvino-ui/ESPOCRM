@@ -8,8 +8,9 @@ use Espo\ORM\EntityManager;
 /**
  * Contratto / Opportunity: prezzo codice da prodotto, Minus/Plus, totali provvigioni.
  *
- * Contratto (Quote): minusPlus = totalPrezzoCodice − imponibile (entrambi IVA esclusa).
- * Esempio: codice 4.400, imponibile 4.090,91 → minusPlus = 309,09.
+ * Contratto (Quote): minusPlus = imponibile − prezzo codice (IVA esclusa).
+ * Esempio: imponibile 4.090,91 − codice 4.400 → minusPlus = −309,09.
+ * Riga articolo: prezzoCodice sempre netto (4.400), mai IVI (4.840).
  *
  * Opportunity: minusPlus = imponibile netto − prezzo codice netto (IVA escl.).
  */
@@ -26,6 +27,7 @@ class QuotePricingCalculator
     {
         $this->ensureImportoContrattoOnQuote($quote);
         $this->syncItemListLinePricingFromImportoContratto($quote);
+        $this->syncItemListPrezzoCodice($quote);
         $this->syncTotalsAndDerivedFields($quote, true);
     }
 
@@ -254,14 +256,10 @@ class QuotePricingCalculator
 
             if ($product) {
                 $productPrice = $this->findActiveProductPrice($product, $quote);
-
-                if ($taxInclusive) {
-                    $listCatalog = $this->resolveProductListinoIvaInclusa($product, $aliquota, $quote, $productPrice);
-                    $codiceLine = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota, $productPrice);
-                } else {
-                    $listCatalog = $this->resolveProductListinoNet($product, $quote, $productPrice);
-                    $codiceLine = $this->resolveProductPrezzoCodiceNet($product, $aliquota, $productPrice);
-                }
+                $listCatalog = $taxInclusive
+                    ? $this->resolveProductListinoIvaInclusa($product, $aliquota, $quote, $productPrice)
+                    : $this->resolveProductListinoNet($product, $quote, $productPrice);
+                $codiceLine = $this->resolveProductPrezzoCodiceNet($product, $aliquota, $productPrice);
             }
 
             if ($listCatalog !== null && $listCatalog > 0) {
@@ -417,9 +415,11 @@ class QuotePricingCalculator
             }
 
             $lineCodice = $this->floatOrNull($this->itemValue($item, 'prezzoCodice'));
-            $targetCodice = $taxInclusive && $codiceIvi !== null && $codiceIvi > 0
-                ? $codiceIvi
-                : $codiceNet;
+            $targetCodice = $codiceNet;
+
+            if ($targetCodice === null && $codiceIvi !== null && $codiceIvi > 0) {
+                $targetCodice = round($codiceIvi / (1 + $aliquota / 100), 2);
+            }
 
             if ($targetCodice === null) {
                 continue;
@@ -430,17 +430,20 @@ class QuotePricingCalculator
             }
 
             if ($lineCodice !== null && $lineCodice > 0 && $codiceNet !== null) {
-                if (!$taxInclusive && abs($lineCodice - $codiceNet) < 0.02) {
+                if (abs($lineCodice - $codiceNet) < 0.02) {
                     continue;
                 }
 
-                if ($taxInclusive && $codiceIvi !== null && abs($lineCodice - $codiceIvi) < 0.02) {
+                if ($codiceIvi !== null && abs($lineCodice - $codiceIvi) < 0.02) {
+                    $itemList[$index] = $this->itemSet($item, 'prezzoCodice', $codiceNet);
+                    $changed = true;
+
                     continue;
                 }
 
                 $listNet = $this->floatOrNull($product->get('listPrice'));
 
-                if (!$taxInclusive && $listNet !== null
+                if ($listNet !== null
                     && abs($lineCodice - $listNet) < 0.02
                     && abs($lineCodice - $codiceNet) > 0.02) {
                     $itemList[$index] = $this->itemSet($item, 'prezzoCodice', $codiceNet);
@@ -778,7 +781,8 @@ class QuotePricingCalculator
     }
 
     /**
-     * Contratto: Prezzo Codice Totale − Importo imponibile (IVA esclusa).
+     * Contratto: imponibile − Prezzo Codice Totale (IVA esclusa).
+     * Negativo = minusvalenza (es. −309,09).
      */
     public function resolveMinusPlusForQuote(Entity $quote): ?float
     {
@@ -803,7 +807,7 @@ class QuotePricingCalculator
             return null;
         }
 
-        return round($prezzoCodiceNet - $importoNet, 2);
+        return round($importoNet - $prezzoCodiceNet, 2);
     }
 
     /**
