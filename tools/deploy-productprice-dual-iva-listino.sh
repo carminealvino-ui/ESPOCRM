@@ -51,6 +51,9 @@ FILES=(
   "tools/sync-listino-prodotti.php"
   "tools/test-iva-dual-price-sync.php"
   "tools/backfill-productprice-dual-iva-from-price.php"
+  "tools/set-pricebook-tax-code.php"
+  "tools/verifica-listino-dual-iva.php"
+  "tools/applica-listino-dual-iva-produzione.sh"
 )
 
 for rel in "${FILES[@]}"; do

@@ -96,6 +96,49 @@ class IvaDualPriceSync
         }
     }
 
+    /**
+     * Migrazione: popola campi dual IVA da price (e prezzo codice dal prodotto collegato).
+     */
+    public function backfillProductPriceFromNativePrice(Entity $entity): void
+    {
+        if ($entity->getEntityType() !== 'ProductPrice') {
+            return;
+        }
+
+        $aliquota = $this->resolveAliquotaForProductPrice($entity);
+        $entity->set('aliquotaIva', $aliquota);
+
+        $taxInclusive = $this->isPriceBookTaxInclusive($entity);
+        $price = $this->floatOrNull($entity->get('price'));
+
+        if ($price !== null && $price > 0) {
+            if ($taxInclusive) {
+                $entity->set('prezzoListinoIvaInclusa', round($price, 2));
+                $entity->set('prezzoListinoIvaEsclusa', self::toEsclusa($price, $aliquota));
+            } else {
+                $entity->set('prezzoListinoIvaEsclusa', round($price, 2));
+                $entity->set('prezzoListinoIvaInclusa', self::toInclusa($price, $aliquota));
+            }
+        }
+
+        $productId = $entity->get('productId');
+
+        if ($productId) {
+            $product = $this->entityManager->getEntityById('Product', $productId);
+
+            if ($product) {
+                $codiceNet = $this->floatOrNull($product->get('prezzoCodice'));
+
+                if ($codiceNet !== null && $codiceNet > 0) {
+                    $entity->set('prezzoCodice', round($codiceNet, 2));
+                    $entity->set('prezzoCodiceIvaInclusa', self::toInclusa($codiceNet, $aliquota));
+                }
+            }
+        }
+
+        $this->syncNativePriceField($entity, $taxInclusive);
+    }
+
     private function syncListinoFields(Entity $entity, float $aliquota, bool $taxInclusive): void
     {
         $iviField = 'prezzoListinoIvaInclusa';

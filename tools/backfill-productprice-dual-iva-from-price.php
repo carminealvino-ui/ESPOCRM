@@ -83,7 +83,7 @@ foreach ($collection as $productPrice) {
     }
 
     $productPrice->set('price', $price);
-    $ivaSync->syncProductPriceOnBeforeSave($productPrice);
+    $ivaSync->backfillProductPriceFromNativePrice($productPrice);
     $entityManager->saveEntity($productPrice, ['silent' => true]);
     $ivaSync->syncProductFromProductPrice($productPrice);
 
