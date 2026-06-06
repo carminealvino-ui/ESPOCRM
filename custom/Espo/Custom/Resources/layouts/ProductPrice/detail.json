@@ -11,6 +11,22 @@
             ],
             [
                 {
+                    "name": "aliquotaIva"
+                },
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "dateStart"
+                },
+                {
+                    "name": "dateEnd"
+                }
+            ],
+            [
+                {
                     "name": "prezzoListinoIvaEsclusa"
                 },
                 {
@@ -29,23 +45,7 @@
                 {
                     "name": "taxCodeListino"
                 },
-                {
-                    "name": "aliquotaIva"
-                }
-            ],
-            [
-                {
-                    "name": "status"
-                },
                 false
-            ],
-            [
-                {
-                    "name": "dateStart"
-                },
-                {
-                    "name": "dateEnd"
-                }
             ],
             [
                 {
