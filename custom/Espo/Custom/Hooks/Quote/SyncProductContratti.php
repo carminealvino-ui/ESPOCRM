@@ -14,7 +14,7 @@ use Espo\ORM\Repository\Option\SaveOptions;
  */
 class SyncProductContratti implements AfterSave
 {
-    public static int $order = 50;
+    public static int $order = 100;
 
     public function __construct(
         private ProductContrattiSync $productContrattiSync
