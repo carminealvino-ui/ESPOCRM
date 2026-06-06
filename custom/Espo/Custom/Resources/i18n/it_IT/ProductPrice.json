@@ -9,7 +9,9 @@
         "prezzoCodice": "Prezzo Codice IVA Esclusa",
         "prezzoCodiceIvaInclusa": "Prezzo Codice IVA Inclusa",
         "aliquotaIva": "Aliquota IVA %",
-        "taxCodeListino": "Imposta - Codice (dal listino)"
+        "taxCodeListino": "Imposta - Codice (dal listino)",
+        "dateStart": "Data inizio validità",
+        "dateEnd": "Data fine validità"
     },
     "tooltips": {
         "aliquotaIva": "Derivata dal codice IVA impostato sul listino prezzi (es. IVA10 → 10%, IVA22 → 22%).",
