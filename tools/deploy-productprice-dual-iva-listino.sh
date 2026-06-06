@@ -38,6 +38,7 @@ FILES=(
   "custom/Espo/Custom/Services/IvaDualPriceSync.php"
   "custom/Espo/Custom/Services/QuotePricingCalculator.php"
   "custom/Espo/Custom/Resources/metadata/entityDefs/PriceBook.json"
+  "custom/Espo/Custom/Resources/metadata/clientDefs/PriceBook.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/ProductPrice.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Product.json"
   "custom/Espo/Custom/Resources/layouts/PriceBook/detail.json"
