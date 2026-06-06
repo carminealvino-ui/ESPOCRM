@@ -42,10 +42,8 @@ $layoutRaw = is_file($layoutPath) ? file_get_contents($layoutPath) : '';
 check(is_file($layoutPath), 'layout PriceBook/detail.json presente');
 check(str_contains($layoutRaw, '"taxCode"'), 'layout PriceBook contiene taxCode');
 
-check(
-    $defs->get(['entityDefs', 'PriceBook', 'fields', 'taxCode', 'type']) === 'link',
-    'entityDefs PriceBook.taxCode type=link'
-);
+$taxCodeType = $defs->get(['entityDefs', 'PriceBook', 'fields', 'taxCode', 'type']);
+check($taxCodeType === 'link', 'entityDefs PriceBook.taxCode type=link (attuale: ' . ($taxCodeType ?? 'ASSENTE') . ')');
 
 check(
     ($defs->get(['entityDefs', 'PriceBook', 'links', 'taxCode', 'entity']) ?? '') === 'TaxCode',

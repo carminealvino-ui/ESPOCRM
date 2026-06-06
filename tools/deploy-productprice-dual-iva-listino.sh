@@ -53,6 +53,7 @@ FILES=(
   "tools/backfill-productprice-dual-iva-from-price.php"
   "tools/set-pricebook-tax-code.php"
   "tools/verifica-listino-dual-iva.php"
+  "tools/install-pricebook-tax-code-field.php"
   "tools/applica-listino-dual-iva-produzione.sh"
 )
 
@@ -63,6 +64,11 @@ done
 php command.php rebuild
 php command.php clearCache 2>/dev/null || true
 rm -rf data/cache/*
+
+# Ripara taxCode link se metadata non registrato (comune dopo deploy parziale)
+if [[ -f tools/install-pricebook-tax-code-field.php ]]; then
+  php tools/install-pricebook-tax-code-field.php || true
+fi
 
 echo ""
 echo "Fatto. In admin: su ogni Listino (PriceBook) imposta TaxCode obbligatorio."

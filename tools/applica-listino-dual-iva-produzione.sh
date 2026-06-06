@@ -11,20 +11,25 @@ BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 
 cd "${CRM_ROOT}" || exit 1
 
-echo "=== 1/4 Deploy file listino dual IVA ==="
+echo "=== 1/5 Deploy file listino dual IVA ==="
 curl -fsSL "${BASE}/tools/deploy-productprice-dual-iva-listino.sh?t=$(date +%s)" -o /tmp/deploy-listino-dual-iva.sh
 bash /tmp/deploy-listino-dual-iva.sh
 
 echo ""
-echo "=== 2/4 Verifica metadata ==="
+echo "=== 2/4 Install / ripara campo taxCode (link → TaxCode) ==="
+curl -fsSL "${BASE}/tools/install-pricebook-tax-code-field.php?t=$(date +%s)" -o tools/install-pricebook-tax-code-field.php
+php tools/install-pricebook-tax-code-field.php
+
+echo ""
+echo "=== 3/4 Verifica metadata ==="
 php tools/verifica-listino-dual-iva.php || true
 
 echo ""
-echo "=== 3/4 Imposta TaxCode IVA10 su listini senza codice ==="
+echo "=== 4/4 Imposta TaxCode IVA10 su listini senza codice ==="
 php tools/set-pricebook-tax-code.php --tax-code=IVA10 --all-missing
 
 echo ""
-echo "=== 4/4 Backfill prezzi dual IVA da campo price ==="
+echo "=== 5/5 Backfill prezzi dual IVA da campo price ==="
 php tools/backfill-productprice-dual-iva-from-price.php
 
 echo ""

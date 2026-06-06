@@ -8,7 +8,8 @@
         },
         "taxCode": {
             "type": "link",
-            "required": true,
+            "entity": "TaxCode",
+            "required": false,
             "audited": true,
             "isCustom": true,
             "autocompleteOnEmpty": true,
