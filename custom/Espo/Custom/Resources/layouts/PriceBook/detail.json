@@ -1,0 +1,34 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "taxCode",
+                    "label": "Imposta - Codice"
+                },
+                {
+                    "name": "isTaxInclusive"
+                }
+            ],
+            [
+                {
+                    "name": "parentPriceBook"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ]
+    }
+]

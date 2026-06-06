@@ -42,10 +42,38 @@ Ogni istruzione deve includere, quando applicabile:
 4. **Comando** completo, copiabile, senza `...`.
 5. **Verifica** attesa (cosa vedere a schermo).
 6. **Rollback** se qualcosa va male (un comando o percorso cartella).
+7. **Comando bash unico** («tutto in un colpo»): un solo blocco copiabile che esegue l’intero passo — vedi [`09-COMANDO-BASH-UNICO.md`](09-COMANDO-BASH-UNICO.md).
 
 Se manca uno di questi punti → l’istruzione **non** è completa.
 
 Dettaglio: [`03-ISTRUZIONI-COMPLETE.md`](03-ISTRUZIONI-COMPLETE.md)
+
+---
+
+## Regola 9 — Comando bash unico
+
+Ogni istruzione al server include **un blocco bash unico** copiabile (curl \| bash o script locale), non una lista di comandi sparsi.
+
+Dettaglio: [`09-COMANDO-BASH-UNICO.md`](09-COMANDO-BASH-UNICO.md)
+
+---
+
+## Regola 10 — Listino e prezzi prodotto
+
+Fonte prezzi = **ProductPrice nel Listino**; il **Prodotto** riceve i totali in automatico.
+
+Dettaglio: [`10-LISTINO-E-PREZZI-PRODOTTO.md`](10-LISTINO-E-PREZZI-PRODOTTO.md)
+
+---
+
+## Regola 11 — Allineamento completo server ↔ repository (obbligatorio)
+
+- **Sempre** allineamento completo: export prod → apply → push su `main` → verifica `status`.
+- **Prima** di ogni deploy in produzione da GitHub: prod deve essere già nel repo.
+- **Dopo** ogni modifica in produzione: nuovo export (niente delta vecchi).
+- Modifiche solo in Admin senza file in `custom/` **non** sono nel repo finché non si fa export/rebuild.
+
+Dettaglio: [`11-ALLINEAMENTO-COMPLETO-SERVER-REPO.md`](11-ALLINEAMENTO-COMPLETO-SERVER-REPO.md)
 
 ---
 
@@ -77,7 +105,10 @@ Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
 | `08-AVVIO-SYNC-CPANEL.md` | **Checklist cPanel** (token.txt, export → apply → push script) |
 | `06-PUSH-GITHUB-DAL-SERVER.md` | Push delta su GitHub dal server (PAT) |
 | `07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md` | Verifica allineamento: `status --branch=main` |
+| `09-COMANDO-BASH-UNICO.md` | Ogni passo = un blocco bash copiabile |
+| `10-LISTINO-E-PREZZI-PRODOTTO.md` | Dove inserire prezzi (listino vs prodotto) |
+| `11-ALLINEAMENTO-COMPLETO-SERVER-REPO.md` | **Sync obbligatorio** prod ↔ GitHub |
 
 ---
 
-*Ultimo aggiornamento regole: 2026-06-02*
+*Ultimo aggiornamento regole: 2026-06-06*

@@ -66,6 +66,7 @@ Prima di modificare in produzione, usare **`tools/backup-dev-save.sh`** con l’
 | Tipo modifica | AGGIORNAMENTO | Esempio comando |
 |---------------|---------------|-----------------|
 | Hook PHP | `hooks` | `backup-dev-save.sh Appuntamento mio-fix hooks GlobalLogic.php` |
+| Service PHP | `services` | `backup-dev-save.sh Quote prezzi services QuotePricingCalculator.php` |
 | Layout JSON | `layouts` | `backup-dev-save.sh Quote prezzi layouts detail.json` |
 | entityDefs / clientDefs | `entityDefs` o path file | `backup-dev-save.sh Quote campi entityDefs Quote.json` |
 | Vista JS detail | `client-detail` | `backup-dev-save.sh Opportunity btn-contratto client-detail edit.js` |

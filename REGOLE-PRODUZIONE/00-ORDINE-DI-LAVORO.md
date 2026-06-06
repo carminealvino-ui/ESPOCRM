@@ -28,19 +28,24 @@ Usare questa sequenza per **ogni** intervento (fix, deploy, layout).
 └─────────────────┬───────────────────┘
                   ▼
 ┌─────────────────────────────────────┐
-│ 5. Allineamento prod → GitHub       │
-│    (vedi 05-SYNC: export SEMPRE     │
-│     per primo, poi PC apply+push)   │
+│ 5. Allineamento COMPLETO prod→repo  │
+│    (Regola 11 — OBBLIGATORIO)       │
+│    export → apply → push → status   │
 └─────────────────────────────────────┘
 ```
 
-## Allineamento produzione → repository
+## Allineamento completo produzione → repository (Regola 11)
 
-Sequenza fissa (dettaglio in [`05-SYNC-REPO-DAL-SERVER.md`](05-SYNC-REPO-DAL-SERVER.md)):
+**Non si chiude un intervento senza allineamento completo.**
 
-1. **`export-delta`** sul server (obbligatorio, primo passo operativo).
+Sequenza fissa (dettaglio in [`11-ALLINEAMENTO-COMPLETO-SERVER-REPO.md`](11-ALLINEAMENTO-COMPLETO-SERVER-REPO.md) e [`05-SYNC-REPO-DAL-SERVER.md`](05-SYNC-REPO-DAL-SERVER.md)):
+
+1. **`export-delta`** sul server (obbligatorio, primo passo operativo, delta **nuovo**).
 2. Scarica ZIP sul PC.
-3. **`apply-delta`** + `git commit` + `git push` sul PC.
+3. **`apply-delta`** + `git commit` + `git push` su `main`.
+4. **`status --branch=main`** sul server → **`Solo prod` ≈ 0**.
+
+**Prima di un deploy in produzione** da branch/script: ripetere i punti 1–4 così il repo contiene già ciò che c’è sul server.
 
 Non saltare l’export usando delta vecchi.
 
@@ -52,3 +57,4 @@ Non saltare l’export usando delta vecchi.
 - [ ] Un solo passo eseguito
 - [ ] Screenshot o output terminale verificato
 - [ ] Solo ora passo al passo successivo
+- [ ] A fine intervento: allineamento completo server → repo (Regola 11)

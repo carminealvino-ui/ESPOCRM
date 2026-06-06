@@ -1,0 +1,31 @@
+[
+    {
+        "name": "name",
+        "link": true,
+        "width": 22
+    },
+    {
+        "name": "prezzoListinoIvaInclusa",
+        "width": 14,
+        "align": "right",
+        "label": "Prezzo Listino IVA Inclusa"
+    },
+    {
+        "name": "prezzoListinoIvaEsclusa",
+        "width": 14,
+        "align": "right",
+        "label": "Prezzo Listino IVA Esclusa"
+    },
+    {
+        "name": "prezzoCodiceIvaInclusa",
+        "width": 14,
+        "align": "right",
+        "label": "Prezzo Codice IVA Inclusa"
+    },
+    {
+        "name": "prezzoCodiceIvaEsclusa",
+        "width": 14,
+        "align": "right",
+        "label": "Prezzo Codice IVA Esclusa"
+    }
+]

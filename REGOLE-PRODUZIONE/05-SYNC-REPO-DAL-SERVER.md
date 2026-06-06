@@ -1,5 +1,7 @@
 # Allineare GitHub al server (produzione → repo)
 
+**Regola 11:** allineamento **completo** obbligatorio dopo ogni modifica in produzione e **prima** di ogni deploy dal repo. Vedi [`11-ALLINEAMENTO-COMPLETO-SERVER-REPO.md`](11-ALLINEAMENTO-COMPLETO-SERVER-REPO.md).
+
 **Direzione:** ciò che è **oggi sul server** diventa base per un commit su `main`.  
 **Non** si fa `apply-delta` in produzione (sarebbe repo → prod).
 

@@ -11,6 +11,17 @@
             ],
             [
                 {
+                    "name": "statoContratto"
+                },
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "statoFinanziamento"
+                }
+            ],
+            [
+                {
                     "name": "numeroContratto"
                 },
                 {

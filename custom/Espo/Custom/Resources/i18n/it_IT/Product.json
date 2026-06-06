@@ -2,9 +2,11 @@
     "fields": {
         "denominazione": "Denominazione",
         "opportunita": "Opportunità",
-        "prezzoCodice": "Prezzo Codice",
+        "prezzoCodice": "Prezzo Codice (IVA esclusa)",
         "prezzoCodiceCurrency": "Prezzo Codice (Valuta)",
         "prezzoCodiceConverted": "Prezzo Codice (Convertito)",
+        "prezzoCodiceIvaInclusa": "Prezzo Codice (IVA inclusa)",
+        "prezzoListinoIvaInclusa": "Listino (IVA inclusa)",
         "name": "Prodotto",
         "contratti": "Contratti",
         "brand": "Brand",

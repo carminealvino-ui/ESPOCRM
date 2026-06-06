@@ -18,5 +18,10 @@
             "layout": null,
             "selectPrimaryFilterName": null
         }
+    },
+    "additionalLayouts": {
+        "listForProduct": {
+            "type": "list"
+        }
     }
 }
