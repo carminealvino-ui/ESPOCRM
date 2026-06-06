@@ -2,80 +2,39 @@
 
 namespace Espo\Custom\Hooks\Provvigione;
 
-use Espo\ORM\Entity;
 use Espo\Core\Hooks\Base;
+use Espo\ORM\Entity;
 
 class BeforeSave extends Base
 {
-    public function beforeSave(Entity $entity, array $options)
+    public function beforeSave(Entity $entity, array $options): void
     {
-        if (!$entity->get('contrattoId')) {
+        $quoteId = $entity->get('contrattoId');
+
+        if (!$quoteId) {
             return;
         }
 
         $em = $this->getEntityManager();
-
-        $quote = $em->getRepository('Quote')
-            ->where(['id' => $entity->get('contrattoId')])
-            ->findOne();
+        $quote = $em->getEntityById('Quote', $quoteId);
 
         if (!$quote) {
             return;
         }
 
+        $this->syncRelatedFieldsFromQuote($entity, $quote);
+
         $tipo = $entity->get('tipo');
         $tasso = (float) $entity->get('tassoProvvigioni');
-
-        $base = 0;
-
-        // BASE CALCOLO
-        if ($tipo === 'Provvigione Base') {
-            $base = (float) $quote->get('amount');
-        }
-
-        elseif ($tipo === 'Plus Provvigionale' || $tipo === 'Minus Provvigionale') {
-            $base = (float) $quote->get('minusPlus');
-        }
-
-        elseif ($tipo === 'Bonus (Sabato-Domenica)') {
-
-            $date = $quote->get('dateQuoted');
-
-            if ($date) {
-                $day = date('N', strtotime($date));
-
-                if ($day >= 6) {
-                    $base = (float) $quote->get('amount');
-                }
-            }
-        }
-
-        elseif (strpos($tipo, 'Gara') !== false) {
-
-            $amount = (float) $quote->get('amount');
-
-            if (strpos($tipo, '2.5') !== false && $amount > 2500) {
-                $base = $amount;
-            }
-
-            if (strpos($tipo, '3.5') !== false && $amount > 3500) {
-                $base = $amount;
-            }
-
-            if (strpos($tipo, '5') !== false && $amount > 5000) {
-                $base = $amount;
-            }
-        }
-
-        // CALCOLO
-        $importo = 0;
+        $base = $this->resolveImportoBase($quote, $tipo);
+        $importo = 0.0;
 
         if ($base > 0 && $tasso > 0) {
-            $importo = ($base * $tasso) / 100;
+            $importo = round(($base * $tasso) / 100, 2);
         }
 
-        // SET DIRETTO → senza save
         $entity->set('importo', $importo);
+        $entity->set('name', $this->buildProvvigioneName($quote, $tipo, $importo));
     }
 
     /**
@@ -118,5 +77,89 @@ class BeforeSave extends Base
     public function afterRemove(Entity $entity, array $options): void
     {
         $this->afterSave($entity, $options);
+    }
+
+    private function syncRelatedFieldsFromQuote(Entity $entity, Entity $quote): void
+    {
+        $quoteName = $quote->get('name');
+
+        if (is_string($quoteName) && $quoteName !== '') {
+            $entity->set('contrattoName', $quoteName);
+        }
+
+        $accountId = $quote->get('accountId');
+
+        if (!$accountId) {
+            return;
+        }
+
+        $entity->set('clienteId', $accountId);
+
+        $accountName = $quote->get('accountName');
+
+        if (is_string($accountName) && $accountName !== '') {
+            $entity->set('clienteName', $accountName);
+        }
+    }
+
+    private function resolveImportoBase(Entity $quote, ?string $tipo): float
+    {
+        if ($tipo === 'Provvigione Base') {
+            return (float) $quote->get('amount');
+        }
+
+        if ($tipo === 'Plus Provvigionale' || $tipo === 'Minus Provvigionale') {
+            return (float) $quote->get('minusPlus');
+        }
+
+        if ($tipo === 'Bonus (Sabato-Domenica)') {
+            $date = $quote->get('dateQuoted');
+
+            if ($date) {
+                $day = (int) date('N', strtotime((string) $date));
+
+                if ($day >= 6) {
+                    return (float) $quote->get('amount');
+                }
+            }
+
+            return 0.0;
+        }
+
+        if ($tipo !== null && strpos($tipo, 'Gara') !== false) {
+            $amount = (float) $quote->get('amount');
+
+            if (strpos($tipo, '2.5') !== false && $amount > 2500) {
+                return $amount;
+            }
+
+            if (strpos($tipo, '3.5') !== false && $amount > 3500) {
+                return $amount;
+            }
+
+            if (strpos($tipo, '5') !== false && $amount > 5000) {
+                return $amount;
+            }
+        }
+
+        return 0.0;
+    }
+
+    private function buildProvvigioneName(Entity $quote, ?string $tipo, float $importo): string
+    {
+        $clientLabel = trim((string) ($quote->get('billingContactName') ?: $quote->get('accountName') ?: ''));
+        $parts = [];
+
+        if ($clientLabel !== '') {
+            $parts[] = $clientLabel;
+        }
+
+        if (is_string($tipo) && $tipo !== '') {
+            $parts[] = $tipo;
+        }
+
+        $parts[] = '€. ' . number_format($importo, 2, '.', '');
+
+        return mb_strtoupper(implode(' - ', $parts));
     }
 }
