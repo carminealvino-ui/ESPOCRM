@@ -19,17 +19,26 @@ php tools/export-custom-for-github.php --upload-github
 
 ## `exports/sync/` — allineamento produzione ↔ GitHub
 
-Tool: `tools/sync-custom-prod-repo.php`
+Tool: `tools/sync-custom-prod-repo.php`  
+Procedura completa: [`REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md`](../REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md)
+
+### Ordine obbligatorio (prod → repo)
+
+1. **`export-delta`** sul server (sempre per primo, ogni sessione).
+2. **`apply-delta`** sul clone Git + **`commit` + `push`**.
+
+**cPanel (server):** procedura completa in [`REGOLE-PRODUZIONE/08-AVVIO-SYNC-CPANEL.md`](../REGOLE-PRODUZIONE/08-AVVIO-SYNC-CPANEL.md) — token in `exports/sync/token.txt` (resta sul server).
+
+**PC:** scarica `delta-….zip` e `apply-delta` sul clone locale.
+
+`status` è opzionale (solo diagnosi); non sostituisce l’export.
 
 ```bash
-# Sul server CRM (confronto con branch GitHub)
-php tools/sync-custom-prod-repo.php status
+# Sul server CRM
+php tools/sync-custom-prod-repo.php export-delta --branch=main
 
-# Esporta solo file modificati in produzione rispetto al repo
-php tools/sync-custom-prod-repo.php export-delta
-
-# Sul PC con clone Git (applica delta e poi commit)
-php tools/sync-custom-prod-repo.php apply-delta exports/sync/delta-YYYYMMDD-HHMMSS
+# Sul PC con clone Git
+php tools/sync-custom-prod-repo.php apply-delta /percorso/delta-YYYYMMDD-HHMMSS
 ```
 
 Config: `tools/sync-custom-prod-repo.config.json`

@@ -53,7 +53,7 @@
     {
         "name": "opportunita",
         "width": 25,
-        "notSortable": true,
+        "link": true,
         "align": "left"
     }
 ]

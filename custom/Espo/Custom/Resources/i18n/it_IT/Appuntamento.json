@@ -26,9 +26,9 @@
         "indirizzoCountry": "Indirizzo nazione",
         "indirizzoPostalCode": "Indirizzo CAP",
         "indirizzoMap": "Mappa",
-        "noteConsulente": "Note consulente",
-        "noteEsito": "Note esito",
-        "noteCallCenter": "Note call center",
+        "noteConsulente": "Note Consulente",
+        "noteEsito": "Note Esito",
+        "noteCallCenter": "Note Call Center",
         "telefono": "Telefono",
         "tipo": "Tipo",
         "opportunita": "Opportunità",
@@ -69,7 +69,9 @@
         }
     },
     "presetFilters": {
+        "pianificato": "Pianificato",
         "svolto": "Svolto",
-        "nonSvolto": "Non Svolto"
+        "nonSvolto": "Non Svolto",
+        "ingestibile": "Ingestibile"
     }
 }

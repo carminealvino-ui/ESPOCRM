@@ -47,7 +47,7 @@
         },
         "numberA": {
             "prefix": "Contratto_",
-            "nextNumber": 2
+            "nextNumber": 100
         },
         "totalPrezzoCodice": {
             "type": "currency",
@@ -81,29 +81,9 @@
             "readOnly": true,
             "isCustom": true
         },
-        "dataInstallazione": {
-            "type": "date",
-            "useNumericFormat": true,
-            "isCustom": true
-        },
-        "dataAttivazione": {
-            "type": "date",
-            "useNumericFormat": true,
-            "isCustom": true
-        },
-        "dataCompetenza": {
-            "type": "date",
-            "useNumericFormat": true,
-            "isCustom": true
-        },
         "opportunita": {
             "type": "link",
             "readOnly": true,
-            "isCustom": true
-        },
-        "numeroPod": {
-            "type": "int",
-            "minValue": 0,
             "isCustom": true
         },
         "prezzoListinoIvaEsclusa": {
@@ -114,25 +94,31 @@
             "type": "currency",
             "isCustom": true
         },
-        "margineSuListino": {
-            "type": "float",
-            "decimalPlaces": 2,
-            "readOnly": true,
+        "dataInstallazione": {
+            "notNull": false,
+            "type": "date",
             "isCustom": true
         },
-        "contattoPersonaleArquati": {
+        "codiceContratto": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
+        "numeroContratto": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
+        "venditaAbbinataAdAltroProdotto": {
+            "notNull": true,
             "type": "bool",
-            "default": false,
             "isCustom": true
         },
-        "integrazionePncPercentuale": {
+        "scontoVenditaAbbinata": {
+            "notNull": false,
             "type": "float",
-            "decimalPlaces": 2,
-            "isCustom": true
-        },
-        "ordineIncompletoAriel": {
-            "type": "bool",
-            "default": false,
             "isCustom": true
         }
     },

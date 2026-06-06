@@ -1,5 +1,8 @@
 {
     "controller": "controllers/record",
+    "recordViews": {
+        "detail": "custom:views/quote/record/detail"
+    },
     "viewSetupHandlers": {
         "record/detail": [
             "__APPEND__",
@@ -9,5 +12,11 @@
             "__APPEND__",
             "custom:handlers/quote/crea-prodotto-articoli"
         ]
+    },
+    "relationshipPanels": {
+        "fornitorePartner": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        }
     }
 }

@@ -1,11 +1,17 @@
 <?php
 
 // =============================================================================
-// VERSIONE: 1.0.0
-// DATA: 2026-05-27
+// VERSIONE: 1.1.0
+// DATA: 2026-06-02
 // FILE: tools/sync-custom-prod-repo.php
 //
 // Allinea custom produzione <-> repository GitHub (modifiche fatte a mano in prod).
+//
+// ORDINE OBBLIGATORIO prod -> repo (REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md):
+//   1. export-delta  SEMPRE per primo (ogni sessione, non riusare delta vecchi)
+//   2. scarica ZIP sul PC
+//   3. apply-delta + git commit + git push sul PC
+//   status = opzionale (solo diagnosi)
 //
 // COMANDI:
 //   status       Confronto produzione vs branch GitHub (o cartella locale)
@@ -14,8 +20,7 @@
 //
 // ESEMPI (sul server CRM):
 //   cd ~/public_html/crm/mec-group
-//   php tools/sync-custom-prod-repo.php status
-//   php tools/sync-custom-prod-repo.php export-delta
+//   php tools/sync-custom-prod-repo.php export-delta --branch=main
 //
 // ESEMPI (sul PC con clone Git):
 //   php tools/sync-custom-prod-repo.php status --local-repo=/path/to/ESPOCRM
@@ -58,10 +63,6 @@ function main(array $argv): void
             $deltaPath = $argv[2] ?? '';
             runApplyDelta($crmRoot, $deltaPath, $options);
             break;
-        case 'push-delta':
-            $deltaPath = $argv[2] ?? '';
-            runPushDelta($crmRoot, $deltaPath, $config, $options);
-            break;
         case 'help':
         default:
             printHelp();
@@ -74,13 +75,14 @@ function printHelp(): void
     echo <<<TXT
 sync-custom-prod-repo.php — allinea produzione e GitHub
 
-  php tools/sync-custom-prod-repo.php status
-  php tools/sync-custom-prod-repo.php export-delta
-  php tools/sync-custom-prod-repo.php apply-delta exports/sync/delta-YYYYMMDD-HHMMSS
-  php tools/sync-custom-prod-repo.php push-delta exports/sync/delta-YYYYMMDD-HHMMSS
+Ordine prod -> repo (vedi REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md):
+  1. export-delta   (sempre per primo, sul server)
+  2. scarica ZIP sul PC
+  3. apply-delta + git push sul PC
 
-  push-delta: richiede GITHUB_TOKEN (PAT con permesso push sul repo).
-  Vedi REGOLE-PRODUZIONE/06-PUSH-GITHUB-DAL-SERVER.md
+  php tools/sync-custom-prod-repo.php export-delta --branch=main
+  php tools/sync-custom-prod-repo.php status --branch=main    # opzionale
+  php tools/sync-custom-prod-repo.php apply-delta exports/sync/delta-YYYYMMDD-HHMMSS
 
 Config: tools/sync-custom-prod-repo.config.json
 
@@ -102,10 +104,6 @@ function parseOptions(array $argv): array
             $options['local_repo'] = substr($arg, 13);
         } elseif (str_starts_with($arg, '--limit=')) {
             $options['limit'] = (int) substr($arg, 8);
-        } elseif ($arg === '--dry-run') {
-            $options['dry_run'] = true;
-        } elseif ($arg === '--exclude-client-modules') {
-            $options['exclude_client_modules'] = true;
         }
     }
 
@@ -228,9 +226,9 @@ function runStatus(string $crmRoot, array $config, array $options): void
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
 
     echo "\nManifest: {$manifestPath}\n";
-    echo "\nProssimo passo:\n";
-    echo "  php tools/sync-custom-prod-repo.php export-delta\n";
-    echo "  php tools/sync-custom-prod-repo.php push-delta {$deltaDir}   # GitHub diretto (GITHUB_TOKEN)\n";
+    echo "\nAllineamento prod -> repo: eseguire SEMPRE export-delta per primo.\n";
+    echo "  php tools/sync-custom-prod-repo.php export-delta --branch=main\n";
+    echo "  (status e solo diagnosi; vedi REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md)\n";
 }
 
 function runExportDelta(string $crmRoot, array $config, array $options): void
@@ -314,12 +312,14 @@ function runExportDelta(string $crmRoot, array $config, array $options): void
     echo "Cartella: {$deltaDir}\n";
     echo "ZIP: {$zipPath}\n";
     echo "Manifest: {$manifestPath}\n";
-    echo "\n";
-    echo "Su PC con Git:\n";
+    echo "\nPasso 2 — Scarica sul PC: {$zipPath}\n";
+    echo "Passo 3 — Su PC con Git:\n";
     echo "  git pull\n";
     echo "  php tools/sync-custom-prod-repo.php apply-delta {$deltaDir}\n";
     echo "  git add custom client/custom\n";
     echo "  git commit -m \"sync: allineamento da produzione\"\n";
+    echo "  git push origin main\n";
+    echo "\n(Vedi REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md)\n";
 }
 
 function runApplyDelta(string $crmRoot, string $deltaPath, array $options): void
@@ -328,9 +328,36 @@ function runApplyDelta(string $crmRoot, string $deltaPath, array $options): void
         fail('Specificare il percorso: apply-delta exports/sync/delta-YYYYMMDD-HHMMSS');
     }
 
-    $deltaPath = resolveDeltaPath($crmRoot, $deltaPath);
+    $deltaPath = realpath($deltaPath);
+
+    if (!$deltaPath || !is_dir($deltaPath)) {
+        fail("Cartella delta non trovata: {$deltaPath}");
+    }
+
     $manifestPath = $deltaPath . '/manifest.json';
-    $files = collectDeltaFilePaths($deltaPath, $manifestPath);
+    $files = [];
+
+    if (is_file($manifestPath)) {
+        $manifest = json_decode(file_get_contents($manifestPath), true);
+        foreach ($manifest['files'] ?? [] as $item) {
+            $files[] = $item['path'];
+        }
+    }
+
+    if ($files === []) {
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($deltaPath, FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $item) {
+            if (!$item->isFile() || $item->getFilename() === 'manifest.json') {
+                continue;
+            }
+
+            $relative = ltrim(str_replace($deltaPath, '', $item->getPathname()), DIRECTORY_SEPARATOR);
+            $files[] = str_replace(DIRECTORY_SEPARATOR, '/', $relative);
+        }
+    }
 
     $backupDir = $crmRoot . '/exports/sync/apply-backup-' . date('Ymd-His');
     mkdir($backupDir, 0755, true);
@@ -593,199 +620,6 @@ function createZipFromDirectory(string $sourceDir, string $zipPath): void
     }
 
     $zip->close();
-}
-
-function resolveDeltaPath(string $crmRoot, string $deltaPath): string
-{
-    if ($deltaPath !== '') {
-        $real = realpath($deltaPath);
-
-        if (!$real || !is_dir($real)) {
-            fail("Cartella delta non trovata: {$deltaPath}");
-        }
-
-        return $real;
-    }
-
-    $dirs = glob($crmRoot . '/exports/sync/delta-*', GLOB_ONLYDIR) ?: [];
-    rsort($dirs);
-
-    if ($dirs === []) {
-        fail('Nessuna cartella delta-*. Eseguire prima export-delta.');
-    }
-
-    return $dirs[0];
-}
-
-/**
- * Applica il delta in un clone Git e fa push su GitHub (senza PC).
- */
-function runPushDelta(string $crmRoot, string $deltaPath, array $config, array $options): void
-{
-    $deltaPath = resolveDeltaPath($crmRoot, $deltaPath);
-
-    $repository = getenv('GITHUB_REPOSITORY') ?: $config['github']['repository'];
-    $branch = getenv('GITHUB_BRANCH') ?: $config['github']['branch'];
-    $dryRun = !empty($options['dry_run']);
-
-    $manifestPath = $deltaPath . '/manifest.json';
-    $files = collectDeltaFilePaths($deltaPath, $manifestPath);
-
-    if ($files === []) {
-        fail('Nessun file nel delta.');
-    }
-
-    $excludeModules = !empty($options['exclude_client_modules']);
-    if ($excludeModules) {
-        $files = array_values(array_filter($files, static function (string $path): bool {
-            return !preg_match('#^client/custom/modules/(advanced|google|outlook)/#', $path);
-        }));
-    }
-
-    echo "=== PUSH DELTA → GitHub ===\n";
-    echo "Delta: {$deltaPath}\n";
-    echo "Repository: {$repository}\n";
-    echo "Branch: {$branch}\n";
-    echo "File da pubblicare: " . count($files) . "\n";
-
-    if ($dryRun) {
-        echo "DRY-RUN: nessun push (token non richiesto).\n";
-        return;
-    }
-
-    $token = getenv('GITHUB_TOKEN') ?: '';
-
-    if ($token === '') {
-        fail('GITHUB_TOKEN mancante. Creare un PAT GitHub (scope repo) e: export GITHUB_TOKEN=ghp_...');
-    }
-
-    if (trim((string) shell_exec('which git 2>/dev/null')) === '') {
-        fail('git non installato sul server.');
-    }
-
-    $workRoot = $crmRoot . '/exports/sync/github-push-' . date('Ymd-His');
-    $repoDir = $workRoot . '/repo';
-    mkdir($workRoot, 0755, true);
-
-    $cloneUrl = 'https://x-access-token:' . rawurlencode($token) . '@github.com/' . $repository . '.git';
-
-    $cloneCmd = sprintf(
-        'git clone --depth 1 --branch %s %s %s 2>&1',
-        escapeshellarg($branch),
-        escapeshellarg($cloneUrl),
-        escapeshellarg($repoDir)
-    );
-
-    echo "Clone branch {$branch}...\n";
-    passthru($cloneCmd, $cloneCode);
-
-    if ($cloneCode !== 0 || !is_dir($repoDir . '/.git')) {
-        fail('git clone fallito. Verificare token, branch e permessi sul repository.');
-    }
-
-    $copied = 0;
-
-    foreach ($files as $path) {
-        $source = $deltaPath . '/' . $path;
-        $target = $repoDir . '/' . $path;
-
-        if (!is_file($source)) {
-            continue;
-        }
-
-        $targetDir = dirname($target);
-
-        if (!is_dir($targetDir)) {
-            mkdir($targetDir, 0755, true);
-        }
-
-        copy($source, $target);
-        $copied++;
-    }
-
-    echo "File copiati nel clone: {$copied}\n";
-
-  $gitName = getenv('GIT_COMMITTER_NAME') ?: 'MEC Sync Produzione';
-    $gitEmail = getenv('GIT_COMMITTER_EMAIL') ?: 'sync@mec-group.local';
-    $message = getenv('GIT_COMMIT_MESSAGE') ?: ('sync: allineamento da produzione ' . date('Y-m-d H:i'));
-
-    $repoEsc = escapeshellarg($repoDir);
-    $steps = [
-        "cd {$repoEsc} && git config user.name " . escapeshellarg($gitName),
-        "cd {$repoEsc} && git config user.email " . escapeshellarg($gitEmail),
-        "cd {$repoEsc} && git add custom client/custom",
-        "cd {$repoEsc} && git status --short | head -20",
-    ];
-
-    foreach ($steps as $cmd) {
-        echo "\$ {$cmd}\n";
-        passthru($cmd, $code);
-    }
-
-    passthru("cd {$repoEsc} && git diff --cached --quiet", $noStaged);
-    if ($noStaged === 0) {
-        echo "Nessuna modifica da committare (repo già uguale al delta?).\n";
-    } else {
-        $commitCmd = "cd {$repoEsc} && git commit -m " . escapeshellarg($message);
-        echo "\$ {$commitCmd}\n";
-        passthru($commitCmd, $code);
-
-        if ($code !== 0) {
-            fail('git commit fallito.');
-        }
-    }
-
-    $pushCmd = "cd {$repoEsc} && git push origin HEAD:" . escapeshellarg($branch);
-    echo "\$ {$pushCmd}\n";
-    passthru($pushCmd, $code);
-
-    if ($code !== 0) {
-        fail('git push fallito. Controllare token, branch protetti e permessi PAT.');
-    }
-
-    echo "\nPush completato su {$repository} branch {$branch}\n";
-    echo "Verifica: https://github.com/{$repository}/commits/{$branch}\n";
-
-    // Rimuovi token dal remote locale
-    passthru('cd ' . escapeshellarg($repoDir) . ' && git remote set-url origin ' . escapeshellarg('https://github.com/' . $repository . '.git'), $unused);
-
-    echo "Clone temporaneo: {$repoDir} (eliminabile dopo verifica)\n";
-}
-
-function collectDeltaFilePaths(string $deltaPath, string $manifestPath): array
-{
-    $files = [];
-
-    if (is_file($manifestPath)) {
-        $manifest = json_decode(file_get_contents($manifestPath), true);
-
-        foreach ($manifest['files'] ?? [] as $item) {
-            if (is_array($item) && isset($item['path'])) {
-                $files[] = $item['path'];
-            } elseif (is_string($item)) {
-                $files[] = $item;
-            }
-        }
-    }
-
-    if ($files !== []) {
-        return $files;
-    }
-
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($deltaPath, FilesystemIterator::SKIP_DOTS)
-    );
-
-    foreach ($iterator as $item) {
-        if (!$item->isFile() || $item->getFilename() === 'manifest.json') {
-            continue;
-        }
-
-        $relative = ltrim(str_replace($deltaPath, '', $item->getPathname()), DIRECTORY_SEPARATOR);
-        $files[] = str_replace(DIRECTORY_SEPARATOR, '/', $relative);
-    }
-
-    return $files;
 }
 
 function removeDirectory(string $dir): void

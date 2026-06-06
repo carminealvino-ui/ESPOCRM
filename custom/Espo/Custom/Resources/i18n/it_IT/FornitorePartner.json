@@ -6,11 +6,12 @@
         "name": "Fornitore / Partner",
         "referente": "Referente",
         "color": "Color",
-        "disponibilita": "Disponibilita",
+        "disponibilita": "Disponibilità",
         "appuntamenti": "Appuntamenti",
         "opportunita": "Opportunità",
         "productBrands": "Brand",
-        "prospects": "Prospects"
+        "prospects": "Prospects",
+        "quotes": "Contratti"
     },
     "links": {
         "meetings": "Riunioni",
@@ -21,7 +22,8 @@
         "appuntamenti": "Appuntamenti",
         "opportunita": "Opportunità",
         "productBrands": "Brand",
-        "prospects": "Prospects"
+        "prospects": "Prospects",
+        "quotes": "Contratti"
     },
     "labels": {
         "Create FornitorePartner": "Crea Fornitore - Partner"

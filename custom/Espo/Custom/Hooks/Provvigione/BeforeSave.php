@@ -77,4 +77,46 @@ class BeforeSave extends Base
         // SET DIRETTO → senza save
         $entity->set('importo', $importo);
     }
+
+    /**
+     * Aggiorna totaleProvvigioni sul contratto (anche save silent da subpanel).
+     */
+    public function afterSave(Entity $entity, array $options): void
+    {
+        if (!empty($options['skipHooks'])) {
+            return;
+        }
+
+        $quoteId = $entity->get('contrattoId');
+
+        if (!$quoteId) {
+            return;
+        }
+
+        $em = $this->getEntityManager();
+        $totale = 0.0;
+
+        foreach ($em->getRepository('Provvigione')->where(['contrattoId' => $quoteId])->find() as $row) {
+            $totale += (float) ($row->get('importo') ?? 0);
+        }
+
+        $totale = round($totale, 2);
+        $quote = $em->getEntityById('Quote', $quoteId);
+
+        if (!$quote) {
+            return;
+        }
+
+        if (abs((float) ($quote->get('totaleProvvigioni') ?? 0) - $totale) < 0.001) {
+            return;
+        }
+
+        $quote->set('totaleProvvigioni', $totale);
+        $em->saveEntity($quote, ['skipHooks' => true, 'silent' => true]);
+    }
+
+    public function afterRemove(Entity $entity, array $options): void
+    {
+        $this->afterSave($entity, $options);
+    }
 }

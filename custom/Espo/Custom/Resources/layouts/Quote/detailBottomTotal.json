@@ -1,21 +1,21 @@
 [
     {
-        "name": "amount"
-    },
-    {
-        "name": "minusPlus"
+        "name": "grandTotalAmount"
     },
     {
         "name": "totalPrezzoCodice"
     },
     {
-        "name": "taxAmount"
-    },
-    {
         "name": "aliquotaIVA"
     },
     {
-        "name": "grandTotalAmount"
+        "name": "amount"
+    },
+    {
+        "name": "prezzoCodiceIvaEsclusa"
+    },
+    {
+        "name": "minusPlus"
     },
     {
         "name": "totaleProvvigioni"

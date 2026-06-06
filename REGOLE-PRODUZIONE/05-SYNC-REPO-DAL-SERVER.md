@@ -5,6 +5,18 @@
 
 ---
 
+## Regola: export sempre per primo
+
+Per **ogni** allineamento produzione → GitHub:
+
+1. Si esegue **sempre** `export-delta` come **primo passo operativo** (dopo eventuale bootstrap `tools/`).
+2. **Non** si riusa un delta vecchio senza aver rifatto l’export nella stessa sessione.
+3. `status` è **opzionale** (solo diagnosi); **non** sostituisce l’export.
+
+Poi: scarica ZIP sul PC → `apply-delta` → `git commit` → `git push` (flusso abituale, credenziali Git sul PC).
+
+---
+
 ## Cosa viene confrontato
 
 | Cartella | Contenuto |
@@ -21,7 +33,7 @@
 
 ---
 
-## Passo 1 — Bootstrap `tools/` sul server
+## Passo 0 — Bootstrap `tools/` (solo se manca lo script)
 
 **Dove:** `cd ~/public_html/crm/mec-group`
 
@@ -29,55 +41,68 @@
 
 ```bash
 curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/bootstrap-server-tools.sh?t=$(date +%s)" | bash
+ls -la tools/sync-custom-prod-repo.php
 ```
 
-**Verifica:** `ls tools/sync-custom-prod-repo.php`
-
-→ Screenshot, poi Passo 2.
+→ Screenshot, poi **Passo 1 (export)**.
 
 ---
 
-## Passo 2 — Stato differenze (solo lettura)
+## Passo 1 — Export delta (obbligatorio, sempre per primo)
 
-Vedi [`07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md`](07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md).
+**Dove:** `cd ~/public_html/crm/mec-group`
+
+**Cosa fa:** esporta in `exports/sync/delta-…/` tutto ciò che in produzione non coincide con `main` (cartella + ZIP).
 
 **Comando:**
 
 ```bash
-php tools/sync-custom-prod-repo.php status --branch=main
-```
-
-Controllare se ci sono `layouts/` che volete portare su Git.  
-→ Screenshot con i quattro totali, poi Passo 3.
-
----
-
-## Passo 3 — Export delta (copia file prod)
-
-**Comando:**
-
-```bash
+cd ~/public_html/crm/mec-group
 php tools/sync-custom-prod-repo.php export-delta --branch=main
 ```
 
 **Verifica attesa:**
 
 - `Export delta completato`
+- `File: N` (numero file)
 - Cartella `exports/sync/delta-YYYYMMDD-HHMMSS/`
 - ZIP `exports/sync/delta-YYYYMMDD-HHMMSS.zip`
 
+**Rollback:** nessuno su `custom/` live; per rifare, eliminare solo la cartella `delta-…` appena creata.
+
+→ Screenshot con path `delta-…` e ZIP, poi Passo 2.
+
 ---
 
-## Passo 4 — Portare il delta sul PC (Git)
+## Passo 2 — Scarica il delta sul PC
 
-Scaricare via SFTP la cartella o lo ZIP `exports/sync/delta-*`.
+**Dove:** SFTP / FileZilla / file manager hosting.
 
-Sul clone locale del repo:
+**File sul server:**
+
+```text
+~/public_html/crm/mec-group/exports/sync/delta-YYYYMMDD-HHMMSS.zip
+```
+
+**Verifica:** ZIP sul PC, dimensione plausibile (non quasi vuoto).
+
+→ Poi Passo 3.
+
+---
+
+## Passo 3 — Apply delta sul clone Git (PC)
+
+**Dove:** clone locale `ESPOCRM`.
 
 ```bash
 cd /percorso/ESPOCRM
 git checkout main
 git pull origin main
+```
+
+Estrarre lo ZIP, poi:
+
+```bash
 php tools/sync-custom-prod-repo.php apply-delta /percorso/delta-YYYYMMDD-HHMMSS
 git status
 git add custom client/custom
@@ -85,18 +110,52 @@ git commit -m "sync: allineamento da produzione $(date +%Y-%m-%d)"
 git push origin main
 ```
 
-**Verifica:** push su GitHub; in repo i layout/metadata coincidono con prod.
+**Verifica:** commit su https://github.com/carminealvino-ui/ESPOCRM/commits/main  
+(`apply-delta` crea backup repo in `exports/sync/apply-backup-…`).
 
 ---
 
-## Passi successivi in produzione (dopo push)
+## Passo 4 — Verifica (opzionale, dopo il push)
 
-Solo deploy **mirati** (`curl` + script), non sovrascrivere tutto `custom/`.  
+**Dove:** server CRM.
+
+```bash
+cd ~/public_html/crm/mec-group
+php tools/sync-custom-prod-repo.php status --branch=main
+```
+
+**Atteso:** `Solo prod` basso o 0; `Identici` alto.
+
+Vedi anche [`07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md`](07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md).
+
+---
+
+## Diagnosi prima dell’export (opzionale)
+
+Solo se serve vedere i totali **prima** dell’export; non salta il Passo 1.
+
+```bash
+php tools/sync-custom-prod-repo.php status --branch=main
+```
+
+---
+
+## Push dal server con PAT (alternativa al PC)
+
+Vedi [`06-PUSH-GITHUB-DAL-SERVER.md`](06-PUSH-GITHUB-DAL-SERVER.md).  
+Flusso consigliato MEC: **export sul server → apply + push sul PC**.
+
+---
+
+## Dopo il push su `main`
+
+Solo deploy **mirati** in produzione, non sovrascrivere tutto `custom/`.  
 Vedi `tools/LAYOUT-NON-SOVRASCRIVERE.md`.
 
 ---
 
 ## Rollback
 
-- Sul server, i file originali non sono cancellati dall’export.
-- Su PC, `apply-delta` salva backup repo in `delta-*-repo-backup` dentro `exports/sync/` sul server (se apply fatto lì) o nella cartella delta sul PC.
+- Produzione: l’export non modifica i file live.
+- PC: backup in `exports/sync/apply-backup-…` creato da `apply-delta`.
+- GitHub: revert del commit di sync.

@@ -6,6 +6,10 @@
         "align": "left"
     },
     {
+        "name": "numeroContratto",
+        "width": 16
+    },
+    {
         "name": "status",
         "width": 15,
         "align": "left"

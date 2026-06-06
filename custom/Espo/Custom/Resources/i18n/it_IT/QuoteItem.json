@@ -7,13 +7,16 @@
         "name": "Voce",
         "provvigioni": "Provvigioni",
         "quote": "Contratto",
-        "amountCurrency": "Importo (valuta)",
+        "amountCurrency": "Prezzo Unitario Iva Esclusa (valuta)",
         "listPrice": "Prezzo di Listino",
         "listPriceConverted": "Prezzo di Listino (convertito)",
         "listPriceCurrency": "Prezzo di Listino (valuta)",
         "productType": "Prodotto - Tipologia",
-        "unitPriceConverted": "Prezzo Unitario (convertito)",
-        "unitPriceCurrency": "Prezzo Unitario (valuta)"
+        "unitPriceConverted": "Prezzo Unitario Iva Inclusa (convertito)",
+        "unitPriceCurrency": "Prezzo Unitario Iva Inclusa (valuta)",
+        "amount": "Prezzo Unitario Iva Esclusa",
+        "amountConverted": "Prezzo Unitario Iva Esclusa (convertito)",
+        "unitPrice": "Prezzo Unitario Iva Inclusa"
     },
     "links": {
         "provvigioni": "Provvigioni",
