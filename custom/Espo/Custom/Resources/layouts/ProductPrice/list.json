@@ -3,8 +3,20 @@
         "name": "product"
     },
     {
-        "name": "timeline",
-        "width": 18
+        "name": "priceBook",
+        "width": 16
+    },
+    {
+        "name": "status",
+        "width": 8
+    },
+    {
+        "name": "dateStart",
+        "width": 10
+    },
+    {
+        "name": "dateEnd",
+        "width": 10
     },
     {
         "name": "prezzoListinoIvaEsclusa",

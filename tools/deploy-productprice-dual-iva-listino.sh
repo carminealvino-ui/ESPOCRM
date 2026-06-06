@@ -44,6 +44,8 @@ FILES=(
   "custom/Espo/Custom/Resources/layouts/PriceBook/detail.json"
   "custom/Espo/Custom/Resources/layouts/ProductPrice/detail.json"
   "custom/Espo/Custom/Resources/layouts/ProductPrice/detailSmall.json"
+  "custom/Espo/Custom/Resources/layouts/ProductPrice/list.json"
+  "custom/Espo/Custom/Resources/layouts/ProductPrice/listForProduct.json"
   "custom/Espo/Custom/Resources/layouts/ProductPrice/listForPriceBook.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/PriceBook.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/ProductPrice.json"

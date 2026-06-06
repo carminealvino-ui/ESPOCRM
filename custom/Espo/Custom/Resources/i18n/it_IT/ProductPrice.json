@@ -1,17 +1,19 @@
 {
     "fields": {
-        "price": "Prezzo listino (campo Sales)",
+        "price": "Prezzo di Listino (legacy Sales)",
         "name": "Listino Prezzi - Aggiornamento",
         "priceConverted": "Prezzo di Listino (convertito)",
         "priceCurrency": "Prezzo di Listino (valuta)",
-        "prezzoListinoIvaEsclusa": "Listino (IVA esclusa)",
-        "prezzoListinoIvaInclusa": "Listino (IVA inclusa)",
-        "prezzoCodice": "Prezzo codice (IVA esclusa)",
-        "prezzoCodiceIvaInclusa": "Prezzo codice (IVA inclusa)",
+        "prezzoListinoIvaEsclusa": "Prezzo Listino IVA Esclusa",
+        "prezzoListinoIvaInclusa": "Prezzo Listino IVA Inclusa",
+        "prezzoCodice": "Prezzo Codice IVA Esclusa",
+        "prezzoCodiceIvaInclusa": "Prezzo Codice IVA Inclusa",
         "aliquotaIva": "Aliquota IVA %",
         "taxCodeListino": "Imposta - Codice (dal listino)"
     },
     "tooltips": {
-        "aliquotaIva": "Derivata dal codice IVA impostato sul listino prezzi (es. IVA10 → 10%, IVA22 → 22%)."
+        "aliquotaIva": "Derivata dal codice IVA impostato sul listino prezzi (es. IVA10 → 10%, IVA22 → 22%).",
+        "prezzoListinoIvaInclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dal codice IVA del listino.",
+        "prezzoListinoIvaEsclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dal codice IVA del listino."
     }
 }

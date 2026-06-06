@@ -41,24 +41,6 @@
             ],
             [
                 {
-                    "name": "interval"
-                },
-                false
-            ],
-            [
-                {
-                    "name": "price"
-                },
-                false
-            ],
-            [
-                {
-                    "name": "minQuantity"
-                },
-                false
-            ],
-            [
-                {
                     "name": "dateStart"
                 },
                 {
