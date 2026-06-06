@@ -1,105 +1,115 @@
 <?php
 
 // ========================================
-// VERSIONE: 1.0.1
-// DATA: 2026-05-06
+// VERSIONE: 1.0.2
+// DATA: 2026-06-05
 // AUTORE: CARMINE ALVINO + CHATGPT
 // ----------------------------------------
-// BASE: 1.0.0 STABILE
+// FIX 1.0.2:
+// ✔ Duplicato = stesso slot (dateStart + dateEnd) E stesso cliente
+//   (prospect, oppure parent, oppure indirizzo)
+// ✔ Prospect/indirizzo diversi → stesso orario consentito
 //
-// ----------------------------------------
-// ✅ CODICE STABILE:
-//
-// ✔ Blocco duplicati per dataStart + dateEnd
-// ✔ Compatibile create/update
-// ✔ Protezione loop import/sync
-//
-// ----------------------------------------
-// 🔧 FIX 1.0.1:
-//
-// ✔ Aggiunto sistema LOG base
-// ✔ Tracciamento CREATE / UPDATE
-// ✔ Scrittura su data/logs/custom.log
-//
-// ----------------------------------------
-// 🎯 OBIETTIVO:
-//
-// Monitorare comportamento reale del sistema
-// per debug sync (Google Calendar)
-//
+// ROLLBACK:
+// backup_dev/Appuntamento/hooks/preventduplicate-1.0.1-data-only-stabile.php
 // ========================================
 
 namespace Espo\Custom\Hooks\Appuntamento;
 
+use Espo\Core\Exceptions\Error;
+use Espo\Core\Hook\Hook\AfterSave;
+use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\ORM\Entity;
-use Espo\Core\ORM\EntityManager;
+use Espo\ORM\EntityManager;
+use Espo\ORM\Repository\Option\SaveOptions;
 
-class PreventDuplicate
+/**
+ * @implements BeforeSave<Entity>
+ * @implements AfterSave<Entity>
+ */
+class PreventDuplicate implements BeforeSave, AfterSave
 {
-    private $entityManager;
+    public function __construct(
+        private EntityManager $entityManager
+    ) {}
 
-    public function __construct(EntityManager $entityManager)
+    public function beforeSave(Entity $entity, SaveOptions $options): void
     {
-        $this->entityManager = $entityManager;
-    }
-
-    // ========================================
-    // ===== CODICE STABILE (NON TOCCARE) =====
-    // ========================================
-    public function beforeSave(Entity $entity, array $options)
-    {
-        // evita loop sync/import
-        if (!empty($options['isImport'])) {
+        if ($options->get('isImport')) {
             return;
         }
 
         $start = $entity->get('dateStart');
-        $end   = $entity->get('dateEnd');
+        $end = $entity->get('dateEnd');
 
         if (!$start || !$end) {
             return;
         }
 
-        $repo = $this->entityManager->getRepository('Appuntamento');
+        $identityKey = $this->buildIdentityKey($entity);
 
-        $qb = $repo->where([
-            'dateStart' => $start,
-            'dateEnd'   => $end,
-        ]);
+        if ($identityKey === null) {
+            return;
+        }
+
+        $query = $this->entityManager
+            ->getRDBRepository('Appuntamento')
+            ->where([
+                'dateStart' => $start,
+                'dateEnd' => $end,
+            ]);
 
         if (!$entity->isNew()) {
-            $qb->where(['id!=' => $entity->getId()]);
+            $query->where(['id!=' => $entity->getId()]);
         }
 
-        $existing = $qb->findOne();
-
-        if ($existing) {
-            throw new \Espo\Core\Exceptions\Error('Appuntamento duplicato bloccato');
+        foreach ($query->find() as $existing) {
+            if ($this->buildIdentityKey($existing) === $identityKey) {
+                throw new Error('Appuntamento duplicato bloccato');
+            }
         }
     }
 
-    // ========================================
-    // ===== FIX 1.0.1 - LOG BASE ============
-    // ========================================
-    public function afterSave(Entity $entity, array $options)
+    /**
+     * Chiave cliente per il controllo duplicati (prospect > parent > indirizzo).
+     */
+    private function buildIdentityKey(Entity $entity): ?string
     {
-        // Determina tipo operazione
+        $prospectId = $entity->get('prospectId');
+
+        if ($prospectId) {
+            return 'prospect:' . $prospectId;
+        }
+
+        $parentType = $entity->get('parentType');
+        $parentId = $entity->get('parentId');
+
+        if ($parentType && $parentId) {
+            return 'parent:' . $parentType . ':' . $parentId;
+        }
+
+        $indirizzo = mb_strtolower(trim((string) $entity->get('indirizzo')));
+
+        if ($indirizzo !== '') {
+            return 'indirizzo:' . $indirizzo;
+        }
+
+        return null;
+    }
+
+    public function afterSave(Entity $entity, SaveOptions $options): void
+    {
         $operation = $entity->isNew() ? 'CREATE' : 'UPDATE';
-
-        // Dati principali
-        $id    = $entity->getId();
-        $start = $entity->get('dateStart');
-        $end   = $entity->get('dateEnd');
-
-        // Log formattato
         $log = date('Y-m-d H:i:s') .
-            " | Appuntamento | " . $operation .
-            " | ID: " . $id .
-            " | START: " . $start .
-            " | END: " . $end . PHP_EOL;
+            ' | Appuntamento | ' . $operation .
+            ' | ID: ' . $entity->getId() .
+            ' | START: ' . $entity->get('dateStart') .
+            ' | END: ' . $entity->get('dateEnd') . PHP_EOL;
 
-        // Scrittura log
-        file_put_contents('data/logs/custom.log', $log, FILE_APPEND);
+        $logPath = 'data/logs/custom.log';
+
+        if (is_writable(dirname($logPath)) || is_file($logPath)) {
+            file_put_contents($logPath, $log, FILE_APPEND);
+        }
     }
 }
-

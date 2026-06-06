@@ -64,6 +64,10 @@
         "prospects": {
             "layout": null,
             "selectPrimaryFilterName": null
+        },
+        "quotes": {
+            "layout": null,
+            "selectPrimaryFilterName": null
         }
     }
 }

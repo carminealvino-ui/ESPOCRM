@@ -1,7 +1,9 @@
 {
     "fields": {
         "fornitorePartner": "Fornitore/Partner",
-        "appuntamenti": "Appuntamenti"
+        "appuntamenti": "Appuntamenti",
+        "productCategories": "Prodotto - Categoria",
+        "name": "Prodotto - Brand"
     },
     "links": {
         "fornitorePartner": "Fornitore/Partner",
