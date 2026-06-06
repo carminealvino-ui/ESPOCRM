@@ -40,6 +40,7 @@
             "type": "enum",
             "options": [
                 "Provvigione Base",
+                "Referenza Personale",
                 "Bonus (Sabato-Domenica)",
                 "Plus Provvigionale",
                 "Minus Provvigionale",
@@ -49,13 +50,14 @@
             ],
             "style": {
                 "Provvigione Base": null,
+                "Referenza Personale": null,
                 "Bonus (Sabato-Domenica)": null,
                 "Plus Provvigionale": null,
                 "Minus Provvigionale": null,
                 "Gara (Soglia >2.5k)": null,
                 "Gara (Soglia >3.5)": null,
                 "Gara (Soglia >5k)": null
-            },
+            ],
             "default": "Provvigione Base",
             "maxLength": 100,
             "isCustom": true

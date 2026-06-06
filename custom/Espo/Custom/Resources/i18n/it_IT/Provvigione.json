@@ -25,6 +25,7 @@
     "options": {
         "tipo": {
             "Provvigione Base": "Provvigione Base",
+            "Referenza Personale": "Referenza Personale",
             "Bonus (Sabato-Domenica)": "Bonus (Sabato-Domenica)",
             "Plus Provvigionale": "Plus Provvigionale",
             "Minus Provvigionale": "Minus Provvigionale",
