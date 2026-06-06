@@ -1164,7 +1164,19 @@ class QuotePricingCalculator
             }
         }
 
-        return null;
+        // Fallback: listino attivo piu recente (dateStart/dateEnd non sempre valorizzati in produzione).
+        foreach ($collection as $productPrice) {
+            return $productPrice;
+        }
+
+        return $this->entityManager
+            ->getRDBRepository('ProductPrice')
+            ->where([
+                'productId' => $product->getId(),
+                'priceBookId' => $priceBookId,
+            ])
+            ->order('dateStart', 'DESC')
+            ->findOne();
     }
 
     private function resolveQuoteReferenceDate(Entity $quote): string

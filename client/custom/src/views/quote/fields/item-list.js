@@ -1,13 +1,12 @@
 // ========================================
-// VERSIONE: 1.2.1
+// VERSIONE: 1.3.0
 // DATA: 2026-06-06
-// Fix: customItemView (Sales Pack usa customItemView, non itemView)
-// FILE: custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
-// ========================================
+// Fix: customItemView + refresh prezzi su listino/prodotto
 
-/* global define */
-
-define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-list'], function (Dep) {
+define('custom:views/quote/fields/item-list', [
+    'sales:views/quote/fields/item-list',
+    'custom:handlers/quote/catalog-prices',
+], function (Dep, CatalogPrices) {
 
     return Dep.extend({
 
@@ -22,11 +21,11 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
         },
 
         setup: function () {
-            Dep.prototype.setup.call(this);
-
             this.customItemView = 'custom:views/quote/record/item';
 
-            this.dropdownItemList = this.dropdownItemList || [];
+            Dep.prototype.setup.call(this);
+
+            this.bindCatalogPriceRefresh();
 
             var hasCreateProductAction = this.dropdownItemList.some(function (item) {
                 return item && item.name === 'createProductDirect';
@@ -78,6 +77,46 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
             $(document).on('click.create-product-menu-' + this.cid, this._onDocumentClick);
         },
 
+        bindCatalogPriceRefresh: function () {
+            if (this._catalogPriceRefreshBound) {
+                return;
+            }
+
+            this._catalogPriceRefreshBound = true;
+
+            this.listenTo(this.model, 'change:priceBookId', function () {
+                if (this.mode === 'edit') {
+                    this.applyCatalogPricesToItemList();
+                }
+            });
+
+            this.listenTo(this.model, 'change:isTaxInclusive', function () {
+                if (this.mode === 'edit') {
+                    this.applyCatalogPricesToItemList();
+                }
+            });
+        },
+
+        bindItemListProductListener: function () {
+            if (this._itemListProductListenerBound) {
+                return;
+            }
+
+            var itemListView = this.getItemListView && this.getItemListView();
+
+            if (!itemListView) {
+                return;
+            }
+
+            this._itemListProductListenerBound = true;
+
+            this.listenTo(itemListView, 'change', function (data) {
+                if (data && data.itemField === 'product') {
+                    this.applyCatalogPricesToItemList();
+                }
+            });
+        },
+
         onRemove: function () {
             if (this._onDocumentClick) {
                 $(document).off('click.create-product-menu-' + this.cid, this._onDocumentClick);
@@ -95,35 +134,8 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
             await this.applyCatalogPricesToItemList();
         },
 
-        fetchCatalogPrices: async function (productIds) {
-            if (!productIds || !productIds.length) {
-                return null;
-            }
-
-            try {
-                var response = await Espo.Ajax.postRequest('Quote/getItemCatalogPrices', {
-                    priceBookId: this.model.get('priceBookId'),
-                    productIds: productIds,
-                    isTaxInclusive: this.model.get('isTaxInclusive'),
-                    taxId: this.model.get('taxId'),
-                    dateQuoted: this.model.get('dateQuoted'),
-                    aliquotaIVA: this.model.get('aliquotaIVA'),
-                });
-
-                var map = {};
-
-                (response || []).forEach(function (row) {
-                    if (row.productId) {
-                        map[row.productId] = row;
-                    }
-                });
-
-                return map;
-            } catch (error) {
-                console.error('Catalog prices fetch failed', error);
-
-                return null;
-            }
+        fetchCatalogPrices: function (productIds) {
+            return CatalogPrices.fetchRows(this.model, productIds);
         },
 
         applyCatalogPricesToItemList: async function () {
@@ -140,12 +152,11 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                 return;
             }
 
-            var pricesByProduct = await this.fetchCatalogPrices(productIds);
-
-            if (!pricesByProduct) {
+            if (!this.model.get('priceBookId')) {
                 return;
             }
 
+            var pricesByProduct = await this.fetchCatalogPrices(productIds);
             var currency = this.model.get('amountCurrency');
             var changed = false;
 
@@ -154,19 +165,16 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                     return;
                 }
 
-                var prices = pricesByProduct[item.productId];
+                var patch = CatalogPrices.patchFromRow(
+                    item,
+                    pricesByProduct[item.productId],
+                    currency
+                );
 
-                if (prices.listPrice != null && prices.listPrice > 0) {
-                    item.listPrice = prices.listPrice;
-                    item.listPriceCurrency = item.listPriceCurrency || currency;
+                Object.keys(patch).forEach(function (key) {
+                    item[key] = patch[key];
                     changed = true;
-                }
-
-                if (prices.prezzoCodice != null && prices.prezzoCodice > 0) {
-                    item.prezzoCodice = prices.prezzoCodice;
-                    item.prezzoCodiceCurrency = item.prezzoCodiceCurrency || currency;
-                    changed = true;
-                }
+                });
             });
 
             if (!changed) {
@@ -195,6 +203,7 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
             this.bindButtonObserver();
             this.injectCreateProductMenuItem();
             this.injectCreateProductMenuItemGlobal();
+            this.bindItemListProductListener();
         },
 
         bindButtonObserver: function () {
