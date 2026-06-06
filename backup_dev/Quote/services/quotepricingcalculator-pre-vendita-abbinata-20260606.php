@@ -1177,18 +1177,6 @@ class QuotePricingCalculator
         Entity $productPrice,
         float $aliquotaPercent
     ): ?float {
-        $ivi = $this->floatOrNull($productPrice->get('prezzoListinoIvaInclusa'));
-
-        if ($ivi !== null && $ivi > 0) {
-            return round($ivi, 2);
-        }
-
-        $net = $this->floatOrNull($productPrice->get('prezzoListinoIvaEsclusa'));
-
-        if ($net !== null && $net > 0) {
-            return round($net * (1 + $aliquotaPercent / 100), 2);
-        }
-
         $price = $this->floatOrNull($productPrice->get('price'));
 
         if ($price === null || $price <= 0) {
