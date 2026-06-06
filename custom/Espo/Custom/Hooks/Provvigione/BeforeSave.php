@@ -2,32 +2,16 @@
 
 namespace Espo\Custom\Hooks\Provvigione;
 
-use Espo\Core\Hook\Hook\AfterRemove;
-use Espo\Core\Hook\Hook\AfterSave;
-use Espo\Core\Hook\Hook\BeforeSave as BeforeSaveHook;
-use Espo\Custom\Services\QuoteProvvigioniSync;
+use Espo\Core\Hooks\Base;
 use Espo\ORM\Entity;
-use Espo\ORM\EntityManager;
-use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Provvigione manuale: importo = tassoProvvigioni % × importoContratto.
- * Nessuna regola provvigionale, nessuna logica per tipo.
- *
- * @implements BeforeSaveHook<Entity>
- * @implements AfterSave<Entity>
- * @implements AfterRemove<Entity>
+ * Provvigione manuale: importo = tassoProvvigioni % × imponibile contratto.
+ * Nessuna regola provvigionale. Hook Base (compatibilità Espo produzione).
  */
-class BeforeSave implements BeforeSaveHook, AfterSave, AfterRemove
+class BeforeSave extends Base
 {
-    public static int $order = 5;
-
-    public function __construct(
-        private EntityManager $entityManager,
-        private QuoteProvvigioniSync $quoteProvvigioniSync
-    ) {}
-
-    public function beforeSave(Entity $entity, SaveOptions $options): void
+    public function beforeSave(Entity $entity, array $options): void
     {
         $quoteId = $entity->get('contrattoId');
 
@@ -35,43 +19,37 @@ class BeforeSave implements BeforeSaveHook, AfterSave, AfterRemove
             return;
         }
 
-        $quote = $this->entityManager->getEntityById('Quote', $quoteId);
+        $em = $this->getEntityManager();
+        $quote = $em->getEntityById('Quote', $quoteId);
 
         if (!$quote) {
             return;
         }
 
-        $this->syncFromQuote($entity, $quote);
-        $this->applyImportoFromTassoAndBase($entity, $quote);
+        $this->syncLinksFromQuote($entity, $quote);
+        $this->applyImporto($entity, $quote);
         $entity->set('name', $this->buildName($entity, $quote));
     }
 
-    public function afterSave(Entity $entity, SaveOptions $options): void
+    public function afterSave(Entity $entity, array $options): void
     {
-        $this->syncTotale($entity, $options);
-    }
-
-    public function afterRemove(Entity $entity, SaveOptions $options): void
-    {
-        $this->syncTotale($entity, $options);
-    }
-
-    private function syncTotale(Entity $entity, SaveOptions $options): void
-    {
-        if ($options->has('skipHooks')) {
+        if (!empty($options['skipHooks'])) {
             return;
         }
 
-        $quoteId = $entity->get('contrattoId');
+        $this->syncTotaleProvvigioni($entity);
+    }
 
-        if (!$quoteId) {
+    public function afterRemove(Entity $entity, array $options): void
+    {
+        if (!empty($options['skipHooks'])) {
             return;
         }
 
-        $this->quoteProvvigioniSync->syncTotaleProvvigioniOnQuote($quoteId);
+        $this->syncTotaleProvvigioni($entity);
     }
 
-    private function syncFromQuote(Entity $entity, Entity $quote): void
+    private function syncLinksFromQuote(Entity $entity, Entity $quote): void
     {
         $quoteName = $quote->get('name');
 
@@ -81,52 +59,42 @@ class BeforeSave implements BeforeSaveHook, AfterSave, AfterRemove
 
         $accountId = $quote->get('accountId');
 
-        if ($accountId) {
-            $entity->set('clienteId', $accountId);
-
-            $accountName = $quote->get('accountName');
-
-            if (is_string($accountName) && $accountName !== '') {
-                $entity->set('clienteName', $accountName);
-            }
-        }
-
-        if (!$entity->hasAttribute('importoContratto')) {
+        if (!$accountId) {
             return;
         }
 
-        $current = $this->floatOrNull($entity->get('importoContratto'));
+        $entity->set('clienteId', $accountId);
 
-        if ($current !== null && $current > 0) {
-            return;
-        }
+        $accountName = $quote->get('accountName');
 
-        $importoContratto = $this->resolveQuoteImportoContratto($quote);
-
-        if ($importoContratto !== null) {
-            $entity->set('importoContratto', $importoContratto);
+        if (is_string($accountName) && $accountName !== '') {
+            $entity->set('clienteName', $accountName);
         }
     }
 
-    private function applyImportoFromTassoAndBase(Entity $entity, Entity $quote): void
+    private function applyImporto(Entity $entity, Entity $quote): void
     {
-        $tasso = $this->floatOrNull($entity->get('tassoProvvigioni'));
+        $tasso = $this->toFloat($entity->get('tassoProvvigioni'));
 
-        if ($tasso === null || $tasso <= 0) {
+        if ($tasso <= 0) {
             return;
         }
 
-        $base = null;
+        $base = 0.0;
 
         if ($entity->hasAttribute('importoContratto')) {
-            $base = $this->floatOrNull($entity->get('importoContratto'));
+            $base = $this->toFloat($entity->get('importoContratto'));
         }
 
-        if ($base === null || $base <= 0) {
-            $base = $this->resolveQuoteImportoContratto($quote);
+        if ($base <= 0) {
+            $base = $this->toFloat($quote->get('amount'));
         }
 
-        if ($base === null || $base <= 0) {
+        if ($base <= 0) {
+            $base = $this->toFloat($quote->get('importoContratto'));
+        }
+
+        if ($base <= 0) {
             return;
         }
 
@@ -137,7 +105,7 @@ class BeforeSave implements BeforeSaveHook, AfterSave, AfterRemove
     {
         $clientLabel = trim((string) ($quote->get('billingContactName') ?: $quote->get('accountName') ?: ''));
         $tipo = $entity->get('tipo');
-        $importo = $this->floatOrNull($entity->get('importo')) ?? 0.0;
+        $importo = $this->toFloat($entity->get('importo'));
         $parts = [];
 
         if ($clientLabel !== '') {
@@ -150,31 +118,43 @@ class BeforeSave implements BeforeSaveHook, AfterSave, AfterRemove
 
         $parts[] = '€. ' . number_format($importo, 2, '.', '');
 
-        return mb_strtoupper(implode(' - ', $parts));
+        return strtoupper(implode(' - ', $parts));
     }
 
-    /** Imponibile contratto (amount = base provvigioni). */
-    private function resolveQuoteImportoContratto(Entity $quote): ?float
+    private function syncTotaleProvvigioni(Entity $entity): void
     {
-        foreach (['amount', 'importoContratto', 'grandTotalAmount'] as $field) {
-            $value = $this->floatOrNull($quote->get($field));
+        $quoteId = $entity->get('contrattoId');
 
-            if ($value !== null && $value > 0) {
-                return round($value, 2);
-            }
+        if (!$quoteId) {
+            return;
         }
 
-        return null;
+        $em = $this->getEntityManager();
+        $totale = 0.0;
+
+        foreach ($em->getRepository('Provvigione')->where(['contrattoId' => $quoteId])->find() as $row) {
+            $totale += (float) ($row->get('importo') ?? 0);
+        }
+
+        $totale = round($totale, 2);
+        $quote = $em->getEntityById('Quote', $quoteId);
+
+        if (!$quote) {
+            return;
+        }
+
+        if (abs((float) ($quote->get('totaleProvvigioni') ?? 0) - $totale) < 0.001) {
+            return;
+        }
+
+        $quote->set('totaleProvvigioni', $totale);
+        $em->saveEntity($quote, ['skipHooks' => true, 'silent' => true]);
     }
 
-    private function floatOrNull(mixed $value): ?float
+    private function toFloat(mixed $value): float
     {
-        if ($value === null || $value === '') {
-            return null;
-        }
-
-        if (!is_numeric($value)) {
-            return null;
+        if ($value === null || $value === '' || !is_numeric($value)) {
+            return 0.0;
         }
 
         return (float) $value;

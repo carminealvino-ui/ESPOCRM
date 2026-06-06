@@ -9,11 +9,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'tools' / 'applica-provvigione-campi-collegati.php'
-MARKER = 'provvigione-campi-collegati-php-20260607d'
+MARKER = 'provvigione-campi-collegati-php-20260607e'
 
 FILES = [
     'custom/Espo/Custom/Hooks/Provvigione/BeforeSave.php',
-    'custom/Espo/Custom/Services/QuoteProvvigioniSync.php',
     'custom/Espo/Custom/Resources/metadata/formula/Provvigione.json',
     'tools/backfill-provvigione-campi-collegati.php',
 ]
@@ -66,13 +65,14 @@ foreach ($files as $rel => $b64) {{
 }}
 echo "\\n=== Verifica PHP ===\\n";
 passthru('php -l custom/Espo/Custom/Hooks/Provvigione/BeforeSave.php', $c1);
-passthru('php -l custom/Espo/Custom/Services/QuoteProvvigioniSync.php', $c2);
-passthru('php -l tools/backfill-provvigione-campi-collegati.php', $c3);
-if ($c1 !== 0 || $c2 !== 0 || $c3 !== 0) exit(1);
+passthru('php -l tools/backfill-provvigione-campi-collegati.php', $c2);
+if ($c1 !== 0 || $c2 !== 0) exit(1);
 echo "\\n=== Rebuild EspoCRM ===\\n";
-passthru('php command.php rebuild', $c4);
+passthru('php command.php rebuild', $c3);
 passthru('php command.php clear-cache 2>/dev/null || true');
 @array_map('unlink', glob('data/cache/*') ?: []);
+$obsolete = $root . '/custom/Espo/Custom/Hooks/Provvigione/SyncQuoteTotaleProvvigioni.php';
+if (is_file($obsolete)) {{ @unlink($obsolete); echo "RM hook obsoleto SyncQuoteTotaleProvvigioni.php\\n"; }}
 echo "\\nDeploy completato ({{$marker}}).\\n";
 echo "Backfill: php tools/backfill-provvigione-campi-collegati.php --verbose\\n";
 """
