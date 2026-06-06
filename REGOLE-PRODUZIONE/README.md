@@ -66,6 +66,17 @@ Dettaglio: [`10-LISTINO-E-PREZZI-PRODOTTO.md`](10-LISTINO-E-PREZZI-PRODOTTO.md)
 
 ---
 
+## Regola 11 — Allineamento completo server ↔ repository (obbligatorio)
+
+- **Sempre** allineamento completo: export prod → apply → push su `main` → verifica `status`.
+- **Prima** di ogni deploy in produzione da GitHub: prod deve essere già nel repo.
+- **Dopo** ogni modifica in produzione: nuovo export (niente delta vecchi).
+- Modifiche solo in Admin senza file in `custom/` **non** sono nel repo finché non si fa export/rebuild.
+
+Dettaglio: [`11-ALLINEAMENTO-COMPLETO-SERVER-REPO.md`](11-ALLINEAMENTO-COMPLETO-SERVER-REPO.md)
+
+---
+
 ## Regola 4 — Struttura `backup_dev/` (cartelle per entità)
 
 - `backup_dev/` non è una copia generica di `custom/`: ha **sottocartelle per entità** (`Appuntamento/`, `Opportunity/`, `Quote/`, …) e tipi (`hooks/`, `layouts/`, `metadata/`, `client/`).
@@ -96,6 +107,7 @@ Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
 | `07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md` | Verifica allineamento: `status --branch=main` |
 | `09-COMANDO-BASH-UNICO.md` | Ogni passo = un blocco bash copiabile |
 | `10-LISTINO-E-PREZZI-PRODOTTO.md` | Dove inserire prezzi (listino vs prodotto) |
+| `11-ALLINEAMENTO-COMPLETO-SERVER-REPO.md` | **Sync obbligatorio** prod ↔ GitHub |
 
 ---
 

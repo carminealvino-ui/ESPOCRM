@@ -56,6 +56,7 @@ Prima di inviare l’istruzione all’operatore, chiedersi:
 3. C’è la **verifica** (output o schermata)?
 4. C’è **un solo** passo (Regola 1)?
 5. C’è un **comando bash unico** copiabile (Regola 9)?
+6. A fine intervento è previsto l’**allineamento completo** server → repo (Regola 11)?
 
 Se una risposta è «no» → completare prima di pubblicare.
 
