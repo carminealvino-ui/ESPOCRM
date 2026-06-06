@@ -1,5 +1,4 @@
-// VERSIONE: 1.2.0
-// Popola Prezzo di Listino e Prezzo Codice alla selezione prodotto.
+// VERSIONE: 1.3.0 — prezzi listino/codice + unitPrice IVA inclusa
 
 define('custom:views/quote/record/item', [
     'sales:views/quote/record/item',
@@ -21,7 +20,7 @@ define('custom:views/quote/record/item', [
         applyCatalogPrices: async function (product) {
             var productId = product.id || this.model.get('productId');
 
-            if (!productId) {
+            if (!productId || !this.parentModel.get('priceBookId')) {
                 return;
             }
 
@@ -29,13 +28,17 @@ define('custom:views/quote/record/item', [
             var row = map[productId];
 
             if (!row) {
-                row = CatalogPrices.buildRowFromProduct(this.parentModel, product.attributes || product);
+                row = CatalogPrices.buildRowFromProduct(
+                    this.parentModel,
+                    product.attributes || product
+                );
             }
 
             var patch = CatalogPrices.patchFromRow(
                 this.model.attributes,
                 row,
-                this.parentModel.get('amountCurrency')
+                this.parentModel.get('amountCurrency'),
+                this.parentModel
             );
 
             if (!Object.keys(patch).length) {
@@ -47,6 +50,14 @@ define('custom:views/quote/record/item', [
             this.model.set(patch);
             this.calculationHandler.calculateItem(this.model);
             this.model.trigger('after-product-select');
+
+            ['listPrice', 'prezzoCodice', 'unitPrice'].forEach(function (field) {
+                var fieldView = this.getFieldView(field);
+
+                if (fieldView && fieldView.reRender) {
+                    fieldView.reRender();
+                }
+            }.bind(this));
         },
     });
 });

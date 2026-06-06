@@ -109,7 +109,7 @@ define('custom:handlers/quote/catalog-prices', [], function () {
         return map;
     };
 
-    var patchFromRow = function (item, row, currency) {
+    var patchFromRow = function (item, row, currency, quoteModel) {
         var patch = {};
 
         if (row.listPrice != null && row.listPrice > 0) {
@@ -120,6 +120,15 @@ define('custom:handlers/quote/catalog-prices', [], function () {
         if (row.prezzoCodice != null && row.prezzoCodice > 0) {
             patch.prezzoCodice = row.prezzoCodice;
             patch.prezzoCodiceCurrency = item.prezzoCodiceCurrency || currency;
+        }
+
+        if (quoteModel && quoteModel.get('isTaxInclusive')) {
+            var unitPrice = item.unitPrice;
+
+            if ((unitPrice == null || unitPrice <= 0) && row.listPrice != null && row.listPrice > 0) {
+                patch.unitPrice = row.listPrice;
+                patch.unitPriceCurrency = item.unitPriceCurrency || currency;
+            }
         }
 
         return patch;

@@ -1,7 +1,4 @@
-// ========================================
-// VERSIONE: 1.3.0
-// DATA: 2026-06-06
-// Fix: customItemView + refresh prezzi su listino/prodotto
+// VERSIONE: 1.4.0 — sync prezzi sulle righe live (non solo itemList del modello padre)
 
 define('custom:views/quote/fields/item-list', [
     'sales:views/quote/fields/item-list',
@@ -23,9 +20,46 @@ define('custom:views/quote/fields/item-list', [
         setup: function () {
             this.customItemView = 'custom:views/quote/record/item';
 
+            var originalCreateView = this.createView.bind(this);
+
+            this.createView = function (name, view, options, callback) {
+                options = options || {};
+
+                if (name === 'itemList') {
+                    options.itemView = 'custom:views/quote/record/item';
+                }
+
+                var viewStr = typeof view === 'string' ? view : '';
+                var isSelectRecords = viewStr.indexOf('select-records') !== -1;
+
+                if (isSelectRecords) {
+                    options.entityType = 'Product';
+                    options.scope = 'Product';
+                    options.createButton = true;
+                    view = 'custom:views/modals/select-product-for-quote';
+                }
+
+                var self = this;
+                var wrappedCallback = callback;
+
+                if (name === 'itemList') {
+                    wrappedCallback = function (itemListView) {
+                        self.ensureItemListHooks(itemListView);
+
+                        if (callback) {
+                            callback(itemListView);
+                        }
+                    };
+                }
+
+                return originalCreateView(name, view, options, wrappedCallback);
+            };
+
             Dep.prototype.setup.call(this);
 
             this.bindCatalogPriceRefresh();
+
+            this.dropdownItemList = this.dropdownItemList || [];
 
             var hasCreateProductAction = this.dropdownItemList.some(function (item) {
                 return item && item.name === 'createProductDirect';
@@ -48,26 +82,6 @@ define('custom:views/quote/fields/item-list', [
                 }
             }
 
-            var originalCreateView = this.createView.bind(this);
-
-            this.createView = function (name, view, options, callback) {
-                options = options || {};
-
-                var viewStr = typeof view === 'string' ? view : '';
-                var isSelectRecords = viewStr.indexOf('select-records') !== -1;
-
-                // Nel contesto item-list del contratto, la modale select-records
-                // viene usata per i prodotti: forziamo scope Product.
-                if (isSelectRecords) {
-                    options.entityType = 'Product';
-                    options.scope = 'Product';
-                    options.createButton = true;
-                    view = 'custom:views/modals/select-product-for-quote';
-                }
-
-                return originalCreateView(name, view, options, callback);
-            };
-
             this._onDocumentClick = function () {
                 setTimeout(function () {
                     this.injectCreateProductMenuItemGlobal();
@@ -75,6 +89,150 @@ define('custom:views/quote/fields/item-list', [
             }.bind(this);
 
             $(document).on('click.create-product-menu-' + this.cid, this._onDocumentClick);
+        },
+
+        getLiveItemList: function () {
+            var itemListView = this.getItemListView && this.getItemListView();
+
+            if (itemListView && typeof itemListView.fetch === 'function') {
+                var fetched = itemListView.fetch();
+
+                if (fetched && fetched.itemList) {
+                    return Espo.Utils.cloneDeep(fetched.itemList);
+                }
+            }
+
+            return Espo.Utils.cloneDeep(this.model.get(this.name) || []);
+        },
+
+        syncItemListFromViews: function () {
+            var itemList = this.getLiveItemList();
+
+            this.model.set(this.name, itemList, {ui: true});
+
+            return itemList;
+        },
+
+        ensureItemListHooks: function (itemListView) {
+            itemListView = itemListView || (this.getItemListView && this.getItemListView());
+
+            if (!itemListView) {
+                if (!this._itemListHookRetries) {
+                    this._itemListHookRetries = 0;
+                }
+
+                if (this._itemListHookRetries < 20) {
+                    this._itemListHookRetries++;
+                    setTimeout(function () {
+                        this.ensureItemListHooks();
+                    }.bind(this), 250);
+                }
+
+                return;
+            }
+
+            if (this._itemListHooksReady) {
+                this.hookItemRowModels(itemListView);
+
+                return;
+            }
+
+            this._itemListHooksReady = true;
+
+            this.listenTo(itemListView, 'change', function (data) {
+                if (data && data.itemField === 'product') {
+                    setTimeout(function () {
+                        this.applyCatalogPricesToItemList();
+                    }.bind(this), 80);
+                }
+
+                this.hookItemRowModels(itemListView);
+            });
+
+            this.hookItemRowModels(itemListView);
+        },
+
+        hookItemRowModels: function (itemListView) {
+            if (!itemListView || typeof itemListView.getItemListViews !== 'function') {
+                return;
+            }
+
+            itemListView.getItemListViews().forEach(function (itemView) {
+                if (!itemView || !itemView.model || itemView._catalogPriceHook) {
+                    return;
+                }
+
+                itemView._catalogPriceHook = true;
+
+                this.listenTo(itemView.model, 'change:productId', function () {
+                    if (!itemView.model.get('productId')) {
+                        return;
+                    }
+
+                    setTimeout(function () {
+                        this.applyCatalogPricesToItemRow(itemView);
+                    }.bind(this), 80);
+                });
+
+                this.listenTo(itemView.model, 'after-product-select', function () {
+                    setTimeout(function () {
+                        this.applyCatalogPricesToItemRow(itemView);
+                    }.bind(this), 80);
+                });
+            }.bind(this));
+        },
+
+        applyCatalogPricesToItemRow: async function (itemView) {
+            if (!itemView || !itemView.model) {
+                return;
+            }
+
+            var productId = itemView.model.get('productId');
+
+            if (!productId || !this.model.get('priceBookId')) {
+                return;
+            }
+
+            var map = await CatalogPrices.fetchRows(this.model, [productId]);
+            var row = map[productId];
+
+            if (!row) {
+                return;
+            }
+
+            var patch = CatalogPrices.patchFromRow(
+                itemView.model.attributes,
+                row,
+                this.model.get('amountCurrency'),
+                this.model
+            );
+
+            if (!Object.keys(patch).length) {
+                return;
+            }
+
+            itemView.model.set(patch);
+
+            if (itemView.calculationHandler) {
+                itemView.calculationHandler.calculateItem(itemView.model);
+            }
+
+            this.syncItemListFromViews();
+            this.refreshItemRowFields(itemView, Object.keys(patch));
+        },
+
+        refreshItemRowFields: function (itemView, fieldNames) {
+            if (!itemView || typeof itemView.getFieldView !== 'function') {
+                return;
+            }
+
+            fieldNames.forEach(function (field) {
+                var fieldView = itemView.getFieldView(field);
+
+                if (fieldView && typeof fieldView.reRender === 'function') {
+                    fieldView.reRender();
+                }
+            });
         },
 
         bindCatalogPriceRefresh: function () {
@@ -97,26 +255,6 @@ define('custom:views/quote/fields/item-list', [
             });
         },
 
-        bindItemListProductListener: function () {
-            if (this._itemListProductListenerBound) {
-                return;
-            }
-
-            var itemListView = this.getItemListView && this.getItemListView();
-
-            if (!itemListView) {
-                return;
-            }
-
-            this._itemListProductListenerBound = true;
-
-            this.listenTo(itemListView, 'change', function (data) {
-                if (data && data.itemField === 'product') {
-                    this.applyCatalogPricesToItemList();
-                }
-            });
-        },
-
         onRemove: function () {
             if (this._onDocumentClick) {
                 $(document).off('click.create-product-menu-' + this.cid, this._onDocumentClick);
@@ -134,12 +272,13 @@ define('custom:views/quote/fields/item-list', [
             await this.applyCatalogPricesToItemList();
         },
 
-        fetchCatalogPrices: function (productIds) {
-            return CatalogPrices.fetchRows(this.model, productIds);
-        },
-
         applyCatalogPricesToItemList: async function () {
-            var itemList = Espo.Utils.cloneDeep(this.model.get(this.name) || []);
+            if (!this.model.get('priceBookId')) {
+                return;
+            }
+
+            var itemListView = this.getItemListView && this.getItemListView();
+            var itemList = this.getLiveItemList();
             var productIds = [];
 
             itemList.forEach(function (item) {
@@ -152,15 +291,11 @@ define('custom:views/quote/fields/item-list', [
                 return;
             }
 
-            if (!this.model.get('priceBookId')) {
-                return;
-            }
-
-            var pricesByProduct = await this.fetchCatalogPrices(productIds);
+            var pricesByProduct = await CatalogPrices.fetchRows(this.model, productIds);
             var currency = this.model.get('amountCurrency');
             var changed = false;
 
-            itemList.forEach(function (item) {
+            itemList.forEach(function (item, index) {
                 if (!item.productId || !pricesByProduct[item.productId]) {
                     return;
                 }
@@ -168,13 +303,26 @@ define('custom:views/quote/fields/item-list', [
                 var patch = CatalogPrices.patchFromRow(
                     item,
                     pricesByProduct[item.productId],
-                    currency
+                    currency,
+                    this.model
                 );
 
                 Object.keys(patch).forEach(function (key) {
                     item[key] = patch[key];
                     changed = true;
                 });
+
+                if (itemListView && typeof itemListView.getItemListViews === 'function') {
+                    var itemView = itemListView.getItemListViews()[index];
+
+                    if (itemView && itemView.model) {
+                        itemView.model.set(patch);
+
+                        if (itemView.calculationHandler) {
+                            itemView.calculationHandler.calculateItem(itemView.model);
+                        }
+                    }
+                }
             });
 
             if (!changed) {
@@ -182,7 +330,13 @@ define('custom:views/quote/fields/item-list', [
             }
 
             this.model.set(this.name, itemList, {ui: true});
-            await this.reRenderNoFlicker();
+
+            if (itemListView && typeof itemListView.getItemListViews === 'function') {
+                itemListView.getItemListViews().forEach(function (itemView) {
+                    this.refreshItemRowFields(itemView, ['listPrice', 'prezzoCodice', 'unitPrice']);
+                }.bind(this));
+            }
+
             this.calculateAmount();
         },
 
@@ -198,12 +352,13 @@ define('custom:views/quote/fields/item-list', [
                 this.injectCreateArticleButton();
                 this.injectCreateProductMenuItem();
                 this.injectCreateProductMenuItemGlobal();
+                this.ensureItemListHooks();
             }.bind(this), 200);
 
             this.bindButtonObserver();
             this.injectCreateProductMenuItem();
             this.injectCreateProductMenuItemGlobal();
-            this.bindItemListProductListener();
+            this.ensureItemListHooks();
         },
 
         bindButtonObserver: function () {
