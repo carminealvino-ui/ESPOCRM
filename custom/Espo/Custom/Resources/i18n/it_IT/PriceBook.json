@@ -1,9 +1,13 @@
 {
     "fields": {
         "name": "Listino Prezzi",
-        "parentPriceBook": "Listino Prezzi Principale"
+        "parentPriceBook": "Listino Prezzi Principale",
+        "taxCode": "Imposta - Codice"
     },
     "labels": {
         "Create PriceBook": "Crea Listino Prezzi"
+    },
+    "links": {
+        "childPriceBooks": "Listino Prezzi Relazionato"
     }
 }

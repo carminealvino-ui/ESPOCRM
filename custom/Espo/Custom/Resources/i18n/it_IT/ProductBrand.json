@@ -7,7 +7,9 @@
     },
     "links": {
         "fornitorePartner": "Fornitore/Partner",
-        "appuntamenti": "Appuntamenti"
+        "appuntamenti": "Appuntamenti",
+        "productCategories": "Prodotto - Categoria",
+        "quotes": "Contratto"
     },
     "labels": {
         "Create ProductBrand": "Crea Prodotto - Brand"

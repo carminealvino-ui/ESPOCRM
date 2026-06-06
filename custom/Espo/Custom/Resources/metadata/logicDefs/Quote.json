@@ -10,6 +10,16 @@
                     }
                 ]
             }
+        },
+        "statoFinanziamento": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
         }
     }
 }

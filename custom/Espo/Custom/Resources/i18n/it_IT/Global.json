@@ -210,7 +210,8 @@
         "Workflow": "Workflow",
         "WorkflowCategory": "Workflow - Categorie",
         "WorkflowLogRecord": "Workflow - Log",
-        "WorkflowRoundRobin": "Workflow - Round Robin"
+        "WorkflowRoundRobin": "Workflow - Round Robin",
+        "PriceRuleCondition": "Listino Prezzi - Regola Condizioni"
     },
     "scopeNames": {
         "Meeting": "Impegno",
