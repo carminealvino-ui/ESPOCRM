@@ -143,4 +143,23 @@ if ($newType !== 'link' || !$hasTaxCodeId) {
     exit(1);
 }
 
+if (!columnExists($pdo, 'price_book', 'tax_code_name')) {
+    fwrite(STDOUT, "Colonna tax_code_name assente → ALTER TABLE...\n");
+    if (!$dryRun) {
+        $pdo->exec('ALTER TABLE price_book ADD COLUMN tax_code_name VARCHAR(100) DEFAULT NULL AFTER tax_code_id');
+    }
+}
+
+if (!$dryRun && columnExists($pdo, 'price_book', 'tax_code_name')) {
+    $n = $pdo->exec(
+        'UPDATE price_book pb
+         INNER JOIN tax_code tc ON tc.id = pb.tax_code_id AND tc.deleted = 0
+         SET pb.tax_code_name = tc.code
+         WHERE pb.deleted = 0
+           AND pb.tax_code_id IS NOT NULL
+           AND (pb.tax_code_name IS NULL OR pb.tax_code_name = \'\')'
+    );
+    fwrite(STDOUT, "Backfill tax_code_name: {$n} listini\n");
+}
+
 fwrite(STDOUT, "\nOK: taxCode link → TaxCode (Imposta - Codici) installato.\n");
