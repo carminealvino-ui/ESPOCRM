@@ -1,24 +1,27 @@
 #!/usr/bin/env bash
-# Tutto in un colpo: fix prezzi dual IVA listino (un solo PHP autonomo).
+# Fix prezzi dual IVA listino (SQL diretto) + layout etichette + rebuild.
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 BRANCH="${BRANCH:-cursor/productprice-dual-iva-listino-codice-9999}"
-URL="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}/tools/fix-prezzi-listino-completo.php"
+BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 
 cd "${CRM_ROOT}" || exit 1
-mkdir -p tools
+mkdir -p tools custom/Espo/Custom/Resources/layouts/ProductPrice
 
-echo "Download fix-prezzi-listino-completo.php ..."
-curl -fsSL "${URL}?t=$(date +%s)" -o tools/fix-prezzi-listino-completo.php
+curl -fsSL "${BASE}/tools/fix-prezzi-listino-completo.php?t=$(date +%s)" -o tools/fix-prezzi-listino-completo.php
+curl -fsSL "${BASE}/custom/Espo/Custom/Resources/layouts/ProductPrice/listForPriceBook.json?t=$(date +%s)" \
+  -o custom/Espo/Custom/Resources/layouts/ProductPrice/listForPriceBook.json
+curl -fsSL "${BASE}/custom/Espo/Custom/Resources/layouts/PriceBook/detail.json?t=$(date +%s)" \
+  -o custom/Espo/Custom/Resources/layouts/PriceBook/detail.json
 
-echo "Esecuzione..."
+echo "=== Fix prezzi dual IVA (SQL) ==="
 php tools/fix-prezzi-listino-completo.php "$@"
 
 echo ""
-echo "Rebuild layout/i18n..."
+echo "=== Rebuild + cache ==="
 php command.php rebuild
 php command.php clear-cache 2>/dev/null || true
 rm -rf data/cache/*
 
-echo "Fatto."
+echo "Completato."
