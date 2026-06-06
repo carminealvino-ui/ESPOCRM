@@ -1,13 +1,5 @@
 {
     "createDisabled": false,
-    "bottomPanels": {
-        "detail": [
-            {
-                "name": "contratti",
-                "label": "Contratti"
-            }
-        ]
-    },
     "relationshipPanels": {
         "contratti": {
             "layout": "listForProduct",
