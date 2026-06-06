@@ -36,6 +36,11 @@
             "isCustom": true
         },
         "price": {
+            "required": false,
+            "mandatoryValidationList": [],
+            "validatorClassNameList": [
+                "Espo\\Custom\\Classes\\FieldValidators\\ProductPrice\\Price\\RequiredOrDualIva"
+            ],
             "tooltip": true
         }
     }

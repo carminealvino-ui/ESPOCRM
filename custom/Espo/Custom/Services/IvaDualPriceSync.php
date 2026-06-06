@@ -2,6 +2,7 @@
 
 namespace Espo\Custom\Services;
 
+use Espo\Core\Record\Input\Data;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
@@ -30,6 +31,31 @@ class IvaDualPriceSync
         $this->syncListinoFields($entity, $aliquota, $taxInclusive);
         $this->syncCodiceFields($entity, $aliquota);
         $this->syncNativePriceField($entity, $taxInclusive);
+    }
+
+    /**
+     * Input filter (create/update API): calcola price e coppie IVA prima della validazione.
+     */
+    public function prepareProductPriceInput(Data $data): void
+    {
+        $priceBookId = $data->get('priceBookId');
+        $aliquota = $this->resolveAliquotaFromPriceBookId(
+            is_string($priceBookId) ? $priceBookId : null
+        ) ?? self::DEFAULT_ALIQUOTA_IVA;
+
+        if (!$data->has('aliquotaIva') || $data->get('aliquotaIva') === null || $data->get('aliquotaIva') === '') {
+            $data->set('aliquotaIva', $aliquota);
+        } else {
+            $aliquota = (float) $data->get('aliquotaIva');
+        }
+
+        $taxInclusive = $this->isPriceBookTaxInclusiveFromId(
+            is_string($priceBookId) ? $priceBookId : null
+        );
+
+        $this->syncInputIvaPair($data, 'prezzoListinoIvaInclusa', 'prezzoListinoIvaEsclusa', $aliquota);
+        $this->syncInputIvaPair($data, 'prezzoCodiceIvaInclusa', 'prezzoCodice', $aliquota);
+        $this->syncInputNativePrice($data, $taxInclusive);
     }
 
     public function syncProductFromProductPrice(Entity $productPrice): void
@@ -336,6 +362,13 @@ class IvaDualPriceSync
     {
         $priceBookId = $entity->get('priceBookId');
 
+        return $this->isPriceBookTaxInclusiveFromId(
+            is_string($priceBookId) ? $priceBookId : null
+        );
+    }
+
+    private function isPriceBookTaxInclusiveFromId(?string $priceBookId): bool
+    {
         if (!$priceBookId) {
             return false;
         }
@@ -343,6 +376,86 @@ class IvaDualPriceSync
         $priceBook = $this->entityManager->getEntityById('PriceBook', $priceBookId);
 
         return $priceBook && (bool) $priceBook->get('isTaxInclusive');
+    }
+
+    private function syncInputIvaPair(Data $data, string $iviField, string $netField, float $aliquota): void
+    {
+        $ivi = $this->floatOrNull($data->get($iviField));
+        $net = $this->floatOrNull($data->get($netField));
+        $iviWritten = $data->has($iviField);
+        $netWritten = $data->has($netField);
+
+        if ($iviWritten && $ivi !== null && $ivi > 0 && (!$netWritten || $net === null || $net <= 0)) {
+            $data->set($netField, self::toEsclusa($ivi, $aliquota));
+
+            return;
+        }
+
+        if ($netWritten && $net !== null && $net > 0 && (!$iviWritten || $ivi === null || $ivi <= 0)) {
+            $data->set($iviField, self::toInclusa($net, $aliquota));
+
+            return;
+        }
+
+        if ($ivi !== null && $ivi > 0 && ($net === null || $net <= 0)) {
+            $data->set($netField, self::toEsclusa($ivi, $aliquota));
+        } elseif ($net !== null && $net > 0 && ($ivi === null || $ivi <= 0)) {
+            $data->set($iviField, self::toInclusa($net, $aliquota));
+        }
+    }
+
+    private function syncInputNativePrice(Data $data, bool $taxInclusive): void
+    {
+        $existingPrice = $this->floatOrNull($data->get('price'));
+
+        if ($existingPrice !== null && $existingPrice > 0) {
+            return;
+        }
+
+        $ivi = $this->floatOrNull($data->get('prezzoListinoIvaInclusa'));
+        $net = $this->floatOrNull($data->get('prezzoListinoIvaEsclusa'));
+        $price = null;
+
+        if ($taxInclusive && $ivi !== null && $ivi > 0) {
+            $price = round($ivi, 2);
+        } elseif (!$taxInclusive && $net !== null && $net > 0) {
+            $price = round($net, 2);
+        } elseif ($ivi !== null && $ivi > 0) {
+            $price = round($ivi, 2);
+        } elseif ($net !== null && $net > 0) {
+            $price = round($net, 2);
+        }
+
+        if ($price === null) {
+            return;
+        }
+
+        $data->set('price', $price);
+
+        $currency = $data->get('priceCurrency');
+
+        if (!is_string($currency) || $currency === '') {
+            $currency = $data->get('prezzoListinoIvaInclusaCurrency');
+        }
+
+        if (!is_string($currency) || $currency === '') {
+            $currency = $data->get('prezzoListinoIvaEsclusaCurrency');
+        }
+
+        if (!is_string($currency) || $currency === '') {
+            $productId = $data->get('productId');
+
+            if (is_string($productId) && $productId !== '') {
+                $product = $this->entityManager->getEntityById('Product', $productId);
+                $currency = $product?->get('unitPriceCurrency') ?? $product?->get('listPriceCurrency');
+            }
+        }
+
+        if (!is_string($currency) || $currency === '') {
+            $currency = 'EUR';
+        }
+
+        $data->set('priceCurrency', $currency);
     }
 
     public static function toEsclusa(float $importoIvi, float $aliquotaPercent): float
