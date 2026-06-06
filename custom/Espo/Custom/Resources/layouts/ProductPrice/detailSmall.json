@@ -13,6 +13,14 @@
             ],
             [
                 {
+                    "name": "aliquotaIva"
+                },
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
                     "name": "dateStart"
                 },
                 {
@@ -33,14 +41,6 @@
                 },
                 {
                     "name": "prezzoCodiceIvaInclusa"
-                }
-            ],
-            [
-                {
-                    "name": "aliquotaIva"
-                },
-                {
-                    "name": "status"
                 }
             ]
         ]
