@@ -1191,6 +1191,16 @@ class QuotePricingCalculator
             return substr($dateQuoted, 0, 10);
         }
 
+        $name = (string) ($quote->get('name') ?? '');
+
+        if (preg_match('/(\d{4}-\d{2}-\d{2})/', $name, $m)) {
+            return $m[1];
+        }
+
+        if (preg_match('/(\d{2})\.(\d{2})\.(\d{4})/', $name, $m)) {
+            return $m[3] . '-' . $m[2] . '-' . $m[1];
+        }
+
         $createdAt = $quote->get('createdAt');
 
         if ($createdAt instanceof \DateTimeInterface) {
