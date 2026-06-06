@@ -128,6 +128,57 @@
             "notNull": false,
             "type": "float",
             "isCustom": true
+        },
+        "finanziamento": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "statoFinanziamento": {
+            "type": "enum",
+            "options": [
+                "",
+                "In lavorazione",
+                "In rivalutazione",
+                "In Attesa Documentazione",
+                "Approvato",
+                "Respinto",
+                "Annullato"
+            ],
+            "style": {
+                "": null,
+                "In lavorazione": null,
+                "In rivalutazione": null,
+                "In Attesa Documentazione": null,
+                "Approvato": null,
+                "Respinto": null,
+                "Annullato": null
+            },
+            "default": null,
+            "isCustom": true
+        },
+        "statoContratto": {
+            "type": "enum",
+            "options": [
+                "",
+                "In lavorazione",
+                "Inserito",
+                "Installato",
+                "Sospeso",
+                "Annullato",
+                "Recesso"
+            ],
+            "style": {
+                "": null,
+                "In lavorazione": null,
+                "Inserito": null,
+                "Installato": null,
+                "Sospeso": null,
+                "Annullato": null,
+                "Recesso": null
+            },
+            "default": null,
+            "isCustom": true
         }
     },
     "links": {

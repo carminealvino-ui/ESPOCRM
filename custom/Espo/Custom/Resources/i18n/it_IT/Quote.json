@@ -67,7 +67,10 @@
         "codiceContratto": "Codice Contratto",
         "numeroContratto": "Numero Contratto",
         "venditaAbbinataAdAltroProdotto": "Vendita Abbinata ad Altro Prodotto",
-        "scontoVenditaAbbinata": "% Sconto Vendita Abbinata"
+        "scontoVenditaAbbinata": "% Sconto Vendita Abbinata",
+        "finanziamento": "Finanziamento",
+        "statoFinanziamento": "Stato Finanziamento",
+        "statoContratto": "Stato Contratto"
     },
     "links": {
         "cAP": "CAP",
@@ -89,6 +92,24 @@
         "inventoryStatus": {
             "Available": "Disponibile",
             "Not Available": "Non Disponibile"
+        },
+        "statoFinanziamento": {
+            "In lavorazione": "In lavorazione",
+            "Approvato": "Approvato",
+            "Respinto": "Respinto",
+            "": "",
+            "Annullato": "Annullato",
+            "In Attesa Documentazione": "In Attesa Documentazione",
+            "In rivalutazione": "In rivalutazione"
+        },
+        "statoContratto": {
+            "In lavorazione": "In lavorazione",
+            "Installato": "Installato",
+            "Annullato": "Annullato",
+            "": "",
+            "Sospeso": "Sospeso",
+            "Inserito": "Inserito",
+            "Recesso": "Recesso"
         }
     }
 }
