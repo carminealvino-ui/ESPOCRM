@@ -24,6 +24,8 @@ mkdir -p "${DEST_DIR}"
 
 if [[ "${AGGIORNAMENTO}" == "hooks" ]]; then
   SRC="${CRM_ROOT}/custom/Espo/Custom/Hooks/${ENTITY}/${REL}"
+elif [[ "${AGGIORNAMENTO}" == "services" ]]; then
+  SRC="${CRM_ROOT}/custom/Espo/Custom/Services/${REL}"
 elif [[ "${AGGIORNAMENTO}" == "layouts" ]]; then
   SRC="${CRM_ROOT}/custom/Espo/Custom/Resources/layouts/${ENTITY}/${REL}"
 elif [[ "${AGGIORNAMENTO}" == client-* ]]; then
@@ -34,12 +36,22 @@ elif [[ "${AGGIORNAMENTO}" == client-* ]]; then
     SRC="${CRM_ROOT}/client/custom/src/${REL}"
   fi
 else
-  SRC="${CRM_ROOT}/custom/Espo/Custom/Resources/${AGGIORNAMENTO}/${REL}"
-  if [[ ! -f "${SRC}" ]] && [[ -f "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/${AGGIORNAMENTO}/${REL}" ]]; then
-    SRC="${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/${AGGIORNAMENTO}/${REL}"
+  META_KIND="${AGGIORNAMENTO_RAW}"
+  case "${AGGIORNAMENTO}" in
+    entitydefs) META_KIND="entityDefs" ;;
+    clientdefs) META_KIND="clientDefs" ;;
+    logicdefs) META_KIND="logicDefs" ;;
+    recorddefs) META_KIND="recordDefs" ;;
+    selectdefs) META_KIND="selectDefs" ;;
+    acldefs) META_KIND="aclDefs" ;;
+  esac
+  SRC="${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/${META_KIND}/${REL}"
+  if [[ -f "${SRC}" ]]; then
     AGGIORNAMENTO="metadata-${AGGIORNAMENTO}"
     DEST_DIR="${CRM_ROOT}/backup_dev/${ENTITY}/${AGGIORNAMENTO}"
     mkdir -p "${DEST_DIR}"
+  elif [[ -f "${CRM_ROOT}/custom/Espo/Custom/Resources/${META_KIND}/${REL}" ]]; then
+    SRC="${CRM_ROOT}/custom/Espo/Custom/Resources/${META_KIND}/${REL}"
   fi
 fi
 
