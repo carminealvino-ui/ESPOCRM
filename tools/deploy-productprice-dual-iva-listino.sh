@@ -51,6 +51,8 @@ FILES=(
   "tools/sync-listino-prodotti.php"
   "tools/test-iva-dual-price-sync.php"
   "tools/backfill-productprice-dual-iva-from-price.php"
+  "tools/install-productprice-dual-iva-fields.php"
+  "tools/completa-prezzi-listino-dual-iva.sh"
   "tools/set-pricebook-tax-code.php"
   "tools/verifica-listino-dual-iva.php"
   "tools/install-pricebook-tax-code-field.php"

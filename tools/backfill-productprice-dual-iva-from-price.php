@@ -1,10 +1,6 @@
 <?php
 /**
  * Popola prezzoListinoIvaInclusa / prezzoListinoIvaEsclusa da campo price esistente.
- *
- *   cd ~/public_html/crm/mec-group
- *   php tools/backfill-productprice-dual-iva-from-price.php --dry-run
- *   php tools/backfill-productprice-dual-iva-from-price.php --price-book-name='ARIEL'
  */
 
 declare(strict_types=1);
@@ -14,6 +10,7 @@ $options = getopt('', [
     'price-book-id::',
     'price-book-name::',
     'dry-run',
+    'verbose',
 ]);
 
 $crmRoot = rtrim($options['crm-root'] ?? getcwd(), '/');
@@ -34,6 +31,15 @@ $entityManager = $app->getContainer()->get('entityManager');
 $ivaSync = $app->getContainer()->get(\Espo\Custom\Services\IvaDualPriceSync::class);
 
 $dryRun = array_key_exists('dry-run', $options);
+$verbose = array_key_exists('verbose', $options);
+
+$sample = $entityManager->getNewEntity('ProductPrice');
+
+if (!$sample->hasAttribute('prezzoListinoIvaInclusa')) {
+    fwrite(STDERR, "ERRORE: campi dual IVA assenti su ProductPrice.\n");
+    fwrite(STDERR, "Esegui: php tools/install-productprice-dual-iva-fields.php\n");
+    exit(1);
+}
 
 $where = [];
 
@@ -49,6 +55,7 @@ $collection = $entityManager
 $priceBookFilter = $options['price-book-name'] ?? null;
 $updated = 0;
 $skipped = 0;
+$errors = 0;
 
 foreach ($collection as $productPrice) {
     if ($priceBookFilter) {
@@ -77,18 +84,41 @@ foreach ($collection as $productPrice) {
     $label = $productPrice->get('name') ?: $productPrice->getId();
 
     if ($dryRun) {
-        fwrite(STDOUT, "[dry-run] {$label}: price={$price} → ricalcolo dual IVA\n");
+        fwrite(STDOUT, "[dry-run] {$label}: price={$price}\n");
         $updated++;
         continue;
     }
 
-    $productPrice->set('price', $price);
-    $ivaSync->backfillProductPriceFromNativePrice($productPrice);
-    $entityManager->saveEntity($productPrice, ['silent' => true]);
-    $ivaSync->syncProductFromProductPrice($productPrice);
+    try {
+        $fresh = $entityManager->getEntityById('ProductPrice', $productPrice->getId());
 
-    fwrite(STDOUT, "OK {$label}: IVI={$productPrice->get('prezzoListinoIvaInclusa')} NET={$productPrice->get('prezzoListinoIvaEsclusa')}\n");
-    $updated++;
+        if (!$fresh) {
+            $errors++;
+            continue;
+        }
+
+        $fresh->set('price', $price);
+        $ivaSync->backfillProductPriceFromNativePrice($fresh);
+        $entityManager->saveEntity($fresh);
+        $ivaSync->syncProductFromProductPrice($fresh);
+
+        if ($verbose || $updated < 5) {
+            fwrite(STDOUT, sprintf(
+                "OK %s: price=%s IVI=%s NET=%s COD=%s\n",
+                $label,
+                $price,
+                $fresh->get('prezzoListinoIvaInclusa'),
+                $fresh->get('prezzoListinoIvaEsclusa'),
+                $fresh->get('prezzoCodice')
+            ));
+        }
+
+        $updated++;
+    } catch (Throwable $e) {
+        $errors++;
+        fwrite(STDERR, "ERR {$label}: {$e->getMessage()}\n");
+    }
 }
 
-fwrite(STDOUT, "\nRighe aggiornate: {$updated}, saltate: {$skipped}" . ($dryRun ? ' (dry-run)' : '') . "\n");
+fwrite(STDOUT, "\nRighe aggiornate: {$updated}, saltate: {$skipped}, errori: {$errors}" . ($dryRun ? ' (dry-run)' : '') . "\n");
+exit($errors > 0 ? 1 : 0);

@@ -13,21 +13,25 @@
     {
         "name": "prezzoListinoIvaEsclusa",
         "width": 12,
-        "align": "right"
+        "align": "right",
+        "label": "Listino (IVA esclusa)"
     },
     {
         "name": "prezzoListinoIvaInclusa",
         "width": 12,
-        "align": "right"
+        "align": "right",
+        "label": "Listino (IVA inclusa)"
     },
     {
         "name": "prezzoCodice",
         "width": 12,
-        "align": "right"
+        "align": "right",
+        "label": "Prezzo codice (IVA esclusa)"
     },
     {
         "name": "prezzoCodiceIvaInclusa",
         "width": 12,
-        "align": "right"
+        "align": "right",
+        "label": "Prezzo codice (IVA inclusa)"
     }
 ]
