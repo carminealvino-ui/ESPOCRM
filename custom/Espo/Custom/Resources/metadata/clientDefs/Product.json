@@ -3,7 +3,10 @@
     "relationshipPanels": {
         "contratti": {
             "layout": "listForProduct",
-            "rowActionsView": "views/record/row-actions/default"
+            "rowActionsView": "views/record/row-actions/default",
+            "selectDisabled": true,
+            "createDisabled": true,
+            "unlinkDisabled": true
         }
     }
 }
