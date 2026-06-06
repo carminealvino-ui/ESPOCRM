@@ -49,6 +49,7 @@ FILES=(
   "custom/Espo/Custom/Resources/i18n/it_IT/Product.json"
   "tools/sync-listino-prodotti.php"
   "tools/test-iva-dual-price-sync.php"
+  "tools/backfill-productprice-dual-iva-from-price.php"
 )
 
 for rel in "${FILES[@]}"; do
