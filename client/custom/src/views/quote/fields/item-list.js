@@ -1,4 +1,4 @@
-// VERSIONE: 1.4.0 — sync prezzi sulle righe live (non solo itemList del modello padre)
+// VERSIONE: 1.4.1 — prezzi listino/codice; niente inject DOM su righe (solo menu …)
 
 define('custom:views/quote/fields/item-list', [
     'sales:views/quote/fields/item-list',
@@ -8,14 +8,6 @@ define('custom:views/quote/fields/item-list', [
     return Dep.extend({
 
         customItemView: 'custom:views/quote/record/item',
-
-        events: {
-            'click .btn-group .dropdown-toggle': function () {
-                setTimeout(function () {
-                    this.injectCreateProductMenuItem();
-                }.bind(this), 0);
-            },
-        },
 
         setup: function () {
             this.customItemView = 'custom:views/quote/record/item';
@@ -82,13 +74,6 @@ define('custom:views/quote/fields/item-list', [
                 }
             }
 
-            this._onDocumentClick = function () {
-                setTimeout(function () {
-                    this.injectCreateProductMenuItemGlobal();
-                }.bind(this), 0);
-            }.bind(this);
-
-            $(document).on('click.create-product-menu-' + this.cid, this._onDocumentClick);
         },
 
         getLiveItemList: function () {
@@ -218,21 +203,6 @@ define('custom:views/quote/fields/item-list', [
             }
 
             this.syncItemListFromViews();
-            this.refreshItemRowFields(itemView, Object.keys(patch));
-        },
-
-        refreshItemRowFields: function (itemView, fieldNames) {
-            if (!itemView || typeof itemView.getFieldView !== 'function') {
-                return;
-            }
-
-            fieldNames.forEach(function (field) {
-                var fieldView = itemView.getFieldView(field);
-
-                if (fieldView && typeof fieldView.reRender === 'function') {
-                    fieldView.reRender();
-                }
-            });
         },
 
         bindCatalogPriceRefresh: function () {
@@ -253,14 +223,6 @@ define('custom:views/quote/fields/item-list', [
                     this.applyCatalogPricesToItemList();
                 }
             });
-        },
-
-        onRemove: function () {
-            if (this._onDocumentClick) {
-                $(document).off('click.create-product-menu-' + this.cid, this._onDocumentClick);
-            }
-
-            Dep.prototype.onRemove.call(this);
         },
 
         actionCreateProductDirect: function () {
@@ -330,13 +292,6 @@ define('custom:views/quote/fields/item-list', [
             }
 
             this.model.set(this.name, itemList, {ui: true});
-
-            if (itemListView && typeof itemListView.getItemListViews === 'function') {
-                itemListView.getItemListViews().forEach(function (itemView) {
-                    this.refreshItemRowFields(itemView, ['listPrice', 'prezzoCodice', 'unitPrice']);
-                }.bind(this));
-            }
-
             this.calculateAmount();
         },
 
@@ -347,139 +302,9 @@ define('custom:views/quote/fields/item-list', [
                 return;
             }
 
-            this.injectCreateArticleButton();
             setTimeout(function () {
-                this.injectCreateArticleButton();
-                this.injectCreateProductMenuItem();
-                this.injectCreateProductMenuItemGlobal();
                 this.ensureItemListHooks();
             }.bind(this), 200);
-
-            this.bindButtonObserver();
-            this.injectCreateProductMenuItem();
-            this.injectCreateProductMenuItemGlobal();
-            this.ensureItemListHooks();
-        },
-
-        bindButtonObserver: function () {
-            if (this._buttonObserver) {
-                return;
-            }
-
-            this._buttonObserver = new MutationObserver(function () {
-                this.injectCreateArticleButton();
-                this.injectCreateProductMenuItem();
-                this.injectCreateProductMenuItemGlobal();
-            }.bind(this));
-
-            this._buttonObserver.observe(this.el, { childList: true, subtree: true });
-        },
-
-        injectCreateArticleButton: function () {
-            if (this.$el.find('.btn-create-article').length) {
-                return;
-            }
-
-            var $anchorGroup = this.$el.find('.btn-group').first();
-            var $container = $anchorGroup.length ? $anchorGroup.parent() : this.$el;
-
-            var $button = $('<button>')
-                .attr('type', 'button')
-                .addClass('btn btn-primary btn-sm btn-create-article')
-                .css('margin-left', '8px')
-                .append($('<span>').addClass('fas fa-plus'))
-                .append(document.createTextNode(' Crea articolo'));
-
-            if ($anchorGroup.length) {
-                $anchorGroup.after($button);
-            } else {
-                $container.append($button);
-            }
-
-            this.listenToDom($button, 'click', function () {
-                this.openCreateArticleModal();
-            }.bind(this));
-        },
-
-        injectCreateProductMenuItem: function () {
-            var $menus = this.$el.find('.dropdown.open .dropdown-menu:visible');
-
-            if (!$menus.length) {
-                $menus = this.$el.find('.dropdown-menu');
-            }
-
-            if (!$menus.length) {
-                return;
-            }
-
-            var self = this;
-
-            $menus.each(function (i, menuEl) {
-                var $menu = $(menuEl);
-
-                if ($menu.find('.action[data-action="createProductDirect"]').length) {
-                    return;
-                }
-
-                var $first = $menu.find('li, .list-group-item').first();
-                var $item = $('<li>');
-                var $link = $('<a>')
-                    .attr('href', 'javascript:')
-                    .addClass('action')
-                    .attr('data-action', 'createProductDirect')
-                    .text('Crea prodotto');
-
-                $item.append($link);
-
-                if ($first.length) {
-                    $first.after($item);
-                } else {
-                    $menu.append($item);
-                }
-
-                self.listenToDom($link, 'click', function (e) {
-                    e.preventDefault();
-                    self.openCreateArticleModal();
-                });
-            });
-        },
-
-        injectCreateProductMenuItemGlobal: function () {
-            var self = this;
-            var $menus = $('.dropdown-menu:visible');
-
-            $menus.each(function (i, menuEl) {
-                var $menu = $(menuEl);
-
-                if (!$menu.find('.action[data-action="addProducts"]').length) {
-                    return;
-                }
-
-                if ($menu.find('.action[data-action="createProductDirect"]').length) {
-                    return;
-                }
-
-                var $base = $menu.find('.action[data-action="addProducts"]').first().closest('li');
-                var $item = $('<li>');
-                var $link = $('<a>')
-                    .attr('href', 'javascript:')
-                    .addClass('action')
-                    .attr('data-action', 'createProductDirect')
-                    .text('Crea prodotto');
-
-                $item.append($link);
-
-                if ($base.length) {
-                    $base.after($item);
-                } else {
-                    $menu.append($item);
-                }
-
-                self.listenToDom($link, 'click', function (e) {
-                    e.preventDefault();
-                    self.openCreateArticleModal();
-                });
-            });
         },
 
         openCreateArticleModal: function () {

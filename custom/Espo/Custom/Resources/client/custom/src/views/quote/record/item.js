@@ -50,14 +50,6 @@ define('custom:views/quote/record/item', [
             this.model.set(patch);
             this.calculationHandler.calculateItem(this.model);
             this.model.trigger('after-product-select');
-
-            ['listPrice', 'prezzoCodice', 'unitPrice'].forEach(function (field) {
-                var fieldView = this.getFieldView(field);
-
-                if (fieldView && fieldView.reRender) {
-                    fieldView.reRender();
-                }
-            }.bind(this));
         },
     });
 });

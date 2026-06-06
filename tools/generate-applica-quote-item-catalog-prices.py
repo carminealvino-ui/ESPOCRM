@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'tools' / 'applica-quote-item-catalog-prices.php'
-MARKER = 'quote-item-catalog-prices-php-20260607c'
+MARKER = 'quote-item-catalog-prices-php-20260607d'
 
 FILES = [
     'custom/Espo/Custom/Services/QuotePricingCalculator.php',

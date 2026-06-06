@@ -10,7 +10,7 @@ Elenco operazioni **non urgenti** da eseguire quando un lavoro lungo è terminat
 
 **Già fatto (non ripetere se l’output era OK):**
 
-- Deploy fix prezzi articoli contratto — marker **`quote-item-catalog-prices-php-20260607c`**
+- Deploy fix prezzi articoli contratto — marker **`quote-item-catalog-prices-php-20260607d`**
 - Comando usato:
 
 ```bash
