@@ -39,7 +39,7 @@ $forceRebuild = array_key_exists('force-rebuild', $options);
 $priceBookFilter = isset($options['price-book-name']) ? (string) $options['price-book-name'] : null;
 $priceBookIdFilter = $options['price-book-id'] ?? null;
 
-out('=== FIX prezzi listino dual IVA ===');
+out('=== FIX prezzi listino dual IVA (sql-20260606) ===');
 
 $requiredColumns = [
     'prezzo_listino_iva_inclusa',
