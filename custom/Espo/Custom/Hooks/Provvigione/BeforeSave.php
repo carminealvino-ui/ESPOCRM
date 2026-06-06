@@ -104,12 +104,16 @@ class BeforeSave extends Base
 
     private function resolveImportoBase(Entity $quote, ?string $tipo): float
     {
-        if ($tipo === 'Provvigione Base') {
-            return (float) $quote->get('amount');
+        if ($tipo === null || $tipo === '') {
+            return 0.0;
+        }
+
+        if ($tipo === 'Provvigione Base' || $tipo === 'Referenza Personale') {
+            return $this->resolveQuoteImponibile($quote);
         }
 
         if ($tipo === 'Plus Provvigionale' || $tipo === 'Minus Provvigionale') {
-            return (float) $quote->get('minusPlus');
+            return (float) ($quote->get('minusPlus') ?? 0);
         }
 
         if ($tipo === 'Bonus (Sabato-Domenica)') {
@@ -119,27 +123,52 @@ class BeforeSave extends Base
                 $day = (int) date('N', strtotime((string) $date));
 
                 if ($day >= 6) {
-                    return (float) $quote->get('amount');
+                    return $this->resolveQuoteImponibile($quote);
                 }
             }
 
             return 0.0;
         }
 
-        if ($tipo !== null && strpos($tipo, 'Gara') !== false) {
-            $amount = (float) $quote->get('amount');
+        if (strpos($tipo, 'Gara') !== false) {
+            return $this->resolveGaraBase($quote, $tipo);
+        }
 
-            if (strpos($tipo, '2.5') !== false && $amount > 2500) {
-                return $amount;
-            }
+        // Tipi aggiunti da Entity Manager: default = imponibile contratto
+        return $this->resolveQuoteImponibile($quote);
+    }
 
-            if (strpos($tipo, '3.5') !== false && $amount > 3500) {
-                return $amount;
-            }
+    private function resolveQuoteImponibile(Entity $quote): float
+    {
+        foreach (['amount', 'importoContratto', 'grandTotalAmount'] as $field) {
+            $value = $quote->get($field);
 
-            if (strpos($tipo, '5') !== false && $amount > 5000) {
-                return $amount;
+            if ($value !== null && $value !== '' && is_numeric($value) && (float) $value > 0) {
+                return (float) $value;
             }
+        }
+
+        return 0.0;
+    }
+
+    private function resolveGaraBase(Entity $quote, string $tipo): float
+    {
+        $amount = $this->resolveQuoteImponibile($quote);
+
+        if ($amount <= 0) {
+            return 0.0;
+        }
+
+        if (strpos($tipo, '2.5') !== false && $amount > 2500) {
+            return $amount;
+        }
+
+        if (strpos($tipo, '3.5') !== false && $amount > 3500) {
+            return $amount;
+        }
+
+        if (strpos($tipo, '5') !== false && $amount > 5000) {
+            return $amount;
         }
 
         return 0.0;
