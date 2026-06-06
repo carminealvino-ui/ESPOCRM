@@ -70,3 +70,16 @@ Poi **Ctrl+F5** nel browser.
 - [ ] **IVA inclusa** spuntato se i prezzi listino sono IVI (B2C)
 - [ ] Backfill eseguito su listini migrati da campo `price` legacy
 - [ ] Prezzi modificati **sul listino**, non sul prodotto (salvo eccezioni)
+
+---
+
+## D) Migrazione contratti storici — backfill articoli (DA FARE A LAVORO FINITO)
+
+Dopo aver inserito tutti i contratti vecchi (~100), **una volta sola**:
+
+```bash
+cd ~/public_html/crm/mec-group && \
+php tools/backfill-quote-itemlist-catalog-prices.php --verbose
+```
+
+Prova prima con `--dry-run`. Dettaglio e checklist: [`12-COSE-DA-FARE-PENDENTI.md`](12-COSE-DA-FARE-PENDENTI.md).

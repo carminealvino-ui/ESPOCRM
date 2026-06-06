@@ -108,7 +108,8 @@ Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
 | `09-COMANDO-BASH-UNICO.md` | Ogni passo = un blocco bash copiabile |
 | `10-LISTINO-E-PREZZI-PRODOTTO.md` | Dove inserire prezzi (listino vs prodotto) |
 | `11-ALLINEAMENTO-COMPLETO-SERVER-REPO.md` | **Sync obbligatorio** prod ↔ GitHub |
+| `12-COSE-DA-FARE-PENDENTI.md` | **Todo pendenti** (es. backfill contratti dopo migrazione) |
 
 ---
 
-*Ultimo aggiornamento regole: 2026-06-06*
+*Ultimo aggiornamento regole: 2026-06-07*
