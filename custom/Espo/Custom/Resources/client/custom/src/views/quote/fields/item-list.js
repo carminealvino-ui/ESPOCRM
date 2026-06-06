@@ -1,6 +1,7 @@
 // ========================================
-// VERSIONE: 1.2.0
+// VERSIONE: 1.2.1
 // DATA: 2026-06-06
+// Fix: customItemView (Sales Pack usa customItemView, non itemView)
 // FILE: custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
 // ========================================
 
@@ -10,7 +11,7 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
 
     return Dep.extend({
 
-        itemView: 'custom:views/quote/record/item',
+        customItemView: 'custom:views/quote/record/item',
 
         events: {
             'click .btn-group .dropdown-toggle': function () {
@@ -22,6 +23,8 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
 
         setup: function () {
             Dep.prototype.setup.call(this);
+
+            this.customItemView = 'custom:views/quote/record/item';
 
             this.dropdownItemList = this.dropdownItemList || [];
 

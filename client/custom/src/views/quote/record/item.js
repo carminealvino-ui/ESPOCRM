@@ -1,5 +1,5 @@
 // ========================================
-// VERSIONE: 1.0.0
+// VERSIONE: 1.1.0
 // DATA: 2026-06-06
 // Popola Prezzo di Listino e Prezzo Codice alla selezione prodotto.
 // ========================================
@@ -62,8 +62,10 @@ define('custom:views/quote/record/item', ['sales:views/quote/record/item'], func
 
                 this.model.set(patch);
                 this.calculationHandler.calculateItem(this.model);
+                this.model.trigger('after-product-select');
             } catch (error) {
                 console.error('Catalog prices fetch failed', error);
+                Espo.Ui.error('Impossibile caricare prezzi listino/codice dal listino selezionato.');
             }
         },
     });
