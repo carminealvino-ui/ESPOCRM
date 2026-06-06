@@ -32,6 +32,7 @@ class QuotePricingCalculator
         $this->syncItemListLinePricingFromImportoContratto($quote);
         $this->syncItemListPrezzoCodice($quote);
         $this->syncTotalsAndDerivedFields($quote, true);
+        $this->ensureEntityCurrencyFields($quote, $this->quoteCurrencyFieldNames());
     }
 
     /**
@@ -381,6 +382,7 @@ class QuotePricingCalculator
     {
         $this->syncItemListPrezzoCodice($opportunity);
         $this->syncTotalsAndDerivedFields($opportunity, false);
+        $this->ensureEntityCurrencyFields($opportunity, ['minusPlus', 'prezzoCodiceIvaEsclusa', 'prezzoCodiceIvaInclusa']);
     }
 
     /**
@@ -596,11 +598,12 @@ class QuotePricingCalculator
         $minusPlus = $this->resolveMinusPlus($entity);
 
         if ($minusPlus !== null) {
-            $entity->set('minusPlus', $minusPlus);
+            $this->setCurrencyAmount($entity, 'minusPlus', $minusPlus);
         }
 
         if ($isQuote && $entity->getId()) {
-            $entity->set(
+            $this->setCurrencyAmount(
+                $entity,
                 'totaleProvvigioni',
                 $this->quoteProvvigioniSync->sumTotaleProvvigioni($entity->getId())
             );
@@ -1717,5 +1720,81 @@ class QuotePricingCalculator
         }
 
         return (float) $value;
+    }
+
+    /** @return list<string> */
+    private function quoteCurrencyFieldNames(): array
+    {
+        return [
+            'minusPlus',
+            'totaleProvvigioni',
+            'totalPrezzoCodice',
+            'importoContratto',
+            'prezzoCodice',
+            'prezzoCodiceIvaEsclusa',
+            'prezzoCodiceIvaInclusa',
+            'prezzoListinoIvaEsclusa',
+            'prezzoListinoIvaInclusa',
+            'prezzoListinoIVAInclusa',
+        ];
+    }
+
+    private function resolveEntityCurrency(Entity $entity): string
+    {
+        $currency = $entity->get('amountCurrency');
+
+        if (is_string($currency) && $currency !== '') {
+            return $currency;
+        }
+
+        return 'EUR';
+    }
+
+    private function setCurrencyAmount(Entity $entity, string $field, float $value): void
+    {
+        if (!$entity->hasAttribute($field)) {
+            return;
+        }
+
+        $patch = [$field => round($value, 2)];
+        $currencyField = $field . 'Currency';
+
+        if ($entity->hasAttribute($currencyField)) {
+            $patch[$currencyField] = $this->resolveEntityCurrency($entity);
+        }
+
+        $entity->set($patch);
+    }
+
+    /** @param list<string> $fieldNames */
+    private function ensureEntityCurrencyFields(Entity $entity, array $fieldNames): void
+    {
+        $currency = $this->resolveEntityCurrency($entity);
+
+        foreach ($fieldNames as $field) {
+            if (!$entity->hasAttribute($field)) {
+                continue;
+            }
+
+            $currencyField = $field . 'Currency';
+
+            if (!$entity->hasAttribute($currencyField)) {
+                continue;
+            }
+
+            $value = $entity->get($field);
+
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $existingCurrency = $entity->get($currencyField);
+
+            if (is_string($existingCurrency) && $existingCurrency !== '') {
+                continue;
+            }
+
+            $entity->set($currencyField, $currency);
+        }
     }
 }
