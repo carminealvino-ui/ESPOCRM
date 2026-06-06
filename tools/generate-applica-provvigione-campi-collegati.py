@@ -9,10 +9,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'tools' / 'applica-provvigione-campi-collegati.php'
-MARKER = 'provvigione-campi-collegati-php-20260607b'
+MARKER = 'provvigione-campi-collegati-php-20260607c'
 
 FILES = [
     'custom/Espo/Custom/Hooks/Provvigione/BeforeSave.php',
+    'custom/Espo/Custom/Hooks/Provvigione/SyncQuoteTotaleProvvigioni.php',
     'custom/Espo/Custom/Resources/metadata/formula/Provvigione.json',
     'tools/backfill-provvigione-campi-collegati.php',
 ]
