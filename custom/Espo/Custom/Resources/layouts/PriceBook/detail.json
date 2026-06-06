@@ -11,7 +11,8 @@
             ],
             [
                 {
-                    "name": "taxCode"
+                    "name": "taxCode",
+                    "label": "Imposta - Codice"
                 },
                 {
                     "name": "isTaxInclusive"

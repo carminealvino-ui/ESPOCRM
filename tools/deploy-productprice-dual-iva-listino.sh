@@ -52,6 +52,7 @@ FILES=(
   "tools/test-iva-dual-price-sync.php"
   "tools/backfill-productprice-dual-iva-from-price.php"
   "tools/install-productprice-dual-iva-fields.php"
+  "tools/fix-prezzi-listino-completo.php"
   "tools/completa-prezzi-listino-dual-iva.sh"
   "tools/set-pricebook-tax-code.php"
   "tools/verifica-listino-dual-iva.php"
