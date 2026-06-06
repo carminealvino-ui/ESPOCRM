@@ -1,6 +1,6 @@
 // ========================================
-// VERSIONE: 1.1.0
-// DATA: 2026-05-26
+// VERSIONE: 1.2.0
+// DATA: 2026-06-06
 // FILE: custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
 // ========================================
 
@@ -9,6 +9,9 @@
 define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-list'], function (Dep) {
 
     return Dep.extend({
+
+        itemView: 'custom:views/quote/record/item',
+
         events: {
             'click .btn-group .dropdown-toggle': function () {
                 setTimeout(function () {
@@ -82,6 +85,94 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
 
         actionCreateProductDirect: function () {
             this.openCreateArticleModal();
+        },
+
+        actionAddProducts: async function () {
+            await Dep.prototype.actionAddProducts.call(this);
+            await this.applyCatalogPricesToItemList();
+        },
+
+        fetchCatalogPrices: async function (productIds) {
+            if (!productIds || !productIds.length) {
+                return null;
+            }
+
+            try {
+                var response = await Espo.Ajax.postRequest('Quote/getItemCatalogPrices', {
+                    priceBookId: this.model.get('priceBookId'),
+                    productIds: productIds,
+                    isTaxInclusive: this.model.get('isTaxInclusive'),
+                    taxId: this.model.get('taxId'),
+                    dateQuoted: this.model.get('dateQuoted'),
+                    aliquotaIVA: this.model.get('aliquotaIVA'),
+                });
+
+                var map = {};
+
+                (response || []).forEach(function (row) {
+                    if (row.productId) {
+                        map[row.productId] = row;
+                    }
+                });
+
+                return map;
+            } catch (error) {
+                console.error('Catalog prices fetch failed', error);
+
+                return null;
+            }
+        },
+
+        applyCatalogPricesToItemList: async function () {
+            var itemList = Espo.Utils.cloneDeep(this.model.get(this.name) || []);
+            var productIds = [];
+
+            itemList.forEach(function (item) {
+                if (item.productId) {
+                    productIds.push(item.productId);
+                }
+            });
+
+            if (!productIds.length) {
+                return;
+            }
+
+            var pricesByProduct = await this.fetchCatalogPrices(productIds);
+
+            if (!pricesByProduct) {
+                return;
+            }
+
+            var currency = this.model.get('amountCurrency');
+            var changed = false;
+
+            itemList.forEach(function (item) {
+                if (!item.productId || !pricesByProduct[item.productId]) {
+                    return;
+                }
+
+                var prices = pricesByProduct[item.productId];
+
+                if (prices.listPrice != null && prices.listPrice > 0) {
+                    item.listPrice = prices.listPrice;
+                    item.listPriceCurrency = item.listPriceCurrency || currency;
+                    changed = true;
+                }
+
+                if (prices.prezzoCodice != null && prices.prezzoCodice > 0) {
+                    item.prezzoCodice = prices.prezzoCodice;
+                    item.prezzoCodiceCurrency = item.prezzoCodiceCurrency || currency;
+                    changed = true;
+                }
+            });
+
+            if (!changed) {
+                return;
+            }
+
+            this.model.set(this.name, itemList, {ui: true});
+            await this.reRenderNoFlicker();
+            this.calculateAmount();
         },
 
         afterRender: function () {

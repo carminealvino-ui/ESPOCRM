@@ -383,6 +383,39 @@ class QuotePricingCalculator
         $this->syncTotalsAndDerivedFields($opportunity, false);
     }
 
+    /**
+     * Prezzi catalogo riga (listino + codice) da ProductPrice / Product per il listino del contratto.
+     *
+     * @return array{listPrice: ?float, prezzoCodice: ?float}
+     */
+    public function resolveItemCatalogPricesForProduct(Entity $quote, Entity $product): array
+    {
+        $aliquota = $this->resolveAliquotaIva($quote);
+        $taxInclusive = $this->isQuotePricesTaxInclusive($quote);
+        $productPrice = $this->findActiveProductPrice($product, $quote);
+
+        $listPrice = $taxInclusive
+            ? $this->resolveProductListinoIvaInclusa($product, $aliquota, $quote, $productPrice)
+            : $this->resolveProductListinoNet($product, $quote, $productPrice);
+
+        $prezzoCodice = $taxInclusive
+            ? $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota, $productPrice, true)
+            : $this->resolveProductPrezzoCodiceNet($product, $aliquota, $productPrice, false);
+
+        if ($prezzoCodice === null && $taxInclusive) {
+            $codiceIvi = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota, $productPrice, true);
+
+            if ($codiceIvi !== null && $codiceIvi > 0) {
+                $prezzoCodice = $codiceIvi;
+            }
+        }
+
+        return [
+            'listPrice' => $listPrice !== null && $listPrice > 0 ? round($listPrice, 2) : null,
+            'prezzoCodice' => $prezzoCodice !== null && $prezzoCodice > 0 ? round($prezzoCodice, 2) : null,
+        ];
+    }
+
     private function syncItemListPrezzoCodice(Entity $entity): void
     {
         $itemList = $entity->get('itemList');
@@ -411,6 +444,20 @@ class QuotePricingCalculator
             $productPrice = $entity->getEntityType() === 'Quote'
                 ? $this->findActiveProductPrice($product, $entity)
                 : null;
+
+            $listCatalog = $taxInclusive
+                ? $this->resolveProductListinoIvaInclusa($product, $aliquota, $entity, $productPrice)
+                : $this->resolveProductListinoNet($product, $entity, $productPrice);
+
+            if ($listCatalog !== null && $listCatalog > 0) {
+                $lineList = $this->floatOrNull($this->itemValue($item, 'listPrice'));
+
+                if ($lineList === null || abs($lineList - $listCatalog) >= 0.02) {
+                    $itemList[$index] = $this->itemSet($item, 'listPrice', $listCatalog);
+                    $item = $itemList[$index];
+                    $changed = true;
+                }
+            }
 
             $codiceNet = $this->resolveProductPrezzoCodiceNet($product, $aliquota, $productPrice, $taxInclusive);
             $codiceIvi = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota, $productPrice, $taxInclusive);
