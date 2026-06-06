@@ -44,6 +44,7 @@ Esempio corretto:
 | Fix | Script |
 |-----|--------|
 | Listino dual IVA + taxCode + backfill | `tools/applica-listino-dual-iva-produzione.sh` |
+| **Fix prezzi listino (inline, no cache GitHub)** | `tools/applica-fix-prezzi-listino-produzione.sh` |
 | Bootstrap tools sul server | `tools/bootstrap-server-tools.sh` |
 | Deploy duplica appuntamento | `tools/deploy-fix-appuntamento-duplica.sh` |
 
