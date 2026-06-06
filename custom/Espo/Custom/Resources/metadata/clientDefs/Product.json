@@ -1,3 +1,17 @@
 {
-    "createDisabled": false
+    "createDisabled": false,
+    "bottomPanels": {
+        "detail": [
+            {
+                "name": "contratti",
+                "label": "Contratti"
+            }
+        ]
+    },
+    "relationshipPanels": {
+        "contratti": {
+            "layout": "listForProduct",
+            "rowActionsView": "views/record/row-actions/default"
+        }
+    }
 }

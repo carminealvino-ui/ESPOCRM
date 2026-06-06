@@ -90,7 +90,15 @@
             "type": "currency",
             "isCustom": true
         },
+        "prezzoListinoIvaInclusa": {
+            "type": "currency",
+            "isCustom": true
+        },
         "prezzoCodiceIvaEsclusa": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "prezzoCodiceIvaInclusa": {
             "type": "currency",
             "isCustom": true
         },
