@@ -1,0 +1,8 @@
+{
+    "earlyBeforeCreateHookClassNameList": [
+        "Espo\\Custom\\Classes\\Record\\Hooks\\ProductPrice\\EarlyBeforeSavePrepare"
+    ],
+    "earlyBeforeUpdateHookClassNameList": [
+        "Espo\\Custom\\Classes\\Record\\Hooks\\ProductPrice\\EarlyBeforeSavePrepare"
+    ]
+}

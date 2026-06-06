@@ -9,11 +9,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'tools' / 'applica-quote-item-catalog-prices.php'
-MARKER = 'quote-item-catalog-prices-php-20260607e'
+MARKER = 'quote-item-catalog-prices-php-20260607f'
 
 FILES = [
     'custom/Espo/Custom/Services/QuotePricingCalculator.php',
+    'custom/Espo/Custom/Services/IvaDualPriceSync.php',
     'custom/Espo/Custom/Tools/Quote/Api/PostGetItemCatalogPrices.php',
+    'custom/Espo/Custom/Resources/routes.json',
+    'custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json',
+    'custom/Espo/Custom/Resources/metadata/recordDefs/ProductPrice.json',
+    'custom/Espo/Custom/Classes/Record/Hooks/ProductPrice/EarlyBeforeSavePrepare.php',
+    'custom/Espo/Custom/Hooks/ProductPrice/DualIvaPricing.php',
     'custom/Espo/Custom/Resources/routes.json',
     'custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json',
     'client/custom/src/handlers/quote/catalog-prices.js',

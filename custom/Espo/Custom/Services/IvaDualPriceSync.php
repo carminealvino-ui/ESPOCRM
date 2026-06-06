@@ -208,28 +208,44 @@ class IvaDualPriceSync
     {
         $ivi = $this->floatOrNull($entity->get('prezzoListinoIvaInclusa'));
         $net = $this->floatOrNull($entity->get('prezzoListinoIvaEsclusa'));
+        $price = null;
 
         if ($taxInclusive && $ivi !== null && $ivi > 0) {
-            $entity->set('price', round($ivi, 2));
+            $price = round($ivi, 2);
+        } elseif (!$taxInclusive && $net !== null && $net > 0) {
+            $price = round($net, 2);
+        } elseif ($ivi !== null && $ivi > 0) {
+            $price = round($ivi, 2);
+        } elseif ($net !== null && $net > 0) {
+            $price = round($net, 2);
+        }
 
+        if ($price === null) {
             return;
         }
 
-        if (!$taxInclusive && $net !== null && $net > 0) {
-            $entity->set('price', round($net, 2));
+        $patch = ['price' => $price];
 
-            return;
+        if ($entity->hasAttribute('priceCurrency')) {
+            $currency = $entity->get('priceCurrency');
+
+            if (!is_string($currency) || $currency === '') {
+                $productId = $entity->get('productId');
+
+                if ($productId) {
+                    $product = $this->entityManager->getEntityById('Product', $productId);
+                    $currency = $product?->get('unitPriceCurrency') ?? $product?->get('listPriceCurrency');
+                }
+            }
+
+            if (!is_string($currency) || $currency === '') {
+                $currency = 'EUR';
+            }
+
+            $patch['priceCurrency'] = $currency;
         }
 
-        if ($ivi !== null && $ivi > 0) {
-            $entity->set('price', round($ivi, 2));
-
-            return;
-        }
-
-        if ($net !== null && $net > 0) {
-            $entity->set('price', round($net, 2));
-        }
+        $entity->set($patch);
     }
 
     private function pairFieldChanged(Entity $entity, string $iviField, string $netField): bool
