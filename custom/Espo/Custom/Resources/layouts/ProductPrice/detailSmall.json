@@ -13,6 +13,14 @@
             ],
             [
                 {
+                    "name": "dateStart"
+                },
+                {
+                    "name": "dateEnd"
+                }
+            ],
+            [
+                {
                     "name": "prezzoListinoIvaEsclusa"
                 },
                 {
@@ -25,14 +33,6 @@
                 },
                 {
                     "name": "prezzoCodiceIvaInclusa"
-                }
-            ],
-            [
-                {
-                    "name": "dateStart"
-                },
-                {
-                    "name": "dateEnd"
                 }
             ],
             [
