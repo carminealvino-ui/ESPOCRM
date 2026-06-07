@@ -315,8 +315,8 @@ class WorkingTimeCalendarDisponibilitaGenerator
             }
 
             $slots[] = [
-                'start' => $dateStr . ' ' . $start,
-                'end' => $dateStr . ' ' . $end,
+                'start' => $this->toUtcDateTime($dateStr, $start),
+                'end' => $this->toUtcDateTime($dateStr, $end),
             ];
         }
 
@@ -392,11 +392,30 @@ class WorkingTimeCalendarDisponibilitaGenerator
             return null;
         }
 
-        if (preg_match('/(\d{2}:\d{2}:\d{2})/', $value, $matches)) {
-            return $matches[1];
+        try {
+            $dt = new \DateTimeImmutable($value, new \DateTimeZone('UTC'));
+            $dt = $dt->setTimezone(new \DateTimeZone(self::TIMEZONE));
+
+            return $dt->format('H:i:s');
+        } catch (\Throwable) {
+            if (preg_match('/(\d{2}:\d{2}:\d{2})/', $value, $matches)) {
+                return $matches[1];
+            }
         }
 
         return null;
+    }
+
+    private function toUtcDateTime(string $dateStr, string $time): string
+    {
+        $local = new \DateTimeImmutable(
+            $dateStr . ' ' . $time,
+            new \DateTimeZone(self::TIMEZONE)
+        );
+
+        return $local
+            ->setTimezone(new \DateTimeZone('UTC'))
+            ->format('Y-m-d H:i:s');
     }
 
     /**
@@ -417,8 +436,11 @@ class WorkingTimeCalendarDisponibilitaGenerator
         $entity = $this->entityManager->createEntity('Disponibilita');
 
         $entity->set([
+            'datadisponibilita' => $dateStr,
             'dateStartDate' => $dateStr,
             'dateEndDate' => $dateStr,
+            'dateStart' => $dateStr . ' 00:00:00',
+            'dateEnd' => $dateStr . ' 23:59:59',
             'orarioInizio' => $orarioInizio,
             'orarioFine' => $orarioFine,
             'azienda' => $azienda ?: '',

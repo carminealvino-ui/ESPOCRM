@@ -53,18 +53,24 @@ class SetName
          * LETTURA DATI BASE (STABILE)
          * ====================================================
          */
-        $fornitoreId = $entity->get('fornitorePartnerId'); // relazione
-        $aziendaNome = $entity->get('azienda'); // nome azienda
-        $data = $entity->get('datadisponibilita'); // data calendario
-        $inizio = $entity->get('orarioInizio'); // datetime UTC
-        $fine = $entity->get('orarioFine'); // datetime UTC
+        $fornitoreId = $entity->get('fornitorePartnerId');
+        $aziendaNome = $entity->get('azienda');
+        $data = $entity->get('datadisponibilita');
+        $inizio = $entity->get('orarioInizio');
+        $fine = $entity->get('orarioFine');
 
-        /**
-         * ====================================================
-         * BLOCCO SICUREZZA (STABILE)
-         * ====================================================
-         * Se manca la data → esci
-         */
+        if (empty($data)) {
+            $data = $entity->get('dateStartDate');
+
+            if (empty($data) && !empty($entity->get('dateStart'))) {
+                $data = substr((string) $entity->get('dateStart'), 0, 10);
+            }
+
+            if (!empty($data)) {
+                $entity->set('datadisponibilita', $data);
+            }
+        }
+
         if (empty($data)) {
             return;
         }
