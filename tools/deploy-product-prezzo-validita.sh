@@ -44,6 +44,23 @@ for rel in "${FILES[@]}"; do
   echo "OK ${rel}"
 done
 
+CLIENT_FILES=(
+  "client/custom/src/views/fields/date-numeric.js"
+  "client/custom/src/views/product-price/fields/validity-numeric.js"
+)
+
+for rel in "${CLIENT_FILES[@]}"; do
+  for prefix in \
+    "${CRM_ROOT}/${rel}" \
+    "${CRM_ROOT}/custom/Espo/Custom/Resources/${rel}" \
+    "${CRM_ROOT}/custom/Espo/Custom/${rel}"
+  do
+    mkdir -p "$(dirname "${prefix}")"
+    curl -fsSL -o "${prefix}" "${BASE}/${rel}?t=$(date +%s)"
+  done
+  echo "OK ${rel} (client paths)"
+done
+
 if [[ -f "${CRM_ROOT}/clear_cache.php" ]]; then
   (cd "${CRM_ROOT}" && php clear_cache.php && php rebuild.php)
 elif [[ -f "${CRM_ROOT}/command.php" ]]; then
@@ -54,3 +71,4 @@ echo ""
 echo "Fatto. Rebuild eseguito."
 echo "Impostare Listino prezzi su ogni Brand (es. ARIEL → ARIEL Energia)."
 echo "SQL opzionale: database/2026-06-07-product-brand-price-book.sql"
+echo "SQL opzionale: database/2026-06-07-product-aliquota-iva.sql"

@@ -7,6 +7,11 @@
         "width": 18
     },
     {
+        "name": "aliquotaIva",
+        "width": 8,
+        "align": "right"
+    },
+    {
         "name": "prezzoListinoIvaEsclusa",
         "width": 11,
         "align": "right",

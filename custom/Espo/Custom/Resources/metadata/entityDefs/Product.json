@@ -21,6 +21,15 @@
             "audited": true,
             "view": "custom:views/fields/date-numeric"
         },
+        "aliquotaIva": {
+            "type": "float",
+            "default": 10,
+            "min": 0,
+            "max": 100,
+            "isCustom": true,
+            "audited": true,
+            "tooltip": true
+        },
         "prezzoListinoIvaEsclusa": {
             "type": "currency",
             "isCustom": true,

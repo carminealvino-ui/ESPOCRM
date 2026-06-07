@@ -41,8 +41,12 @@ class IvaDualPriceSync
 
         $aliquota = $this->resolveAliquotaForProduct($entity);
 
-        $this->syncIvaPair($entity, 'prezzoListinoIvaInclusa', 'prezzoListinoIvaEsclusa', $aliquota);
-        $this->syncIvaPair($entity, 'prezzoCodiceIvaInclusa', 'prezzoCodice', $aliquota);
+        if ($entity->isAttributeChanged('aliquotaIva')) {
+            $this->recalculatePairsForAliquotaChange($entity, $aliquota);
+        } else {
+            $this->syncIvaPair($entity, 'prezzoListinoIvaInclusa', 'prezzoListinoIvaEsclusa', $aliquota);
+            $this->syncIvaPair($entity, 'prezzoCodiceIvaInclusa', 'prezzoCodice', $aliquota);
+        }
 
         $listinoNet = $this->floatOrNull($entity->get('prezzoListinoIvaEsclusa'));
 
@@ -99,6 +103,12 @@ class IvaDualPriceSync
 
         if ($codiceIvi !== null && $codiceIvi > 0 && $product->hasAttribute('prezzoCodiceIvaInclusa')) {
             $patch['prezzoCodiceIvaInclusa'] = round($codiceIvi, 2);
+        }
+
+        $aliquota = $this->floatOrNull($productPrice->get('aliquotaIva'));
+
+        if ($aliquota !== null && $aliquota > 0 && $product->hasAttribute('aliquotaIva')) {
+            $patch['aliquotaIva'] = round($aliquota, 3);
         }
 
         if ($patch === []) {
@@ -300,6 +310,12 @@ class IvaDualPriceSync
 
     private function resolveAliquotaForProductPrice(Entity $entity): float
     {
+        $stored = $this->floatOrNull($entity->get('aliquotaIva'));
+
+        if ($stored !== null && $stored > 0 && ($entity->isNew() || $entity->isAttributeChanged('aliquotaIva'))) {
+            return $stored;
+        }
+
         $fromBook = $this->resolveAliquotaFromPriceBookId($entity->get('priceBookId'));
 
         if ($fromBook !== null && $fromBook > 0) {
@@ -317,17 +333,46 @@ class IvaDualPriceSync
 
     private function resolveAliquotaForProduct(Entity $entity): float
     {
+        $stored = $this->floatOrNull($entity->get('aliquotaIva'));
+
+        if ($stored !== null && $stored > 0) {
+            return $stored;
+        }
+
         $priceBook = $this->productPriceBookResolver->resolveForProduct($entity);
 
         if ($priceBook) {
             $fromBook = $this->resolveAliquotaFromPriceBook($priceBook);
 
             if ($fromBook !== null && $fromBook > 0) {
+                $entity->set('aliquotaIva', $fromBook);
+
                 return $fromBook;
             }
         }
 
+        $entity->set('aliquotaIva', self::DEFAULT_ALIQUOTA_IVA);
+
         return self::DEFAULT_ALIQUOTA_IVA;
+    }
+
+    private function recalculatePairsForAliquotaChange(Entity $entity, float $aliquota): void
+    {
+        foreach (
+            [
+                ['prezzoListinoIvaInclusa', 'prezzoListinoIvaEsclusa'],
+                ['prezzoCodiceIvaInclusa', 'prezzoCodice'],
+            ] as [$iviField, $netField]
+        ) {
+            $ivi = $this->floatOrNull($entity->get($iviField));
+            $net = $this->floatOrNull($entity->get($netField));
+
+            if ($ivi !== null && $ivi > 0) {
+                $entity->set($netField, self::toEsclusa($ivi, $aliquota));
+            } elseif ($net !== null && $net > 0) {
+                $entity->set($iviField, self::toInclusa($net, $aliquota));
+            }
+        }
     }
 
     /**

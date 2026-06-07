@@ -21,7 +21,8 @@ class ProductPriceTimeline
         return $product->isAttributeChanged('prezzoListinoIvaEsclusa')
             || $product->isAttributeChanged('prezzoListinoIvaInclusa')
             || $product->isAttributeChanged('prezzoCodice')
-            || $product->isAttributeChanged('prezzoCodiceIvaInclusa');
+            || $product->isAttributeChanged('prezzoCodiceIvaInclusa')
+            || $product->isAttributeChanged('aliquotaIva');
     }
 
     public function syncFromProduct(Entity $product, string $dateStart): bool
@@ -42,6 +43,7 @@ class ProductPriceTimeline
         $listinoIvi = $this->floatOrNull($product->get('prezzoListinoIvaInclusa'));
         $codiceNet = $this->floatOrNull($product->get('prezzoCodice'));
         $codiceIvi = $this->floatOrNull($product->get('prezzoCodiceIvaInclusa'));
+        $aliquotaIva = $this->floatOrNull($product->get('aliquotaIva'));
 
         if (!$this->hasAnyPrice($listinoNet, $listinoIvi, $codiceNet, $codiceIvi)) {
             return false;
@@ -57,6 +59,7 @@ class ProductPriceTimeline
             $listinoIvi,
             $codiceNet,
             $codiceIvi,
+            $aliquotaIva,
             $normalizedDateStart
         )) {
             return false;
@@ -77,6 +80,10 @@ class ProductPriceTimeline
 
         $this->applyListino($productPrice, $priceBook, $listinoNet, $listinoIvi);
         $this->applyCodice($productPrice, $codiceNet, $codiceIvi);
+
+        if ($aliquotaIva !== null && $aliquotaIva > 0 && $productPrice->hasAttribute('aliquotaIva')) {
+            $productPrice->set('aliquotaIva', round($aliquotaIva, 3));
+        }
 
         $this->entityManager->saveEntity($productPrice);
 
@@ -154,6 +161,7 @@ class ProductPriceTimeline
         ?float $listinoIvi,
         ?float $codiceNet,
         ?float $codiceIvi,
+        ?float $aliquotaIva,
         string $dateStart
     ): bool {
         $existingStart = substr((string) ($existing->get('dateStart') ?? ''), 0, 10);
@@ -167,11 +175,13 @@ class ProductPriceTimeline
         $existingListIvi = $this->floatOrNull($existing->get('prezzoListinoIvaInclusa'));
         $existingCodiceNet = $this->floatOrNull($existing->get('prezzoCodice'));
         $existingCodiceIvi = $this->floatOrNull($existing->get('prezzoCodiceIvaInclusa'));
+        $existingAliquota = $this->floatOrNull($existing->get('aliquotaIva'));
 
         return $this->amountsEqual($existingListNet, $listinoNet)
             && $this->amountsEqual($existingListIvi, $listinoIvi)
             && $this->amountsEqual($existingCodiceNet, $codiceNet)
-            && $this->amountsEqual($existingCodiceIvi, $codiceIvi);
+            && $this->amountsEqual($existingCodiceIvi, $codiceIvi)
+            && $this->amountsEqual($existingAliquota, $aliquotaIva);
     }
 
     private function amountsEqual(?float $left, ?float $right): bool

@@ -3,6 +3,7 @@
         "denominazione": "Denominazione",
         "elencoCatalogo": "Elenco catalogo",
         "dataInizioValidita": "Data inizio validità",
+        "aliquotaIva": "Aliquota IVA",
         "prezzoListinoIvaEsclusa": "Prezzo Listino IVA Esclusa",
         "prezzoListinoIvaInclusa": "Prezzo Listino IVA Inclusa",
         "prezzoListinoIvaEsclusaCurrency": "Prezzo Listino IVA Esclusa (Valuta)",
@@ -24,10 +25,11 @@
         "listPriceCurrency": "Prezzo di Listino (valuta)"
     },
     "tooltips": {
-        "prezzoListinoIvaInclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dal codice IVA del listino di default.",
-        "prezzoListinoIvaEsclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dal codice IVA del listino di default.",
-        "prezzoCodice": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dal codice IVA del listino di default.",
-        "prezzoCodiceIvaInclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dal codice IVA del listino di default."
+        "prezzoListinoIvaInclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dall'aliquota IVA indicata.",
+        "prezzoListinoIvaEsclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dall'aliquota IVA indicata.",
+        "prezzoCodice": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dall'aliquota IVA indicata.",
+        "prezzoCodiceIvaInclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dall'aliquota IVA indicata.",
+        "aliquotaIva": "Aliquota IVA applicata ai prezzi del pannello. Se vuota, deriva dal listino del brand."
     },
     "links": {
         "opportunita": "Opportunità",
