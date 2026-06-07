@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * Allinea datadisponibilita = data (Europe/Rome) di dateStart sui record esistenti.
+ * Allinea datadisponibilita = data di inizio (dateStartDate / orarioInizio / dateStart).
  *
  * Uso: php tools/backfill-disponibilita-data-da-inizio.php [--dry-run] [--verbose]
  */
@@ -17,6 +17,7 @@ $application = new Application();
 $application->setupSystemUser();
 
 $entityManager = $application->getContainer()->get('entityManager');
+$pdo = $entityManager->getPDO();
 
 $dryRun = in_array('--dry-run', $argv, true);
 $verbose = in_array('--verbose', $argv, true);
@@ -25,25 +26,20 @@ $timezone = new DateTimeZone('Europe/Rome');
 $updated = 0;
 $skipped = 0;
 
-$collection = $entityManager
-    ->getRDBRepository('Disponibilita')
-    ->where([
-        'dateStart!=' => null,
-    ])
-    ->find();
+$sql = "SELECT id, datadisponibilita, date_start, date_start_date, date_end_date, orario_inizio
+        FROM disponibilita
+        WHERE deleted = 0";
 
-foreach ($collection as $entity) {
-    $dateStart = $entity->get('dateStart');
+$rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 
-    if (!$dateStart) {
+foreach ($rows as $row) {
+    $target = resolveTargetDate($row, $timezone);
+    $current = normalizeDate($row['datadisponibilita'] ?? null);
+
+    if ($target === null) {
         $skipped++;
         continue;
     }
-
-    $dt = new DateTime($dateStart, new DateTimeZone('UTC'));
-    $dt->setTimezone($timezone);
-    $target = $dt->format('Y-m-d');
-    $current = $entity->get('datadisponibilita');
 
     if ($current === $target) {
         $skipped++;
@@ -52,17 +48,33 @@ foreach ($collection as $entity) {
 
     if ($verbose || $dryRun) {
         fwrite(STDOUT, sprintf(
-            "%s | %s -> %s | dateStart=%s\n",
-            $entity->getId(),
+            "%s | %s -> %s | dateStartDate=%s | orarioInizio=%s | dateStart=%s\n",
+            $row['id'],
             $current ?? '(null)',
             $target,
-            $dateStart
+            $row['date_start_date'] ?? '(null)',
+            $row['orario_inizio'] ?? '(null)',
+            $row['date_start'] ?? '(null)'
         ));
     }
 
     if (!$dryRun) {
-        $entity->set('datadisponibilita', $target);
-        $entityManager->saveEntity($entity, ['skipHooks' => true, 'silent' => true]);
+        $update = $pdo->prepare(
+            'UPDATE disponibilita SET
+                datadisponibilita = :target,
+                date_start_date = :target,
+                date_end_date = :target,
+                date_start = :start,
+                date_end = :end,
+                modified_at = NOW()
+             WHERE id = :id AND deleted = 0'
+        );
+        $update->execute([
+            'target' => $target,
+            'start' => $target . ' 00:00:00',
+            'end' => $target . ' 23:59:59',
+            'id' => $row['id'],
+        ]);
     }
 
     $updated++;
@@ -74,3 +86,50 @@ fwrite(STDOUT, sprintf(
     $skipped,
     $dryRun ? ' (dry-run)' : ''
 ));
+
+function normalizeDate(?string $value): ?string
+{
+    if ($value === null || $value === '') {
+        return null;
+    }
+
+    if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $value, $matches)) {
+        return $matches[1];
+    }
+
+    return null;
+}
+
+function extractDateUtcToRome(string $dateTime, DateTimeZone $timezone): string
+{
+    $dt = new DateTime($dateTime, new DateTimeZone('UTC'));
+    $dt->setTimezone($timezone);
+
+    return $dt->format('Y-m-d');
+}
+
+/**
+ * @param array<string, mixed> $row
+ */
+function resolveTargetDate(array $row, DateTimeZone $timezone): ?string
+{
+    $dateStartDate = normalizeDate($row['date_start_date'] ?? null);
+
+    if ($dateStartDate !== null) {
+        return $dateStartDate;
+    }
+
+    $orarioInizio = $row['orario_inizio'] ?? null;
+
+    if (is_string($orarioInizio) && $orarioInizio !== '') {
+        return extractDateUtcToRome($orarioInizio, $timezone);
+    }
+
+    $dateStart = $row['date_start'] ?? null;
+
+    if (is_string($dateStart) && $dateStart !== '') {
+        return extractDateUtcToRome($dateStart, $timezone);
+    }
+
+    return null;
+}

@@ -57,6 +57,10 @@ define('custom:views/disponibilita/create', 'views/record/edit', function (Dep) 
                 this.updateFromDateStart();
             });
 
+            this.listenTo(this.model, 'change:dateStartDate', () => {
+                this.updateFromDateStart();
+            });
+
             this.listenTo(this.model, 'change:datadisponibilita', () => {
                 this.updateFromDataDisponibilita();
             });
@@ -103,14 +107,23 @@ define('custom:views/disponibilita/create', 'views/record/edit', function (Dep) 
         updateFromDateStart: function () {
             if (this.userModifiedTime) return;
 
+            let dateStartDate = this.model.get('dateStartDate');
             let dateStart = this.model.get('dateStart');
-            if (!dateStart) return;
+            let dataDisp = dateStartDate
+                ? moment(dateStartDate).format('YYYY-MM-DD')
+                : (dateStart ? moment(dateStart).format('YYYY-MM-DD') : null);
 
-            let dataDisp = moment(dateStart).format('YYYY-MM-DD');
+            if (!dataDisp) return;
+
             this.model.set('datadisponibilita', dataDisp);
 
-            this.model.set('orarioInizio', dataDisp + ' 11:30:00');
-            this.model.set('orarioFine', dataDisp + ' 18:30:00');
+            if (!this.model.get('orarioInizio')) {
+                this.model.set('orarioInizio', dataDisp + ' 11:30:00');
+            }
+
+            if (!this.model.get('orarioFine')) {
+                this.model.set('orarioFine', dataDisp + ' 18:30:00');
+            }
         },
 
         // ============================================

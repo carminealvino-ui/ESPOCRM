@@ -8,23 +8,12 @@ use Espo\ORM\Entity;
  * ============================================================
  * ENTITÀ: Disponibilita
  * FILE: SetName.php
- * VERSIONE: 1.3.0
+ * VERSIONE: 1.3.1
  * DATA: 2026-06-06
- * STATO: STABILE PRODUZIONE
  *
- * ============================================================
- * FIX 1.3.0
- * ============================================================
- * ✔ datadisponibilita = sola data di dateStart (Europe/Rome)
- * ✔ Non sovrascrive più dateStart/dateEnd da datadisponibilita
- *
- * ============================================================
- * CONTESTO
- * ============================================================
- * Hook gestisce:
- *  - datadisponibilita (da dateStart)
- *  - name (azienda + orari)
- *  - isAllDay / color calendario
+ * FIX 1.3.1
+ * ✔ datadisponibilita da dateStartDate (all-day) / orarioInizio / dateStart
+ * ✔ Allinea dateStartDate e dateStart datetime al salvataggio
  * ============================================================
  */
 class SetName
@@ -35,10 +24,19 @@ class SetName
     {
         $entityManager = $GLOBALS['entityManager'];
 
-        $dateStart = $entity->get('dateStart');
+        $sourceDate = $this->resolveSourceDate($entity);
 
-        if (!empty($dateStart)) {
-            $entity->set('datadisponibilita', $this->extractDate($dateStart));
+        if ($sourceDate !== null) {
+            $entity->set([
+                'datadisponibilita' => $sourceDate,
+                'dateStartDate' => $sourceDate,
+                'dateEndDate' => $sourceDate,
+                'dateStart' => $sourceDate . ' 00:00:00',
+                'dateEnd' => $sourceDate . ' 23:59:59',
+            ]);
+
+            $this->syncOrarioDate($entity, 'orarioInizio', $sourceDate);
+            $this->syncOrarioDate($entity, 'orarioFine', $sourceDate);
         }
 
         $fornitoreId = $entity->get('fornitorePartnerId');
@@ -55,24 +53,12 @@ class SetName
             $dtStart = new \DateTime($inizio, new \DateTimeZone('UTC'));
             $dtStart->setTimezone(new \DateTimeZone(self::TIMEZONE));
             $oraInizio = $dtStart->format('H:i');
-        } elseif (!empty($dateStart)) {
-            $dtStart = new \DateTime($dateStart, new \DateTimeZone('UTC'));
-            $dtStart->setTimezone(new \DateTimeZone(self::TIMEZONE));
-            $oraInizio = $dtStart->format('H:i');
         }
 
         if (!empty($fine)) {
             $dtEnd = new \DateTime($fine, new \DateTimeZone('UTC'));
             $dtEnd->setTimezone(new \DateTimeZone(self::TIMEZONE));
             $oraFine = $dtEnd->format('H:i');
-        } else {
-            $dateEnd = $entity->get('dateEnd');
-
-            if (!empty($dateEnd)) {
-                $dtEnd = new \DateTime($dateEnd, new \DateTimeZone('UTC'));
-                $dtEnd->setTimezone(new \DateTimeZone(self::TIMEZONE));
-                $oraFine = $dtEnd->format('H:i');
-            }
         }
 
         $nome = '';
@@ -99,6 +85,45 @@ class SetName
                 }
             }
         }
+    }
+
+    /**
+     * Data di inizio effettiva mostrata in elenco (all-day = dateStartDate).
+     */
+    private function resolveSourceDate(Entity $entity): ?string
+    {
+        $dateStartDate = $this->normalizeDateValue($entity->get('dateStartDate'));
+
+        if ($dateStartDate !== null) {
+            return $dateStartDate;
+        }
+
+        $orarioInizio = $entity->get('orarioInizio');
+
+        if (!empty($orarioInizio)) {
+            return $this->extractDate($orarioInizio);
+        }
+
+        $dateStart = $entity->get('dateStart');
+
+        if (!empty($dateStart)) {
+            return $this->extractDate($dateStart);
+        }
+
+        return $this->normalizeDateValue($entity->get('datadisponibilita'));
+    }
+
+    private function normalizeDateValue(mixed $value): ?string
+    {
+        if (!is_string($value) || $value === '') {
+            return null;
+        }
+
+        if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $value, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
     }
 
     private function extractDate(string $dateTime): string
