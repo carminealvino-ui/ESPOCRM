@@ -3,8 +3,38 @@
         "rows": [
             [
                 {
-                    "name": "name"
+                    "name": "dataInizioGenerazione"
                 },
+                {
+                    "name": "dataFineGenerazione"
+                }
+            ],
+            [
+                {
+                    "name": "generazioneAzienda"
+                },
+                {
+                    "name": "generazioneStatus"
+                }
+            ],
+            [
+                {
+                    "name": "generazioneArea",
+                    "fullWidth": true
+                }
+            ],
+            [
+                {
+                    "name": "generazioneCollaborators",
+                    "fullWidth": true
+                }
+            ]
+        ],
+        "label": "Generazione Disponibilità"
+    },
+    {
+        "rows": [
+            [
                 {
                     "name": "timeZone"
                 }
@@ -79,38 +109,5 @@
             ]
         ],
         "label": "Panoramica"
-    },
-    {
-        "rows": [
-            [
-                {
-                    "name": "dataInizioGenerazione"
-                },
-                {
-                    "name": "dataFineGenerazione"
-                }
-            ],
-            [
-                {
-                    "name": "generazioneAzienda"
-                },
-                {
-                    "name": "generazioneStatus"
-                }
-            ],
-            [
-                {
-                    "name": "generazioneArea",
-                    "fullWidth": true
-                }
-            ],
-            [
-                {
-                    "name": "generazioneCollaborators",
-                    "fullWidth": true
-                }
-            ]
-        ],
-        "label": "Generazione Disponibilità"
     }
 ]

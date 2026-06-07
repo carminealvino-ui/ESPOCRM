@@ -1,5 +1,8 @@
 {
     "fields": {
+        "name": {
+            "required": false
+        },
         "dataInizioGenerazione": {
             "type": "date",
             "useNumericFormat": true,

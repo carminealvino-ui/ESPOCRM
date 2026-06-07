@@ -28,6 +28,8 @@ backup_if_exists() {
 }
 
 FILES=(
+  "custom/Espo/Custom/Hooks/WorkingTimeCalendar/SetName.php"
+  "custom/Espo/Custom/Resources/metadata/hooks/WorkingTimeCalendar.json"
   "custom/Espo/Custom/Services/WorkingTimeCalendarDisponibilitaGenerator.php"
   "custom/Espo/Custom/Actions/WorkingTimeCalendar/GeneraDisponibilita.php"
   "custom/Espo/Custom/Actions/Disponibilita/GeneraDisponibilitaRicorrenti.php"
