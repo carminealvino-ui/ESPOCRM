@@ -1,0 +1,28 @@
+{
+    "fields": {
+        "dataInizioGenerazione": "Data inizio generazione",
+        "dataFineGenerazione": "Data fine generazione",
+        "generazioneAzienda": "Azienda",
+        "generazioneStatus": "Stato disponibilità",
+        "generazioneAssignedUsers": "Utenti assegnati",
+        "generazioneArea": "Area di lavoro"
+    },
+    "labels": {
+        "Generazione Disponibilità": "Generazione Disponibilità"
+    },
+    "options": {
+        "generazioneStatus": {
+            "Presente": "Presente",
+            "Ferie": "Ferie",
+            "Malattia": "Malattia",
+            "Auto": "Auto",
+            "Indisponibile": "Indisponibile"
+        },
+        "generazioneAzienda": {
+            "": "",
+            "ARQUATI": "ARQUATI",
+            "ARIEL": "ARIEL",
+            "PROGETTO": "PROGETTO"
+        }
+    }
+}

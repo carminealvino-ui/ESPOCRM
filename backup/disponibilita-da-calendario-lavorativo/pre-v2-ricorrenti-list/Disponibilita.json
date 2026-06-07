@@ -68,21 +68,5 @@
             "layout": null,
             "selectPrimaryFilterName": null
         }
-    },
-    "menu": {
-        "list": {
-            "buttons": [
-                "__APPEND__",
-                {
-                    "label": "Disponibilità Ricorrenti",
-                    "name": "disponibilitaRicorrenti",
-                    "style": "default",
-                    "acl": "edit",
-                    "aclScope": "Disponibilita",
-                    "handler": "custom:action-handlers/disponibilita/disponibilita-ricorrenti",
-                    "actionFunction": "disponibilitaRicorrenti"
-                }
-            ]
-        }
     }
 }

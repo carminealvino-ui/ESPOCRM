@@ -1,7 +1,8 @@
 {
     "fields": {
         "fornitorePartner": "Fornitore/Partner",
-        "appuntamenti": "Appuntamenti"
+        "appuntamenti": "Appuntamenti",
+        "color": "Calendar color"
     },
     "links": {
         "fornitorePartner": "Fornitore/Partner",

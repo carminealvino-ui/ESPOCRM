@@ -1,6 +1,10 @@
 {
     "Opportunity": {
         "createContratto": "Espo\\Custom\\Actions\\Opportunity\\CreateContratto"
+    },
+    "Disponibilita": {
+        "generaDisponibilitaRicorrenti": "Espo\\Custom\\Actions\\Disponibilita\\GeneraDisponibilitaRicorrenti",
+        "backfillBrandColorCalendario": "Espo\\Custom\\Actions\\Disponibilita\\BackfillBrandColorCalendario"
     }
 }
 
