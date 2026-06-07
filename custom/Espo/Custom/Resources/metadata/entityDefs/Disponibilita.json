@@ -184,7 +184,7 @@
             "notNull": false,
             "type": "date",
             "useNumericFormat": true,
-            "default": "javascript: return this.dateTime.getToday();",
+            "readOnly": true,
             "isCustom": true
         },
         "color": {

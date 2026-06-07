@@ -8,106 +8,73 @@ use Espo\ORM\Entity;
  * ============================================================
  * ENTITÀ: Disponibilita
  * FILE: SetName.php
- * VERSIONE: 1.2.0
- * DATA: 2026-05-07
+ * VERSIONE: 1.3.0
+ * DATA: 2026-06-06
  * STATO: STABILE PRODUZIONE
+ *
+ * ============================================================
+ * FIX 1.3.0
+ * ============================================================
+ * ✔ datadisponibilita = sola data di dateStart (Europe/Rome)
+ * ✔ Non sovrascrive più dateStart/dateEnd da datadisponibilita
  *
  * ============================================================
  * CONTESTO
  * ============================================================
- * Questo hook gestisce:
- *
- * ✔ Nome evento (azienda + orari)
- * ✔ Impostazione calendario (all-day)
- * ✔ Conversione timezone UTC → Europe/Rome
- * ✔ Colore evento da Fornitore/Partner
- *
- * ============================================================
- * ARCHITETTURA
- * ============================================================
- * HOOK = fonte unica della verità per:
- *  - dateStart / dateEnd
- *  - name
- *  - color
- *
- * JS = SOLO UX (default valori)
- *
- * ============================================================
- * FIX IMPLEMENTATI
- * ============================================================
- * ✔ Fix timezone corretto
- * ✔ Eliminata dipendenza da campi UI
- * ✔ Aggiunto supporto calendarColor (fix calendario)
- *
+ * Hook gestisce:
+ *  - datadisponibilita (da dateStart)
+ *  - name (azienda + orari)
+ *  - isAllDay / color calendario
  * ============================================================
  */
-
 class SetName
 {
-    public function beforeSave(Entity $entity, array $options)
+    private const TIMEZONE = 'Europe/Rome';
+
+    public function beforeSave(Entity $entity, array $options): void
     {
         $entityManager = $GLOBALS['entityManager'];
 
-        /**
-         * ====================================================
-         * LETTURA DATI BASE (STABILE)
-         * ====================================================
-         */
-        $fornitoreId = $entity->get('fornitorePartnerId'); // relazione
-        $aziendaNome = $entity->get('azienda'); // nome azienda
-        $data = $entity->get('datadisponibilita'); // data calendario
-        $inizio = $entity->get('orarioInizio'); // datetime UTC
-        $fine = $entity->get('orarioFine'); // datetime UTC
+        $dateStart = $entity->get('dateStart');
 
-        /**
-         * ====================================================
-         * BLOCCO SICUREZZA (STABILE)
-         * ====================================================
-         * Se manca la data → esci
-         */
-        if (empty($data)) {
-            return;
+        if (!empty($dateStart)) {
+            $entity->set('datadisponibilita', $this->extractDate($dateStart));
         }
 
-        /**
-         * ====================================================
-         * CALENDARIO (STABILE)
-         * ====================================================
-         * Evento sempre all-day per visualizzazione barra alta
-         */
-        $entity->set('isAllDay', true);
-        $entity->set('dateStart', $data . ' 00:00:00');
-        $entity->set('dateEnd', $data . ' 23:59:59');
+        $fornitoreId = $entity->get('fornitorePartnerId');
+        $aziendaNome = $entity->get('azienda');
+        $inizio = $entity->get('orarioInizio');
+        $fine = $entity->get('orarioFine');
 
-        /**
-         * ====================================================
-         * CONVERSIONE ORARI (FIX TIMEZONE)
-         * ====================================================
-         * DB → UTC
-         * UI → Europe/Rome
-         */
+        $entity->set('isAllDay', true);
+
         $oraInizio = '';
         $oraFine = '';
 
         if (!empty($inizio)) {
             $dtStart = new \DateTime($inizio, new \DateTimeZone('UTC'));
-            $dtStart->setTimezone(new \DateTimeZone('Europe/Rome'));
+            $dtStart->setTimezone(new \DateTimeZone(self::TIMEZONE));
+            $oraInizio = $dtStart->format('H:i');
+        } elseif (!empty($dateStart)) {
+            $dtStart = new \DateTime($dateStart, new \DateTimeZone('UTC'));
+            $dtStart->setTimezone(new \DateTimeZone(self::TIMEZONE));
             $oraInizio = $dtStart->format('H:i');
         }
 
         if (!empty($fine)) {
             $dtEnd = new \DateTime($fine, new \DateTimeZone('UTC'));
-            $dtEnd->setTimezone(new \DateTimeZone('Europe/Rome'));
+            $dtEnd->setTimezone(new \DateTimeZone(self::TIMEZONE));
             $oraFine = $dtEnd->format('H:i');
+        } else {
+            $dateEnd = $entity->get('dateEnd');
+
+            if (!empty($dateEnd)) {
+                $dtEnd = new \DateTime($dateEnd, new \DateTimeZone('UTC'));
+                $dtEnd->setTimezone(new \DateTimeZone(self::TIMEZONE));
+                $oraFine = $dtEnd->format('H:i');
+            }
         }
 
-        /**
-         * ====================================================
-         * COSTRUZIONE NOME (STABILE)
-         * ====================================================
-         * Formato:
-         * AZIENDA | HH:mm - HH:mm
-         */
         $nome = '';
 
         if (!empty($aziendaNome)) {
@@ -120,35 +87,25 @@ class SetName
 
         $entity->set('name', $nome);
 
-        /**
-         * ====================================================
-         * COLORE EVENTO (FIX COMPLETO)
-         * ====================================================
-         * Origine: Fornitore/Partner.color
-         *
-         * Problema Espo:
-         * - 'color' non sempre usato dal calendario
-         *
-         * Soluzione:
-         * ✔ set color
-         * ✔ set calendarColor (fondamentale)
-         */
         if (!empty($fornitoreId)) {
-
             $fornitore = $entityManager->getEntityById('FornitorePartner', $fornitoreId);
 
             if ($fornitore) {
                 $colore = $fornitore->get('color');
 
                 if (!empty($colore)) {
-
-                    // campo standard
                     $entity->set('color', $colore);
-
-                    // FIX calendario Espo
                     $entity->set('calendarColor', $colore);
                 }
             }
         }
+    }
+
+    private function extractDate(string $dateTime): string
+    {
+        $dt = new \DateTime($dateTime, new \DateTimeZone('UTC'));
+        $dt->setTimezone(new \DateTimeZone(self::TIMEZONE));
+
+        return $dt->format('Y-m-d');
     }
 }
