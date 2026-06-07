@@ -1,10 +1,10 @@
 {
     "controller": "controllers/record",
     "modalViews": {
-        "edit": "views/modals/edit"
+        "edit": "custom:views/modals/working-time-calendar-edit"
     },
     "recordViews": {
         "edit": "views/record/edit",
-        "editSmall": "views/record/edit-small"
+        "editSmall": "views/record/edit"
     }
 }

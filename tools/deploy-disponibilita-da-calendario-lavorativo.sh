@@ -40,11 +40,13 @@ FILES=(
   "custom/Espo/Custom/Resources/layouts/WorkingTimeCalendar/detail.json"
   "custom/Espo/Custom/Resources/layouts/WorkingTimeCalendar/edit.json"
   "custom/Espo/Custom/Resources/layouts/WorkingTimeCalendar/detailGenerazioneDisponibilita.json"
+  "custom/Espo/Custom/Resources/layouts/WorkingTimeCalendar/detailSmall.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/WorkingTimeCalendar.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Disponibilita.json"
   "custom/Espo/Custom/Resources/i18n/en_US/WorkingTimeCalendar.json"
   "client/custom/src/action-handlers/disponibilita/disponibilita-ricorrenti.js"
   "client/custom/src/views/modals/disponibilita-ricorrenti.js"
+  "client/custom/src/views/modals/working-time-calendar-edit.js"
   "tools/rollback-disponibilita-da-calendario-lavorativo.sh"
 )
 

@@ -83,7 +83,7 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
             this.createView('selectCalendarDialog', 'views/modals/select-records', {
                 scope: 'WorkingTimeCalendar',
                 multiple: false,
-                createButton: true,
+                createButton: false,
             }, (view) => {
                 view.render();
 
@@ -151,11 +151,15 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
                 this.clearView('record');
             }
 
-            this.createView('record', 'views/record/edit-for-modal', {
+            this.createView('record', 'views/record/edit', {
                 scope: 'WorkingTimeCalendar',
                 model: this.calendarModel,
+                type: 'edit',
                 layoutName: 'edit',
-                detailLayout: 'edit',
+                sideDisabled: true,
+                bottomDisabled: true,
+                buttonsDisabled: true,
+                isWide: true,
                 el: this.getSelector() + ' .record',
             }, (view) => {
                 view.render();
