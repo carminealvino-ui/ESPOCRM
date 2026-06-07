@@ -118,10 +118,10 @@
 // ✔ Nuovo appuntamento: dateEnd = dateStart + 1h30 (5400 sec)
 //    (calendario / dettaglio piccolo; backup server-side)
 //
-// 1.7.4 (01-06-2026)
+// 1.8.0 (06-2026)
 // ----------------------------------------
-// ✔ FIX: in aggiornamento non sovrascrivere fornitore/brand/categoria
-//    gia impostati su Appuntamento (sync da Lead/Prospect solo se vuoti)
+// ✔ Palette dalton-friendly (Okabe-Ito)
+// ✔ Brand solo su Planned; stati fissi per Held / Chiuso+ / Annullato / Ingestibile
 //
 // 1.7.0 (25-05-2026)
 // -----------------------------------------------------
@@ -149,6 +149,7 @@ namespace Espo\Custom\Hooks\Appuntamento;
 use Espo\Core\ORM\EntityManager;
 use Espo\Custom\Services\LeadProspectSync;
 use Espo\Custom\Services\LineaProdottoCategorySync;
+use Espo\Custom\Services\AppuntamentoCalendarColor;
 use Espo\ORM\Entity;
 
 class GlobalLogic
@@ -178,7 +179,7 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.7.4'
+                '1.8.0'
             );
 
             $this->applyDefaultDurationOnCreate($entity);
@@ -457,46 +458,14 @@ class GlobalLogic
             }
 
             // ========================================
-            // COLORI CALENDARIO
+            // COLORI CALENDARIO (1.8.0 — dalton + brand solo Planned)
             // ========================================
 
-            if (
+            $calendarColor = (new AppuntamentoCalendarColor($this->entityManager))
+                ->resolveColor($entity);
 
-                $status === 'Held' &&
-                $sottostato === 'Chiuso Positivamente'
-
-            ) {
-
-                $entity->set(
-                    'color',
-                    '#00aa00'
-                );
-
-            } elseif ($status === 'Held') {
-
-                $entity->set(
-                    'color',
-                    '#006400'
-                );
-
-            } elseif ($status === 'Planned') {
-
-                $entity->set(
-                    'color',
-                    '#0000ff'
-                );
-
-            } elseif (
-
-                $status === 'Not Held' ||
-                $status === 'Ingestibile'
-
-            ) {
-
-                $entity->set(
-                    'color',
-                    '#cc0000'
-                );
+            if ($calendarColor !== null) {
+                $entity->set('color', $calendarColor);
             }
 
             // ========================================

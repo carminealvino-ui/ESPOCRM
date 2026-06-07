@@ -1,0 +1,72 @@
+{
+    "fields": {
+        "name": {
+            "required": false
+        },
+        "dataInizioGenerazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataFineGenerazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "generazioneProductBrand": {
+            "type": "link",
+            "isCustom": true
+        },
+        "generazioneStatus": {
+            "type": "enum",
+            "options": [
+                "Presente",
+                "Ferie",
+                "Malattia",
+                "Auto",
+                "Indisponibile"
+            ],
+            "default": "Presente",
+            "isCustom": true
+        },
+        "generazioneArea": {
+            "type": "multiEnum",
+            "storeArrayValues": true,
+            "options": [
+                "ROMA SUD",
+                "ROMA EST",
+                "ROMA NORD",
+                "PESCARA",
+                "CHIETI",
+                "LATINA",
+                "FROSINONE"
+            ],
+            "isCustom": true
+        },
+        "generazioneCollaborators": {
+            "type": "linkMultiple",
+            "view": "views/fields/collaborators",
+            "maxCount": 30,
+            "isCustom": true
+        }
+    },
+    "links": {
+        "users": {
+            "type": "hasMany",
+            "foreign": "workingTimeCalendar",
+            "entity": "User",
+            "readOnly": true
+        },
+        "generazioneCollaborators": {
+            "type": "hasMany",
+            "entity": "User",
+            "relationName": "entityCollaborator",
+            "layoutRelationshipsDisabled": true
+        },
+        "generazioneProductBrand": {
+            "type": "belongsTo",
+            "entity": "ProductBrand",
+            "isCustom": true
+        }
+    }
+}

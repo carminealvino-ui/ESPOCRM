@@ -36,7 +36,7 @@
             "type": "foreign",
             "link": "prospect",
             "field": "whatsApp",
-            "view": "views/fields/foreign-url",
+            "view": "custom:views/fields/foreign-whatsapp-create-call",
             "isCustom": true
         },
         "whatsApp39": {
@@ -44,7 +44,7 @@
             "type": "foreign",
             "link": "prospect",
             "field": "whatsApp39",
-            "view": "views/fields/foreign-url",
+            "view": "custom:views/fields/foreign-whatsapp-create-call",
             "isCustom": true
         },
         "appuntamento": {

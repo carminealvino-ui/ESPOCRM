@@ -12,6 +12,9 @@
             [
                 {
                     "name": "description"
+                },
+                {
+                    "name": "color"
                 }
             ]
         ],

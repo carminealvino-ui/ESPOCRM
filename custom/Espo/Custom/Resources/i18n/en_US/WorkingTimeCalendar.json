@@ -1,0 +1,13 @@
+{
+    "fields": {
+        "dataInizioGenerazione": "Generation start date",
+        "dataFineGenerazione": "Generation end date",
+        "generazioneProductBrand": "Brand",
+        "generazioneStatus": "Availability status",
+        "generazioneArea": "Work area",
+        "generazioneCollaborators": "Collaborators"
+    },
+    "labels": {
+        "Generazione Disponibilità": "Availability generation"
+    }
+}

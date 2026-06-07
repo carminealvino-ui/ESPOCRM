@@ -164,14 +164,17 @@
             "type": "varchar",
             "trim": true,
             "options": [],
+            "view": "custom:views/fields/telefono-dial-call",
             "isCustom": true
         },
         "whatsApp": {
             "type": "url",
+            "view": "custom:views/fields/whatsapp-create-call",
             "isCustom": true
         },
         "whatsApp39": {
             "type": "url",
+            "view": "custom:views/fields/whatsapp-create-call",
             "isCustom": true
         },
         "lead": {

@@ -9,18 +9,20 @@
         "dateStartDate": "Data inizio (tutto il giorno)",
         "dateEndDate": "Data fine (tutto il giorno)",
         "isAllDay": "È tutto il giorno",
-        "azienda": "Azienda",
+        "productBrand": "Brand",
         "area": "Area",
         "name": "Disponibilità",
         "datadisponibilita": "Data Disponibilità",
         "color": "Color",
         "orarioInizio": "Orario Inizio",
         "orarioFine": "Orario Fine",
-        "fornitorePartner": "Fornitore/Partner"
+        "fornitorePartner": "Fornitore/Partner",
+        "productBrand": "Brand"
     },
     "links": {
         "parent": "Genitore",
-        "fornitorePartner": "Fornitore/Partner"
+        "fornitorePartner": "Fornitore/Partner",
+        "productBrand": "Brand"
     },
     "options": {
         "status": {
@@ -67,5 +69,8 @@
         "planned": "Pianificato",
         "held": "Trattenuto",
         "todays": "Di oggi"
+    },
+    "labels": {
+        "Disponibilità Ricorrenti": "Disponibilità Ricorrenti"
     }
 }
