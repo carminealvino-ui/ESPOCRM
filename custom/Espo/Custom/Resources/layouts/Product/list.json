@@ -5,31 +5,31 @@
     },
     {
         "name": "name",
-        "width": 35,
+        "width": 32,
         "link": true
     },
     {
         "name": "category",
-        "width": 16
+        "width": 14
     },
     {
         "name": "brand",
-        "width": 16
+        "width": 12
     },
     {
-        "name": "pricingType",
-        "width": 16
+        "name": "prezzoListinoIvaInclusa",
+        "width": 12
     },
     {
-        "name": "unitPrice",
-        "width": 16
+        "name": "prezzoListinoIvaEsclusa",
+        "width": 12
+    },
+    {
+        "name": "prezzoCodiceIvaInclusa",
+        "width": 12
     },
     {
         "name": "prezzoCodice",
-        "width": 16
-    },
-    {
-        "name": "listPrice",
-        "width": 16
+        "width": 12
     }
 ]
