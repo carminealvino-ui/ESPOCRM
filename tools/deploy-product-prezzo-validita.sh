@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Pannello Prezzo Product con data inizio validità → subpanel Prezzi (ProductPrice).
+# Pannello Prezzo Product: dual IVA + data validità → subpanel Prezzi.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/product-prezzo-validita-9999/tools/deploy-product-prezzo-validita.sh?t=$(date +%s)" | bash
@@ -12,7 +12,9 @@ REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 
 FILES=(
+  "custom/Espo/Custom/Services/IvaDualPriceSync.php"
   "custom/Espo/Custom/Services/ProductPriceTimeline.php"
+  "custom/Espo/Custom/Hooks/Product/DualIvaPricing.php"
   "custom/Espo/Custom/Hooks/Product/PreparePriceTimeline.php"
   "custom/Espo/Custom/Hooks/Product/SyncPriceTimeline.php"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Product.json"
@@ -20,7 +22,7 @@ FILES=(
   "custom/Espo/Custom/Resources/i18n/it_IT/Product.json"
 )
 
-echo "=== Deploy prezzo validità Product → ${CRM_ROOT} ==="
+echo "=== Deploy pannello prezzo dual IVA Product → ${CRM_ROOT} ==="
 
 for rel in "${FILES[@]}"; do
   target="${CRM_ROOT}/${rel}"
@@ -36,4 +38,5 @@ elif [[ -f "${CRM_ROOT}/command.php" ]]; then
 fi
 
 echo ""
-echo "Fatto. Rebuild eseguito. Modificare listPrice/prezzoCodice + data inizio validità sul Product."
+echo "Fatto. Rebuild eseguito."
+echo "Se mancano colonne DB: eseguire database/2026-06-05-product-dual-iva-prezzi.sql"

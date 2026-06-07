@@ -19,8 +19,10 @@ class ProductPriceTimeline
 
     public function hasPricePanelChanges(Entity $product): bool
     {
-        return $product->isAttributeChanged('listPrice')
-            || $product->isAttributeChanged('prezzoCodice');
+        return $product->isAttributeChanged('prezzoListinoIvaEsclusa')
+            || $product->isAttributeChanged('prezzoListinoIvaInclusa')
+            || $product->isAttributeChanged('prezzoCodice')
+            || $product->isAttributeChanged('prezzoCodiceIvaInclusa');
     }
 
     public function syncFromProduct(Entity $product, string $dateStart): bool
@@ -37,10 +39,12 @@ class ProductPriceTimeline
             throw new Error('Listino prezzi di default non configurato.');
         }
 
-        $listPrice = $this->floatOrNull($product->get('listPrice'));
-        $prezzoCodice = $this->floatOrNull($product->get('prezzoCodice'));
+        $listinoNet = $this->floatOrNull($product->get('prezzoListinoIvaEsclusa'));
+        $listinoIvi = $this->floatOrNull($product->get('prezzoListinoIvaInclusa'));
+        $codiceNet = $this->floatOrNull($product->get('prezzoCodice'));
+        $codiceIvi = $this->floatOrNull($product->get('prezzoCodiceIvaInclusa'));
 
-        if (($listPrice === null || $listPrice <= 0) && ($prezzoCodice === null || $prezzoCodice <= 0)) {
+        if (!$this->hasAnyPrice($listinoNet, $listinoIvi, $codiceNet, $codiceIvi)) {
             return false;
         }
 
@@ -48,7 +52,14 @@ class ProductPriceTimeline
 
         $existing = $this->findLatestActiveRow($productId, $priceBook->getId());
 
-        if ($existing && $this->isAlreadyAligned($existing, $listPrice, $prezzoCodice, $normalizedDateStart)) {
+        if ($existing && $this->isAlreadyAligned(
+            $existing,
+            $listinoNet,
+            $listinoIvi,
+            $codiceNet,
+            $codiceIvi,
+            $normalizedDateStart
+        )) {
             return false;
         }
 
@@ -65,21 +76,64 @@ class ProductPriceTimeline
             'dateStart' => $normalizedDateStart,
         ]);
 
-        if ($listPrice !== null && $listPrice > 0) {
-            $productPrice->set('price', round($listPrice, 2));
-
-            if ($productPrice->hasAttribute('prezzoListinoIvaEsclusa')) {
-                $productPrice->set('prezzoListinoIvaEsclusa', round($listPrice, 2));
-            }
-        }
-
-        if ($prezzoCodice !== null && $prezzoCodice > 0 && $productPrice->hasAttribute('prezzoCodice')) {
-            $productPrice->set('prezzoCodice', round($prezzoCodice, 2));
-        }
+        $this->applyListino($productPrice, $priceBook, $listinoNet, $listinoIvi);
+        $this->applyCodice($productPrice, $codiceNet, $codiceIvi);
 
         $this->entityManager->saveEntity($productPrice);
 
         return true;
+    }
+
+    private function applyListino(
+        Entity $productPrice,
+        Entity $priceBook,
+        ?float $listinoNet,
+        ?float $listinoIvi
+    ): void {
+        if ($listinoNet !== null && $listinoNet > 0 && $productPrice->hasAttribute('prezzoListinoIvaEsclusa')) {
+            $productPrice->set('prezzoListinoIvaEsclusa', round($listinoNet, 2));
+        }
+
+        if ($listinoIvi !== null && $listinoIvi > 0 && $productPrice->hasAttribute('prezzoListinoIvaInclusa')) {
+            $productPrice->set('prezzoListinoIvaInclusa', round($listinoIvi, 2));
+        }
+
+        $taxInclusive = (bool) $priceBook->get('isTaxInclusive');
+
+        if ($taxInclusive && $listinoIvi !== null && $listinoIvi > 0) {
+            $productPrice->set('price', round($listinoIvi, 2));
+
+            return;
+        }
+
+        if ($listinoNet !== null && $listinoNet > 0) {
+            $productPrice->set('price', round($listinoNet, 2));
+        }
+    }
+
+    private function applyCodice(
+        Entity $productPrice,
+        ?float $codiceNet,
+        ?float $codiceIvi
+    ): void {
+        if ($codiceNet !== null && $codiceNet > 0 && $productPrice->hasAttribute('prezzoCodice')) {
+            $productPrice->set('prezzoCodice', round($codiceNet, 2));
+        }
+
+        if ($codiceIvi !== null && $codiceIvi > 0 && $productPrice->hasAttribute('prezzoCodiceIvaInclusa')) {
+            $productPrice->set('prezzoCodiceIvaInclusa', round($codiceIvi, 2));
+        }
+    }
+
+    private function hasAnyPrice(?float $listinoNet, ?float $listinoIvi, ?float $codiceNet, ?float $codiceIvi): bool
+    {
+        foreach ([$listinoNet, $listinoIvi, $codiceNet, $codiceIvi] as $value) {
+            if ($value !== null && $value > 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function resolvePriceBook(): ?Entity
@@ -115,8 +169,10 @@ class ProductPriceTimeline
 
     private function isAlreadyAligned(
         Entity $existing,
-        ?float $listPrice,
-        ?float $prezzoCodice,
+        ?float $listinoNet,
+        ?float $listinoIvi,
+        ?float $codiceNet,
+        ?float $codiceIvi,
         string $dateStart
     ): bool {
         $existingStart = substr((string) ($existing->get('dateStart') ?? ''), 0, 10);
@@ -125,16 +181,16 @@ class ProductPriceTimeline
             return false;
         }
 
-        $existingList = $this->floatOrNull($existing->get('prezzoListinoIvaEsclusa'))
+        $existingListNet = $this->floatOrNull($existing->get('prezzoListinoIvaEsclusa'))
             ?? $this->floatOrNull($existing->get('price'));
+        $existingListIvi = $this->floatOrNull($existing->get('prezzoListinoIvaInclusa'));
+        $existingCodiceNet = $this->floatOrNull($existing->get('prezzoCodice'));
+        $existingCodiceIvi = $this->floatOrNull($existing->get('prezzoCodiceIvaInclusa'));
 
-        if (!$this->amountsEqual($existingList, $listPrice)) {
-            return false;
-        }
-
-        $existingCodice = $this->floatOrNull($existing->get('prezzoCodice'));
-
-        return $this->amountsEqual($existingCodice, $prezzoCodice);
+        return $this->amountsEqual($existingListNet, $listinoNet)
+            && $this->amountsEqual($existingListIvi, $listinoIvi)
+            && $this->amountsEqual($existingCodiceNet, $codiceNet)
+            && $this->amountsEqual($existingCodiceIvi, $codiceIvi);
     }
 
     private function amountsEqual(?float $left, ?float $right): bool

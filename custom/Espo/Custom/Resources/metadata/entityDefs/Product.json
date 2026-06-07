@@ -14,10 +14,29 @@
             "isCustom": true,
             "audited": true
         },
+        "prezzoListinoIvaEsclusa": {
+            "type": "currency",
+            "isCustom": true,
+            "onlyDefaultCurrency": true,
+            "audited": true
+        },
+        "prezzoListinoIvaInclusa": {
+            "type": "currency",
+            "isCustom": true,
+            "onlyDefaultCurrency": true,
+            "audited": true
+        },
         "prezzoCodice": {
             "type": "currency",
             "isCustom": true,
-            "onlyDefaultCurrency": true
+            "onlyDefaultCurrency": true,
+            "audited": true
+        },
+        "prezzoCodiceIvaInclusa": {
+            "type": "currency",
+            "isCustom": true,
+            "onlyDefaultCurrency": true,
+            "audited": true
         },
         "name": {
             "required": false,

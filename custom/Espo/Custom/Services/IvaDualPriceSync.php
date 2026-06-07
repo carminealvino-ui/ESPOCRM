@@ -2,6 +2,7 @@
 
 namespace Espo\Custom\Services;
 
+use Espo\Modules\Sales\Tools\Price\DefaultPriceBookProvider;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
@@ -13,7 +14,8 @@ class IvaDualPriceSync
     public const DEFAULT_ALIQUOTA_IVA = 10.0;
 
     public function __construct(
-        private EntityManager $entityManager
+        private EntityManager $entityManager,
+        private DefaultPriceBookProvider $defaultPriceBookProvider,
     ) {}
 
     public function syncProductPriceOnBeforeSave(Entity $entity): void
@@ -30,6 +32,30 @@ class IvaDualPriceSync
         $this->syncListinoFields($entity, $aliquota, $taxInclusive);
         $this->syncCodiceFields($entity, $aliquota);
         $this->syncNativePriceField($entity, $taxInclusive);
+    }
+
+    public function syncProductOnBeforeSave(Entity $entity): void
+    {
+        if ($entity->getEntityType() !== 'Product') {
+            return;
+        }
+
+        $aliquota = $this->resolveAliquotaForProduct($entity);
+
+        $this->syncIvaPair($entity, 'prezzoListinoIvaInclusa', 'prezzoListinoIvaEsclusa', $aliquota);
+        $this->syncIvaPair($entity, 'prezzoCodiceIvaInclusa', 'prezzoCodice', $aliquota);
+
+        $listinoNet = $this->floatOrNull($entity->get('prezzoListinoIvaEsclusa'));
+
+        if ($listinoNet !== null && $listinoNet > 0) {
+            if ($entity->hasAttribute('listPrice')) {
+                $entity->set('listPrice', round($listinoNet, 2));
+            }
+
+            if ($entity->hasAttribute('unitPrice')) {
+                $entity->set('unitPrice', round($listinoNet, 2));
+            }
+        }
     }
 
     public function syncProductFromProductPrice(Entity $productPrice): void
@@ -285,6 +311,21 @@ class IvaDualPriceSync
 
         if ($aliquota !== null && $aliquota > 0) {
             return $aliquota;
+        }
+
+        return self::DEFAULT_ALIQUOTA_IVA;
+    }
+
+    private function resolveAliquotaForProduct(Entity $entity): float
+    {
+        $priceBook = $this->defaultPriceBookProvider->get();
+
+        if ($priceBook) {
+            $fromBook = $this->resolveAliquotaFromPriceBook($priceBook);
+
+            if ($fromBook !== null && $fromBook > 0) {
+                return $fromBook;
+            }
         }
 
         return self::DEFAULT_ALIQUOTA_IVA;
