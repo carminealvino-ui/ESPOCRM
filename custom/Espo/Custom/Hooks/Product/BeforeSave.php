@@ -8,8 +8,9 @@ use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Forza nome prodotto in formato:
- * BRAND - CATEGORIA - DENOMINAZIONE
+ * Nome prodotto in formato catalogo:
+ * BRAND - {nn} CATEGORIA - {nnn} DENOMINAZIONE
+ * Es.: ARIEL - 01 CALDAIE A GAS - 001 ECO WIND 24 kW
  */
 class BeforeSave implements BeforeSaveHook
 {
@@ -34,11 +35,66 @@ class BeforeSave implements BeforeSaveHook
             return;
         }
 
-        $target = sprintf('%s - %s - %s', $brandName, $categoryName, $denominazione);
+        $categoryPart = $this->buildCategoryLabel($entity, $categoryName);
+        $denominazionePart = $this->buildDenominazioneLabel($entity, $denominazione);
+
+        $target = sprintf('%s - %s - %s', $brandName, $categoryPart, $denominazionePart);
 
         if ((string) $entity->get('name') !== $target) {
             $entity->set('name', $target);
         }
+    }
+
+    private function buildCategoryLabel(Entity $entity, string $categoryName): string
+    {
+        $categoryElenco = $this->resolveCategoryElenco($entity);
+
+        if ($categoryElenco === '') {
+            return $categoryName;
+        }
+
+        return $categoryElenco . ' ' . $categoryName;
+    }
+
+    private function buildDenominazioneLabel(Entity $entity, string $denominazione): string
+    {
+        $productElenco = $this->formatElenco($entity->get('elencoCatalogo'), 3);
+
+        if ($productElenco === '') {
+            return $denominazione;
+        }
+
+        return $productElenco . ' ' . $denominazione;
+    }
+
+    private function resolveCategoryElenco(Entity $entity): string
+    {
+        $categoryId = (string) ($entity->get('categoryId') ?? '');
+
+        if ($categoryId === '') {
+            return '';
+        }
+
+        $category = $this->entityManager->getEntityById('ProductCategory', $categoryId);
+
+        if (!$category) {
+            return '';
+        }
+
+        return $this->formatElenco($category->get('elencoCatalogo'), 2);
+    }
+
+    private function formatElenco(mixed $value, int $length): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        if (!is_numeric($value)) {
+            return trim((string) $value);
+        }
+
+        return str_pad((string) (int) $value, $length, '0', STR_PAD_LEFT);
     }
 
     private function resolveLinkedName(

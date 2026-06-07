@@ -1,6 +1,7 @@
 {
     "fields": {
         "denominazione": "Denominazione",
+        "elencoCatalogo": "Elenco catalogo",
         "dataInizioValidita": "Data inizio validità",
         "prezzoListinoIvaEsclusa": "Prezzo Listino IVA Esclusa",
         "prezzoListinoIvaInclusa": "Prezzo Listino IVA Inclusa",
