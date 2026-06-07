@@ -1,6 +1,9 @@
 {
     "Opportunity": {
         "createContratto": "Espo\\Custom\\Actions\\Opportunity\\CreateContratto"
+    },
+    "WorkingTimeCalendar": {
+        "generaDisponibilita": "Espo\\Custom\\Actions\\WorkingTimeCalendar\\GeneraDisponibilita"
     }
 }
 

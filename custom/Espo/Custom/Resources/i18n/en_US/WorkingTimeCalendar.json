@@ -1,0 +1,12 @@
+{
+    "fields": {
+        "dataInizioGenerazione": "Generation start date",
+        "dataFineGenerazione": "Generation end date",
+        "generazioneAzienda": "Company",
+        "generazioneStatus": "Availability status",
+        "generazioneAssignedUsers": "Assigned users"
+    },
+    "labels": {
+        "Generazione Disponibilità": "Availability generation"
+    }
+}

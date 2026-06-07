@@ -1,0 +1,51 @@
+{
+    "fields": {
+        "dataInizioGenerazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataFineGenerazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "generazioneAzienda": {
+            "type": "enum",
+            "options": [
+                "",
+                "ARQUATI",
+                "ARIEL",
+                "PROGETTO"
+            ],
+            "default": "",
+            "isCustom": true
+        },
+        "generazioneStatus": {
+            "type": "enum",
+            "options": [
+                "Presente",
+                "Ferie",
+                "Malattia",
+                "Auto",
+                "Indisponibile"
+            ],
+            "default": "Presente",
+            "isCustom": true
+        },
+        "generazioneAssignedUsers": {
+            "type": "linkMultiple",
+            "view": "views/fields/assigned-users",
+            "maxCount": 30,
+            "isCustom": true
+        }
+    },
+    "links": {
+        "generazioneAssignedUsers": {
+            "type": "hasMany",
+            "entity": "User",
+            "relationName": "entityUser",
+            "layoutRelationshipsDisabled": true
+        }
+    }
+}
