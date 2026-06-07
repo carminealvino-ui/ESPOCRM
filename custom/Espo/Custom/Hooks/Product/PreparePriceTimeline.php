@@ -17,7 +17,7 @@ class PreparePriceTimeline implements BeforeSave
     /** @var array<int, string> */
     public static array $pendingDateByObject = [];
 
-    public static int $order = 10;
+    public static int $order = 4;
 
     public function __construct(
         private ProductPriceTimeline $productPriceTimeline
