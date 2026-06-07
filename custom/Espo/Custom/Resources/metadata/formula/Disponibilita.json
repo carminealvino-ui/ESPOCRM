@@ -1,3 +1,3 @@
 {
-    "beforeSaveCustomScript": null
+    "beforeSaveCustomScript": "ifThen(\n    !empty(dateStartDate),\n    datadisponibilita = dateStartDate\n);\nifThen(\n    empty(dateStartDate) && !empty(dateStart),\n    datadisponibilita = datetime\\format(dateStart, 'Europe/Rome', 'YYYY-MM-DD')\n);\nifThen(\n    empty(dateStartDate) && empty(dateStart) && !empty(orarioInizio),\n    datadisponibilita = datetime\\format(orarioInizio, 'Europe/Rome', 'YYYY-MM-DD')\n);"
 }

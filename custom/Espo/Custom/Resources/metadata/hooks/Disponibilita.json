@@ -1,0 +1,8 @@
+{
+    "beforeSave": {
+        "setName": {
+            "className": "Espo\\Custom\\Hooks\\Disponibilita\\SetName",
+            "order": 5
+        }
+    }
+}

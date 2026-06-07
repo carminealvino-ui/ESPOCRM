@@ -2,112 +2,64 @@
 
 namespace Espo\Custom\Hooks\Disponibilita;
 
+use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\ORM\Entity;
+use Espo\ORM\EntityManager;
+use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * ============================================================
- * ENTITÀ: Disponibilita
- * FILE: SetName.php
- * VERSIONE: 1.2.0
- * DATA: 2026-05-07
- * STATO: STABILE PRODUZIONE
+ * Disponibilita: datadisponibilita = Data inizio (dateStartDate / dateStart).
  *
- * ============================================================
- * CONTESTO
- * ============================================================
- * Questo hook gestisce:
- *
- * ✔ Nome evento (azienda + orari)
- * ✔ Impostazione calendario (all-day)
- * ✔ Conversione timezone UTC → Europe/Rome
- * ✔ Colore evento da Fornitore/Partner
- *
- * ============================================================
- * ARCHITETTURA
- * ============================================================
- * HOOK = fonte unica della verità per:
- *  - dateStart / dateEnd
- *  - name
- *  - color
- *
- * JS = SOLO UX (default valori)
- *
- * ============================================================
- * FIX IMPLEMENTATI
- * ============================================================
- * ✔ Fix timezone corretto
- * ✔ Eliminata dipendenza da campi UI
- * ✔ Aggiunto supporto calendarColor (fix calendario)
- *
- * ============================================================
+ * v1.3.3: dateStartDate e' la data mostrata in elenco come "Data inizio".
+ * orarioInizio solo come fallback se Data inizio assente.
  */
-
-class SetName
+class SetName implements BeforeSave
 {
-    public function beforeSave(Entity $entity, array $options)
+    private const TIMEZONE = 'Europe/Rome';
+
+    public function __construct(
+        private EntityManager $entityManager
+    ) {}
+
+    public function beforeSave(Entity $entity, SaveOptions $options): void
     {
-        $entityManager = $GLOBALS['entityManager'];
-
-        /**
-         * ====================================================
-         * LETTURA DATI BASE (STABILE)
-         * ====================================================
-         */
-        $fornitoreId = $entity->get('fornitorePartnerId'); // relazione
-        $aziendaNome = $entity->get('azienda'); // nome azienda
-        $data = $entity->get('datadisponibilita'); // data calendario
-        $inizio = $entity->get('orarioInizio'); // datetime UTC
-        $fine = $entity->get('orarioFine'); // datetime UTC
-
-        /**
-         * ====================================================
-         * BLOCCO SICUREZZA (STABILE)
-         * ====================================================
-         * Se manca la data → esci
-         */
-        if (empty($data)) {
+        if ($options->get('skipHooks')) {
             return;
         }
 
-        /**
-         * ====================================================
-         * CALENDARIO (STABILE)
-         * ====================================================
-         * Evento sempre all-day per visualizzazione barra alta
-         */
-        $entity->set('isAllDay', true);
-        $entity->set('dateStart', $data . ' 00:00:00');
-        $entity->set('dateEnd', $data . ' 23:59:59');
+        $sourceDate = $this->resolveSourceDate($entity);
 
-        /**
-         * ====================================================
-         * CONVERSIONE ORARI (FIX TIMEZONE)
-         * ====================================================
-         * DB → UTC
-         * UI → Europe/Rome
-         */
+        if ($sourceDate !== null) {
+            $entity->set([
+                'datadisponibilita' => $sourceDate,
+                'dateStartDate' => $sourceDate,
+                'dateEndDate' => $sourceDate,
+                'dateStart' => $sourceDate . ' 00:00:00',
+                'dateEnd' => $sourceDate . ' 23:59:59',
+            ]);
+
+            $this->syncOrarioDate($entity, 'orarioInizio', $sourceDate);
+            $this->syncOrarioDate($entity, 'orarioFine', $sourceDate);
+        }
+
+        $fornitoreId = $entity->get('fornitorePartnerId');
+        $aziendaNome = $entity->get('azienda');
+        $inizio = $entity->get('orarioInizio');
+        $fine = $entity->get('orarioFine');
+
+        $entity->set('isAllDay', true);
+
         $oraInizio = '';
         $oraFine = '';
 
         if (!empty($inizio)) {
-            $dtStart = new \DateTime($inizio, new \DateTimeZone('UTC'));
-            $dtStart->setTimezone(new \DateTimeZone('Europe/Rome'));
-            $oraInizio = $dtStart->format('H:i');
+            $oraInizio = $this->extractTime($inizio);
         }
 
         if (!empty($fine)) {
-            $dtEnd = new \DateTime($fine, new \DateTimeZone('UTC'));
-            $dtEnd->setTimezone(new \DateTimeZone('Europe/Rome'));
-            $oraFine = $dtEnd->format('H:i');
+            $oraFine = $this->extractTime($fine);
         }
 
-        /**
-         * ====================================================
-         * COSTRUZIONE NOME (STABILE)
-         * ====================================================
-         * Formato:
-         * AZIENDA | HH:mm - HH:mm
-         */
         $nome = '';
 
         if (!empty($aziendaNome)) {
@@ -120,35 +72,100 @@ class SetName
 
         $entity->set('name', $nome);
 
-        /**
-         * ====================================================
-         * COLORE EVENTO (FIX COMPLETO)
-         * ====================================================
-         * Origine: Fornitore/Partner.color
-         *
-         * Problema Espo:
-         * - 'color' non sempre usato dal calendario
-         *
-         * Soluzione:
-         * ✔ set color
-         * ✔ set calendarColor (fondamentale)
-         */
-        if (!empty($fornitoreId)) {
-
-            $fornitore = $entityManager->getEntityById('FornitorePartner', $fornitoreId);
-
-            if ($fornitore) {
-                $colore = $fornitore->get('color');
-
-                if (!empty($colore)) {
-
-                    // campo standard
-                    $entity->set('color', $colore);
-
-                    // FIX calendario Espo
-                    $entity->set('calendarColor', $colore);
-                }
-            }
+        if (empty($fornitoreId)) {
+            return;
         }
+
+        $fornitore = $this->entityManager->getEntityById('FornitorePartner', $fornitoreId);
+
+        if (!$fornitore) {
+            return;
+        }
+
+        $colore = $fornitore->get('color');
+
+        if (empty($colore)) {
+            return;
+        }
+
+        $entity->set('color', $colore);
+        $entity->set('calendarColor', $colore);
+    }
+
+    private function resolveSourceDate(Entity $entity): ?string
+    {
+        $fromDataInizio = $this->dateFromDataInizioFields($entity);
+
+        if ($fromDataInizio !== null) {
+            return $fromDataInizio;
+        }
+
+        $orarioInizio = $entity->get('orarioInizio');
+
+        if (!empty($orarioInizio)) {
+            return $this->extractDate($orarioInizio);
+        }
+
+        return null;
+    }
+
+    private function dateFromDataInizioFields(Entity $entity): ?string
+    {
+        $dateStartDate = $this->normalizeDateValue($entity->get('dateStartDate'));
+
+        if ($dateStartDate !== null) {
+            return $dateStartDate;
+        }
+
+        $dateStart = $entity->get('dateStart');
+
+        if (!empty($dateStart)) {
+            return $this->extractDate($dateStart);
+        }
+
+        return null;
+    }
+
+    private function normalizeDateValue(mixed $value): ?string
+    {
+        if (!is_string($value) || $value === '') {
+            return null;
+        }
+
+        if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $value, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    private function extractDate(string $dateTime): string
+    {
+        $dt = new \DateTime($dateTime, new \DateTimeZone('UTC'));
+        $dt->setTimezone(new \DateTimeZone(self::TIMEZONE));
+
+        return $dt->format('Y-m-d');
+    }
+
+    private function extractTime(string $dateTime): string
+    {
+        $dt = new \DateTime($dateTime, new \DateTimeZone('UTC'));
+        $dt->setTimezone(new \DateTimeZone(self::TIMEZONE));
+
+        return $dt->format('H:i');
+    }
+
+    private function syncOrarioDate(Entity $entity, string $field, string $sourceDate): void
+    {
+        $value = $entity->get($field);
+
+        if (!is_string($value) || $value === '') {
+            return;
+        }
+
+        $dt = new \DateTime($value, new \DateTimeZone('UTC'));
+        $dt->setTimezone(new \DateTimeZone(self::TIMEZONE));
+
+        $entity->set($field, $sourceDate . ' ' . $dt->format('H:i:s'));
     }
 }
