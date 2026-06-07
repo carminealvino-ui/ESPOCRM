@@ -67,5 +67,8 @@
         "planned": "Pianificato",
         "held": "Trattenuto",
         "todays": "Di oggi"
+    },
+    "labels": {
+        "Disponibilità Ricorrenti": "Disponibilità Ricorrenti"
     }
 }

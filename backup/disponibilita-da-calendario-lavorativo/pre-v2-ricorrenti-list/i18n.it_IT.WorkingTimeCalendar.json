@@ -4,12 +4,11 @@
         "dataFineGenerazione": "Data fine generazione",
         "generazioneAzienda": "Azienda",
         "generazioneStatus": "Stato disponibilità",
-        "generazioneArea": "Area di lavoro",
-        "generazioneCollaborators": "Collaboratori"
+        "generazioneAssignedUsers": "Utenti assegnati",
+        "generazioneArea": "Area di lavoro"
     },
     "labels": {
-        "Generazione Disponibilità": "Generazione Disponibilità",
-        "Disponibilità Ricorrenti": "Disponibilità Ricorrenti"
+        "Generazione Disponibilità": "Generazione Disponibilità"
     },
     "options": {
         "generazioneStatus": {

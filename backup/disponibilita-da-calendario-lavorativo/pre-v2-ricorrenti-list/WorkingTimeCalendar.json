@@ -33,6 +33,12 @@
             "default": "Presente",
             "isCustom": true
         },
+        "generazioneAssignedUsers": {
+            "type": "linkMultiple",
+            "view": "views/fields/assigned-users",
+            "maxCount": 30,
+            "isCustom": true
+        },
         "generazioneArea": {
             "type": "multiEnum",
             "storeArrayValues": true,
@@ -46,19 +52,13 @@
                 "FROSINONE"
             ],
             "isCustom": true
-        },
-        "generazioneCollaborators": {
-            "type": "linkMultiple",
-            "view": "views/fields/collaborators",
-            "maxCount": 30,
-            "isCustom": true
         }
     },
     "links": {
-        "generazioneCollaborators": {
+        "generazioneAssignedUsers": {
             "type": "hasMany",
             "entity": "User",
-            "relationName": "entityCollaborator",
+            "relationName": "entityUser",
             "layoutRelationshipsDisabled": true
         }
     }

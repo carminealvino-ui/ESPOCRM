@@ -106,7 +106,7 @@
             ],
             [
                 {
-                    "name": "generazioneCollaborators",
+                    "name": "generazioneAssignedUsers",
                     "fullWidth": true
                 }
             ]

@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Deploy v2: Disponibilità Ricorrenti da lista Disponibilità.
-# Utenti automatici dal calendario; area e collaboratori nel pannello generazione.
+# Deploy: generazione Disponibilità da Calendario Lavorativo.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/disponibilita-da-calendario-lavorativo-9999/tools/deploy-disponibilita-da-calendario-lavorativo.sh?t=$(date +%s)" | bash
@@ -11,49 +10,20 @@ CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
 BRANCH="${2:-cursor/disponibilita-da-calendario-lavorativo-9999}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
-STAMP=$(date +%Y%m%d-%H%M%S)
-LOCAL_BACKUP="${CRM_ROOT}/backup/disponibilita-da-calendario-lavorativo/server-${STAMP}"
-
-echo "=== Backup locale pre-deploy in ${LOCAL_BACKUP} ==="
-mkdir -p "${LOCAL_BACKUP}"
-
-backup_if_exists() {
-  local rel="$1"
-  local src="${CRM_ROOT}/${rel}"
-  if [[ -f "${src}" ]]; then
-    mkdir -p "${LOCAL_BACKUP}/$(dirname "${rel}")"
-    cp -a "${src}" "${LOCAL_BACKUP}/${rel}"
-    echo "BACKUP ${rel}"
-  fi
-}
 
 FILES=(
   "custom/Espo/Custom/Services/WorkingTimeCalendarDisponibilitaGenerator.php"
   "custom/Espo/Custom/Actions/WorkingTimeCalendar/GeneraDisponibilita.php"
-  "custom/Espo/Custom/Actions/Disponibilita/GeneraDisponibilitaRicorrenti.php"
   "custom/Espo/Custom/Controllers/WorkingTimeCalendar.php"
-  "custom/Espo/Custom/Controllers/Disponibilita.php"
   "custom/Espo/Custom/Resources/metadata/entityDefs/WorkingTimeCalendar.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/WorkingTimeCalendar.json"
-  "custom/Espo/Custom/Resources/metadata/clientDefs/Disponibilita.json"
   "custom/Espo/Custom/Resources/metadata/app/actions.json"
   "custom/Espo/Custom/Resources/layouts/WorkingTimeCalendar/detail.json"
   "custom/Espo/Custom/Resources/layouts/WorkingTimeCalendar/edit.json"
-  "custom/Espo/Custom/Resources/layouts/WorkingTimeCalendar/detailGenerazioneDisponibilita.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/WorkingTimeCalendar.json"
-  "custom/Espo/Custom/Resources/i18n/it_IT/Disponibilita.json"
   "custom/Espo/Custom/Resources/i18n/en_US/WorkingTimeCalendar.json"
-  "client/custom/src/action-handlers/disponibilita/disponibilita-ricorrenti.js"
-  "client/custom/src/views/modals/disponibilita-ricorrenti.js"
-  "tools/rollback-disponibilita-da-calendario-lavorativo.sh"
+  "client/custom/src/views/working-time-calendar/record/detail.js"
 )
-
-for rel in "${FILES[@]}"; do
-  backup_if_exists "${rel}"
-done
-
-echo ""
-echo "=== Deploy file da branch ${BRANCH} ==="
 
 for rel in "${FILES[@]}"; do
   target="${CRM_ROOT}/${rel}"
@@ -69,9 +39,6 @@ elif [[ -f "${CRM_ROOT}/command.php" ]]; then
 fi
 
 echo ""
-echo "Deploy v2 completato."
-echo "Backup locale: ${LOCAL_BACKUP}"
-echo "Rollback repo v1: bash tools/rollback-disponibilita-da-calendario-lavorativo.sh"
-echo ""
-echo "Uso: lista Disponibilità → pulsante «Disponibilità Ricorrenti»."
-echo "Ctrl+F5 nel browser."
+echo "Fatto. Aprire un Calendario Lavorativo, compilare il pannello"
+echo "\"Generazione Disponibilità\" (date, utenti, azienda) e cliccare"
+echo "\"Genera Disponibilità\". Ctrl+F5 nel browser."

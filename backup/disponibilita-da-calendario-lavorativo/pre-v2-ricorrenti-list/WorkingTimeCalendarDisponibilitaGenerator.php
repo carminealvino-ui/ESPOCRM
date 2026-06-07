@@ -7,11 +7,6 @@ use Espo\ORM\EntityManager;
 
 /**
  * Genera record Disponibilita da un WorkingTimeCalendar e un intervallo di date.
- *
- * v2.0.0:
- * - Utenti presi automaticamente dal link users del calendario
- * - Una disponibilita per fascia oraria con tutti gli utenti del calendario
- * - Area e collaboratori dal pannello generazione del calendario
  */
 class WorkingTimeCalendarDisponibilitaGenerator
 {
@@ -20,76 +15,6 @@ class WorkingTimeCalendarDisponibilitaGenerator
     public function __construct(
         private EntityManager $entityManager
     ) {}
-
-    /**
-     * @return array{created: int, skipped: int, errors: string[], userCount: int}
-     */
-    public function generateFromCalendar(Entity $calendar, bool $dryRun = false): array
-    {
-        $dateFrom = $calendar->get('dataInizioGenerazione');
-        $dateTo = $calendar->get('dataFineGenerazione');
-        $azienda = $calendar->get('generazioneAzienda');
-        $status = $calendar->get('generazioneStatus') ?: 'Presente';
-        $area = $calendar->get('generazioneArea') ?? [];
-        $collaboratorIds = $calendar->getLinkMultipleIdList('generazioneCollaborators');
-
-        if (!is_array($area)) {
-            $area = $area !== null && $area !== '' ? [$area] : [];
-        }
-
-        $assignedUserIds = $this->resolveCalendarUserIds($calendar);
-
-        if (!$dateFrom || !$dateTo) {
-            throw new \InvalidArgumentException('Compilare Data inizio e Data fine generazione.');
-        }
-
-        if ($area === []) {
-            throw new \InvalidArgumentException('Selezionare almeno un\'area di lavoro.');
-        }
-
-        if ($assignedUserIds === []) {
-            throw new \InvalidArgumentException(
-                'Nessun utente collegato al calendario lavorativo. Collegare gli utenti al calendario prima di generare.'
-            );
-        }
-
-        $result = $this->generate(
-            $calendar,
-            $dateFrom,
-            $dateTo,
-            $assignedUserIds,
-            $azienda,
-            $status,
-            $area,
-            $collaboratorIds,
-            $dryRun
-        );
-
-        $result['userCount'] = count($assignedUserIds);
-
-        return $result;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function resolveCalendarUserIds(Entity $calendar): array
-    {
-        $userIds = [];
-
-        foreach (
-            $this->entityManager
-                ->getRDBRepository('WorkingTimeCalendar')
-                ->getRelation($calendar, 'users')
-                ->find() as $user
-        ) {
-            $userIds[] = $user->getId();
-        }
-
-        sort($userIds);
-
-        return array_values(array_unique($userIds));
-    }
 
     /**
      * @return array{created: int, skipped: int, errors: string[]}
@@ -102,7 +27,6 @@ class WorkingTimeCalendarDisponibilitaGenerator
         ?string $azienda = null,
         string $status = 'Presente',
         array $area = [],
-        array $collaboratorIds = [],
         bool $dryRun = false
     ): array {
         $dateFrom = $this->normalizeDate($dateFrom);
@@ -118,10 +42,6 @@ class WorkingTimeCalendarDisponibilitaGenerator
 
         $assignedUserIds = array_values(array_filter(array_unique($assignedUserIds)));
         $area = array_values(array_filter(array_unique($area)));
-        $collaboratorIds = array_values(array_filter(array_unique($collaboratorIds)));
-
-        sort($assignedUserIds);
-        sort($collaboratorIds);
 
         if ($assignedUserIds === []) {
             throw new \InvalidArgumentException('Selezionare almeno un utente assegnato.');
@@ -143,14 +63,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
             $slots = $this->resolveTimeSlotsForDate($calendar, $dateStr);
 
             foreach ($slots as $slot) {
-                if ($this->existsDisponibilita(
-                    $dateStr,
-                    $slot['start'],
-                    $slot['end'],
-                    $assignedUserIds,
-                    $area,
-                    $collaboratorIds
-                )) {
+                if ($this->existsDisponibilita($dateStr, $slot['start'], $slot['end'], $assignedUserIds, $area)) {
                     $skipped++;
                     continue;
                 }
@@ -168,8 +81,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
                         $assignedUserIds,
                         $azienda,
                         $status,
-                        $area,
-                        $collaboratorIds
+                        $area
                     );
                     $created++;
                 } catch (\Throwable $e) {
@@ -220,6 +132,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
 
     /**
      * @return array<int, array{start: string, end: string}>|null|false
+     *         null = nessuna eccezione, false = giorno non lavorativo
      */
     private function resolveExceptionSlots(Entity $calendar, string $dateStr): array|null|false
     {
@@ -298,16 +211,13 @@ class WorkingTimeCalendarDisponibilitaGenerator
 
     /**
      * @param string[] $assignedUserIds
-     * @param string[] $area
-     * @param string[] $collaboratorIds
      */
     private function existsDisponibilita(
         string $dateStr,
         string $orarioInizio,
         string $orarioFine,
         array $assignedUserIds,
-        array $area,
-        array $collaboratorIds
+        array $area
     ): bool {
         $startTime = $this->extractTimeFromDateTime($orarioInizio);
         $endTime = $this->extractTimeFromDateTime($orarioFine);
@@ -321,7 +231,6 @@ class WorkingTimeCalendarDisponibilitaGenerator
 
         sort($assignedUserIds);
         sort($area);
-        sort($collaboratorIds);
 
         foreach ($collection as $entity) {
             $existingStart = $this->extractTimeFromDateTime((string) $entity->get('orarioInizio'));
@@ -344,14 +253,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
             }
             sort($existingArea);
 
-            if ($existingArea !== $area) {
-                continue;
-            }
-
-            $existingCollaborators = $entity->getLinkMultipleIdList('collaborators');
-            sort($existingCollaborators);
-
-            if ($existingCollaborators === $collaboratorIds) {
+            if ($existingArea === $area) {
                 return true;
             }
         }
@@ -374,8 +276,6 @@ class WorkingTimeCalendarDisponibilitaGenerator
 
     /**
      * @param string[] $assignedUserIds
-     * @param string[] $area
-     * @param string[] $collaboratorIds
      */
     private function createDisponibilita(
         string $dateStr,
@@ -384,8 +284,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
         array $assignedUserIds,
         ?string $azienda,
         string $status,
-        array $area,
-        array $collaboratorIds
+        array $area
     ): void {
         $entity = $this->entityManager->createEntity('Disponibilita');
 
@@ -398,7 +297,6 @@ class WorkingTimeCalendarDisponibilitaGenerator
             'status' => $status,
             'area' => $area,
             'assignedUsersIds' => $assignedUserIds,
-            'collaboratorsIds' => $collaboratorIds,
         ]);
 
         $this->entityManager->saveEntity($entity);

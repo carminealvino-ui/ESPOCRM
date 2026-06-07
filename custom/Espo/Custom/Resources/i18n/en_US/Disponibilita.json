@@ -58,5 +58,8 @@
         "planned": "Planned",
         "held": "Held",
         "todays": "Today's"
+    },
+    "labels": {
+        "Disponibilità Ricorrenti": "Recurring Availability"
     }
 }

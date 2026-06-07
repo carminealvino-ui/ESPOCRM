@@ -1,15 +1,3 @@
 {
-    "controller": "controllers/record",
-    "recordViews": {
-        "detail": "custom:views/working-time-calendar/record/detail"
-    },
-    "buttonList": [
-        "__APPEND__",
-        {
-            "name": "generaDisponibilita",
-            "label": "Genera Disponibilità",
-            "style": "primary",
-            "action": "generaDisponibilita"
-        }
-    ]
+    "controller": "controllers/record"
 }
