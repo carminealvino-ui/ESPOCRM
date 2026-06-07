@@ -12,8 +12,14 @@
                     "name": "denominazione"
                 },
                 {
-                    "name": "status"
+                    "name": "elencoCatalogo"
                 }
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                false
             ],
             [
                 {
