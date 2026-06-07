@@ -12,8 +12,14 @@
                     "name": "denominazione"
                 },
                 {
-                    "name": "status"
+                    "name": "elencoCatalogo"
                 }
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                false
             ],
             [
                 {
@@ -36,31 +42,27 @@
         "rows": [
             [
                 {
-                    "name": "costPrice"
+                    "name": "dataInizioValidita"
                 },
                 {
-                    "name": "pricingType"
+                    "name": "aliquotaIva"
                 }
             ],
             [
                 {
-                    "name": "listPrice"
+                    "name": "prezzoListinoIvaEsclusa"
                 },
                 {
-                    "name": "pricingFactor"
+                    "name": "prezzoListinoIvaInclusa"
                 }
             ],
             [
                 {
                     "name": "prezzoCodice"
                 },
-                false
-            ],
-            [
                 {
-                    "name": "unitPrice"
-                },
-                false
+                    "name": "prezzoCodiceIvaInclusa"
+                }
             ]
         ],
         "style": "default",

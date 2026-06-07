@@ -6,12 +6,12 @@
                     "name": "name"
                 },
                 {
-                    "name": "priceBook"
+                    "name": "elencoCatalogo"
                 }
             ],
             [
                 {
-                    "name": "fornitorePartner"
+                    "name": "productBrand"
                 },
                 false
             ],

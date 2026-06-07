@@ -6,6 +6,12 @@
         },
         "name": {
             "options": []
+        },
+        "elencoCatalogo": {
+            "type": "int",
+            "min": 0,
+            "isCustom": true,
+            "audited": true
         }
     },
     "links": {

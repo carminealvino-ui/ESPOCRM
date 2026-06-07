@@ -13,6 +13,10 @@
         },
         "name": {
             "options": []
+        },
+        "priceBook": {
+            "type": "link",
+            "isCustom": true
         }
     },
     "links": {
@@ -62,6 +66,13 @@
             "type": "hasMany",
             "foreign": "productBrand",
             "entity": "Quote",
+            "audited": false,
+            "isCustom": true
+        },
+        "priceBook": {
+            "type": "belongsTo",
+            "foreign": "productBrands",
+            "entity": "PriceBook",
             "audited": false,
             "isCustom": true
         }

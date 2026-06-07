@@ -4,6 +4,7 @@ namespace Espo\Custom\Hooks\ProductPrice;
 
 use Espo\Core\Hook\Hook\AfterSave;
 use Espo\Core\Hook\Hook\BeforeSave;
+use Espo\Core\Utils\Log;
 use Espo\Custom\Services\IvaDualPriceSync;
 use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
@@ -19,7 +20,8 @@ class DualIvaPricing implements BeforeSave, AfterSave
     public static int $order = 5;
 
     public function __construct(
-        private IvaDualPriceSync $ivaDualPriceSync
+        private IvaDualPriceSync $ivaDualPriceSync,
+        private Log $log,
     ) {}
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
@@ -41,6 +43,15 @@ class DualIvaPricing implements BeforeSave, AfterSave
             return;
         }
 
-        $this->ivaDualPriceSync->syncProductFromProductPrice($entity);
+        try {
+            $this->ivaDualPriceSync->syncProductFromProductPrice($entity);
+        } catch (\Throwable $e) {
+            $this->log->error(
+                'ProductPrice sync to Product failed [productPrice='
+                . ($entity->getId() ?? 'new')
+                . ']: '
+                . $e->getMessage()
+            );
+        }
     }
 }

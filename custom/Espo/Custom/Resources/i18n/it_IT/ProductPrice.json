@@ -20,7 +20,7 @@
         "prezzoListinoIvaEsclusaCurrency": "Prezzo Listino IVA Esclusa (valuta)",
         "prezzoListinoIvaInclusaConverted": "Prezzo Listino IVA Inclusa (convertito)",
         "prezzoListinoIvaInclusaCurrency": "Prezzo Listino IVA Inclusa (valuta)",
-        "priceBook": "Prezzo di Listino"
+        "priceBook": "Listino prezzi"
     },
     "tooltips": {
         "aliquotaIva": "Derivata dal codice IVA impostato sul listino prezzi (es. IVA10 → 10%, IVA22 → 22%).",

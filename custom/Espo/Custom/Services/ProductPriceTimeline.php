@@ -1,0 +1,306 @@
+<?php
+
+namespace Espo\Custom\Services;
+
+use Espo\ORM\Entity;
+use Espo\ORM\EntityManager;
+
+/**
+ * Crea/aggiorna righe ProductPrice con validità temporale dal pannello Prezzo su Product.
+ */
+class ProductPriceTimeline
+{
+    public function __construct(
+        private EntityManager $entityManager,
+        private ProductPriceBookResolver $productPriceBookResolver,
+    ) {}
+
+    public function hasPricePanelChanges(Entity $product): bool
+    {
+        return $product->isAttributeChanged('prezzoListinoIvaEsclusa')
+            || $product->isAttributeChanged('prezzoListinoIvaInclusa')
+            || $product->isAttributeChanged('prezzoCodice')
+            || $product->isAttributeChanged('prezzoCodiceIvaInclusa')
+            || $product->isAttributeChanged('aliquotaIva');
+    }
+
+    public function hasPricesOnPanel(Entity $product): bool
+    {
+        return $this->hasAnyPrice(
+            $this->floatOrNull($product->get('prezzoListinoIvaEsclusa')),
+            $this->floatOrNull($product->get('prezzoListinoIvaInclusa')),
+            $this->floatOrNull($product->get('prezzoCodice')),
+            $this->floatOrNull($product->get('prezzoCodiceIvaInclusa'))
+        );
+    }
+
+    /**
+     * Decide se sincronizzare il pannello Prezzo verso ProductPrice (beforeSave).
+     */
+    public function shouldSyncFromProduct(Entity $product): bool
+    {
+        if (!$this->hasPricesOnPanel($product)) {
+            return false;
+        }
+
+        if ($this->hasPricePanelChanges($product)) {
+            return true;
+        }
+
+        if ($product->isAttributeChanged('dataInizioValidita')) {
+            return true;
+        }
+
+        return $this->needsBackfillSync($product);
+    }
+
+    /**
+     * Prodotto con prezzi ma senza riga Active nel listino risolto (es. migrazione o primo salvataggio).
+     */
+    public function needsBackfillSync(Entity $product): bool
+    {
+        $productId = $product->getId();
+
+        if (!$productId) {
+            return true;
+        }
+
+        $priceBook = $this->productPriceBookResolver->resolveForProduct($product);
+
+        if (!$priceBook) {
+            return false;
+        }
+
+        return $this->findLatestActiveRow($productId, $priceBook->getId()) === null;
+    }
+
+    public function resolveDateStart(Entity $product): string
+    {
+        $dateStart = trim((string) ($product->get('dataInizioValidita') ?? ''));
+
+        if ($dateStart !== '') {
+            $normalized = $this->normalizeDate($dateStart);
+
+            if ($normalized !== null) {
+                return $normalized;
+            }
+        }
+
+        return date('Y-m-d');
+    }
+
+    public function syncFromProduct(Entity $product, string $dateStart): bool
+    {
+        $productId = $product->getId();
+
+        if (!$productId) {
+            return false;
+        }
+
+        $priceBook = $this->productPriceBookResolver->resolveForProduct($product);
+
+        if (!$priceBook) {
+            throw new \RuntimeException(
+                'Listino prezzi non trovato per prodotto ' . $productId
+            );
+        }
+
+        $listinoNet = $this->floatOrNull($product->get('prezzoListinoIvaEsclusa'));
+        $listinoIvi = $this->floatOrNull($product->get('prezzoListinoIvaInclusa'));
+        $codiceNet = $this->floatOrNull($product->get('prezzoCodice'));
+        $codiceIvi = $this->floatOrNull($product->get('prezzoCodiceIvaInclusa'));
+        $aliquotaIva = $this->floatOrNull($product->get('aliquotaIva'));
+
+        if (!$this->hasAnyPrice($listinoNet, $listinoIvi, $codiceNet, $codiceIvi)) {
+            return false;
+        }
+
+        $normalizedDateStart = $this->normalizeDate($dateStart);
+
+        if ($normalizedDateStart === null) {
+            throw new \RuntimeException(
+                'Data inizio validità non valida: ' . $dateStart
+            );
+        }
+
+        $existing = $this->findLatestActiveRow($productId, $priceBook->getId());
+
+        if ($existing && $this->isAlreadyAligned(
+            $existing,
+            $listinoNet,
+            $listinoIvi,
+            $codiceNet,
+            $codiceIvi,
+            $aliquotaIva,
+            $normalizedDateStart
+        )) {
+            return false;
+        }
+
+        if ($existing && $existing->hasAttribute('dateEnd')) {
+            $existing->set('dateEnd', $this->dayBefore($normalizedDateStart));
+            $this->entityManager->saveEntity($existing);
+        }
+
+        $productPrice = $this->entityManager->getNewEntity('ProductPrice');
+        $productPrice->set([
+            'productId' => $productId,
+            'priceBookId' => $priceBook->getId(),
+            'status' => 'Active',
+            'dateStart' => $normalizedDateStart,
+        ]);
+
+        $this->applyListino($productPrice, $priceBook, $listinoNet, $listinoIvi);
+        $this->applyCodice($productPrice, $codiceNet, $codiceIvi);
+
+        if ($aliquotaIva !== null && $aliquotaIva > 0 && $productPrice->hasAttribute('aliquotaIva')) {
+            $productPrice->set('aliquotaIva', round($aliquotaIva, 3));
+        }
+
+        if ($this->floatOrNull($productPrice->get('price')) === null) {
+            throw new \RuntimeException(
+                'Impossibile determinare il prezzo listino per ProductPrice'
+            );
+        }
+
+        $this->entityManager->saveEntity($productPrice);
+
+        return true;
+    }
+
+    private function applyListino(
+        Entity $productPrice,
+        Entity $priceBook,
+        ?float $listinoNet,
+        ?float $listinoIvi
+    ): void {
+        if ($listinoNet !== null && $listinoNet > 0 && $productPrice->hasAttribute('prezzoListinoIvaEsclusa')) {
+            $productPrice->set('prezzoListinoIvaEsclusa', round($listinoNet, 2));
+        }
+
+        if ($listinoIvi !== null && $listinoIvi > 0 && $productPrice->hasAttribute('prezzoListinoIvaInclusa')) {
+            $productPrice->set('prezzoListinoIvaInclusa', round($listinoIvi, 2));
+        }
+
+        $taxInclusive = (bool) $priceBook->get('isTaxInclusive');
+
+        if ($taxInclusive && $listinoIvi !== null && $listinoIvi > 0) {
+            $productPrice->set('price', round($listinoIvi, 2));
+
+            return;
+        }
+
+        if ($listinoNet !== null && $listinoNet > 0) {
+            $productPrice->set('price', round($listinoNet, 2));
+        }
+    }
+
+    private function applyCodice(
+        Entity $productPrice,
+        ?float $codiceNet,
+        ?float $codiceIvi
+    ): void {
+        if ($codiceNet !== null && $codiceNet > 0 && $productPrice->hasAttribute('prezzoCodice')) {
+            $productPrice->set('prezzoCodice', round($codiceNet, 2));
+        }
+
+        if ($codiceIvi !== null && $codiceIvi > 0 && $productPrice->hasAttribute('prezzoCodiceIvaInclusa')) {
+            $productPrice->set('prezzoCodiceIvaInclusa', round($codiceIvi, 2));
+        }
+    }
+
+    private function hasAnyPrice(?float $listinoNet, ?float $listinoIvi, ?float $codiceNet, ?float $codiceIvi): bool
+    {
+        foreach ([$listinoNet, $listinoIvi, $codiceNet, $codiceIvi] as $value) {
+            if ($value !== null && $value > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function findLatestActiveRow(string $productId, string $priceBookId): ?Entity
+    {
+        return $this->entityManager
+            ->getRDBRepository('ProductPrice')
+            ->where([
+                'productId' => $productId,
+                'priceBookId' => $priceBookId,
+                'status' => 'Active',
+            ])
+            ->order('dateStart', 'DESC')
+            ->findOne();
+    }
+
+    private function isAlreadyAligned(
+        Entity $existing,
+        ?float $listinoNet,
+        ?float $listinoIvi,
+        ?float $codiceNet,
+        ?float $codiceIvi,
+        ?float $aliquotaIva,
+        string $dateStart
+    ): bool {
+        $existingStart = substr((string) ($existing->get('dateStart') ?? ''), 0, 10);
+
+        if ($existingStart !== $dateStart) {
+            return false;
+        }
+
+        $existingListNet = $this->floatOrNull($existing->get('prezzoListinoIvaEsclusa'))
+            ?? $this->floatOrNull($existing->get('price'));
+        $existingListIvi = $this->floatOrNull($existing->get('prezzoListinoIvaInclusa'));
+        $existingCodiceNet = $this->floatOrNull($existing->get('prezzoCodice'));
+        $existingCodiceIvi = $this->floatOrNull($existing->get('prezzoCodiceIvaInclusa'));
+        $existingAliquota = $this->floatOrNull($existing->get('aliquotaIva'));
+
+        return $this->amountsEqual($existingListNet, $listinoNet)
+            && $this->amountsEqual($existingListIvi, $listinoIvi)
+            && $this->amountsEqual($existingCodiceNet, $codiceNet)
+            && $this->amountsEqual($existingCodiceIvi, $codiceIvi)
+            && $this->amountsEqual($existingAliquota, $aliquotaIva);
+    }
+
+    private function amountsEqual(?float $left, ?float $right): bool
+    {
+        if ($left === null && $right === null) {
+            return true;
+        }
+
+        if ($left === null || $right === null) {
+            return false;
+        }
+
+        return abs($left - $right) < 0.009;
+    }
+
+    private function normalizeDate(string $dateStart): ?string
+    {
+        $normalized = substr(trim($dateStart), 0, 10);
+
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $normalized)) {
+            return null;
+        }
+
+        return $normalized;
+    }
+
+    private function dayBefore(string $dateStart): string
+    {
+        return date('Y-m-d', strtotime($dateStart . ' -1 day'));
+    }
+
+    private function floatOrNull(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        return (float) $value;
+    }
+}

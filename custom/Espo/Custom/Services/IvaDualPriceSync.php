@@ -13,7 +13,8 @@ class IvaDualPriceSync
     public const DEFAULT_ALIQUOTA_IVA = 10.0;
 
     public function __construct(
-        private EntityManager $entityManager
+        private EntityManager $entityManager,
+        private ProductPriceBookResolver $productPriceBookResolver,
     ) {}
 
     public function syncProductPriceOnBeforeSave(Entity $entity): void
@@ -30,6 +31,34 @@ class IvaDualPriceSync
         $this->syncListinoFields($entity, $aliquota, $taxInclusive);
         $this->syncCodiceFields($entity, $aliquota);
         $this->syncNativePriceField($entity, $taxInclusive);
+    }
+
+    public function syncProductOnBeforeSave(Entity $entity): void
+    {
+        if ($entity->getEntityType() !== 'Product') {
+            return;
+        }
+
+        $aliquota = $this->resolveAliquotaForProduct($entity);
+
+        if ($entity->isAttributeChanged('aliquotaIva')) {
+            $this->recalculatePairsForAliquotaChange($entity, $aliquota);
+        } else {
+            $this->syncIvaPair($entity, 'prezzoListinoIvaInclusa', 'prezzoListinoIvaEsclusa', $aliquota);
+            $this->syncIvaPair($entity, 'prezzoCodiceIvaInclusa', 'prezzoCodice', $aliquota);
+        }
+
+        $listinoNet = $this->floatOrNull($entity->get('prezzoListinoIvaEsclusa'));
+
+        if ($listinoNet !== null && $listinoNet > 0) {
+            if ($entity->hasAttribute('listPrice')) {
+                $entity->set('listPrice', round($listinoNet, 2));
+            }
+
+            if ($entity->hasAttribute('unitPrice')) {
+                $entity->set('unitPrice', round($listinoNet, 2));
+            }
+        }
     }
 
     public function syncProductFromProductPrice(Entity $productPrice): void
@@ -74,6 +103,12 @@ class IvaDualPriceSync
 
         if ($codiceIvi !== null && $codiceIvi > 0 && $product->hasAttribute('prezzoCodiceIvaInclusa')) {
             $patch['prezzoCodiceIvaInclusa'] = round($codiceIvi, 2);
+        }
+
+        $aliquota = $this->floatOrNull($productPrice->get('aliquotaIva'));
+
+        if ($aliquota !== null && $aliquota > 0 && $product->hasAttribute('aliquotaIva')) {
+            $patch['aliquotaIva'] = round($aliquota, 3);
         }
 
         if ($patch === []) {
@@ -275,6 +310,12 @@ class IvaDualPriceSync
 
     private function resolveAliquotaForProductPrice(Entity $entity): float
     {
+        $stored = $this->floatOrNull($entity->get('aliquotaIva'));
+
+        if ($stored !== null && $stored > 0 && ($entity->isNew() || $entity->isAttributeChanged('aliquotaIva'))) {
+            return $stored;
+        }
+
         $fromBook = $this->resolveAliquotaFromPriceBookId($entity->get('priceBookId'));
 
         if ($fromBook !== null && $fromBook > 0) {
@@ -288,6 +329,50 @@ class IvaDualPriceSync
         }
 
         return self::DEFAULT_ALIQUOTA_IVA;
+    }
+
+    private function resolveAliquotaForProduct(Entity $entity): float
+    {
+        $stored = $this->floatOrNull($entity->get('aliquotaIva'));
+
+        if ($stored !== null && $stored > 0) {
+            return $stored;
+        }
+
+        $priceBook = $this->productPriceBookResolver->resolveForProduct($entity);
+
+        if ($priceBook) {
+            $fromBook = $this->resolveAliquotaFromPriceBook($priceBook);
+
+            if ($fromBook !== null && $fromBook > 0) {
+                $entity->set('aliquotaIva', $fromBook);
+
+                return $fromBook;
+            }
+        }
+
+        $entity->set('aliquotaIva', self::DEFAULT_ALIQUOTA_IVA);
+
+        return self::DEFAULT_ALIQUOTA_IVA;
+    }
+
+    private function recalculatePairsForAliquotaChange(Entity $entity, float $aliquota): void
+    {
+        foreach (
+            [
+                ['prezzoListinoIvaInclusa', 'prezzoListinoIvaEsclusa'],
+                ['prezzoCodiceIvaInclusa', 'prezzoCodice'],
+            ] as [$iviField, $netField]
+        ) {
+            $ivi = $this->floatOrNull($entity->get($iviField));
+            $net = $this->floatOrNull($entity->get($netField));
+
+            if ($ivi !== null && $ivi > 0) {
+                $entity->set($netField, self::toEsclusa($ivi, $aliquota));
+            } elseif ($net !== null && $net > 0) {
+                $entity->set($iviField, self::toInclusa($net, $aliquota));
+            }
+        }
     }
 
     /**

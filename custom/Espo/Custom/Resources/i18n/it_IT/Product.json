@@ -1,16 +1,35 @@
 {
     "fields": {
         "denominazione": "Denominazione",
+        "elencoCatalogo": "Elenco catalogo",
+        "dataInizioValidita": "Data inizio validità",
+        "aliquotaIva": "Aliquota IVA",
+        "prezzoListinoIvaEsclusa": "Prezzo Listino IVA Esclusa",
+        "prezzoListinoIvaInclusa": "Prezzo Listino IVA Inclusa",
+        "prezzoListinoIvaEsclusaCurrency": "Prezzo Listino IVA Esclusa (Valuta)",
+        "prezzoListinoIvaEsclusaConverted": "Prezzo Listino IVA Esclusa (Convertito)",
+        "prezzoListinoIvaInclusaCurrency": "Prezzo Listino IVA Inclusa (Valuta)",
+        "prezzoListinoIvaInclusaConverted": "Prezzo Listino IVA Inclusa (Convertito)",
+        "prezzoCodiceIvaInclusa": "Prezzo Codice IVA Inclusa",
+        "prezzoCodiceIvaInclusaCurrency": "Prezzo Codice IVA Inclusa (Valuta)",
+        "prezzoCodiceIvaInclusaConverted": "Prezzo Codice IVA Inclusa (Convertito)",
         "opportunita": "Opportunità",
-        "prezzoCodice": "Prezzo Codice",
-        "prezzoCodiceCurrency": "Prezzo Codice (Valuta)",
-        "prezzoCodiceConverted": "Prezzo Codice (Convertito)",
+        "prezzoCodice": "Prezzo Codice IVA Esclusa",
+        "prezzoCodiceCurrency": "Prezzo Codice IVA Esclusa (Valuta)",
+        "prezzoCodiceConverted": "Prezzo Codice IVA Esclusa (Convertito)",
         "name": "Prodotto",
         "contratti": "Contratti",
         "brand": "Brand",
         "listPrice": "Prezzo di Listino",
         "listPriceConverted": "Prezzo di Listino (convertito)",
         "listPriceCurrency": "Prezzo di Listino (valuta)"
+    },
+    "tooltips": {
+        "prezzoListinoIvaInclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dall'aliquota IVA indicata.",
+        "prezzoListinoIvaEsclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dall'aliquota IVA indicata.",
+        "prezzoCodice": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dall'aliquota IVA indicata.",
+        "prezzoCodiceIvaInclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dall'aliquota IVA indicata.",
+        "aliquotaIva": "Aliquota IVA applicata ai prezzi del pannello. Se vuota, deriva dal listino del brand."
     },
     "links": {
         "opportunita": "Opportunità",
