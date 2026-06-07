@@ -22,6 +22,7 @@ FILES=(
   "custom/Espo/Custom/Resources/metadata/entityDefs/Product.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/ProductCategory.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/ProductBrand.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/PriceBook.json"
   "custom/Espo/Custom/Resources/metadata/formula/Product.json"
   "custom/Espo/Custom/Resources/layouts/Product/detail.json"
   "custom/Espo/Custom/Resources/layouts/Product/list.json"
@@ -30,6 +31,7 @@ FILES=(
   "custom/Espo/Custom/Resources/i18n/it_IT/Product.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/ProductCategory.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/ProductBrand.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/PriceBook.json"
 )
 
 echo "=== Deploy Product (catalogo + prezzi) → ${CRM_ROOT} ==="
