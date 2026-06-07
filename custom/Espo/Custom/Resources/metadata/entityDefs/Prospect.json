@@ -164,6 +164,7 @@
             "type": "varchar",
             "trim": true,
             "options": [],
+            "view": "custom:views/fields/telefono-dial-call",
             "isCustom": true
         },
         "whatsApp": {
