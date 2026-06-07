@@ -36,6 +36,7 @@
             "isCustom": true
         },
         "price": {
+            "required": false,
             "tooltip": true
         }
     }
