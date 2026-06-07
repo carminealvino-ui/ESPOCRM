@@ -20,6 +20,7 @@
  *   --limit=N                 Max record per sezione (0 = tutti)
  *   --force-color             Sovrascrive colori già presenti
  *   --verbose                 Dettaglio brand e motivi skip
+ *   --report                  Solo diagnostica (brand, azienda, match)
  */
 declare(strict_types=1);
 
@@ -43,6 +44,7 @@ $options = getopt('', [
     'limit::',
     'force-color',
     'verbose',
+    'report',
 ]);
 
 $dryRun = array_key_exists('dry-run', $options);

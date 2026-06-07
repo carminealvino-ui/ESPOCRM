@@ -32,7 +32,8 @@ class BrandCalendarColorBackfill
      *   colorsJsonPath?: ?string,
      *   limit?: int,
      *   forceColor?: bool,
-     *   verbose?: bool
+     *   verbose?: bool,
+     *   report?: bool
      * } $options
      * @return array<string, mixed>
      */
@@ -46,6 +47,10 @@ class BrandCalendarColorBackfill
         $forceColor = (bool) ($options['forceColor'] ?? false);
         $this->verbose = (bool) ($options['verbose'] ?? false);
         $this->log = [];
+
+        if (!empty($options['report'])) {
+            return $this->buildReport();
+        }
 
         $this->loadBrandMap();
 
@@ -114,6 +119,106 @@ class BrandCalendarColorBackfill
         $stats['log'] = $this->log;
 
         return $stats;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildReport(): array
+    {
+        $this->loadBrandMap();
+
+        $report = [
+            'report' => true,
+            'brands' => [],
+            'disponibilitaAzienda' => [],
+            'disponibilitaSamples' => [],
+            'warnings' => [],
+            'log' => [],
+        ];
+
+        foreach ($this->brandByName as $brand) {
+            $report['brands'][] = [
+                'id' => $brand->getId(),
+                'name' => $brand->get('name'),
+                'color' => $brand->get('color') ?: '',
+            ];
+        }
+
+        $report['disponibilitaAzienda'] = $this->loadDistinctDisponibilitaAzienda();
+
+        $samples = 0;
+
+        foreach ($this->entityManager->getRDBRepository('Disponibilita')->limit(0, 10)->find() as $entity) {
+            $label = $this->resolveDisponibilitaLabel($entity);
+            $brand = $this->resolveDisponibilitaBrand($entity, true);
+
+            $report['disponibilitaSamples'][] = [
+                'id' => $entity->getId(),
+                'name' => $entity->get('name'),
+                'azienda' => $entity->get('azienda'),
+                'productBrandId' => $entity->get('productBrandId'),
+                'color' => $entity->get('color') ?: '',
+                'labelRisolto' => $label,
+                'brandRisolto' => $brand ? $brand->get('name') : null,
+                'brandColor' => $brand ? ($brand->get('color') ?: '') : '',
+            ];
+
+            $samples++;
+        }
+
+        if (!$this->entityHasAttribute('ProductBrand', 'color')) {
+            $report['warnings'][] = 'Manca ProductBrand.color → eseguire deploy + rebuild.';
+        }
+
+        if (!$this->entityHasAttribute('Disponibilita', 'productBrandId')) {
+            $report['warnings'][] = 'Manca Disponibilita.productBrandId → eseguire deploy + rebuild.';
+        }
+
+        $colorPath = $this->resolveColorMapPath(null);
+        $report['log'][] = 'File colori: ' . ($colorPath ?: 'non trovato');
+        $report['log'][] = 'Brand CRM: ' . implode(', ', $this->listBrandNames());
+
+        if ($colorPath) {
+            $map = $this->loadColorMap(null);
+            $report['log'][] = 'Chiavi JSON colori: ' . implode(', ', array_keys($map));
+        }
+
+        return $report;
+    }
+
+    /**
+     * @return array<int, array{value: string, count: int}>
+     */
+    private function loadDistinctDisponibilitaAzienda(): array
+    {
+        if (!$this->tableHasColumn('disponibilita', 'azienda')) {
+            return [];
+        }
+
+        $pdo = $this->entityManager->getPDO();
+        $stmt = $pdo->query(
+            "SELECT azienda, COUNT(*) AS cnt
+             FROM disponibilita
+             WHERE deleted = 0
+             GROUP BY azienda
+             ORDER BY cnt DESC"
+        );
+
+        if ($stmt === false) {
+            return [];
+        }
+
+        $rows = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $rows[] = [
+                'value' => (string) ($row['azienda'] ?? ''),
+                'count' => (int) ($row['cnt'] ?? 0),
+            ];
+        }
+
+        return $rows;
     }
 
     /**
@@ -323,7 +428,7 @@ class BrandCalendarColorBackfill
 
             if ($currentColor !== '' && !$forceColor) {
                 if ($this->verbose) {
-                    $this->logLine("Brand saltato (colore già presente): {$displayName}");
+                    $this->logLine("Brand saltato (colore già presente): {$displayName} = {$currentColor}");
                 }
                 $skipped++;
                 continue;
@@ -493,10 +598,21 @@ class BrandCalendarColorBackfill
         $brand = $this->resolveDisponibilitaBrand($entity, true);
 
         if (!$brand) {
+            if ($this->verbose) {
+                $this->logLine(
+                    'Disponibilità saltata (brand non trovato): '
+                    . ($entity->get('name') ?: $entity->getId())
+                );
+            }
+
             return false;
         }
 
         if (!$entity->get('productBrandId')) {
+            return true;
+        }
+
+        if ($forceColor) {
             return true;
         }
 
@@ -508,11 +624,65 @@ class BrandCalendarColorBackfill
 
         $currentColor = trim((string) ($entity->get('color') ?: ''));
 
-        if ($forceColor) {
-            return $currentColor !== $brandColor;
+        return $currentColor === '';
+    }
+
+    private function resolveDisponibilitaLabel(Entity $entity): ?string
+    {
+        $candidates = [
+            trim((string) ($entity->get('azienda') ?: '')),
+            $this->readDisponibilitaFieldFromDb($entity->getId(), 'azienda'),
+            $this->parseLabelFromDisponibilitaName($entity->get('name')),
+        ];
+
+        foreach ($candidates as $value) {
+            $value = trim((string) $value);
+
+            if ($value !== '') {
+                return $value;
+            }
         }
 
-        return $currentColor === '';
+        return null;
+    }
+
+    private function parseLabelFromDisponibilitaName(?string $name): ?string
+    {
+        $name = trim((string) $name);
+
+        if ($name === '') {
+            return null;
+        }
+
+        if (preg_match('/^([^|]+)/u', $name, $matches)) {
+            $label = trim($matches[1]);
+
+            return $label !== '' ? $label : null;
+        }
+
+        return null;
+    }
+
+    private function readDisponibilitaFieldFromDb(?string $id, string $column): ?string
+    {
+        if (!$id || !$this->tableHasColumn('disponibilita', $column)) {
+            return null;
+        }
+
+        $pdo = $this->entityManager->getPDO();
+        $stmt = $pdo->prepare(
+            "SELECT `{$column}` FROM disponibilita WHERE id = :id AND deleted = 0 LIMIT 1"
+        );
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
+            return null;
+        }
+
+        $value = trim((string) ($row[$column] ?? ''));
+
+        return $value !== '' ? $value : null;
     }
 
     private function resolveDisponibilitaBrand(Entity $entity, bool $allowLegacyAzienda = true): ?Entity
@@ -520,14 +690,20 @@ class BrandCalendarColorBackfill
         $brandId = $entity->get('productBrandId');
 
         if ($brandId) {
-            return $this->entityManager->getEntityById('ProductBrand', $brandId);
+            $brand = $this->entityManager->getEntityById('ProductBrand', $brandId);
+
+            if ($brand) {
+                return $brand;
+            }
         }
 
         if (!$allowLegacyAzienda) {
             return null;
         }
 
-        return $this->resolveBrandByName($entity->get('azienda'));
+        $label = $this->resolveDisponibilitaLabel($entity);
+
+        return $this->resolveBrandByName($label);
     }
 
     /**
