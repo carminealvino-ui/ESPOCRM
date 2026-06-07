@@ -25,4 +25,19 @@ class Disponibilita extends \Espo\Core\Templates\Controllers\Event
 
         return $action->run($data);
     }
+
+    public function postActionBackfillBrandColorCalendario(
+        Request $request,
+        Response $response
+    ) {
+        $data = $request->getParsedBody() ?? (object) [];
+
+        $entityManager = $this->getContainer()->get('entityManager');
+
+        $action = new \Espo\Custom\Actions\Disponibilita\BackfillBrandColorCalendario(
+            $entityManager
+        );
+
+        return $action->run($data);
+    }
 }
