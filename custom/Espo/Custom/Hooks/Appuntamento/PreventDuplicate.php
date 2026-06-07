@@ -1,10 +1,16 @@
 <?php
 
 // ========================================
-// VERSIONE: 1.0.2
-// DATA: 2026-06-05
+// VERSIONE: 1.0.3
+// DATA: 2026-06-06
 // AUTORE: CARMINE ALVINO + CHATGPT
 // ----------------------------------------
+// FIX 1.0.3:
+// ✔ Hook registrato in metadata/hooks/Appuntamento.json
+// ✔ Blocco ghost Google Calendar (APPUNTAMENTO SENZA PROSPECT)
+//   stesso slot + stesso assegnatario
+// ✔ Duplicato Google Calendar stesso googleCalendarEventId
+//
 // FIX 1.0.2:
 // ✔ Duplicato = stesso slot (dateStart + dateEnd) E stesso cliente
 //   (prospect, oppure parent, oppure indirizzo)
@@ -29,13 +35,15 @@ use Espo\ORM\Repository\Option\SaveOptions;
  */
 class PreventDuplicate implements BeforeSave, AfterSave
 {
+    private const ENTITY_TYPE = 'Appuntamento';
+
     public function __construct(
         private EntityManager $entityManager
     ) {}
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
-        if ($options->get('isImport')) {
+        if ($options->get('isImport') || $options->get('skipHooks')) {
             return;
         }
 
@@ -47,13 +55,10 @@ class PreventDuplicate implements BeforeSave, AfterSave
         }
 
         $identityKey = $this->buildIdentityKey($entity);
-
-        if ($identityKey === null) {
-            return;
-        }
+        $googleEventId = $this->resolveGoogleCalendarEventId($entity);
 
         $query = $this->entityManager
-            ->getRDBRepository('Appuntamento')
+            ->getRDBRepository(self::ENTITY_TYPE)
             ->where([
                 'dateStart' => $start,
                 'dateEnd' => $end,
@@ -64,7 +69,7 @@ class PreventDuplicate implements BeforeSave, AfterSave
         }
 
         foreach ($query->find() as $existing) {
-            if ($this->buildIdentityKey($existing) === $identityKey) {
+            if ($this->isDuplicate($entity, $existing, $identityKey, $googleEventId)) {
                 throw new Error('Appuntamento duplicato bloccato');
             }
         }
@@ -95,6 +100,81 @@ class PreventDuplicate implements BeforeSave, AfterSave
         }
 
         return null;
+    }
+
+    private function isDuplicate(
+        Entity $entity,
+        Entity $existing,
+        ?string $identityKey,
+        ?string $googleEventId
+    ): bool {
+        if ($googleEventId !== null) {
+            $existingGoogleEventId = $this->resolveGoogleCalendarEventId($existing);
+
+            if ($existingGoogleEventId !== null && $existingGoogleEventId === $googleEventId) {
+                return true;
+            }
+        }
+
+        $existingKey = $this->buildIdentityKey($existing);
+
+        if ($identityKey !== null && $identityKey === $existingKey) {
+            return true;
+        }
+
+        if (!$this->sameAssignedUser($entity, $existing)) {
+            return false;
+        }
+
+        // Ghost Google Calendar: esiste gia' un appuntamento con cliente nello stesso slot.
+        if ($identityKey === null && $existingKey !== null) {
+            return true;
+        }
+
+        // Entrambi senza cliente (es. doppio APPUNTAMENTO SENZA PROSPECT).
+        if ($identityKey === null && $existingKey === null) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function sameAssignedUser(Entity $entity, Entity $existing): bool
+    {
+        $userId = $entity->get('assignedUserId');
+        $existingUserId = $existing->get('assignedUserId');
+
+        if (!$userId || !$existingUserId) {
+            return true;
+        }
+
+        return $userId === $existingUserId;
+    }
+
+    private function resolveGoogleCalendarEventId(Entity $entity): ?string
+    {
+        if (!$entity->getId()) {
+            return null;
+        }
+
+        $relation = $this->entityManager
+            ->getRDBRepository('GoogleCalendarEvent')
+            ->where([
+                'entityType' => self::ENTITY_TYPE,
+                'entityId' => $entity->getId(),
+                ['googleCalendarEventId!=' => ''],
+                ['googleCalendarEventId!=' => 'FAIL'],
+                ['googleCalendarEventId!=' => null],
+            ])
+            ->findOne();
+
+        if (!$relation) {
+            return null;
+        }
+
+        $eventId = $relation->get('googleCalendarEventId');
+
+        return is_string($eventId) && $eventId !== '' ? $eventId : null;
     }
 
     public function afterSave(Entity $entity, SaveOptions $options): void
