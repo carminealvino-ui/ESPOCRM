@@ -1,6 +1,7 @@
 {
     "fields": {
         "denominazione": "Denominazione",
+        "elencoCatalogo": "Elenco catalogo",
         "opportunita": "Opportunità",
         "prezzoCodice": "Prezzo Codice",
         "prezzoCodiceCurrency": "Prezzo Codice (Valuta)",

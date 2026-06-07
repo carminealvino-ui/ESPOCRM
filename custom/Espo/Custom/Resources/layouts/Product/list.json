@@ -1,5 +1,9 @@
 [
     {
+        "name": "elencoCatalogo",
+        "width": 8
+    },
+    {
         "name": "name",
         "width": 35,
         "link": true
