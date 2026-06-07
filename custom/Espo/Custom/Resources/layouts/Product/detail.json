@@ -54,7 +54,9 @@
                 {
                     "name": "prezzoCodice"
                 },
-                false
+                {
+                    "name": "dataInizioValidita"
+                }
             ],
             [
                 {

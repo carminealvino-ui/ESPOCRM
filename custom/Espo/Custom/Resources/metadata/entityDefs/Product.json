@@ -9,6 +9,11 @@
         "opportunita": {
             "type": "link"
         },
+        "dataInizioValidita": {
+            "type": "date",
+            "isCustom": true,
+            "audited": true
+        },
         "prezzoCodice": {
             "type": "currency",
             "isCustom": true,

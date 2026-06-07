@@ -1,6 +1,7 @@
 {
     "fields": {
         "denominazione": "Denominazione",
+        "dataInizioValidita": "Data inizio validità",
         "opportunita": "Opportunità",
         "prezzoCodice": "Prezzo Codice",
         "prezzoCodiceCurrency": "Prezzo Codice (Valuta)",
