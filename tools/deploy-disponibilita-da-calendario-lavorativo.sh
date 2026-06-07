@@ -63,6 +63,11 @@ FILES=(
   "client/custom/src/action-handlers/disponibilita/disponibilita-ricorrenti.js"
   "client/custom/src/views/modals/disponibilita-ricorrenti.js"
   "client/custom/src/views/modals/working-time-calendar-edit.js"
+  "custom/Espo/Custom/Services/BrandCalendarColorBackfill.php"
+  "custom/Espo/Custom/Actions/Disponibilita/BackfillBrandColorCalendario.php"
+  "tools/backfill-brand-color-calendario.php"
+  "tools/data/brand-calendar-colors.example.json"
+  "tools/deploy-backfill-brand-color-calendario.sh"
   "tools/rollback-disponibilita-da-calendario-lavorativo.sh"
 )
 
