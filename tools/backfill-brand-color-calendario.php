@@ -19,6 +19,7 @@
  *   --colors-json=PATH        File JSON nomeBrand => #hex
  *   --limit=N                 Max record per sezione (0 = tutti)
  *   --force-color             Sovrascrive colori già presenti
+ *   --verbose                 Dettaglio brand e motivi skip
  */
 declare(strict_types=1);
 
@@ -41,6 +42,7 @@ $options = getopt('', [
     'colors-json::',
     'limit::',
     'force-color',
+    'verbose',
 ]);
 
 $dryRun = array_key_exists('dry-run', $options);
@@ -49,6 +51,7 @@ $applyDefaultColors = array_key_exists('apply-default-colors', $options);
 $colorsJsonPath = $options['colors-json'] ?? null;
 $limit = isset($options['limit']) ? (int) $options['limit'] : 0;
 $forceColor = array_key_exists('force-color', $options);
+$verbose = array_key_exists('verbose', $options);
 
 $allowedOnly = ['all', 'brands', 'calendars', 'disponibilita', 'appuntamenti'];
 
@@ -81,10 +84,19 @@ $stats = $service->run([
     'colorsJsonPath' => $colorsJsonPath,
     'limit' => $limit,
     'forceColor' => $forceColor,
+    'verbose' => $verbose,
 ]);
 
 foreach ($stats['warnings'] as $warning) {
     fwrite(STDOUT, "AVVISO: {$warning}\n");
+}
+
+if ($verbose && !empty($stats['log'])) {
+    fwrite(STDOUT, "\nDettaglio:\n");
+
+    foreach ($stats['log'] as $line) {
+        fwrite(STDOUT, "  {$line}\n");
+    }
 }
 
 fwrite(STDOUT, "\nRisultati:\n");

@@ -15,6 +15,11 @@ class BrandCalendarColorBackfill
     /** @var array<string, Entity> */
     private array $brandByName = [];
 
+    private bool $verbose = false;
+
+    /** @var string[] */
+    private array $log = [];
+
     public function __construct(
         private EntityManager $entityManager
     ) {}
@@ -26,7 +31,8 @@ class BrandCalendarColorBackfill
      *   applyDefaultColors?: bool,
      *   colorsJsonPath?: ?string,
      *   limit?: int,
-     *   forceColor?: bool
+     *   forceColor?: bool,
+     *   verbose?: bool
      * } $options
      * @return array<string, mixed>
      */
@@ -38,6 +44,8 @@ class BrandCalendarColorBackfill
         $colorsJsonPath = $options['colorsJsonPath'] ?? null;
         $limit = (int) ($options['limit'] ?? 0);
         $forceColor = (bool) ($options['forceColor'] ?? false);
+        $this->verbose = (bool) ($options['verbose'] ?? false);
+        $this->log = [];
 
         $this->loadBrandMap();
 
@@ -52,13 +60,33 @@ class BrandCalendarColorBackfill
             'appuntamentiUpdated' => 0,
             'appuntamentiSkipped' => 0,
             'warnings' => [],
+            'log' => [],
         ];
+
+        if (!$this->entityHasAttribute('ProductBrand', 'color')) {
+            $stats['warnings'][] =
+                'Campo ProductBrand.color assente: eseguire deploy completo + php command.php rebuild.';
+        }
+
+        if (!$this->entityHasAttribute('Disponibilita', 'productBrandId')) {
+            $stats['warnings'][] =
+                'Campo Disponibilita.productBrandId assente: eseguire deploy completo + php command.php rebuild.';
+        }
 
         if ($only === 'all' || $only === 'brands') {
             if (!$applyDefaultColors && !$colorsJsonPath) {
                 $stats['warnings'][] = 'Step brands: usare --apply-default-colors o --colors-json=FILE.';
             } else {
                 $colorMap = $this->loadColorMap($colorsJsonPath);
+                $colorFile = $this->resolveColorMapPath($colorsJsonPath);
+
+                if ($colorMap === []) {
+                    $stats['warnings'][] = 'Nessun colore caricato dal file JSON.';
+                } elseif ($this->verbose) {
+                    $this->logLine('File colori: ' . ($colorFile ?: 'n/d'));
+                    $this->logLine('Brand CRM: ' . implode(', ', $this->listBrandNames()));
+                }
+
                 $brandStats = $this->backfillBrandColors($colorMap, $dryRun, $forceColor);
                 $stats['brandsColored'] = $brandStats['updated'];
                 $stats['brandsSkipped'] = $brandStats['skipped'];
@@ -83,7 +111,25 @@ class BrandCalendarColorBackfill
             $stats['appuntamentiSkipped'] = $appStats['skipped'];
         }
 
+        $stats['log'] = $this->log;
+
         return $stats;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function listBrandNames(): array
+    {
+        $names = [];
+
+        foreach ($this->brandByName as $brand) {
+            $names[] = (string) $brand->get('name');
+        }
+
+        sort($names);
+
+        return $names;
     }
 
     /**
@@ -91,46 +137,77 @@ class BrandCalendarColorBackfill
      */
     private function loadColorMap(?string $colorsJsonPath): array
     {
+        $path = $this->resolveColorMapPath($colorsJsonPath);
+
+        if ($path === null) {
+            return [];
+        }
+
+        $decoded = json_decode((string) file_get_contents($path), true);
+
+        if (!is_array($decoded)) {
+            return [];
+        }
+
+        $map = [];
+
+        foreach ($decoded as $name => $color) {
+            if (!is_string($name) || !is_string($color)) {
+                continue;
+            }
+
+            $name = $this->normalizeBrandKey($name);
+            $color = trim($color);
+
+            if ($name === '' || $color === '') {
+                continue;
+            }
+
+            $map[$name] = $color;
+        }
+
+        return $map;
+    }
+
+    private function resolveColorMapPath(?string $colorsJsonPath): ?string
+    {
+        $crmRoot = $this->resolveCrmRoot();
+
         $paths = array_filter([
             $colorsJsonPath,
+            $colorsJsonPath && !str_starts_with((string) $colorsJsonPath, '/')
+                ? $crmRoot . '/' . ltrim((string) $colorsJsonPath, '/')
+                : $colorsJsonPath,
+            $crmRoot . '/tools/data/brand-calendar-colors.json',
+            $crmRoot . '/tools/data/brand-calendar-colors.example.json',
             dirname(__DIR__, 4) . '/tools/data/brand-calendar-colors.json',
             dirname(__DIR__, 4) . '/tools/data/brand-calendar-colors.example.json',
         ]);
 
         foreach ($paths as $path) {
-            if (!$path || !is_file($path)) {
-                continue;
-            }
-
-            $decoded = json_decode((string) file_get_contents($path), true);
-
-            if (!is_array($decoded)) {
-                continue;
-            }
-
-            $map = [];
-
-            foreach ($decoded as $name => $color) {
-                if (!is_string($name) || !is_string($color)) {
-                    continue;
-                }
-
-                $name = trim($name);
-                $color = trim($color);
-
-                if ($name === '' || $color === '') {
-                    continue;
-                }
-
-                $map[strtoupper($name)] = $color;
-            }
-
-            if ($map !== []) {
-                return $map;
+            if ($path && is_file($path)) {
+                return $path;
             }
         }
 
-        return [];
+        return null;
+    }
+
+    private function resolveCrmRoot(): string
+    {
+        $cwd = getcwd();
+
+        if ($cwd && is_file($cwd . '/bootstrap.php')) {
+            return rtrim($cwd, '/');
+        }
+
+        $fromService = dirname(__DIR__, 4);
+
+        if (is_file($fromService . '/bootstrap.php')) {
+            return $fromService;
+        }
+
+        return rtrim((string) $cwd, '/');
     }
 
     private function loadBrandMap(): void
@@ -148,19 +225,69 @@ class BrandCalendarColorBackfill
                 continue;
             }
 
-            $this->brandByName[strtoupper($name)] = $brand;
+            $this->brandByName[$this->normalizeBrandKey($name)] = $brand;
         }
+    }
+
+    private function normalizeBrandKey(string $name): string
+    {
+        $name = strtoupper(trim($name));
+        $name = preg_replace('/\s+/', ' ', $name) ?? $name;
+
+        return $name;
     }
 
     private function resolveBrandByName(?string $name): ?Entity
     {
-        $name = trim((string) $name);
+        $name = $this->normalizeBrandKey((string) $name);
 
         if ($name === '') {
             return null;
         }
 
-        return $this->brandByName[strtoupper($name)] ?? null;
+        if (isset($this->brandByName[$name])) {
+            return $this->brandByName[$name];
+        }
+
+        $firstToken = explode(' ', $name)[0] ?? '';
+
+        if ($firstToken !== '' && isset($this->brandByName[$firstToken])) {
+            return $this->brandByName[$firstToken];
+        }
+
+        foreach ($this->brandByName as $key => $brand) {
+            if (str_starts_with($name, $key) || str_starts_with($key, $name)) {
+                return $brand;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<string, string> $colorMap
+     */
+    private function resolveColorFromMap(string $brandName, array $colorMap): ?string
+    {
+        $key = $this->normalizeBrandKey($brandName);
+
+        if (isset($colorMap[$key])) {
+            return $colorMap[$key];
+        }
+
+        $firstToken = explode(' ', $key)[0] ?? '';
+
+        if ($firstToken !== '' && isset($colorMap[$firstToken])) {
+            return $colorMap[$firstToken];
+        }
+
+        foreach ($colorMap as $mapKey => $color) {
+            if (str_starts_with($key, $mapKey) || str_starts_with($mapKey, $key)) {
+                return $color;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -176,11 +303,18 @@ class BrandCalendarColorBackfill
             return ['updated' => 0, 'skipped' => 0];
         }
 
+        if (!$this->entityHasAttribute('ProductBrand', 'color')) {
+            return ['updated' => 0, 'skipped' => count($this->brandByName)];
+        }
+
         foreach ($this->brandByName as $brand) {
-            $name = strtoupper(trim((string) $brand->get('name')));
-            $targetColor = $colorMap[$name] ?? null;
+            $displayName = trim((string) $brand->get('name'));
+            $targetColor = $this->resolveColorFromMap($displayName, $colorMap);
 
             if ($targetColor === null) {
+                if ($this->verbose) {
+                    $this->logLine("Brand saltato (no colore in JSON): {$displayName}");
+                }
                 $skipped++;
                 continue;
             }
@@ -188,11 +322,17 @@ class BrandCalendarColorBackfill
             $currentColor = trim((string) ($brand->get('color') ?: ''));
 
             if ($currentColor !== '' && !$forceColor) {
+                if ($this->verbose) {
+                    $this->logLine("Brand saltato (colore già presente): {$displayName}");
+                }
                 $skipped++;
                 continue;
             }
 
             if ($dryRun) {
+                if ($this->verbose) {
+                    $this->logLine("[dry-run] Brand {$displayName} → {$targetColor}");
+                }
                 $updated++;
                 continue;
             }
@@ -202,6 +342,11 @@ class BrandCalendarColorBackfill
                 'skipHooks' => true,
                 'silent' => true,
             ]);
+
+            if ($this->verbose) {
+                $this->logLine("Brand {$displayName} → {$targetColor}");
+            }
+
             $updated++;
         }
 
@@ -215,6 +360,10 @@ class BrandCalendarColorBackfill
     {
         $updated = 0;
         $skipped = 0;
+
+        if (!$this->entityHasAttribute('WorkingTimeCalendar', 'generazioneProductBrandId')) {
+            return ['updated' => 0, 'skipped' => 0];
+        }
 
         $query = $this->entityManager
             ->getRDBRepository('WorkingTimeCalendar')
@@ -341,7 +490,7 @@ class BrandCalendarColorBackfill
 
     private function shouldUpdateDisponibilita(Entity $entity, bool $forceColor): bool
     {
-        $brand = $this->resolveDisponibilitaBrand($entity, false);
+        $brand = $this->resolveDisponibilitaBrand($entity, true);
 
         if (!$brand) {
             return false;
@@ -425,12 +574,6 @@ class BrandCalendarColorBackfill
                 continue;
             }
 
-            if (!$forceColor && $currentColor !== '' && $currentColor !== $brandColor) {
-                // Mantieni colori manuali o per status se già impostati.
-                $skipped++;
-                continue;
-            }
-
             if ($dryRun) {
                 $updated++;
                 continue;
@@ -447,6 +590,11 @@ class BrandCalendarColorBackfill
         return ['updated' => $updated, 'skipped' => $skipped];
     }
 
+    private function entityHasAttribute(string $entityType, string $attribute): bool
+    {
+        return $this->entityManager->getNewEntity($entityType)->hasAttribute($attribute);
+    }
+
     private function tableHasColumn(string $table, string $column): bool
     {
         $pdo = $this->entityManager->getPDO();
@@ -461,5 +609,10 @@ class BrandCalendarColorBackfill
         } catch (\Throwable) {
             return false;
         }
+    }
+
+    private function logLine(string $message): void
+    {
+        $this->log[] = $message;
     }
 }
