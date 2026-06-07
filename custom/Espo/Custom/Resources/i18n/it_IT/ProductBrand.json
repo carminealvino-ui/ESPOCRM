@@ -1,12 +1,14 @@
 {
     "fields": {
         "fornitorePartner": "Fornitore/Partner",
+        "priceBook": "Listino prezzi",
         "appuntamenti": "Appuntamenti",
         "productCategories": "Prodotto - Categoria",
         "name": "Prodotto - Brand"
     },
     "links": {
         "fornitorePartner": "Fornitore/Partner",
+        "priceBook": "Listino prezzi",
         "appuntamenti": "Appuntamenti",
         "productCategories": "Prodotto - Categoria",
         "quotes": "Contratto"

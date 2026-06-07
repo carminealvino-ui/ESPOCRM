@@ -3,8 +3,6 @@
 namespace Espo\Custom\Services;
 
 use Espo\Core\Exceptions\Error;
-use Espo\Core\Utils\Config;
-use Espo\Modules\Sales\Tools\Price\DefaultPriceBookProvider;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
@@ -15,8 +13,7 @@ class ProductPriceTimeline
 {
     public function __construct(
         private EntityManager $entityManager,
-        private DefaultPriceBookProvider $defaultPriceBookProvider,
-        private Config $config,
+        private ProductPriceBookResolver $productPriceBookResolver,
     ) {}
 
     public function hasPricePanelChanges(Entity $product): bool
@@ -35,7 +32,7 @@ class ProductPriceTimeline
             return false;
         }
 
-        $priceBook = $this->resolvePriceBook($product);
+        $priceBook = $this->productPriceBookResolver->resolveForProduct($product);
 
         if (!$priceBook) {
             return false;
@@ -136,85 +133,6 @@ class ProductPriceTimeline
         }
 
         return false;
-    }
-
-    private function resolvePriceBook(Entity $product): ?Entity
-    {
-        $fromDefault = $this->defaultPriceBookProvider->get();
-
-        if ($fromDefault) {
-            return $fromDefault;
-        }
-
-        $defaultId = $this->config->get('defaultPriceBookId');
-
-        if ($defaultId) {
-            $priceBook = $this->entityManager->getEntityById('PriceBook', $defaultId);
-
-            if ($priceBook && $priceBook->get('status') === 'Active') {
-                return $priceBook;
-            }
-        }
-
-        $fromExisting = $this->resolveFromExistingProductPrice($product->getId());
-
-        if ($fromExisting) {
-            return $fromExisting;
-        }
-
-        foreach (['ARIEL Energia', 'ARIEL', 'Energia'] as $namePattern) {
-            $priceBook = $this->findActivePriceBookByName($namePattern);
-
-            if ($priceBook) {
-                return $priceBook;
-            }
-        }
-
-        return $this->entityManager
-            ->getRDBRepository('PriceBook')
-            ->where(['status' => 'Active'])
-            ->order('name', 'ASC')
-            ->findOne();
-    }
-
-    private function resolveFromExistingProductPrice(?string $productId): ?Entity
-    {
-        if (!$productId) {
-            return null;
-        }
-
-        $productPrice = $this->entityManager
-            ->getRDBRepository('ProductPrice')
-            ->where([
-                'productId' => $productId,
-                'status' => 'Active',
-            ])
-            ->order('dateStart', 'DESC')
-            ->findOne();
-
-        if (!$productPrice) {
-            return null;
-        }
-
-        $priceBookId = $productPrice->get('priceBookId');
-
-        if (!$priceBookId) {
-            return null;
-        }
-
-        return $this->entityManager->getEntityById('PriceBook', $priceBookId);
-    }
-
-    private function findActivePriceBookByName(string $namePattern): ?Entity
-    {
-        return $this->entityManager
-            ->getRDBRepository('PriceBook')
-            ->where([
-                'name*' => $namePattern,
-                'status' => 'Active',
-            ])
-            ->order('name', 'DESC')
-            ->findOne();
     }
 
     private function findLatestActiveRow(string $productId, string $priceBookId): ?Entity

@@ -16,16 +16,20 @@ FILES=(
   "custom/Espo/Custom/Hooks/Product/DualIvaPricing.php"
   "custom/Espo/Custom/Hooks/Product/PreparePriceTimeline.php"
   "custom/Espo/Custom/Hooks/Product/SyncPriceTimeline.php"
+  "custom/Espo/Custom/Services/ProductPriceBookResolver.php"
   "custom/Espo/Custom/Services/IvaDualPriceSync.php"
   "custom/Espo/Custom/Services/ProductPriceTimeline.php"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Product.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/ProductCategory.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/ProductBrand.json"
   "custom/Espo/Custom/Resources/metadata/formula/Product.json"
   "custom/Espo/Custom/Resources/layouts/Product/detail.json"
   "custom/Espo/Custom/Resources/layouts/Product/list.json"
   "custom/Espo/Custom/Resources/layouts/ProductCategory/detail.json"
+  "custom/Espo/Custom/Resources/layouts/ProductBrand/detail.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Product.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/ProductCategory.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/ProductBrand.json"
 )
 
 echo "=== Deploy Product (catalogo + prezzi) → ${CRM_ROOT} ==="
@@ -45,4 +49,5 @@ fi
 
 echo ""
 echo "Fatto. Rebuild eseguito."
-echo "Se mancano colonne DB: eseguire database/2026-06-05-product-dual-iva-prezzi.sql"
+echo "Impostare Listino prezzi su ogni Brand (es. ARIEL → ARIEL Energia)."
+echo "SQL opzionale: database/2026-06-07-product-brand-price-book.sql"

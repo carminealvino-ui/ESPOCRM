@@ -2,8 +2,6 @@
 
 namespace Espo\Custom\Services;
 
-use Espo\Core\Utils\Config;
-use Espo\Modules\Sales\Tools\Price\DefaultPriceBookProvider;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
@@ -16,8 +14,7 @@ class IvaDualPriceSync
 
     public function __construct(
         private EntityManager $entityManager,
-        private DefaultPriceBookProvider $defaultPriceBookProvider,
-        private Config $config,
+        private ProductPriceBookResolver $productPriceBookResolver,
     ) {}
 
     public function syncProductPriceOnBeforeSave(Entity $entity): void
@@ -320,7 +317,7 @@ class IvaDualPriceSync
 
     private function resolveAliquotaForProduct(Entity $entity): float
     {
-        $priceBook = $this->resolvePriceBookForProduct($entity);
+        $priceBook = $this->productPriceBookResolver->resolveForProduct($entity);
 
         if ($priceBook) {
             $fromBook = $this->resolveAliquotaFromPriceBook($priceBook);
@@ -331,70 +328,6 @@ class IvaDualPriceSync
         }
 
         return self::DEFAULT_ALIQUOTA_IVA;
-    }
-
-    private function resolvePriceBookForProduct(Entity $entity): ?Entity
-    {
-        $priceBook = $this->defaultPriceBookProvider->get();
-
-        if ($priceBook) {
-            return $priceBook;
-        }
-
-        $defaultId = $this->config->get('defaultPriceBookId');
-
-        if ($defaultId) {
-            $fromConfig = $this->entityManager->getEntityById('PriceBook', $defaultId);
-
-            if ($fromConfig && $fromConfig->get('status') === 'Active') {
-                return $fromConfig;
-            }
-        }
-
-        $productId = $entity->getId();
-
-        if ($productId) {
-            $productPrice = $this->entityManager
-                ->getRDBRepository('ProductPrice')
-                ->where([
-                    'productId' => $productId,
-                    'status' => 'Active',
-                ])
-                ->order('dateStart', 'DESC')
-                ->findOne();
-
-            if ($productPrice && $productPrice->get('priceBookId')) {
-                $fromExisting = $this->entityManager->getEntityById(
-                    'PriceBook',
-                    $productPrice->get('priceBookId')
-                );
-
-                if ($fromExisting) {
-                    return $fromExisting;
-                }
-            }
-        }
-
-        foreach (['ARIEL Energia', 'ARIEL', 'Energia'] as $namePattern) {
-            $fromName = $this->entityManager
-                ->getRDBRepository('PriceBook')
-                ->where([
-                    'name*' => $namePattern,
-                    'status' => 'Active',
-                ])
-                ->order('name', 'DESC')
-                ->findOne();
-
-            if ($fromName) {
-                return $fromName;
-            }
-        }
-
-        return $this->entityManager
-            ->getRDBRepository('PriceBook')
-            ->where(['status' => 'Active'])
-            ->order('name', 'ASC')
-            ->findOne();
     }
 
     /**
