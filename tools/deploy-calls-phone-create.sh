@@ -15,8 +15,12 @@ FILES=(
   "client/custom/src/helpers/call-create-from-record.js"
   "client/custom/src/views/fields/phone-create-call.js"
   "client/custom/src/views/fields/telefono-dial-call.js"
+  "client/custom/src/views/fields/whatsapp-create-call.js"
+  "client/custom/src/views/fields/foreign-whatsapp-create-call.js"
   "custom/Espo/Custom/Resources/metadata/fields/phone.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Prospect.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Lead.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Account.json"
   "custom/Espo/Custom/Resources/metadata/formula/Call.json"
 )
 
@@ -37,4 +41,4 @@ fi
 
 echo ""
 echo "Fatto. Ctrl+F5 nel browser."
-echo "Clic su numero telefono in Prospect / Lead / Account / Contact → modale Contatto telefonico."
+echo "Clic su telefono o WhatsApp in Prospect / Lead / Account / Contact → modale Contatto telefonico."

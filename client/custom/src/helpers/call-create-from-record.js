@@ -2,6 +2,34 @@ define('custom:helpers/call-create-from-record', [], function () {
 
     const ALLOWED_ENTITY_TYPES = ['Prospect', 'Lead', 'Account', 'Contact'];
 
+    const extractPhoneFromWhatsAppUrl = function (url) {
+        url = (url || '').trim();
+
+        if (!url) {
+            return '';
+        }
+
+        let match = url.match(/wa\.me\/(\d+)/);
+
+        if (match) {
+            return match[1];
+        }
+
+        match = url.match(/phone=(\d+)/);
+
+        if (match) {
+            return match[1];
+        }
+
+        match = url.match(/(\d{8,15})/);
+
+        if (match) {
+            return match[1];
+        }
+
+        return '';
+    };
+
     const buildRecordName = function (model) {
         const name = (model.get('name') || '').trim();
 
@@ -15,7 +43,9 @@ define('custom:helpers/call-create-from-record', [], function () {
         ].join(' ').trim();
     };
 
-    const buildAttributes = function (model, phoneNumber) {
+    const buildAttributes = function (model, phoneNumber, options) {
+        options = options || {};
+
         const entityType = model.entityType;
         const recordName = buildRecordName(model);
         const dialNumber = (phoneNumber || model.get('phoneNumber') || '').trim();
@@ -28,6 +58,10 @@ define('custom:helpers/call-create-from-record', [], function () {
             status: 'Planned',
             direction: 'Outbound',
         };
+
+        if (options.fromWhatsApp) {
+            attributes.whatsApp = true;
+        }
 
         if (entityType === 'Prospect') {
             attributes.prospectId = model.id;
@@ -69,7 +103,7 @@ define('custom:helpers/call-create-from-record', [], function () {
         return attributes;
     };
 
-    const openCreateCallModal = function (hostView, model, phoneNumber) {
+    const openCreateCallModal = function (hostView, model, phoneNumber, options) {
         if (!model || ALLOWED_ENTITY_TYPES.indexOf(model.entityType) === -1) {
             return;
         }
@@ -78,7 +112,7 @@ define('custom:helpers/call-create-from-record', [], function () {
             return;
         }
 
-        const attributes = buildAttributes(model, phoneNumber);
+        const attributes = buildAttributes(model, phoneNumber, options);
 
         hostView.createView('createCallFromPhoneDialog', 'views/modals/edit', {
             scope: 'Call',
@@ -99,9 +133,22 @@ define('custom:helpers/call-create-from-record', [], function () {
         });
     };
 
+    const openCreateCallFromWhatsApp = function (hostView, model, urlValue) {
+        const phoneNumber = extractPhoneFromWhatsAppUrl(urlValue)
+            || extractPhoneFromWhatsAppUrl(model.get('whatsApp'))
+            || extractPhoneFromWhatsAppUrl(model.get('whatsApp39'))
+            || (model.get('phoneNumber') || '').trim();
+
+        openCreateCallModal(hostView, model, phoneNumber, {
+            fromWhatsApp: true,
+        });
+    };
+
     return {
         allowedEntityTypes: ALLOWED_ENTITY_TYPES,
         buildAttributes: buildAttributes,
+        extractPhoneFromWhatsAppUrl: extractPhoneFromWhatsAppUrl,
         openCreateCallModal: openCreateCallModal,
+        openCreateCallFromWhatsApp: openCreateCallFromWhatsApp,
     };
 });

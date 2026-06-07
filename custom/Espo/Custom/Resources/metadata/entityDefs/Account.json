@@ -167,6 +167,7 @@
         },
         "whatsApp": {
             "type": "url",
+            "view": "custom:views/fields/whatsapp-create-call",
             "isCustom": true
         },
         "stato": {
