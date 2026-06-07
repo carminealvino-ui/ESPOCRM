@@ -13,6 +13,13 @@
         },
         "name": {
             "options": []
+        },
+        "color": {
+            "type": "varchar",
+            "maxLength": 100,
+            "trim": true,
+            "options": [],
+            "isCustom": true
         }
     },
     "links": {
@@ -62,6 +69,13 @@
             "type": "hasMany",
             "foreign": "productBrand",
             "entity": "Quote",
+            "audited": false,
+            "isCustom": true
+        },
+        "disponibilita": {
+            "type": "hasMany",
+            "foreign": "productBrand",
+            "entity": "Disponibilita",
             "audited": false,
             "isCustom": true
         }

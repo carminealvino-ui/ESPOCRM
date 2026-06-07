@@ -3,7 +3,8 @@
         "fornitorePartner": "Fornitore/Partner",
         "appuntamenti": "Appuntamenti",
         "productCategories": "Prodotto - Categoria",
-        "name": "Prodotto - Brand"
+        "name": "Prodotto - Brand",
+        "color": "Colore calendario"
     },
     "links": {
         "fornitorePartner": "Fornitore/Partner",

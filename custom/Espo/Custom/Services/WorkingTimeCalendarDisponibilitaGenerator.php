@@ -28,7 +28,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
     {
         $dateFrom = $calendar->get('dataInizioGenerazione');
         $dateTo = $calendar->get('dataFineGenerazione');
-        $azienda = $calendar->get('generazioneAzienda');
+        $productBrandId = $this->resolveCalendarProductBrandId($calendar);
         $status = $calendar->get('generazioneStatus') ?: 'Presente';
         $area = $calendar->get('generazioneArea') ?? [];
         $collaboratorIds = $calendar->getLinkMultipleIdList('generazioneCollaborators');
@@ -58,7 +58,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
             $dateFrom,
             $dateTo,
             $assignedUserIds,
-            $azienda,
+            $productBrandId,
             $status,
             $area,
             $collaboratorIds,
@@ -126,7 +126,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
         string $dateFrom,
         string $dateTo,
         array $assignedUserIds,
-        ?string $azienda = null,
+        ?string $productBrandId = null,
         string $status = 'Presente',
         array $area = [],
         array $collaboratorIds = [],
@@ -193,7 +193,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
                         $slot['start'],
                         $slot['end'],
                         $assignedUserIds,
-                        $azienda,
+                        $productBrandId,
                         $status,
                         $area,
                         $collaboratorIds
@@ -428,7 +428,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
         string $orarioInizio,
         string $orarioFine,
         array $assignedUserIds,
-        ?string $azienda,
+        ?string $productBrandId,
         string $status,
         array $area,
         array $collaboratorIds
@@ -443,7 +443,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
             'dateEnd' => $dateStr . ' 23:59:59',
             'orarioInizio' => $orarioInizio,
             'orarioFine' => $orarioFine,
-            'azienda' => $azienda ?: '',
+            'productBrandId' => $productBrandId,
             'status' => $status,
             'area' => $area,
             'assignedUsersIds' => $assignedUserIds,
@@ -451,6 +451,28 @@ class WorkingTimeCalendarDisponibilitaGenerator
         ]);
 
         $this->entityManager->saveEntity($entity);
+    }
+
+    private function resolveCalendarProductBrandId(Entity $calendar): ?string
+    {
+        $brandId = $calendar->get('generazioneProductBrandId');
+
+        if ($brandId) {
+            return $brandId;
+        }
+
+        $legacyAzienda = trim((string) ($calendar->get('generazioneAzienda') ?: ''));
+
+        if ($legacyAzienda === '') {
+            return null;
+        }
+
+        $brand = $this->entityManager
+            ->getRDBRepository('ProductBrand')
+            ->where(['name' => $legacyAzienda])
+            ->findOne();
+
+        return $brand?->getId();
     }
 
     private function normalizeDate(?string $value): ?string

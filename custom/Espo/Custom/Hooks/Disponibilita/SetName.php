@@ -2,59 +2,20 @@
 
 namespace Espo\Custom\Hooks\Disponibilita;
 
+use Espo\Core\ORM\EntityManager;
 use Espo\ORM\Entity;
 
 /**
- * ============================================================
- * ENTITÀ: Disponibilita
- * FILE: SetName.php
- * VERSIONE: 1.2.0
- * DATA: 2026-05-07
- * STATO: STABILE PRODUZIONE
- *
- * ============================================================
- * CONTESTO
- * ============================================================
- * Questo hook gestisce:
- *
- * ✔ Nome evento (azienda + orari)
- * ✔ Impostazione calendario (all-day)
- * ✔ Conversione timezone UTC → Europe/Rome
- * ✔ Colore evento da Fornitore/Partner
- *
- * ============================================================
- * ARCHITETTURA
- * ============================================================
- * HOOK = fonte unica della verità per:
- *  - dateStart / dateEnd
- *  - name
- *  - color
- *
- * JS = SOLO UX (default valori)
- *
- * ============================================================
- * FIX IMPLEMENTATI
- * ============================================================
- * ✔ Fix timezone corretto
- * ✔ Eliminata dipendenza da campi UI
- * ✔ Aggiunto supporto calendarColor (fix calendario)
- *
- * ============================================================
+ * Hook Disponibilita: nome, date calendario, colore da ProductBrand.
  */
-
 class SetName
 {
+    public function __construct(
+        private EntityManager $entityManager
+    ) {}
+
     public function beforeSave(Entity $entity, array $options)
     {
-        $entityManager = $GLOBALS['entityManager'];
-
-        /**
-         * ====================================================
-         * LETTURA DATI BASE (STABILE)
-         * ====================================================
-         */
-        $fornitoreId = $entity->get('fornitorePartnerId');
-        $aziendaNome = $entity->get('azienda');
         $data = $entity->get('datadisponibilita');
         $inizio = $entity->get('orarioInizio');
         $fine = $entity->get('orarioFine');
@@ -75,23 +36,10 @@ class SetName
             return;
         }
 
-        /**
-         * ====================================================
-         * CALENDARIO (STABILE)
-         * ====================================================
-         * Evento sempre all-day per visualizzazione barra alta
-         */
         $entity->set('isAllDay', true);
         $entity->set('dateStart', $data . ' 00:00:00');
         $entity->set('dateEnd', $data . ' 23:59:59');
 
-        /**
-         * ====================================================
-         * CONVERSIONE ORARI (FIX TIMEZONE)
-         * ====================================================
-         * DB → UTC
-         * UI → Europe/Rome
-         */
         $oraInizio = '';
         $oraFine = '';
 
@@ -107,17 +55,19 @@ class SetName
             $oraFine = $dtEnd->format('H:i');
         }
 
-        /**
-         * ====================================================
-         * COSTRUZIONE NOME (STABILE)
-         * ====================================================
-         * Formato:
-         * AZIENDA | HH:mm - HH:mm
-         */
+        $brand = $this->resolveProductBrand($entity);
+        $brandName = $brand ? (string) $brand->get('name') : '';
+
+        if ($brandName !== '' && $entity->hasAttribute('azienda')) {
+            $entity->set('azienda', $brandName);
+        }
+
         $nome = '';
 
-        if (!empty($aziendaNome)) {
-            $nome .= $aziendaNome . ' | ';
+        if ($brandName !== '') {
+            $nome .= $brandName . ' | ';
+        } elseif ($entity->get('azienda')) {
+            $nome .= $entity->get('azienda') . ' | ';
         }
 
         if ($oraInizio && $oraFine) {
@@ -126,35 +76,39 @@ class SetName
 
         $entity->set('name', $nome);
 
-        /**
-         * ====================================================
-         * COLORE EVENTO (FIX COMPLETO)
-         * ====================================================
-         * Origine: Fornitore/Partner.color
-         *
-         * Problema Espo:
-         * - 'color' non sempre usato dal calendario
-         *
-         * Soluzione:
-         * ✔ set color
-         * ✔ set calendarColor (fondamentale)
-         */
-        if (!empty($fornitoreId)) {
+        $colore = $brand ? trim((string) ($brand->get('color') ?: '')) : '';
 
-            $fornitore = $entityManager->getEntityById('FornitorePartner', $fornitoreId);
-
-            if ($fornitore) {
-                $colore = $fornitore->get('color');
-
-                if (!empty($colore)) {
-
-                    // campo standard
-                    $entity->set('color', $colore);
-
-                    // FIX calendario Espo
-                    $entity->set('calendarColor', $colore);
-                }
-            }
+        if ($colore !== '') {
+            $entity->set('color', $colore);
         }
+    }
+
+    private function resolveProductBrand(Entity $entity): ?Entity
+    {
+        $brandId = $entity->get('productBrandId');
+
+        if ($brandId) {
+            return $this->entityManager->getEntityById('ProductBrand', $brandId);
+        }
+
+        $azienda = trim((string) ($entity->get('azienda') ?: ''));
+
+        if ($azienda === '') {
+            return null;
+        }
+
+        $brand = $this->entityManager
+            ->getRDBRepository('ProductBrand')
+            ->where(['name' => $azienda])
+            ->findOne();
+
+        if (!$brand) {
+            return null;
+        }
+
+        $entity->set('productBrandId', $brand->getId());
+        $entity->set('productBrandName', $brand->get('name'));
+
+        return $brand;
     }
 }

@@ -2,7 +2,7 @@
     "fields": {
         "dataInizioGenerazione": "Data inizio generazione",
         "dataFineGenerazione": "Data fine generazione",
-        "generazioneAzienda": "Azienda",
+        "generazioneProductBrand": "Brand",
         "generazioneStatus": "Stato disponibilità",
         "generazioneArea": "Area di lavoro",
         "generazioneCollaborators": "Collaboratori",
@@ -26,12 +26,6 @@
             "Malattia": "Malattia",
             "Auto": "Auto",
             "Indisponibile": "Indisponibile"
-        },
-        "generazioneAzienda": {
-            "": "",
-            "ARQUATI": "ARQUATI",
-            "ARIEL": "ARIEL",
-            "PROGETTO": "PROGETTO"
         }
     }
 }

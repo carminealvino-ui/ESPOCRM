@@ -9,17 +9,19 @@
         "dateStartDate": "Date Start (all day)",
         "dateEndDate": "Date End (all day)",
         "isAllDay": "Is All-Day",
-        "azienda": "Azienda",
+        "productBrand": "Brand",
         "area": "Area",
         "datadisponibilita": "Data Disponibilità",
         "color": "Color",
         "orarioInizio": "Orario Inizio",
         "orarioFine": "Orario Fine",
-        "fornitorePartner": "Fornitore/Partner"
+        "fornitorePartner": "Fornitore/Partner",
+        "productBrand": "Brand"
     },
     "links": {
         "parent": "Parent",
-        "fornitorePartner": "Fornitore/Partner"
+        "fornitorePartner": "Fornitore/Partner",
+        "productBrand": "Brand"
     },
     "options": {
         "status": {

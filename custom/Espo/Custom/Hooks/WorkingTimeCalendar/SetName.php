@@ -25,10 +25,14 @@ class SetName implements BeforeSave
     {
         $parts = [];
 
-        $azienda = trim((string) ($entity->get('generazioneAzienda') ?: ''));
+        $brandName = trim((string) ($entity->get('generazioneProductBrandName') ?: ''));
 
-        if ($azienda !== '') {
-            $parts[] = $azienda;
+        if ($brandName === '') {
+            $brandName = trim((string) ($entity->get('generazioneAzienda') ?: ''));
+        }
+
+        if ($brandName !== '') {
+            $parts[] = $brandName;
         }
 
         $area = $entity->get('generazioneArea') ?? [];

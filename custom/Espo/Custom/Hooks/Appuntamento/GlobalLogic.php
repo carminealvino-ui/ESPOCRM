@@ -460,7 +460,16 @@ class GlobalLogic
             // COLORI CALENDARIO
             // ========================================
 
-            if (
+            $brandColor = $this->resolveBrandCalendarColor($entity);
+
+            if ($brandColor !== null) {
+
+                $entity->set(
+                    'color',
+                    $brandColor
+                );
+
+            } elseif (
 
                 $status === 'Held' &&
                 $sottostato === 'Chiuso Positivamente'
@@ -952,6 +961,28 @@ class GlobalLogic
                 $category->get('productBrandName')
             );
         }
+    }
+
+    private function resolveBrandCalendarColor(Entity $entity): ?string
+    {
+        $brandId = $entity->get('productBrandId');
+
+        if (!$brandId) {
+            return null;
+        }
+
+        $brand = $this->entityManager->getEntityById(
+            'ProductBrand',
+            $brandId
+        );
+
+        if (!$brand) {
+            return null;
+        }
+
+        $color = trim((string) ($brand->get('color') ?: ''));
+
+        return $color !== '' ? $color : null;
     }
 
 }

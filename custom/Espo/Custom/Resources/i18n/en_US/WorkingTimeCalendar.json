@@ -2,7 +2,7 @@
     "fields": {
         "dataInizioGenerazione": "Generation start date",
         "dataFineGenerazione": "Generation end date",
-        "generazioneAzienda": "Company",
+        "generazioneProductBrand": "Brand",
         "generazioneStatus": "Availability status",
         "generazioneArea": "Work area",
         "generazioneCollaborators": "Collaborators"

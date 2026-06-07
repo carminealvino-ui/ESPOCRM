@@ -30,7 +30,8 @@ class GeneraDisponibilitaRicorrenti
         foreach ([
             'dataInizioGenerazione',
             'dataFineGenerazione',
-            'generazioneAzienda',
+            'generazioneProductBrandId',
+            'generazioneProductBrandName',
             'generazioneStatus',
             'generazioneArea',
         ] as $field) {
