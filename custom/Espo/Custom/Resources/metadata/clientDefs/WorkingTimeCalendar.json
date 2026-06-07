@@ -1,3 +1,10 @@
 {
-    "controller": "controllers/record"
+    "controller": "controllers/record",
+    "modalViews": {
+        "edit": "views/modals/edit"
+    },
+    "recordViews": {
+        "edit": "views/record/edit",
+        "editSmall": "views/record/edit-small"
+    }
 }

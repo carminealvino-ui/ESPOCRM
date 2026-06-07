@@ -9,7 +9,8 @@
     },
     "labels": {
         "Generazione Disponibilità": "Generazione Disponibilità",
-        "Disponibilità Ricorrenti": "Disponibilità Ricorrenti"
+        "Disponibilità Ricorrenti": "Disponibilità Ricorrenti",
+        "Overview": "Panoramica"
     },
     "options": {
         "generazioneStatus": {
