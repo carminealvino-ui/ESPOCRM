@@ -94,14 +94,22 @@ class WorkingTimeCalendarDisponibilitaGenerator
      */
     public function resolveCalendarUserIds(Entity $calendar): array
     {
+        $calendarId = $calendar->getId();
+
+        if (!$calendarId) {
+            return [];
+        }
+
         $userIds = [];
 
-        foreach (
-            $this->entityManager
-                ->getRDBRepository('WorkingTimeCalendar')
-                ->getRelation($calendar, 'users')
-                ->find() as $user
-        ) {
+        $users = $this->entityManager
+            ->getRDBRepository('User')
+            ->where([
+                'workingTimeCalendarId' => $calendarId,
+            ])
+            ->find();
+
+        foreach ($users as $user) {
             $userIds[] = $user->getId();
         }
 

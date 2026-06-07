@@ -303,6 +303,7 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
                 return;
             }
 
+            this.refreshAssignedUserCount();
             runGenerate();
         },
     });
