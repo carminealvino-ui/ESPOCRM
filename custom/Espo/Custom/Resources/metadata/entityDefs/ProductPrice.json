@@ -37,6 +37,15 @@
         },
         "price": {
             "tooltip": true
+        },
+        "timeline": {
+            "view": "custom:views/product-price/fields/validity-numeric"
+        },
+        "dateStart": {
+            "view": "custom:views/fields/date-numeric"
+        },
+        "dateEnd": {
+            "view": "custom:views/fields/date-numeric"
         }
     }
 }

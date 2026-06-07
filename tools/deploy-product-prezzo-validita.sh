@@ -22,6 +22,7 @@ FILES=(
   "custom/Espo/Custom/Resources/metadata/entityDefs/Product.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/ProductCategory.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/ProductBrand.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/ProductPrice.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/PriceBook.json"
   "custom/Espo/Custom/Resources/metadata/formula/Product.json"
   "custom/Espo/Custom/Resources/layouts/Product/detail.json"

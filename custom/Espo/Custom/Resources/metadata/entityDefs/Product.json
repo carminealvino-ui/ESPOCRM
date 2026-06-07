@@ -18,7 +18,8 @@
         "dataInizioValidita": {
             "type": "date",
             "isCustom": true,
-            "audited": true
+            "audited": true,
+            "view": "custom:views/fields/date-numeric"
         },
         "prezzoListinoIvaEsclusa": {
             "type": "currency",

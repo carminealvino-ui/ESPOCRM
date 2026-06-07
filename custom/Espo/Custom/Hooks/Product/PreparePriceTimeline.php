@@ -39,7 +39,7 @@ class PreparePriceTimeline implements BeforeSave
 
         $dateStart = trim((string) ($entity->get('dataInizioValidita') ?? ''));
 
-        if (!$entity->isAttributeChanged('dataInizioValidita') || $dateStart === '') {
+        if ($dateStart === '') {
             $dateStart = date('Y-m-d');
             $entity->set('dataInizioValidita', $dateStart);
         }
