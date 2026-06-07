@@ -12,6 +12,8 @@ REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 
 FILES=(
+  "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
+  "custom/Espo/Custom/Services/AppuntamentoCalendarColor.php"
   "custom/Espo/Custom/Services/BrandCalendarColorBackfill.php"
   "custom/Espo/Custom/Actions/Disponibilita/BackfillBrandColorCalendario.php"
   "custom/Espo/Custom/Hooks/Disponibilita/SetName.php"

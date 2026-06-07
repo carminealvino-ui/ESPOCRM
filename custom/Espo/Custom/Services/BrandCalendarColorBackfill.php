@@ -245,7 +245,7 @@ class BrandCalendarColorBackfill
         $path = $this->resolveColorMapPath($colorsJsonPath);
 
         if ($path === null) {
-            return [];
+            return AppuntamentoCalendarColor::defaultBrandColorMap();
         }
 
         $decoded = json_decode((string) file_get_contents($path), true);
@@ -257,7 +257,11 @@ class BrandCalendarColorBackfill
         $map = [];
 
         foreach ($decoded as $name => $color) {
-            if (!is_string($name) || !is_string($color)) {
+            if (!is_string($name) || str_starts_with($name, '_')) {
+                continue;
+            }
+
+            if (!is_string($color)) {
                 continue;
             }
 
@@ -269,6 +273,10 @@ class BrandCalendarColorBackfill
             }
 
             $map[$name] = $color;
+        }
+
+        if ($map === []) {
+            return AppuntamentoCalendarColor::defaultBrandColorMap();
         }
 
         return $map;
@@ -714,11 +722,10 @@ class BrandCalendarColorBackfill
         $updated = 0;
         $skipped = 0;
 
+        $colorResolver = new AppuntamentoCalendarColor($this->entityManager);
+
         $query = $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where([
-                'productBrandId!=' => null,
-            ])
             ->order('createdAt', 'ASC');
 
         if ($limit > 0) {
@@ -726,26 +733,16 @@ class BrandCalendarColorBackfill
         }
 
         foreach ($query->find() as $entity) {
-            $brand = $this->entityManager->getEntityById(
-                'ProductBrand',
-                $entity->get('productBrandId')
-            );
+            $targetColor = $colorResolver->resolveColor($entity);
 
-            if (!$brand) {
-                $skipped++;
-                continue;
-            }
-
-            $brandColor = trim((string) ($brand->get('color') ?: ''));
-
-            if ($brandColor === '') {
+            if ($targetColor === null) {
                 $skipped++;
                 continue;
             }
 
             $currentColor = trim((string) ($entity->get('color') ?: ''));
 
-            if (!$forceColor && $currentColor === $brandColor) {
+            if (!$forceColor && $currentColor === $targetColor) {
                 $skipped++;
                 continue;
             }
@@ -755,7 +752,7 @@ class BrandCalendarColorBackfill
                 continue;
             }
 
-            $entity->set('color', $brandColor);
+            $entity->set('color', $targetColor);
             $this->entityManager->saveEntity($entity, [
                 'skipHooks' => true,
                 'silent' => true,

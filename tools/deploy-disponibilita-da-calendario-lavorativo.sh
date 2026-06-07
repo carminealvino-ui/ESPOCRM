@@ -63,6 +63,8 @@ FILES=(
   "client/custom/src/action-handlers/disponibilita/disponibilita-ricorrenti.js"
   "client/custom/src/views/modals/disponibilita-ricorrenti.js"
   "client/custom/src/views/modals/working-time-calendar-edit.js"
+  "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
+  "custom/Espo/Custom/Services/AppuntamentoCalendarColor.php"
   "custom/Espo/Custom/Services/BrandCalendarColorBackfill.php"
   "custom/Espo/Custom/Actions/Disponibilita/BackfillBrandColorCalendario.php"
   "tools/backfill-brand-color-calendario.php"

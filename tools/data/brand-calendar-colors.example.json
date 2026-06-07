@@ -1,7 +1,8 @@
 {
-    "ARIEL": "#0066cc",
-    "ARQUATI": "#cc6600",
-    "PROGETTO": "#6600cc",
-    "ARTEL": "#009999",
-    "GFB": "#669900"
+    "_comment": "Palette dalton-friendly (Okabe-Ito). Solo per appuntamenti Planned. Stati: verde #009E73 svolto, arancio #E69F00 chiuso+, vermiglio #D55E00 annullato/ingestibile.",
+    "ARIEL": "#0173B2",
+    "ARQUATI": "#785EF0",
+    "PROGETTO": "#CC79A7",
+    "ARTEL": "#56B4E9",
+    "GFB": "#332288"
 }
