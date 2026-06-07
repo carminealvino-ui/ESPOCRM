@@ -100,6 +100,12 @@
             ],
             [
                 {
+                    "name": "generazioneArea",
+                    "fullWidth": true
+                }
+            ],
+            [
+                {
                     "name": "generazioneAssignedUsers",
                     "fullWidth": true
                 }

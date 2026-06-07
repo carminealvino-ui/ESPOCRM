@@ -4,7 +4,8 @@
         "dataFineGenerazione": "Generation end date",
         "generazioneAzienda": "Company",
         "generazioneStatus": "Availability status",
-        "generazioneAssignedUsers": "Assigned users"
+        "generazioneAssignedUsers": "Assigned users",
+        "generazioneArea": "Work area"
     },
     "labels": {
         "Generazione Disponibilità": "Availability generation"

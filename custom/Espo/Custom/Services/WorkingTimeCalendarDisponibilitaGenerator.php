@@ -26,6 +26,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
         array $assignedUserIds,
         ?string $azienda = null,
         string $status = 'Presente',
+        array $area = [],
         bool $dryRun = false
     ): array {
         $dateFrom = $this->normalizeDate($dateFrom);
@@ -40,9 +41,14 @@ class WorkingTimeCalendarDisponibilitaGenerator
         }
 
         $assignedUserIds = array_values(array_filter(array_unique($assignedUserIds)));
+        $area = array_values(array_filter(array_unique($area)));
 
         if ($assignedUserIds === []) {
             throw new \InvalidArgumentException('Selezionare almeno un utente assegnato.');
+        }
+
+        if ($area === []) {
+            throw new \InvalidArgumentException('Selezionare almeno un\'area di lavoro.');
         }
 
         $created = 0;
@@ -57,7 +63,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
             $slots = $this->resolveTimeSlotsForDate($calendar, $dateStr);
 
             foreach ($slots as $slot) {
-                if ($this->existsDisponibilita($dateStr, $slot['start'], $slot['end'], $assignedUserIds)) {
+                if ($this->existsDisponibilita($dateStr, $slot['start'], $slot['end'], $assignedUserIds, $area)) {
                     $skipped++;
                     continue;
                 }
@@ -74,7 +80,8 @@ class WorkingTimeCalendarDisponibilitaGenerator
                         $slot['end'],
                         $assignedUserIds,
                         $azienda,
-                        $status
+                        $status,
+                        $area
                     );
                     $created++;
                 } catch (\Throwable $e) {
@@ -209,7 +216,8 @@ class WorkingTimeCalendarDisponibilitaGenerator
         string $dateStr,
         string $orarioInizio,
         string $orarioFine,
-        array $assignedUserIds
+        array $assignedUserIds,
+        array $area
     ): bool {
         $startTime = $this->extractTimeFromDateTime($orarioInizio);
         $endTime = $this->extractTimeFromDateTime($orarioFine);
@@ -222,6 +230,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
             ->find();
 
         sort($assignedUserIds);
+        sort($area);
 
         foreach ($collection as $entity) {
             $existingStart = $this->extractTimeFromDateTime((string) $entity->get('orarioInizio'));
@@ -234,7 +243,17 @@ class WorkingTimeCalendarDisponibilitaGenerator
             $existingIds = $entity->getLinkMultipleIdList('assignedUsers');
             sort($existingIds);
 
-            if ($existingIds === $assignedUserIds) {
+            if ($existingIds !== $assignedUserIds) {
+                continue;
+            }
+
+            $existingArea = $entity->get('area') ?? [];
+            if (!is_array($existingArea)) {
+                $existingArea = $existingArea !== null && $existingArea !== '' ? [$existingArea] : [];
+            }
+            sort($existingArea);
+
+            if ($existingArea === $area) {
                 return true;
             }
         }
@@ -264,7 +283,8 @@ class WorkingTimeCalendarDisponibilitaGenerator
         string $orarioFine,
         array $assignedUserIds,
         ?string $azienda,
-        string $status
+        string $status,
+        array $area
     ): void {
         $entity = $this->entityManager->createEntity('Disponibilita');
 
@@ -275,6 +295,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
             'orarioFine' => $orarioFine,
             'azienda' => $azienda ?: '',
             'status' => $status,
+            'area' => $area,
             'assignedUsersIds' => $assignedUserIds,
         ]);
 

@@ -38,6 +38,20 @@
             "view": "views/fields/assigned-users",
             "maxCount": 30,
             "isCustom": true
+        },
+        "generazioneArea": {
+            "type": "multiEnum",
+            "storeArrayValues": true,
+            "options": [
+                "ROMA SUD",
+                "ROMA EST",
+                "ROMA NORD",
+                "PESCARA",
+                "CHIETI",
+                "LATINA",
+                "FROSINONE"
+            ],
+            "isCustom": true
         }
     },
     "links": {

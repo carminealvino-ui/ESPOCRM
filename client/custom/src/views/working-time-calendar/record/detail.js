@@ -38,6 +38,7 @@ define('custom:views/working-time-calendar/record/detail', ['views/record/detail
             var dateFrom = this.model.get('dataInizioGenerazione');
             var dateTo = this.model.get('dataFineGenerazione');
             var users = this.model.get('generazioneAssignedUsersIds') || [];
+            var area = this.model.get('generazioneArea') || [];
 
             if (!dateFrom || !dateTo) {
                 Espo.Ui.warning('Compilare Data inizio e Data fine generazione nel pannello "Generazione Disponibilità".');
@@ -47,6 +48,12 @@ define('custom:views/working-time-calendar/record/detail', ['views/record/detail
 
             if (!users.length) {
                 Espo.Ui.warning('Selezionare almeno un utente nel campo Utenti assegnati.');
+
+                return;
+            }
+
+            if (!area.length) {
+                Espo.Ui.warning('Selezionare almeno un\'area di lavoro.');
 
                 return;
             }

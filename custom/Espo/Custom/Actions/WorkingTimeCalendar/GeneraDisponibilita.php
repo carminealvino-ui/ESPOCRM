@@ -19,9 +19,18 @@ class GeneraDisponibilita
         $assignedUserIds = $calendar->getLinkMultipleIdList('generazioneAssignedUsers');
         $azienda = $calendar->get('generazioneAzienda');
         $status = $calendar->get('generazioneStatus') ?: 'Presente';
+        $area = $calendar->get('generazioneArea') ?? [];
+
+        if (!is_array($area)) {
+            $area = $area !== null && $area !== '' ? [$area] : [];
+        }
 
         if (!$dateFrom || !$dateTo) {
             throw new \Exception('Compilare Data inizio e Data fine generazione nel calendario.');
+        }
+
+        if ($area === []) {
+            throw new \Exception('Selezionare almeno un\'area di lavoro nel calendario.');
         }
 
         $generator = new WorkingTimeCalendarDisponibilitaGenerator($this->entityManager);
@@ -32,7 +41,8 @@ class GeneraDisponibilita
             $dateTo,
             $assignedUserIds,
             $azienda,
-            $status
+            $status,
+            $area
         );
 
         return (object) [
