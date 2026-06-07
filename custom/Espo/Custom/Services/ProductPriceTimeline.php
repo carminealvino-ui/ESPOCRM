@@ -24,6 +24,71 @@ class ProductPriceTimeline
             || $product->isAttributeChanged('aliquotaIva');
     }
 
+    public function hasPricesOnPanel(Entity $product): bool
+    {
+        return $this->hasAnyPrice(
+            $this->floatOrNull($product->get('prezzoListinoIvaEsclusa')),
+            $this->floatOrNull($product->get('prezzoListinoIvaInclusa')),
+            $this->floatOrNull($product->get('prezzoCodice')),
+            $this->floatOrNull($product->get('prezzoCodiceIvaInclusa'))
+        );
+    }
+
+    /**
+     * Decide se sincronizzare il pannello Prezzo verso ProductPrice (beforeSave).
+     */
+    public function shouldSyncFromProduct(Entity $product): bool
+    {
+        if (!$this->hasPricesOnPanel($product)) {
+            return false;
+        }
+
+        if ($this->hasPricePanelChanges($product)) {
+            return true;
+        }
+
+        if ($product->isAttributeChanged('dataInizioValidita')) {
+            return true;
+        }
+
+        return $this->needsBackfillSync($product);
+    }
+
+    /**
+     * Prodotto con prezzi ma senza riga Active nel listino risolto (es. migrazione o primo salvataggio).
+     */
+    public function needsBackfillSync(Entity $product): bool
+    {
+        $productId = $product->getId();
+
+        if (!$productId) {
+            return true;
+        }
+
+        $priceBook = $this->productPriceBookResolver->resolveForProduct($product);
+
+        if (!$priceBook) {
+            return false;
+        }
+
+        return $this->findLatestActiveRow($productId, $priceBook->getId()) === null;
+    }
+
+    public function resolveDateStart(Entity $product): string
+    {
+        $dateStart = trim((string) ($product->get('dataInizioValidita') ?? ''));
+
+        if ($dateStart !== '') {
+            $normalized = $this->normalizeDate($dateStart);
+
+            if ($normalized !== null) {
+                return $normalized;
+            }
+        }
+
+        return date('Y-m-d');
+    }
+
     public function syncFromProduct(Entity $product, string $dateStart): bool
     {
         $productId = $product->getId();
@@ -35,7 +100,9 @@ class ProductPriceTimeline
         $priceBook = $this->productPriceBookResolver->resolveForProduct($product);
 
         if (!$priceBook) {
-            return false;
+            throw new \RuntimeException(
+                'Listino prezzi non trovato per prodotto ' . $productId
+            );
         }
 
         $listinoNet = $this->floatOrNull($product->get('prezzoListinoIvaEsclusa'));
@@ -51,7 +118,9 @@ class ProductPriceTimeline
         $normalizedDateStart = $this->normalizeDate($dateStart);
 
         if ($normalizedDateStart === null) {
-            return false;
+            throw new \RuntimeException(
+                'Data inizio validità non valida: ' . $dateStart
+            );
         }
 
         $existing = $this->findLatestActiveRow($productId, $priceBook->getId());
@@ -86,6 +155,12 @@ class ProductPriceTimeline
 
         if ($aliquotaIva !== null && $aliquotaIva > 0 && $productPrice->hasAttribute('aliquotaIva')) {
             $productPrice->set('aliquotaIva', round($aliquotaIva, 3));
+        }
+
+        if ($this->floatOrNull($productPrice->get('price')) === null) {
+            throw new \RuntimeException(
+                'Impossibile determinare il prezzo listino per ProductPrice'
+            );
         }
 
         $this->entityManager->saveEntity($productPrice);

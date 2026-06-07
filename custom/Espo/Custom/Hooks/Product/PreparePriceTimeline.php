@@ -14,10 +14,10 @@ use Espo\ORM\Repository\Option\SaveOptions;
  */
 class PreparePriceTimeline implements BeforeSave
 {
-    /** @var array<int, string> */
-    public static array $pendingDateByObject = [];
+    /** @var array<string, string> */
+    public static array $pendingDateByKey = [];
 
-    public static int $order = 4;
+    public static int $order = 6;
 
     public function __construct(
         private ProductPriceTimeline $productPriceTimeline
@@ -33,17 +33,27 @@ class PreparePriceTimeline implements BeforeSave
             return;
         }
 
-        if (!$this->productPriceTimeline->hasPricePanelChanges($entity)) {
+        if (!$this->productPriceTimeline->shouldSyncFromProduct($entity)) {
             return;
         }
 
-        $dateStart = trim((string) ($entity->get('dataInizioValidita') ?? ''));
+        $dateStart = $this->productPriceTimeline->resolveDateStart($entity);
 
-        if ($dateStart === '') {
-            $dateStart = date('Y-m-d');
+        if (trim((string) ($entity->get('dataInizioValidita') ?? '')) === '') {
             $entity->set('dataInizioValidita', $dateStart);
         }
 
-        self::$pendingDateByObject[spl_object_id($entity)] = $dateStart;
+        self::$pendingDateByKey[self::pendingKey($entity)] = $dateStart;
+    }
+
+    public static function pendingKey(Entity $entity): string
+    {
+        $id = $entity->getId();
+
+        if ($id) {
+            return 'id:' . $id;
+        }
+
+        return 'obj:' . spl_object_id($entity);
     }
 }

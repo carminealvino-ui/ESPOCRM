@@ -32,19 +32,56 @@ class SyncPriceTimeline implements AfterSave
             return;
         }
 
-        $objectId = spl_object_id($entity);
+        $dateStart = $this->resolvePendingDateStart($entity);
 
-        if (!isset(PreparePriceTimeline::$pendingDateByObject[$objectId])) {
+        if ($dateStart === null) {
             return;
         }
 
-        $dateStart = PreparePriceTimeline::$pendingDateByObject[$objectId];
-        unset(PreparePriceTimeline::$pendingDateByObject[$objectId]);
-
         try {
-            $this->productPriceTimeline->syncFromProduct($entity, $dateStart);
+            $synced = $this->productPriceTimeline->syncFromProduct($entity, $dateStart);
+
+            if (!$synced) {
+                $this->log->debug(
+                    'Product price timeline: nessuna nuova riga (valori già allineati) per prodotto '
+                    . ($entity->getId() ?? '')
+                );
+            }
         } catch (\Throwable $e) {
-            $this->log->error('Product price timeline sync failed: ' . $e->getMessage());
+            $this->log->error(
+                'Product price timeline sync failed [product='
+                . ($entity->getId() ?? 'new')
+                . ']: '
+                . $e->getMessage()
+            );
         }
+    }
+
+    private function resolvePendingDateStart(Entity $entity): ?string
+    {
+        $keys = [];
+
+        if ($entity->getId()) {
+            $keys[] = 'id:' . $entity->getId();
+        }
+
+        $keys[] = PreparePriceTimeline::pendingKey($entity);
+
+        foreach ($keys as $key) {
+            if (!isset(PreparePriceTimeline::$pendingDateByKey[$key])) {
+                continue;
+            }
+
+            $dateStart = PreparePriceTimeline::$pendingDateByKey[$key];
+            unset(PreparePriceTimeline::$pendingDateByKey[$key]);
+
+            return $dateStart;
+        }
+
+        if (!$this->productPriceTimeline->needsBackfillSync($entity)) {
+            return null;
+        }
+
+        return $this->productPriceTimeline->resolveDateStart($entity);
     }
 }
