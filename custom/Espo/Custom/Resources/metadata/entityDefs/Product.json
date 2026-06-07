@@ -18,8 +18,7 @@
         "dataInizioValidita": {
             "type": "date",
             "isCustom": true,
-            "audited": true,
-            "view": "custom:views/fields/date-numeric"
+            "audited": true
         },
         "aliquotaIva": {
             "type": "float",

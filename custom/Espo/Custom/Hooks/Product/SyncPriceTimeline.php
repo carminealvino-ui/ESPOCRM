@@ -3,6 +3,7 @@
 namespace Espo\Custom\Hooks\Product;
 
 use Espo\Core\Hook\Hook\AfterSave;
+use Espo\Core\Utils\Log;
 use Espo\Custom\Services\ProductPriceTimeline;
 use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
@@ -17,7 +18,8 @@ class SyncPriceTimeline implements AfterSave
     public static int $order = 20;
 
     public function __construct(
-        private ProductPriceTimeline $productPriceTimeline
+        private ProductPriceTimeline $productPriceTimeline,
+        private Log $log,
     ) {}
 
     public function afterSave(Entity $entity, SaveOptions $options): void
@@ -39,6 +41,10 @@ class SyncPriceTimeline implements AfterSave
         $dateStart = PreparePriceTimeline::$pendingDateByObject[$objectId];
         unset(PreparePriceTimeline::$pendingDateByObject[$objectId]);
 
-        $this->productPriceTimeline->syncFromProduct($entity, $dateStart);
+        try {
+            $this->productPriceTimeline->syncFromProduct($entity, $dateStart);
+        } catch (\Throwable $e) {
+            $this->log->error('Product price timeline sync failed: ' . $e->getMessage());
+        }
     }
 }

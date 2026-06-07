@@ -2,7 +2,6 @@
 
 namespace Espo\Custom\Services;
 
-use Espo\Core\Exceptions\Error;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
@@ -50,6 +49,10 @@ class ProductPriceTimeline
         }
 
         $normalizedDateStart = $this->normalizeDate($dateStart);
+
+        if ($normalizedDateStart === null) {
+            return false;
+        }
 
         $existing = $this->findLatestActiveRow($productId, $priceBook->getId());
 
@@ -197,12 +200,12 @@ class ProductPriceTimeline
         return abs($left - $right) < 0.009;
     }
 
-    private function normalizeDate(string $dateStart): string
+    private function normalizeDate(string $dateStart): ?string
     {
         $normalized = substr(trim($dateStart), 0, 10);
 
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $normalized)) {
-            throw new Error('Data inizio validità non valida.');
+            return null;
         }
 
         return $normalized;

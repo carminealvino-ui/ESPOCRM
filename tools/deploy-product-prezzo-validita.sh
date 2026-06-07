@@ -29,6 +29,7 @@ FILES=(
   "custom/Espo/Custom/Resources/layouts/Product/list.json"
   "custom/Espo/Custom/Resources/layouts/ProductCategory/detail.json"
   "custom/Espo/Custom/Resources/layouts/ProductBrand/detail.json"
+  "custom/Espo/Custom/Resources/layouts/ProductPrice/listForProduct.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Product.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/ProductCategory.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/ProductBrand.json"

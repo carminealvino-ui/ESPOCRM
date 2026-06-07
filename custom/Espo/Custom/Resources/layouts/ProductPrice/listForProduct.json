@@ -3,8 +3,12 @@
         "name": "priceBook"
     },
     {
-        "name": "timeline",
-        "width": 18
+        "name": "dateStart",
+        "width": 10
+    },
+    {
+        "name": "dateEnd",
+        "width": 10
     },
     {
         "name": "aliquotaIva",
