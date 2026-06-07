@@ -2,27 +2,30 @@
 
 namespace Espo\Custom\Hooks\Disponibilita;
 
+use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\ORM\Entity;
+use Espo\ORM\EntityManager;
+use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * ============================================================
- * ENTITÀ: Disponibilita
- * FILE: SetName.php
- * VERSIONE: 1.3.1
- * DATA: 2026-06-06
+ * Disponibilita: datadisponibilita = data di inizio (solo data).
  *
- * FIX 1.3.1
- * ✔ datadisponibilita da dateStartDate (all-day) / orarioInizio / dateStart
- * ✔ Allinea dateStartDate e dateStart datetime al salvataggio
- * ============================================================
+ * v1.3.2: orarioInizio e' la data operativa reale sui record esistenti;
+ * se l'utente modifica Data inizio (dateStart/dateStartDate) prevale quella.
  */
-class SetName
+class SetName implements BeforeSave
 {
     private const TIMEZONE = 'Europe/Rome';
 
-    public function beforeSave(Entity $entity, array $options): void
+    public function __construct(
+        private EntityManager $entityManager
+    ) {}
+
+    public function beforeSave(Entity $entity, SaveOptions $options): void
     {
-        $entityManager = $GLOBALS['entityManager'];
+        if ($options->get('skipHooks')) {
+            return;
+        }
 
         $sourceDate = $this->resolveSourceDate($entity);
 
@@ -50,15 +53,11 @@ class SetName
         $oraFine = '';
 
         if (!empty($inizio)) {
-            $dtStart = new \DateTime($inizio, new \DateTimeZone('UTC'));
-            $dtStart->setTimezone(new \DateTimeZone(self::TIMEZONE));
-            $oraInizio = $dtStart->format('H:i');
+            $oraInizio = $this->extractTime($inizio);
         }
 
         if (!empty($fine)) {
-            $dtEnd = new \DateTime($fine, new \DateTimeZone('UTC'));
-            $dtEnd->setTimezone(new \DateTimeZone(self::TIMEZONE));
-            $oraFine = $dtEnd->format('H:i');
+            $oraFine = $this->extractTime($fine);
         }
 
         $nome = '';
@@ -73,29 +72,34 @@ class SetName
 
         $entity->set('name', $nome);
 
-        if (!empty($fornitoreId)) {
-            $fornitore = $entityManager->getEntityById('FornitorePartner', $fornitoreId);
-
-            if ($fornitore) {
-                $colore = $fornitore->get('color');
-
-                if (!empty($colore)) {
-                    $entity->set('color', $colore);
-                    $entity->set('calendarColor', $colore);
-                }
-            }
+        if (empty($fornitoreId)) {
+            return;
         }
+
+        $fornitore = $this->entityManager->getEntityById('FornitorePartner', $fornitoreId);
+
+        if (!$fornitore) {
+            return;
+        }
+
+        $colore = $fornitore->get('color');
+
+        if (empty($colore)) {
+            return;
+        }
+
+        $entity->set('color', $colore);
+        $entity->set('calendarColor', $colore);
     }
 
-    /**
-     * Data di inizio effettiva mostrata in elenco (all-day = dateStartDate).
-     */
     private function resolveSourceDate(Entity $entity): ?string
     {
-        $dateStartDate = $this->normalizeDateValue($entity->get('dateStartDate'));
+        if ($entity->isAttributeChanged('dateStart') || $entity->isAttributeChanged('dateStartDate')) {
+            $fromDataInizio = $this->dateFromDataInizioFields($entity);
 
-        if ($dateStartDate !== null) {
-            return $dateStartDate;
+            if ($fromDataInizio !== null) {
+                return $fromDataInizio;
+            }
         }
 
         $orarioInizio = $entity->get('orarioInizio');
@@ -104,13 +108,24 @@ class SetName
             return $this->extractDate($orarioInizio);
         }
 
+        return $this->dateFromDataInizioFields($entity);
+    }
+
+    private function dateFromDataInizioFields(Entity $entity): ?string
+    {
+        $dateStartDate = $this->normalizeDateValue($entity->get('dateStartDate'));
+
+        if ($dateStartDate !== null) {
+            return $dateStartDate;
+        }
+
         $dateStart = $entity->get('dateStart');
 
         if (!empty($dateStart)) {
             return $this->extractDate($dateStart);
         }
 
-        return $this->normalizeDateValue($entity->get('datadisponibilita'));
+        return null;
     }
 
     private function normalizeDateValue(mixed $value): ?string
@@ -132,5 +147,27 @@ class SetName
         $dt->setTimezone(new \DateTimeZone(self::TIMEZONE));
 
         return $dt->format('Y-m-d');
+    }
+
+    private function extractTime(string $dateTime): string
+    {
+        $dt = new \DateTime($dateTime, new \DateTimeZone('UTC'));
+        $dt->setTimezone(new \DateTimeZone(self::TIMEZONE));
+
+        return $dt->format('H:i');
+    }
+
+    private function syncOrarioDate(Entity $entity, string $field, string $sourceDate): void
+    {
+        $value = $entity->get($field);
+
+        if (!is_string($value) || $value === '') {
+            return;
+        }
+
+        $dt = new \DateTime($value, new \DateTimeZone('UTC'));
+        $dt->setTimezone(new \DateTimeZone(self::TIMEZONE));
+
+        $entity->set($field, $sourceDate . ' ' . $dt->format('H:i:s'));
     }
 }

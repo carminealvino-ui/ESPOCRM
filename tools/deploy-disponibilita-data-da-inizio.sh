@@ -14,6 +14,7 @@ BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 FILES=(
   "custom/Espo/Custom/Hooks/Disponibilita/SetName.php"
   "custom/Espo/Custom/Resources/metadata/hooks/Disponibilita.json"
+  "custom/Espo/Custom/Resources/metadata/formula/Disponibilita.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Disponibilita.json"
   "custom/Espo/Custom/Resources/client/custom-views/disponibilita/create.js"
   "tools/backfill-disponibilita-data-da-inizio.php"
@@ -33,8 +34,12 @@ elif [[ -f "${CRM_ROOT}/command.php" ]]; then
 fi
 
 echo ""
+echo "Diagnostica (campione DB):"
+(cd "${CRM_ROOT}" && php tools/backfill-disponibilita-data-da-inizio.php --sample | head -20)
+
+echo ""
 echo "Backfill record esistenti (dry-run):"
-(cd "${CRM_ROOT}" && php tools/backfill-disponibilita-data-da-inizio.php --dry-run --verbose | tail -5)
+(cd "${CRM_ROOT}" && php tools/backfill-disponibilita-data-da-inizio.php --dry-run --verbose | tail -10)
 
 echo ""
 echo "Per applicare il backfill:"
