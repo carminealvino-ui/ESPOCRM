@@ -37,7 +37,7 @@ class AppuntamentoCalendarColor
     public const BRAND_PALETTE_DALTON = [
         'ARIEL' => '#0173B2',
         'ARQUATI' => '#785EF0',
-        'PROGETTO' => '#CC79A7',
+        'PROGETTO' => '#2EC4B6',
         'ARTEL' => '#56B4E9',
         'GFB' => '#332288',
     ];
