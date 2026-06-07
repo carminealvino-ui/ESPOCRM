@@ -8,10 +8,10 @@ use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Disponibilita: datadisponibilita = data di inizio (solo data).
+ * Disponibilita: datadisponibilita = Data inizio (dateStartDate / dateStart).
  *
- * v1.3.2: orarioInizio e' la data operativa reale sui record esistenti;
- * se l'utente modifica Data inizio (dateStart/dateStartDate) prevale quella.
+ * v1.3.3: dateStartDate e' la data mostrata in elenco come "Data inizio".
+ * orarioInizio solo come fallback se Data inizio assente.
  */
 class SetName implements BeforeSave
 {
@@ -94,12 +94,10 @@ class SetName implements BeforeSave
 
     private function resolveSourceDate(Entity $entity): ?string
     {
-        if ($entity->isAttributeChanged('dateStart') || $entity->isAttributeChanged('dateStartDate')) {
-            $fromDataInizio = $this->dateFromDataInizioFields($entity);
+        $fromDataInizio = $this->dateFromDataInizioFields($entity);
 
-            if ($fromDataInizio !== null) {
-                return $fromDataInizio;
-            }
+        if ($fromDataInizio !== null) {
+            return $fromDataInizio;
         }
 
         $orarioInizio = $entity->get('orarioInizio');
@@ -108,7 +106,7 @@ class SetName implements BeforeSave
             return $this->extractDate($orarioInizio);
         }
 
-        return $this->dateFromDataInizioFields($entity);
+        return null;
     }
 
     private function dateFromDataInizioFields(Entity $entity): ?string

@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * Allinea datadisponibilita = data di inizio (orarioInizio > dateStart > dateStartDate).
+ * Allinea datadisponibilita = Data inizio (dateStartDate > dateStart > orarioInizio).
  *
  * Uso:
  *   php tools/backfill-disponibilita-data-da-inizio.php --dry-run --verbose
@@ -167,7 +167,7 @@ function rebuildOrarioDateTime(?string $value, string $targetDate, DateTimeZone 
  */
 function resolveTargetDate(array $row, DateTimeZone $timezone): ?string
 {
-    foreach (['orario_inizio', 'date_start', 'date_start_date'] as $field) {
+    foreach (['date_start_date', 'date_start', 'orario_inizio'] as $field) {
         $value = $row[$field] ?? null;
 
         if (!is_string($value) || $value === '') {
