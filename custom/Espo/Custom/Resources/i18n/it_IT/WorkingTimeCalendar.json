@@ -5,7 +5,14 @@
         "generazioneAzienda": "Azienda",
         "generazioneStatus": "Stato disponibilità",
         "generazioneArea": "Area di lavoro",
-        "generazioneCollaborators": "Collaboratori"
+        "generazioneCollaborators": "Collaboratori",
+        "weekday0": "Dom",
+        "weekday1": "Lun",
+        "weekday2": "Mar",
+        "weekday3": "Mer",
+        "weekday4": "Gio",
+        "weekday5": "Ven",
+        "weekday6": "Sab"
     },
     "labels": {
         "Generazione Disponibilità": "Generazione Disponibilità",

@@ -37,7 +37,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
             $area = $area !== null && $area !== '' ? [$area] : [];
         }
 
-        $assignedUserIds = $this->resolveCalendarUserIds($calendar);
+        $assignedUserIds = $this->resolveAssignedUserIds($calendar);
 
         if (!$dateFrom || !$dateTo) {
             throw new \InvalidArgumentException('Compilare Data inizio e Data fine generazione.');
@@ -49,7 +49,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
 
         if ($assignedUserIds === []) {
             throw new \InvalidArgumentException(
-                'Nessun utente collegato al calendario lavorativo. Collegare gli utenti al calendario prima di generare.'
+                'Selezionare almeno un collaboratore oppure collegare utenti al calendario lavorativo.'
             );
         }
 
@@ -68,6 +68,25 @@ class WorkingTimeCalendarDisponibilitaGenerator
         $result['userCount'] = count($assignedUserIds);
 
         return $result;
+    }
+
+    /**
+     * Utenti collegati al calendario; se assenti, usa i collaboratori del pannello generazione.
+     *
+     * @return string[]
+     */
+    public function resolveAssignedUserIds(Entity $calendar): array
+    {
+        $userIds = $this->resolveCalendarUserIds($calendar);
+
+        if ($userIds !== []) {
+            return $userIds;
+        }
+
+        $collaboratorIds = $calendar->getLinkMultipleIdList('generazioneCollaborators');
+        sort($collaboratorIds);
+
+        return array_values(array_unique($collaboratorIds));
     }
 
     /**

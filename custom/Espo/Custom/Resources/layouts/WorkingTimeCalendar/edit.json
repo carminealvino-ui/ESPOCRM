@@ -47,14 +47,6 @@
             ],
             [
                 {
-                    "name": "weekday0"
-                },
-                {
-                    "name": "weekday0TimeRanges"
-                }
-            ],
-            [
-                {
                     "name": "weekday1"
                 },
                 {
@@ -99,6 +91,14 @@
                 },
                 {
                     "name": "weekday6TimeRanges"
+                }
+            ],
+            [
+                {
+                    "name": "weekday0"
+                },
+                {
+                    "name": "weekday0TimeRanges"
                 }
             ],
             [

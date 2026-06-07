@@ -35,6 +35,7 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
             this.headerText = this.translate('Disponibilità Ricorrenti', 'labels', 'Disponibilita');
             this.calendarId = null;
             this.userCount = 0;
+            this.userSource = 'none';
 
             this.buttonList = [
                 {
@@ -59,6 +60,7 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
 
             this.once('after:render', () => {
                 this.showFullCalendarForm();
+                this.refreshAssignedUserCount();
             });
         },
 
@@ -69,12 +71,13 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
         actionCreateCalendar: function () {
             this.calendarId = null;
             this.userCount = 0;
+            this.userSource = 'none';
             this.$el.find('.calendar-selected-name').text('Nuovo calendario');
 
             this.getModelFactory().create('WorkingTimeCalendar')
                 .then((model) => {
                     this.calendarModel = model;
-                    this.updateUserInfo();
+                    this.refreshAssignedUserCount();
                     this.createRecordView();
                 });
         },
@@ -139,11 +142,42 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
                     }).then(() => {
                         this.calendarModel = model;
                         this.calendarId = model.id;
-                        this.userCount = (model.get('usersIds') || []).length;
-                        this.updateUserInfo();
+                        this.refreshAssignedUserCount();
                         this.createRecordView();
                     });
                 });
+        },
+
+        resolveAssignedUserCount: function () {
+            const usersIds = this.calendarModel.get('usersIds') || [];
+            const collaboratorIds = this.calendarModel.get('generazioneCollaboratorsIds') || [];
+
+            if (usersIds.length) {
+                return {
+                    count: usersIds.length,
+                    source: 'calendar',
+                };
+            }
+
+            if (collaboratorIds.length) {
+                return {
+                    count: collaboratorIds.length,
+                    source: 'collaborators',
+                };
+            }
+
+            return {
+                count: 0,
+                source: 'none',
+            };
+        },
+
+        refreshAssignedUserCount: function () {
+            const info = this.resolveAssignedUserCount();
+
+            this.userCount = info.count;
+            this.userSource = info.source;
+            this.updateUserInfo();
         },
 
         createRecordView: function () {
@@ -163,28 +197,30 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
                 el: this.getSelector() + ' .record',
             }, (view) => {
                 view.render();
+
+                this.stopListening(this.calendarModel, 'change:generazioneCollaboratorsIds');
+                this.listenTo(this.calendarModel, 'change:generazioneCollaboratorsIds', () => {
+                    this.refreshAssignedUserCount();
+                });
             });
         },
 
         updateUserInfo: function () {
             const $info = this.$el.find('.calendar-users-info');
-            let message = 'Utenti dal calendario (assegnati automaticamente): ' + this.userCount;
+            let message = 'Utenti assegnati alle disponibilità: ' + this.userCount;
 
-            if (!this.userCount) {
-                message += ' — collegare almeno un utente al calendario lavorativo (relazione Utenti).';
-                $info.removeClass('alert-info').addClass('alert-warning');
-            } else {
+            if (this.userSource === 'calendar') {
+                message += ' (dal calendario lavorativo)';
                 $info.removeClass('alert-warning').addClass('alert-info');
+            } else if (this.userSource === 'collaborators') {
+                message += ' (dai collaboratori selezionati)';
+                $info.removeClass('alert-warning').addClass('alert-info');
+            } else {
+                message += ' — selezionare almeno un collaboratore o collegare utenti al calendario.';
+                $info.removeClass('alert-info').addClass('alert-warning');
             }
 
             $info.text(message).removeClass('hidden');
-        },
-
-        refreshUserCount: function () {
-            const usersIds = this.calendarModel.get('usersIds') || [];
-
-            this.userCount = usersIds.length;
-            this.updateUserInfo();
         },
 
         actionGenerate: function () {
@@ -209,7 +245,7 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
             const runGenerate = () => {
                 if (!this.userCount) {
                     this.enableButton('generate');
-                    Espo.Ui.warning('Nessun utente collegato al calendario. Collegare utenti al calendario lavorativo.');
+                    Espo.Ui.warning('Selezionare almeno un collaboratore o collegare utenti al calendario lavorativo.');
 
                     return;
                 }
@@ -253,8 +289,10 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
                         });
                     })
                     .then((response) => {
-                        this.userCount = (response.usersIds || []).length;
-                        this.updateUserInfo();
+                        this.calendarModel.set({
+                            usersIds: response.usersIds || [],
+                        }, {silent: true});
+                        this.refreshAssignedUserCount();
                         runGenerate();
                     })
                     .catch((e) => {
