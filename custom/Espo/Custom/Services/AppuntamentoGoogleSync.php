@@ -81,16 +81,22 @@ class AppuntamentoGoogleSync
             return;
         }
 
-        if (!$this->hasGoogleLink($entity->getId())) {
+        $calendarUserId = $this->resolveGoogleCalendarUserIdForEntity($entity, true);
+
+        if ($calendarUserId === null) {
             return;
         }
 
-        $fallbackUserId = $this->resolvePrimaryUserId(
-            $entity->getFetched('assignedUsersIds'),
-            $entity->getFetched('assignedUserId')
-        );
+        if ($this->hasGoogleLink($entity->getId())) {
+            $fallbackUserId = $this->resolvePrimaryUserId(
+                $entity->getFetched('assignedUsersIds'),
+                $entity->getFetched('assignedUserId')
+            );
 
-        $this->unlinkFromGoogleForUser($entity, $fallbackUserId);
+            $this->unlinkFromGoogleForUser($entity, $fallbackUserId ?? $calendarUserId);
+        }
+
+        $this->bonificaDeleteOrphanGoogleEvent($entity, $calendarUserId);
     }
 
     public function handleRemoved(Entity $entity): void
@@ -126,10 +132,7 @@ class AppuntamentoGoogleSync
         }
 
         $this->loadAssignedUsersIds($entity);
-        $userId = $this->resolvePrimaryUserId(
-            $entity->get('assignedUsersIds'),
-            $entity->get('assignedUserId')
-        );
+        $userId = $this->resolveGoogleCalendarUserIdForEntity($entity, false);
 
         if ($userId === null) {
             return false;
@@ -178,11 +181,24 @@ class AppuntamentoGoogleSync
             $entity->get('assignedUserId')
         );
 
-        if ($userId !== $calendarUserId) {
+        if (!$this->isOnConsultantCalendar($entity, $calendarUserId)) {
             return 'skipped';
         }
 
+        $this->persistAssignedUserIdIfNeeded($entity, $calendarUserId);
+
         return $this->pushEntityToGoogle($entity, $calendarUserId) ? 'pushed' : 'failed';
+    }
+
+    public function isOnConsultantCalendar(Entity $entity, string $consultantUserId): bool
+    {
+        $this->loadAssignedUsersIds($entity);
+
+        if ($this->hasConsultantAssigned($entity, $consultantUserId)) {
+            return true;
+        }
+
+        return (string) $entity->get('assignedUserId') === $consultantUserId;
     }
 
     public function needsAssignedUserIdFix(Entity $entity): bool
@@ -271,22 +287,24 @@ class AppuntamentoGoogleSync
             return false;
         }
 
+        $userTz = $this->resolveUserTimeZone($calendarUserId);
+
         try {
-            $start = new \DateTime($dateStart);
+            $start = new \DateTime($dateStart, $userTz);
         } catch (\Throwable) {
             return false;
         }
 
-        $end = clone $start;
-        $end->modify('+1 day');
+        $dayStart = (clone $start)->setTime(0, 0, 0)->setTimezone(new \DateTimeZone('UTC'));
+        $dayEnd = (clone $start)->setTime(23, 59, 59)->setTimezone(new \DateTimeZone('UTC'));
 
         try {
             $client = $this->clientManager->create('Google', $calendarUserId);
             $response = $client->getCalendarClient()->getEventList($calendarId, [
-                'timeMin' => $start->format('Y-m-d\T00:00:00\Z'),
-                'timeMax' => $end->format('Y-m-d\T23:59:59\Z'),
+                'timeMin' => $dayStart->format('Y-m-d\TH:i:s\Z'),
+                'timeMax' => $dayEnd->format('Y-m-d\TH:i:s\Z'),
                 'singleEvents' => 'true',
-                'maxResults' => 50,
+                'maxResults' => 100,
                 'q' => $needle,
             ]);
         } catch (\Throwable $e) {
@@ -295,6 +313,19 @@ class AppuntamentoGoogleSync
             );
 
             return false;
+        }
+
+        if (!is_array($response) || !is_array($response['items'] ?? null)) {
+            return false;
+        }
+
+        if ($response['items'] === []) {
+            $response = $client->getCalendarClient()->getEventList($calendarId, [
+                'timeMin' => $dayStart->format('Y-m-d\TH:i:s\Z'),
+                'timeMax' => $dayEnd->format('Y-m-d\TH:i:s\Z'),
+                'singleEvents' => 'true',
+                'maxResults' => 100,
+            ]);
         }
 
         if (!is_array($response) || empty($response['items']) || !is_array($response['items'])) {
@@ -326,6 +357,93 @@ class AppuntamentoGoogleSync
         }
 
         return false;
+    }
+
+    /**
+     * Scansiona Google Calendar e rimuove eventi il cui appuntamento Espo è Not Held / eliminato.
+     *
+     * @return int numero eventi rimossi
+     */
+    public function bonificaReconcileGoogleRange(
+        string $calendarUserId,
+        string $fromDate,
+        string $toDate
+    ): int {
+        if (!$this->isGoogleCalendarApiAvailableForUser($calendarUserId)) {
+            return 0;
+        }
+
+        $calendarId = $this->resolveMainGoogleCalendarIdForUser($calendarUserId);
+
+        if ($calendarId === null) {
+            return 0;
+        }
+
+        $userTz = $this->resolveUserTimeZone($calendarUserId);
+
+        try {
+            $rangeStart = new \DateTime($fromDate . ' 00:00:00', $userTz);
+            $rangeEnd = new \DateTime($toDate . ' 23:59:59', $userTz);
+        } catch (\Throwable) {
+            return 0;
+        }
+
+        $timeMin = (clone $rangeStart)->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
+        $timeMax = (clone $rangeEnd)->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
+
+        try {
+            $client = $this->clientManager->create('Google', $calendarUserId);
+            $response = $client->getCalendarClient()->getEventList($calendarId, [
+                'timeMin' => $timeMin,
+                'timeMax' => $timeMax,
+                'singleEvents' => 'true',
+                'maxResults' => 250,
+            ]);
+        } catch (\Throwable $e) {
+            $GLOBALS['log']->error('AppuntamentoGoogleSync: reconcile list failed: ' . $e->getMessage());
+
+            return 0;
+        }
+
+        if (!is_array($response) || !is_array($response['items'] ?? null)) {
+            return 0;
+        }
+
+        $removed = 0;
+
+        foreach ($response['items'] as $item) {
+            if (!is_array($item) || empty($item['id'])) {
+                continue;
+            }
+
+            $summary = (string) ($item['summary'] ?? '');
+
+            if ($summary === '' || str_starts_with($summary, 'Too Good To Go')) {
+                continue;
+            }
+
+            if (!$this->looksLikeAppuntamentoGoogleEvent($summary)) {
+                continue;
+            }
+
+            $appointment = $this->findAppointmentForGoogleEvent($summary, $item, $userTz);
+
+            if ($appointment === null || $this->shouldStayOnGoogleCalendar($appointment)) {
+                continue;
+            }
+
+            try {
+                if ($client->getCalendarClient()->deleteEvent($calendarId, (string) $item['id'])) {
+                    $removed++;
+                }
+            } catch (\Throwable $e) {
+                $GLOBALS['log']->error(
+                    'AppuntamentoGoogleSync: reconcile delete ' . $item['id'] . ': ' . $e->getMessage()
+                );
+            }
+        }
+
+        return $removed;
     }
 
     public function shouldStayOnGoogleCalendar(Entity $entity): bool
@@ -675,33 +793,6 @@ class AppuntamentoGoogleSync
         return is_array($googleData) && !empty($googleData['googleCalendarEventId']);
     }
 
-    private function isCalendarPushEnabledForUser(string $userId): bool
-    {
-        if (!$this->isGoogleCalendarApiAvailableForUser($userId)) {
-            return false;
-        }
-
-        $externalAccount = $this->entityManager->getEntityById('ExternalAccount', 'Google__' . $userId);
-
-        if (!$externalAccount) {
-            return false;
-        }
-
-        $direction = $externalAccount->get('calendarDirection');
-
-        if ($direction === 'GCToEspo') {
-            return false;
-        }
-
-        $entityTypes = $externalAccount->get('calendarEntityTypes');
-
-        if (is_array($entityTypes) && $entityTypes !== [] && !in_array('Appuntamento', $entityTypes, true)) {
-            return false;
-        }
-
-        return true;
-    }
-
     private function isGoogleCalendarApiAvailableForUser(string $userId): bool
     {
         $externalAccount = $this->entityManager->getEntityById('ExternalAccount', 'Google__' . $userId);
@@ -773,25 +864,167 @@ class AppuntamentoGoogleSync
 
     private function googleSummaryMatchesAppointment(string $summary, Entity $entity, string $needle): bool
     {
-        if ($needle !== '' && str_contains($summary, $needle)) {
-            return true;
-        }
-
+        $dateStart = $entity->get('dateStart');
+        $timePart = is_string($dateStart) && strlen($dateStart) >= 16 ? substr($dateStart, 11, 5) : '';
         $name = trim((string) ($entity->get('name') ?? ''));
 
-        if ($name !== '' && str_contains($summary, $name)) {
+        $codeMatch = $needle !== '' && str_contains($summary, $needle);
+        $nameMatch = $name !== '' && str_contains($summary, $name);
+        $timeMatch = $timePart !== '' && str_contains($summary, $timePart);
+
+        if ($codeMatch && $timeMatch) {
             return true;
         }
 
-        $dateStart = $entity->get('dateStart');
-
-        if (!is_string($dateStart) || strlen($dateStart) < 16) {
-            return false;
+        if ($nameMatch && $timeMatch) {
+            return true;
         }
 
-        $timePart = substr($dateStart, 11, 5);
+        if ($nameMatch && $name !== '' && strlen($name) > 20) {
+            return true;
+        }
 
-        return $timePart !== '' && str_contains($summary, $timePart);
+        return false;
+    }
+
+    /**
+     * @param array<string, mixed> $googleItem
+     */
+    private function findAppointmentForGoogleEvent(string $summary, array $googleItem, \DateTimeZone $userTz): ?Entity
+    {
+        $code = null;
+
+        if (preg_match('/\b(\d{5})\b/', $summary, $matches)) {
+            $code = $matches[1];
+        }
+
+        $eventStart = $googleItem['start']['dateTime'] ?? $googleItem['start']['date'] ?? null;
+
+        if (!is_string($eventStart) || $eventStart === '') {
+            return null;
+        }
+
+        try {
+            $eventDt = new \DateTime($eventStart);
+            $eventDt->setTimezone($userTz);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        $day = $eventDt->format('Y-m-d');
+        $where = [
+            'deleted' => false,
+            'dateStart>=' => $day . ' 00:00:00',
+            'dateStart<=' => $day . ' 23:59:59',
+        ];
+
+        if ($code !== null) {
+            $where['name*'] = $code . '%';
+        } else {
+            $where['name*'] = '%' . substr($summary, 0, 32) . '%';
+        }
+
+        $candidates = $this->entityManager
+            ->getRDBRepository(self::ENTITY_TYPE)
+            ->where($where)
+            ->find();
+
+        $eventMinutes = (int) $eventDt->format('H') * 60 + (int) $eventDt->format('i');
+
+        foreach ($candidates as $candidate) {
+            $start = $candidate->get('dateStart');
+
+            if (!is_string($start) || strlen($start) < 16) {
+                continue;
+            }
+
+            try {
+                $appDt = new \DateTime($start, $userTz);
+            } catch (\Throwable) {
+                continue;
+            }
+
+            $appMinutes = (int) $appDt->format('H') * 60 + (int) $appDt->format('i');
+
+            if (abs($appMinutes - $eventMinutes) <= 5) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveGoogleCalendarUserIdForEntity(Entity $entity, bool $preferFetched): ?string
+    {
+        $adminIds = $this->resolveAdminUserIds();
+        $candidates = [];
+
+        if ($preferFetched) {
+            $candidates[] = $this->resolvePrimaryUserId(
+                $entity->getFetched('assignedUsersIds'),
+                $entity->getFetched('assignedUserId')
+            );
+        }
+
+        $this->loadAssignedUsersIds($entity);
+        $candidates[] = $this->resolvePrimaryUserId(
+            $entity->get('assignedUsersIds'),
+            $entity->get('assignedUserId')
+        );
+
+        foreach ($candidates as $userId) {
+            if (
+                is_string($userId)
+                && $userId !== ''
+                && !in_array($userId, $adminIds, true)
+                && $this->isGoogleCalendarApiAvailableForUser($userId)
+            ) {
+                return $userId;
+            }
+        }
+
+        $entityId = $entity->getId();
+
+        if ($entityId) {
+            $googleData = $this->getGoogleRepository()->getEventEntityGoogleData(self::ENTITY_TYPE, $entityId);
+
+            if (is_array($googleData)) {
+                $ownerId = $this->resolveCalendarOwnerUserId($googleData);
+
+                if ($ownerId !== null) {
+                    return $ownerId;
+                }
+            }
+        }
+
+        foreach ($candidates as $userId) {
+            if (is_string($userId) && $userId !== '' && $this->isGoogleCalendarApiAvailableForUser($userId)) {
+                return $userId;
+            }
+        }
+
+        return null;
+    }
+
+    private function looksLikeAppuntamentoGoogleEvent(string $summary): bool
+    {
+        if (preg_match('/^\d{5}\s*-/', $summary)) {
+            return true;
+        }
+
+        return str_contains($summary, 'LZ/');
+    }
+
+    private function resolveUserTimeZone(string $userId): \DateTimeZone
+    {
+        $preferences = $this->entityManager->getEntityById('Preferences', $userId);
+        $timeZone = $preferences?->get('timeZone');
+
+        try {
+            return new \DateTimeZone(is_string($timeZone) && $timeZone !== '' ? $timeZone : 'Europe/Rome');
+        } catch (\Throwable) {
+            return new \DateTimeZone('Europe/Rome');
+        }
     }
 
     /**
@@ -814,7 +1047,7 @@ class AppuntamentoGoogleSync
 
     private function pushEntityToGoogle(Entity $entity, string $userId): bool
     {
-        if (!$this->isCalendarPushEnabledForUser($userId)) {
+        if (!$this->isGoogleCalendarApiAvailableForUser($userId)) {
             return false;
         }
 

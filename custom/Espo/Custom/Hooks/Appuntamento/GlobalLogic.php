@@ -630,6 +630,18 @@ class GlobalLogic
             }
 
             // ========================================
+            // SYNC assignedUserId ← assignedUsers (Google Calendar richiede assignedUserId)
+            // ========================================
+
+            if ($status !== 'Not Held') {
+                $assignedUsersIds = $entity->get('assignedUsersIds') ?: [];
+
+                if ($assignedUsersIds !== []) {
+                    $entity->set('assignedUserId', $assignedUsersIds[0]);
+                }
+            }
+
+            // ========================================
             // FIX ASSEGNAZIONE ADMIN (solo Non Svolto / annullati)
             // Ingestibile resta sul consulente (visita effettuata, infattibile).
             // ========================================

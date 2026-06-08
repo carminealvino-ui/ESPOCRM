@@ -18,6 +18,7 @@
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-ingestibili
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-not-held
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-push
+ *   php tools/bonifica-appuntamento-google-calendar.php --apply --reconcile
  *
  * @noinspection PhpUnhandledExceptionInspection
  */
@@ -50,7 +51,8 @@ $dryRun = !in_array('--apply', $argv, true);
 $onlyIngestibili = in_array('--only-ingestibili', $argv, true);
 $onlyNotHeld = in_array('--only-not-held', $argv, true);
 $onlyPush = in_array('--only-push', $argv, true);
-$pushSinceDays = 14;
+$reconcileOnly = in_array('--reconcile', $argv, true);
+$pushSinceDays = 21;
 
 foreach ($argv as $arg) {
     if (str_starts_with($arg, '--push-since-days=')) {
@@ -139,6 +141,9 @@ if ($onlyNotHeld) {
 if ($onlyPush) {
     fwrite(STDOUT, "Filtro: solo push appuntamenti mancanti su Google (ultimi {$pushSinceDays} giorni e futuri)\n");
 }
+if ($reconcileOnly) {
+    fwrite(STDOUT, "Filtro: solo riconciliazione Google (rimuove annullati fantasma su Google)\n");
+}
 fwrite(STDOUT, "Consulente calendario: {$calendarUserLabel} (id {$calendarUserId})\n");
 fwrite(STDOUT, 'Google collegato: ' . ($googleOk ? 'sì' : 'NO — delete API potrebbe fallire') . "\n\n");
 
@@ -154,7 +159,32 @@ $stats = [
     'google_pushed' => 0,
     'google_push_failed' => 0,
     'google_push_skipped' => 0,
+    'google_reconcile_removed' => 0,
 ];
+
+$runReconcile = $reconcileOnly || (!$onlyIngestibili && !$onlyPush);
+
+if ($runReconcile) {
+    $reconcileFrom = date('Y-m-d', strtotime('-3 days'));
+    $reconcileTo = date('Y-m-d', strtotime('+21 days'));
+    fwrite(STDOUT, "[RECONCILE] Scansione Google {$reconcileFrom} → {$reconcileTo}\n");
+
+    if ($dryRun) {
+        fwrite(STDOUT, "  (dry-run: in apply rimuove eventi Google senza appuntamento Planned/Held/Ingestibile in Espo)\n");
+        $stats['google_reconcile_removed'] = 0;
+    } else {
+        $stats['google_reconcile_removed'] = $sync->bonificaReconcileGoogleRange(
+            $calendarUserId,
+            $reconcileFrom,
+            $reconcileTo
+        );
+        fwrite(STDOUT, '  rimossi da Google: ' . $stats['google_reconcile_removed'] . "\n\n");
+    }
+}
+
+if ($reconcileOnly) {
+    goto summary;
+}
 
 if (!$onlyIngestibili && !$onlyPush) {
 $shouldRemoveAppointment = static function (AppuntamentoGoogleSync $sync, Entity $appointment) use ($onlyNotHeld): bool {
@@ -387,6 +417,12 @@ if ($onlyPush || (!$onlyIngestibili && !$onlyNotHeld)) {
             continue;
         }
 
+        if (!$sync->isOnConsultantCalendar($appointment, $calendarUserId)) {
+            $stats['google_push_skipped']++;
+
+            continue;
+        }
+
         $label = formatAppointmentLabel($appointment);
         fwrite(STDOUT, "[PUSH GOOGLE] {$label}\n");
 
@@ -409,6 +445,7 @@ if ($onlyPush || (!$onlyIngestibili && !$onlyNotHeld)) {
     }
 }
 
+summary:
 fwrite(STDOUT, "\n--- Riepilogo ---\n");
 foreach ($stats as $key => $value) {
     fwrite(STDOUT, sprintf("%-22s %d\n", $key . ':', $value));
