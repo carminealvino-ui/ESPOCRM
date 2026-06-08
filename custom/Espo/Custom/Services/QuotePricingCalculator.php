@@ -481,18 +481,21 @@ class QuotePricingCalculator
         $taxInclusiveQuote = $isQuote && $this->isQuotePricesTaxInclusive($entity);
         $codiceNetFromProducts = $this->sumPrezzoCodiceNetFromProductsOnItems($entity);
         $codiceIviFromProducts = $this->sumPrezzoCodiceIvaInclusaFromProductsOnItems($entity);
+        $totalPrezzoCodice = $this->floatOrNull($entity->get('totalPrezzoCodice')) ?? 0.0;
 
         if ($taxInclusiveQuote) {
             if ($codiceIviFromProducts > 0) {
+                $totalPrezzoCodice = round($codiceIviFromProducts, 2);
                 $entity->set([
-                    'prezzoCodiceIvaInclusa' => round($codiceIviFromProducts, 2),
-                    'totalPrezzoCodice' => round($codiceIviFromProducts, 2),
+                    'prezzoCodiceIvaInclusa' => $totalPrezzoCodice,
+                    'totalPrezzoCodice' => $totalPrezzoCodice,
                 ]);
             } elseif ($codiceIvi = $this->sumPrezzoCodiceIvaInclusaFromItems($entity)) {
                 if ($codiceIvi > 0) {
+                    $totalPrezzoCodice = round($codiceIvi, 2);
                     $entity->set([
-                        'prezzoCodiceIvaInclusa' => round($codiceIvi, 2),
-                        'totalPrezzoCodice' => round($codiceIvi, 2),
+                        'prezzoCodiceIvaInclusa' => $totalPrezzoCodice,
+                        'totalPrezzoCodice' => $totalPrezzoCodice,
                     ]);
                 }
             }
@@ -969,6 +972,39 @@ class QuotePricingCalculator
         }
 
         return (bool) $entity->get('isTaxInclusive') || $this->isB2cContract($entity);
+    }
+
+    /**
+     * Prezzi listino/codice per riga contratto (API Quote/getItemCatalogPrices).
+     *
+     * @return array{listPrice: ?float, prezzoCodice: ?float}
+     */
+    public function resolveItemCatalogPricesForProduct(Entity $quote, Entity $product): array
+    {
+        $aliquota = $this->resolveAliquotaIva($quote);
+        $taxInclusive = $this->isQuotePricesTaxInclusive($quote);
+        $productPrice = $this->findActiveProductPrice($product, $quote);
+
+        $listPrice = $taxInclusive
+            ? $this->resolveProductListinoIvaInclusa($product, $aliquota, $quote, $productPrice)
+            : $this->resolveProductListinoNet($product, $quote, $productPrice);
+
+        $prezzoCodice = $taxInclusive
+            ? $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota, $productPrice, true)
+            : $this->resolveProductPrezzoCodiceNet($product, $aliquota, $productPrice, false);
+
+        if ($prezzoCodice === null && $taxInclusive) {
+            $codiceIvi = $this->resolveProductPrezzoCodiceIvaInclusa($product, $aliquota, $productPrice, true);
+
+            if ($codiceIvi !== null && $codiceIvi > 0) {
+                $prezzoCodice = $codiceIvi;
+            }
+        }
+
+        return [
+            'listPrice' => $listPrice !== null && $listPrice > 0 ? round($listPrice, 2) : null,
+            'prezzoCodice' => $prezzoCodice !== null && $prezzoCodice > 0 ? round($prezzoCodice, 2) : null,
+        ];
     }
 
     public function resolveProductListinoIvaInclusa(
