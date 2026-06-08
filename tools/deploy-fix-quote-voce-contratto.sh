@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fix errore inserimento voce contratto (Quote/getItemCatalogPrices + formula number\round).
+# Fix errore inserimento voce contratto + prezzo codice editabile in riga.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-quote-voce-contratto-9999/tools/deploy-fix-quote-voce-contratto.sh?t=$(date +%s)" | bash
@@ -51,4 +51,4 @@ elif [[ -f "${CRM_ROOT}/command.php" ]]; then
 fi
 
 echo ""
-echo "Fatto. Ctrl+F5 e riprova ad aggiungere una voce al contratto."
+echo "Fatto. Ctrl+F5 e riprova ad aggiungere/modificare voci al contratto."
