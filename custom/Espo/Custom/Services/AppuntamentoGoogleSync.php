@@ -178,21 +178,39 @@ class AppuntamentoGoogleSync
     }
 
     /**
-     * Corregge Ingestibile assegnati per errore ad admin invece che al consulente.
+     * Ingestibile assegnato ad admin (errore GlobalLogic storico) → consulente calendario.
      */
-    public function bonificaFixIngestibileConsultant(Entity $entity, string $consultantUserId): bool
+    public function needsIngestibileConsultantFix(Entity $entity, string $consultantUserId): bool
     {
         if ($entity->get('status') !== 'Ingestibile' || $entity->get('deleted')) {
             return false;
         }
 
-        $adminId = '1';
-        $ids = $entity->get('assignedUsersIds') ?: [];
-        $needsFix = ($entity->get('assignedUserId') === $adminId)
-            || ($ids === [$adminId])
-            || ($ids === []);
+        $this->loadAssignedUsersIds($entity);
+        $adminIds = $this->resolveAdminUserIds();
 
-        if (!$needsFix) {
+        $primaryId = $this->resolvePrimaryUserId(
+            $entity->get('assignedUsersIds'),
+            $entity->get('assignedUserId')
+        );
+
+        if ($primaryId === null) {
+            return true;
+        }
+
+        if ($primaryId === $consultantUserId) {
+            return false;
+        }
+
+        return in_array($primaryId, $adminIds, true);
+    }
+
+    /**
+     * Corregge Ingestibile assegnati per errore ad admin invece che al consulente.
+     */
+    public function bonificaFixIngestibileConsultant(Entity $entity, string $consultantUserId): bool
+    {
+        if (!$this->needsIngestibileConsultantFix($entity, $consultantUserId)) {
             return false;
         }
 
@@ -201,6 +219,47 @@ class AppuntamentoGoogleSync
         $this->entityManager->saveEntity($entity, ['skipHooks' => true]);
 
         return true;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function resolveAdminUserIds(): array
+    {
+        static $cache = null;
+
+        if ($cache !== null) {
+            return $cache;
+        }
+
+        $ids = ['1'];
+
+        $users = $this->entityManager
+            ->getRDBRepository('User')
+            ->where([
+                'isActive' => true,
+                'OR' => [
+                    ['type' => 'admin'],
+                    ['userName' => 'admin'],
+                    ['userName' => 'Admin'],
+                ],
+            ])
+            ->find();
+
+        foreach ($users as $user) {
+            $ids[] = (string) $user->getId();
+        }
+
+        $cache = array_values(array_unique($ids));
+
+        return $cache;
+    }
+
+    private function loadAssignedUsersIds(Entity $entity): void
+    {
+        if (!is_array($entity->get('assignedUsersIds'))) {
+            $entity->loadLinkMultipleField('assignedUsers');
+        }
     }
 
     private function unlinkFromGoogleForUser(Entity $entity, ?string $userId): void

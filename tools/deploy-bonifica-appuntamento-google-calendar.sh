@@ -39,4 +39,5 @@ fi
 echo ""
 echo "1) Anteprima:  php tools/bonifica-appuntamento-google-calendar.php --dry-run"
 echo "2) Esegui:     php tools/bonifica-appuntamento-google-calendar.php --apply"
-echo "   (consulente default: Alvino Carmine; oppure --user-id=ID)"
+echo "   Solo ingestibili admin→Carmine:"
+echo "   php tools/bonifica-appuntamento-google-calendar.php --apply --only-ingestibili"

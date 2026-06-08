@@ -15,6 +15,7 @@
  *   php tools/bonifica-appuntamento-google-calendar.php --dry-run
  *   php tools/bonifica-appuntamento-google-calendar.php --apply
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --user-name="Alvino Carmine"
+ *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-ingestibili
  *
  * @noinspection PhpUnhandledExceptionInspection
  */
@@ -44,6 +45,7 @@ $injectableFactory = $container->getByClass(InjectableFactory::class);
 $sync = $injectableFactory->create(AppuntamentoGoogleSync::class);
 
 $dryRun = !in_array('--apply', $argv, true);
+$onlyIngestibili = in_array('--only-ingestibili', $argv, true);
 $userIdArg = null;
 $userNameArg = 'Alvino Carmine';
 
@@ -117,6 +119,9 @@ $googleOk = $externalAccount
 
 fwrite(STDOUT, "=== Bonifica Google Calendar Appuntamenti ===\n");
 fwrite(STDOUT, 'Modalità: ' . ($dryRun ? 'DRY-RUN (nessuna modifica)' : 'APPLY') . "\n");
+if ($onlyIngestibili) {
+    fwrite(STDOUT, "Filtro: solo correzione Ingestibile (admin → consulente)\n");
+}
 fwrite(STDOUT, "Consulente calendario: {$calendarUserLabel} (id {$calendarUserId})\n");
 fwrite(STDOUT, 'Google collegato: ' . ($googleOk ? 'sì' : 'NO — delete API potrebbe fallire') . "\n\n");
 
@@ -129,6 +134,7 @@ $stats = [
     'ingestibile_fixed' => 0,
 ];
 
+if (!$onlyIngestibili) {
 // --- Fase 1: tutti i link GoogleCalendarEvent → Appuntamento ---
 $linkRows = $em->getRDBRepository('GoogleCalendarEvent')
     ->where([
@@ -145,7 +151,10 @@ foreach ($linkRows as $link) {
     $entityId = $link->get('entityId');
     $googleEventId = $link->get('googleCalendarEventId');
 
-    $appointment = $em->getEntityById('Appuntamento', $entityId, ['withDeleted' => true]);
+    $appointment = $em->getRDBRepository('Appuntamento')
+        ->where(['id' => $entityId])
+        ->withDeleted()
+        ->findOne();
 
     if (!$appointment) {
         fwrite(STDOUT, "[ORPHAN LINK] entityId={$entityId} googleEvent={$googleEventId} — appuntamento assente\n");
@@ -264,6 +273,8 @@ foreach ($ghosts as $appointment) {
     }
 }
 
+}
+
 // --- Fase 4: Ingestibile assegnati ad admin → consulente (Carmine Alvino) ---
 $ingestibili = $em->getRDBRepository('Appuntamento')
     ->where([
@@ -273,18 +284,16 @@ $ingestibili = $em->getRDBRepository('Appuntamento')
     ->find();
 
 foreach ($ingestibili as $appointment) {
-    $ids = $appointment->get('assignedUsersIds') ?: [];
-    $assignedUserId = $appointment->get('assignedUserId');
-    $wrongAdmin = ($assignedUserId === '1' || $assignedUserId === 1)
-        || $ids === ['1']
-        || $ids === [];
-
-    if (!$wrongAdmin) {
+    if (!$sync->needsIngestibileConsultantFix($appointment, $calendarUserId)) {
         continue;
     }
 
     $label = formatAppointmentLabel($appointment);
-    fwrite(STDOUT, "[FIX INGESTIBILE] {$label} → consulente {$calendarUserLabel}\n");
+    $current = $appointment->get('assignedUserName')
+        ?? $appointment->get('assignedUsersNames')
+        ?? $appointment->get('assignedUserId');
+    fwrite(STDOUT, "[FIX INGESTIBILE] {$label}\n");
+    fwrite(STDOUT, "  consulente attuale: {$current} → {$calendarUserLabel}\n");
 
     if ($dryRun) {
         $stats['ingestibile_fixed']++;
