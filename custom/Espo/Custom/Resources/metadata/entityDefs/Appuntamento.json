@@ -455,7 +455,7 @@
             "notNull": true,
             "type": "bool",
             "isCustom": true,
-            "default": false
+            "default": true
         },
         "noteCallCenter": {
             "type": "text",

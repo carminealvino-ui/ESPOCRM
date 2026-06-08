@@ -10,7 +10,7 @@ use Espo\ORM\Repository\Option\RemoveOptions;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Google Calendar: Not Held → rimuovi; syncConGoogle → push/rimuovi; Ingestibile se sync attivo.
+ * Google Calendar: sync attivo di default; syncConGoogle off → escluso; Not Held → rimuovi.
  * beforeSave (dopo GlobalLogic): GoogleCalendarSyncAfterGlobal.
  *
  * @implements AfterSave<Entity>

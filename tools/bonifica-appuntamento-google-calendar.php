@@ -8,8 +8,8 @@
  *   - Non Svolto / annullati (status Not Held)
  *   - ghost "(APPUNTAMENTO SENZA PROSPECT)"
  *
- * Mantiene su Google: Planned, Held, Ingestibile con syncConGoogle = true.
- * Rimuove da Google se syncConGoogle = false, Not Held, eliminato o ghost.
+ * Mantiene su Google: Planned, Held, Ingestibile (sync attivo di default, opt-out con syncConGoogle = false).
+ * Rimuove da Google se syncConGoogle disattivato, Not Held, eliminato o ghost.
  * Corregge Ingestibile assegnati per errore ad admin → consulente calendario.
  *
  * Uso (da root CRM, es. ~/public_html/crm/mec-group):
@@ -154,7 +154,7 @@ if ($onlyPurgeGhosts) {
     fwrite(STDOUT, "Filtro: solo rimozione ghost APPUNTAMENTO SENZA PROSPECT duplicati\n");
 }
 if ($backfillSyncFlag) {
-    fwrite(STDOUT, "Filtro: allinea syncConGoogle=true sugli appuntamenti già collegati a Google\n");
+    fwrite(STDOUT, "Filtro: migrazione syncConGoogle=true (vecchio default false)\n");
 }
 fwrite(STDOUT, "Consulente calendario: {$calendarUserLabel} (id {$calendarUserId})\n");
 fwrite(STDOUT, 'Google collegato: ' . ($googleOk ? 'sì' : 'NO — delete API potrebbe fallire') . "\n\n");
@@ -215,7 +215,7 @@ if ($onlyPurgeGhosts) {
 }
 
 if ($backfillSyncFlag) {
-    fwrite(STDOUT, "[BACKFILL SYNC FLAG] syncConGoogle=true per appuntamenti con link Google dal {$purgeSince}\n");
+    fwrite(STDOUT, "[BACKFILL SYNC FLAG] syncConGoogle=true per appuntamenti sincronizzabili dal {$purgeSince}\n");
 
     if ($dryRun) {
         $wouldUpdate = 0;
@@ -228,7 +228,7 @@ if ($backfillSyncFlag) {
                 'dateStart>=' => $purgeSince . ' 00:00:00',
             ])
             ->find() as $appointment) {
-            if ($sync->isGhostAppointment($appointment) || !$sync->hasGoogleLink($appointment->getId())) {
+            if ($sync->isGhostAppointment($appointment)) {
                 continue;
             }
 
@@ -280,7 +280,6 @@ if ($runPush) {
         $toPush = $em->getRDBRepository('Appuntamento')
             ->where([
                 'deleted' => false,
-                'syncConGoogle' => true,
                 'status' => ['Planned', 'Held', 'Ingestibile'],
                 'dateStart>=' => $pushSince,
             ])

@@ -79,7 +79,7 @@ class AppuntamentoGoogleSync
     }
 
     /**
-     * Flag "Sync con Google" disattivato → rimuovi evento; attivato → push in afterSave.
+     * Opt-out: sync sempre attivo; flag disattivato → rimuovi evento; riattivato → push in afterSave.
      */
     public function handleSyncConGoogleToggle(Entity $entity): void
     {
@@ -87,7 +87,7 @@ class AppuntamentoGoogleSync
             return;
         }
 
-        $wasEnabled = (bool) $entity->getFetched('syncConGoogle');
+        $wasEnabled = $entity->getFetched('syncConGoogle') !== false;
         $isEnabled = $this->isSyncConGoogleEnabled($entity);
 
         if ($wasEnabled === $isEnabled) {
@@ -575,7 +575,8 @@ class AppuntamentoGoogleSync
 
     public function isSyncConGoogleEnabled(Entity $entity): bool
     {
-        return (bool) $entity->get('syncConGoogle');
+        // Opt-out: sincronizza sempre salvo disattivazione esplicita del flag.
+        return $entity->get('syncConGoogle') !== false;
     }
 
     public function shouldStayOnGoogleCalendar(Entity $entity): bool
@@ -606,7 +607,7 @@ class AppuntamentoGoogleSync
     }
 
     /**
-     * Allinea il flag syncConGoogle agli appuntamenti già presenti su Google (migrazione).
+     * Migrazione: il vecchio default false bloccava la sync; riallinea a true (opt-out).
      */
     public function bonificaBackfillSyncConGoogleFlag(string $sinceDate): int
     {
@@ -623,7 +624,7 @@ class AppuntamentoGoogleSync
             ->find();
 
         foreach ($appointments as $appointment) {
-            if ($this->isGhostAppointment($appointment) || !$this->hasGoogleLink($appointment->getId())) {
+            if ($this->isGhostAppointment($appointment)) {
                 continue;
             }
 

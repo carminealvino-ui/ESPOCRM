@@ -19,6 +19,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Appuntamento/PreventDuplicate.php"
   "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
   "custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
 )
 
 echo "=== Fix Appuntamento Google Calendar sync → ${CRM_ROOT} ==="
@@ -38,8 +39,8 @@ fi
 
 echo ""
 echo "Fatto. Ctrl+F5."
-echo "Sync con Google attivo (syncConGoogle=true): push/update; disattivo → rimosso da Google."
-echo "Not Held/annullato o eliminato → rimosso da Google; Ingestibile resta se sync attivo; cambio consulente → spostato."
+echo "Sync Google attivo di default; disattiva syncConGoogle per escludere un appuntamento."
+echo "Not Held/annullato o eliminato → rimosso da Google; Ingestibile resta; cambio consulente → spostato."
 echo ""
 echo "Bonifica eventi orfani su Google:"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --dry-run"
@@ -48,5 +49,5 @@ echo "Allinea agenda (rimuove annullati + push venerdì/sabato):"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --user-id=67c93e694705fde80"
 echo "Solo push mancanti:"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --only-push --user-id=67c93e694705fde80"
-echo "Allinea flag syncConGoogle sugli appuntamenti già su Google:"
+echo "Migrazione vecchio default false → true (una tantum se serve):"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --backfill-sync-flag --user-id=67c93e694705fde80"
