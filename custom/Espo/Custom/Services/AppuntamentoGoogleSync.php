@@ -131,15 +131,105 @@ class AppuntamentoGoogleSync
 
         $googleData = $this->getGoogleRepository()->getEventEntityGoogleData(self::ENTITY_TYPE, $entityId);
 
-        if ($googleData === false || empty($googleData['googleCalendarEventId'])) {
-            return 'no_link';
+        if (is_array($googleData) && !empty($googleData['googleCalendarEventId'])) {
+            if ($this->deleteGoogleEventWithFallback($googleData, $calendarUserId)) {
+                $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entityId);
+
+                return 'removed';
+            }
+
+            return 'failed';
         }
 
-        $deleted = $this->deleteGoogleEventWithFallback($googleData, $calendarUserId);
+        if ($this->bonificaDeleteOrphanGoogleEvent($entity, $calendarUserId)) {
+            return 'removed';
+        }
 
-        $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entityId);
+        return 'no_link';
+    }
 
-        return $deleted ? 'removed' : 'failed';
+    /**
+     * Cerca su Google Calendar un evento orfano (senza link Espo) per Not Held / annullati.
+     */
+    public function bonificaDeleteOrphanGoogleEvent(Entity $entity, string $calendarUserId): bool
+    {
+        if (!$this->isGoogleCalendarApiAvailableForUser($calendarUserId)) {
+            return false;
+        }
+
+        $calendarId = $this->resolveMainGoogleCalendarIdForUser($calendarUserId);
+
+        if ($calendarId === null) {
+            return false;
+        }
+
+        $needle = $this->buildGoogleSearchNeedle($entity);
+
+        if ($needle === null) {
+            return false;
+        }
+
+        $dateStart = $entity->get('dateStart');
+
+        if (!is_string($dateStart) || $dateStart === '') {
+            return false;
+        }
+
+        try {
+            $start = new \DateTime($dateStart);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        $end = clone $start;
+        $end->modify('+1 day');
+
+        try {
+            $client = $this->clientManager->create('Google', $calendarUserId);
+            $response = $client->getCalendarClient()->getEventList($calendarId, [
+                'timeMin' => $start->format('Y-m-d\T00:00:00\Z'),
+                'timeMax' => $end->format('Y-m-d\T23:59:59\Z'),
+                'singleEvents' => 'true',
+                'maxResults' => 50,
+                'q' => $needle,
+            ]);
+        } catch (\Throwable $e) {
+            $GLOBALS['log']->error(
+                'AppuntamentoGoogleSync: orphan search failed for user ' . $calendarUserId . ': ' . $e->getMessage()
+            );
+
+            return false;
+        }
+
+        if (!is_array($response) || empty($response['items']) || !is_array($response['items'])) {
+            return false;
+        }
+
+        foreach ($response['items'] as $item) {
+            if (!is_array($item) || empty($item['id'])) {
+                continue;
+            }
+
+            $summary = (string) ($item['summary'] ?? '');
+
+            if (!$this->googleSummaryMatchesAppointment($summary, $entity, $needle)) {
+                continue;
+            }
+
+            try {
+                $deleted = (bool) $client->getCalendarClient()->deleteEvent($calendarId, (string) $item['id']);
+
+                if ($deleted) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                $GLOBALS['log']->error(
+                    'AppuntamentoGoogleSync: orphan delete failed ' . $item['id'] . ': ' . $e->getMessage()
+                );
+            }
+        }
+
+        return false;
     }
 
     public function shouldStayOnGoogleCalendar(Entity $entity): bool
@@ -341,7 +431,10 @@ class AppuntamentoGoogleSync
 
         $syncUserId = $this->resolveCalendarOwnerUserId($googleData) ?? $userId;
         $this->queueDeletedDummyForSyncJob($entity, $googleData, $syncUserId);
-        $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entityId);
+
+        $GLOBALS['log']->warning(
+            'AppuntamentoGoogleSync: Google delete failed, link kept for retry. Appuntamento=' . $entityId
+        );
     }
 
     /**
@@ -411,14 +504,11 @@ class AppuntamentoGoogleSync
      */
     private function deleteGoogleEventForUser(string $userId, array $googleData): bool
     {
-        if (!$this->isCalendarPushEnabledForUser($userId)) {
+        if (!$this->isGoogleCalendarApiAvailableForUser($userId)) {
             return false;
         }
 
-        $googleCalendar = $this->entityManager->getEntityById(
-            'GoogleCalendar',
-            $googleData['googleCalendarId']
-        );
+        $googleCalendar = $this->resolveGoogleCalendarEntity($googleData);
 
         if (!$googleCalendar) {
             return false;
@@ -491,13 +581,13 @@ class AppuntamentoGoogleSync
 
     private function isCalendarPushEnabledForUser(string $userId): bool
     {
-        $externalAccount = $this->entityManager->getEntityById('ExternalAccount', 'Google__' . $userId);
-
-        if (!$externalAccount || !$externalAccount->get('enabled')) {
+        if (!$this->isGoogleCalendarApiAvailableForUser($userId)) {
             return false;
         }
 
-        if (!$externalAccount->get('calendarEnabled') && !$externalAccount->get('googleCalendarEnabled')) {
+        $externalAccount = $this->entityManager->getEntityById('ExternalAccount', 'Google__' . $userId);
+
+        if (!$externalAccount) {
             return false;
         }
 
@@ -514,6 +604,98 @@ class AppuntamentoGoogleSync
         }
 
         return true;
+    }
+
+    private function isGoogleCalendarApiAvailableForUser(string $userId): bool
+    {
+        $externalAccount = $this->entityManager->getEntityById('ExternalAccount', 'Google__' . $userId);
+
+        if (!$externalAccount || !$externalAccount->get('enabled')) {
+            return false;
+        }
+
+        return (bool) ($externalAccount->get('calendarEnabled') || $externalAccount->get('googleCalendarEnabled'));
+    }
+
+    /**
+     * @param array<string, mixed> $googleData
+     */
+    private function resolveGoogleCalendarEntity(array $googleData): ?Entity
+    {
+        $storedId = $googleData['googleCalendarId'] ?? null;
+
+        if (!is_string($storedId) || $storedId === '') {
+            return null;
+        }
+
+        $googleCalendar = $this->entityManager->getEntityById('GoogleCalendar', $storedId);
+
+        if ($googleCalendar) {
+            return $googleCalendar;
+        }
+
+        return $this->getGoogleRepository()->getCalendarByGCId($storedId);
+    }
+
+    private function resolveMainGoogleCalendarIdForUser(string $userId): ?string
+    {
+        $gcUser = $this->getGoogleRepository()->getUsersMainCalendar($userId);
+
+        if (!$gcUser) {
+            return null;
+        }
+
+        $googleCalendar = $this->entityManager
+            ->getRDBRepository('GoogleCalendar')
+            ->getById($gcUser->get('googleCalendarId'));
+
+        if (!$googleCalendar) {
+            return null;
+        }
+
+        $calendarId = $googleCalendar->get('calendarId');
+
+        return is_string($calendarId) && $calendarId !== '' ? $calendarId : null;
+    }
+
+    private function buildGoogleSearchNeedle(Entity $entity): ?string
+    {
+        $name = trim((string) ($entity->get('name') ?? ''));
+
+        if ($name === '') {
+            return null;
+        }
+
+        if (preg_match('/^(\d{3,6})\b/', $name, $matches)) {
+            return $matches[1];
+        }
+
+        $compact = preg_replace('/\s+/', ' ', $name) ?? $name;
+
+        return strlen($compact) > 48 ? substr($compact, 0, 48) : $compact;
+    }
+
+    private function googleSummaryMatchesAppointment(string $summary, Entity $entity, string $needle): bool
+    {
+        if ($needle !== '' && str_contains($summary, $needle)) {
+            return true;
+        }
+
+        $name = trim((string) ($entity->get('name') ?? ''));
+
+        if ($name !== '' && str_contains($summary, $name)) {
+            return true;
+        }
+
+        $dateStart = $entity->get('dateStart');
+
+        if (!is_string($dateStart) || strlen($dateStart) < 16) {
+            return false;
+        }
+
+        $timePart = substr($dateStart, 11, 5);
+
+        return $timePart !== '' && str_contains($summary, $timePart);
     }
 
     /**

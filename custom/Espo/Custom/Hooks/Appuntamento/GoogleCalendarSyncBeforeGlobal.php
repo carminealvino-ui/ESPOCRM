@@ -8,13 +8,13 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Dopo GlobalLogic (order 9): consulente → admin su Not Held, sync assignedUserId.
+ * Prima di GlobalLogic (order 9): rimuove da Google i Not Held mentre il consulente è ancora assegnato.
  *
  * @implements BeforeSave<Entity>
  */
-class GoogleCalendarSyncAfterGlobal implements BeforeSave
+class GoogleCalendarSyncBeforeGlobal implements BeforeSave
 {
-    public static int $order = 10;
+    public static int $order = 8;
 
     public function __construct(
         private AppuntamentoGoogleSync $appuntamentoGoogleSync
@@ -30,7 +30,10 @@ class GoogleCalendarSyncAfterGlobal implements BeforeSave
             return;
         }
 
-        $this->appuntamentoGoogleSync->syncAssignedUserIdFromAssignedUsers($entity);
-        $this->appuntamentoGoogleSync->handleConsultantChange($entity);
+        if ($entity->get('status') !== 'Not Held') {
+            return;
+        }
+
+        $this->appuntamentoGoogleSync->handleNotHeldStatus($entity);
     }
 }

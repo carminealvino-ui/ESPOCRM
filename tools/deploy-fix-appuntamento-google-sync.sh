@@ -14,6 +14,7 @@ BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 FILES=(
   "custom/Espo/Custom/Services/AppuntamentoGoogleSync.php"
   "custom/Espo/Custom/Hooks/Appuntamento/GoogleCalendarSync.php"
+  "custom/Espo/Custom/Hooks/Appuntamento/GoogleCalendarSyncBeforeGlobal.php"
   "custom/Espo/Custom/Hooks/Appuntamento/GoogleCalendarSyncAfterGlobal.php"
   "custom/Espo/Custom/Hooks/Appuntamento/PreventDuplicate.php"
   "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
