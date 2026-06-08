@@ -630,29 +630,16 @@ class GlobalLogic
             }
 
             // ========================================
-            // FIX ASSEGNAZIONE ADMIN
+            // FIX ASSEGNAZIONE ADMIN (solo Non Svolto / annullati)
+            // Ingestibile resta sul consulente (visita effettuata, infattibile).
             // ========================================
 
-            if (
-
-                $status === 'Not Held' ||
-                $status === 'Ingestibile'
-
-            ) {
-
-                // ========================================
-                // RESET UTENTI ASSEGNATI
-                // ========================================
+            if ($status === 'Not Held') {
 
                 $entity->set(
                     'assignedUsersIds',
                     []
                 );
-
-                // ========================================
-                // ASSEGNA SOLO ADMIN
-                // USER ID = 1
-                // ========================================
 
                 $entity->set(
                     'assignedUsersIds',

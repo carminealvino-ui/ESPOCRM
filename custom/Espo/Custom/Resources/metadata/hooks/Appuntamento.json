@@ -4,9 +4,25 @@
             "className": "Espo\\Custom\\Hooks\\Appuntamento\\PreventDuplicate",
             "order": 5
         },
+        "googleCalendarSync": {
+            "className": "Espo\\Custom\\Hooks\\Appuntamento\\GoogleCalendarSync",
+            "order": 6
+        },
         "globalLogic": {
             "className": "Espo\\Custom\\Hooks\\Appuntamento\\GlobalLogic",
             "order": 9
+        }
+    },
+    "afterSave": {
+        "googleCalendarSync": {
+            "className": "Espo\\Custom\\Hooks\\Appuntamento\\GoogleCalendarSync",
+            "order": 6
+        }
+    },
+    "afterRemove": {
+        "googleCalendarSync": {
+            "className": "Espo\\Custom\\Hooks\\Appuntamento\\GoogleCalendarSync",
+            "order": 6
         }
     }
 }
