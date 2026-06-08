@@ -127,10 +127,6 @@ class AppuntamentoGoogleSync
             return false;
         }
 
-        if ($this->hasGoogleLink($entity->getId())) {
-            return false;
-        }
-
         $this->loadAssignedUsersIds($entity);
         $userId = $this->resolveGoogleCalendarUserIdForEntity($entity, false);
 
@@ -139,6 +135,14 @@ class AppuntamentoGoogleSync
         }
 
         $this->persistAssignedUserIdIfNeeded($entity, $userId);
+
+        if ($this->hasGoogleLink($entity->getId())) {
+            if ($this->isGoogleEventAlive($entity, $userId)) {
+                return false;
+            }
+
+            $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entity->getId());
+        }
 
         return $this->pushEntityToGoogle($entity, $userId);
     }
@@ -162,7 +166,7 @@ class AppuntamentoGoogleSync
     }
 
     /**
-     * @return 'pushed'|'skipped'|'failed'
+     * @return 'pushed'|'skipped'|'failed'|'repaired'
      */
     public function bonificaPushMissing(Entity $entity, string $calendarUserId): string
     {
@@ -170,24 +174,85 @@ class AppuntamentoGoogleSync
             return 'skipped';
         }
 
-        $this->bonificaFixAssignedUserId($entity);
-
-        if ($this->hasGoogleLink($entity->getId())) {
-            return 'skipped';
-        }
-
-        $userId = $this->resolvePrimaryUserId(
-            $entity->get('assignedUsersIds'),
-            $entity->get('assignedUserId')
-        );
-
-        if (!$this->isOnConsultantCalendar($entity, $calendarUserId)) {
-            return 'skipped';
-        }
-
         $this->persistAssignedUserIdIfNeeded($entity, $calendarUserId);
 
-        return $this->pushEntityToGoogle($entity, $calendarUserId) ? 'pushed' : 'failed';
+        if ($this->hasGoogleLink($entity->getId())) {
+            if ($this->isGoogleEventAlive($entity, $calendarUserId)) {
+                return 'skipped';
+            }
+
+            $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entity->getId());
+        }
+
+        if (!$this->pushEntityToGoogle($entity, $calendarUserId)) {
+            return 'failed';
+        }
+
+        return $this->hasGoogleLink($entity->getId()) ? 'pushed' : 'failed';
+    }
+
+    public function describePushSkipReason(Entity $entity, string $calendarUserId): ?string
+    {
+        if (!$this->shouldStayOnGoogleCalendar($entity)) {
+            return 'status non sincronizzabile';
+        }
+
+        if (
+            $this->hasGoogleLink($entity->getId())
+            && $this->isGoogleEventAlive($entity, $calendarUserId)
+        ) {
+            return 'già presente su Google';
+        }
+
+        if (!$this->isGoogleCalendarApiAvailableForUser($calendarUserId)) {
+            return 'Google API non disponibile';
+        }
+
+        if ($this->createGoogleEventAction($calendarUserId) === null) {
+            return 'calendario principale Google non configurato';
+        }
+
+        return null;
+    }
+
+    public function isGoogleEventAlive(Entity $entity, string $calendarUserId): bool
+    {
+        $entityId = $entity->getId();
+
+        if (!$entityId) {
+            return false;
+        }
+
+        $googleData = $this->getGoogleRepository()->getEventEntityGoogleData(self::ENTITY_TYPE, $entityId);
+
+        if (!is_array($googleData) || empty($googleData['googleCalendarEventId'])) {
+            return false;
+        }
+
+        $googleEventId = (string) $googleData['googleCalendarEventId'];
+
+        if ($googleEventId === '' || $googleEventId === 'FAIL') {
+            return false;
+        }
+
+        $calendarId = $this->resolveMainGoogleCalendarIdForUser($calendarUserId);
+
+        if ($calendarId === null) {
+            return false;
+        }
+
+        try {
+            $client = $this->clientManager->create('Google', $calendarUserId);
+            $event = $client->getCalendarClient()->retrieveEvent($calendarId, $googleEventId);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        if (!is_array($event) || empty($event['id'])) {
+            return false;
+        }
+
+        return ($event['status'] ?? 'confirmed') !== 'cancelled';
     }
 
     public function isOnConsultantCalendar(Entity $entity, string $consultantUserId): bool
@@ -364,19 +429,25 @@ class AppuntamentoGoogleSync
      *
      * @return int numero eventi rimossi
      */
+    /**
+     * @return array{removed: int, scanned: int, candidates: int}
+     */
     public function bonificaReconcileGoogleRange(
         string $calendarUserId,
         string $fromDate,
-        string $toDate
-    ): int {
+        string $toDate,
+        bool $apply = true
+    ): array {
+        $empty = ['removed' => 0, 'scanned' => 0, 'candidates' => 0];
+
         if (!$this->isGoogleCalendarApiAvailableForUser($calendarUserId)) {
-            return 0;
+            return $empty;
         }
 
         $calendarId = $this->resolveMainGoogleCalendarIdForUser($calendarUserId);
 
         if ($calendarId === null) {
-            return 0;
+            return $empty;
         }
 
         $userTz = $this->resolveUserTimeZone($calendarUserId);
@@ -385,7 +456,7 @@ class AppuntamentoGoogleSync
             $rangeStart = new \DateTime($fromDate . ' 00:00:00', $userTz);
             $rangeEnd = new \DateTime($toDate . ' 23:59:59', $userTz);
         } catch (\Throwable) {
-            return 0;
+            return $empty;
         }
 
         $timeMin = (clone $rangeStart)->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
@@ -402,14 +473,16 @@ class AppuntamentoGoogleSync
         } catch (\Throwable $e) {
             $GLOBALS['log']->error('AppuntamentoGoogleSync: reconcile list failed: ' . $e->getMessage());
 
-            return 0;
+            return $empty;
         }
 
         if (!is_array($response) || !is_array($response['items'] ?? null)) {
-            return 0;
+            return $empty;
         }
 
         $removed = 0;
+        $scanned = 0;
+        $candidates = 0;
 
         foreach ($response['items'] as $item) {
             if (!is_array($item) || empty($item['id'])) {
@@ -426,9 +499,16 @@ class AppuntamentoGoogleSync
                 continue;
             }
 
+            $scanned++;
             $appointment = $this->findAppointmentForGoogleEvent($summary, $item, $userTz);
 
             if ($appointment === null || $this->shouldStayOnGoogleCalendar($appointment)) {
+                continue;
+            }
+
+            $candidates++;
+
+            if (!$apply) {
                 continue;
             }
 
@@ -443,7 +523,11 @@ class AppuntamentoGoogleSync
             }
         }
 
-        return $removed;
+        return [
+            'removed' => $removed,
+            'scanned' => $scanned,
+            'candidates' => $candidates,
+        ];
     }
 
     public function shouldStayOnGoogleCalendar(Entity $entity): bool
@@ -786,7 +870,7 @@ class AppuntamentoGoogleSync
         $this->entityManager->removeEntity($dummy, ['skipHooks' => true]);
     }
 
-    private function hasGoogleLink(string $entityId): bool
+    public function hasGoogleLink(string $entityId): bool
     {
         $googleData = $this->getGoogleRepository()->getEventEntityGoogleData(self::ENTITY_TYPE, $entityId);
 
@@ -894,7 +978,9 @@ class AppuntamentoGoogleSync
     {
         $code = null;
 
-        if (preg_match('/\b(\d{5})\b/', $summary, $matches)) {
+        if (preg_match('/(?:^|\s)(\d{5})\s*-/', $summary, $matches)) {
+            $code = $matches[1];
+        } elseif (preg_match('/\b(\d{5})\b/', $summary, $matches)) {
             $code = $matches[1];
         }
 
@@ -1008,7 +1094,7 @@ class AppuntamentoGoogleSync
 
     private function looksLikeAppuntamentoGoogleEvent(string $summary): bool
     {
-        if (preg_match('/^\d{5}\s*-/', $summary)) {
+        if (preg_match('/(?:^|\s)(\d{5})\s*-/', $summary)) {
             return true;
         }
 

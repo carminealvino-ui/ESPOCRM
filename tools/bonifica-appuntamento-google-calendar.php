@@ -52,6 +52,7 @@ $onlyIngestibili = in_array('--only-ingestibili', $argv, true);
 $onlyNotHeld = in_array('--only-not-held', $argv, true);
 $onlyPush = in_array('--only-push', $argv, true);
 $reconcileOnly = in_array('--reconcile', $argv, true);
+$verbose = in_array('--verbose', $argv, true);
 $pushSinceDays = 21;
 
 foreach ($argv as $arg) {
@@ -169,17 +170,16 @@ if ($runReconcile) {
     $reconcileTo = date('Y-m-d', strtotime('+21 days'));
     fwrite(STDOUT, "[RECONCILE] Scansione Google {$reconcileFrom} → {$reconcileTo}\n");
 
-    if ($dryRun) {
-        fwrite(STDOUT, "  (dry-run: in apply rimuove eventi Google senza appuntamento Planned/Held/Ingestibile in Espo)\n");
-        $stats['google_reconcile_removed'] = 0;
-    } else {
-        $stats['google_reconcile_removed'] = $sync->bonificaReconcileGoogleRange(
-            $calendarUserId,
-            $reconcileFrom,
-            $reconcileTo
-        );
-        fwrite(STDOUT, '  rimossi da Google: ' . $stats['google_reconcile_removed'] . "\n\n");
-    }
+    $reconcileResult = $sync->bonificaReconcileGoogleRange(
+        $calendarUserId,
+        $reconcileFrom,
+        $reconcileTo,
+        !$dryRun
+    );
+    $stats['google_reconcile_removed'] = $reconcileResult['removed'];
+    fwrite(STDOUT, '  eventi appuntamento su Google: ' . $reconcileResult['scanned'] . "\n");
+    fwrite(STDOUT, '  candidati rimozione (Not Held in Espo): ' . $reconcileResult['candidates'] . "\n");
+    fwrite(STDOUT, '  rimossi da Google: ' . $reconcileResult['removed'] . "\n\n");
 }
 
 if ($reconcileOnly) {
@@ -187,6 +187,7 @@ if ($reconcileOnly) {
 }
 
 if (!$onlyIngestibili && !$onlyPush) {
+fwrite(STDOUT, "=== Fase 1-3: pulizia link e Not Held ===\n");
 $shouldRemoveAppointment = static function (AppuntamentoGoogleSync $sync, Entity $appointment) use ($onlyNotHeld): bool {
     if ($onlyNotHeld) {
         return !$appointment->get('deleted') && $appointment->get('status') === 'Not Held';
@@ -376,8 +377,9 @@ foreach ($ingestibili as $appointment) {
 
 }
 
-// --- Fase 5: push su Google appuntamenti senza link (es. sabato mancante) ---
+// --- Fase 5: push su Google (link assente o evento fantasma su Google) ---
 if ($onlyPush || (!$onlyIngestibili && !$onlyNotHeld)) {
+    fwrite(STDOUT, "=== Fase 5: push appuntamenti su Google ===\n");
     $pushSince = date('Y-m-d 00:00:00', strtotime('-' . $pushSinceDays . ' days'));
     $toPush = $em->getRDBRepository('Appuntamento')
         ->where([
@@ -400,31 +402,24 @@ if ($onlyPush || (!$onlyIngestibili && !$onlyNotHeld)) {
             }
         }
 
-        $googleData = $em->getRepository('GoogleCalendar')->getEventEntityGoogleData(
-            'Appuntamento',
-            $appointment->getId()
-        );
+        $skipReason = $sync->describePushSkipReason($appointment, $calendarUserId);
+        $hasStaleLink = $sync->hasGoogleLink($appointment->getId())
+            && !$sync->isGoogleEventAlive($appointment, $calendarUserId);
+        $needsPush = $skipReason === null || $hasStaleLink;
 
-        if (is_array($googleData) && !empty($googleData['googleCalendarEventId'])) {
+        if (!$needsPush) {
             $stats['google_push_skipped']++;
 
-            continue;
-        }
-
-        if (!$sync->shouldStayOnGoogleCalendar($appointment)) {
-            $stats['google_push_skipped']++;
-
-            continue;
-        }
-
-        if (!$sync->isOnConsultantCalendar($appointment, $calendarUserId)) {
-            $stats['google_push_skipped']++;
+            if ($verbose && $skipReason !== null) {
+                fwrite(STDOUT, '[SKIP] ' . formatAppointmentLabel($appointment) . " — {$skipReason}\n");
+            }
 
             continue;
         }
 
         $label = formatAppointmentLabel($appointment);
-        fwrite(STDOUT, "[PUSH GOOGLE] {$label}\n");
+        $action = $hasStaleLink ? '[REPAIR+PUSH]' : '[PUSH GOOGLE]';
+        fwrite(STDOUT, "{$action} {$label}\n");
 
         if ($dryRun) {
             $stats['google_pushed']++;
@@ -438,11 +433,17 @@ if ($onlyPush || (!$onlyIngestibili && !$onlyNotHeld)) {
             $stats['google_pushed']++;
         } elseif ($result === 'failed') {
             $stats['google_push_failed']++;
-            fwrite(STDOUT, "  → ERRORE push Google\n");
+            fwrite(STDOUT, "  → ERRORE push Google (controlla log Espo)\n");
         } else {
             $stats['google_push_skipped']++;
+
+            if ($verbose) {
+                fwrite(STDOUT, "  → saltato dopo tentativo\n");
+            }
         }
     }
+
+    fwrite(STDOUT, "\n");
 }
 
 summary:
