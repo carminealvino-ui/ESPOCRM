@@ -175,16 +175,28 @@ if ($onlyPurgeGhosts || (!$onlyIngestibili && !$onlyPush && !$reconcileOnly)) {
     fwrite(STDOUT, "[PURGE GHOSTS] Duplicati senza prospect dal {$purgeSince}\n");
 
     if ($dryRun) {
-        $ghostCount = $em->getRDBRepository('Appuntamento')
+        $orphanPlanned = 0;
+
+        foreach ($em->getRDBRepository('Appuntamento')
             ->where([
                 'deleted' => false,
                 'name*' => '%(APPUNTAMENTO SENZA PROSPECT)%',
                 'dateStart>=' => $purgeSince . ' 00:00:00',
             ])
-            ->count();
+            ->find() as $ghost) {
+            if (!$sync->isGhostAppointment($ghost)) {
+                continue;
+            }
 
-        fwrite(STDOUT, "  ghost da analizzare: {$ghostCount}\n\n");
-        $stats['ghosts_purged'] = $ghostCount;
+            if ($ghost->get('status') === 'Planned') {
+                $orphanPlanned++;
+                $label = formatAppointmentLabel($ghost);
+                fwrite(STDOUT, "  [ORPHAN PLANNED] {$label}\n");
+            }
+        }
+
+        fwrite(STDOUT, "  ghost Planned orphan da rimuovere: {$orphanPlanned}\n\n");
+        $stats['ghosts_purged'] = $orphanPlanned;
     } else {
         $stats['ghosts_purged'] = $sync->bonificaPurgeSlotGhosts($purgeSince);
         fwrite(STDOUT, '  ghost rimossi: ' . $stats['ghosts_purged'] . "\n\n");

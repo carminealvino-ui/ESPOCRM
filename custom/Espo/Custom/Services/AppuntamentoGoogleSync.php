@@ -572,7 +572,8 @@ class AppuntamentoGoogleSync
     }
 
     /**
-     * Rimuove ghost duplicati nello stesso slot di un appuntamento reale (prospect/parent).
+     * Rimuove appuntamenti ghost "(APPUNTAMENTO SENZA PROSPECT)" senza prospect/parent.
+     * Include duplicati nello stesso slot e orphan Planned rimasti fuori sync/Google.
      */
     public function bonificaPurgeSlotGhosts(?string $sinceDate = null): int
     {
@@ -599,12 +600,15 @@ class AppuntamentoGoogleSync
 
             $start = $ghost->get('dateStart');
             $end = $ghost->get('dateEnd');
+            $status = (string) ($ghost->get('status') ?? '');
 
-            if (!is_string($start) || !is_string($end) || $start === '' || $end === '') {
-                continue;
-            }
+            $isDuplicateInSlot = is_string($start) && is_string($end) && $start !== '' && $end !== ''
+                && $this->slotHasRealAppointment($start, $end, $ghost->getId());
 
-            if (!$this->slotHasRealAppointment($start, $end, $ghost->getId())) {
+            // Planned orphan: mai validi in produzione (restano fuori da Google).
+            $isOrphanPlanned = $status === 'Planned';
+
+            if (!$isDuplicateInSlot && !$isOrphanPlanned) {
                 continue;
             }
 
