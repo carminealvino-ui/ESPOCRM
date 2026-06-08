@@ -1,0 +1,47 @@
+{
+    "fields": {
+        "prezzoListinoIvaInclusa": {
+            "type": "currency",
+            "isCustom": true,
+            "audited": true
+        },
+        "prezzoListinoIvaEsclusa": {
+            "type": "currency",
+            "isCustom": true,
+            "audited": true
+        },
+        "prezzoCodiceIvaInclusa": {
+            "type": "currency",
+            "isCustom": true,
+            "audited": true
+        },
+        "prezzoCodice": {
+            "type": "currency",
+            "isCustom": true,
+            "audited": true
+        },
+        "aliquotaIva": {
+            "type": "float",
+            "default": 10,
+            "min": 0,
+            "isCustom": true,
+            "readOnly": true,
+            "tooltip": true
+        },
+        "taxCodeListino": {
+            "type": "foreign",
+            "link": "priceBook",
+            "field": "taxCodeName",
+            "view": "views/fields/foreign-varchar",
+            "isCustom": true
+        },
+        "price": {
+            "required": false,
+            "mandatoryValidationList": [],
+            "validatorClassNameList": [
+                "Espo\\Custom\\Classes\\FieldValidators\\ProductPrice\\Price\\RequiredOrDualIva"
+            ],
+            "tooltip": true
+        }
+    }
+}
