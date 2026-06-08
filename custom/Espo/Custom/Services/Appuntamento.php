@@ -2,35 +2,116 @@
 
 namespace Espo\Custom\Services;
 
+use Espo\ORM\Entity;
+
 class Appuntamento extends \Espo\Core\Templates\Services\Event
 {
+    private const GHOST_NAME_MARKER = '(APPUNTAMENTO SENZA PROSPECT)';
+
     public function createEntity($data)
     {
-        // 🔴 BLOCCO DUPLICATI DA GOOGLE (stesso evento creato 2 volte)
-        if (!empty($data->dateStart) && !empty($data->name)) {
+        $duplicate = $this->findDuplicateForCreate($data);
 
-            $existing = $this->getEntityManager()
-                ->getRepository('Appuntamento')
-                ->where([
-                    'dateStart' => $data->dateStart,
-                    'name' => $data->name
-                ])
-                ->order('createdAt', 'DESC')
-                ->limit(1)
-                ->findOne();
+        if ($duplicate) {
+            return $duplicate;
+        }
 
-            if ($existing) {
-                $createdAt = strtotime($existing->get('createdAt'));
+        return parent::createEntity($data);
+    }
+
+    private function findDuplicateForCreate(object $data): ?Entity
+    {
+        if (empty($data->dateStart) || empty($data->dateEnd)) {
+            return null;
+        }
+
+        $where = [
+            'dateStart' => $data->dateStart,
+            'dateEnd' => $data->dateEnd,
+        ];
+
+        if (!empty($data->assignedUserId)) {
+            $where['assignedUserId'] = $data->assignedUserId;
+        }
+
+        $candidates = $this->getEntityManager()
+            ->getRDBRepository('Appuntamento')
+            ->where($where)
+            ->order('createdAt', 'DESC')
+            ->find();
+
+        $incomingKey = $this->buildIdentityKeyFromData($data);
+        $incomingIsGhost = $this->isGhostName((string) ($data->name ?? '')) && $incomingKey === null;
+
+        foreach ($candidates as $existing) {
+            $existingKey = $this->buildIdentityKeyFromEntity($existing);
+
+            if ($incomingKey !== null && $incomingKey === $existingKey) {
+                return $existing;
+            }
+
+            if ($incomingIsGhost && $existingKey !== null) {
+                return $existing;
+            }
+
+            if ($incomingIsGhost && $existingKey === null) {
+                $createdAt = strtotime((string) $existing->get('createdAt'));
                 $now = time();
 
-                // Se creato negli ultimi 3 secondi = duplicato sync
-                if (($now - $createdAt) < 3) {
+                if ($createdAt !== false && ($now - $createdAt) < 3) {
                     return $existing;
                 }
             }
         }
 
-        return parent::createEntity($data);
+        return null;
+    }
+
+    private function buildIdentityKeyFromData(object $data): ?string
+    {
+        if (!empty($data->prospectId)) {
+            return 'prospect:' . $data->prospectId;
+        }
+
+        if (!empty($data->parentType) && !empty($data->parentId)) {
+            return 'parent:' . $data->parentType . ':' . $data->parentId;
+        }
+
+        $indirizzo = mb_strtolower(trim((string) ($data->indirizzo ?? '')));
+
+        if ($indirizzo !== '') {
+            return 'indirizzo:' . $indirizzo;
+        }
+
+        return null;
+    }
+
+    private function buildIdentityKeyFromEntity(Entity $entity): ?string
+    {
+        $prospectId = $entity->get('prospectId');
+
+        if ($prospectId) {
+            return 'prospect:' . $prospectId;
+        }
+
+        $parentType = $entity->get('parentType');
+        $parentId = $entity->get('parentId');
+
+        if ($parentType && $parentId) {
+            return 'parent:' . $parentType . ':' . $parentId;
+        }
+
+        $indirizzo = mb_strtolower(trim((string) $entity->get('indirizzo')));
+
+        if ($indirizzo !== '') {
+            return 'indirizzo:' . $indirizzo;
+        }
+
+        return null;
+    }
+
+    private function isGhostName(string $name): bool
+    {
+        return str_contains($name, self::GHOST_NAME_MARKER);
     }
 }
-
