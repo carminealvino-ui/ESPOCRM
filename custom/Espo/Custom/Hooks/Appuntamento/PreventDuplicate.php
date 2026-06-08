@@ -1,17 +1,16 @@
 <?php
 
 // ========================================
-// VERSIONE: 1.0.4
-// DATA: 2026-06-07
+// VERSIONE: 1.0.5
+// DATA: 2026-06-08
 // ----------------------------------------
+// FIX 1.0.5:
+// ✔ Modifica appuntamento con prospect: non bloccare se esiste ghost nello slot
+// ✔ Rimuove ghost PRIMA del controllo duplicati (beforeSave), non solo dopo
+//
 // FIX 1.0.4:
 // ✔ Blocco simmetrico ghost ↔ appuntamento con prospect (stesso slot + assegnatario)
 // ✔ Dopo save con prospect: rimuove ghost "(APPUNTAMENTO SENZA PROSPECT)" nello stesso slot
-//
-// FIX 1.0.3:
-// ✔ Hook registrato in metadata/hooks/Appuntamento.json
-// ✔ Blocco ghost Google Calendar (APPUNTAMENTO SENZA PROSPECT)
-// ✔ Duplicato Google Calendar stesso googleCalendarEventId
 // ========================================
 
 namespace Espo\Custom\Hooks\Appuntamento;
@@ -50,6 +49,10 @@ class PreventDuplicate implements BeforeSave, AfterSave
             return;
         }
 
+        if ($this->buildIdentityKey($entity) !== null) {
+            $this->purgeGhostsInSlot($entity);
+        }
+
         $identityKey = $this->buildIdentityKey($entity);
         $googleEventId = $this->resolveGoogleCalendarEventId($entity);
 
@@ -77,7 +80,7 @@ class PreventDuplicate implements BeforeSave, AfterSave
             return;
         }
 
-        $this->removeGhostDuplicates($entity, $options);
+        $this->purgeGhostsInSlot($entity);
 
         $operation = $entity->isNew() ? 'CREATE' : 'UPDATE';
         $log = date('Y-m-d H:i:s') .
@@ -126,6 +129,10 @@ class PreventDuplicate implements BeforeSave, AfterSave
         ?string $identityKey,
         ?string $googleEventId
     ): bool {
+        if ($identityKey !== null && $this->isGhostAppointment($existing)) {
+            return false;
+        }
+
         if ($googleEventId !== null) {
             $existingGoogleEventId = $this->resolveGoogleCalendarEventId($existing);
 
@@ -144,25 +151,19 @@ class PreventDuplicate implements BeforeSave, AfterSave
             return false;
         }
 
-        // Ghost Google Calendar: esiste già un appuntamento con cliente nello stesso slot.
-        if ($identityKey === null && $existingKey !== null) {
+        if ($identityKey === null && $this->isGhostAppointment($entity) && $existingKey !== null) {
             return true;
         }
 
-        // Nuovo con prospect ma esiste già ghost nello stesso slot.
-        if ($identityKey !== null && $existingKey === null && $this->isGhostAppointment($existing)) {
-            return true;
-        }
-
-        // Entrambi senza cliente (es. doppio APPUNTAMENTO SENZA PROSPECT).
-        if ($identityKey === null && $existingKey === null) {
+        if ($identityKey === null && $existingKey === null
+            && $this->isGhostAppointment($entity) && $this->isGhostAppointment($existing)) {
             return true;
         }
 
         return false;
     }
 
-    private function removeGhostDuplicates(Entity $entity, SaveOptions $options): void
+    private function purgeGhostsInSlot(Entity $entity): void
     {
         if ($this->buildIdentityKey($entity) === null) {
             return;
@@ -171,15 +172,18 @@ class PreventDuplicate implements BeforeSave, AfterSave
         $start = $entity->get('dateStart');
         $end = $entity->get('dateEnd');
 
-        if (!$start || !$end || !$entity->getId()) {
+        if (!$start || !$end) {
             return;
         }
 
         $query = [
             'dateStart' => $start,
             'dateEnd' => $end,
-            'id!=' => $entity->getId(),
         ];
+
+        if (!$entity->isNew() && $entity->getId()) {
+            $query['id!='] = $entity->getId();
+        }
 
         $assignedUserId = $entity->get('assignedUserId');
 

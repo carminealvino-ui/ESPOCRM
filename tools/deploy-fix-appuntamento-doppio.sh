@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fix doppio appuntamento (ghost Google Calendar + stesso slot/prospect).
+# Fix doppio appuntamento + modifica appuntamento con ghost nello slot (v1.0.5).
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-appuntamento-doppio-9999/tools/deploy-fix-appuntamento-doppio.sh?t=$(date +%s)" | bash
@@ -38,4 +38,4 @@ fi
 
 echo ""
 echo "Fatto. Ctrl+F5 nel browser."
-echo "I nuovi duplicati vengono bloccati; i ghost esistenti vengono rimossi al prossimo save dell'appuntamento reale."
+echo "Modifica/salvataggio appuntamento con prospect consentito; ghost rimossi prima del controllo duplicati."
