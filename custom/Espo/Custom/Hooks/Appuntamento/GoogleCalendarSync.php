@@ -35,6 +35,7 @@ class GoogleCalendarSync implements AfterSave, AfterRemove
         }
 
         $this->appuntamentoGoogleSync->handleNotHeldStatus($entity);
+        $this->appuntamentoGoogleSync->pushToGoogleIfNeeded($entity);
     }
 
     public function afterRemove(Entity $entity, RemoveOptions $options): void

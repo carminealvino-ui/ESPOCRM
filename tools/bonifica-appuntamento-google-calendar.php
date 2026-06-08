@@ -17,6 +17,7 @@
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --user-name="Alvino Carmine"
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-ingestibili
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-not-held
+ *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-push
  *
  * @noinspection PhpUnhandledExceptionInspection
  */
@@ -48,6 +49,14 @@ $sync = $injectableFactory->create(AppuntamentoGoogleSync::class);
 $dryRun = !in_array('--apply', $argv, true);
 $onlyIngestibili = in_array('--only-ingestibili', $argv, true);
 $onlyNotHeld = in_array('--only-not-held', $argv, true);
+$onlyPush = in_array('--only-push', $argv, true);
+$pushSinceDays = 14;
+
+foreach ($argv as $arg) {
+    if (str_starts_with($arg, '--push-since-days=')) {
+        $pushSinceDays = max(1, (int) substr($arg, 18));
+    }
+}
 $userIdArg = null;
 $userNameArg = 'Alvino Carmine';
 
@@ -127,6 +136,9 @@ if ($onlyIngestibili) {
 if ($onlyNotHeld) {
     fwrite(STDOUT, "Filtro: solo rimozione Non Svolto / annullati (Not Held) da Google\n");
 }
+if ($onlyPush) {
+    fwrite(STDOUT, "Filtro: solo push appuntamenti mancanti su Google (ultimi {$pushSinceDays} giorni e futuri)\n");
+}
 fwrite(STDOUT, "Consulente calendario: {$calendarUserLabel} (id {$calendarUserId})\n");
 fwrite(STDOUT, 'Google collegato: ' . ($googleOk ? 'sì' : 'NO — delete API potrebbe fallire') . "\n\n");
 
@@ -138,9 +150,13 @@ $stats = [
     'orphan_links_cleaned' => 0,
     'ingestibile_fixed' => 0,
     'ingestibile_ok' => 0,
+    'assigned_user_fixed' => 0,
+    'google_pushed' => 0,
+    'google_push_failed' => 0,
+    'google_push_skipped' => 0,
 ];
 
-if (!$onlyIngestibili) {
+if (!$onlyIngestibili && !$onlyPush) {
 $shouldRemoveAppointment = static function (AppuntamentoGoogleSync $sync, Entity $appointment) use ($onlyNotHeld): bool {
     if ($onlyNotHeld) {
         return !$appointment->get('deleted') && $appointment->get('status') === 'Not Held';
@@ -297,7 +313,7 @@ foreach ($ghosts as $appointment) {
 }
 
 // --- Fase 4: Ingestibile assegnati ad admin → consulente (Carmine Alvino) ---
-if ($onlyIngestibili || (!$onlyIngestibili && !$onlyNotHeld)) {
+if (!$onlyPush && ($onlyIngestibili || (!$onlyIngestibili && !$onlyNotHeld))) {
 $ingestibili = $em->getRDBRepository('Appuntamento')
     ->where([
         'status' => 'Ingestibile',
@@ -328,6 +344,69 @@ foreach ($ingestibili as $appointment) {
     }
 }
 
+}
+
+// --- Fase 5: push su Google appuntamenti senza link (es. sabato mancante) ---
+if ($onlyPush || (!$onlyIngestibili && !$onlyNotHeld)) {
+    $pushSince = date('Y-m-d 00:00:00', strtotime('-' . $pushSinceDays . ' days'));
+    $toPush = $em->getRDBRepository('Appuntamento')
+        ->where([
+            'deleted' => false,
+            'status' => ['Planned', 'Held', 'Ingestibile'],
+            'dateStart>=' => $pushSince,
+        ])
+        ->order('dateStart', 'ASC')
+        ->find();
+
+    foreach ($toPush as $appointment) {
+        if ($sync->needsAssignedUserIdFix($appointment)) {
+            $label = formatAppointmentLabel($appointment);
+            fwrite(STDOUT, "[FIX ASSIGNED USER] {$label}\n");
+
+            if (!$dryRun && $sync->bonificaFixAssignedUserId($appointment)) {
+                $stats['assigned_user_fixed']++;
+            } elseif ($dryRun) {
+                $stats['assigned_user_fixed']++;
+            }
+        }
+
+        $googleData = $em->getRepository('GoogleCalendar')->getEventEntityGoogleData(
+            'Appuntamento',
+            $appointment->getId()
+        );
+
+        if (is_array($googleData) && !empty($googleData['googleCalendarEventId'])) {
+            $stats['google_push_skipped']++;
+
+            continue;
+        }
+
+        if (!$sync->shouldStayOnGoogleCalendar($appointment)) {
+            $stats['google_push_skipped']++;
+
+            continue;
+        }
+
+        $label = formatAppointmentLabel($appointment);
+        fwrite(STDOUT, "[PUSH GOOGLE] {$label}\n");
+
+        if ($dryRun) {
+            $stats['google_pushed']++;
+
+            continue;
+        }
+
+        $result = $sync->bonificaPushMissing($appointment, $calendarUserId);
+
+        if ($result === 'pushed') {
+            $stats['google_pushed']++;
+        } elseif ($result === 'failed') {
+            $stats['google_push_failed']++;
+            fwrite(STDOUT, "  → ERRORE push Google\n");
+        } else {
+            $stats['google_push_skipped']++;
+        }
+    }
 }
 
 fwrite(STDOUT, "\n--- Riepilogo ---\n");

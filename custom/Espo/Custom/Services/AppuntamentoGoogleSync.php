@@ -3,6 +3,8 @@
 namespace Espo\Custom\Services;
 
 use Espo\Core\ExternalAccount\ClientManager;
+use Espo\Core\InjectableFactory;
+use Espo\Modules\Google\Core\Google\Actions\Event as GoogleEventAction;
 use Espo\Modules\Google\Repositories\GoogleCalendar as GoogleCalendarRepository;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
@@ -16,7 +18,8 @@ class AppuntamentoGoogleSync
 
     public function __construct(
         private EntityManager $entityManager,
-        private ClientManager $clientManager
+        private ClientManager $clientManager,
+        private InjectableFactory $injectableFactory
     ) {}
 
     public function syncAssignedUserIdFromAssignedUsers(Entity $entity): void
@@ -102,6 +105,99 @@ class AppuntamentoGoogleSync
         );
 
         $this->unlinkFromGoogleForUser($entity, $userId);
+    }
+
+    /**
+     * Dopo il save: invia subito su Google gli appuntamenti pianificati senza link.
+     * Il job Espo (ogni 3 min, max 20) spesso non basta e richiede assignedUserId corretto.
+     */
+    public function pushToGoogleIfNeeded(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE || !$entity->getId()) {
+            return false;
+        }
+
+        if (!$this->shouldStayOnGoogleCalendar($entity)) {
+            return false;
+        }
+
+        if ($this->hasGoogleLink($entity->getId())) {
+            return false;
+        }
+
+        $this->loadAssignedUsersIds($entity);
+        $userId = $this->resolvePrimaryUserId(
+            $entity->get('assignedUsersIds'),
+            $entity->get('assignedUserId')
+        );
+
+        if ($userId === null) {
+            return false;
+        }
+
+        $this->persistAssignedUserIdIfNeeded($entity, $userId);
+
+        return $this->pushEntityToGoogle($entity, $userId);
+    }
+
+    /**
+     * Bonifica: corregge assignedUserId da assignedUsers (richiesto dal modulo Google).
+     */
+    public function bonificaFixAssignedUserId(Entity $entity): bool
+    {
+        $this->loadAssignedUsersIds($entity);
+        $userId = $this->resolvePrimaryUserId(
+            $entity->get('assignedUsersIds'),
+            $entity->get('assignedUserId')
+        );
+
+        if ($userId === null) {
+            return false;
+        }
+
+        return $this->persistAssignedUserIdIfNeeded($entity, $userId);
+    }
+
+    /**
+     * @return 'pushed'|'skipped'|'failed'
+     */
+    public function bonificaPushMissing(Entity $entity, string $calendarUserId): string
+    {
+        if (!$this->shouldStayOnGoogleCalendar($entity)) {
+            return 'skipped';
+        }
+
+        $this->bonificaFixAssignedUserId($entity);
+
+        if ($this->hasGoogleLink($entity->getId())) {
+            return 'skipped';
+        }
+
+        $userId = $this->resolvePrimaryUserId(
+            $entity->get('assignedUsersIds'),
+            $entity->get('assignedUserId')
+        );
+
+        if ($userId !== $calendarUserId) {
+            return 'skipped';
+        }
+
+        return $this->pushEntityToGoogle($entity, $calendarUserId) ? 'pushed' : 'failed';
+    }
+
+    public function needsAssignedUserIdFix(Entity $entity): bool
+    {
+        $this->loadAssignedUsersIds($entity);
+        $expected = $this->resolvePrimaryUserId(
+            $entity->get('assignedUsersIds'),
+            null
+        );
+
+        if ($expected === null) {
+            return false;
+        }
+
+        return (string) $entity->get('assignedUserId') !== $expected;
     }
 
     /**
@@ -714,6 +810,123 @@ class AppuntamentoGoogleSync
         }
 
         return null;
+    }
+
+    private function pushEntityToGoogle(Entity $entity, string $userId): bool
+    {
+        if (!$this->isCalendarPushEnabledForUser($userId)) {
+            return false;
+        }
+
+        $eventAction = $this->createGoogleEventAction($userId);
+
+        if ($eventAction === null) {
+            return false;
+        }
+
+        try {
+            return (bool) $eventAction->insertIntoGoogle($this->buildEspoEventPayload($entity));
+        } catch (\Throwable $e) {
+            $GLOBALS['log']->error(
+                'AppuntamentoGoogleSync: push failed for ' . $entity->getId() . ': ' . $e->getMessage()
+            );
+
+            return false;
+        }
+    }
+
+    private function createGoogleEventAction(string $userId): ?GoogleEventAction
+    {
+        $gcUser = $this->getGoogleRepository()->getUsersMainCalendar($userId);
+
+        if (!$gcUser) {
+            return null;
+        }
+
+        $googleCalendar = $this->entityManager
+            ->getRDBRepository('GoogleCalendar')
+            ->getById($gcUser->get('googleCalendarId'));
+
+        if (!$googleCalendar) {
+            return null;
+        }
+
+        $calendarId = $googleCalendar->get('calendarId');
+
+        if (!is_string($calendarId) || $calendarId === '') {
+            return null;
+        }
+
+        $externalAccount = $this->entityManager->getEntityById('ExternalAccount', 'Google__' . $userId);
+
+        if (!$externalAccount) {
+            return null;
+        }
+
+        $entityLabels = [];
+        $syncEntities = $externalAccount->get('calendarEntityTypes') ?? [];
+
+        if (is_array($syncEntities)) {
+            foreach ($syncEntities as $syncEntity) {
+                $label = $externalAccount->get($syncEntity . 'IdentificationLabel');
+                $entityLabels[$syncEntity] = is_string($label) ? $label : '';
+            }
+        }
+
+        $eventAction = $this->injectableFactory->create(GoogleEventAction::class);
+        $eventAction->setUserId($userId);
+        $eventAction->setCalendarId($calendarId);
+        $eventAction->syncParams = [
+            'calendar' => $gcUser,
+            'entityLabels' => $entityLabels,
+            'dontSyncEventAttendees' => $externalAccount->get('dontSyncEventAttendees'),
+        ];
+
+        return $eventAction;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildEspoEventPayload(Entity $entity): array
+    {
+        return [
+            'scope' => self::ENTITY_TYPE,
+            'id' => $entity->getId(),
+            'name' => $entity->get('name'),
+            'dateStart' => $entity->get('dateStart'),
+            'dateEnd' => $entity->get('dateEnd'),
+            'dateStartDate' => null,
+            'dateEndDate' => null,
+            'modifiedAt' => $entity->get('modifiedAt'),
+            'description' => $entity->get('description'),
+            'status' => $entity->get('status'),
+            'location' => $entity->get('location'),
+            'cLocation' => null,
+            'uid' => $entity->get('uid'),
+            'joinUrl' => $entity->get('joinUrl'),
+            'attendees' => [],
+            'deleted' => false,
+        ];
+    }
+
+    private function persistAssignedUserIdIfNeeded(Entity $entity, string $userId): bool
+    {
+        if ((string) $entity->get('assignedUserId') === $userId) {
+            return false;
+        }
+
+        $fresh = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entity->getId());
+
+        if (!$fresh) {
+            return false;
+        }
+
+        $fresh->set('assignedUserId', $userId);
+        $this->entityManager->saveEntity($fresh, ['skipHooks' => true]);
+        $entity->set('assignedUserId', $userId);
+
+        return true;
     }
 
     private function getGoogleRepository(): GoogleCalendarRepository
