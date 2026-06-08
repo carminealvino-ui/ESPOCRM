@@ -8,6 +8,7 @@ use Espo\Modules\Google\Core\Google\Actions\Event as GoogleEventAction;
 use Espo\Modules\Google\Repositories\GoogleCalendar as GoogleCalendarRepository;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
+use Espo\ORM\Query\Part\UpdateBuilder;
 
 /**
  * Sync Appuntamento ↔ Google Calendar (rimozione su Not Held / delete / cambio consulente).
@@ -15,6 +16,8 @@ use Espo\ORM\EntityManager;
 class AppuntamentoGoogleSync
 {
     private const ENTITY_TYPE = 'Appuntamento';
+
+    private const GHOST_NAME_MARKER = '(APPUNTAMENTO SENZA PROSPECT)';
 
     public function __construct(
         private EntityManager $entityManager,
@@ -194,6 +197,10 @@ class AppuntamentoGoogleSync
     public function describePushSkipReason(Entity $entity, string $calendarUserId): ?string
     {
         if (!$this->shouldStayOnGoogleCalendar($entity)) {
+            if ($this->isGhostAppointment($entity)) {
+                return 'ghost duplicato (senza prospect)';
+            }
+
             return 'status non sincronizzabile';
         }
 
@@ -555,14 +562,106 @@ class AppuntamentoGoogleSync
 
     public function isGhostAppointment(Entity $entity): bool
     {
-        $name = (string) ($entity->get('name') ?? '');
-
-        if (!str_contains($name, '(APPUNTAMENTO SENZA PROSPECT)')) {
+        if ($this->buildIdentityKey($entity) !== null) {
             return false;
         }
 
-        return !$entity->get('prospectId')
-            && !($entity->get('parentType') && $entity->get('parentId'));
+        $name = (string) ($entity->get('name') ?? '');
+
+        return str_contains($name, self::GHOST_NAME_MARKER);
+    }
+
+    /**
+     * Rimuove ghost duplicati nello stesso slot di un appuntamento reale (prospect/parent).
+     */
+    public function bonificaPurgeSlotGhosts(?string $sinceDate = null): int
+    {
+        $where = [
+            'deleted' => false,
+            'name*' => '%' . self::GHOST_NAME_MARKER . '%',
+        ];
+
+        if (is_string($sinceDate) && $sinceDate !== '') {
+            $where['dateStart>='] = $sinceDate . ' 00:00:00';
+        }
+
+        $ghosts = $this->entityManager
+            ->getRDBRepository(self::ENTITY_TYPE)
+            ->where($where)
+            ->find();
+
+        $purged = 0;
+
+        foreach ($ghosts as $ghost) {
+            if (!$this->isGhostAppointment($ghost)) {
+                continue;
+            }
+
+            $start = $ghost->get('dateStart');
+            $end = $ghost->get('dateEnd');
+
+            if (!is_string($start) || !is_string($end) || $start === '' || $end === '') {
+                continue;
+            }
+
+            if (!$this->slotHasRealAppointment($start, $end, $ghost->getId())) {
+                continue;
+            }
+
+            $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $ghost->getId());
+            $this->entityManager->removeEntity($ghost, [
+                'skipHooks' => true,
+                'silent' => true,
+            ]);
+            $purged++;
+        }
+
+        return $purged;
+    }
+
+    private function slotHasRealAppointment(string $dateStart, string $dateEnd, ?string $excludeId): bool
+    {
+        $where = [
+            'dateStart' => $dateStart,
+            'dateEnd' => $dateEnd,
+            'deleted' => false,
+        ];
+
+        if ($excludeId) {
+            $where['id!='] = $excludeId;
+        }
+
+        foreach ($this->entityManager->getRDBRepository(self::ENTITY_TYPE)->where($where)->find() as $other) {
+            if (!$this->isGhostAppointment($other)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function buildIdentityKey(Entity $entity): ?string
+    {
+        $prospectId = $entity->get('prospectId');
+
+        if ($prospectId) {
+            return 'prospect:' . $prospectId;
+        }
+
+        $parentType = $entity->get('parentType');
+        $parentId = $entity->get('parentId');
+
+        if ($parentType && $parentId) {
+            return 'parent:' . $parentType . ':' . $parentId;
+        }
+
+        $indirizzo = mb_strtolower(trim((string) $entity->get('indirizzo')));
+
+        if ($indirizzo !== '') {
+            return 'indirizzo:' . $indirizzo;
+        }
+
+        return null;
     }
 
     /**
@@ -728,10 +827,11 @@ class AppuntamentoGoogleSync
         }
 
         $syncUserId = $this->resolveCalendarOwnerUserId($googleData) ?? $userId;
-        $this->queueDeletedDummyForSyncJob($entity, $googleData, $syncUserId);
 
         $GLOBALS['log']->warning(
-            'AppuntamentoGoogleSync: Google delete failed, link kept for retry. Appuntamento=' . $entityId
+            'AppuntamentoGoogleSync: Google delete failed, link kept for retry. Appuntamento='
+            . $entityId
+            . ' user=' . ($syncUserId ?? 'null')
         );
     }
 
@@ -834,40 +934,30 @@ class AppuntamentoGoogleSync
         }
     }
 
-    /**
-     * Fallback: record segnato deleted collegato a Google per il job Espo→GC.
-     *
-     * @param array<string, mixed> $googleData
-     */
-    private function queueDeletedDummyForSyncJob(Entity $entity, array $googleData, ?string $userId): void
+    private function persistAssignedUserIdIfNeeded(Entity $entity, string $userId): bool
     {
-        if ($userId === null) {
-            return;
+        if ((string) $entity->get('assignedUserId') === $userId) {
+            return false;
         }
 
-        $dummy = $this->entityManager->getNewEntity(self::ENTITY_TYPE);
+        $entityId = $entity->getId();
 
-        $copyFields = ['name', 'dateStart', 'dateEnd', 'location'];
-
-        foreach ($copyFields as $field) {
-            if ($dummy->hasAttribute($field)) {
-                $dummy->set($field, $entity->getFetched($field) ?? $entity->get($field));
-            }
+        if (!$entityId) {
+            return false;
         }
 
-        $dummy->set('assignedUserId', $userId);
-        $dummy->set('deleted', true);
-
-        $this->entityManager->saveEntity($dummy, ['skipHooks' => true]);
-
-        $this->getGoogleRepository()->storeEventRelation(
-            self::ENTITY_TYPE,
-            $dummy->getId(),
-            $googleData['googleCalendarId'],
-            $googleData['googleCalendarEventId']
+        // UPDATE diretto: evita hook Google (dummy "APPUNTAMENTO SENZA PROSPECT").
+        $this->entityManager->getQueryExecutor()->execute(
+            UpdateBuilder::create()
+                ->in(self::ENTITY_TYPE)
+                ->set(['assignedUserId' => $userId])
+                ->where(['id' => $entityId])
+                ->build()
         );
 
-        $this->entityManager->removeEntity($dummy, ['skipHooks' => true]);
+        $entity->set('assignedUserId', $userId);
+
+        return true;
     }
 
     public function hasGoogleLink(string $entityId): bool
@@ -1227,25 +1317,6 @@ class AppuntamentoGoogleSync
             'attendees' => [],
             'deleted' => false,
         ];
-    }
-
-    private function persistAssignedUserIdIfNeeded(Entity $entity, string $userId): bool
-    {
-        if ((string) $entity->get('assignedUserId') === $userId) {
-            return false;
-        }
-
-        $fresh = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entity->getId());
-
-        if (!$fresh) {
-            return false;
-        }
-
-        $fresh->set('assignedUserId', $userId);
-        $this->entityManager->saveEntity($fresh, ['skipHooks' => true]);
-        $entity->set('assignedUserId', $userId);
-
-        return true;
     }
 
     private function getGoogleRepository(): GoogleCalendarRepository

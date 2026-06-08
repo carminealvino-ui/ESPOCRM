@@ -19,6 +19,7 @@
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-not-held
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-push
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --reconcile
+ *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-ghosts
  *
  * @noinspection PhpUnhandledExceptionInspection
  */
@@ -52,6 +53,7 @@ $onlyIngestibili = in_array('--only-ingestibili', $argv, true);
 $onlyNotHeld = in_array('--only-not-held', $argv, true);
 $onlyPush = in_array('--only-push', $argv, true);
 $reconcileOnly = in_array('--reconcile', $argv, true);
+$onlyPurgeGhosts = in_array('--only-purge-ghosts', $argv, true);
 $verbose = in_array('--verbose', $argv, true);
 $pushSinceDays = 21;
 
@@ -145,6 +147,9 @@ if ($onlyPush) {
 if ($reconcileOnly) {
     fwrite(STDOUT, "Filtro: solo riconciliazione Google (rimuove annullati fantasma su Google)\n");
 }
+if ($onlyPurgeGhosts) {
+    fwrite(STDOUT, "Filtro: solo rimozione ghost APPUNTAMENTO SENZA PROSPECT duplicati\n");
+}
 fwrite(STDOUT, "Consulente calendario: {$calendarUserLabel} (id {$calendarUserId})\n");
 fwrite(STDOUT, 'Google collegato: ' . ($googleOk ? 'sì' : 'NO — delete API potrebbe fallire') . "\n\n");
 
@@ -161,7 +166,34 @@ $stats = [
     'google_push_failed' => 0,
     'google_push_skipped' => 0,
     'google_reconcile_removed' => 0,
+    'ghosts_purged' => 0,
 ];
+
+$purgeSince = date('Y-m-d', strtotime('-' . $pushSinceDays . ' days'));
+
+if ($onlyPurgeGhosts || (!$onlyIngestibili && !$onlyPush && !$reconcileOnly)) {
+    fwrite(STDOUT, "[PURGE GHOSTS] Duplicati senza prospect dal {$purgeSince}\n");
+
+    if ($dryRun) {
+        $ghostCount = $em->getRDBRepository('Appuntamento')
+            ->where([
+                'deleted' => false,
+                'name*' => '%(APPUNTAMENTO SENZA PROSPECT)%',
+                'dateStart>=' => $purgeSince . ' 00:00:00',
+            ])
+            ->count();
+
+        fwrite(STDOUT, "  ghost da analizzare: {$ghostCount}\n\n");
+        $stats['ghosts_purged'] = $ghostCount;
+    } else {
+        $stats['ghosts_purged'] = $sync->bonificaPurgeSlotGhosts($purgeSince);
+        fwrite(STDOUT, '  ghost rimossi: ' . $stats['ghosts_purged'] . "\n\n");
+    }
+}
+
+if ($onlyPurgeGhosts) {
+    goto summary;
+}
 
 $runReconcile = $reconcileOnly || (!$onlyIngestibili && !$onlyPush);
 $runPush = $onlyPush || (!$onlyIngestibili && !$onlyNotHeld);
@@ -279,6 +311,8 @@ if ($onlyPush) {
 
 if ($runCleanup) {
 fwrite(STDOUT, "=== Fase 1-3: pulizia link e Not Held ===\n");
+
+try {
 $shouldRemoveAppointment = static function (AppuntamentoGoogleSync $sync, Entity $appointment) use ($onlyNotHeld): bool {
     if ($onlyNotHeld) {
         return !$appointment->get('deleted') && $appointment->get('status') === 'Not Held';
@@ -438,6 +472,10 @@ foreach ($ghosts as $appointment) {
     }
 }
 
+}
+
+} catch (\Throwable $e) {
+    fwrite(STDERR, 'ERRORE Fase 1-3: ' . $e->getMessage() . "\n");
 }
 
 }
