@@ -16,6 +16,7 @@
  *   php tools/bonifica-appuntamento-google-calendar.php --apply
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --user-name="Alvino Carmine"
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-ingestibili
+ *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-not-held
  *
  * @noinspection PhpUnhandledExceptionInspection
  */
@@ -46,6 +47,7 @@ $sync = $injectableFactory->create(AppuntamentoGoogleSync::class);
 
 $dryRun = !in_array('--apply', $argv, true);
 $onlyIngestibili = in_array('--only-ingestibili', $argv, true);
+$onlyNotHeld = in_array('--only-not-held', $argv, true);
 $userIdArg = null;
 $userNameArg = 'Alvino Carmine';
 
@@ -122,6 +124,9 @@ fwrite(STDOUT, 'Modalità: ' . ($dryRun ? 'DRY-RUN (nessuna modifica)' : 'APPLY'
 if ($onlyIngestibili) {
     fwrite(STDOUT, "Filtro: solo correzione Ingestibile (admin → consulente)\n");
 }
+if ($onlyNotHeld) {
+    fwrite(STDOUT, "Filtro: solo rimozione Non Svolto / annullati (Not Held) da Google\n");
+}
 fwrite(STDOUT, "Consulente calendario: {$calendarUserLabel} (id {$calendarUserId})\n");
 fwrite(STDOUT, 'Google collegato: ' . ($googleOk ? 'sì' : 'NO — delete API potrebbe fallire') . "\n\n");
 
@@ -136,6 +141,14 @@ $stats = [
 ];
 
 if (!$onlyIngestibili) {
+$shouldRemoveAppointment = static function (AppuntamentoGoogleSync $sync, Entity $appointment) use ($onlyNotHeld): bool {
+    if ($onlyNotHeld) {
+        return !$appointment->get('deleted') && $appointment->get('status') === 'Not Held';
+    }
+
+    return !$sync->shouldStayOnGoogleCalendar($appointment);
+};
+
 // --- Fase 1: tutti i link GoogleCalendarEvent → Appuntamento ---
 $linkRows = $em->getRDBRepository('GoogleCalendarEvent')
     ->where([
@@ -170,7 +183,7 @@ foreach ($linkRows as $link) {
 
     $label = formatAppointmentLabel($appointment);
 
-    if ($sync->shouldStayOnGoogleCalendar($appointment)) {
+    if (!$shouldRemoveAppointment($sync, $appointment)) {
         $stats['google_skipped_keep']++;
         fwrite(STDOUT, "[KEEP] {$label}\n");
 
@@ -196,13 +209,17 @@ foreach ($linkRows as $link) {
 }
 
 // --- Fase 2: Not Held / deleted con link residuo (senza riga in scan se già puliti) ---
-$staleAppointments = $em->getRDBRepository('Appuntamento')
-    ->where([
+$staleWhere = $onlyNotHeld
+    ? ['status' => 'Not Held', 'deleted' => false]
+    : [
         'OR' => [
             ['deleted' => true],
             ['status' => 'Not Held'],
         ],
-    ])
+    ];
+
+$staleAppointments = $em->getRDBRepository('Appuntamento')
+    ->where($staleWhere)
     ->withDeleted()
     ->find();
 
@@ -235,6 +252,7 @@ foreach ($staleAppointments as $appointment) {
 }
 
 // --- Fase 3: ghost con nome APPUNTAMENTO SENZA PROSPECT ---
+if (!$onlyNotHeld) {
 $ghosts = $em->getRDBRepository('Appuntamento')
     ->where([
         'name*' => '%(APPUNTAMENTO SENZA PROSPECT)%',
@@ -276,7 +294,10 @@ foreach ($ghosts as $appointment) {
 
 }
 
+}
+
 // --- Fase 4: Ingestibile assegnati ad admin → consulente (Carmine Alvino) ---
+if ($onlyIngestibili || (!$onlyIngestibili && !$onlyNotHeld)) {
 $ingestibili = $em->getRDBRepository('Appuntamento')
     ->where([
         'status' => 'Ingestibile',
@@ -305,6 +326,8 @@ foreach ($ingestibili as $appointment) {
     if ($sync->bonificaFixIngestibileConsultant($appointment, $calendarUserId)) {
         $stats['ingestibile_fixed']++;
     }
+}
+
 }
 
 fwrite(STDOUT, "\n--- Riepilogo ---\n");

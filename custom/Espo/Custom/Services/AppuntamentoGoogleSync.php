@@ -78,16 +78,16 @@ class AppuntamentoGoogleSync
             return;
         }
 
-        if (!$entity->isNew() && !$entity->isAttributeChanged('status')) {
+        if (!$this->hasGoogleLink($entity->getId())) {
             return;
         }
 
-        $userId = $this->resolvePrimaryUserId(
+        $fallbackUserId = $this->resolvePrimaryUserId(
             $entity->getFetched('assignedUsersIds'),
             $entity->getFetched('assignedUserId')
         );
 
-        $this->unlinkFromGoogleForUser($entity, $userId);
+        $this->unlinkFromGoogleForUser($entity, $fallbackUserId);
     }
 
     public function handleRemoved(Entity $entity): void
@@ -135,7 +135,7 @@ class AppuntamentoGoogleSync
             return 'no_link';
         }
 
-        $deleted = $this->deleteGoogleEventForUser($calendarUserId, $googleData);
+        $deleted = $this->deleteGoogleEventWithFallback($googleData, $calendarUserId);
 
         $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entityId);
 
@@ -333,14 +333,77 @@ class AppuntamentoGoogleSync
             return;
         }
 
-        if ($userId !== null && $this->deleteGoogleEventForUser($userId, $googleData)) {
+        if ($this->deleteGoogleEventWithFallback($googleData, $userId)) {
             $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entityId);
 
             return;
         }
 
-        $this->queueDeletedDummyForSyncJob($entity, $googleData, $userId);
+        $syncUserId = $this->resolveCalendarOwnerUserId($googleData) ?? $userId;
+        $this->queueDeletedDummyForSyncJob($entity, $googleData, $syncUserId);
         $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entityId);
+    }
+
+    /**
+     * @param array<string, mixed> $googleData
+     */
+    private function resolveCalendarOwnerUserId(array $googleData): ?string
+    {
+        $googleCalendarEntityId = $googleData['googleCalendarId'] ?? null;
+
+        if (!is_string($googleCalendarEntityId) || $googleCalendarEntityId === '') {
+            return null;
+        }
+
+        $gcUser = $this->entityManager
+            ->getRDBRepository('GoogleCalendarUser')
+            ->where([
+                'googleCalendarId' => $googleCalendarEntityId,
+                'active' => true,
+                'type' => 'main',
+            ])
+            ->findOne();
+
+        if ($gcUser) {
+            $userId = $gcUser->get('userId');
+
+            return is_string($userId) && $userId !== '' ? $userId : null;
+        }
+
+        $gcUser = $this->entityManager
+            ->getRDBRepository('GoogleCalendarUser')
+            ->where([
+                'googleCalendarId' => $googleCalendarEntityId,
+                'active' => true,
+            ])
+            ->findOne();
+
+        if (!$gcUser) {
+            return null;
+        }
+
+        $userId = $gcUser->get('userId');
+
+        return is_string($userId) && $userId !== '' ? $userId : null;
+    }
+
+    /**
+     * @param array<string, mixed> $googleData
+     */
+    private function deleteGoogleEventWithFallback(array $googleData, ?string $fallbackUserId): bool
+    {
+        $deleteUserIds = array_values(array_unique(array_filter([
+            $this->resolveCalendarOwnerUserId($googleData),
+            $fallbackUserId,
+        ])));
+
+        foreach ($deleteUserIds as $deleteUserId) {
+            if ($this->deleteGoogleEventForUser($deleteUserId, $googleData)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
