@@ -54,6 +54,10 @@ class AppuntamentoGoogleSync
             return;
         }
 
+        if (!$this->isSyncConGoogleEnabled($entity)) {
+            return;
+        }
+
         $oldUserId = $this->resolvePrimaryUserId(
             $entity->getFetched('assignedUsersIds'),
             $entity->getFetched('assignedUserId')
@@ -72,6 +76,34 @@ class AppuntamentoGoogleSync
         }
 
         $this->unlinkFromGoogleForUser($entity, $oldUserId);
+    }
+
+    /**
+     * Flag "Sync con Google" disattivato → rimuovi evento; attivato → push in afterSave.
+     */
+    public function handleSyncConGoogleToggle(Entity $entity): void
+    {
+        if ($entity->isNew() || $entity->getEntityType() !== self::ENTITY_TYPE) {
+            return;
+        }
+
+        $wasEnabled = (bool) $entity->getFetched('syncConGoogle');
+        $isEnabled = $this->isSyncConGoogleEnabled($entity);
+
+        if ($wasEnabled === $isEnabled) {
+            return;
+        }
+
+        if ($isEnabled) {
+            return;
+        }
+
+        $calendarUserId = $this->resolveGoogleCalendarUserIdForEntity($entity, true);
+        $this->unlinkFromGoogleForUser($entity, $calendarUserId);
+
+        if ($calendarUserId !== null) {
+            $this->bonificaDeleteOrphanGoogleEvent($entity, $calendarUserId);
+        }
     }
 
     public function handleNotHeldStatus(Entity $entity): void
@@ -196,11 +228,15 @@ class AppuntamentoGoogleSync
 
     public function describePushSkipReason(Entity $entity, string $calendarUserId): ?string
     {
-        if (!$this->shouldStayOnGoogleCalendar($entity)) {
-            if ($this->isGhostAppointment($entity)) {
-                return 'ghost duplicato (senza prospect)';
-            }
+        if ($this->isGhostAppointment($entity)) {
+            return 'ghost duplicato (senza prospect)';
+        }
 
+        if (!$this->isSyncConGoogleEnabled($entity)) {
+            return 'sync con Google disattivato';
+        }
+
+        if (!$this->shouldStayOnGoogleCalendar($entity)) {
             return 'status non sincronizzabile';
         }
 
@@ -537,6 +573,11 @@ class AppuntamentoGoogleSync
         ];
     }
 
+    public function isSyncConGoogleEnabled(Entity $entity): bool
+    {
+        return (bool) $entity->get('syncConGoogle');
+    }
+
     public function shouldStayOnGoogleCalendar(Entity $entity): bool
     {
         if ($entity->getEntityType() !== self::ENTITY_TYPE) {
@@ -544,6 +585,10 @@ class AppuntamentoGoogleSync
         }
 
         if ($entity->get('deleted')) {
+            return false;
+        }
+
+        if (!$this->isSyncConGoogleEnabled($entity)) {
             return false;
         }
 
@@ -558,6 +603,36 @@ class AppuntamentoGoogleSync
         }
 
         return in_array($status, ['Planned', 'Held', 'Ingestibile'], true);
+    }
+
+    /**
+     * Allinea il flag syncConGoogle agli appuntamenti già presenti su Google (migrazione).
+     */
+    public function bonificaBackfillSyncConGoogleFlag(string $sinceDate): int
+    {
+        $updated = 0;
+
+        $appointments = $this->entityManager
+            ->getRDBRepository(self::ENTITY_TYPE)
+            ->where([
+                'deleted' => false,
+                'syncConGoogle' => false,
+                'status' => ['Planned', 'Held', 'Ingestibile'],
+                'dateStart>=' => $sinceDate . ' 00:00:00',
+            ])
+            ->find();
+
+        foreach ($appointments as $appointment) {
+            if ($this->isGhostAppointment($appointment) || !$this->hasGoogleLink($appointment->getId())) {
+                continue;
+            }
+
+            $appointment->set('syncConGoogle', true);
+            $this->entityManager->saveEntity($appointment, ['skipHooks' => true]);
+            $updated++;
+        }
+
+        return $updated;
     }
 
     public function isGhostAppointment(Entity $entity): bool

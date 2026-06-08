@@ -8,7 +8,8 @@
  *   - Non Svolto / annullati (status Not Held)
  *   - ghost "(APPUNTAMENTO SENZA PROSPECT)"
  *
- * Mantiene su Google: Planned, Held, Ingestibile.
+ * Mantiene su Google: Planned, Held, Ingestibile con syncConGoogle = true.
+ * Rimuove da Google se syncConGoogle = false, Not Held, eliminato o ghost.
  * Corregge Ingestibile assegnati per errore ad admin → consulente calendario.
  *
  * Uso (da root CRM, es. ~/public_html/crm/mec-group):
@@ -20,6 +21,7 @@
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-push
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --reconcile
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-ghosts
+ *   php tools/bonifica-appuntamento-google-calendar.php --apply --backfill-sync-flag
  *
  * @noinspection PhpUnhandledExceptionInspection
  */
@@ -54,6 +56,7 @@ $onlyNotHeld = in_array('--only-not-held', $argv, true);
 $onlyPush = in_array('--only-push', $argv, true);
 $reconcileOnly = in_array('--reconcile', $argv, true);
 $onlyPurgeGhosts = in_array('--only-purge-ghosts', $argv, true);
+$backfillSyncFlag = in_array('--backfill-sync-flag', $argv, true);
 $verbose = in_array('--verbose', $argv, true);
 $pushSinceDays = 21;
 
@@ -150,6 +153,9 @@ if ($reconcileOnly) {
 if ($onlyPurgeGhosts) {
     fwrite(STDOUT, "Filtro: solo rimozione ghost APPUNTAMENTO SENZA PROSPECT duplicati\n");
 }
+if ($backfillSyncFlag) {
+    fwrite(STDOUT, "Filtro: allinea syncConGoogle=true sugli appuntamenti già collegati a Google\n");
+}
 fwrite(STDOUT, "Consulente calendario: {$calendarUserLabel} (id {$calendarUserId})\n");
 fwrite(STDOUT, 'Google collegato: ' . ($googleOk ? 'sì' : 'NO — delete API potrebbe fallire') . "\n\n");
 
@@ -167,6 +173,7 @@ $stats = [
     'google_push_skipped' => 0,
     'google_reconcile_removed' => 0,
     'ghosts_purged' => 0,
+    'sync_flag_backfilled' => 0,
 ];
 
 $purgeSince = date('Y-m-d', strtotime('-' . $pushSinceDays . ' days'));
@@ -207,6 +214,38 @@ if ($onlyPurgeGhosts) {
     goto summary;
 }
 
+if ($backfillSyncFlag) {
+    fwrite(STDOUT, "[BACKFILL SYNC FLAG] syncConGoogle=true per appuntamenti con link Google dal {$purgeSince}\n");
+
+    if ($dryRun) {
+        $wouldUpdate = 0;
+
+        foreach ($em->getRDBRepository('Appuntamento')
+            ->where([
+                'deleted' => false,
+                'syncConGoogle' => false,
+                'status' => ['Planned', 'Held', 'Ingestibile'],
+                'dateStart>=' => $purgeSince . ' 00:00:00',
+            ])
+            ->find() as $appointment) {
+            if ($sync->isGhostAppointment($appointment) || !$sync->hasGoogleLink($appointment->getId())) {
+                continue;
+            }
+
+            $wouldUpdate++;
+            fwrite(STDOUT, '  [FLAG ON] ' . formatAppointmentLabel($appointment) . "\n");
+        }
+
+        $stats['sync_flag_backfilled'] = $wouldUpdate;
+        fwrite(STDOUT, "  flag da attivare: {$wouldUpdate}\n\n");
+    } else {
+        $stats['sync_flag_backfilled'] = $sync->bonificaBackfillSyncConGoogleFlag($purgeSince);
+        fwrite(STDOUT, '  flag attivati: ' . $stats['sync_flag_backfilled'] . "\n\n");
+    }
+
+    goto summary;
+}
+
 $runReconcile = $reconcileOnly || (!$onlyIngestibili && !$onlyPush);
 $runPush = $onlyPush || (!$onlyIngestibili && !$onlyNotHeld);
 $runCleanup = !$onlyIngestibili && !$onlyPush;
@@ -241,6 +280,7 @@ if ($runPush) {
         $toPush = $em->getRDBRepository('Appuntamento')
             ->where([
                 'deleted' => false,
+                'syncConGoogle' => true,
                 'status' => ['Planned', 'Held', 'Ingestibile'],
                 'dateStart>=' => $pushSince,
             ])
