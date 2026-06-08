@@ -8,8 +8,8 @@
  *   - Non Svolto / annullati (status Not Held)
  *   - ghost "(APPUNTAMENTO SENZA PROSPECT)"
  *
- * Mantiene su Google: Planned, Held, Ingestibile (sync attivo di default, opt-out con syncConGoogle = false).
- * Rimuove da Google se syncConGoogle disattivato, Not Held, eliminato o ghost.
+ * Mantiene su Google: Planned, Held, Ingestibile del consulente con Google attivo.
+ * Rimuove: admin, consulente diverso, syncConGoogle off, Not Held, eliminato, ghost.
  * Corregge Ingestibile assegnati per errore ad admin → consulente calendario.
  *
  * Uso (da root CRM, es. ~/public_html/crm/mec-group):
@@ -263,7 +263,7 @@ if ($runReconcile) {
     );
     $stats['google_reconcile_removed'] = $reconcileResult['removed'];
     fwrite(STDOUT, '  eventi appuntamento su Google: ' . $reconcileResult['scanned'] . "\n");
-    fwrite(STDOUT, '  candidati rimozione (Not Held in Espo): ' . $reconcileResult['candidates'] . "\n");
+    fwrite(STDOUT, '  candidati rimozione (Not Held / admin / consulente errato in Espo): ' . $reconcileResult['candidates'] . "\n");
     fwrite(STDOUT, '  rimossi da Google: ' . $reconcileResult['removed'] . "\n\n");
 }
 
@@ -306,8 +306,10 @@ if ($runPush) {
         }
 
         $skipReason = $sync->describePushSkipReason($appointment, $calendarUserId);
-        $hasStaleLink = $sync->hasGoogleLink($appointment->getId())
-            && !$sync->isGoogleEventAlive($appointment, $calendarUserId);
+        $syncUserId = $sync->resolveSyncableConsultantUserId($appointment);
+        $hasStaleLink = $syncUserId === $calendarUserId
+            && $sync->hasGoogleLink($appointment->getId())
+            && !$sync->isGoogleEventAlive($appointment, $syncUserId);
         $needsPush = $skipReason === null || $hasStaleLink;
 
         if (!$needsPush) {
@@ -364,12 +366,12 @@ if ($runCleanup) {
 fwrite(STDOUT, "=== Fase 1-3: pulizia link e Not Held ===\n");
 
 try {
-$shouldRemoveAppointment = static function (AppuntamentoGoogleSync $sync, Entity $appointment) use ($onlyNotHeld): bool {
+$shouldRemoveAppointment = static function (AppuntamentoGoogleSync $sync, Entity $appointment) use ($onlyNotHeld, $calendarUserId): bool {
     if ($onlyNotHeld) {
         return !$appointment->get('deleted') && $appointment->get('status') === 'Not Held';
     }
 
-    return !$sync->shouldStayOnGoogleCalendar($appointment);
+    return !$sync->shouldStayOnConsultantGoogleCalendar($appointment, $calendarUserId);
 };
 
 // --- Fase 1: tutti i link GoogleCalendarEvent → Appuntamento ---
