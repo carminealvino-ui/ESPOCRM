@@ -1,0 +1,14 @@
+{
+    "createInputFilterClassNameList": [
+        "Espo\\Custom\\Classes\\Record\\ProductPrice\\InputFilter"
+    ],
+    "updateInputFilterClassNameList": [
+        "Espo\\Custom\\Classes\\Record\\ProductPrice\\InputFilter"
+    ],
+    "earlyBeforeCreateHookClassNameList": [
+        "Espo\\Custom\\Classes\\Record\\Hooks\\ProductPrice\\EarlyBeforeSavePrepare"
+    ],
+    "earlyBeforeUpdateHookClassNameList": [
+        "Espo\\Custom\\Classes\\Record\\Hooks\\ProductPrice\\EarlyBeforeSavePrepare"
+    ]
+}
