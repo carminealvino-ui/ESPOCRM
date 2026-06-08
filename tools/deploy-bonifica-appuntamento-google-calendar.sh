@@ -41,3 +41,5 @@ echo "1) Anteprima:  php tools/bonifica-appuntamento-google-calendar.php --dry-r
 echo "2) Esegui:     php tools/bonifica-appuntamento-google-calendar.php --apply"
 echo "   Solo ingestibili admin→Carmine:"
 echo "   php tools/bonifica-appuntamento-google-calendar.php --apply --only-ingestibili"
+echo "   Push mancanti su Google (sabato/futuri):"
+echo "   php tools/bonifica-appuntamento-google-calendar.php --apply --only-push --user-id=67c93e694705fde80"
