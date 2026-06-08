@@ -132,6 +132,7 @@ $stats = [
     'google_skipped_keep' => 0,
     'orphan_links_cleaned' => 0,
     'ingestibile_fixed' => 0,
+    'ingestibile_ok' => 0,
 ];
 
 if (!$onlyIngestibili) {
@@ -285,13 +286,13 @@ $ingestibili = $em->getRDBRepository('Appuntamento')
 
 foreach ($ingestibili as $appointment) {
     if (!$sync->needsIngestibileConsultantFix($appointment, $calendarUserId)) {
+        $stats['ingestibile_ok']++;
+
         continue;
     }
 
     $label = formatAppointmentLabel($appointment);
-    $current = $appointment->get('assignedUserName')
-        ?? $appointment->get('assignedUsersNames')
-        ?? $appointment->get('assignedUserId');
+    $current = $sync->describeAssignee($appointment);
     fwrite(STDOUT, "[FIX INGESTIBILE] {$label}\n");
     fwrite(STDOUT, "  consulente attuale: {$current} → {$calendarUserLabel}\n");
 
@@ -316,6 +317,8 @@ if ($dryRun) {
 } else {
     fwrite(STDOUT, "\nBonifica completata. Controlla Google Calendar e fai Ctrl+F5 in Espo.\n");
 }
+
+fwrite(STDOUT, "\nNota: esegui un solo comando per riga (usa --user-id=67c93e694705fde80 se serve).\n");
 
 function formatAppointmentLabel(Entity $appointment): string
 {

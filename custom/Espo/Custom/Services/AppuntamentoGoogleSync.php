@@ -187,22 +187,71 @@ class AppuntamentoGoogleSync
         }
 
         $this->loadAssignedUsersIds($entity);
+
+        if ($this->hasConsultantAssigned($entity, $consultantUserId)) {
+            return false;
+        }
+
+        return $this->isAssignedToAdmin($entity);
+    }
+
+    public function isAssignedToAdmin(Entity $entity): bool
+    {
+        $this->loadAssignedUsersIds($entity);
         $adminIds = $this->resolveAdminUserIds();
+
+        foreach ($entity->get('assignedUsersIds') ?: [] as $userId) {
+            if (in_array((string) $userId, $adminIds, true)) {
+                return true;
+            }
+        }
+
+        $assignedUserId = $entity->get('assignedUserId');
+
+        if ($assignedUserId && in_array((string) $assignedUserId, $adminIds, true)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function describeAssignee(Entity $entity): string
+    {
+        $this->loadAssignedUsersIds($entity);
+
+        $names = $entity->get('assignedUsersNames');
+
+        if (is_array($names) && $names !== []) {
+            return implode(', ', $names);
+        }
+
+        if (is_string($names) && $names !== '') {
+            return $names;
+        }
+
+        $name = $entity->get('assignedUserName');
+
+        if (is_string($name) && $name !== '') {
+            return $name;
+        }
 
         $primaryId = $this->resolvePrimaryUserId(
             $entity->get('assignedUsersIds'),
             $entity->get('assignedUserId')
         );
 
-        if ($primaryId === null) {
-            return true;
+        return $primaryId ?? '(nessuno)';
+    }
+
+    private function hasConsultantAssigned(Entity $entity, string $consultantUserId): bool
+    {
+        foreach ($entity->get('assignedUsersIds') ?: [] as $userId) {
+            if ((string) $userId === $consultantUserId) {
+                return true;
+            }
         }
 
-        if ($primaryId === $consultantUserId) {
-            return false;
-        }
-
-        return in_array($primaryId, $adminIds, true);
+        return (string) $entity->get('assignedUserId') === $consultantUserId;
     }
 
     /**
