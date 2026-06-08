@@ -1,0 +1,18 @@
+{
+    "labels": {
+        "Create RoundingProfile": "Create Rounding Profile"
+    },
+    "fields": {
+        "roundingFactor": "Rounding Factor",
+        "status": "Status"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    },
+    "tooltips": {
+        "roundingFactor": "\n\nExamples:\n- 1 – to a whole number\n- 0.5 – to 50 cents\n- 0.01 – to 1 cent"
+    }
+}

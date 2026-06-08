@@ -1,0 +1,10 @@
+{
+    "links": {
+        "quotesBilling": "Citatos (Atsiskaitymai)",
+        "quotesShipping": "Citatos (pristatymas)",
+        "salesOrdersBilling": "Pardavimo užsakymai (sąskaitos faktūros)",
+        "salesOrdersShipping": "Pardavimo užsakymai (pristatymas)",
+        "invoicesBilling": "Sąskaitos faktūros (sąskaitos faktūros)",
+        "invoicesShipping": "Sąskaitos faktūros (pristatymas)"
+    }
+}

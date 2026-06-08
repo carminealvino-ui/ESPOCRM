@@ -1,0 +1,137 @@
+{
+    "fields": {
+        "name": {
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "accountName"
+                    },
+                    {
+                        "type": "isEmpty",
+                        "attribute": "emailAddress"
+                    },
+                    {
+                        "type": "isEmpty",
+                        "attribute": "phoneNumber"
+                    }
+                ]
+            }
+        },
+        "industry": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        },
+        "insegna": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        },
+        "accountName": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        },
+        "partitaIVA": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        },
+        "referenteAziendale": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        },
+        "title": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        },
+        "codiceCliente": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "azienda",
+                        "value": "GFB"
+                    }
+                ]
+            }
+        },
+        "codicePOS": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "azienda",
+                        "value": "GFB"
+                    }
+                ]
+            }
+        },
+        "consistenze": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "azienda",
+                        "value": "GFB"
+                    }
+                ]
+            }
+        },
+        "importoFattura": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "azienda",
+                        "value": "GFB"
+                    }
+                ]
+            }
+        },
+        "meseImportazioneCB": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "azienda",
+                        "value": "GFB"
+                    }
+                ]
+            }
+        }
+    }
+}

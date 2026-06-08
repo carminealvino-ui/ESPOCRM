@@ -1,0 +1,22 @@
+{
+    "fields": {
+        "prezzoCodice": {
+            "type": "currency",
+            "isCustom": true,
+            "onlyDefaultCurrency": true
+        },
+        "prezzoCodiceCurrency": {
+            "default": "EUR",
+            "labelType": "state"
+        }
+    },
+    "links": {
+        "provvigioni": {
+            "type": "hasMany",
+            "foreign": "contrattoArticoli",
+            "entity": "Provvigione",
+            "audited": false,
+            "isCustom": true
+        }
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "stream": {
+        "disabled": true
+    },
+    "_delimiter_": {
+        "disabled": true
+    },
+    "appuntamentoChildren": {
+        "index": 0
+    },
+    "opportunita": {
+        "index": 1
+    }
+}

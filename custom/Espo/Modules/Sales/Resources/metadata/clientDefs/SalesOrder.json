@@ -1,0 +1,255 @@
+{
+    "controller": "controllers/record",
+    "modelDefaultsPreparator": "modules/sales/handlers/order/model-defaults-preparator",
+    "mergeDisabled": true,
+    "boolFilterList": ["onlyMy"],
+    "filterList": [
+        "actual",
+        {
+            "name": "completed",
+            "style": "success"
+        }
+    ],
+    "recordViews": {
+        "detail": "sales:views/quote/record/detail",
+        "edit": "sales:views/quote/record/edit",
+        "detailSmall": "sales:views/quote/record/detail-small",
+        "editSmall": "sales:views/quote/record/edit-small"
+    },
+    "viewSetupHandlers": {
+        "record/detail": ["sales:handlers/quote/setup-record-detail"],
+        "record/edit": ["sales:handlers/quote/setup-record-detail"]
+    },
+    "massActionDefs": {
+        "lock": {
+            "aclScope": "SalesOrder",
+            "acl": "edit",
+            "handler": "sales:handlers/quote/lock-mass-action",
+            "actionFunction": "actionLock",
+            "initFunction": "initLock"
+        },
+        "unlock": {
+            "aclScope": "SalesOrder",
+            "acl": "edit",
+            "handler": "sales:handlers/quote/lock-mass-action",
+            "actionFunction": "actionUnlock",
+            "initFunction": "initUnlock"
+        }
+    },
+    "massActionList": [
+        "lock",
+        "unlock"
+    ],
+    "checkAllResultMassActionList": [
+        "lock",
+        "unlock"
+    ],
+    "detailActionList": [
+        {
+            "name": "lock",
+            "acl": "edit",
+            "label": "Lock",
+            "handler": "sales:handlers/quote/lock-action",
+            "data": {
+                "handler": "sales:handlers/quote/lock-action"
+            },
+            "checkVisibilityFunction": "canBeLocked",
+            "actionFunction": "actionLock"
+        },
+        {
+            "name": "unlock",
+            "acl": "edit",
+            "label": "Unlock",
+            "handler": "sales:handlers/quote/lock-action",
+            "data": {
+                "handler": "sales:handlers/quote/lock-action"
+            },
+            "checkVisibilityFunction": "canBeUnlocked",
+            "actionFunction": "actionUnlock"
+        },
+        {
+            "name": "viewTaxes",
+            "label": "View Tax Details",
+            "handler": "modules/sales/handlers/tax-code/view-taxes-action",
+            "actionFunction": "action",
+            "checkVisibilityFunction": "isVisible",
+            "groupIndex": 7
+        }
+    ],
+    "bottomPanels": {
+        "detail": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "sales:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "edit": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "sales:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "detailSmall": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "editSmall": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ]
+    },
+    "menu": {
+        "detail": {
+            "buttons": [
+                {
+                    "name": "createDelivery",
+                    "action": "createDelivery",
+                    "label": "Create Delivery",
+                    "acl": "create",
+                    "aclScope": "DeliveryOrder",
+                    "iconClass": "fas fa-shipping-fast",
+                    "handler": "modules/sales/handlers/sales-order/delivery-button",
+                    "actionFunction": "process",
+                    "initFunction": "init"
+                }
+            ]
+        },
+        "list": {
+            "dropdown": [
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.Tax",
+                    "link": "#Tax",
+                    "acl": "read",
+                    "aclScope": "Tax"
+                },
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.ShippingProvider",
+                    "link": "#ShippingProvider",
+                    "acl": "read",
+                    "aclScope": "ShippingProvider"
+                },
+                false,
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.SalesOrderItem",
+                    "link": "#SalesOrderItem",
+                    "acl": "read",
+                    "aclScope": "SalesOrderItem"
+                },
+                false,
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.Template",
+                    "link": "#Template",
+                    "acl": "read",
+                    "aclScope": "Template"
+                }
+            ]
+        }
+    },
+    "additionalLayouts": {
+        "detailBottomTotal": {
+            "type": "list",
+            "dataAttributeList": ["name", "view", "customLabel"]
+        },
+        "listForAccount": {
+            "type": "list"
+        }
+    },
+    "relationshipPanels": {
+        "account": {
+            "selectMandatoryAttributeList": [
+                "billingAddressStreet",
+                "billingAddressCountry",
+                "billingAddressPostalCode",
+                "billingAddressCity",
+                "billingAddressState",
+                "shippingAddressStreet",
+                "shippingAddressCountry",
+                "shippingAddressPostalCode",
+                "shippingAddressCity",
+                "shippingAddressState",
+                "priceBookId",
+                "priceBookName",
+                "priceBookIsTaxInclusive"
+            ],
+            "selectFieldHandler": "modules/sales/handlers/quote/select-account-field"
+        },
+        "invoices": {
+            "createAction": "createRelatedInvoice",
+            "view": "sales:views/sales-order/record/panels/invoices",
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true
+        },
+        "deliveryOrders": {
+            "createAction": "createRelatedDeliveryOrder",
+            "view": "sales:views/sales-order/record/panels/delivery-orders",
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true
+        },
+        "returnOrders": {
+            "createAction": "createRelatedReturnOrder",
+            "view": "sales:views/sales-order/record/panels/return-orders",
+            "layout": "listForAccount",
+            "selectDisabled": true,
+            "unlinkDisabled": true
+        },
+        "inventoryTransactions": {
+            "createDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "layout": "listForOrder"
+        },
+        "tax": {
+            "selectMandatoryAttributeList": [
+                "rate",
+                "basis",
+                "taxCodeId",
+                "taxCodeName",
+                "shippingMode"
+            ],
+            "selectFieldHandler": "modules/sales/handlers/quote/select-tax-field"
+        },
+        "billingContact": {
+            "createAttributeMap": {
+                "accountId": "accountId",
+                "accountName": "accountName"
+            }
+        },
+        "shippingContact": {
+            "createAttributeMap": {
+                "accountId": "accountId",
+                "accountName": "accountName"
+            }
+        },
+        "priceBook": {
+            "selectFieldHandler": "modules/sales/handlers/quote/select-price-book-field"
+        }
+    },
+    "calculationHandler": "sales:quote-calculation-handler",
+    "iconClass": "fas fa-file-invoice"
+}

@@ -1,0 +1,71 @@
+{
+  "labels": {
+    "Create ReceiptOrder": "Crea ricevuta ordine",
+    "Add Item": "Aggiungi Articolo",
+    "Items": "Articoli",
+    "Received Inventory": "Inventario ricevuto",
+    "Import Serial Numbers": "Importa numeri di serie",
+    "CSV File": "File CSV"
+  },
+  "fields": {
+    "status": "Stato",
+    "number": "Numero",
+    "numberA": "Numero (incrementato automaticamente)",
+    "account": "Cliente",
+    "supplier": "Fornitore",
+    "purchaseOrder": "Ordine d'Acquisto",
+    "returnOrder": "Ordine di Reso",
+    "shippingContact": "Contatto di spedizione",
+    "amount": "Importo",
+    "shippingProvider": "Corriere per la spedizione",
+    "amountCurrency": "Importo Valuta",
+    "itemList": "Lista articoli",
+    "receivedItemList": "Elenco degli articoli ricevuti",
+    "dateOrdered": "Data Ordine",
+    "dateReceived": "Ordine ricevuto",
+    "weight": "Peso",
+    "currency": "Valuta",
+    "isDone": "Fatto",
+    "warehouse": "Magazzino",
+    "fieldDelimiter": "Delimitatore di campo",
+    "textQualifier": "Qualificatore di testo",
+    "headerRow": "Riga di intestazione",
+    "columnNumber": "Numero di colonna",
+    "preview": "Anteprima"
+  },
+  "links": {
+    "items": "Articoli",
+    "receivedItems": "Articoli ricevuti",
+    "shippingContact": "Contatto di spedizione",
+    "shippingProvider": "Corriere per la spedizione",
+    "purchaseOrder": "Ordine d'Acquisto",
+    "returnOrder": "Ordine di Reso",
+    "account": "Cliente",
+    "supplier": "Fornitore",
+    "inventoryTransactions": "Transazioni di magazzino",
+    "warehouse": "Magazzino"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Ready": "Pronto",
+      "Completed": "Completato",
+      "Canceled": "Annullato"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperto",
+    "completed": "Completato"
+  },
+  "messages": {
+    "inventoryIsInAdjustment": "Impossibile salvare perché l'inventario è attualmente in fase di rettifica avviata.",
+    "serialNumbersExists": "Alcuni numeri di serie esistono già.\n\n{numbers}",
+    "serialNumberImportLimitExceeded": "Non è possibile importare più di {maxSize} numeri di serie.",
+    "serialNumberAlreadyInStock": "Numero di serie già disponibile a magazzino.\n\n{numbers}",
+    "receivedSerialNumberNotOne": "La quantità di un articolo ricevuto con un numero di serie deve essere uno.",
+    "receivedInventoryNumberProductMismatch": "Il numero di inventario non corrisponde al prodotto.",
+    "receivedInventoryNumberIsEmpty": "Numero di inventario non specificato.",
+    "receivedQuantityMismatch": "Mancata corrispondenza della quantità ricevuta.",
+    "emptyQuantityReceived": "È necessario specificare la quantità ricevuta prima di completare l'ordine."
+  }
+}

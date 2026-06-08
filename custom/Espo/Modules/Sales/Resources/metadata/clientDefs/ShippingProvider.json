@@ -1,0 +1,9 @@
+{
+    "controller": "controllers/record",
+    "filterList": [
+        "active"
+    ],
+    "selectDefaultFilters": {
+        "filter": "active"
+    }
+}

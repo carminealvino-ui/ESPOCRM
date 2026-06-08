@@ -1,0 +1,34 @@
+{
+    "labels": {
+        "Create Warehouse": "Create Warehouse"
+    },
+    "fields": {
+        "status": "Status",
+        "isAvailableForStock": "Available for Stock",
+        "isStock": "Stock",
+        "order": "Order"
+    },
+    "links": {
+        "deliveryOrders": "Deliveries",
+        "receiptOrders": "Receipts",
+        "inventoryTransactions": "Inventory Transactions",
+        "products": "Products",
+        "inventoryNumbers": "Inventory Numbers",
+        "outboundTransferOrders": "Outbound Transfers",
+        "inboundTransferOrders": "Inbound Transfers"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    },
+    "presetFilters": {
+        "active": "Active",
+        "stocked": "Stocked"
+    },
+    "tabs": {
+        "inventory": "Inventory",
+        "orders": "Orders"
+    }
+}

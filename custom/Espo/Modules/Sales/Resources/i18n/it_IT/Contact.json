@@ -1,0 +1,19 @@
+{
+  "links": {
+    "quotesBilling": "Preventivi (Fatturazione)",
+    "quotesShipping": "Preventivi (Spedizione)",
+    "salesOrdersBilling": "Ordini di vendita (fatturazione)",
+    "salesOrdersShipping": "Ordini di vendita (spedizione)",
+    "invoicesBilling": "Fatture (fatturazione)",
+    "invoicesShipping": "Fatture (Spedizione)",
+    "purchaseOrdersBilling": "Ordini di acquisto (fatturazione)",
+    "purchaseOrdersShipping": "Ordini di acquisto (spedizione)",
+    "deliveryOrdersShipping": "Ordini di consegna (spedizione)",
+    "returnOrdersBilling": "Ordini di reso (fatturazione)",
+    "returnOrdersShipping": "Ordini di reso (spedizione)",
+    "receiptOrdersShipping": "Ordini ricevuti (spedizione)",
+    "creditNotesBilling": "Note di credito (fatturazione)",
+    "subscriptionsBilling": "Abbonamenti (Fatturazione)",
+    "supplierBillsBilling": "Fatture fornitore (Fatturazione)"
+  }
+}

@@ -1,0 +1,5 @@
+[
+    {"name": "name"},
+    {"name": "quantity", "width": 9},
+    {"name": "fixedQuantity", "width": 10}
+]

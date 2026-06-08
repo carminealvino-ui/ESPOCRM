@@ -1,0 +1,76 @@
+{
+  "labels": {
+    "Create CreditNote": "Crea nota di credito",
+    "Taxes": "Tasse",
+    "Add Item": "Aggiungi Articolo",
+    "Templates": "Modelli",
+    "Items": "Articoli",
+    "E-Credit Note": "Nota di credito elettronico"
+  },
+  "fields": {
+    "status": "Stato",
+    "number": "Numero",
+    "numberA": "Numero (incrementato automaticamente)",
+    "account": "Cliente",
+    "invoice": "Fattura",
+    "tax": "Profilo fiscale",
+    "taxRate": "Aliquota Fiscale",
+    "taxAmount": "L'Importo della Tassa",
+    "amount": "Importo",
+    "itemList": "Lista articoli",
+    "dateIssued": "Data di emissione",
+    "dateDue": "Data Scadenza",
+    "amountConverted": "Importo (convertito)",
+    "taxAmountConverted": "Importo dell'imposta (convertito)",
+    "taxAmountCurrency": "Importo imposta Valuta",
+    "amountCurrency": "Importo Valuta",
+    "currency": "Valuta",
+    "buyerReference": "Riferimento dell'acquirente",
+    "purchaseOrderReference": "Riferimento ordine di acquisto",
+    "note": "Nota",
+    "amountDue": "Importo Dovuto",
+    "amountDueCurrency": "Importo dovuto Valuta",
+    "grandTotalAmountConverted": "Totale generale (convertito)",
+    "grandTotalAmount": "Totale complessivo",
+    "grandTotalAmountCurrency": "Valuta totale generale",
+    "discountAmountCurrency": "Importo sconto Valuta",
+    "billingContact": "Contatto di fatturazione",
+    "allocations": "Allocazioni",
+    "unallocatedAmount": "Importo non allocato",
+    "roundingProfile": "Profilo di arrotondamento"
+  },
+  "links": {
+    "items": "Articoli",
+    "account": "Cliente",
+    "tax": "Profilo fiscale",
+    "invoice": "Fattura",
+    "priceBook": "Listino Prezzi",
+    "billingContact": "Contatto di fatturazione",
+    "allocations": "Allocazioni",
+    "subscriptionUpdates": "Aggiornamenti abbonamento",
+    "roundingProfile": "Profilo di arrotondamento"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Issued": "Emessa",
+      "Resolved": "Risolta",
+      "Canceled": "Annullato"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperto",
+    "resolved": "Risolta",
+    "openIssued": "Emessa, aperta"
+  },
+  "messages": {
+    "amountDueMustNotBeLessThanZero": "L'importo dovuto non può essere inferiore a zero. L'importo allocato supera l'importo della transazione.",
+    "cannotApplyToDoneInvoice": "Non può essere applicato a una fattura pagata.",
+    "creditNoteDifferentCurrency": "La valuta della nota di accredito non può differire dalla valuta della fattura.",
+    "cannotCompleteWithAmountDue": "Impossibile chiudere perché l'importo dovuto non è stato compensato. Devi prima allocare la nota di credito a una fattura. In alternativa, crea un pagamento in uscita e allocarlo a questa nota di credito.",
+    "cannotCancelWithAmountDue": "Impossibile annullare una nota di credito emessa, poiché l'importo dovuto non è stato compensato. Alloca prima la nota di credito a una fattura o a una nota di debito. Se necessario, crea una corrispondente nota di debito per l'importo residuo. Quindi imposta la nota di credito come chiusa."
+  },
+  "panels": {
+    "allocation": "Abbinamento fattura"
+  }
+}

@@ -1,0 +1,14 @@
+{
+    "labels": {
+        "Create ProductCategory": "Izveidot kategoriju",
+        "Manage Categories": "Pārvaldīt kategorijas",
+        "Products": "Produkti"
+    },
+    "fields": {
+        "order": "Pasūtījums",
+        "childList": "Bērnu saraksts"
+    },
+    "links": {
+        "products": "Produkti"
+    }
+}

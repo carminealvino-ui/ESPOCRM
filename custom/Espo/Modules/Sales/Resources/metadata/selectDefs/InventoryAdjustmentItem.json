@@ -1,0 +1,12 @@
+{
+    "primaryFilterClassNameMap": {
+        "completed": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryAdjustmentItem\\PrimaryFilters\\Completed"
+    },
+    "accessControlFilterClassNameMap": {
+        "onlyOwn": "Espo\\Modules\\Sales\\Classes\\Select\\QuoteItem\\AccessControlFilters\\OnlyOwn",
+        "onlyTeam": "Espo\\Modules\\Sales\\Classes\\Select\\QuoteItem\\AccessControlFilters\\OnlyTeam",
+        "portalOnlyAccount": "Espo\\Core\\Select\\AccessControl\\Filters\\No",
+        "portalOnlyContact": "Espo\\Core\\Select\\AccessControl\\Filters\\No",
+        "portalOnlyOwn": "Espo\\Core\\Select\\AccessControl\\Filters\\No"
+    }
+}

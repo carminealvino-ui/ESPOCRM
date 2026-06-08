@@ -1,0 +1,59 @@
+[
+    {
+        "name": "name",
+        "width": 18,
+        "link": true,
+        "align": "left"
+    },
+    {
+        "name": "addressCity",
+        "width": 10,
+        "align": "left"
+    },
+    {
+        "name": "cAP",
+        "width": 8,
+        "align": "left"
+    },
+    {
+        "name": "cAPCodice",
+        "width": 8,
+        "align": "left"
+    },
+    {
+        "name": "b2B",
+        "width": 6,
+        "align": "left"
+    },
+    {
+        "name": "source",
+        "width": 8,
+        "align": "left"
+    },
+    {
+        "name": "fornitorePartner",
+        "width": 8,
+        "align": "left"
+    },
+    {
+        "name": "productBrand",
+        "width": 6,
+        "align": "left"
+    },
+    {
+        "name": "productCategory",
+        "width": 8,
+        "align": "left"
+    },
+    {
+        "name": "status",
+        "width": 8,
+        "align": "left"
+    },
+    {
+        "name": "opportunita",
+        "width": 25,
+        "link": true,
+        "align": "left"
+    }
+]

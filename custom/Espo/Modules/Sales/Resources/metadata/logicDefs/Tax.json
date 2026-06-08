@@ -1,0 +1,74 @@
+{
+    "fields": {
+        "taxCode": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "basis",
+                        "value": "Tax Code"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "basis",
+                        "value": "Tax Code"
+                    }
+                ]
+            }
+        },
+        "rate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "basis",
+                        "value": "Rate"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "basis",
+                        "value": "Rate"
+                    }
+                ]
+            }
+        },
+        "shippingTaxCode": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "basis",
+                        "value": "Tax Code"
+                    },
+                    {
+                        "type": "equals",
+                        "attribute": "shippingMode",
+                        "value": "Fixed"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "basis",
+                        "value": "Tax Code"
+                    },
+                    {
+                        "type": "equals",
+                        "attribute": "shippingMode",
+                        "value": "Fixed"
+                    }
+                ]
+            }
+        }
+    }
+}

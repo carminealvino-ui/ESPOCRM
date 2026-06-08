@@ -1,0 +1,25 @@
+{
+    "readLoaderClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\InventoryNumber\\QuantityInTransit"
+    ],
+    "duplicateWhereBuilderClassName": "Espo\\Classes\\DuplicateWhereBuilders\\Name",
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\InventoryNumber\\BeforeCreateValidation"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\InventoryNumber\\BeforeUpdateValidation"
+    ],
+    "actions": {
+        "convertCurrency": {
+            "disabled": true
+        },
+        "merge": {
+            "disabled": true
+        }
+    },
+    "massActions": {
+        "convertCurrency": {
+            "disabled": true
+        }
+    }
+}

@@ -1,0 +1,40 @@
+{
+    "stream": false,
+    "disabled": true,
+    "statusField": null,
+    "kanbanStatusIgnoreList": null,
+    "stars": false,
+    "preserveAuditLog": true,
+    "collaborators": false,
+    "assignedUsers": false,
+    "softReserveStatusList": [
+        "Draft"
+    ],
+    "reserveStatusList": [
+        "Ready"
+    ],
+    "canceledStatusList": [
+        "Canceled"
+    ],
+    "doneStatusList": [
+        "Completed"
+    ],
+    "failedStatusList": [
+        "Failed"
+    ],
+    "lockableFieldList": [
+        "status",
+        "itemList",
+        "shippingCost",
+        "number",
+        "dateOrdered",
+        "shippingDate",
+        "deliveryDate",
+        "fromWarehouse",
+        "toWarehouse",
+        "fromAddress",
+        "toAddress",
+        "shippingProvider",
+        "amount"
+    ]
+}

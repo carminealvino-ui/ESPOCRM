@@ -1,0 +1,57 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "product"
+                }
+            ],
+            [
+                {
+                    "name": "periodStartDate"
+                },
+                {
+                    "name": "periodEndDate"
+                }
+            ],
+            [
+                {
+                    "name": "creditNote"
+                },
+                {
+                    "name": "account"
+                }
+            ],
+            [
+                {
+                    "name": "quantity"
+                },
+                {
+                    "name": "creditNoteStatus"
+                }
+            ],
+            [
+                {
+                    "name": "taxCode"
+                },
+                {
+                    "name": "unitPrice"
+                }
+            ],
+            [
+                {
+                    "name": "amount"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ]
+    }
+]

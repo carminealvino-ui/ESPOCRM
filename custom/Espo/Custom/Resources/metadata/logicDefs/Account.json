@@ -1,0 +1,78 @@
+{
+    "fields": {
+        "cluster": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        },
+        "industry": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        },
+        "codiceCliente": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "has",
+                        "attribute": "azienda",
+                        "value": "GFB"
+                    }
+                ]
+            }
+        },
+        "codicePOS": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "has",
+                        "attribute": "azienda",
+                        "value": "GFB"
+                    }
+                ]
+            }
+        },
+        "consistenze": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "has",
+                        "attribute": "azienda",
+                        "value": "GFB"
+                    }
+                ]
+            }
+        },
+        "meseImportazioneCB": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "has",
+                        "attribute": "azienda",
+                        "value": "GFB"
+                    }
+                ]
+            }
+        },
+        "partitaIVA": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,145 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "maxLength": 100,
+            "index": true,
+            "audited": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Active",
+                "Inactive"
+            ],
+            "maxLength": 8,
+            "default": "Active",
+            "style": {
+                "Inactive": "info"
+            },
+            "audited": true
+        },
+        "channel": {
+            "type": "link",
+            "audited": true
+        },
+        "provider": {
+            "type": "foreign",
+            "link": "channel",
+            "field": "provider"
+        },
+        "instructions": {
+            "type": "text",
+            "tooltip": true
+        },
+        "isInbound": {
+            "type": "bool",
+            "default": true
+        },
+        "isOutbound": {
+            "type": "bool",
+            "default": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "isPrimary": {
+            "type": "bool",
+            "notStorable": true,
+            "utility": true
+        },
+        "accounts": {
+            "type": "linkMultiple",
+            "importDisabled": true,
+            "exportDisabled": true,
+            "noLoad": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "directUpdateDisabled": true,
+            "layoutAvailabilityList": [
+                "filters"
+            ]
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "paymentEntries": {
+            "type": "hasMany",
+            "entity": "PaymentEntry",
+            "foreign": "method",
+            "readOnly": true
+        },
+        "channel": {
+            "type": "belongsTo",
+            "entity": "PaymentChannel",
+            "foreign": "methods"
+        },
+        "requests": {
+            "type": "hasMany",
+            "entity": "PaymentRequest",
+            "foreign": "method",
+            "foreignName": "number",
+            "readOnly": true
+        },
+        "accounts": {
+            "type": "hasMany",
+            "entity": "Account",
+            "foreign": "paymentMethods",
+            "readOnly": true,
+            "columnAttributeMap": {
+                "primary": "isPrimary"
+            }
+        },
+        "invoices": {
+            "type": "hasMany",
+            "entity": "Invoice",
+            "foreign": "paymentMethods",
+            "readOnly": true,
+            "columnAttributeMap": {
+                "primary": "isPrimary"
+            }
+        },
+        "subscriptions": {
+            "type": "hasMany",
+            "entity": "Subscription",
+            "foreign": "paymentMethod",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "name",
+        "order": "asc",
+        "textFilterFields": [
+            "name"
+        ]
+    }
+}

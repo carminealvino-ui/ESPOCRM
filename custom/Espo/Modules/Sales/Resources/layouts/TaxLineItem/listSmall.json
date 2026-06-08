@@ -1,0 +1,27 @@
+[
+    {
+        "name": "taxCode"
+    },
+    {
+        "name": "source",
+        "width": 20
+    },
+    {
+        "name": "component",
+        "width": 12
+    },
+    {
+        "name": "product",
+        "width": 16
+    },
+    {
+        "name": "baseAmount",
+        "align": "right",
+        "width": 15
+    },
+    {
+        "name": "amount",
+        "align": "right",
+        "width": 15
+    }
+]

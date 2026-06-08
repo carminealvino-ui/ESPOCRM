@@ -1,0 +1,16 @@
+{
+  "labels": {
+    "Items": "Articles",
+    "Select Product": "Sélectionner un produit",
+    "Add Item": "Ajouter un article"
+  },
+  "links": {
+    "quotes": "Devis",
+    "salesOrders": "Commandes",
+    "invoices": "Factures",
+    "items": "Articles"
+  },
+  "fields": {
+    "itemList": "Liste des articles"
+  }
+}

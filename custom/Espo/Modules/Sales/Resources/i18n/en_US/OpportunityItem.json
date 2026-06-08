@@ -1,0 +1,30 @@
+{
+    "fields": {
+        "name": "Name",
+        "qty": "Qty",
+        "quantity": "Quantity",
+        "quantityInt": "Quantity (Int)",
+        "unitPrice": "Unit Price",
+        "amount": "Amount",
+        "amountCurrency": "Amount (Currency)",
+        "unitPriceCurrency": "Unit Price (Currency)",
+        "product": "Product",
+        "order": "Line Number",
+        "opportunity": "Opportunity",
+        "description": "Description",
+        "discount": "Discount (%)",
+        "amountConverted": "Amount (Converted)",
+        "unitPriceConverted": "Unit Price (Converted)",
+        "listPrice": "List Price",
+        "listPriceConverted": "List Price (Converted)",
+        "listPriceCurrency": "List Price Currency",
+        "opportunityStage": "Stage"
+    },
+    "links": {
+        "opportunity": "Opportunity",
+        "product": "Product"
+    },
+    "labels": {
+        "Opportunities": "Opportunities"
+    }
+}

@@ -1,0 +1,13 @@
+{
+  "labels": {
+    "Items": "Elementy",
+    "Select Product": "Wybierz Produkt",
+    "Add Item": "Dodaj element"
+  },
+  "links": {
+    "quotes": "Oferty"
+  },
+  "fields": {
+    "itemList": "Lista elementów"
+  }
+}

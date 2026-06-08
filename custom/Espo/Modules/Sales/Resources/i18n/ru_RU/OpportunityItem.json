@@ -1,0 +1,27 @@
+{
+  "fields": {
+    "name": "Название",
+    "qty": "К-во",
+    "quantity": "Количество",
+    "unitPrice": "Цена за ед.",
+    "amount": "Сумма",
+    "product": "Продукт",
+    "order": "Номер линии",
+    "opportunity": "Сделка",
+    "description": "Описание",
+    "amountConverted": "Сумма (сконвертированная)",
+    "unitPriceConverted": "Цена за ед. (сконвертированная)",
+    "opportunityStage": "Стадия",
+      "listPriceCurrency": "Валюта цены",
+      "listPrice": "Цена",
+      "listPriceConverted": "Цена (сконвертированная)",
+      "discount": "Скидка (%)"
+  },
+  "links": {
+    "opportunity": "Сделка",
+    "product": "Продукт"
+  },
+  "labels": {
+    "Opportunities": "Сделки"
+  }
+}

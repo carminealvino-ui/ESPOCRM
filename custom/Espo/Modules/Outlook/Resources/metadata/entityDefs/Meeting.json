@@ -1,0 +1,10 @@
+{
+    "fields": {
+        "outlookSkipPush": {
+            "type": "bool",
+            "utility": true,
+            "readOnly": true,
+            "directAccessDisabled": true
+        }
+    }
+}

@@ -1,0 +1,24 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "quantityWarehouse",
+        "label": "quantity",
+        "width": 18,
+        "notSortable": true
+    },
+    {
+        "name": "quantityWarehouseOnHand",
+        "label": "quantityOnHand",
+        "width": 18,
+        "notSortable": true
+    },
+    {
+        "name": "quantityWarehouseReserved",
+        "label": "quantityReserved",
+        "width": 18,
+        "notSortable": true
+    }
+]

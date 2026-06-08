@@ -1,0 +1,43 @@
+{
+  "fields": {
+    "variantSyncFieldList": "Varianten-Syncfelder",
+    "doneStatusList": "Erledigt-Status",
+    "canceledStatusList": "Stornierte Status",
+    "softReserveStatusList": "Weiche Reservierungsstatus",
+    "reserveStatusList": "Reservierungsstatus",
+    "failedStatusList": "Fehlgeschlage Status",
+    "deliveryRequiredStatusList": "Liefererforderliche Status",
+    "lockableFieldList": "Felder sperren"
+  },
+  "tooltips": {
+    "lockableFieldList": "Felder, die schreibgeschützt werden, wenn eine Bestellung gesperrt wird.",
+    "productVariantSyncFieldList": "Felder, die von einer Vorlage mit Produktvarianten synchronisiert werden.",
+    "salesOrderSoftReserveStatusList": "Status, bei denen Inventar weich reserviert ist.",
+    "deliveryOrderSoftReserveStatusList": "Status, bei denen Inventar weich reserviert ist.",
+    "transferOrderSoftReserveStatusList": "Status, bei denen Inventar weich reserviert ist.",
+    "salesOrderDoneStatusList": "Status, die anzeigen, dass ein Kundenauftrag erledigt ist.",
+    "purchaseOrderDoneStatusList": "Status, die anzeigen, dass eine Bestellung erledigt ist.",
+    "purchaseOrderCanceledStatusList": "Status, die anzeigen, dass eine Bestellung storniert ist.",
+    "salesOrderCanceledStatusList": "Status, die anzeigen, dass eine Bestellung storniert ist.",
+    "receiptOrderDoneStatusList": "Status, die anzeigen, dass ein Empfangsauftrag erledigt ist.",
+    "receiptOrderCanceledStatusList": "Status, die anzeigen, dass ein Empfangsauftrag storniert ist.",
+    "invoiceDoneStatusList": "Status, die anzeigen, dass eine Rechnung erledigt ist.",
+    "invoiceCanceledStatusList": "Status, die anzeigen, dass eine Rechnung storniert ist.",
+    "invoicePreIssueStatusList": "Statusangaben, die darauf hinweisen, dass eine Rechnung weder ausgestellt noch storniert wurde.",
+    "creditNoteDoneStatusList": "Status, der angibt, dass eine Gutschrift fertiggestellt ist.",
+    "creditNoteCanceledStatusList": "Status, der angibt, dass eine Gutschrift storniert wurde.",
+    "quoteDoneStatusList": "Status, die anzeigen, dass ein Angebot erledigt ist.",
+    "quoteCanceledStatusList": "Status, die anzeigen, dass ein Angebot storniert ist.",
+    "deliveryRequiredStatusList": "Status, für die ein Lieferauftrag erstellt werden soll.",
+    "deliveryOrderCanceledStatusList": "Status, die anzeigen, dass ein Lieferauftrag storniert wurde. Das Inventar wird nicht automatisch in den Lager zurückgeführt.",
+    "deliveryOrderReserveStatusList": "Status, bei denen Inventar reserviert ist.",
+    "transferOrderReserveStatusList": "Status, bei denen Inventar reserviert ist.",
+    "deliveryOrderFailedStatusList": "Status, dieanzeigen, dass ein Lieferauftrag nicht zugestellt werden konnte. Das Inventar wird nicht automatisch in den Lager zurückgeführt. Möglicherweise ist ein manueller Eingriff erforderlich.",
+    "deliveryOrderDoneStatusList": "Status, die anzeigen, dass ein Lieferauftrag erledigt ist.",
+    "transferOrderCanceledStatusList": "Status, die anzeigen, dass ein Umlagerungsauftrag storniert ist. Das Inventar wird automatisch wieder in den Lager zurückgeführt.",
+    "transferOrderFailedStatusList": "Status, die anzeigen, dass ein Umlagerungsauftrag nicht zugestellt werden konnte. Der Bestand wird nicht automatisch in den Lager zurückgeführt. Möglicherweise ist ein manueller Eingriff erforderlich.",
+    "transferOrderDoneStatusList": "Status, die anzeigen, dass ein Umlagerungsauftrag erledigt ist.",
+    "returnOrderDoneStatusList": "Status, die anzeigen, dass eine Rücksendebestellung erledigt ist.",
+    "returnOrderCanceledStatusList": "Status, die anzeigen, dass eine Rücksendebestellung storniert ist."
+  }
+}

@@ -1,0 +1,15 @@
+{
+    "fields": {
+        "internalClassName": {
+            "nonAdminReadOnly": true
+        },
+        "internalParams": {
+            "onlyAdmin": true
+        }
+    },
+    "links": {
+        "portals": {
+            "internal": true
+        }
+    }
+}

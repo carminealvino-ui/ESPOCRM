@@ -1,0 +1,151 @@
+{
+    "WireTransfer": {
+        "entityType": "PaymentChannelWireTransfer",
+        "record": {
+            "view": null,
+            "layout": [
+                {
+                    "rows": [
+                        [
+                            {
+                                "name": "accountHolder"
+                            },
+                            false
+                        ],
+                        [
+                            {
+                                "name": "iban"
+                            },
+                            {
+                                "name": "accountNumber"
+                            }
+                        ],
+                        [
+                            {
+                                "name": "bic"
+                            },
+                            {
+                                "name": "bankCode"
+                            }
+                        ],
+                        [
+                            {
+                                "name": "bankName"
+                            },
+                            {
+                                "name": "bankAddress"
+                            }
+                        ]
+                    ]
+                }
+            ],
+            "fields": {
+                "accountHolder": {
+                    "lockable": true
+                },
+                "iban": {
+                    "lockable": true
+                },
+                "accountNumber": {
+                    "lockable": true
+                },
+                "bic": {
+                    "lockable": true
+                },
+                "bankName": {
+                    "lockable": true
+                },
+                "bankCode": {
+                    "lockable": true
+                }
+            }
+        },
+        "paymentLink": {
+            "dataProviderClassName": "Espo\\Modules\\Sales\\Tools\\PaymentRequest\\WireTransfer\\WireTransferPaymentLinkDataProvider",
+            "view": "modules/sales/views/payment-channel-wire-transfer/link"
+        }
+    },
+    "SepaCreditTransfer": {
+        "entityType": "PaymentChannelSepaCreditTransfer",
+        "record": {
+            "view": null,
+            "layout": [
+                {
+                    "rows": [
+                        [
+                            {
+                                "name": "accountHolder"
+                            },
+                            false
+                        ],
+                        [
+                            {
+                                "name": "iban"
+                            },
+                            false
+                        ],
+                        [
+                            {
+                                "name": "bic"
+                            },
+                            false
+                        ]
+                    ]
+                }
+            ],
+            "fields": {
+                "accountHolder": {
+                    "lockable": true
+                },
+                "iban": {
+                    "lockable": true
+                },
+                "bic": {
+                    "lockable": true
+                }
+            }
+        },
+        "paymentLink": {
+            "dataProviderClassName": "Espo\\Modules\\Sales\\Tools\\PaymentRequest\\SepaCreditTransfer\\SepaCreditTransferPaymentLinkDataProvider",
+            "view": "modules/sales/views/payment-channel-wire-transfer/link"
+        }
+    },
+    "SepaDirectDebit": {
+        "entityType": "PaymentChannelSepaDirectDebit",
+        "record": {
+            "view": null,
+            "layout": [
+                {
+                    "rows": [
+                        [
+                            {
+                                "name": "creditorIdentifier"
+                            },
+                            {
+                                "name": "accountHolder"
+                            }
+                        ],
+                        [
+                            {
+                                "name": "iban"
+                            },
+                            false
+                        ]
+                    ]
+                }
+            ],
+            "fields": {
+                "creditorIdentifier": {
+                    "lockable": true
+                },
+                "accountHolder": {
+                    "lockable": true
+                },
+                "iban": {
+                    "lockable": true
+                }
+            }
+        },
+        "paymentLink": {}
+    }
+}

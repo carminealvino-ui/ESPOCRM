@@ -1,0 +1,70 @@
+{
+  "labels": {
+    "Create SupplierCredit": "Eingangsgutschrift erstellen",
+    "Items": "Artikel"
+  },
+  "fields": {
+    "reference": "Referenz",
+    "number": "Nummer",
+    "numberA": "Nummer (auto-inkrement)",
+    "account": "Firma",
+    "supplier": "Lieferant",
+    "supplierBill": "Eingangsrechnung",
+    "billingAddress": "Rechnungsadresse",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "supplierAddress": "Lieferantenadresse",
+    "supplierAddressStreet": "Straße (Lieferant)",
+    "supplierAddressCity": "Stadt (Lieferant)",
+    "supplierAddressState": "Bundesland (Lieferant)",
+    "supplierAddressCountry": "Land (Lieferant)",
+    "supplierAddressPostalCode": "PLZ (Lieferant)",
+    "tax": "Steuerprofil",
+    "taxRate": "Steuersatz",
+    "shippingProvider": "Versender",
+    "taxAmount": "Steuerbetrag",
+    "amount": "Betrag",
+    "grandTotalAmount": "Gesamtbetrag",
+    "itemList": "Artikelliste",
+    "dateIssued": "Ausstellungsdatum",
+    "dateDue": "Fälligkeitsdatum",
+    "amountConverted": "Betrag (konvertiert)",
+    "taxAmountConverted": "Steuerbetrag (konvertiert)",
+    "grandTotalAmountConverted": "Gesamtbetrag (konvertiert)",
+    "taxAmountCurrency": "Steuerbetrag Währung",
+    "amountCurrency": "Betragswährung",
+    "currency": "Währung",
+    "isDone": "Erledigt",
+    "amountDue": "Fälliger Betrag",
+    "amountDueCurrency": "Fälliger Betrag Währung",
+    "allocations": "Zuordnungen",
+    "unallocatedAmount": "Nicht zugeordneter Betrag",
+    "document": "Originaldokument"
+  },
+  "links": {
+    "items": "Artikel",
+    "supplierBill": "Eingangsrechnung",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "shippingProvider": "Versender",
+    "tax": "Steuerprofil",
+    "account": "Firma",
+    "supplier": "Lieferant",
+    "allocations": "Zuordnungen"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Issued": "Ausgestellt",
+      "Resolved": "Erledigt",
+      "Canceled": "Storniert"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "resolved": "Erledigt",
+    "openIssued": "Offen Ausgestellt"
+  },
+  "message": {
+    "cannotCompleteWithAmountDue": "Abschluss nicht möglich, da der fällige Betrag nicht ausgeglichen ist. Ordnen Sie die Lieferantengutschrift zunächst einer Lieferantenrechnung zu oder erstellen Sie eingehende Zahlung und ordnen Sie diese der Lieferantengutschrift zu.",
+    "cannotCancelWithAmountDue": "Eine ausgestellte Lieferantengutschrift kann nicht storniert werden, da der fällige Betrag noch nicht ausgeglichen ist. Ordnen Sie die Lieferantengutschrift zunächst einer Lieferantenrechnung zu."
+  }
+}

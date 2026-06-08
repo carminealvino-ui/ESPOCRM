@@ -1,0 +1,10 @@
+{
+    "primaryFilterClassNameMap": {
+        "active": "Espo\\Modules\\Sales\\Classes\\Select\\PriceBook\\PrimaryFilters\\Active"
+    },
+    "selectAttributesDependencyMap": {
+        "id": [
+            "isTaxInclusive"
+        ]
+    }
+}

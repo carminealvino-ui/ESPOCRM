@@ -1,0 +1,35 @@
+{
+  "labels": {
+    "Create SupplierProductPrice": "Crea prezzo fornitore"
+  },
+  "fields": {
+    "supplier": "Fornitore",
+    "status": "Stato",
+    "product": "Prodotto",
+    "minQuantity": "Quantità min",
+    "price": "Prezzo",
+    "priceCurrency": "Prezzo Valuta",
+    "dateStart": "Data di Inizio",
+    "dateEnd": "Data Fine",
+    "minQty": "Qtà minima",
+    "partNumber": "Codice articolo",
+    "priceConverted": "Prezzo convertito",
+    "timeline": "Date di validità"
+  },
+  "links": {
+    "supplier": "Fornitore",
+    "product": "Prodotto"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  },
+  "presetFilters": {
+    "active": "Attivo"
+  },
+  "massActions": {
+    "updatePrice": "Aggiorna il prezzo"
+  }
+}

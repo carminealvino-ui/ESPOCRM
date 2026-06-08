@@ -1,0 +1,31 @@
+{
+    "stream": false,
+    "disabled": true,
+    "statusField": null,
+    "kanbanStatusIgnoreList": null,
+    "stars": false,
+    "preserveAuditLog": true,
+    "collaborators": false,
+    "assignedUsers": false,
+    "lockableFieldList": [
+        "supplier",
+        "account",
+        "status",
+        "itemList",
+        "shippingCost",
+        "number",
+        "reference",
+        "amount",
+        "dateInvoiced",
+        "dateDue",
+        "purchaseOrder",
+        "supplierAddress",
+        "billingContact",
+        "tax",
+        "taxRate",
+        "currencyRate",
+        "shippingProvider",
+        "document",
+        "postingDate"
+    ]
+}

@@ -1,0 +1,50 @@
+{
+  "labels": {
+    "Create InventoryAdjustment": "Crea rettifica",
+    "Add Item": "Aggiungi Articolo",
+    "Items": "Articoli"
+  },
+  "fields": {
+    "status": "Stato",
+    "number": "Numero",
+    "numberA": "Numero (incrementato automaticamente)",
+    "amount": "Importo",
+    "itemList": "Lista articoli",
+    "date": "Data",
+    "reason": "Motivo",
+    "warehouse": "Magazzino",
+    "isDone": "Fatto",
+    "doneAt": "Fatto a"
+  },
+  "links": {
+    "items": "Articoli",
+    "inventoryTransactions": "Transazioni di magazzino",
+    "warehouse": "Magazzino"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Started": "Iniziato",
+      "Completed": "Completato",
+      "Canceled": "Annullato"
+    },
+    "reason": {
+      "Stocktaking": "Inventario",
+      "Write-off": "Cancellazione",
+      "Waste": "Spreco",
+      "Shrinkage": "Restringimento",
+      "Damage": "Danno",
+      "Internal": "Interno"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperto",
+    "completed": "Completato"
+  },
+  "messages": {
+    "itemProductIsNotInventory": "Il prodotto {name} non è un articolo di magazzino.",
+    "emptyNewQuantityInItem": "La quantità disponibile non è specificata per un articolo.",
+    "sameItemsInAnotherAdjustment": "Gli stessi elementi si trovano in un'altra rettifica avviata.",
+    "duplicateItems": "Non puoi includere articoli duplicati nella stessa rettifica."
+  }
+}

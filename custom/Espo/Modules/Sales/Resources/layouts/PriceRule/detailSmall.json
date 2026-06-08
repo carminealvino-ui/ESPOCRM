@@ -1,0 +1,85 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "target"
+                },
+                {
+                    "name": "priceBook"
+                }
+            ],
+            [
+                {
+                    "name": "productCategory"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "conditionSelect",
+                    "label": "condition"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                false
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "basedOn"
+                },
+                {
+                    "name": "supplier"
+                }
+            ],
+            [
+                {
+                    "name": "percentage"
+                },
+                {
+                    "name": "currency"
+                }
+            ],
+            [
+                {
+                    "name": "roundingMethod"
+                },
+                {
+                    "name": "roundingFactor"
+                }
+            ],
+            [
+                {
+                    "name": "surcharge"
+                },
+                false
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "minQuantity"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "dateStart"
+                },
+                {
+                    "name": "dateEnd"
+                }
+            ]
+        ]
+    }
+]

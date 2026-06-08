@@ -1,0 +1,16 @@
+[
+    "brand",
+    "isSubscribable",
+    "isPurchasable",
+    "isSellable",
+    "itemType",
+    "pricingType",
+    "pricingFactor",
+    "allowFractionalQuantity",
+    "removalStrategy",
+    "isInventory",
+    "teams",
+    "status",
+    "category",
+    "taxClasses"
+]

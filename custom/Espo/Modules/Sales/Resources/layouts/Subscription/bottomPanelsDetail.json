@@ -1,0 +1,14 @@
+{
+    "periods": {
+        "index": 0
+    },
+    "updates": {
+        "index": 1
+    },
+    "invoices": {
+        "index": 2
+    },
+    "creditNotes": {
+        "index": 3
+    }
+}

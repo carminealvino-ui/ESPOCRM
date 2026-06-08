@@ -1,0 +1,251 @@
+{
+    "fields": {
+        "priceBook": {
+            "type": "link",
+            "autocompleteOnEmpty": true,
+            "audited": true
+        },
+        "priceBookIsTaxInclusive": {
+            "type": "foreign",
+            "link": "priceBook",
+            "field": "isTaxInclusive",
+            "utility": true
+        },
+        "taxNumber": {
+            "type": "varchar",
+            "maxLength": 32,
+            "audited": true
+        },
+        "electronicAddressScheme": {
+            "type": "enum",
+            "maxLength": 4,
+            "view": "sales:views/fields/electronic-address-scheme",
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\FieldValidators\\Account\\ElectronicAddressScheme\\Valid"
+            ],
+            "audited": true
+        },
+        "electronicAddressIdentifier": {
+            "type": "varchar",
+            "maxLength": 255,
+            "audited": true
+        },
+        "paymentMethods": {
+            "type": "linkMultiple",
+            "view": "views/fields/link-multiple-with-primary",
+            "columns": {
+                "primary": "isPrimary"
+            },
+            "primaryLink": "paymentMethod",
+            "additionalAttributeList": ["columns"],
+            "fullNameAdditionalAttributeList": ["paymentMethod"],
+            "autocompleteOnEmpty": true,
+            "audited": true
+        },
+        "paymentMethod": {
+            "type": "link",
+            "notStorable": true,
+            "entity": "PaymentMethod",
+            "layoutAvailabilityList": [
+                "detail",
+                "list"
+            ],
+            "autocompleteOnEmpty": true,
+            "detailLayoutIncompatibleFieldList": ["paymentMethods"],
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Account\\PaymentMethod",
+            "audited": true
+        },
+        "paymentTermsProfile": {
+            "type": "link",
+            "audited": true,
+            "autocompleteOnEmpty": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText",
+                "autocompleteOnEmpty"
+            ],
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\Account\\PaymentTermsProfile\\MustBeActive"
+            ]
+        }
+    },
+    "links": {
+        "supplier": {
+            "type": "hasOne",
+            "foreign": "account",
+            "entity": "Supplier"
+        },
+        "paymentMethods": {
+            "type": "hasMany",
+            "entity": "PaymentMethod",
+            "foreign": "accounts",
+            "foreignName": "number",
+            "readOnly": true,
+            "additionalColumns": {
+                "primary": {
+                    "type": "bool"
+                }
+            },
+            "layoutRelationshipsDisabled": true
+        },
+        "paymentTermsProfile": {
+            "type": "belongsTo",
+            "entity": "PaymentTermsProfile"
+        },
+        "quotes": {
+            "type": "hasMany",
+            "entity": "Quote",
+            "foreign": "account",
+            "audited": true,
+            "readOnly": true
+        },
+        "quoteItems": {
+            "type": "hasMany",
+            "entity": "QuoteItem",
+            "foreign": "account",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "salesOrders": {
+            "type": "hasMany",
+            "entity": "SalesOrder",
+            "foreign": "account",
+            "audited": true,
+            "readOnly": true
+        },
+        "salesOrderItems": {
+            "type": "hasMany",
+            "entity": "SalesOrderItem",
+            "foreign": "account",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "invoices": {
+            "type": "hasMany",
+            "entity": "Invoice",
+            "foreign": "account",
+            "audited": true,
+            "readOnly": true
+        },
+        "invoiceItems": {
+            "type": "hasMany",
+            "entity": "InvoiceItem",
+            "foreign": "account",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "purchaseOrders": {
+            "type": "hasMany",
+            "entity": "PurchaseOrder",
+            "foreign": "account",
+            "audited": true,
+            "readOnly": true
+        },
+        "purchaseOrderItems": {
+            "type": "hasMany",
+            "entity": "PurchaseOrderItem",
+            "foreign": "account",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "deliveryOrders": {
+            "type": "hasMany",
+            "entity": "DeliveryOrder",
+            "foreign": "account",
+            "audited": true,
+            "readOnly": true
+        },
+        "deliveryOrderItems": {
+            "type": "hasMany",
+            "entity": "DeliveryOrderItem",
+            "foreign": "account",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "receiptOrders": {
+            "type": "hasMany",
+            "entity": "ReceiptOrder",
+            "foreign": "account",
+            "audited": true,
+            "readOnly": true
+        },
+        "returnOrders": {
+            "type": "hasMany",
+            "entity": "ReturnOrder",
+            "foreign": "account",
+            "audited": true,
+            "readOnly": true
+        },
+        "receiptOrderItems": {
+            "type": "hasMany",
+            "entity": "ReceiptOrderItem",
+            "foreign": "account",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "returnOrderItems": {
+            "type": "hasMany",
+            "entity": "ReturnOrderItem",
+            "foreign": "account",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "creditNotes": {
+            "type": "hasMany",
+            "entity": "CreditNote",
+            "foreign": "account",
+            "audited": true,
+            "readOnly": true
+        },
+        "creditNoteItems": {
+            "type": "hasMany",
+            "entity": "CreditNoteItem",
+            "foreign": "account",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "subscriptions": {
+            "type": "hasMany",
+            "entity": "Subscription",
+            "foreign": "account",
+            "audited": true,
+            "readOnly": true
+        },
+        "subscriptionItems": {
+            "type": "hasMany",
+            "entity": "SubscriptionItem",
+            "foreign": "account",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "priceBook": {
+            "type": "belongsTo",
+            "entity": "PriceBook",
+            "foreign": "accounts"
+        },
+        "writeOffEntries": {
+            "type": "hasMany",
+            "entity": "WriteOffEntry",
+            "foreign": "account",
+            "foreignName": "number",
+            "audited": true,
+            "readOnly": true
+        },
+        "paymentEntries": {
+            "type": "hasMany",
+            "entity": "PaymentEntry",
+            "foreign": "account",
+            "foreignName": "number",
+            "audited": true,
+            "readOnly": true
+        },
+        "paymentRequests": {
+            "type": "hasMany",
+            "entity": "PaymentRequest",
+            "foreign": "account",
+            "foreignName": "number",
+            "audited": true,
+            "readOnly": true
+        }
+    }
+}

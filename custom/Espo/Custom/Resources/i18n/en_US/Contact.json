@@ -1,0 +1,9 @@
+{
+    "links": {
+        "appuntamentoChildren": "Appuntamenti",
+        "fornitorePartner": "Fornitore/Partner"
+    },
+    "fields": {
+        "fornitorePartner": "Fornitore/Partner"
+    }
+}

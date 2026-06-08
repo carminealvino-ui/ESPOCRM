@@ -1,0 +1,34 @@
+{
+  "fields": {
+    "name": "Название",
+    "qty": "К-во",
+    "quantity": "Количество",
+    "listPrice": "Цена",
+    "unitPrice": "Цена за ед.",
+    "amount": "Сумма",
+    "taxRate": "Налог (%)",
+    "product": "Продукт",
+    "order": "Номер линии",
+    "salesOrder": "Заказ",
+    "weight": "Вес",
+    "unitWeight": "Вес ед.",
+    "description": "Описание",
+    "discount": "Скидка (%)",
+    "amountConverted": "Сумма (сконвертированная)",
+    "unitPriceConverted": "Цена за ед. (сконвертированная)",
+    "listPriceConverted": "Цена (сконвертированная)",
+    "account": "Контрагент",
+    "listPriceCurrency": "Валюта цены",
+    "unitPriceCurrency": "Валюта цены за ед.",
+    "amountCurrency": "Валюта суммы",
+    "salesOrderStatus": "Статус заказа"
+  },
+  "links": {
+    "salesOrder": "Заказ",
+    "product": "Продукт",
+    "account": "Контрагент"
+  },
+  "labels": {
+    "Sales Orders": "Заказы"
+  }
+}

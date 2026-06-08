@@ -14,7 +14,7 @@
 //
 // MODALITA SICURA:
 // - di default crea uno ZIP locale in exports/custom (custom/ + client/custom/)
-// - backup singole fix: solo in backup/hooks_cleanup/ (non qui)
+// - backup singole fix: solo in backup_dev/ (non qui)
 // - non contiene password
 // - non contiene token GitHub
 // - non modifica i file EspoCRM

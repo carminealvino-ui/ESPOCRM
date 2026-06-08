@@ -1,0 +1,34 @@
+{
+  "fields": {
+    "name": "Nome",
+    "qty": "Q.tà",
+    "quantity": "Quantità",
+    "quantityInt": "Quantità (Int)",
+    "unitPrice": "Prezzo Unitario",
+    "amount": "Importo",
+    "taxRate": "Aliquota Fiscale",
+    "product": "Prodotto",
+    "order": "Numero di riga",
+    "creditNote": "Nota di credito",
+    "creditNoteStatus": "Stato della nota di credito",
+    "description": "Descrizione",
+    "amountConverted": "Importo (convertito)",
+    "unitPriceConverted": "Prezzo unitario (convertito)",
+    "account": "Cliente",
+    "unitPriceCurrency": "Prezzo unitario Valuta",
+    "amountCurrency": "Importo Valuta",
+    "productIsSubscribable": "Prodotto sottoscrivibile",
+    "periodStartDate": "Data inizio periodo",
+    "periodEndDate": "Data fine periodo",
+    "taxCode": "Codice imposta",
+    "taxes": "Imposta",
+    "amountLocal": "Importo in valuta locale",
+    "dateIssued": "Data di emissione"
+  },
+  "links": {
+    "creditNote": "Nota di credito",
+    "product": "Prodotto",
+    "account": "Cliente",
+    "taxCode": "Codice imposta"
+  }
+}

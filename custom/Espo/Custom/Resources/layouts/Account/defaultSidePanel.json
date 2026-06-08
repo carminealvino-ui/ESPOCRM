@@ -1,0 +1,32 @@
+[
+    {
+        "name": "prospect"
+    },
+    {
+        "name": "originalLead"
+    },
+    {
+        "name": "cluster"
+    },
+    {
+        "name": "b2B"
+    },
+    {
+        "name": "codicePOS"
+    },
+    {
+        "name": "codiceCliente"
+    },
+    {
+        "name": "meseImportazioneCB"
+    },
+    {
+        "name": "consistenze"
+    },
+    {
+        "name": ":assignedUser"
+    },
+    {
+        "name": "teams"
+    }
+]

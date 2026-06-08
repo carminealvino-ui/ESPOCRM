@@ -1,0 +1,43 @@
+{
+  "labels": {
+    "Create SubscriptionTemplate": "Vorlage erstellen",
+    "Add Item": "Artikel hinzufügen",
+    "Items": "Artikel"
+  },
+  "fields": {
+    "hasTrial": "Probezeit",
+    "trialPeriodDays": "Probezeit (in Tagen)",
+    "billingPlans": "Abrechnungspläne",
+    "itemList": "Artikelliste",
+    "primaryProduct": "Hauptprodukt",
+    "products": "Produkte",
+    "hasTerm": "Festlaufzeit",
+    "termUnit": "Laufzeiteinheit",
+    "termLength": "Laufzeitdauer",
+    "hasQuantity": "Hat Menge"
+  },
+  "links": {
+    "items": "Artikel",
+    "billingPlans": "Abrechnungspläne",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "priceBook": "Preisbuch",
+    "invoices": "Rechnungen",
+    "billingPlan": "Abrechnungsplan",
+    "periods": "Zeiträume",
+    "primaryProduct": "Hauptprodukt",
+    "products": "Produkte"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "active": "Aktiv"
+  },
+  "tooltips": {
+    "hasTerm": "Abonnements haben eine feste Laufzeit."
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "labels": {
+    "Create ProductBrand": "Создать бренд"
+  },
+  "fields": {
+    "website": "Вебсайт"
+  },
+  "links": {
+    "products": "Продукты"
+  }
+}

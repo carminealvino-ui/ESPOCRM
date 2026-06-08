@@ -1,0 +1,40 @@
+{
+  "fields": {
+    "name": "Betreff",
+    "qty": "Mng",
+    "quantity": "Menge",
+    "quantityInt": "Menge (Int)",
+    "listPrice": "Listpreis",
+    "unitPrice": "Einzelpreis",
+    "amount": "Betrag",
+    "taxRate": "Steuersatz",
+    "product": "Produkt",
+    "order": "Positionsnummer",
+    "purchaseOrder": "Bestellung",
+    "weight": "Gewicht",
+    "unitWeight": "Einzelgewicht",
+    "description": "Beschreibung",
+    "discount": "Rabatt (%)",
+    "amountConverted": "Betrag (konvertiert)",
+    "unitPriceConverted": "Einzelpreis (konvertiert)",
+    "listPriceConverted": "Listpreis (konvertiert)",
+    "account": "Firma",
+    "listPriceCurrency": "Listpreis Währung",
+    "unitPriceCurrency": "Einzelpreis Währung",
+    "amountCurrency": "Betragswährung",
+    "purchaseOrderStatus": "Bestellstatus",
+    "inventoryNumberType": "Inventarnummertyp",
+    "taxCode": "Steuercode",
+    "taxes": "Steuerbetrag",
+    "itemType": "Artikeltyp"
+  },
+  "links": {
+    "purchaseOrder": "Bestellung",
+    "product": "Produkt",
+    "account": "Firma",
+    "taxCode": "Steuercode"
+  },
+  "labels": {
+    "Purchase Orders": "Bestellungen"
+  }
+}

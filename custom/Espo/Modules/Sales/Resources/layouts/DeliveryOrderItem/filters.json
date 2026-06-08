@@ -1,0 +1,9 @@
+[
+    "account",
+    "deliveryOrder",
+    "product",
+    "deliveryOrderStatus",
+    "quantity",
+    "createdBy",
+    "createdAt"
+]

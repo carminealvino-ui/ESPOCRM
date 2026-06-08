@@ -1,0 +1,150 @@
+{
+    "fields": {
+        "isLocked": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isNotActual"
+                    }
+                ]
+            }
+        },
+        "isIssued": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isIssued"
+                    }
+                ]
+            }
+        },
+        "status": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isLocked"
+                    }
+                ]
+            }
+        },
+        "supplier": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "supplierBillId",
+                                "data": {
+                                    "field": "supplierBill"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "itemList": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isLocked"
+                            },
+                            {
+                                "type": "and",
+                                "value": [
+                                    {
+                                        "type": "in",
+                                        "attribute": "status",
+                                        "value": [
+                                            "Resolved"
+                                        ]
+                                    },
+                                    {
+                                        "type": "isTrue",
+                                        "attribute": "isDone"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "and",
+                                "value": [
+                                    {
+                                        "type": "in",
+                                        "attribute": "status",
+                                        "value": [
+                                            "Canceled"
+                                        ]
+                                    },
+                                    {
+                                        "type": "isTrue",
+                                        "attribute": "isNotActual"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "tax": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isLocked"
+                            },
+                            {
+                                "type": "and",
+                                "value": [
+                                    {
+                                        "type": "in",
+                                        "attribute": "status",
+                                        "value": [
+                                            "Resolved"
+                                        ]
+                                    },
+                                    {
+                                        "type": "isTrue",
+                                        "attribute": "isDone"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "number": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "amountDue": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        }
+    }
+}

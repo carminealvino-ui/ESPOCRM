@@ -1,0 +1,91 @@
+{
+    "controller": "controllers/record",
+    "mergeDisabled": true,
+    "viewSetupHandlers": {
+        "list": ["sales:handlers/info"],
+        "record/detail": ["sales:handlers/inventory-number/setup-record-detail"],
+        "record/edit": ["sales:handlers/inventory-number/setup-record-detail"]
+    },
+    "filterList": [
+        {
+            "name": "onHand"
+        }
+    ],
+    "menu": {
+        "detail": {
+            "buttons": [
+                {
+                    "name": "viewHistory",
+                    "action": "viewHistory",
+                    "label": "View History",
+                    "data": {
+                        "handler": "sales:handlers/inventory-number/view-history-handler"
+                    }
+                }
+            ]
+        }
+    },
+    "bottomPanels": {
+        "detail": [
+            {
+                "name": "warehousesQuantity",
+                "label": "Warehouses",
+                "view": "sales:views/inventory-number/record/panels/warehouses-quantity"
+            },
+            {
+                "name": "orderItems",
+                "label": "Orders",
+                "view": "modules/sales/views/inventory-number/record/panels/order-items",
+                "recordListView": "sales:views/quote-item/record/list-union"
+            }
+        ],
+        "detailSmall": [
+            {
+                "name": "warehousesQuantity",
+                "label": "Warehouses",
+                "view": "sales:views/inventory-number/record/panels/warehouses-quantity"
+            }
+        ]
+    },
+    "relationshipPanels": {
+        "product": {
+            "createDisabled": true,
+            "selectMandatoryAttributeList": ["inventoryNumberType", "expirationDays"],
+            "selectHandler": "sales:handlers/inventory-number/select-product",
+            "selectPrimaryFilterName": "available",
+            "selectFieldHandler": "sales:handlers/inventory-number/select-field-product"
+        },
+        "inventoryTransactions": {
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "removeDisabled": true,
+            "editDisabled": true,
+            "createAttributeMap": {
+                "productId": "productId",
+                "productName": "productName"
+            }
+        },
+        "inventoryAdjustmentItems": {
+            "createDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "removeDisabled": true,
+            "primaryFilter": "completed",
+            "layout": "listForProduct",
+            "orderBy": "createdAt",
+            "orderDirection": "desc"
+        }
+    },
+    "additionalLayouts": {
+        "listForProduct": {
+            "type": "listSmall"
+        },
+        "listForTemplateProduct": {
+            "type": "listSmall"
+        },
+        "listForWarehouse": {
+            "type": "listSmall"
+        }
+    },
+    "iconClass": "fas fa-barcode"
+}

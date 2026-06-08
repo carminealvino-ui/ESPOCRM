@@ -1,0 +1,11 @@
+[
+    {
+        "rows": [
+            [{"name": "name"}, {"name": "status"}],
+            [{"name": "interval"}, {"name": "billingCycleLength"}],
+            [{"name": "gracePeriodDays"}, {"name": "invoiceDuePeriodDays"}],
+            [{"name": "invoiceLeadTimeDays"}, false],
+            [{"name": "description"}]
+        ]
+    }
+]

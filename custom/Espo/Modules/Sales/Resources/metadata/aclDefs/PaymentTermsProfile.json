@@ -1,0 +1,4 @@
+{
+    "accessCheckerClassName": "Espo\\Modules\\Sales\\Classes\\Acl\\PaymentTermsProfile\\AccessChecker",
+    "portalAccessCheckerClassName": "Espo\\Modules\\Sales\\Classes\\AclPortal\\PaymentTermsProfile\\AccessChecker"
+}

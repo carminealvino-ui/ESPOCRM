@@ -1,0 +1,36 @@
+[
+    {
+        "name": "name",
+        "width": 40,
+        "link": true,
+        "align": "left"
+    },
+    {
+        "name": "fornitorePartner",
+        "width": 20
+    },
+    {
+        "name": "productBrand",
+        "width": 20
+    },
+    {
+        "name": "dateStart",
+        "width": 15,
+        "align": "left"
+    },
+    {
+        "name": "status",
+        "width": 15,
+        "align": "left"
+    },
+    {
+        "name": "sottostato",
+        "width": 15,
+        "align": "left"
+    },
+    {
+        "name": "esito",
+        "width": 15,
+        "align": "left"
+    }
+]

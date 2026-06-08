@@ -1,0 +1,11 @@
+{
+  "labels": {
+    "Create ProductBrand": "Crear marca"
+  },
+  "fields": {
+    "website": "Sitio web"
+  },
+  "links": {
+    "products": "Productos"
+  }
+}

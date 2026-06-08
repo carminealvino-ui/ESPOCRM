@@ -1,0 +1,121 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "readOnly": true,
+            "notStorable": true,
+            "orderDisabled": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "supplier": {
+            "type": "link",
+            "required": true,
+            "view": "sales:views/product-price/fields/link-with-status"
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Active",
+                "Inactive"
+            ],
+            "default": "Active",
+            "style": {
+                "Inactive": "info"
+            }
+        },
+        "product": {
+            "type": "link",
+            "required": true,
+            "view": "sales:views/product-price/fields/product"
+        },
+        "partNumber": {
+            "type": "foreign",
+            "link": "product",
+            "field": "partNumber",
+            "relateOnImport": true
+        },
+        "minQuantity": {
+            "type": "float",
+            "minValue": 0.0
+        },
+        "price": {
+            "type": "currency",
+            "required": true,
+            "audited": true
+        },
+        "dateStart": {
+            "type": "date"
+        },
+        "dateEnd": {
+            "type": "date"
+        },
+        "timeline": {
+            "type": "base",
+            "view": "modules/sales/views/product-price/fields/timeline",
+            "layoutAvailabilityList": ["list"],
+            "fieldManagerParamList": [],
+            "readOnly": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true,
+            "notStorable": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "product": {
+            "type": "belongsTo",
+            "foreign": "supplierPrices",
+            "entity": "Product"
+        },
+        "supplier": {
+            "type": "belongsTo",
+            "foreign": "prices",
+            "entity": "Supplier"
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "entityTeam",
+            "layoutRelationshipsDisabled": true
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": []
+    },
+    "indexes": {
+        "supplierGroup": {
+            "columns": [
+                "supplierId",
+                "productId",
+                "status"
+            ]
+        }
+    }
+}

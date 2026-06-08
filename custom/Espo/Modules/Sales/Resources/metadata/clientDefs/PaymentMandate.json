@@ -1,0 +1,32 @@
+{
+    "controller": "controllers/record",
+    "filterList": [
+        "active"
+    ],
+    "selectDefaultFilters": {
+        "filter": "active"
+    },
+    "duplicateDisabled": true,
+    "mergeDisabled": true,
+    "nameAttribute": "referenceId",
+    "bottomPanels": {
+        "detail": [
+            {
+                "name": "data",
+                "label": "Parameters",
+                "isForm": true,
+                "view": "modules/sales/views/payment-channel/record/panels/data",
+                "notRefreshable": true
+            }
+        ],
+        "edit": [
+            {
+                "name": "data",
+                "label": "Parameters",
+                "isForm": true,
+                "view": "modules/sales/views/payment-channel/record/panels/data",
+                "notRefreshable": true
+            }
+        ]
+    }
+}

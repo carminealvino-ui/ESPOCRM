@@ -1,0 +1,23 @@
+{
+    "mandatory": {
+        "scopeLevel": {
+            "QuoteItem": "Quote",
+            "SalesOrderItem": "SalesOrder",
+            "InvoiceItem": "Invoice",
+            "PurchaseOrderItem": "PurchaseOrder",
+            "DeliveryOrderItem": "DeliveryOrder",
+            "ReceiptOrderItem": "ReceiptOrder",
+            "ReceiptOrderReceivedItem": "ReceiptOrder",
+            "CreditNoteItem": "CreditNote",
+            "TransferOrderItem": "TransferOrder",
+            "ReturnOrderItem": "ReturnOrder",
+            "SupplierBillItem": "SupplierBill",
+            "SupplierCreditItem": "SupplierCredit",
+            "OpportunityItem": "Opportunity",
+            "SubscriptionItem": "Subscription",
+            "SubscriptionPeriod": "Subscription",
+            "SubscriptionUpdate": "Subscription",
+            "ProductPrice": "PriceBook"
+        }
+    }
+}

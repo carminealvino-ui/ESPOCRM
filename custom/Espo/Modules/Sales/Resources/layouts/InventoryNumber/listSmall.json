@@ -1,0 +1,14 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "product",
+        "width": 30
+    },
+    {
+        "name": "type",
+        "width": 28
+    }
+]

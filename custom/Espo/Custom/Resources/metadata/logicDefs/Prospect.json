@@ -1,0 +1,44 @@
+{
+    "fields": {
+        "partitaIVA": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        },
+        "insegna": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        },
+        "ragioneSociale": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        },
+        "referenteAziendale": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "b2B"
+                    }
+                ]
+            }
+        }
+    }
+}

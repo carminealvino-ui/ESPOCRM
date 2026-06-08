@@ -1,0 +1,12 @@
+{
+    "labels": {
+        "Create TaxClass": "Create Tax Class"
+    },
+    "links": {
+        "products": "Products"
+    },
+    "messages": {
+        "cannotRemoveReferencedInProduct": "Cannot remove tax class because it is referenced by one or more products.",
+        "cannotRemoveReferencedInItemRule": "Cannot remove tax class because it is referenced by one or more tax item rules."
+    }
+}

@@ -1,0 +1,31 @@
+{
+  "labels": {
+    "Create Supplier": "Crea fornitore"
+  },
+  "fields": {
+    "account": "Cliente",
+    "status": "Stato"
+  },
+  "links": {
+    "account": "Cliente",
+    "prices": "Prezzi",
+    "purchaseOrders": "Ordini d'Acquisto",
+    "receiptOrders": "Ordini di ricezione",
+    "supplierBills": "Fatture fornitore",
+    "supplierCredits": "Note di credito fornitore",
+    "paymentEntries": "Pagamenti"
+  },
+  "presetFilters": {
+    "active": "Attivo"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  },
+  "tabs": {
+    "transactions": "Transazioni",
+    "prices": "Prezzi"
+  }
+}

@@ -1,0 +1,11 @@
+{
+    "_delimiter_": {
+        "disabled": true
+    },
+    "zona": {
+        "index": 0
+    },
+    "cAP": {
+        "index": 1
+    }
+}

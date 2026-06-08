@@ -1,0 +1,7 @@
+{
+    "categories": {
+        "inventoryQuantityUpdate": {
+            "accessCheckCommand": "InventoryAclCheck --userId=:userId"
+        }
+    }
+}

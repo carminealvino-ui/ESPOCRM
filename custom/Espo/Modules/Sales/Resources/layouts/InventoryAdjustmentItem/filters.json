@@ -1,0 +1,10 @@
+[
+    "inventoryAdjustment",
+    "product",
+    "inventoryNumber",
+    "inventoryAdjustmentStatus",
+    "quantity",
+    "newQuantityOnHand",
+    "createdBy",
+    "createdAt"
+]

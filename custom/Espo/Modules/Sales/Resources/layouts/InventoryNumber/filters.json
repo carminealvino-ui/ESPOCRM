@@ -1,0 +1,13 @@
+[
+    "name",
+    "product",
+    "type",
+    "quantityOnHand",
+    "quantityReserved",
+    "incomingDate",
+    "expirationDate",
+    "productionDate",
+    "warehousesOnHand",
+    "createdAt",
+    "createdBy"
+]

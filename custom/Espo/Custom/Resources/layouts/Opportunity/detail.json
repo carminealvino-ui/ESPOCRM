@@ -41,6 +41,11 @@
             ],
             [
                 {
+                    "name": "descrizioneMotivazione"
+                }
+            ],
+            [
+                {
                     "name": "probability"
                 },
                 false,
@@ -57,11 +62,6 @@
                 },
                 {
                     "name": "statoFinanziamento"
-                }
-            ],
-            [
-                {
-                    "name": "descrizioneMotivazione"
                 }
             ]
         ],
@@ -123,7 +123,7 @@
         "dynamicLogicVisible": null,
         "style": "default",
         "hidden": false,
-        "customLabel": "Formulazione Opportunit\u00e0"
+        "customLabel": "Formulazione Opportunità"
     },
     {
         "rows": [

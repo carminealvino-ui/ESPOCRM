@@ -1,0 +1,810 @@
+{
+    "internalReports": {
+        "Sales:LedgerSummary": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\LedgerSummary",
+            "entityType": "Invoice",
+            "params": [
+                {
+                    "name": "includeZero",
+                    "type": "bool",
+                    "labelTranslation": "Report.salesReportParams.includeZero"
+                },
+                {
+                    "name": "inboundPaymentMethods",
+                    "type": "linkMultiple",
+                    "entity": "PaymentMethod",
+                    "labelTranslation": "Report.salesReportParams.inboundPaymentMethods",
+                    "view": "modules/sales/views/report/fields/ledger-inbound-payment-methods",
+                    "tooltip": "Report.salesReportPaymentMethods"
+                },
+                {
+                    "name": "outboundPaymentMethods",
+                    "type": "linkMultiple",
+                    "entity": "PaymentMethod",
+                    "labelTranslation": "Report.salesReportParams.outboundPaymentMethods",
+                    "view": "modules/sales/views/report/fields/ledger-outbound-payment-methods",
+                    "tooltip": "Report.salesReportPaymentMethods"
+                },
+                {
+                    "name": "salesTaxCodes",
+                    "type": "linkMultiple",
+                    "entity": "TaxCode",
+                    "labelTranslation": "Report.salesReportParams.salesTaxCodes",
+                    "view": "modules/sales/views/report/fields/ledger-sales-tax-codes",
+                    "tooltip": "Report.salesReportSalesTaxCodes"
+                },
+                {
+                    "name": "purchaseTaxCodes",
+                    "type": "linkMultiple",
+                    "entity": "TaxCode",
+                    "labelTranslation": "Report.salesReportParams.purchaseTaxCodes",
+                    "view": "modules/sales/views/report/fields/ledger-purchase-tax-codes",
+                    "tooltip": "Report.salesReportPurchaseTaxCodes"
+                },
+                {
+                    "name": "accountNumberFunds",
+                    "type": "varchar",
+                    "maxLength": 12,
+                    "labelTranslation": "Report.salesReportParams.accountNumberFunds"
+                },
+                {
+                    "name": "accountNumberAr",
+                    "type": "varchar",
+                    "maxLength": 12,
+                    "labelTranslation": "Report.salesReportParams.accountNumberAr"
+                },
+                {
+                    "name": "accountNumberAp",
+                    "type": "varchar",
+                    "maxLength": 12,
+                    "labelTranslation": "Report.salesReportParams.accountNumberAp"
+                },
+                {
+                    "name": "accountNumberRevenueSales",
+                    "type": "varchar",
+                    "maxLength": 12,
+                    "labelTranslation": "Report.salesReportParams.accountNumberRevenueSales"
+                },
+                {
+                    "name": "accountNumberRevenueRounding",
+                    "type": "varchar",
+                    "maxLength": 12,
+                    "labelTranslation": "Report.salesReportParams.accountNumberRevenueRounding"
+                },
+                {
+                    "name": "accountNumberRevenueRealizedFxGainLoss",
+                    "type": "varchar",
+                    "maxLength": 12,
+                    "labelTranslation": "Report.salesReportParams.accountNumberRevenueRealizedFxGainLoss"
+                },
+                {
+                    "name": "accountNumberExpensesPurchase",
+                    "type": "varchar",
+                    "maxLength": 12,
+                    "labelTranslation": "Report.salesReportParams.accountNumberExpensesPurchase"
+                },
+                {
+                    "name": "accountNumberExpensesWriteOffs",
+                    "type": "varchar",
+                    "maxLength": 12,
+                    "labelTranslation": "Report.salesReportParams.accountNumberExpensesWriteOffs"
+                },
+                {
+                    "name": "accountNumberTaxSales",
+                    "type": "varchar",
+                    "maxLength": 12,
+                    "labelTranslation": "Report.salesReportParams.accountNumberTaxSales",
+                    "tooltip": "Report.salesReportAccountNumberTaxSales"
+                },
+                {
+                    "name": "accountNumberTaxPurchase",
+                    "type": "varchar",
+                    "maxLength": 12,
+                    "labelTranslation": "Report.salesReportParams.accountNumberTaxPurchase",
+                    "tooltip": "Report.salesReportAccountNumberTaxPurchase"
+                }
+            ],
+            "paramsDefaults": {
+                "includeZero": true,
+                "groupBy": "Month",
+                "chartType": null,
+                "includeShipping": true
+            },
+            "type": "Grid",
+            "depth": 1,
+            "columns": [
+                "debit",
+                "credit"
+            ],
+            "runtimeFilters": [
+                "postingDate"
+            ],
+            "runtimeFiltersParams": {
+                "postingDate": {
+                    "defaultType": "ever",
+                    "labelTranslation": "Report.salesReportFields.date",
+                    "view": "modules/sales/views/report/fields/date-ledger-summary"
+                }
+            }
+        },
+        "Sales:SalesRevenue": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\SalesRevenue",
+            "params": [
+                {
+                    "name": "groupBy",
+                    "type": "enum",
+                    "options": [
+                        "Month",
+                        "Quarter",
+                        "Year",
+                        "Week",
+                        "Fiscal Quarter",
+                        "Fiscal Year"
+                    ],
+                    "translation": "Report.salesReportOptions.groupBy",
+                    "labelTranslation": "Report.fields.groupBy"
+                },
+                {
+                    "name": "chartType",
+                    "type": "enum",
+                    "options": [
+                        "",
+                        "BarVertical",
+                        "Line"
+                    ],
+                    "translation": "Report.options.chartType",
+                    "labelTranslation": "Report.fields.chartType"
+                },
+                {
+                    "name": "includeShipping",
+                    "type": "bool",
+                    "labelTranslation": "Report.salesReportParams.includeShipping"
+                }
+            ],
+            "paramsDefaults": {
+                "groupBy": "Month",
+                "chartType": null,
+                "includeShipping": true
+            },
+            "entityType": "Invoice",
+            "type": "Grid",
+            "depth": 1,
+            "columns": [
+                "SUM:amount"
+            ],
+            "runtimeFilters": [
+                "postingDate"
+            ],
+            "runtimeFiltersParams": {
+                "postingDate": {
+                    "labelTranslation": "Report.salesReportFields.date"
+                }
+            }
+        },
+        "Sales:PurchaseExpenditure": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\PurchaseExpenditure",
+            "params": [
+                {
+                    "name": "groupBy",
+                    "type": "enum",
+                    "options": [
+                        "Month",
+                        "Quarter",
+                        "Year",
+                        "Week",
+                        "Fiscal Quarter",
+                        "Fiscal Year"
+                    ],
+                    "translation": "Report.salesReportOptions.groupBy",
+                    "labelTranslation": "Report.fields.groupBy"
+                },
+                {
+                    "name": "chartType",
+                    "type": "enum",
+                    "options": [
+                        "",
+                        "BarVertical",
+                        "Line"
+                    ],
+                    "translation": "Report.options.chartType",
+                    "labelTranslation": "Report.fields.chartType"
+                },
+                {
+                    "name": "includeShipping",
+                    "type": "bool",
+                    "labelTranslation": "Report.salesReportParams.includeShipping"
+                }
+            ],
+            "paramsDefaults": {
+                "groupBy": "Month",
+                "chartType": null,
+                "includeShipping": true
+            },
+            "entityType": "SupplierBill",
+            "type": "Grid",
+            "depth": 1,
+            "columns": [
+                "SUM:amount"
+            ],
+            "runtimeFilters": [
+                "postingDate"
+            ],
+            "runtimeFiltersParams": {
+                "postingDate": {
+                    "labelTranslation": "Report.salesReportFields.date"
+                }
+            }
+        },
+        "Sales:SalesByCustomer": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\SalesByCustomer",
+            "params": [
+                {
+                    "name": "orderByField",
+                    "type": "enum",
+                    "options": [
+                        "amount",
+                        "account"
+                    ],
+                    "translation": "Invoice.fields",
+                    "labelTranslation": "Report.fields.orderBy"
+                },
+                {
+                    "name": "maxSize",
+                    "type": "int",
+                    "min": "1",
+                    "max": 1000,
+                    "labelTranslation": "Report.salesReportParams.maxSize"
+                },
+                {
+                    "name": "includeShipping",
+                    "type": "bool",
+                    "labelTranslation": "Report.salesReportParams.includeShipping"
+                }
+            ],
+            "paramsDefaults": {
+                "orderBy": "amount",
+                "maxSize": 100,
+                "includeShipping": true
+            },
+            "entityType": "Invoice",
+            "type": "Grid",
+            "depth": 1,
+            "columns": [
+                "SUM:amount"
+            ],
+            "runtimeFilters": [
+                "postingDate",
+                "account"
+            ],
+            "runtimeFiltersParams": {
+                "postingDate": {
+                    "labelTranslation": "Report.salesReportFields.date",
+                    "view": "modules/sales/views/report/fields/date-issued"
+                },
+                "account": {
+                    "view": "modules/sales/views/report/fields/account"
+                }
+            }
+        },
+        "Sales:SalesByProduct": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\SalesByProduct",
+            "params": [
+                {
+                    "name": "orderByField",
+                    "type": "enum",
+                    "options": [
+                        "amount",
+                        "product"
+                    ],
+                    "translation": "InvoiceItem.fields",
+                    "labelTranslation": "Report.fields.orderBy"
+                },
+                {
+                    "name": "productCategory",
+                    "type": "link",
+                    "entity": "ProductCategory",
+                    "view": "views/fields/link-category-tree",
+                    "labelTranslation": "Global.scopeNames.ProductCategory"
+                },
+                {
+                    "name": "maxSize",
+                    "type": "int",
+                    "min": "1",
+                    "max": 1000,
+                    "labelTranslation": "Report.salesReportParams.maxSize"
+                }
+            ],
+            "paramsDefaults": {
+                "orderBy": "amount",
+                "maxSize": 100,
+                "productCategoryId": null,
+                "productCategoryName": null
+            },
+            "entityType": "Invoice",
+            "type": "Grid",
+            "depth": 1,
+            "columns": [
+                "SUM:quantity",
+                "SUM:amount"
+            ],
+            "columnsParams": {
+                "SUM:quantity": {
+                    "labelTranslation": "InvoiceItem.fields.quantity"
+                },
+                "SUM:amount": {
+                    "labelTranslation": "Invoice.fields.amount"
+                }
+            },
+            "runtimeFilters": [
+                "postingDate"
+            ],
+            "runtimeFiltersParams": {
+                "postingDate": {
+                    "labelTranslation": "Report.salesReportFields.date",
+                    "view": "modules/sales/views/report/fields/date-issued"
+                }
+            }
+        },
+        "Sales:SalesByProductCategory": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\SalesByProductCategory",
+            "params": [
+                {
+                    "name": "orderByField",
+                    "type": "enum",
+                    "options": [
+                        "productCategory",
+                        "amount"
+                    ],
+                    "translation": "Report.salesReportOptions.orderByField",
+                    "labelTranslation": "Report.fields.orderBy"
+                }
+            ],
+            "paramsDefaults": {
+                "orderBy": "productCategory"
+            },
+            "entityType": "Invoice",
+            "type": "Grid",
+            "depth": 1,
+            "columns": [
+                "SUM:quantity",
+                "SUM:amount"
+            ],
+            "columnsParams": {
+                "SUM:quantity": {
+                    "labelTranslation": "InvoiceItem.fields.quantity"
+                },
+                "SUM:amount": {
+                    "labelTranslation": "Invoice.fields.amount"
+                }
+            },
+            "runtimeFilters": [
+                "postingDate"
+            ],
+            "runtimeFiltersParams": {
+                "postingDate": {
+                    "labelTranslation": "Report.salesReportFields.date",
+                    "view": "modules/sales/views/report/fields/date-issued"
+                }
+            }
+        },
+        "Sales:PurchasesByProduct": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\PurchasesByProduct",
+            "params": [
+                {
+                    "name": "orderByField",
+                    "type": "enum",
+                    "options": [
+                        "amount",
+                        "product"
+                    ],
+                    "translation": "SupplierBillItem.fields",
+                    "labelTranslation": "Report.fields.orderBy"
+                },
+                {
+                    "name": "productCategory",
+                    "type": "link",
+                    "entity": "ProductCategory",
+                    "view": "views/fields/link-category-tree",
+                    "labelTranslation": "Global.scopeNames.ProductCategory"
+                },
+                {
+                    "name": "maxSize",
+                    "type": "int",
+                    "min": "1",
+                    "max": 1000,
+                    "labelTranslation": "Report.salesReportParams.maxSize"
+                }
+            ],
+            "paramsDefaults": {
+                "orderBy": "amount",
+                "maxSize": 100,
+                "productCategoryId": null,
+                "productCategoryName": null
+            },
+            "entityType": "SupplierBill",
+            "type": "Grid",
+            "depth": 1,
+            "columns": [
+                "SUM:quantity",
+                "SUM:amount"
+            ],
+            "columnsParams": {
+                "SUM:quantity": {
+                    "labelTranslation": "SupplierBillItem.fields.quantity"
+                },
+                "SUM:amount": {
+                    "labelTranslation": "SupplierBill.fields.amount"
+                }
+            },
+            "runtimeFilters": [
+                "postingDate"
+            ],
+            "runtimeFiltersParams": {
+                "postingDate": {
+                    "labelTranslation": "Report.salesReportFields.date",
+                    "view": "modules/sales/views/report/fields/date-issued"
+                }
+            }
+        },
+        "Sales:CustomerBalances": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\CustomerBalances",
+            "params": [
+                {
+                    "name": "orderByField",
+                    "type": "enum",
+                    "options": [
+                        "amount",
+                        "account"
+                    ],
+                    "translation": "Report.salesReportOptions.orderByField",
+                    "labelTranslation": "Report.fields.orderBy"
+                },
+                {
+                    "name": "maxSize",
+                    "type": "int",
+                    "min": "1",
+                    "max": 1000,
+                    "labelTranslation": "Report.salesReportParams.maxSize"
+                },
+                {
+                    "name": "includeZero",
+                    "type": "bool",
+                    "labelTranslation": "Report.salesReportParams.includeZero"
+                }
+            ],
+            "paramsDefaults": {
+                "orderBy": "amount",
+                "maxSize": 100,
+                "includeZero": false
+            },
+            "entityType": "Invoice",
+            "type": "Grid",
+            "depth": 1,
+            "columns": [
+                "SUM:amountOpening",
+                "SUM:amountClosing"
+            ],
+            "columnsParams": {
+                "SUM:amountOpening": {
+                    "labelTranslation": "Report.salesReportColumns.amountOpening"
+                },
+                "SUM:amountClosing": {
+                    "labelTranslation": "Report.salesReportColumns.amountClosing"
+                }
+            },
+            "runtimeFilters": [
+                "postingDate",
+                "account"
+            ],
+            "runtimeFiltersParams": {
+                "postingDate": {
+                    "defaultType": "ever",
+                    "labelTranslation": "Report.salesReportFields.date",
+                    "view": "modules/sales/views/report/fields/date-customer-balance"
+                },
+                "account": {
+                    "view": "modules/sales/views/report/fields/account"
+                }
+            }
+        },
+        "Sales:SupplierBalances": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\SupplierBalances",
+            "params": [
+                {
+                    "name": "orderByField",
+                    "type": "enum",
+                    "options": [
+                        "amount",
+                        "supplier"
+                    ],
+                    "translation": "Report.salesReportOptions.orderByField",
+                    "labelTranslation": "Report.fields.orderBy"
+                },
+                {
+                    "name": "maxSize",
+                    "type": "int",
+                    "min": "1",
+                    "max": 1000,
+                    "labelTranslation": "Report.salesReportParams.maxSize"
+                },
+                {
+                    "name": "includeZero",
+                    "type": "bool",
+                    "labelTranslation": "Report.salesReportParams.includeZero"
+                }
+            ],
+            "paramsDefaults": {
+                "orderBy": "amount",
+                "maxSize": 100,
+                "includeZero": false
+            },
+            "entityType": "SupplierBill",
+            "type": "Grid",
+            "depth": 1,
+            "columns": [
+                "SUM:amountOpening",
+                "SUM:amountClosing"
+            ],
+            "columnsParams": {
+                "SUM:amountOpening": {
+                    "labelTranslation": "Report.salesReportColumns.amountOpening"
+                },
+                "SUM:amountClosing": {
+                    "labelTranslation": "Report.salesReportColumns.amountClosing"
+                }
+            },
+            "runtimeFilters": [
+                "postingDate",
+                "supplier"
+            ],
+            "runtimeFiltersParams": {
+                "postingDate": {
+                    "defaultType": "ever",
+                    "labelTranslation": "Report.salesReportFields.date",
+                    "view": "modules/sales/views/report/fields/date-customer-balance"
+                },
+                "supplier": {
+                    "view": "modules/sales/views/report/fields/account"
+                }
+            }
+        },
+        "Sales:CustomerAging": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\CustomerAging",
+            "params": [
+                {
+                    "name": "basis",
+                    "type": "enum",
+                    "options": [
+                        "dateDue",
+                        "installmentDateDue",
+                        "dateInvoiced"
+                    ],
+                    "translation": "Report.salesReportOptions.basis",
+                    "labelTranslation": "Report.salesReportParams.basis"
+                },
+                {
+                    "name": "orderByField",
+                    "type": "enum",
+                    "options": [
+                        "account",
+                        "amount"
+                    ],
+                    "translation": "Report.salesReportOptions.orderByField",
+                    "labelTranslation": "Report.fields.orderBy"
+                },
+                {
+                    "name": "maxSize",
+                    "type": "int",
+                    "min": "1",
+                    "max": 5000,
+                    "labelTranslation": "Report.salesReportParams.maxSize"
+                }
+            ],
+            "paramsDefaults": {
+                "orderBy": "account",
+                "maxSize": 1000,
+                "basis": "dateDue"
+            },
+            "entityType": "Invoice",
+            "type": "Grid",
+            "depth": 2,
+            "columns": [
+                "SUM:amount"
+            ],
+            "columnsParams": {
+                "SUM:amount": {
+                    "labelTranslation": "Invoice.fields.grandTotalAmount"
+                }
+            },
+            "runtimeFilters": [
+                "date",
+                "account"
+            ],
+            "runtimeFiltersParams": {
+                "date": {
+                    "defaultType": "today",
+                    "labelTranslation": "Report.salesReportFields.asOfDate",
+                    "view": "modules/sales/views/report/fields/date-only-date"
+                },
+                "account": {
+                    "view": "modules/sales/views/report/fields/account"
+                }
+            }
+        },
+        "Sales:SalesTaxSummary": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\SalesTaxSummary",
+            "entityType": "Invoice",
+            "params": [
+                {
+                    "name": "taxCodes",
+                    "type": "linkMultiple",
+                    "entity": "TaxCode",
+                    "required": true,
+                    "labelTranslation": "Global.scopeNamesPlural.TaxCode",
+                    "view": "modules/sales/views/report/fields/tax-codes"
+                },
+                {
+                    "name": "basis",
+                    "type": "enum",
+                    "options": [
+                        "Accrual",
+                        "Cash"
+                    ],
+                    "translation": "Report.salesReportOptions.taxBasis",
+                    "labelTranslation": "Report.salesReportParams.taxBasis"
+                }
+            ],
+            "paramsDefaults": {
+                "basis": "Accrual"
+            },
+            "type": "Grid",
+            "depth": 1,
+            "columns": [
+                "SUM:baseAmount",
+                "SUM:amount"
+            ],
+            "columnsParams": {
+                "SUM:baseAmount": {
+                    "labelTranslation": "TaxTotalItem.fields.baseAmount"
+                },
+                "SUM:amount": {
+                    "labelTranslation": "TaxTotalItem.fields.amount"
+                }
+            },
+            "runtimeFilters": [
+                "postingDate"
+            ],
+            "runtimeFiltersParams": {
+                "postingDate": {
+                    "defaultType": "currentYear",
+                    "labelTranslation": "Report.salesReportFields.date",
+                    "view": "modules/sales/views/report/fields/tax-date"
+                }
+            }
+        },
+        "Sales:PurchaseTaxSummary": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\PurchaseTaxSummary",
+            "entityType": "SupplierBill",
+            "params": [
+                {
+                    "name": "taxCodes",
+                    "type": "linkMultiple",
+                    "entity": "TaxCode",
+                    "required": true,
+                    "labelTranslation": "Global.scopeNamesPlural.TaxCode",
+                    "view": "modules/sales/views/report/fields/purchase-tax-codes"
+                },
+                {
+                    "name": "basis",
+                    "type": "enum",
+                    "options": [
+                        "Accrual",
+                        "Cash"
+                    ],
+                    "translation": "Report.salesReportOptions.taxBasis",
+                    "labelTranslation": "Report.salesReportParams.taxBasis"
+                }
+            ],
+            "paramsDefaults": {
+                "basis": "Accrual"
+            },
+            "type": "Grid",
+            "depth": 1,
+            "columns": [
+                "SUM:baseAmount",
+                "SUM:amount"
+            ],
+            "columnsParams": {
+                "SUM:baseAmount": {
+                    "labelTranslation": "TaxTotalItem.fields.baseAmount"
+                },
+                "SUM:amount": {
+                    "labelTranslation": "TaxTotalItem.fields.amount"
+                }
+            },
+            "runtimeFilters": [
+                "postingDate"
+            ],
+            "runtimeFiltersParams": {
+                "postingDate": {
+                    "defaultType": "currentYear",
+                    "labelTranslation": "Report.salesReportFields.date",
+                    "view": "modules/sales/views/report/fields/tax-date"
+                }
+            }
+        },
+        "Sales:TaxSalesList": {
+            "className": "Espo\\Modules\\Sales\\Tools\\Report\\Reports\\TaxSalesList",
+            "entityType": "Invoice",
+            "params": [
+                {
+                    "name": "taxCodes",
+                    "type": "linkMultiple",
+                    "entity": "TaxCode",
+                    "required": true,
+                    "labelTranslation": "Global.scopeNamesPlural.TaxCode",
+                    "view": "modules/sales/views/report/fields/tax-codes-with-column"
+                }
+            ],
+            "paramsDefaults": {},
+            "type": "Grid",
+            "depth": 2,
+            "columns": [
+                "SUM:amount"
+            ],
+            "columnsParams": {
+                "SUM:amount": {
+                    "labelTranslation": "Report.salesReportColumns.amount"
+                }
+            },
+            "runtimeFilters": [
+                "postingDate"
+            ],
+            "runtimeFiltersParams": {
+                "postingDate": {
+                    "defaultType": "currentYear",
+                    "labelTranslation": "Report.salesReportFields.date",
+                    "view": "modules/sales/views/report/fields/tax-date"
+                }
+            }
+        }
+    },
+    "entityParams": {
+        "Product": {
+            "whereFilterAdditionalApplierClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\Select\\Product\\AdditionalAppliers\\Quantity"
+            ]
+        },
+        "Invoice": {
+            "whereFilterAdditionalApplierClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\AdditionalAppliers\\AmountDue",
+                "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\AdditionalAppliers\\OverdueDays"
+            ]
+        },
+        "CreditNote": {
+            "whereFilterAdditionalApplierClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\AdditionalAppliers\\AmountDue"
+            ]
+        },
+        "SupplierBill": {
+            "whereFilterAdditionalApplierClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\AdditionalAppliers\\AmountDue"
+            ]
+        },
+        "SupplierCredit": {
+            "whereFilterAdditionalApplierClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\Select\\Invoice\\AdditionalAppliers\\AmountDue"
+            ]
+        },
+        "PaymentEntry": {
+            "whereFilterAdditionalApplierClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\AdditionalAppliers\\UnallocatedAmount"
+            ]
+        },
+        "WriteOffEntry": {
+            "whereFilterAdditionalApplierClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\AdditionalAppliers\\UnallocatedAmount"
+            ]
+        }
+    }
+}

@@ -1,0 +1,14 @@
+[
+    {
+        "name": ":assignedUser"
+    },
+    {
+        "name": "teams"
+    },
+    {
+        "name": "isLocked"
+    },
+    {
+        "name": "isHardLocked"
+    }
+]

@@ -1,0 +1,123 @@
+{
+    "params": {
+        "defaultPriceBook": {},
+        "priceBooksEnabled": {},
+        "inventoryTransactionsEnabled": {},
+        "warehousesEnabled": {},
+        "inventoryCompressJobPeriod": {
+            "level": "admin"
+        },
+        "inventoryDetachJobPeriod": {
+            "level": "admin"
+        },
+        "notActualOrderLockingJobPeriod": {
+            "level": "admin"
+        },
+        "productVariantMaxCount": {},
+        "salesForbidOrderUnlock": {
+            "level": "default"
+        },
+        "eInvoiceFormat": {
+            "level": "default"
+        },
+        "sellerCompanyName": {
+            "level": "admin"
+        },
+        "sellerElectronicAddressScheme": {
+            "level": "admin"
+        },
+        "sellerElectronicAddressIdentifier": {
+            "level": "admin"
+        },
+        "sellerVatNumber": {
+            "level": "admin"
+        },
+        "sellerTaxRegistrationScheme": {
+            "level": "admin"
+        },
+        "sellerTaxRegistrationIdentifier": {
+            "level": "admin"
+        },
+        "sellerAddress": {
+            "level": "admin"
+        },
+        "sellerContactName": {
+            "level": "admin"
+        },
+        "sellerContactEmailAddress": {
+            "level": "admin"
+        },
+        "sellerContactPhoneNumber": {
+            "level": "admin"
+        },
+        "salesQuoteEmailTemplate": {
+            "level": "admin"
+        },
+        "salesSalesOrderEmailTemplate": {
+            "level": "admin"
+        },
+        "salesInvoiceEmailTemplate": {
+            "level": "admin"
+        },
+        "salesPurchaseOrderEmailTemplate": {
+            "level": "admin"
+        },
+        "salesReceiptOrderEmailTemplate": {
+            "level": "admin"
+        },
+        "salesReturnOrderEmailTemplate": {
+            "level": "admin"
+        },
+        "salesCreditNoteEmailTemplate": {
+            "level": "admin"
+        },
+        "salesTransferOrderEmailTemplate": {
+            "level": "admin"
+        },
+        "salesInventoryAdjustmentEmailTemplate": {
+            "level": "admin"
+        },
+        "salesPaymentRequestEmailTemplate": {
+            "level": "admin"
+        },
+        "salesInvoiceTemplate": {
+            "level": "default"
+        },
+        "salesIssuanceLocking": {
+            "level": "default"
+        },
+        "salesForceIssuanceLocking": {
+            "level": "system"
+        },
+        "salesInvoiceListPrice": {
+            "level": "default"
+        },
+        "salesPurchaseOrderListPrice": {
+            "level": "default"
+        },
+        "salesTaxCodesEnabled": {
+            "level": "default"
+        },
+        "defaultRoundingProfile": {
+            "level": "default"
+        },
+        "salesDebitNoteNumberingDisabled": {
+            "level": "admin"
+        },
+        "salesDraftNumbering": {
+            "level": "default"
+        },
+        "defaultPaymentTermsProfile": {
+            "level": "default"
+        },
+        "supplierBillPostingDateEnabled": {
+            "level": "default"
+        },
+        "paymentEntryPostingDateEnabled": {
+            "level": "default"
+        },
+        "salesWeightUnit": {
+            "level": "default"
+        }
+    }
+}

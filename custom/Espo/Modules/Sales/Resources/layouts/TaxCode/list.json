@@ -1,0 +1,42 @@
+[
+    {
+        "name": "code",
+        "width": 11,
+        "link": true
+    },
+    {
+        "name": "name"
+    },
+    {
+        "name": "status",
+        "width": 10
+    },
+    {
+        "name": "isSelectable",
+        "width": 9
+    },
+    {
+        "name": "isForSales",
+        "width": 9,
+        "hidden": true
+    },
+    {
+        "name": "isForPurchases",
+        "width": 9,
+        "hidden": true
+    },
+    {
+        "name": "type",
+        "width": 12
+    },
+    {
+        "name": "rate",
+        "width": 13,
+        "align": "right"
+    },
+    {
+        "name": "amount",
+        "width": 13,
+        "align": "right"
+    }
+]

@@ -1,0 +1,20 @@
+[
+    {
+        "label": "Overview",
+        "rows": [
+            [{"name": "number"}, false],
+            [{"name": "status"}, false],
+            [{"name": "dateOrdered"}, false],
+            [{"name": "shippingDate"}, {"name": "deliveryDate"}]
+        ]
+    },
+    {
+        "label": "Details",
+        "rows": [
+            [{"name": "fromWarehouse"}, {"name": "toWarehouse"}],
+            [{"name": "fromAddress"}, {"name": "toAddress"}],
+            [{"name": "shippingProvider"}, false],
+            [{"name": "description"}]
+        ]
+    }
+]

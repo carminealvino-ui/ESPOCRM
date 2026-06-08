@@ -1,0 +1,39 @@
+{
+    "controller": "controllers/record",
+    "acl": "sales:acl/quote-item",
+    "views": {
+        "list": "sales:views/quote-item/list"
+    },
+    "recordViews": {
+        "list": "sales:views/quote-item/record/list"
+    },
+    "mergeDisabled": true,
+    "convertCurrencyDisabled": true,
+    "menu": {
+        "list": {
+            "buttons": [
+                {
+                    "label": "Sales Orders",
+                    "link": "#SalesOrder",
+                    "acl": "read",
+                    "aclScope": "SalesOrder"
+                }
+            ]
+        }
+    },
+    "additionalLayouts": {
+        "listItem": {
+            "type": "listSmall",
+            "dataAttributeList": [
+                "name",
+                "align",
+                "widthComplex",
+                "width",
+                "widthPx",
+                "link",
+                "view",
+                "customLabel"
+            ]
+        }
+    }
+}

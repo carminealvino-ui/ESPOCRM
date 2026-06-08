@@ -1,0 +1,170 @@
+{
+    "fields": {
+        "defaultPriceBook": {
+            "type": "link",
+            "entity": "PriceBook"
+        },
+        "priceBooksEnabled": {
+            "type": "bool"
+        },
+        "productLevelPricesEnabled": {
+            "type": "bool"
+        },
+        "inventoryTransactionsEnabled": {
+            "type": "bool"
+        },
+        "warehousesEnabled": {
+            "type": "bool"
+        },
+        "salesForbidOrderUnlock": {
+            "type": "bool",
+            "tooltip": true
+        },
+        "eInvoiceFormat": {
+            "type": "enum",
+            "view": "sales:views/settings/fields/e-invoice-format",
+            "translation": "Invoice.options.eInvoiceFormats"
+        },
+        "sellerCompanyName": {
+            "type": "varchar",
+            "maxLength": 150
+        },
+        "sellerElectronicAddressScheme": {
+            "type": "enum",
+            "maxLength": 4,
+            "view": "sales:views/fields/electronic-address-scheme",
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\FieldValidators\\Account\\ElectronicAddressScheme\\Valid"
+            ]
+        },
+        "sellerElectronicAddressIdentifier": {
+            "type": "varchar",
+            "maxLength": 255
+        },
+        "sellerTaxRegistrationScheme": {
+            "type": "enum",
+            "maxLength": 4,
+            "view": "sales:views/fields/electronic-address-scheme",
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\FieldValidators\\Account\\ElectronicAddressScheme\\Valid"
+            ]
+        },
+        "sellerTaxRegistrationIdentifier": {
+            "type": "varchar",
+            "maxLength": 255
+        },
+        "sellerVatNumber": {
+            "type": "varchar",
+            "maxLength": 100
+        },
+        "sellerAddress": {
+            "type": "address"
+        },
+        "sellerContactName": {
+            "type": "varchar",
+            "maxLength": 150
+        },
+        "sellerContactEmailAddress": {
+            "type": "varchar",
+            "maxLength": 255,
+            "view": "views/fields/email-address"
+        },
+        "sellerContactPhoneNumber": {
+            "type": "varchar",
+            "maxLength": 100,
+            "pattern": "$phoneNumberLoose"
+        },
+        "salesQuoteEmailTemplate": {
+            "type": "link",
+            "entity": "EmailTemplate"
+        },
+        "salesSalesOrderEmailTemplate": {
+            "type": "link",
+            "entity": "EmailTemplate"
+        },
+        "salesInvoiceEmailTemplate": {
+            "type": "link",
+            "entity": "EmailTemplate"
+        },
+        "salesPurchaseOrderEmailTemplate": {
+            "type": "link",
+            "entity": "EmailTemplate"
+        },
+        "salesReceiptOrderEmailTemplate": {
+            "type": "link",
+            "entity": "EmailTemplate"
+        },
+        "salesReturnOrderEmailTemplate": {
+            "type": "link",
+            "entity": "EmailTemplate"
+        },
+        "salesCreditNoteEmailTemplate": {
+            "type": "link",
+            "entity": "EmailTemplate"
+        },
+        "salesTransferOrderEmailTemplate": {
+            "type": "link",
+            "entity": "EmailTemplate"
+        },
+        "salesInventoryAdjustmentEmailTemplate": {
+            "type": "link",
+            "entity": "EmailTemplate"
+        },
+        "salesPaymentRequestEmailTemplate": {
+            "type": "link",
+            "entity": "EmailTemplate"
+        },
+        "salesInvoiceTemplate": {
+            "type": "link",
+            "entity": "Template",
+            "view": "modules/sales/views/settings/fields/sales-invoice-template"
+        },
+        "salesIssuanceLocking": {
+            "type": "bool",
+            "tooltip": true
+        },
+        "salesInvoiceListPrice": {
+            "type": "bool",
+            "tooltip": true
+        },
+        "salesPurchaseOrderListPrice": {
+            "type": "bool"
+        },
+        "salesTaxCodesEnabled": {
+            "type": "bool",
+            "tooltip": true
+        },
+        "defaultRoundingProfile": {
+            "type": "link",
+            "entity": "RoundingProfile"
+        },
+        "salesDebitNoteNumberingDisabled": {
+            "type": "bool"
+        },
+        "salesDraftNumbering": {
+            "type": "bool",
+            "tooltip": true
+        },
+        "supplierBillPostingDate": {
+            "type": "bool",
+            "tooltip": true
+        },
+        "paymentEntryPostingDate": {
+            "type": "bool",
+            "tooltip": true
+        },
+        "defaultPaymentTermsProfile": {
+            "type": "link",
+            "entity": "PaymentTermsProfile"
+        },
+        "salesWeightUnit": {
+            "type": "enum",
+            "options": [
+                "",
+                "kg",
+                "lb"
+            ],
+            "translation": "Global.options.salesWeightUnitShort"
+        }
+    }
+}

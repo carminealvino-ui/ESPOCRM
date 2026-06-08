@@ -1,0 +1,33 @@
+{
+    "loadAdditionalFieldsAfterUpdate": true,
+    "actions": {
+        "merge": {
+            "disabled": true
+        },
+        "convertCurrency": {
+            "disabled": true
+        }
+    },
+    "massActions": {
+        "lock": {
+            "implementationClassName": "Espo\\Modules\\Sales\\Classes\\MassActions\\Lock"
+        },
+        "unlock": {
+            "implementationClassName": "Espo\\Modules\\Sales\\Classes\\MassActions\\Unlock"
+        },
+        "convertCurrency": {
+            "disabled": true
+        }
+    },
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentRequest\\BeforeSaveValidation",
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentRequest\\BeforeCreate"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\PaymentRequest\\BeforeSaveValidation"
+    ],
+    "readLoaderClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentRequest\\PaymentUrlLoader",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentRequest\\InvoiceAmountsLoader"
+    ]
+}

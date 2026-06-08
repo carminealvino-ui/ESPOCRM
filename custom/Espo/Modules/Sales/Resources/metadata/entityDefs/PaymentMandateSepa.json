@@ -1,0 +1,12 @@
+{
+    "fields": {
+        "scheme": {
+            "type": "enum",
+            "options": [
+                "Core",
+                "B2B"
+            ],
+            "maxLength": 4
+        }
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "fields": {
+        "prezzoCodice": "Prezzo Codice",
+        "prezzoCodiceCurrency": "Prezzo Codice (Currency)",
+        "prezzoCodiceConverted": "Prezzo Codice (Converted)",
+        "prezzoListino": "Prezzo Listino",
+        "prezzoListinoCurrency": "Prezzo Listino (Valuta)",
+        "prezzoListinoConverted": "Prezzo Listino (Convertito)"
+    }
+}

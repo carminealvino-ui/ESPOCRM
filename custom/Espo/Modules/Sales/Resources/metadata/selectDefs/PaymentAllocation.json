@@ -1,0 +1,18 @@
+{
+    "selectAttributesDependencyMap": {
+        "id": [
+            "paymentEntryId",
+            "paymentEntryName",
+            "creditNoteId",
+            "creditNoteName",
+            "writeOffEntryId",
+            "writeOffEntryName",
+            "supplierCreditId",
+            "supplierCreditName"
+        ],
+        "amount": [
+            "amountLocal",
+            "amountLocalCurrency"
+        ]
+    }
+}

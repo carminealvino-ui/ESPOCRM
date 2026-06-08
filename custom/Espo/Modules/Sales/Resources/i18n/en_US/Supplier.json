@@ -1,0 +1,31 @@
+{
+    "labels": {
+        "Create Supplier": "Create Supplier"
+    },
+    "fields": {
+        "account": "Account",
+        "status": "Status"
+    },
+    "links": {
+        "account": "Account",
+        "prices": "Prices",
+        "purchaseOrders": "Purchase Orders",
+        "receiptOrders": "Receipt Orders",
+        "supplierBills": "Bills",
+        "supplierCredits": "Bill Credits",
+        "paymentEntries": "Payments"
+    },
+    "presetFilters": {
+        "active": "Active"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    },
+    "tabs": {
+        "transactions": "Transactions",
+        "prices": "Prices"
+    }
+}

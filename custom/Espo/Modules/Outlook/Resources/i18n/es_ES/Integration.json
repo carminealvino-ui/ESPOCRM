@@ -1,0 +1,13 @@
+{
+  "fields": {
+    "outlookCalendar": "Calendario",
+    "outlookContacts": "Contactos",
+    "tenant": "Inquilino"
+  },
+  "help": {
+    "Outlook": "Obtenga las credenciales de OAuth del [Centro de administración de Azure Active Directory] (https://aad.portal.azure.com)."
+  },
+  "tooltips": {
+    "outlookTenant": "Controla quién puede iniciar sesión en la aplicación.\n\n* *common*: permite a los usuarios con cuentas personales de Microsoft y cuentas profesionales/educativas de Azure AD iniciar sesión en la aplicación.\n* *organizations*: solo permite a los usuarios con cuentas profesionales o educativas de Azure AD iniciar sesión en la aplicación.\n* *consumers*: solo permite a los usuarios con cuentas personales de Microsoft (MSA) iniciar sesión en la aplicación.\n\nNota: si su aplicación de Azure no está configurada como multiinquilino, el valor *common* provocará un error de autenticación. Debe utilizar un valor adecuado."
+  }
+}

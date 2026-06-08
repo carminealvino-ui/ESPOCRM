@@ -1,0 +1,12 @@
+{
+    "primaryFilterClassNameMap": {
+        "active": "Espo\\Modules\\Sales\\Classes\\Select\\RoundingProfile\\PrimaryFilters\\Active"
+    },
+    "selectAttributesDependencyMap": {
+        "id": [
+            "roundingFactor"
+        ]
+    },
+    "accessControlFilterResolverClassName": "Espo\\Modules\\Sales\\Classes\\Select\\RoundingProfile\\FilterResolver",
+    "portalAccessControlFilterResolverClassName": "Espo\\Modules\\Sales\\Classes\\Select\\RoundingProfile\\PortalFilterResolver"
+}

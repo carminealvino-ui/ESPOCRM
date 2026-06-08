@@ -1,0 +1,74 @@
+{
+    "fields": {
+        "address": "Address",
+        "cAP": "CAP",
+        "appuntamenti": "Appuntamenti",
+        "b2B": "B2B",
+        "codiceCAP": "Codice CAP",
+        "cAPDescrizione": "CAP Descrizione",
+        "insegna": "Insegna",
+        "partitaIVA": "Partita IVA",
+        "ragioneSociale": "Ragione Sociale",
+        "referenteAziendale": "Referente Aziendale",
+        "telefono": "Telefono",
+        "whatsApp": "WhatsApp",
+        "whatsApp39": "WhatsApp +39",
+        "lead": "Lead",
+        "call": "Call",
+        "opportunita": "Opportunità",
+        "origine": "Fonte",
+        "azienda": "Azienda",
+        "contattiTelefonici": "Contatti Telefonici",
+        "cliente": "Cliente",
+        "fornitorePartner": "Fornitore/Partner",
+        "productBrand": "Brand"
+    },
+    "links": {
+        "meetings": "Meetings",
+        "calls": "Calls",
+        "tasks": "Tasks",
+        "cAP": "CAP",
+        "appuntamenti": "Appuntamenti",
+        "lead": "Lead",
+        "appuntamentoChildren": "Appuntamenti",
+        "call": "Call",
+        "opportunita": "Opportunità",
+        "contattiTelefonici": "Contatti Telefonici",
+        "cliente": "Cliente",
+        "fornitorePartner": "Fornitore/Partner",
+        "productBrand": "Brand"
+    },
+    "labels": {
+        "Create Prospect": "Create Prospect"
+    },
+    "options": {
+        "origine": {
+            "": "Nessuno",
+            "Generazione Lead": "Generazione Lead",
+            "Extractor": "Extractor",
+            "Assegnazione CB": "Assegnazione CB",
+            "Referenza Personale": "Referenza Personale",
+            "Call Center": "Call Center",
+            "Chiamate a freddo": "Chiamate a freddo",
+            "Vodafone Assegnazione CB": "Vodafone Assegnazione CB",
+            "D2D": "D2D",
+            "Email": "Email",
+            "Passaparola": "Passaparola",
+            "Partner": "Partner",
+            "Pubbliche relazioni": "Pubbliche relazioni",
+            "Sito Web": "Sito Web",
+            "WhatsApp Massivo": "WhatsApp Massivo",
+            "Campagna": "Campagna",
+            "Other": "Altro"
+        },
+        "azienda": {
+            "": "",
+            "ARQUATI": "ARQUATI",
+            "ARIEL": "ARIEL",
+            "ARTEL": "ARTEL",
+            "PROGETTO": "PROGETTO",
+            "GFB": "GFB",
+            "TELCALL": "TELCALL"
+        }
+    }
+}

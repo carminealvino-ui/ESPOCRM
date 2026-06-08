@@ -1,0 +1,22 @@
+{
+  "labels": {
+    "Create TaxPurchaseRule": "Einkaufssteuerregel erstellen"
+  },
+  "fields": {
+    "logic": "Bedingungen",
+    "tax": "Steuerprofil",
+    "order": "Auftrag"
+  },
+  "links": {
+    "tax": "Steuerprofil"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  }
+}

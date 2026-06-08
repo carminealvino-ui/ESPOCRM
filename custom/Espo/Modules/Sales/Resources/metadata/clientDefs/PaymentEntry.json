@@ -1,0 +1,143 @@
+{
+    "controller": "controllers/record",
+    "modelDefaultsPreparator": "modules/sales/handlers/payment-entry/model-defaults-preparator",
+    "filterList": [
+        "actual",
+        {
+            "name": "completed",
+            "style": "success"
+        }
+    ],
+    "nameAttribute": "number",
+    "mergeDisabled": true,
+    "convertCurrencyDisabled": true,
+    "viewSetupHandlers": {
+        "list": ["sales:handlers/info"],
+        "record/detail": [
+            "modules/sales/handlers/payment-entry/setup-record-detail",
+            "modules/sales/handlers/general/issuance-locking-setup-record-detail",
+            "modules/sales/handlers/general/currency-rate-setup-record-detail"
+        ],
+        "record/edit": [
+            "modules/sales/handlers/payment-entry/setup-record-detail",
+            "modules/sales/handlers/general/issuance-locking-setup-record-detail",
+            "modules/sales/handlers/general/currency-rate-setup-record-detail"
+        ]
+    },
+    "relationshipPanels": {
+        "request": {
+            "selectMandatoryAttributeList": [
+                "name",
+                "number",
+                "methodId",
+                "methodName",
+                "amountCurrency",
+                "accountId",
+                "accountName"
+            ],
+            "selectHandler": "modules/sales/handlers/select-same-account",
+            "selectFieldHandler": "modules/sales/handlers/payment-entry/select-request-field-handler"
+        },
+        "method": {
+            "selectHandler": "modules/sales/handlers/payment-entry/method-select-handler"
+        }
+    },
+    "massActionDefs": {
+        "lock": {
+            "aclScope": "PaymentEntry",
+            "acl": "edit",
+            "handler": "sales:handlers/quote/lock-mass-action",
+            "actionFunction": "actionLock",
+            "initFunction": "initLock"
+        },
+        "unlock": {
+            "aclScope": "PaymentEntry",
+            "acl": "edit",
+            "handler": "sales:handlers/quote/lock-mass-action",
+            "actionFunction": "actionUnlock",
+            "initFunction": "initUnlock"
+        }
+    },
+    "detailActionList": [
+        {
+            "name": "lock",
+            "acl": "edit",
+            "label": "Lock",
+            "handler": "sales:handlers/quote/lock-action",
+            "data": {
+                "handler": "sales:handlers/quote/lock-action"
+            },
+            "checkVisibilityFunction": "canBeLocked",
+            "actionFunction": "actionLock"
+        },
+        {
+            "name": "unlock",
+            "acl": "edit",
+            "label": "Unlock",
+            "handler": "sales:handlers/quote/lock-action",
+            "data": {
+                "handler": "sales:handlers/quote/lock-action"
+            },
+            "checkVisibilityFunction": "canBeUnlocked",
+            "actionFunction": "actionUnlock"
+        },
+        {
+            "name": "viewLocalAmounts",
+            "label": "View in Local Currency",
+            "handler": "modules/sales/handlers/payment-entry/view-local-amounts",
+            "actionFunction": "action",
+            "checkVisibilityFunction": "isVisible",
+            "groupIndex": 7
+        },
+        {
+            "name": "viewTaxes",
+            "label": "View Cash Basis Taxes",
+            "handler": "modules/sales/handlers/payment-entry/view-taxes-action",
+            "actionFunction": "action",
+            "checkVisibilityFunction": "isVisible",
+            "groupIndex": 7
+        }
+    ],
+    "massActionList": [
+        "lock",
+        "unlock"
+    ],
+    "checkAllResultMassActionList": [
+        "lock",
+        "unlock"
+    ],
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "link": "#PaymentRequest",
+                    "labelTranslation": "Global.scopeNamesPlural.PaymentRequest",
+                    "aclScope": "PaymentRequest"
+                },
+                false,
+                {
+                    "link": "#PaymentMethod",
+                    "labelTranslation": "Global.scopeNamesPlural.PaymentMethod",
+                    "aclScope": "PaymentMethod"
+                },
+                {
+                    "link": "#PaymentChannel",
+                    "labelTranslation": "Global.scopeNamesPlural.PaymentChannel",
+                    "aclScope": "PaymentChannel"
+                }
+            ]
+        }
+    },
+    "selectDefaultFilters": {
+        "filter": "actual"
+    },
+    "additionalLayouts": {
+        "listForAccount": {
+            "type": "list"
+        },
+        "listForRequest": {
+            "type": "list"
+        }
+    },
+    "iconClass": "fas fa-credit-card"
+}

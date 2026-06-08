@@ -1,0 +1,15 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "brand",
+        "width": 30
+    },
+    {
+        "name": "unitPrice",
+        "align": "right",
+        "width": 25
+    }
+]

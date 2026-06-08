@@ -1,0 +1,12 @@
+[
+    "status",
+    "hasTrial",
+    "trialPeriodDays",
+    "billingPlans",
+    "products",
+    "primaryProduct",
+    "hasTerm",
+    "teams",
+    "createdAt",
+    "createdBy"
+]

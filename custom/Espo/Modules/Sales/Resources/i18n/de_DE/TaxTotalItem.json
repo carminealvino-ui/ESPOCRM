@@ -1,0 +1,16 @@
+{
+  "fields": {
+    "source": "Quelle",
+    "taxCode": "Steuercode",
+    "rate": "Satz",
+    "amount": "Steuerbetrag",
+    "baseAmount": "Basis",
+    "amountLocal": "Lokaler Steuerbetrag",
+    "baseAmountLocal": "Basis lokal",
+    "taxCodeLabel": "Steuercode-Bezeichnung"
+  },
+  "links": {
+    "taxCode": "Steuercode",
+    "source": "Quelle"
+  }
+}

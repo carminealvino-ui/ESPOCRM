@@ -1,0 +1,147 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "number"
+                },
+                {
+                    "name": "account"
+                }
+            ],
+            [
+                {
+                    "name": "opportunity"
+                }
+            ],
+            [
+                {
+                    "name": "fornitorePartner",
+                    "customLabel": "Fornitore / Partner"
+                },
+                {
+                    "name": "productBrand",
+                    "customLabel": "Brand"
+                }
+            ],
+            [
+                {
+                    "name": "productCategory",
+                    "customLabel": "Categoria prodotto"
+                }
+            ],
+            [
+                {
+                    "name": "dateQuoted"
+                },
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "importoContratto",
+                    "customLabel": "Importo contratto (IVA incl. se B2C)"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ],
+            [
+                {
+                    "name": "name"
+                },
+                false
+            ]
+        ],
+        "style": "default",
+        "label": "Overview"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "billingContact"
+                },
+                {
+                    "name": "shippingContact"
+                }
+            ],
+            [
+                {
+                    "name": "billingAddress"
+                },
+                {
+                    "name": "shippingAddress"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": "Details"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "tax"
+                },
+                {
+                    "name": "shippingProvider"
+                }
+            ],
+            [
+                {
+                    "name": "priceBook"
+                },
+                {
+                    "name": "isTaxInclusive"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": ""
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "prezzoListinoIvaEsclusa",
+                    "customLabel": "Prezzo listino (IVA escl.)"
+                },
+                {
+                    "name": "prezzoListinoIVAInclusa",
+                    "customLabel": "Prezzo listino (IVA incl.)"
+                }
+            ],
+            [
+                {
+                    "name": "prezzoCodiceIvaEsclusa",
+                    "customLabel": "Prezzo a codice (IVA escl.)"
+                },
+                {
+                    "name": "prezzoCodiceIvaInclusa",
+                    "customLabel": "Prezzo a codice (IVA incl.)"
+                }
+            ],
+            [
+                {
+                    "name": "totalPrezzoCodice",
+                    "customLabel": "Totale prezzo codice (da articoli)"
+                },
+                {
+                    "name": "minusPlus",
+                    "customLabel": "Minus / Plus venduto (€)"
+                }
+            ],
+            [
+                {
+                    "name": "margineSuListino",
+                    "customLabel": "Margine % su listino"
+                },
+                false
+            ]
+        ],
+        "style": "default",
+        "label": "Prezzi e Minus/Plus"
+    }
+]
