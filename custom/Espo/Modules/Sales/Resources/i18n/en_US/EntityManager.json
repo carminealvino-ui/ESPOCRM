@@ -1,0 +1,43 @@
+{
+    "fields": {
+        "variantSyncFieldList": "Variant sync fields",
+        "doneStatusList": "Done Statuses",
+        "canceledStatusList": "Canceled Statuses",
+        "softReserveStatusList": "Soft Reserve Statuses",
+        "reserveStatusList": "Reserve Statuses",
+        "failedStatusList": "Failed Statuses",
+        "deliveryRequiredStatusList": "Delivery Required Statuses",
+        "lockableFieldList": "Lock Fields"
+    },
+    "tooltips": {
+        "lockableFieldList": "Fields that become read-only when an order is locked.",
+        "productVariantSyncFieldList": "Fields that are synced from a template to product variants.",
+        "salesOrderSoftReserveStatusList": "Statuses on which inventory is soft reserved.",
+        "salesOrderDoneStatusList": "Statuses indicating that a sales order is done.",
+        "purchaseOrderDoneStatusList": "Statuses indicating that a purchase order is done.",
+        "purchaseOrderCanceledStatusList": "Statuses indicating that an order is canceled.",
+        "receiptOrderDoneStatusList": "Statuses indicating that a receipt order is done.",
+        "receiptOrderCanceledStatusList": "Statuses indicating that a receipt order is canceled.",
+        "salesOrderCanceledStatusList": "Statuses indicating that an order is canceled.",
+        "invoiceDoneStatusList": "Statuses indicating that an invoice is done.",
+        "invoiceCanceledStatusList": "Statuses indicating that an invoice is canceled.",
+        "invoicePreIssueStatusList": "Statuses indicating that an invoice is not issued and not canceled.",
+        "creditNoteDoneStatusList": "Statuses indicating that a credit note is done.",
+        "creditNoteCanceledStatusList": "Statuses indicating that a credit note is canceled.",
+        "quoteDoneStatusList": "Statuses indicating that a quote is done.",
+        "quoteCanceledStatusList": "Statuses indicating that a quote is canceled.",
+        "deliveryRequiredStatusList": "Statuses on which a delivery order should be created.",
+        "deliveryOrderCanceledStatusList": "Statuses indicating that a delivery order is canceled. Inventory is automatically returned to stock.",
+        "deliveryOrderReserveStatusList": "Statuses on which inventory is reserved.",
+        "deliveryOrderSoftReserveStatusList": "Statuses on which inventory is soft reserved.",
+        "deliveryOrderFailedStatusList": "Statuses indicating that a delivery order could not be delivered. Inventory is not automatically returned to stock. Manual intervention might be required.",
+        "deliveryOrderDoneStatusList": "Statuses indicating that a delivery order is done.",
+        "transferOrderCanceledStatusList": "Statuses indicating that a transfer order is canceled. Inventory is automatically returned to stock.",
+        "transferOrderReserveStatusList": "Statuses on which inventory is reserved.",
+        "transferOrderSoftReserveStatusList": "Statuses on which inventory is soft reserved.",
+        "transferOrderFailedStatusList": "Statuses indicating that a transfer order could not be delivered. Inventory is not automatically returned to stock. Manual intervention might be required.",
+        "transferOrderDoneStatusList": "Statuses indicating that a transfer order is done.",
+        "returnOrderDoneStatusList": "Statuses indicating that a return order is done.",
+        "returnOrderCanceledStatusList": "Statuses indicating that a return order is canceled."
+    }
+}

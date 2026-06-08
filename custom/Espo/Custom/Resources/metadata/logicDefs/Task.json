@@ -1,0 +1,28 @@
+{
+    "fields": {
+        "dateCompleted": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "status",
+                        "value": "Completed"
+                    }
+                ]
+            }
+        },
+        "reminders": {
+            "visible": null
+        },
+        "parent": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isFalse",
+                        "attribute": "privato"
+                    }
+                ]
+            }
+        }
+    }
+}

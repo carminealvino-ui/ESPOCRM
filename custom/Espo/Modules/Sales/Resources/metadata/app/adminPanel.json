@@ -1,0 +1,87 @@
+{
+    "salesPack": {
+        "label": "Sales Pack",
+        "itemList": [
+            {
+                "url": "#Admin/salesPackSettings",
+                "label": "Settings",
+                "iconClass": "fas fa-cog",
+                "description": "salesPackSettings",
+                "recordView": "sales:views/settings/record/settings"
+            },
+            {
+                "url": "#PriceRuleCondition",
+                "label": "Price Rule Conditions",
+                "iconClass": "fas fa-code",
+                "description": "priceRuleConditions"
+            },
+            {
+                "url": "#TaxCode",
+                "label": "Tax Codes",
+                "iconClass": "fas fa-percent",
+                "description": "taxCodes"
+            },
+            {
+                "url": "#Tax",
+                "label": "Tax Profiles",
+                "iconClass": "fas fa-percent",
+                "description": "taxProfiles"
+            },
+            {
+                "url": "#TaxRule",
+                "label": "Tax Rules",
+                "iconClass": "fas fa-percent",
+                "description": "taxRules"
+            },
+            {
+                "url": "#TaxPurchaseRule",
+                "label": "Tax Purchase Rules",
+                "iconClass": "fas fa-percent",
+                "description": "taxPurchaseRules"
+            },
+            {
+                "url": "#TaxClass",
+                "label": "Tax Classes",
+                "iconClass": "fas fa-percent",
+                "description": "taxClasses"
+            },
+            {
+                "url": "#EuTaxMapping",
+                "label": "EN 16931 Tax Mapping",
+                "iconClass": "fas fa-percent",
+                "description": "euTaxMapping"
+            },
+            {
+                "url": "#RoundingProfile",
+                "label": "Rounding Profiles",
+                "iconClass": "far fa-circle",
+                "description": "roundingProfiles"
+            },
+            {
+                "url": "#PaymentChannel",
+                "label": "Payment Channels",
+                "iconClass": "far fa-credit-card",
+                "description": "paymentChannels"
+            },
+            {
+                "url": "#PaymentMethod",
+                "label": "Payment Methods",
+                "iconClass": "far fa-credit-card",
+                "description": "paymentMethods"
+            },
+            {
+                "url": "#PaymentTermsProfile",
+                "label": "Payment Terms Profiles",
+                "iconClass": "far fa-calendar",
+                "description": "paymentTermsProfiles"
+            },
+            {
+                "url": "#Admin/subscriptionIntervals",
+                "label": "Subscription Intervals",
+                "iconClass": "fas fa-pen-nib",
+                "description": "subscriptionIntervals",
+                "recordView": "modules/sales/views/settings/record/subscription-intervals"
+            }
+        ]
+    }
+}

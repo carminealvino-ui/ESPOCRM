@@ -1,0 +1,35 @@
+{
+    "massActions": {
+        "delete": {
+            "allowed": true
+        },
+        "update": {
+            "allowed": false,
+            "disabled": true
+        }
+    },
+    "actions": {
+        "merge": {
+            "disabled": true
+        }
+    },
+    "relationships": {
+        "invoices": {
+            "linkRequiredForeignAccess": "edit"
+        }
+    },
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\SubscriptionUpdate\\BeforeSaveValidation"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\SubscriptionUpdate\\BeforeSaveValidation"
+    ],
+    "createInputFilterClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Order\\InputFilter"
+    ],
+    "updateInputFilterClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Order\\InputFilter"
+    ],
+    "deletedRestorerClassName": "Espo\\Modules\\Sales\\Classes\\Record\\SubscriptionUpdate\\DeletedRestorer",
+    "loadAdditionalFieldsAfterUpdate": true
+}

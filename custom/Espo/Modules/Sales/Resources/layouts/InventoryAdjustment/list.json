@@ -1,0 +1,22 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "reason",
+        "width": 20
+    },
+    {
+        "name": "warehouse",
+        "width": 25
+    },
+    {
+        "name": "date",
+        "width": 12
+    }
+]

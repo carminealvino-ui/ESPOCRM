@@ -1,0 +1,44 @@
+{
+    "fields": {
+        "name": "Name",
+        "qty": "Qty",
+        "quantity": "Quantity",
+        "quantityInt": "Quantity (Int)",
+        "listPrice": "List Price",
+        "unitPrice": "Unit Price",
+        "amount": "Amount",
+        "taxRate": "Tax Rate",
+        "product": "Product",
+        "order": "Line Number",
+        "quote": "Quote",
+        "weight": "Weight",
+        "unitWeight": "Unit Weight",
+        "description": "Description",
+        "discount": "Discount (%)",
+        "amountConverted": "Amount (Converted)",
+        "unitPriceConverted": "Unit Price (Converted)",
+        "listPriceConverted": "List Price (Converted)",
+        "account": "Account",
+        "listPriceCurrency": "List Price Currency",
+        "unitPriceCurrency": "Unit Price Currency",
+        "amountCurrency": "Amount Currency",
+        "quoteStatus": "Quote Status",
+        "inventoryNumberType": "Inventory Number Type",
+        "isInventory": "Is Inventory",
+        "taxCode": "Tax Code",
+        "taxes": "Tax"
+    },
+    "links": {
+        "quote": "Quote",
+        "product": "Product",
+        "account": "Account",
+        "taxCode": "Tax Code"
+    },
+    "labels": {
+        "Quotes": "Quotes"
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "completed": "Completed"
+    }
+}

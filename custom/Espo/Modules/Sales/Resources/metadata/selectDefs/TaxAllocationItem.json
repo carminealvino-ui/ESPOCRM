@@ -1,0 +1,5 @@
+{
+    "ordererClassNameMap": {
+        "groupedOrder": "Espo\\Modules\\Sales\\Select\\TaxAllocationItem\\Order\\GroupedOrder"
+    }
+}

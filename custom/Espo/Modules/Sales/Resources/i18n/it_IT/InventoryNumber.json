@@ -1,0 +1,46 @@
+{
+  "labels": {
+    "Create InventoryNumber": "Crea numero",
+    "Quantity": "Quantità",
+    "Warehouses": "Magazzini",
+    "Inventory History": "Storico dell'inventario",
+    "View History": "Visualizza lo storico",
+    "Received": "Ricevuta",
+    "Shipped": "Spedito",
+    "Orders": "Ordini"
+  },
+  "fields": {
+    "type": "Tipo",
+    "product": "Prodotto",
+    "quantityOnHand": "A Disposizione",
+    "quantityReserved": "Riservato",
+    "quantityInTransit": "In transito",
+    "incomingDate": "Data di arrivo",
+    "productionDate": "Data Produzione",
+    "expirationDate": "Data di scadenza",
+    "warehousesOnHand": "Magazzini (a disposizione)",
+    "deleteId": "Elimina ID",
+    "number": "Numero interno",
+    "orderFifo": "Ordina FIFO",
+    "orderFefo": "Ordina FEFO",
+    "orderLifo": "Ordina LIFO",
+    "quantityWarehouseOnHand": "A portata di mano in magazzino",
+    "quantityWarehouseReserved": "Prenotato in Magazzino"
+  },
+  "links": {
+    "product": "Prodotto",
+    "inventoryTransactions": "Transazioni di magazzino",
+    "inventoryAdjustmentItems": "Rettifiche"
+  },
+  "presetFilters": {
+    "onHand": "A Disposizione",
+    "notOnHand": "Non disponibile a magazzino"
+  },
+  "messages": {
+    "alreadyExists": "Lo stesso numero di inventario esiste già."
+  },
+  "tabs": {
+    "inventory": "Magazzino",
+    "orders": "Ordini"
+  }
+}

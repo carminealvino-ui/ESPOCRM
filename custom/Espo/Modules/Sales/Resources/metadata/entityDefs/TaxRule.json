@@ -1,0 +1,90 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "maxLength": 150,
+            "required": true
+        },
+        "order": {
+            "type": "int",
+            "default": 1,
+            "readOnly": true,
+            "index": true,
+            "audited": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "logic": {
+            "type": "jsonObject",
+            "view": "modules/sales/views/tax-rule/fields/logic",
+            "tooltip": true,
+            "audited": true
+        },
+        "tax": {
+            "type": "link",
+            "required": true,
+            "autocompleteOnEmpty": true,
+            "tooltip": true,
+            "audited": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Active",
+                "Inactive"
+            ],
+            "maxLength": 8,
+            "default": "Active",
+            "style": {
+                "Inactive": "info"
+            },
+            "audited": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "tax": {
+            "type": "belongsTo",
+            "entity": "Tax"
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "order",
+        "order": "asc",
+        "textFilterFields": [
+            "name"
+        ]
+    },
+    "indexes": {
+        "statusOrder": {
+            "columns": [
+                "status",
+                "order"
+            ]
+        }
+    }
+}

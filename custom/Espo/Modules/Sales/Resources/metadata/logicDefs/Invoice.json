@@ -1,0 +1,290 @@
+{
+    "fields": {
+        "isLocked": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isNotActual"
+                    }
+                ]
+            }
+        },
+        "isIssued": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isIssued"
+                    }
+                ]
+            }
+        },
+        "postingDate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "postingDate"
+                    }
+                ]
+            }
+        },
+        "status": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isLocked"
+                    }
+                ]
+            }
+        },
+        "account": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "opportunityId",
+                                "data": {
+                                    "field": "opportunity"
+                                }
+                            },
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "quoteId",
+                                "data": {
+                                    "field": "quote"
+                                }
+                            },
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "salesOrderId",
+                                "data": {
+                                    "field": "salesOrder"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "quote": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "salesOrderId",
+                                "data": {
+                                    "field": "salesOrder"
+                                }
+                            },
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "id"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "salesOrder": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "dateDue": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "paymentTermsProfileId",
+                        "data": {
+                            "field": "paymentTermsProfile"
+                        }
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "paymentTermsProfileId",
+                        "data": {
+                            "field": "paymentTermsProfile"
+                        }
+                    }
+                ]
+            }
+        },
+        "opportunity": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "quoteId",
+                                "data": {
+                                    "field": "quote"
+                                }
+                            },
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "salesOrderId",
+                                "data": {
+                                    "field": "salesOrder"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "precedingInvoice": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "in",
+                                "attribute": "type",
+                                "value": [
+                                    "Debit Note"
+                                ]
+                            },
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "precedingInvoiceId",
+                                "data": {
+                                    "field": "precedingInvoice"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "itemList": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isLocked"
+                            },
+                            {
+                                "type": "and",
+                                "value": [
+                                    {
+                                        "type": "in",
+                                        "attribute": "status",
+                                        "value": [
+                                            "Paid"
+                                        ]
+                                    },
+                                    {
+                                        "type": "isTrue",
+                                        "attribute": "isDone"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "and",
+                                "value": [
+                                    {
+                                        "type": "in",
+                                        "attribute": "status",
+                                        "value": [
+                                            "Canceled"
+                                        ]
+                                    },
+                                    {
+                                        "type": "isTrue",
+                                        "attribute": "isNotActual"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "tax": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isLocked"
+                            },
+                            {
+                                "type": "and",
+                                "value": [
+                                    {
+                                        "type": "in",
+                                        "attribute": "status",
+                                        "value": [
+                                            "Paid"
+                                        ]
+                                    },
+                                    {
+                                        "type": "isTrue",
+                                        "attribute": "isDone"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "number": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "amountDue": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "paymentTermsNote": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "paymentTermsNote"
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,38 @@
+{
+  "fields": {
+    "priceBook": "Listino Prezzi",
+    "electronicAddressScheme": "Formato dell’indirizzo elettronico",
+    "electronicAddressIdentifier": "Identificatore Indirizzo elettronico",
+    "paymentMethods": "Metodi di pagamento",
+    "paymentMethod": "Metodo di pagamento principale",
+    "taxNumber": "Codice Fiscale / Partita IVA",
+    "paymentTermsProfile": "Profilo termini di pagamento"
+  },
+  "links": {
+    "priceBook": "Listino Prezzi",
+    "supplier": "Fornitore",
+    "quotes": "Preventivi",
+    "quoteItems": "Preventivi articoli",
+    "salesOrders": "Ordini di vendita",
+    "salesOrderItems": "Articoli dell'ordine di vendita",
+    "invoices": "Fatture",
+    "invoiceItems": "Descrizione Fattura",
+    "purchaseOrders": "Ordini d'Acquisto",
+    "purchaseOrderItems": "Articoli dell'ordine di acquisto",
+    "deliveryOrders": "Ordini di consegna",
+    "deliveryOrderItems": "Articoli dell'ordine di consegna",
+    "receiptOrders": "Ordini ricevuti",
+    "receiptOrderItems": "Articoli ricevuti",
+    "returnOrders": "Ordini di reso",
+    "returnOrderItems": "Articoli dell'ordine di reso",
+    "writeOffEntries": "Stralci",
+    "paymentEntries": "Pagamenti",
+    "creditNotes": "Note di credito",
+    "creditNoteItems": "Voci delle note di credito",
+    "paymentRequests": "Richieste di Pagamento",
+    "paymentMethods": "Metodi di pagamento",
+    "subscriptions": "Abbonamenti",
+    "subscriptionItems": "Voci abbonamento",
+    "paymentTermsProfile": "Profilo termini di pagamento"
+  }
+}

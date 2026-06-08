@@ -1,0 +1,40 @@
+{
+    "primaryFilterClassNameMap": {
+        "onHand": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\PrimaryFilters\\OnHand",
+        "notOnHand": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\PrimaryFilters\\NotOnHand"
+    },
+    "accessControlFilterClassNameMap": {
+        "all": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\AccessControlFilters\\All"
+    },
+    "additionalApplierClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\AdditionalAppliers\\Quantity"
+    ],
+    "whereItemConverterClassNameMap": {
+        "warehousesOnHandIds_arrayAnyOf": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\WarehousesOnHand",
+        "quantityReserved_greaterThan": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityReserved_greaterThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityReserved_lessThan": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityReserved_lessThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityReserved_equals": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityReserved_notEquals": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityReserved_isNull": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityReserved_isNotNull": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityReserved_between": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityOnHand_greaterThan": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityOnHand_greaterThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityOnHand_lessThan": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityOnHand_lessThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityOnHand_equals": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityOnHand_notEquals": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityOnHand_isNull": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityOnHand_isNotNull": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity",
+        "quantityOnHand_between": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\WhereItemConverters\\Quantity"
+    },
+    "ordererClassNameMap": {
+        "quantityReserved": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\Order\\Quantity",
+        "quantityOnHand": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\Order\\Quantity",
+        "orderFifo": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\Order\\OrderFifo",
+        "orderFefo": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\Order\\OrderFefo",
+        "orderLifo": "Espo\\Modules\\Sales\\Classes\\Select\\InventoryNumber\\Order\\OrderLifo"
+    }
+}

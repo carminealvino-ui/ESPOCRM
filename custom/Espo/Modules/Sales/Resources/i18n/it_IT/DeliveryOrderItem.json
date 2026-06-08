@@ -1,0 +1,25 @@
+{
+  "fields": {
+    "name": "Nome",
+    "qty": "Q.tà",
+    "quantity": "Quantità",
+    "quantityInt": "Quantità (Int)",
+    "product": "Prodotto",
+    "order": "Numero di riga",
+    "deliveryOrder": "Consegna Ordine",
+    "weight": "Peso",
+    "unitWeight": "Peso unitario",
+    "description": "Descrizione",
+    "account": "Azienda",
+    "deliveryOrderStatus": "Stato dell'ordine di consegna",
+    "inventoryNumber": "Numero di inventario",
+    "inventoryNumberType": "Tipologia di codice inventario",
+    "isInventory": "È un articolo di magazzino"
+  },
+  "links": {
+    "deliveryOrder": "Consegna Ordine",
+    "product": "Prodotto",
+    "account": "Cliente",
+    "inventoryNumber": "Numero di inventario"
+  }
+}

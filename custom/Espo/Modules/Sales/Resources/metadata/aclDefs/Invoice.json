@@ -1,0 +1,16 @@
+{
+    "accountLink": "account",
+    "contactLink": "billingContact",
+    "linkCheckerClassNameMap": {
+        "account": "Espo\\Modules\\Sales\\Classes\\Acl\\Invoice\\LinkCheckers\\AccountChecker",
+        "quote": "Espo\\Modules\\Sales\\Classes\\Acl\\Invoice\\LinkCheckers\\QuoteChecker",
+        "salesOrder": "Espo\\Modules\\Sales\\Classes\\Acl\\Invoice\\LinkCheckers\\SalesOrderChecker",
+        "opportunity": "Espo\\Modules\\Sales\\Classes\\Acl\\Invoice\\LinkCheckers\\OpportunityChecker",
+        "billingContact": "Espo\\Modules\\Sales\\Classes\\Acl\\Invoice\\LinkCheckers\\BillingContactChecker",
+        "shippingContact": "Espo\\Modules\\Sales\\Classes\\Acl\\Invoice\\LinkCheckers\\ShippingContactChecker",
+        "tax": "Espo\\Modules\\Sales\\Classes\\Acl\\Invoice\\LinkCheckers\\TaxChecker",
+        "shippingProvider": "Espo\\Modules\\Sales\\Classes\\Acl\\Invoice\\LinkCheckers\\ShippingProviderChecker",
+        "priceBook": "Espo\\Modules\\Sales\\Classes\\Acl\\Invoice\\LinkCheckers\\PriceBookChecker",
+        "paymentMethods": "Espo\\Modules\\Sales\\Classes\\Acl\\Invoice\\LinkCheckers\\PaymentMethods"
+    }
+}

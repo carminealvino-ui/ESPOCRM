@@ -1,0 +1,120 @@
+{
+    "fields": {
+        "referenceId": {
+            "type": "varchar",
+            "required": true,
+            "maxLength": 100,
+            "audited": true
+        },
+        "account": {
+            "type": "link",
+            "required": true,
+            "audited": true
+        },
+        "type": {
+            "type": "enum",
+            "options": [
+                "",
+                "Sepa"
+            ],
+            "required": true,
+            "readOnlyAfterCreate": true,
+            "maxLength": 24
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Draft",
+                "Active",
+                "Canceled"
+            ],
+            "default": "Draft",
+            "style": {
+                "Active": "primary",
+                "Canceled": "info"
+            },
+            "maxLength": 8,
+            "displayAsLabel": true,
+            "labelType": "state",
+            "audited": true
+        },
+        "accountHolder": {
+            "type": "varchar",
+            "maxLength": 255,
+            "required": true
+        },
+        "iban": {
+            "type": "varchar",
+            "maxLength": 34,
+            "pattern": "[A-Z]{2}[0-9]{2}[A-Z0-9]{11,30}",
+            "required": true,
+            "audited": true
+        },
+        "dateSigned": {
+            "type": "date",
+            "audited": true
+        },
+        "data": {
+            "type": "jsonObject",
+            "notStorable": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "providerField": "type",
+            "metadataPath": "app.salesPaymentMandates",
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentMandate\\DataLoader"
+        },
+        "record": {
+            "type": "linkParent",
+            "readOnly": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "account": {
+            "type": "belongsTo",
+            "entity": "Account"
+        },
+        "record": {
+            "type": "belongsToParent"
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "textFilterFields": [
+            "referenceId"
+        ],
+        "orderBy": "createdAt",
+        "order": "desc"
+    },
+    "transactionalSave": true
+}

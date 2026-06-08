@@ -1,0 +1,6 @@
+[
+    {"name": "inventoryAdjustment"},
+    {"name": "warehouse", "width": 25, "notSortable": true},
+    {"name": "quantity", "width": 15},
+    {"name": "createdAt", "width": 20}
+]

@@ -1,0 +1,3 @@
+{
+    "beforeSaveCustomScript": "// Aggiorna Data\ndata=datetime\\format((datetime\\addHours(dateStart,0)), 'Europe/Amsterdam', 'DD/MM/YYYY HH:mm');\ndateEnd=null;\n\n// Aggiorna Prospect\n$prospectId = record\\findOne('Prospect', null, null, 'name=', parentName);\n\nif ($prospectId) {\n    prospectId = $prospectId\n}\n\n\n// Aggiorna Telefono\ntelefono=prospect.phoneNumber;\nwhatsAppNumero = string\\concatenate('https://wa.me/', '+39', telefono);\nname=string\\upperCase(string\\concatenate(data, ' - ', tipologia, ' - ', parentName,' - ', telefono));\n"
+}

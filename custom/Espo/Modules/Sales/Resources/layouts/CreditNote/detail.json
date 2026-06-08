@@ -1,0 +1,36 @@
+[
+    {
+        "label": "Overview",
+        "rows": [
+            [{"name": "number"}, {"name": "account"}],
+            [{"name": "status"}, {"name": "invoice"}],
+            [{"name": "grandTotalAmount"}, false],
+            [{"name": "dateIssued"}, {"name": "dateDue"}]
+        ]
+    },
+    {
+        "label": "Details",
+        "rows": [
+            [{"name": "billingContact"}, {"name": "buyerReference"}],
+            [{"name": "tax"}, {"name": "roundingProfile"}],
+            [{"name": "isTaxInclusive"}, false],
+            [{"name": "description"}]
+        ]
+    },
+    {
+        "label": "$allocation",
+        "rows": [
+            [
+                {
+                    "name": "allocations"
+                }
+            ],
+            [
+                {
+                    "name": "unallocatedAmount"
+                },
+                false
+            ]
+        ]
+    }
+]

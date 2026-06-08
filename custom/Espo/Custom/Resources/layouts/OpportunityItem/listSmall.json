@@ -1,0 +1,27 @@
+[
+    {
+        "name": "product"
+    },
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "opportunity",
+        "width": 27
+    },
+    {
+        "name": "quantity",
+        "width": 6
+    },
+    {
+        "name": "unitPrice",
+        "width": 18,
+        "align": "right"
+    },
+    {
+        "name": "amount",
+        "width": 18,
+        "align": "right"
+    }
+]

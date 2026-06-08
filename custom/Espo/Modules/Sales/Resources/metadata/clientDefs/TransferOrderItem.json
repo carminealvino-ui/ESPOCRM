@@ -1,0 +1,47 @@
+{
+    "controller": "controllers/record",
+    "acl": "sales:acl/quote-item",
+    "views": {
+        "list": "sales:views/quote-item/list"
+    },
+    "recordViews": {
+        "list": "sales:views/quote-item/record/list"
+    },
+    "mergeDisabled": true,
+    "convertCurrencyDisabled": true,
+    "duplicateDisabled": true,
+    "menu": {
+        "list": {
+            "buttons": [
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.TransferOrder",
+                    "link": "#TransferOrder",
+                    "acl": "read",
+                    "aclScope": "TransferOrder"
+                }
+            ]
+        }
+    },
+    "additionalLayouts": {
+        "listItem": {
+            "type": "listSmall",
+            "dataAttributeList": [
+                "name",
+                "align",
+                "widthComplex",
+                "width",
+                "widthPx",
+                "link",
+                "view",
+                "customLabel"
+            ]
+        }
+    },
+    "relationshipPanels": {
+        "inventoryNumber": {
+            "selectHandler": "sales:handlers/delivery-order-item/select-inventory-number",
+            "createDisabled": true,
+            "selectLayout": "listForProduct"
+        }
+    }
+}

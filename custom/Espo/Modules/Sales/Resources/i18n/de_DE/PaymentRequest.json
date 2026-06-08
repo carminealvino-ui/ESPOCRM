@@ -1,0 +1,62 @@
+{
+  "labels": {
+    "Create PaymentRequest": "Zahlungsaufforderung erstellen",
+    "Generate new reference ID": "Neue Referenz ID generieren",
+    "Send in Email": "In E-Mail senden"
+  },
+  "fields": {
+    "amount": "Betrag",
+    "amountCurrency": "Betragswährung",
+    "amountConverted": "Betrag Konvertiert",
+    "referenceId": "Referenz ID",
+    "number": "Nummer",
+    "account": "Firma",
+    "expirationDate": "Verfallsdatum",
+    "method": "Art",
+    "invoices": "Rechnungen",
+    "invoiceAmounts": "Rechnungsbeträge",
+    "paymentUrl": "Zahlung URL"
+  },
+  "links": {
+    "account": "Firma",
+    "paymentEntries": "Zahlungen",
+    "method": "Art",
+    "invoices": "Rechnungen"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Pending": "Schwebend",
+      "In Progress": "In Bearbeitung",
+      "Paid": "Bezahlt",
+      "Canceled": "Storniert",
+      "Expired": "Abgelaufen"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "paid": "Bezahlt"
+  },
+  "messages": {
+    "currencyNotAllowedForChannel": "Die Währung ist für diese Art nicht zulässig.",
+    "methodIsNotActive": "Die Art ist nicht aktiv.",
+    "checkoutSuccessInProcess": "Checkout abgeschlossen. Die Zahlung wird nun verarbeitet.",
+    "checkoutSuccessPaid": "Die Zahlung ist abgeschlossen.",
+    "cannotChangeMethod": "Die Art kann nicht geändert werden. Nur ein Administrator ist dazu berechtigt.",
+    "cannotChangeAmountAutomatedChannel": "Der Betrag kann nicht geändert werden, da die Zahlungsart automatisiert ist.",
+    "cannotChangeExpirationDateAutomatedChannel": "Das Verfallsdatum kann nicht geändert werden, da die Zahlungsart automatisiert ist.",
+    "cannotChangeStatusForAutomatedChannel": "Der Status kann nicht geändert werden, da die Zahlungsart automatisiert ist. Nur Admin Benutzer dürfen den Status manuell ändern.",
+    "cannotSetExpired": "Der Status kann nicht manuell auf Abgelaufen gesetzt werden.",
+    "draftMessage": "Die Zahlungsaufforderung hat den Status „Entwurf“. Um fortzufahren, muss sie auf „Schwebend“ gesetzt werden.",
+    "generateNewReferenceIdConfirmation": "Sind Sie sicher, dass Sie eine neue Referenz ID generieren möchten? Die Zahlungs URL wird geändert.",
+    "accountMismatch": "Firma stimmt nicht mit dem Rechnungsfirma überein.",
+    "invoicesCurrencyCodeMismatch": "Rechnungen mit unterschiedlichen Währungen können nicht ausgewählt werden.",
+    "currencyCodeMismatch": "Die Betragswährung stimmt nicht mit der Währung der Rechnung überein.",
+    "invoiceNotActual": "Die ausgewählte Rechnung ist nicht geöffnet."
+  },
+  "strings": {
+    "generateSepaXml": "SEPA XML generieren",
+    "paymentLink": "Zahlungslink",
+    "proceed": "Weiter zur Zahlung"
+  }
+}

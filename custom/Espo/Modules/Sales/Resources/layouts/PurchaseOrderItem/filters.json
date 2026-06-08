@@ -1,0 +1,11 @@
+[
+    "account",
+    "purchaseOrder",
+    "product",
+    "purchaseOrderStatus",
+    "quantity",
+    "unitPriceConverted",
+    "amountConverted",
+    "createdBy",
+    "createdAt"
+]

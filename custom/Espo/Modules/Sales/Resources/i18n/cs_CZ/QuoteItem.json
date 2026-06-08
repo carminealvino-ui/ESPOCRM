@@ -1,0 +1,17 @@
+{
+  "fields": {
+    "name": "Název",
+    "qty": "Qty",
+    "quantity": "Kvantita",
+    "listPrice": "Katalogová cena",
+    "unitPrice": "Jednotková cena",
+    "amount": "Částka",
+    "taxRate": "Daňová sazba",
+    "product": "Produkt",
+    "order": "Číslo řádku",
+    "quote": "Nabídka"
+  },
+  "links": {
+    "quote": "Nabídka"
+  }
+}

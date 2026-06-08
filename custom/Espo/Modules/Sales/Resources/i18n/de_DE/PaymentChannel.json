@@ -1,0 +1,29 @@
+{
+  "labels": {
+    "Create PaymentChannel": "Zahlungskanal erstellen",
+    "Provider Settings": "Anbietereinstellungen"
+  },
+  "fields": {
+    "provider": "Anbieter",
+    "data": "Daten",
+    "record": "Datensatz"
+  },
+  "links": {
+    "paymentEntries": "Zahlungen",
+    "methods": "Zahlungsarten"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    },
+    "provider": {
+      "WireTransfer": "Banküberweisung",
+      "SepaCreditTransfer": "SEPA-Überweisung",
+      "SepaDirectDebit": "SEPA-Lastschrift"
+    }
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  }
+}

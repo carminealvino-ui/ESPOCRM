@@ -1,0 +1,10 @@
+{
+    "links": {
+        "receiptOrders": {
+            "readOnly": true
+        },
+        "items": {
+            "readOnly": true
+        }
+    }
+}

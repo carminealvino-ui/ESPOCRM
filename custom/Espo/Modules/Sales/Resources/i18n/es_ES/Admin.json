@@ -1,0 +1,13 @@
+{
+  "layouts": {
+    "listItem": "Lista (artículo)",
+    "detailBottomTotal": "Total inferior"
+  },
+  "fields": {
+    "useAutoincrement": "Autoincremento",
+    "copyFieldList": "Campos para copiar"
+  },
+  "templates": {
+    "salesEmailPdf": "Enviar PDF por correo electrónico (ventas)"
+  }
+}

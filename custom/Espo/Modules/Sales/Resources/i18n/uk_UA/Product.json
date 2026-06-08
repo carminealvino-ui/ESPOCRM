@@ -1,0 +1,47 @@
+{
+  "labels": {
+    "Create Product": "Створити продукт",
+    "Price": "Ціна",
+    "Brands": "Бренди",
+    "Categories": "Категорії"
+  },
+  "fields": {
+    "status": "Статус",
+    "brand": "Бренд",
+    "partNumber": "Номер частини",
+    "category": "Категорія",
+    "pricingType": "Ціновий тип",
+    "pricingFactor": "Ціновий фактор",
+    "costPrice": "Собівартість",
+    "listPrice": "Ціна",
+    "unitPrice": "Ціна за од.",
+    "costPriceCurrency": "Валюта собівартості",
+    "listPriceCurrency": "Валюта ціни",
+    "unitPriceCurrency": "Валюта ціни за од.",
+    "costPriceConverted": "Собівартість (конвертована)",
+    "listPriceConverted": "Ціна (конвертована)",
+    "unitPriceConverted": "Ціна за од. (конвертована)",
+    "isTaxFree": "Без податку",
+    "weight": "Вага"
+  },
+  "links": {
+    "brand": "Бренд",
+    "category": "Категорія"
+  },
+  "options": {
+      "status": {
+          "Available": "Активний",
+          "Unavailable": "Неактивний"
+      },
+    "pricingType": {
+      "Same as List": "Відповідає зазначеній ціні",
+      "Fixed": "Фіксований",
+      "Discount from List": "Знижка від ціни",
+      "Markup over Cost": "Націнка на собівартість",
+      "Profit Margin": "Рентабельність"
+    }
+  },
+  "presetFilters": {
+    "available": "Доступно"
+  }
+}

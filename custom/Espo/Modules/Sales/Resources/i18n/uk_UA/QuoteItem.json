@@ -1,0 +1,34 @@
+{
+  "fields": {
+    "name": "Назва",
+    "qty": "К-сть",
+    "quantity": "Кількість",
+    "listPrice": "Ціна",
+    "unitPrice": "Ціна за од.",
+    "amount": "Сума",
+    "taxRate": "Податок (%)",
+    "product": "Продукт",
+    "order": "Порядковий номер",
+    "quote": "Пропозиція",
+    "weight": "Вага",
+    "unitWeight": "Вага одиниці",
+    "description": "Опис",
+    "discount": "Знижка (%)",
+    "amountConverted": "Сума (конвертована)",
+    "unitPriceConverted": "Ціна за од. (конвертована)",
+    "listPriceConverted": "Ціна (конвертована)",
+    "account": "Контрагент",
+    "listPriceCurrency": "Валюта ціни",
+    "unitPriceCurrency": "Валюта ціни за од.",
+    "amountCurrency": "Валюта суми",
+    "quoteStatus": "Статус пропозиції"
+  },
+  "links": {
+    "quote": "Пропозиція",
+    "product": "Продукт",
+    "account": "Контрагент"
+  },
+  "labels": {
+    "Quotes": "Пропозиції"
+  }
+}

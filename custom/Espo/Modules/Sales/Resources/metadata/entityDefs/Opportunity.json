@@ -1,0 +1,72 @@
+{
+    "fields": {
+        "itemList": {
+            "type": "jsonArray",
+            "notStorable": true,
+            "view": "sales:views/opportunity/fields/item-list",
+            "layoutAvailabilityList": [],
+            "dynamicLogicVisibleDisabled": true,
+            "dynamicLogicInvalidDisabled": true,
+            "templatePlaceholderDisabled": true,
+            "reportDisabled": true,
+            "workflowDisabled": true,
+            "massUpdateDisabled": true,
+            "duplicatorClassName": "Espo\\Modules\\Sales\\Classes\\FieldDuplicators\\Quote\\ItemList",
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Opportunity\\ItemListLoader",
+            "isCompactForm": false,
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "isCompactForm",
+                    "type": "bool"
+                },
+                {
+                    "name": "audited",
+                    "type": "bool"
+                }
+            ],
+            "audited": false,
+            "auditView": "modules/sales/views/quote/fields/audit-item-list"
+        },
+        "priceBook": {
+            "type": "link",
+            "autocompleteOnEmpty": true
+        },
+        "priceBookIsTaxInclusive": {
+            "type": "foreign",
+            "link": "priceBook",
+            "field": "isTaxInclusive",
+            "utility": true
+        }
+    },
+    "links": {
+        "items": {
+            "type": "hasMany",
+            "entity": "OpportunityItem",
+            "foreign": "opportunity",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "quotes": {
+            "type": "hasMany",
+            "entity": "Quote",
+            "foreign": "opportunity",
+            "audited": true
+        },
+        "salesOrders": {
+            "type": "hasMany",
+            "entity": "SalesOrder",
+            "foreign": "opportunity",
+            "audited": true
+        },
+        "invoices": {
+            "type": "hasMany",
+            "entity": "Invoice",
+            "foreign": "opportunity",
+            "audited": true
+        },
+        "priceBook": {
+            "type": "belongsTo",
+            "entity": "PriceBook"
+        }
+    }
+}

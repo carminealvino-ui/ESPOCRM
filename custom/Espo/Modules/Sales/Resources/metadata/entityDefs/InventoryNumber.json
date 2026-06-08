@@ -1,0 +1,260 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true
+        },
+        "number": {
+            "type": "autoincrement",
+            "dbType": "bigint"
+        },
+        "type": {
+            "type": "enum",
+            "options": [
+                "Batch",
+                "Serial"
+            ],
+            "readOnlyAfterCreate": true,
+            "default": "Batch",
+            "maxLength": 6,
+            "customizationOptionsDisabled": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\InventoryNumber\\Type\\Valid"
+            ],
+            "translation": "Product.options.inventoryNumberType"
+        },
+        "product": {
+            "type": "link",
+            "required": true,
+            "readOnlyAfterCreate": true,
+            "customizationDisabled": true,
+            "customizationRequiredDisabled": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\InventoryNumber\\Product\\NotTemplate"
+            ],
+            "view": "sales:views/fields/product-variant"
+        },
+        "quantityOnHand": {
+            "type": "float",
+            "notStorable": true,
+            "readOnly": true,
+            "importDisabled": true,
+            "customizationDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "directUpdateDisabled": true,
+            "foreignAccessDisabled": true,
+            "filtersEnabled": true,
+            "listColumnEnabled": true,
+            "layoutIgnoreList": ["listForWarehouse"],
+            "view": "modules/sales/views/product/fields/quantity",
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\InventoryNumber\\QuantityOnHand"
+        },
+        "quantityReserved": {
+            "type": "float",
+            "notStorable": true,
+            "readOnly": true,
+            "importDisabled": true,
+            "customizationDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "directUpdateDisabled": true,
+            "foreignAccessDisabled": true,
+            "filtersEnabled": true,
+            "listColumnEnabled": true,
+            "layoutIgnoreList": ["listForWarehouse"],
+            "view": "modules/sales/views/product/fields/quantity",
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\InventoryNumber\\QuantityReserved"
+        },
+        "quantityInTransit": {
+            "type": "float",
+            "notStorable": true,
+            "readOnly": true,
+            "importDisabled": true,
+            "layoutAvailabilityList": ["detail"],
+            "customizationDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "directUpdateDisabled": true,
+            "foreignAccessDisabled": true,
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\InventoryNumber\\QuantityInTransit"
+        },
+        "quantityWarehouseOnHand": {
+            "type": "float",
+            "notStorable": true,
+            "readOnly": true,
+            "exportDisabled": true,
+            "importDisabled": true,
+            "customizationDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "directUpdateDisabled": true,
+            "foreignAccessDisabled": true,
+            "layoutAvailabilityList": [
+                "listForWarehouse"
+            ]
+        },
+        "quantityWarehouseReserved": {
+            "type": "float",
+            "notStorable": true,
+            "readOnly": true,
+            "exportDisabled": true,
+            "importDisabled": true,
+            "customizationDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "directUpdateDisabled": true,
+            "foreignAccessDisabled": true,
+            "layoutAvailabilityList": [
+                "listForWarehouse"
+            ]
+        },
+        "warehousesOnHand": {
+            "type": "linkMultiple",
+            "entity": "Warehouse",
+            "notStorable": true,
+            "exportDisabled": true,
+            "importDisabled": true,
+            "autocompleteOnEmpty": true,
+            "fieldManagerParamList": [
+                "autocompleteOnEmpty"
+            ],
+            "directAccessDisabled": true,
+            "dynamicLogicDisabled": true,
+            "layoutAvailabilityList": [
+                "filters"
+            ],
+            "view": "sales:views/inventory-number/fields/warehouses-on-hand"
+        },
+        "incomingDate": {
+            "type": "date",
+            "default": "javascript: return this.dateTime.getToday();",
+            "index": true
+        },
+        "productionDate": {
+            "type": "date"
+        },
+        "expirationDate": {
+            "type": "date",
+            "index": true
+        },
+        "orderFifo": {
+            "type": "int",
+            "notStorable": true,
+            "utility": true
+        },
+        "orderFefo": {
+            "type": "int",
+            "notStorable": true,
+            "utility": true
+        },
+        "orderLifo": {
+            "type": "int",
+            "notStorable": true,
+            "utility": true
+        },
+        "idForSearch": {
+            "type": "varchar",
+            "notStorable": true,
+            "utility": true,
+            "view": "sales:views/inventory-number/fields/id-for-search"
+        },
+        "deleteId": {
+            "type": "varchar",
+            "maxLength": 17,
+            "readOnly": true,
+            "notNull": true,
+            "default": "0",
+            "utility": true,
+            "customizationDisabled": true,
+            "exportDisabled": true,
+            "importDisabled": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true,
+            "index": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "product": {
+            "type": "belongsTo",
+            "entity": "Product",
+            "foreign": "inventoryNumbers"
+        },
+        "inventoryTransactions": {
+            "type": "hasMany",
+            "entity": "InventoryTransaction",
+            "foreign": "inventoryNumber",
+            "readOnly": true
+        },
+        "inventoryAdjustmentItems": {
+            "type": "hasMany",
+            "entity": "InventoryAdjustmentItem",
+            "foreign": "inventoryNumber",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "number",
+        "order": "desc",
+        "textFilterFields": [
+            "name"
+        ]
+    },
+    "indexes": {
+        "productIdName": {
+            "columns": [
+                "productId",
+                "name",
+                "deleteId"
+            ],
+            "unique": true
+        }
+    }
+}

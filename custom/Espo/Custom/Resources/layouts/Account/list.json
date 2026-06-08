@@ -1,0 +1,47 @@
+[
+    {
+        "name": "name",
+        "width": 20,
+        "link": true,
+        "align": "left"
+    },
+    {
+        "name": "b2B",
+        "width": 5,
+        "align": "left"
+    },
+    {
+        "name": "originalLead",
+        "width": 15,
+        "align": "left"
+    },
+    {
+        "name": "billingAddress",
+        "width": 20,
+        "align": "left"
+    },
+    {
+        "name": "stato",
+        "width": 8,
+        "align": "left"
+    },
+    {
+        "name": "type",
+        "width": 8,
+        "align": "left"
+    },
+    {
+        "name": "azienda",
+        "notSortable": true
+    },
+    {
+        "name": "phoneNumber",
+        "width": 8,
+        "align": "left"
+    },
+    {
+        "name": "whatsApp",
+        "width": 12,
+        "align": "left"
+    }
+]

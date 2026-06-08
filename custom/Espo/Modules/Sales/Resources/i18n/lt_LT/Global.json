@@ -1,0 +1,32 @@
+{
+    "scopeNames": {
+        "Product": "Produktas",
+        "ProductCategory": "Produkto kategorija",
+        "ProductBrand": "Prekės ženklas",
+        "ReportCategory": "Ataskaitos kategorija",
+        "Quote": "Citata",
+        "QuoteItem": "Cituoti elementą",
+        "SalesOrder": "Pardavimo užsakymas",
+        "SalesOrderItem": "Pardavimo užsakymo elementas",
+        "Invoice": "Sąskaita faktūra",
+        "InvoiceItem": "Sąskaitos faktūros elementas",
+        "Tax": "Mokesčiai",
+        "ShippingProvider": "Pristatymo paslaugų teikėjas",
+        "OpportunityItem": "Galimybių punktas"
+    },
+    "scopeNamesPlural": {
+        "Product": "Produktai",
+        "ProductCategory": "Produktų kategorijos",
+        "ReportCategory": "Ataskaitų kategorijos",
+        "Quote": "Citatos",
+        "QuoteItem": "Citatos elementai",
+        "SalesOrder": "Pardavimo užsakymai",
+        "SalesOrderItem": "Pardavimo užsakymo elementai",
+        "Invoice": "Sąskaitos faktūros",
+        "InvoiceItem": "Sąskaitos faktūros elementai",
+        "Tax": "Mokesčiai",
+        "ShippingProvider": "Pristatymo paslaugų teikėjai",
+        "OpportunityItem": "Galimybių elementai",
+        "ProductBrand": "Produktų prekių ženklai"
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "links": {
+        "inventoryTransactions": {
+            "readOnly": true
+        },
+        "items": {
+            "readOnly": true
+        }
+    }
+}

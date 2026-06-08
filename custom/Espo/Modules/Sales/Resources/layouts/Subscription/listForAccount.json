@@ -1,0 +1,23 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "primaryProduct",
+        "width": 25
+    },
+    {
+        "name": "amount",
+        "width": 20,
+        "hidden": true
+    },
+    {
+        "name": "billingState",
+        "width": 15
+    }
+]

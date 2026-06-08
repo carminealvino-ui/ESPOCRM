@@ -1,0 +1,10 @@
+{
+    "scriptList": [
+        "__APPEND__",
+        "client/custom/modules/float-extended/src/views/fields/float-extended.js"
+    ],
+    "developerModeScriptList": [
+        "__APPEND__",
+        "client/custom/modules/float-extended/src/viwes/fields/float-extended.js"
+    ]
+}

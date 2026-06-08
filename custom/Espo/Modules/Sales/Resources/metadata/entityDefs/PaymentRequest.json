@@ -1,0 +1,217 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "utility": true,
+            "select": {
+                "select": "number"
+            }
+        },
+        "number": {
+            "type": "number",
+            "prefix": "PR-",
+            "padLength": 5,
+            "index": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Draft",
+                "Pending",
+                "In Progress",
+                "Paid",
+                "Canceled",
+                "Expired"
+            ],
+            "maxLength": 11,
+            "default": "Draft",
+            "style": {
+                "Pending": "primary",
+                "In Progress": "warning",
+                "Paid": "success",
+                "Canceled": "info",
+                "Expired": "info"
+            },
+            "displayAsLabel": true,
+            "labelType": "state",
+            "audited": true,
+            "fieldManagerParamList": [
+                "default",
+                "inlineEditDisabled"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true
+        },
+        "method": {
+            "type": "link",
+            "required": true,
+            "audited": true,
+            "autocompleteOnEmpty": true,
+            "dynamicLogicDisabled": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PaymentRequest\\Method\\ActiveInbound"
+            ]
+        },
+        "methodProvider": {
+            "type": "varchar",
+            "notStorable": true,
+            "readOnly": true,
+            "utility": true,
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentRequest\\MethodProvider"
+        },
+        "paymentUrl": {
+            "type": "url",
+            "notStorable": true,
+            "readOnly": true,
+            "directUpdateDisabled": true,
+            "copyToClipboard": true
+        },
+        "expirationDate": {
+            "type": "date",
+            "audited": true,
+            "dynamicLogicDisabled": true
+        },
+        "account": {
+            "type": "link",
+            "audited": true,
+            "dynamicLogicDisabled": true
+        },
+        "amount": {
+            "type": "currency",
+            "decimal": true,
+            "required": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "invoices": {
+            "type": "linkMultiple",
+            "audited": true,
+            "dynamicLogicDisabled": true,
+            "view": "modules/sales/views/payment-request/fields/invoices"
+        },
+        "invoiceAmounts": {
+            "type": "jsonObject",
+            "notStorable": true,
+            "readOnly": true,
+            "utility": true,
+            "customizationDisabled": true
+        },
+        "referenceId": {
+            "type": "varchar",
+            "maxLength": 36,
+            "readOnly": true,
+            "index": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited"
+            ],
+            "dynamicLogicDisabled": true,
+            "copyToClipboard": true
+        },
+        "isLocked": {
+            "type": "bool",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "view": "modules/sales/views/quote/fields/is-locked"
+        },
+        "isDone": {
+            "type": "bool",
+            "readOnly": true,
+            "customizationDisabled": true
+        },
+        "isNotActual": {
+            "type": "bool",
+            "readOnly": true,
+            "customizationDisabled": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "audited": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "method": {
+            "type": "belongsTo",
+            "entity": "PaymentMethod",
+            "foreign": "requests"
+        },
+        "account": {
+            "type": "belongsTo",
+            "entity": "Account",
+            "foreign": "paymentRequests"
+        },
+        "invoices": {
+            "type": "hasMany",
+            "entity": "Invoice",
+            "foreign": "paymentRequests",
+            "readOnly": true
+        },
+        "paymentEntries": {
+            "type": "hasMany",
+            "entity": "PaymentEntry",
+            "foreign": "request",
+            "readOnly": true
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "entityTeam",
+            "layoutRelationshipsDisabled": true
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [
+            "number"
+        ]
+    },
+    "indexes": {
+        "createdAt": {
+            "columns": [
+                "createdAt"
+            ]
+        },
+        "expirationDateStatus": {
+            "columns": [
+                "expirationDate",
+                "status"
+            ]
+        }
+    }
+}

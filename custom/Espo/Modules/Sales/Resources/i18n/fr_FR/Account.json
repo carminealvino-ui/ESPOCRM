@@ -1,0 +1,10 @@
+{
+  "links": {
+    "quotes": "Devis",
+    "quoteItems": "Éléments de devis",
+    "salesOrders": "Commandes",
+    "salesOrderItems": "Éléments de commande de vente",
+    "invoices": "Factures",
+    "invoiceItems": "Éléments de facture"
+  }
+}

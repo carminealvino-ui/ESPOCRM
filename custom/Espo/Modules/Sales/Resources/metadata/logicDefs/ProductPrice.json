@@ -1,0 +1,26 @@
+{
+    "fields": {
+        "interval": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "productIsSubscribable"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "productIsSubscribable"
+                    },
+                    {
+                        "type": "isFalse",
+                        "attribute": "productIsSellable"
+                    }
+                ]
+            }
+        }
+    }
+}

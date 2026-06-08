@@ -1,0 +1,58 @@
+{
+  "labels": {
+    "Price Rule Conditions": "Condizioni della regola dei prezzi",
+    "Tax Profiles": "Profili fiscali",
+    "Tax Rules": "Regole fiscali",
+    "Tax Codes": "Codici imposta",
+    "Tax Purchase Rules": "Regole di acquisto delle imposte",
+    "Tax Classes": "Classi fiscali",
+    "Payment Channels": "Canali di pagamento",
+    "Payment Methods": "Metodi di pagamento",
+    "Subscription Periods": "Periodi di abbonamento",
+    "Rounding Profiles": "Profili di arrotondamento",
+    "EN 16931 Tax Mapping": "Mappatura imposte EN 16931",
+    "Payment Terms Profiles": "Profili termini di pagamento"
+  },
+  "layouts": {
+    "listItem": "Lista (elemento)",
+    "detailBottomTotal": "Totale inferiore",
+    "listForAdd": "Elenco (Seleziona per elemento)",
+    "listForAddInventory": "Elenco (Seleziona inventario)",
+    "detailCreateFromSalesOrder": "Crea da ordine di vendita",
+    "detailCreateFromPurchaseOrder": "Crea da ordine di acquisto",
+    "listForProduct": "Elenco per prodotto",
+    "listForTemplateProduct": "Elenco per il modello di prodotto",
+    "listForWarehouse": "Elenco per magazzino",
+    "listVariant": "Elenca varianti",
+    "listForAllocationSelect": "Elenco per l'assegnazione",
+    "listForWarehouseInbound": "Elenco per magazzino (entrata)",
+    "listForWarehouseOutbound": "Elenco per magazzino (uscita)"
+  },
+  "fields": {
+    "useAutoincrement": "Incremento automatico",
+    "copyFieldList": "Campi da copiare",
+    "isCompactForm": "Modulo compatto",
+    "syncWithNumber": "Sincronizza con numero"
+  },
+  "templates": {
+    "salesEmailPdf": "E-mail PDF (Vendite)"
+  },
+  "keywords": {
+    "salesPack": "prezzo, listino prezzi, listino prezzi, tasse"
+  },
+  "descriptions": {
+    "euTaxMapping": "Mappatura della categoria fiscale e del codice di esenzione usata nelle fatture elettroniche.",
+    "salesPackSettings": "Parametri per la funzionalità di vendita e acquisto.",
+    "priceRuleConditions": "Condizioni della formula per le regole di prezzo.",
+    "taxCodes": "Configura le imposte applicabili alle righe.",
+    "taxProfiles": "Crea profili per specifici regimi fiscali.",
+    "taxRules": "Regole che determinano l'imposta applicabile per un determinato Cliente.",
+    "taxPurchaseRules": "Regole che determinano l'imposta applicabile per un determinato Cliente per gli acquisti.",
+    "taxClasses": "Le classi fiscali consentono di associare i prodotti a specifiche aliquote fiscali.",
+    "paymentChannels": "Fornitori di servizi di pagamento e impostazioni.",
+    "paymentMethods": "Metodi di pagamento disponibili che i tuoi clienti possono utilizzare.",
+    "subscriptionIntervals": "Periodi di fatturazione disponibili per i prodotti sottoscrivibili.",
+    "roundingProfiles": "Configura i metodi di arrotondamento delle fatture.",
+    "paymentTermsProfiles": "Configura i termini di pagamento per le fatture."
+  }
+}

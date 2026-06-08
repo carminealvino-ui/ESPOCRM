@@ -1,0 +1,47 @@
+{
+  "labels": {
+    "Create SubscriptionUpdate": "Abonnement-Update erstellen"
+  },
+  "fields": {
+    "number": "Nummer",
+    "date": "Datum",
+    "subscription": "Abonnement",
+    "billingStatus": "Abrechnungs Status",
+    "itemList": "Artikelliste",
+    "amount": "Betrag",
+    "currency": "Währung",
+    "invoiceGrandTotalAmount": "Zur Rechnung",
+    "creditNoteGrandTotalAmount": "Gutschreiben an",
+    "netAmount": "Nettobetrag",
+    "billingAction": "Abrechnungsaktion",
+    "createPaymentRequest": "Zahlungsaufforderung erstellen",
+    "sendPaymentRequest": "Zahlungsaufforderung senden",
+    "sendInvoice": "Rechnung senden"
+  },
+  "links": {
+    "subscription": "Abonnement",
+    "invoices": "Rechnungen",
+    "creditNotes": "Gutschriften",
+    "items": "Artikel"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Applied": "Angewendet",
+      "Canceled": "Storniert"
+    },
+    "billingStatus": {
+      "Invoiced": "In Rechnung gestellt",
+      "Paid": "Bezahlt",
+      "Canceled": "Storniert"
+    },
+    "billingAction": {
+      "Draft": "Entwurf",
+      "Issue": "Ausstellen"
+    }
+  },
+  "messages": {
+    "noChangesInUpdate": "Es wurden keine Änderungen vorgenommen.",
+    "cannotUpdateNonDraft": "Ein Nicht-Entwurf kann nicht geändert werden."
+  }
+}

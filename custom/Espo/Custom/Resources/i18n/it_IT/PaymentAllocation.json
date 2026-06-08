@@ -1,0 +1,13 @@
+{
+    "fields": {
+        "amountConverted": "Importo (convertito)",
+        "amountCurrency": "Importo (valuta)",
+        "amountLocal": "Importo in valuta locale",
+        "amountLocalConverted": "Importo in valuta locale (convertito)",
+        "amountLocalCurrency": "Importo in valuta locale (valuta)",
+        "date": "Data",
+        "datePaid": "Data Pagamento",
+        "fxGainLoss": "Utile/<perdita",
+        "source": "Fonte"
+    }
+}

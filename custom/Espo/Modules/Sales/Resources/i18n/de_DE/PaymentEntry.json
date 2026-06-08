@@ -1,0 +1,76 @@
+{
+  "labels": {
+    "Create PaymentEntry": "Zahlung erstellen",
+    "View Cash Basis Taxes": "Steuern auf Cash-Basis anzeigen",
+    "Cash Basis Taxes": "Steuern auf Cash-Basis"
+  },
+  "fields": {
+    "number": "Nummer",
+    "numberA": "Nummer (auto-inkrement)",
+    "account": "Firma",
+    "supplier": "Lieferant",
+    "type": "Typ",
+    "partyType": "Partytyp",
+    "transactionId": "Transaktion ID",
+    "datePaid": "Zahlungsdatum",
+    "method": "Art",
+    "amount": "Betrag",
+    "amountConverted": "Betrag (konvertiert)",
+    "amountCurrency": "Betragswährung",
+    "allocations": "Zuordnungen",
+    "unallocatedAmount": "Nicht zugeordneter Betrag",
+    "request": "Aufforderung",
+    "amountLocal": "Lokaler Betrag",
+    "amountLocalCurrency": "Lokaler Betrag Währung",
+    "amountLocalConverted": "Lokaler Betrag (konvertiert)"
+  },
+  "links": {
+    "method": "Art",
+    "account": "Firma",
+    "supplier": "Lieferant",
+    "allocations": "Zuordnungen",
+    "request": "Aufforderung"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "In Progress": "In Bearbeitung",
+      "Paid": "Bezahlt",
+      "Completed": "Abgeschlossen",
+      "Canceled": "Storniert"
+    },
+    "type": {
+      "Inbound": "Eingehend",
+      "Outbound": "Ausgehend"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "completed": "Abgeschlossen"
+  },
+  "otherFields": {
+    "allocatedAmount": "Zugeordneter Betrag",
+    "target": "Ziel"
+  },
+  "messages": {
+    "allocationsOnlyIfPaid": "Statusänderung nicht möglich – Zuordnungen müssen zuerst entfernt werden.",
+    "unallocatedAmountMustBeZero": "Abschluss nicht möglich – der Transaktionsbetrag muss vollständig zugeordnet sein.",
+    "unallocatedAmountMustNotBeLessThanZero": "Der zugeordnete Betrag darf den Transaktionsbetrag nicht überschreiten.",
+    "cannotAllocateMoreThanOnce": "Kann nicht mehr als einmal derselben Entität zugeordnet werden.",
+    "draftCannotHaveAllocations": "Ein Entwurf kann keine Zuordnungen enthalten.",
+    "requestIsLocked": "Zahlungsaufforderung ist gesperrt.",
+    "allocationTargetAccountMismatch": "Das Zuordnungsziel ist einer anderen Firma zugewiesen.",
+    "allocationTargetSupplierMismatch": "Das Zuordnungsziel ist einem anderen Lieferanten zugewiesen.",
+    "allocationTargetCurrencyMismatch": "Das Zuordnungsziel hat eine andere Währung.",
+    "allocationTargetLocalCurrencyMismatch": "Das Zuordnungsziel hat eine andere Hauswährung.",
+    "allocationTargetIsNotOpen": "Das Zuordnungsziel ist nicht offen.",
+    "allocationTargetIsLocked": "Das Zuordnungsziel ist gesperrt.",
+    "noEditAccessToAllocationTarget": "Kein Bearbeitungszugriff auf das Zuordnungsziel.",
+    "allocationTargetNotAllowed": "Das Zuordnungsziel ist nicht zulässig.",
+    "allocationTargetNotFound": "Das Zuordnungsziel nicht gefunden.",
+    "removedAllocationTargetIsNotOpen": "Die Zuordnung kann nicht von einem nicht geöffneten Ziel entfernt werden.",
+    "removedAllocationTargetIsLocked": "Die Zuordnung kann nicht von einem gesperrten Ziel entfernt werden.",
+    "cannotConvertWithAllocations": "Währungsumrechnung nicht möglich, da bereits Zahlungszuordnungen vorhanden sind.",
+    "cannotAllocateToNonIssuedTarget": "Eine Zuordnung zu einem nicht ausgestellten Dokument ist nicht möglich."
+  }
+}

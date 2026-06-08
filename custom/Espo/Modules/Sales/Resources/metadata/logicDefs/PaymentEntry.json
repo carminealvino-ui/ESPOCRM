@@ -1,0 +1,219 @@
+{
+    "fields": {
+        "isLocked": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isNotActual"
+                    }
+                ]
+            }
+        },
+        "isIssued": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isIssued"
+                    }
+                ]
+            }
+        },
+        "account": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "partyType",
+                        "value": [
+                            "Customer"
+                        ]
+                    }
+                ]
+            }
+        },
+        "supplier": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "partyType",
+                        "value": [
+                            "Supplier"
+                        ]
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "partyType",
+                        "value": [
+                            "Supplier"
+                        ]
+                    }
+                ]
+            }
+        },
+        "allocations": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isLocked"
+                            },
+                            {
+                                "type": "and",
+                                "value": [
+                                    {
+                                        "type": "in",
+                                        "attribute": "status",
+                                        "value": [
+                                            "Completed"
+                                        ]
+                                    },
+                                    {
+                                        "type": "isTrue",
+                                        "attribute": "isDone"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "allocations"
+                            },
+                            {
+                                "type": "in",
+                                "attribute": "status",
+                                "value": [
+                                    "Paid",
+                                    "Completed"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "unallocatedAmount": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "allocations"
+                            },
+                            {
+                                "type": "in",
+                                "attribute": "status",
+                                "value": [
+                                    "Paid",
+                                    "Completed"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "datePaid": {
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "status",
+                        "value": [
+                            "Paid",
+                            "Completed"
+                        ]
+                    }
+                ]
+            }
+        },
+        "number": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "type": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "allocations"
+                            },
+                            {
+                                "type": "and",
+                                "value": [
+                                    {
+                                        "type": "in",
+                                        "attribute": "status",
+                                        "value": [
+                                            "Completed"
+                                        ]
+                                    },
+                                    {
+                                        "type": "isTrue",
+                                        "attribute": "isDone"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "partyType": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "allocations"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "request": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "type",
+                        "value": [
+                            "Inbound"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

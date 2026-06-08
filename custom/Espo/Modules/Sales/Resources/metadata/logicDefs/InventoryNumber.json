@@ -1,0 +1,14 @@
+{
+    "panels": {
+        "quantity": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "attribute": "id",
+                        "type": "isNotEmpty"
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "_delimiter_": {
+        "disabled": true
+    },
+    "prospect": {
+        "index": 0
+    },
+    "appuntamento": {
+        "index": 1
+    },
+    "lead": {
+        "index": 2
+    },
+    "opportunita": {
+        "index": 3
+    },
+    "quote": {
+        "index": 4
+    }
+}

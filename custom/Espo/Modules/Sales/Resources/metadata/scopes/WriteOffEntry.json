@@ -1,0 +1,65 @@
+{
+    "entity": true,
+    "object": true,
+    "tab": true,
+    "acl": true,
+    "aclLevelList": [
+        "all",
+        "team",
+        "no"
+    ],
+    "aclPortal": true,
+    "aclPortalLevelList":  [
+        "all",
+        "account",
+        "no"
+    ],
+    "aclPortalActionList": [
+        "read"
+    ],
+    "module": "Sales",
+    "customizable": true,
+    "layouts": true,
+    "entityManager": {
+        "addField": false,
+        "edit": false,
+        "fields": false,
+        "relationships": false,
+        "formula": false,
+        "layouts": true
+    },
+    "importable": true,
+    "notifications": false,
+    "preserveAuditLog": true,
+    "currencyConversionAccessRequiredFieldList": ["amount"],
+    "lockableFieldList": [
+        "account",
+        "number",
+        "status",
+        "amount",
+        "allocations",
+        "date",
+        "postingDate"
+    ],
+    "issuanceLockableFieldList": [
+        "account",
+        "number",
+        "amount",
+        "date",
+        "postingDate",
+        "issuedAt",
+        "issuedBy"
+    ],
+    "duplicateCheckFieldList": [
+        "number"
+    ],
+    "preIssueStatusList": [
+        "Draft"
+    ],
+    "doneStatusList": [
+        "Applied"
+    ],
+    "canceledStatusList": [
+        "Canceled"
+    ]
+}

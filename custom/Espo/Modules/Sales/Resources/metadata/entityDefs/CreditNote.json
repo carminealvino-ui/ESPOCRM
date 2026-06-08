@@ -1,0 +1,922 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "duplicateIgnore": true,
+            "readOnly": true,
+            "syncWithNumber": true,
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "syncWithNumber",
+                    "type": "bool"
+                }
+            ],
+            "fieldManagerParamList": [
+                "syncWithNumber",
+                "options",
+                "required",
+                "readOnly",
+                "readOnlyAfterCreate",
+                "audited",
+                "pattern",
+                "copyToClipboard",
+                "inlineEditDisabled"
+            ]
+        },
+        "appliedToInvoice": {
+            "type": "bool",
+            "utility": true
+        },
+        "number": {
+            "type": "varchar",
+            "maxLength": 100,
+            "index": true,
+            "readOnly": true,
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "useAutoincrement",
+                    "type": "bool"
+                }
+            ],
+            "fieldManagerParamList": [
+                "useAutoincrement",
+                "required",
+                "readOnly",
+                "readOnlyAfterCreate",
+                "audited",
+                "pattern",
+                "copyToClipboard",
+                "inlineEditDisabled"
+            ],
+            "dynamicLogicDisabled": true,
+            "useAutoincrement": true,
+            "duplicateIgnore": true
+        },
+        "numberA": {
+            "type": "number",
+            "prefix": "CN-",
+            "padLength": 5,
+            "layoutAvailabilityList": [],
+            "textFilterDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true,
+            "suppressHook": true
+        },
+        "numberDraftA": {
+            "type": "number",
+            "prefix": "PRE-CN-",
+            "padLength": 5,
+            "layoutAvailabilityList": [],
+            "textFilterDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true,
+            "suppressHook": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Draft",
+                "Issued",
+                "Resolved",
+                "Canceled"
+            ],
+            "style": {
+                "Issued": "primary",
+                "Resolved": "success",
+                "Canceled": "info"
+            },
+            "default": "Draft",
+            "displayAsLabel": true,
+            "labelType": "state",
+            "notActualOptions": [
+                "Resolved",
+                "Canceled"
+            ],
+            "customizationOptionsDisabled": true,
+            "customizationOptionsReferenceDisabled": true,
+            "audited": true,
+            "duplicateIgnore": true,
+            "view": "modules/sales/views/general/fields/status"
+        },
+        "dateIssued": {
+            "type": "date",
+            "default": "javascript: return this.dateTime.getToday();",
+            "audited": true
+        },
+        "dateDue": {
+            "type": "date",
+            "audited": true,
+            "view": "modules/sales/views/fields/date-due"
+        },
+        "postingDate": {
+            "type": "date",
+            "readOnly": true,
+            "duplicateIgnore": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "account": {
+            "type": "link",
+            "audited": true
+        },
+        "invoice": {
+            "type": "link",
+            "view": "sales:views/credit-note/fields/invoice",
+            "audited": true
+        },
+        "billingContact": {
+            "type": "link",
+            "view": "sales:views/quote/fields/contact",
+            "audited": true
+        },
+        "isTaxInclusive": {
+            "type": "bool",
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "roundingProfile": {
+            "type": "link",
+            "audited": true,
+            "autocompleteOnEmpty": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText",
+                "autocompleteOnEmpty"
+            ],
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\Invoice\\RoundingProfile\\MustBeActive"
+            ]
+        },
+        "tax": {
+            "type": "link",
+            "view": "sales:views/quote/fields/tax",
+            "autocompleteOnEmpty": true,
+            "inlineEditDisabled": true,
+            "audited": true
+        },
+        "taxRate": {
+            "type": "float",
+            "min": 0,
+            "max": 100,
+            "readOnly": true,
+            "customizationReadOnlyDisabled": true,
+            "customizationReadOnlyAfterCreateDisabled": true
+        },
+        "taxCode": {
+            "type": "link",
+            "entity": "TaxCode",
+            "readOnly": true,
+            "notStorable": true,
+            "utility": true,
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\TaxCodeLoader"
+        },
+        "taxTotals": {
+            "type": "jsonArray",
+            "notStorable": true,
+            "readOnly": true,
+            "fieldManagerParamList": [],
+            "dynamicLogicDisabled": true,
+            "layoutAvailabilityList": [],
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\TaxTotalsLoader"
+        },
+        "taxAmount": {
+            "type": "currency",
+            "layoutDetailDisabled": true,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited"
+            ]
+        },
+        "roundingAmount": {
+            "type": "currency",
+            "decimal": true,
+            "layoutDetailDisabled": true,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited"
+            ]
+        },
+        "amount": {
+            "type": "currency",
+            "decimal": true,
+            "optimisticConcurrencyControlIgnore": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited"
+            ]
+        },
+        "shippingCost": {
+            "type": "currency",
+            "layoutAvailabilityList": [
+                "list",
+                "filters"
+            ],
+            "audited": true
+        },
+        "shippingAmount": {
+            "type": "currency",
+            "decimal": true,
+            "readOnly": true,
+            "audited": true,
+            "layoutAvailabilityList": [
+                "list",
+                "filters",
+                "detailBottomTotal"
+            ],
+            "fieldManagerParamList": [
+                "audited"
+            ]
+        },
+        "shippingTaxMode": {
+            "type": "enum",
+            "optionsReference": "Tax.shippingMode",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "audited"
+            ]
+        },
+        "grandTotalAmount": {
+            "type": "currency",
+            "decimal": true,
+            "layoutDetailDisabled": true,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited"
+            ]
+        },
+        "amountDue": {
+            "type": "currency",
+            "decimal": true,
+            "notStorable": true,
+            "readOnly": true,
+            "importDisabled": true,
+            "orderDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "directUpdateDisabled": true,
+            "foreignAccessDisabled": true,
+            "customizationReadOnlyDisabled": true,
+            "layoutAvailabilityList": [
+                "defaultSidePanel",
+                "list",
+                "filters"
+            ],
+            "filtersEnabled": true,
+            "listColumnEnabled": true,
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Invoice\\AmountDue"
+        },
+        "amountDueConverted": {
+            "type": "currencyConverted",
+            "readOnly": true,
+            "customizationDisabled": true,
+            "utility": true
+        },
+        "amountDueCurrency": {
+            "type": "enum",
+            "readOnly": true,
+            "customizationDisabled": true,
+            "utility": true
+        },
+        "amountLocal": {
+            "type": "currency",
+            "decimal": true,
+            "readOnly": true,
+            "conversionDisabled": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "grandTotalAmountLocal": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "decimalPlaces": 3,
+            "precision": 13,
+            "scale": 3,
+            "readOnly": true,
+            "view": "modules/sales/views/invoice/fields/grand-total-amount-local",
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "layoutAvailabilityList": [
+                "list",
+                "detail",
+                "defaultSidePanel"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "shippingAmountLocal": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "decimalPlaces": 3,
+            "precision": 13,
+            "scale": 3,
+            "readOnly": true,
+            "view": "modules/sales/views/invoice/fields/grand-total-amount-local",
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "layoutAvailabilityList": [
+                "list",
+                "detail",
+                "defaultSidePanel"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "taxAmountLocal": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "decimalPlaces": 3,
+            "precision": 13,
+            "scale": 3,
+            "readOnly": true,
+            "view": "modules/sales/views/invoice/fields/grand-total-amount-local",
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "layoutAvailabilityList": [
+                "list",
+                "detail",
+                "defaultSidePanel"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "roundingAmountLocal": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "decimalPlaces": 3,
+            "precision": 13,
+            "scale": 3,
+            "readOnly": true,
+            "view": "modules/sales/views/invoice/fields/grand-total-amount-local",
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "layoutAvailabilityList": [
+                "list",
+                "detail",
+                "defaultSidePanel"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "currencyRate": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "audited": true,
+            "min": 0.0001,
+            "precision": 20,
+            "scale": 8,
+            "decimalPlaces": 6,
+            "validationList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\General\\Decimal\\Valid",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\General\\Decimal\\Range"
+            ],
+            "layoutAvailabilityList": [
+                "list",
+                "filters"
+            ],
+            "view": "modules/sales/views/fields/decimal",
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "amountLocalCurrency": {
+            "customizationDisabled": true
+        },
+        "taxAmountCurrency": {
+            "customizationDisabled": true
+        },
+        "shippingCostCurrency": {
+            "customizationDisabled": true
+        },
+        "shippingAmountCurrency": {
+            "customizationDisabled": true
+        },
+        "preDiscountedAmountCurrency": {
+            "customizationDisabled": true
+        },
+        "grandTotalAmountCurrency": {
+            "customizationDisabled": true
+        },
+        "discountAmountCurrency": {
+            "customizationDisabled": true
+        },
+        "itemList": {
+            "type": "jsonArray",
+            "notStorable": true,
+            "layoutAvailabilityList": [],
+            "dynamicLogicVisibleDisabled": true,
+            "dynamicLogicInvalidDisabled": true,
+            "view": "sales:views/quote/fields/item-list",
+            "templatePlaceholderDisabled": true,
+            "reportDisabled": true,
+            "workflowDisabled": true,
+            "massUpdateDisabled": true,
+            "duplicatorClassName": "Espo\\Modules\\Sales\\Classes\\FieldDuplicators\\Quote\\ItemList",
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\ItemListLoader",
+            "isCompactForm": false,
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "isCompactForm",
+                    "type": "bool"
+                },
+                {
+                    "name": "audited",
+                    "type": "bool"
+                }
+            ],
+            "audited": true,
+            "auditView": "modules/sales/views/quote/fields/audit-item-list"
+        },
+        "allocations": {
+            "type": "jsonArray",
+            "view": "modules/sales/views/payment-entry/fields/allocations",
+            "notStorable": true,
+            "massUpdateDisabled": true,
+            "forceValidation": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\CreditNote\\Allocations\\Valid",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\CreditNote\\Allocations\\SameCurrencyAsAmount",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\CreditNote\\Allocations\\OnlyIfIssuedOrResolved"
+            ],
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\CreditNote\\Allocations",
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "audited",
+                    "type": "bool"
+                }
+            ],
+            "audited": true,
+            "duplicateIgnore": true
+        },
+        "unallocatedAmount": {
+            "type": "currency",
+            "notStorable": true,
+            "readOnly": true,
+            "importDisabled": true,
+            "orderDisabled": true,
+            "directAccessDisabled": true,
+            "dynamicLogicDisabled": true,
+            "directUpdateDisabled": true,
+            "foreignAccessDisabled": true,
+            "customizationReadOnlyDisabled": true,
+            "conversionDisabled": true,
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\CreditNote\\UnallocatedAmount",
+            "fieldManagerParamList": [],
+            "layoutAvailabilityList": [
+                "detail"
+            ]
+        },
+        "unallocatedAmountConverted": {
+            "type": "currencyConverted",
+            "readOnly": true,
+            "customizationDisabled": true,
+            "utility": true
+        },
+        "unallocatedAmountCurrency": {
+            "type": "enum",
+            "readOnly": true,
+            "customizationDisabled": true,
+            "utility": true
+        },
+        "buyerReference": {
+            "type": "varchar",
+            "maxLength": 50,
+            "audited": true
+        },
+        "purchaseOrderReference": {
+            "type": "varchar",
+            "maxLength": 50,
+            "audited": true
+        },
+        "note": {
+            "type": "text",
+            "maxLength": 4000,
+            "audited": true
+        },
+        "buyerName": {
+            "type": "varchar",
+            "maxLength": 255,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "buyerElectronicAddressScheme": {
+            "type": "enum",
+            "maxLength": 4,
+            "view": "modules/sales/views/fields/electronic-address-scheme",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "buyerElectronicAddressIdentifier": {
+            "type": "varchar",
+            "maxLength": 255,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "buyerTaxNumber": {
+            "type": "varchar",
+            "maxLength": 32,
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerName": {
+            "type": "varchar",
+            "dbType": "text",
+            "maxLength": 255,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerElectronicAddressScheme": {
+            "type": "enum",
+            "maxLength": 4,
+            "view": "modules/sales/views/fields/electronic-address-scheme",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerElectronicAddressIdentifier": {
+            "type": "varchar",
+            "dbType": "text",
+            "maxLength": 255,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerTaxNumber": {
+            "type": "varchar",
+            "maxLength": 32,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerTaxRegistrationScheme": {
+            "type": "enum",
+            "maxLength": 4,
+            "view": "modules/sales/views/fields/electronic-address-scheme",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerTaxRegistrationIdentifier": {
+            "type": "varchar",
+            "dbType": "text",
+            "maxLength": 255,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerAddress": {
+            "type": "address",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerAddressStreet": {
+            "dbType": "text"
+        },
+        "sellerAddressCity": {
+            "dbType": "text"
+        },
+        "sellerAddressState": {
+            "dbType": "text"
+        },
+        "sellerAddressCountry": {
+            "dbType": "text"
+        },
+        "sellerAddressPostalCode": {
+            "dbType": "text"
+        },
+        "sellerContactName": {
+            "type": "varchar",
+            "dbType": "text",
+            "maxLength": 150,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerContactEmailAddress": {
+            "type": "varchar",
+            "dbType": "text",
+            "maxLength": 255,
+            "view": "views/fields/email-address",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "sellerContactPhoneNumber": {
+            "type": "varchar",
+            "dbType": "text",
+            "maxLength": 100,
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "billingAddress": {
+            "type": "address",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ]
+        },
+        "isDone": {
+            "type": "bool",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true
+        },
+        "isNotActual": {
+            "type": "bool",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true
+        },
+        "isIssued": {
+            "type": "bool",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true,
+            "view": "modules/sales/views/quote/fields/is-issued"
+        },
+        "wasIssued": {
+            "type": "bool",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "directUpdateDisabled": true,
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true
+        },
+        "issuedBy": {
+            "type": "link",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "duplicateIgnore": true
+        },
+        "issuedAt": {
+            "type": "datetime",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "duplicateIgnore": true
+        },
+        "isLocked": {
+            "type": "bool",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true,
+            "view": "modules/sales/views/quote/fields/is-locked"
+        },
+        "products": {
+            "type": "linkMultiple",
+            "entity": "Product",
+            "notStorable": true,
+            "customizationDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "layoutAvailabilityList": [
+                "filters"
+            ],
+            "view": "sales:views/quote/fields/products"
+        },
+        "idForSearch": {
+            "type": "varchar",
+            "notStorable": true,
+            "utility": true,
+            "view": "sales:views/inventory-number/fields/id-for-search"
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "assignedUser": {
+            "type": "link",
+            "view": "views/fields/assigned-user",
+            "audited": true
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "audited": true
+        }
+    },
+    "links": {
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "tax": {
+            "type": "belongsTo",
+            "entity": "Tax"
+        },
+        "account": {
+            "type": "belongsTo",
+            "entity": "Account",
+            "foreign": "creditNotes"
+        },
+        "invoice": {
+            "type": "belongsTo",
+            "entity": "Invoice",
+            "foreign": "creditNotes"
+        },
+        "items": {
+            "type": "hasMany",
+            "entity": "CreditNoteItem",
+            "foreign": "creditNote",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true
+        },
+        "paymentAllocations": {
+            "type": "hasChildren",
+            "entity": "PaymentAllocation",
+            "foreign": "target",
+            "readOnly": true,
+            "foreignName": "id",
+            "orderBy": "number",
+            "order": "desc",
+            "layoutRelationshipsDisabled": true
+        },
+        "billingContact": {
+            "type": "belongsTo",
+            "entity": "Contact",
+            "foreign": "creditNotesBilling"
+        },
+        "allocations": {
+            "type": "hasMany",
+            "entity": "PaymentAllocation",
+            "foreign": "creditNote",
+            "readOnly": true,
+            "customizationDisabled": true,
+            "layoutRelationshipsDisabled": true,
+            "orderBy": "number",
+            "order": "asc"
+        },
+        "subscriptionUpdates": {
+            "type": "hasMany",
+            "entity": "SubscriptionUpdate",
+            "foreign": "creditNotes",
+            "foreignName": "number"
+        },
+        "taxLineItems": {
+            "type": "hasChildren",
+            "entity": "TaxLineItem",
+            "foreign": "source",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true,
+            "orderBy": "order",
+            "order": "asc"
+        },
+        "taxTotalItems": {
+            "type": "hasChildren",
+            "entity": "TaxTotalItem",
+            "foreign": "source",
+            "layoutRelationshipsDisabled": true,
+            "readOnly": true,
+            "orderBy": "order",
+            "order": "asc"
+        },
+        "roundingProfile": {
+            "type": "belongsTo",
+            "entity": "RoundingProfile"
+        },
+        "assignedUser": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "EntityTeam",
+            "layoutRelationshipsDisabled": true
+        },
+        "issuedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [
+            "name",
+            "number"
+        ]
+    },
+    "indexes": {
+        "createdAt": {
+            "columns": [
+                "createdAt"
+            ]
+        }
+    },
+    "optimisticConcurrencyControl": true
+}

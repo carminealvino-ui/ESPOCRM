@@ -1,0 +1,48 @@
+{
+  "labels": {
+    "Create SubscriptionUpdate": "Crea aggiornamento abbonamento"
+  },
+  "fields": {
+    "number": "Numero",
+    "date": "Data",
+    "subscription": "Abbonamento",
+    "status": "Stato",
+    "billingStatus": "Stato fatturazione",
+    "itemList": "Elenco voci",
+    "amount": "Importo",
+    "currency": "Valuta",
+    "invoiceGrandTotalAmount": "Da fatturare",
+    "creditNoteGrandTotalAmount": "Da accreditare",
+    "netAmount": "Importo netto",
+    "billingAction": "Azione di fatturazione",
+    "createPaymentRequest": "Crea richiesta di pagamento",
+    "sendPaymentRequest": "Invia richiesta di pagamento",
+    "sendInvoice": "Invia fattura"
+  },
+  "links": {
+    "subscription": "Abbonamento",
+    "invoices": "Fatture",
+    "creditNotes": "Note di credito",
+    "items": "Voci"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Applied": "Applicato",
+      "Canceled": "Annullato"
+    },
+    "billingStatus": {
+      "Invoiced": "Fatturato",
+      "Paid": "Pagato",
+      "Canceled": "Annullato"
+    },
+    "billingAction": {
+      "Draft": "Bozza",
+      "Issue": "Emetti"
+    }
+  },
+  "messages": {
+    "noChangesInUpdate": "Nessuna modifica effettuata.",
+    "cannotUpdateNonDraft": "Non è possibile modificare un elemento che non è una bozza."
+  }
+}

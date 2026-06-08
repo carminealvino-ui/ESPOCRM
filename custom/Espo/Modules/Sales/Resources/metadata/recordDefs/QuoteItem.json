@@ -1,0 +1,19 @@
+{
+    "actions": {
+        "convertCurrency": {
+            "disabled": true
+        },
+        "merge": {
+            "disabled": true
+        }
+    },
+    "massActions": {
+        "convertCurrency": {
+            "disabled": true
+        },
+        "delete": {
+            "disabled": true
+        }
+    },
+    "deletedRestorerClassName": "Espo\\Modules\\Sales\\Classes\\Record\\QuoteItem\\DeletedRestorer"
+}

@@ -1,0 +1,23 @@
+[
+    {
+        "name": "priceBook"
+    },
+    {
+        "name": "interval",
+        "width": 14
+    },
+    {
+        "name": "timeline",
+        "width": 24
+    },
+    {
+        "name": "minQuantity",
+        "width": 14,
+        "label": "minQty"
+    },
+    {
+        "name": "price",
+        "width": 16,
+        "align": "right"
+    }
+]

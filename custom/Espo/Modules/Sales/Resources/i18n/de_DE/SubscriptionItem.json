@@ -1,0 +1,28 @@
+{
+  "fields": {
+    "qty": "Mng",
+    "quantity": "Menge",
+    "quantityInt": "Menge (Int)",
+    "unitPrice": "Einzelpreis",
+    "amount": "Betrag",
+    "product": "Produkt",
+    "order": "Positionsnummer",
+    "subscription": "Abonnement",
+    "subscriptionStatus": "Abonnement Status",
+    "description": "Beschreibung",
+    "amountConverted": "Betrag (konvertiert)",
+    "unitPriceConverted": "Einzelpreis (konvertiert)",
+    "account": "Firma",
+    "unitPriceCurrency": "Einzelpreis Währung",
+    "amountCurrency": "Betragswährung",
+    "subscriptionUpdate": "Abonnement-Update",
+    "inventoryNumberType": "Inventarnummertyp",
+    "isInventory": "Ist Inventar"
+  },
+  "links": {
+    "subscription": "Abonnement",
+    "product": "Produkt",
+    "account": "Firma",
+    "subscriptionUpdate": "Abonnement-Update"
+  }
+}

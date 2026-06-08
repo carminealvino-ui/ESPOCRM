@@ -1,0 +1,41 @@
+{
+    "labels": {
+        "Create Tax": "Create Tax Profile"
+    },
+    "fields": {
+        "rate": "Rate",
+        "shippingMode": "Shipping Tax Mode",
+        "status": "Status",
+        "taxCode": "Tax Code",
+        "basis": "Basis",
+        "taxDisplay": "Tax",
+        "shippingTaxCode": "Shipping Tax Code"
+    },
+    "links": {
+        "itemRules": "Item Rules",
+        "taxCode": "Tax Code",
+        "shippingTaxCode": "Shipping Tax Code"
+    },
+    "options": {
+        "shippingMode": {
+            "Proportional": "Proportional",
+            "Fixed": "Fixed"
+        },
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    },
+    "presetFilters": {
+        "active": "Active"
+    },
+    "tooltips": {
+        "shippingMode": "Defines how tax is applied to the shipping charge.\n\n- Proportional – Taxes from line items are distributed proportionally to the shipping.\n- Fixed – A specific tax code is applied.",
+        "shippingTaxCode": "This tax code will always be applied to shipping.",
+        "taxCode": "This tax code will be applied to lines that don't match any item rule."
+    },
+    "messages": {
+        "cannotUseInactiveTaxCode": "Cannot use an inactive Tax Code.",
+        "cannotChangeBasis": "Cannot change the basis as the Tax Profile has Item Rules."
+    }
+}

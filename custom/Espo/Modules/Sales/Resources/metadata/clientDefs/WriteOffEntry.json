@@ -1,0 +1,86 @@
+{
+    "controller": "controllers/record",
+    "filterList": [
+        "actual",
+        {
+            "name": "applied",
+            "style": "success"
+        }
+    ],
+    "nameAttribute": "number",
+    "mergeDisabled": true,
+    "convertCurrencyDisabled": true,
+    "viewSetupHandlers": {
+        "list": ["modules/sales/handlers/info"],
+        "record/detail": [
+            "modules/sales/handlers/write-off-entry/setup-record-detail",
+            "modules/sales/handlers/general/issuance-locking-setup-record-detail"
+        ],
+        "record/edit": [
+            "modules/sales/handlers/write-off-entry/setup-record-detail",
+            "modules/sales/handlers/general/issuance-locking-setup-record-detail"
+        ]
+    },
+    "massActionDefs": {
+        "lock": {
+            "aclScope": "WriteOffEntry",
+            "acl": "edit",
+            "handler": "modules/sales/handlers/quote/lock-mass-action",
+            "actionFunction": "actionLock",
+            "initFunction": "initLock"
+        },
+        "unlock": {
+            "aclScope": "WriteOffEntry",
+            "acl": "edit",
+            "handler": "modules/sales/handlers/quote/lock-mass-action",
+            "actionFunction": "actionUnlock",
+            "initFunction": "initUnlock"
+        }
+    },
+    "detailActionList": [
+        {
+            "name": "lock",
+            "acl": "edit",
+            "label": "Lock",
+            "handler": "modules/sales/handlers/quote/lock-action",
+            "data": {
+                "handler": "modules/sales/handlers/quote/lock-action"
+            },
+            "checkVisibilityFunction": "canBeLocked",
+            "actionFunction": "actionLock"
+        },
+        {
+            "name": "unlock",
+            "acl": "edit",
+            "label": "Unlock",
+            "handler": "modules/sales/handlers/quote/lock-action",
+            "data": {
+                "handler": "modules/sales/handlers/quote/lock-action"
+            },
+            "checkVisibilityFunction": "canBeUnlocked",
+            "actionFunction": "actionUnlock"
+        }
+    ],
+    "massActionList": [
+        "lock",
+        "unlock"
+    ],
+    "checkAllResultMassActionList": [
+        "lock",
+        "unlock"
+    ],
+    "menu": {
+        "list": {
+            "dropdown": []
+        }
+    },
+    "selectDefaultFilters": {
+        "filter": "actual"
+    },
+    "additionalLayouts": {
+        "listForAccount": {
+            "type": "list"
+        }
+    },
+    "iconClass": "fas fa-scissors"
+}

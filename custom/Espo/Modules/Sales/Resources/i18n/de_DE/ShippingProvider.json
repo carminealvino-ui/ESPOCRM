@@ -1,0 +1,17 @@
+{
+  "labels": {
+    "Create ShippingProvider": "Neuer Versender"
+  },
+  "fields": {
+    "website": "Webseite"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  }
+}

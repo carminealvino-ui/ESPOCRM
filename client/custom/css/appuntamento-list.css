@@ -1,0 +1,53 @@
+/**
+ * Elenco Appuntamenti — caricato sempre da client.json (non dipende solo da list.js).
+ */
+
+.list-appuntamento-fullwidth .list > table,
+[data-entity-type="Appuntamento"] .list > table {
+    width: 100% !important;
+    table-layout: auto !important;
+}
+
+.list-appuntamento-fullwidth .list > table th[data-name="dataAppuntamento"],
+.list-appuntamento-fullwidth .list > table td[data-name="dataAppuntamento"],
+.list-appuntamento-fullwidth .list > table th[data-name="name"],
+.list-appuntamento-fullwidth .list > table td[data-name="name"],
+.list-appuntamento-fullwidth .list > table th[data-name="sottostato"],
+.list-appuntamento-fullwidth .list > table td[data-name="sottostato"],
+.list-appuntamento-fullwidth .list > table th[data-name="esito"],
+.list-appuntamento-fullwidth .list > table td[data-name="esito"],
+.list-appuntamento-fullwidth .list > table th[data-name="opportunita"],
+.list-appuntamento-fullwidth .list > table td[data-name="opportunita"],
+[data-entity-type="Appuntamento"] .list > table th[data-name="dataAppuntamento"],
+[data-entity-type="Appuntamento"] .list > table td[data-name="dataAppuntamento"],
+[data-entity-type="Appuntamento"] .list > table th[data-name="name"],
+[data-entity-type="Appuntamento"] .list > table td[data-name="name"],
+[data-entity-type="Appuntamento"] .list > table th[data-name="sottostato"],
+[data-entity-type="Appuntamento"] .list > table td[data-name="sottostato"],
+[data-entity-type="Appuntamento"] .list > table th[data-name="esito"],
+[data-entity-type="Appuntamento"] .list > table td[data-name="esito"],
+[data-entity-type="Appuntamento"] .list > table th[data-name="opportunita"],
+[data-entity-type="Appuntamento"] .list > table td[data-name="opportunita"] {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    word-break: break-word !important;
+    max-width: none !important;
+}
+
+.list-appuntamento-fullwidth .list > table td[data-name="name"] a,
+.list-appuntamento-fullwidth .list > table td[data-name="name"] .cell-content,
+.list-appuntamento-fullwidth .list > table td[data-name="sottostato"] .cell-content,
+.list-appuntamento-fullwidth .list > table td[data-name="sottostato"] .label,
+.list-appuntamento-fullwidth .list > table td[data-name="esito"] .cell-content,
+.list-appuntamento-fullwidth .list > table td[data-name="opportunita"] a,
+.list-appuntamento-fullwidth .list > table td[data-name="opportunita"] .cell-content,
+.list-appuntamento-fullwidth .list > table td[data-name="opportunita"] .link-multiple,
+[data-entity-type="Appuntamento"] .list > table td a,
+[data-entity-type="Appuntamento"] .list > table td .cell-content,
+[data-entity-type="Appuntamento"] .list > table td .label {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    max-width: none !important;
+}

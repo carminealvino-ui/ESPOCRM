@@ -1,0 +1,44 @@
+{
+    "fields": {
+        "paymentEntry": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "paymentEntryId"
+                    }
+                ]
+            }
+        },
+        "writeOffEntry": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "writeOffEntryId"
+                    }
+                ]
+            }
+        },
+        "creditNote": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "creditNoteId"
+                    }
+                ]
+            }
+        },
+        "supplierCredit": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "supplierCreditId"
+                    }
+                ]
+            }
+        }
+    }
+}

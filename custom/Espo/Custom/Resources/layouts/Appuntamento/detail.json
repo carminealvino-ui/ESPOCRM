@@ -1,32 +1,108 @@
 [
     {
-        "label": "",
         "rows": [
             [
                 {
-                    "name": "name"
+                    "name": "parent"
                 },
                 {
-                    "name": "parent"
+                    "name": "tipo"
                 }
             ],
             [
+                {
+                    "name": "callCenter"
+                },
+                {
+                    "name": "fornitorePartner"
+                },
                 {
                     "name": "productBrand"
                 }
             ],
             [
+                false,
+                false,
                 {
-                    "name": "order"
+                    "name": "productCategory"
+                }
+            ],
+            [
+                {
+                    "name": "indirizzo"
+                },
+                {
+                    "name": "telefono"
+                }
+            ],
+            [
+                {
+                    "name": "indirizzoMap"
+                }
+            ],
+            [
+                {
+                    "name": "dateStart"
+                },
+                {
+                    "name": "dateEnd"
+                },
+                {
+                    "name": "duration"
+                }
+            ],
+            [
+                {
+                    "name": "noteCallCenter"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": "Overview"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "sottostato"
+                }
+            ],
+            [
+                {
+                    "name": "noteConsulente"
+                }
+            ]
+        ],
+        "dynamicLogicVisible": null,
+        "style": "default",
+        "hidden": false,
+        "customLabel": "Esito"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "esito"
                 },
                 false
             ],
             [
                 {
-                    "name": "description",
-                    "fullWidth": true
+                    "name": "noteEsito"
                 }
             ]
-        ]
+        ],
+        "dynamicLogicVisible": null,
+        "style": "default",
+        "hidden": false,
+        "customLabel": "CRM Aziendale"
     }
 ]

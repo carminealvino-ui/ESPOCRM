@@ -1,0 +1,76 @@
+{
+  "labels": {
+    "Create Quote": "Створити пропозицію",
+    "Taxes": "Податки",
+    "Shipping Providers": "Служби доставки",
+    "Add Item": "Додати пункт",
+    "Templates": "Шаблони",
+    "Items": "Пункти",
+    "Send in Email": "Відправити ел. поштою",
+    "Quote Items": "Пункти пропозицій"
+  },
+  "fields": {
+    "status": "Статус",
+    "number": "Номер пропозиції",
+    "numberA": "Номер пропозиції (автоінкрементний)",
+    "invoiceNumber": "Номер рахунку-фактури",
+    "account": "Контрагент",
+    "opportunity": "Угода",
+    "billingAddress": "Платіжна адреса",
+    "shippingAddress": "Адреса доставки",
+    "billingContact": "Контакт по оплаті",
+    "shippingContact": "Контакт по доставці",
+    "tax": "Податок",
+    "taxRate": "Податок (%)",
+    "shippingCost": "Вартість доставки",
+    "shippingProvider": "Служба доставки",
+    "taxAmount": "Сума податку",
+    "discountAmount": "Сума знижки",
+    "amount": "Сума",
+    "preDiscountedAmount": "Сума без знижки",
+    "grandTotalAmount": "Загальна сума",
+    "itemList": "Список пунктів",
+    "dateQuoted": "Дата пропозиції",
+    "dateOrdered": "Дата замовлення",
+    "dateInvoiced": "Дата фактури",
+    "weight": "Вага",
+    "amountConverted": "Сума (конвертована)",
+    "taxAmountConverted": "Сума податку (конвертована)",
+    "shippingCostConverted": "Вартість доставки (конвертована)",
+    "preDiscountedAmountConverted": "Сума без знижки (конвертована)",
+    "discountAmountConverted": "Сума знижки (конвертована)",
+    "grandTotalAmountConverted": "Загальна сума (конвертована)",
+    "shippingCostCurrency": "Валюта вартості доставки",
+    "taxAmountCurrency": "Валюта суми податку",
+    "discountAmountCurrency": "Валюта суми знижки",
+    "amountCurrency": "Валюта суми",
+    "preDiscountedAmountCurrency": "Валюта суми без знижки",
+    "grandTotalAmountCurrency": "Валюта загальної суми",
+    "currency": "Валюта"
+  },
+  "links": {
+    "items": "Пункти",
+    "billingContact": "Контакт по оплаті",
+    "shippingContact": "Контакт по доставці",
+    "shippingProvider": "Служба доставки",
+    "opportunity": "Угода",
+    "account": "Контрагент",
+    "tax": "Податок",
+    "salesOrders": "Замовлення",
+    "invoices": "Рахунки-фактури"
+  },
+  "options": {
+    "status": {
+      "Draft": "Чернетка",
+      "In Review": "На розгляді",
+      "Presented": "Представлена",
+      "Approved": "Затверджено",
+      "Rejected": "Відхилено",
+      "Canceled": "Скасовано"
+    }
+  },
+  "presetFilters": {
+    "actual": "Поточні",
+    "approved": "Затверджені"
+  }
+}

@@ -1,0 +1,27 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "supplier",
+        "width": 23
+    },
+    {
+        "name": "purchaseOrder",
+        "width": 20
+    },
+    {
+        "name": "dateOrdered",
+        "width": 11
+    },
+    {
+        "name": "dateReceived",
+        "width": 11,
+        "hidden": true
+    }
+]

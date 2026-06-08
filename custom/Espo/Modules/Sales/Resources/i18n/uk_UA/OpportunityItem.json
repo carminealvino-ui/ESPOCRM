@@ -1,0 +1,27 @@
+{
+  "fields": {
+    "name": "Назва",
+    "qty": "К-сть",
+    "quantity": "Кількість",
+    "unitPrice": "Ціна за од.",
+    "amount": "Сума",
+    "product": "Продукт",
+    "order": "Порядковий номер",
+    "opportunity": "Угода",
+    "description": "Опис",
+    "amountConverted": "Сума (конвертована)",
+    "unitPriceConverted": "Ціна за од. (конвертована)",
+    "opportunityStage": "Стадія",
+      "listPrice": "Ціна",
+      "listPriceConverted": "Ціна (конвертована)",
+      "listPriceCurrency": "Валюта ціни",
+      "discount": "Знижка (%)"
+  },
+  "links": {
+    "opportunity": "Угода",
+    "product": "Продукт"
+  },
+  "labels": {
+    "Opportunities": "Угоди"
+  }
+}

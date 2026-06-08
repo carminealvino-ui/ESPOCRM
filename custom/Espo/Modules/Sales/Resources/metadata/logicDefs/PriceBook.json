@@ -1,0 +1,14 @@
+{
+    "fields": {
+        "isDefault": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "attribute": "id",
+                        "type": "isNotEmpty"
+                    }
+                ]
+            }
+        }
+    }
+}

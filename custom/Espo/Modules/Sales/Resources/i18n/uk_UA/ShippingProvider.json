@@ -1,0 +1,8 @@
+{
+  "labels": {
+    "Create ShippingProvider": "Створити службу доставки"
+  },
+  "fields": {
+    "website": "Вебсайт"
+  }
+}

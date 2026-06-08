@@ -1,0 +1,22 @@
+[
+    {
+        "name": "type",
+        "link": true,
+        "notSortable": true
+    },
+    {
+        "name": "status",
+        "width": 20,
+        "notSortable": true
+    },
+    {
+        "name": "billingStatus",
+        "width": 20,
+        "notSortable": true
+    },
+    {
+        "name": "timeline",
+        "width": 25,
+        "notSortable": true
+    }
+]

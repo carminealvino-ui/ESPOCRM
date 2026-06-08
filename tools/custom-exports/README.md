@@ -8,7 +8,7 @@ Usare:
 php tools/export-custom-for-github.php
 ```
 
-I backup delle singole fix restano in **`backup/hooks_cleanup/`**.
+I backup delle singole fix restano in **`backup_dev/`**.
 
 Per spostare export già generati nella vecchia cartella:
 

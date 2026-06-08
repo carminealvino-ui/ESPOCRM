@@ -1,0 +1,34 @@
+[
+    {
+        "label": "Overview",
+        "rows": [
+            [{"name": "number"}, {"name": "account"}],
+            [{"name": "status"}, {"name": "salesOrder"}],
+            [{"name": "grandTotalAmount"}, {"name": "quote"}],
+            [{"name": "dateInvoiced"}, {"name": "opportunity"}],
+            [{"name": "paymentTermsProfile"}, {"name": "dateDue"}],
+            [false, {"name": "precedingInvoice"}]
+        ]
+    },
+    {
+        "label": "Details",
+        "rows": [
+            [{"name": "billingAddress"}, {"name": "shippingAddress"}],
+            [{"name": "billingContact"}, {"name": "shippingContact"}]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "tax"}, {"name": "shippingProvider"}],
+            [{"name": "priceBook"}, {"name": "isTaxInclusive"}],
+            [{"name": "paymentMethods"}, {"name": "roundingProfile"}]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "note"}, {"name": "buyerReference"}],
+            [{"name": "paymentTermsNote"}, false],
+            [{"name": "description"}]
+        ]
+    }
+]

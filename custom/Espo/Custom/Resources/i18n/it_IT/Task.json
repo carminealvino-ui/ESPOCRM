@@ -1,0 +1,22 @@
+{
+    "labels": {
+        "Create Task": "Creare To Do"
+    },
+    "fields": {
+        "opportunita": "Opportunità",
+        "privato": "Privato",
+        "tipologia": "Tipologia"
+    },
+    "links": {
+        "opportunita": "Opportunità"
+    },
+    "options": {
+        "tipologia": {
+            "": "",
+            "Telefonata": "Telefonata",
+            "Email": "Email",
+            "Preparazione Documento": "Preparazione Documento",
+            "Sollecito": "Sollecito"
+        }
+    }
+}

@@ -1,0 +1,57 @@
+{
+    "controller": "controllers/record",
+    "filterList": [
+        "active"
+    ],
+    "selectDefaultFilters": {
+        "filter": "active"
+    },
+    "forceListViewSettings": true,
+    "mergeDisabled": true,
+    "relationshipPanels": {
+        "channel": {
+            "createDisabled": true
+        },
+        "paymentEntries": {
+            "selectDisabled": true,
+            "createDisabled": true,
+            "removeDisabled": true,
+            "unlinkDisabled": true
+        },
+        "requests": {
+            "selectDisabled": true,
+            "createDisabled": true,
+            "removeDisabled": true,
+            "unlinkDisabled": true
+        },
+        "invoices": {
+            "selectDisabled": true,
+            "createDisabled": true,
+            "removeDisabled": true,
+            "unlinkDisabled": true
+        }
+    },
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "link": "#PaymentChannel",
+                    "labelTranslation": "Global.scopeNamesPlural.PaymentChannel",
+                    "aclScope": "PaymentChannel"
+                }
+            ]
+        },
+        "detail": {
+            "buttons": [
+                {
+                    "name": "mandates",
+                    "link": "#PaymentMandate",
+                    "labelTranslation": "Global.scopeNamesPlural.PaymentMandate",
+                    "aclScope": "PaymentMandate",
+                    "handler": "modules/sales/handlers/payment-method/detail-menu",
+                    "checkVisibilityFunction": "hasPaymentMandate"
+                }
+            ]
+        }
+    }
+}

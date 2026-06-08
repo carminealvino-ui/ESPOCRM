@@ -7,9 +7,10 @@
 --   Aprile 2026 69ce7c1fa73049580  ARIEL - 26-04 (Aprile 2026)
 --   Script: tools/fase-3e-disattiva-listini-marzo-aprile.sh
 --
--- LISTINI ATTIVI (sync prezzi / opportunità):
---   Maggio 2026  6a043018dc22acf33  ARIEL - 26-05 (Maggio 2026)  — in transizione
---   07/05/2026   07ce1b326cd314ca2  ARIEL - 26-07-05 (Climatizzatori 07/05/2026)  — listino in vigore
+-- LISTINO ARIEL ATTIVO (maggio 2026 disattivato manualmente in Espo):
+--   07/05/2026   07ce1b326cd314ca2  ARIEL - 26-07-05 (Climatizzatori 07/05/2026)
+--
+-- Non attivi: 26-03, 26-04, 26-05 (69d4c2dce710dc14b, 69ce7c1fa73049580, 6a043018dc22acf33)
 --
 -- Storico aprile (solo documentazione):
 --   Fino al 30/04/2026: due modelli 9.000 (MONO + MONO PLUS)

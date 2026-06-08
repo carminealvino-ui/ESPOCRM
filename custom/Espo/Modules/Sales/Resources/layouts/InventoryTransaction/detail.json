@@ -1,0 +1,10 @@
+[
+    {
+        "rows": [
+            [{"name": "product"}, {"name": "number"}],
+            [{"name": "quantity"}, {"name": "parent"}],
+            [{"name": "type"}, {"name": "warehouse"}],
+            [{"name": "inventoryNumber"}, false]
+        ]
+    }
+]

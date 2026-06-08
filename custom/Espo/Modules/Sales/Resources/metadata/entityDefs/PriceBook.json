@@ -1,0 +1,135 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "audited": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Active",
+                "Inactive"
+            ],
+            "default": "Active",
+            "style": {
+                "Inactive": "info"
+            },
+            "maxLength": 8,
+            "audited": true,
+            "customizationDisabled": true
+        },
+        "parentPriceBook": {
+            "type": "link",
+            "autocompleteOnEmpty": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited",
+                "default",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PriceBook\\ParentPriceBook\\SameType"
+            ]
+        },
+        "isDefault": {
+            "type": "bool",
+            "notStorable": true,
+            "readOnly": true,
+            "customizationDisabled": true,
+            "exportDisabled": true,
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PriceBook\\IsDefault",
+            "layoutAvailabilityList": [
+                "list",
+                "defaultSidePanel"
+            ]
+        },
+        "isTaxInclusive": {
+            "type": "bool",
+            "readOnlyAfterCreate": true,
+            "fieldManagerParamList": [
+                "default",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "assignedUser": {
+            "type": "link",
+            "view": "views/fields/assigned-user",
+            "audited": true
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "audited": true
+        }
+    },
+    "links": {
+        "accounts": {
+            "type": "hasMany",
+            "foreign": "priceBook",
+            "entity": "Account"
+        },
+        "prices": {
+            "type": "hasMany",
+            "foreign": "priceBook",
+            "entity": "ProductPrice"
+        },
+        "rules": {
+            "type": "hasMany",
+            "foreign": "priceBook",
+            "entity": "PriceRule"
+        },
+        "parentPriceBook": {
+            "type": "belongsTo",
+            "foreign": "childPriceBooks",
+            "entity": "PriceBook"
+        },
+        "childPriceBooks": {
+            "type": "hasMany",
+            "foreign": "parentPriceBook",
+            "entity": "PriceBook"
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "assignedUser": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "entityTeam",
+            "layoutRelationshipsDisabled": true
+        }
+    },
+    "collection": {
+        "orderBy": "name",
+        "order": "asc"
+    }
+}

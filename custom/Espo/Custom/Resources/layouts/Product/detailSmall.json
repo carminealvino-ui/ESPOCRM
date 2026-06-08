@@ -1,0 +1,66 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                }
+            ],
+            [
+                {
+                    "name": "brand"
+                }
+            ],
+            [
+                {
+                    "name": "category"
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "denominazione"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": ""
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "costPrice"
+                },
+                {
+                    "name": "pricingType"
+                }
+            ],
+            [
+                {
+                    "name": "listPrice"
+                },
+                {
+                    "name": "pricingFactor"
+                }
+            ],
+            [
+                {
+                    "name": "unitPrice"
+                },
+                false
+            ]
+        ],
+        "style": "default",
+        "label": "Price"
+    }
+]

@@ -1,0 +1,65 @@
+{
+    "fields": {
+        "entity": {
+            "type": "linkParent"
+        },
+        "eventId": {
+            "type": "varchar",
+            "maxLength": 230,
+            "index": true
+        },
+        "calendar": {
+            "type": "link"
+        },
+        "syncedAt": {
+            "type": "datetime"
+        },
+        "isUpdated": {
+            "type": "bool"
+        },
+        "isDeleted": {
+            "type": "bool"
+        },
+        "isEspoEvent": {
+            "type": "bool"
+        },
+        "outlookCalendarId": {
+            "type": "foreign",
+            "field": "calendarId",
+            "link": "calendar"
+        },
+        "iCalUId": {
+            "type": "varchar",
+            "maxLength": 230,
+            "index": true
+        },
+        "outlookUserId": {
+            "type": "varchar",
+            "maxLength": 230
+        },
+        "outlookDeleted": {
+            "type": "bool"
+        },
+        "isPrimary": {
+            "type": "bool"
+        },
+        "user": {
+            "type": "link"
+        }
+    },
+    "links": {
+        "calendar": {
+            "type": "belongsTo",
+            "entity": "OutlookCalendar"
+        },
+        "user": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "indexes": {
+        "calendarEvent": {
+            "columns": ["calendarId", "eventId"]
+        }
+    }
+}

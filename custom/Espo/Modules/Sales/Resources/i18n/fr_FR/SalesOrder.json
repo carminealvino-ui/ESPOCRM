@@ -1,0 +1,73 @@
+{
+  "labels": {
+    "Create SalesOrder": "Créer une commande",
+    "Shipping Providers": "Fournisseurs d'expédition",
+    "Add Item": "Ajouter un article",
+    "Templates": "Modèles",
+    "Items": "Articles",
+    "Sales Order Items": "Éléments de commande de vente"
+  },
+  "fields": {
+    "status": "État",
+    "number": "Numéro",
+    "numberA": "Numéro (incrémenté automatiquement)",
+    "account": "Compte",
+    "opportunity": "Opportunité",
+    "quote": "Devis",
+    "billingAddress": "Adresse de facturation",
+    "shippingAddress": "Adresse de livraison",
+    "billingContact": "Contact de facturation",
+    "shippingContact": "Contact d'expédition",
+    "tax": "Taxe",
+    "taxRate": "Taux de taxe",
+    "shippingCost": "Frais de port",
+    "shippingProvider": "Fournisseur d'expédition",
+    "taxAmount": "Montant des taxes",
+    "discountAmount": "Montant de la remise",
+    "amount": "Montant",
+    "preDiscountedAmount": "Montant avant la remise",
+    "grandTotalAmount": "Montant final",
+    "itemList": "Liste des articles",
+    "dateOrdered": "Date de commande",
+    "dateInvoiced": "Date de facturation",
+    "weight": "Poids",
+    "amountConverted": "Montant (converti)",
+    "taxAmountConverted": "Montant des taxes (converti)",
+    "shippingCostConverted": "Coût d'expédition (converti)",
+    "preDiscountedAmountConverted": "Montant avant la remise (converti)",
+    "discountAmountConverted": "Montant de la remise (converti)",
+    "grandTotalAmountConverted": "Montant final (converti)",
+    "taxAmountCurrency": "Devise du montant des taxes",
+    "discountAmountCurrency": "Devise du montant de la remise",
+    "amountCurrency": "Devise du montant",
+    "preDiscountedAmountCurrency": "Devise du montant avant la remise",
+    "grandTotalAmountCurrency": "Devise du montant final",
+    "currency": "Devise"
+  },
+  "links": {
+    "items": "Articles",
+    "billingContact": "Contact de facturation",
+    "shippingContact": "Contact d'expédition",
+    "shippingProvider": "Fournisseur d'expédition",
+    "opportunity": "Opportunité",
+    "account": "Compte",
+    "tax": "Taxe",
+    "quote": "Devis",
+    "invoices": "Factures"
+  },
+  "options": {
+    "status": {
+      "Draft": "Brouillon",
+      "Ready": "Prêt",
+      "Active": "Actif",
+      "Approved": "Approuvé",
+      "Completed": "Terminé",
+      "Rejected": "Rejeté",
+      "Canceled": "Annulé"
+    }
+  },
+  "presetFilters": {
+    "actual": "Réel",
+    "completed": "Terminé"
+  }
+}

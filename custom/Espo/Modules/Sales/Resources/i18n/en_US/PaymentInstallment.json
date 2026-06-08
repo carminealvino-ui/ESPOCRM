@@ -1,0 +1,22 @@
+{
+    "fields": {
+        "percentage": "Percentage",
+        "days": "Days",
+        "state": "Progress",
+        "status": "Status",
+        "amountDue": "Due"
+    },
+    "options": {
+        "status": {
+            "Unsettled": "Unsettled",
+            "Partially Settled": "Partially Settled",
+            "Settled": "Settled"
+        },
+        "state": {
+            "Due": "Due",
+            "Partially Settled": "Partially Settled",
+            "Settled": "Settled",
+            "Canceled": "Canceled"
+        }
+    }
+}

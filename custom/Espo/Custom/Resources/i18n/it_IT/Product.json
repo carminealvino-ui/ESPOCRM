@@ -1,0 +1,20 @@
+{
+    "fields": {
+        "denominazione": "Denominazione",
+        "opportunita": "Opportunità",
+        "prezzoCodice": "Prezzo Codice",
+        "prezzoCodiceCurrency": "Prezzo Codice (Valuta)",
+        "prezzoCodiceConverted": "Prezzo Codice (Convertito)",
+        "name": "Prodotto",
+        "contratti": "Contratti",
+        "brand": "Brand",
+        "listPrice": "Prezzo di Listino",
+        "listPriceConverted": "Prezzo di Listino (convertito)",
+        "listPriceCurrency": "Prezzo di Listino (valuta)"
+    },
+    "links": {
+        "opportunita": "Opportunità",
+        "contratti": "Contratti",
+        "brand": "Brand"
+    }
+}

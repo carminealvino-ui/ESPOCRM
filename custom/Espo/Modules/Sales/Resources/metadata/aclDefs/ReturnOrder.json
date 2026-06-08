@@ -1,0 +1,11 @@
+{
+    "accountLink": "account",
+    "contactLink": "billingContact",
+    "linkCheckerClassNameMap": {
+        "account": "Espo\\Modules\\Sales\\Classes\\Acl\\ReturnOrder\\LinkCheckers\\AccountChecker",
+        "billingContact": "Espo\\Modules\\Sales\\Classes\\Acl\\ReturnOrder\\LinkCheckers\\BillingContactChecker",
+        "shippingContact": "Espo\\Modules\\Sales\\Classes\\Acl\\ReturnOrder\\LinkCheckers\\ShippingContactChecker",
+        "tax": "Espo\\Modules\\Sales\\Classes\\Acl\\ReturnOrder\\LinkCheckers\\TaxChecker",
+        "shippingProvider": "Espo\\Modules\\Sales\\Classes\\Acl\\ReturnOrder\\LinkCheckers\\ShippingProviderChecker"
+    }
+}

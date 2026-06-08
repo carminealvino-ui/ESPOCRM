@@ -1,0 +1,8 @@
+[
+    {
+        "rows": [
+            [{"name": "status"}, {"name": "assignedUser"}],
+            [{"name": "warehouse"}, false]
+        ]
+    }
+]

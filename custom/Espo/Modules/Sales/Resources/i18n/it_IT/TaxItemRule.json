@@ -1,0 +1,28 @@
+{
+  "labels": {
+    "Create TaxItemRule": "Crea regola elemento fiscale"
+  },
+  "fields": {
+    "tax": "Profilo fiscale",
+    "class": "Classe",
+    "rate": "Tasso",
+    "status": "Stato",
+    "taxCode": "Codice imposta",
+    "basis": "Base",
+    "taxDisplay": "Imposta"
+  },
+  "links": {
+    "tax": "Profilo fiscale",
+    "class": "Classe",
+    "taxCode": "Codice imposta"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  },
+  "presetFilters": {
+    "active": "Attivo"
+  }
+}

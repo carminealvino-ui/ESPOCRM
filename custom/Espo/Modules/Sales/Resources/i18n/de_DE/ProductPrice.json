@@ -1,0 +1,43 @@
+{
+  "labels": {
+    "Create ProductPrice": "Preis erstellen"
+  },
+  "fields": {
+    "priceBook": "Preisbuch",
+    "product": "Produkt",
+    "minQuantity": "Mindestmenge",
+    "price": "Preis",
+    "priceCurrency": "Preiswährung",
+    "dateStart": "Startdatum",
+    "dateEnd": "Enddatum",
+    "minQty": "Min. Mng",
+    "partNumber": "Teilenummer",
+    "priceConverted": "Preis umgerechnet",
+    "interval": "Zeitraum",
+    "productIsSubscribable": "Produkt ist abonnierbar",
+    "productIsSellable": "Produkt ist verkaufbar",
+    "timeline": "Gültigkeitsdaten"
+  },
+  "links": {
+    "priceBook": "Preisbuch",
+    "product": "Produkt"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  },
+  "tooltips": {
+    "minQuantity": "Der Preis wird nur verwendet, wenn die Menge der verkauften Artikel den angegebenen Wert überschreitet."
+  },
+  "messages": {
+    "priceMassUpdated": "Preise aktualisiert, Anzahl: {count}"
+  },
+  "massActions": {
+    "updatePrice": "Preis aktualisieren"
+  }
+}

@@ -1,0 +1,19 @@
+[
+    {
+        "name": "supplier"
+    },
+    {
+        "name": "timeline",
+        "width": 25
+    },
+    {
+        "name": "minQuantity",
+        "width": 14,
+        "label": "minQty"
+    },
+    {
+        "name": "price",
+        "width": 16,
+        "align": "right"
+    }
+]
