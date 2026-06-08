@@ -104,6 +104,105 @@ class AppuntamentoGoogleSync
         $this->unlinkFromGoogleForUser($entity, $userId);
     }
 
+    /**
+     * Bonifica: rimuove link Google per appuntamento che non deve restare in calendario.
+     *
+     * @return 'removed'|'skipped'|'failed'
+     */
+    public function bonificaRemoveIfStale(Entity $entity, string $calendarUserId): string
+    {
+        if (!$this->shouldStayOnGoogleCalendar($entity)) {
+            return $this->bonificaForceRemoveGoogleLink($entity, $calendarUserId);
+        }
+
+        return 'skipped';
+    }
+
+    /**
+     * @return 'removed'|'failed'|'no_link'
+     */
+    public function bonificaForceRemoveGoogleLink(Entity $entity, string $calendarUserId): string
+    {
+        $entityId = $entity->getId();
+
+        if (!$entityId) {
+            return 'failed';
+        }
+
+        $googleData = $this->getGoogleRepository()->getEventEntityGoogleData(self::ENTITY_TYPE, $entityId);
+
+        if ($googleData === false || empty($googleData['googleCalendarEventId'])) {
+            return 'no_link';
+        }
+
+        $deleted = $this->deleteGoogleEventForUser($calendarUserId, $googleData);
+
+        $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entityId);
+
+        return $deleted ? 'removed' : 'failed';
+    }
+
+    public function shouldStayOnGoogleCalendar(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE) {
+            return false;
+        }
+
+        if ($entity->get('deleted')) {
+            return false;
+        }
+
+        $status = (string) ($entity->get('status') ?? '');
+
+        if ($status === 'Not Held') {
+            return false;
+        }
+
+        if ($this->isGhostAppointment($entity)) {
+            return false;
+        }
+
+        return in_array($status, ['Planned', 'Held', 'Ingestibile'], true);
+    }
+
+    public function isGhostAppointment(Entity $entity): bool
+    {
+        $name = (string) ($entity->get('name') ?? '');
+
+        if (!str_contains($name, '(APPUNTAMENTO SENZA PROSPECT)')) {
+            return false;
+        }
+
+        return !$entity->get('prospectId')
+            && !($entity->get('parentType') && $entity->get('parentId'));
+    }
+
+    /**
+     * Corregge Ingestibile assegnati per errore ad admin invece che al consulente.
+     */
+    public function bonificaFixIngestibileConsultant(Entity $entity, string $consultantUserId): bool
+    {
+        if ($entity->get('status') !== 'Ingestibile' || $entity->get('deleted')) {
+            return false;
+        }
+
+        $adminId = '1';
+        $ids = $entity->get('assignedUsersIds') ?: [];
+        $needsFix = ($entity->get('assignedUserId') === $adminId)
+            || ($ids === [$adminId])
+            || ($ids === []);
+
+        if (!$needsFix) {
+            return false;
+        }
+
+        $entity->set('assignedUsersIds', [$consultantUserId]);
+        $entity->set('assignedUserId', $consultantUserId);
+        $this->entityManager->saveEntity($entity, ['skipHooks' => true]);
+
+        return true;
+    }
+
     private function unlinkFromGoogleForUser(Entity $entity, ?string $userId): void
     {
         $entityId = $entity->getId();
