@@ -164,9 +164,11 @@ $stats = [
 ];
 
 $runReconcile = $reconcileOnly || (!$onlyIngestibili && !$onlyPush);
+$runPush = $onlyPush || (!$onlyIngestibili && !$onlyNotHeld);
+$runCleanup = !$onlyIngestibili && !$onlyPush;
 
 if ($runReconcile) {
-    $reconcileFrom = date('Y-m-d', strtotime('-3 days'));
+    $reconcileFrom = date('Y-m-d', strtotime('-14 days'));
     $reconcileTo = date('Y-m-d', strtotime('+21 days'));
     fwrite(STDOUT, "[RECONCILE] Scansione Google {$reconcileFrom} → {$reconcileTo}\n");
 
@@ -186,7 +188,96 @@ if ($reconcileOnly) {
     goto summary;
 }
 
-if (!$onlyIngestibili && !$onlyPush) {
+// --- Fase 5 (priorità): push su Google prima della pulizia link ---
+if ($runPush) {
+    fwrite(STDOUT, "=== Fase 5: push appuntamenti su Google ===\n");
+    $pushSince = date('Y-m-d 00:00:00', strtotime('-' . $pushSinceDays . ' days'));
+
+    try {
+        $toPush = $em->getRDBRepository('Appuntamento')
+            ->where([
+                'deleted' => false,
+                'status' => ['Planned', 'Held', 'Ingestibile'],
+                'dateStart>=' => $pushSince,
+            ])
+            ->order('dateStart', 'ASC')
+            ->find();
+    } catch (\Throwable $e) {
+        fwrite(STDERR, 'ERRORE Fase 5 (query): ' . $e->getMessage() . "\n");
+        $toPush = [];
+    }
+
+    $pushList = is_iterable($toPush) ? iterator_to_array($toPush) : [];
+    fwrite(STDOUT, '  appuntamenti da verificare: ' . count($pushList) . "\n");
+
+    foreach ($pushList as $appointment) {
+        if ($sync->needsAssignedUserIdFix($appointment)) {
+            $label = formatAppointmentLabel($appointment);
+            fwrite(STDOUT, "[FIX ASSIGNED USER] {$label}\n");
+
+            if (!$dryRun && $sync->bonificaFixAssignedUserId($appointment)) {
+                $stats['assigned_user_fixed']++;
+            } elseif ($dryRun) {
+                $stats['assigned_user_fixed']++;
+            }
+        }
+
+        $skipReason = $sync->describePushSkipReason($appointment, $calendarUserId);
+        $hasStaleLink = $sync->hasGoogleLink($appointment->getId())
+            && !$sync->isGoogleEventAlive($appointment, $calendarUserId);
+        $needsPush = $skipReason === null || $hasStaleLink;
+
+        if (!$needsPush) {
+            $stats['google_push_skipped']++;
+
+            if ($verbose && $skipReason !== null) {
+                fwrite(STDOUT, '[SKIP] ' . formatAppointmentLabel($appointment) . " — {$skipReason}\n");
+            }
+
+            continue;
+        }
+
+        $label = formatAppointmentLabel($appointment);
+        $action = $hasStaleLink ? '[REPAIR+PUSH]' : '[PUSH GOOGLE]';
+        fwrite(STDOUT, "{$action} {$label}\n");
+
+        if ($dryRun) {
+            $stats['google_pushed']++;
+
+            continue;
+        }
+
+        try {
+            $result = $sync->bonificaPushMissing($appointment, $calendarUserId);
+        } catch (\Throwable $e) {
+            $stats['google_push_failed']++;
+            fwrite(STDOUT, '  → ERRORE: ' . $e->getMessage() . "\n");
+
+            continue;
+        }
+
+        if ($result === 'pushed') {
+            $stats['google_pushed']++;
+        } elseif ($result === 'failed') {
+            $stats['google_push_failed']++;
+            fwrite(STDOUT, "  → ERRORE push Google (controlla log Espo)\n");
+        } else {
+            $stats['google_push_skipped']++;
+
+            if ($verbose) {
+                fwrite(STDOUT, "  → saltato dopo tentativo\n");
+            }
+        }
+    }
+
+    fwrite(STDOUT, "\n");
+}
+
+if ($onlyPush) {
+    goto summary;
+}
+
+if ($runCleanup) {
 fwrite(STDOUT, "=== Fase 1-3: pulizia link e Not Held ===\n");
 $shouldRemoveAppointment = static function (AppuntamentoGoogleSync $sync, Entity $appointment) use ($onlyNotHeld): bool {
     if ($onlyNotHeld) {
@@ -197,15 +288,20 @@ $shouldRemoveAppointment = static function (AppuntamentoGoogleSync $sync, Entity
 };
 
 // --- Fase 1: tutti i link GoogleCalendarEvent → Appuntamento ---
-$linkRows = $em->getRDBRepository('GoogleCalendarEvent')
-    ->where([
-        'entityType' => 'Appuntamento',
-        ['googleCalendarEventId!=' => ''],
-        ['googleCalendarEventId!=' => 'FAIL'],
-        ['googleCalendarEventId!=' => null],
-    ])
-    ->order('createdAt', 'ASC')
-    ->find();
+try {
+    $linkRows = $em->getRDBRepository('GoogleCalendarEvent')
+        ->where([
+            'entityType' => 'Appuntamento',
+            ['googleCalendarEventId!=' => ''],
+            ['googleCalendarEventId!=' => 'FAIL'],
+            ['googleCalendarEventId!=' => null],
+        ])
+        ->order('id', 'ASC')
+        ->find();
+} catch (\Throwable $e) {
+    fwrite(STDERR, 'ERRORE Fase 1 (query link): ' . $e->getMessage() . "\n");
+    $linkRows = [];
+}
 
 foreach ($linkRows as $link) {
     $stats['links_scanned']++;
@@ -232,7 +328,10 @@ foreach ($linkRows as $link) {
 
     if (!$shouldRemoveAppointment($sync, $appointment)) {
         $stats['google_skipped_keep']++;
-        fwrite(STDOUT, "[KEEP] {$label}\n");
+
+        if ($verbose) {
+            fwrite(STDOUT, "[KEEP] {$label}\n");
+        }
 
         continue;
     }
@@ -375,75 +474,6 @@ foreach ($ingestibili as $appointment) {
     }
 }
 
-}
-
-// --- Fase 5: push su Google (link assente o evento fantasma su Google) ---
-if ($onlyPush || (!$onlyIngestibili && !$onlyNotHeld)) {
-    fwrite(STDOUT, "=== Fase 5: push appuntamenti su Google ===\n");
-    $pushSince = date('Y-m-d 00:00:00', strtotime('-' . $pushSinceDays . ' days'));
-    $toPush = $em->getRDBRepository('Appuntamento')
-        ->where([
-            'deleted' => false,
-            'status' => ['Planned', 'Held', 'Ingestibile'],
-            'dateStart>=' => $pushSince,
-        ])
-        ->order('dateStart', 'ASC')
-        ->find();
-
-    foreach ($toPush as $appointment) {
-        if ($sync->needsAssignedUserIdFix($appointment)) {
-            $label = formatAppointmentLabel($appointment);
-            fwrite(STDOUT, "[FIX ASSIGNED USER] {$label}\n");
-
-            if (!$dryRun && $sync->bonificaFixAssignedUserId($appointment)) {
-                $stats['assigned_user_fixed']++;
-            } elseif ($dryRun) {
-                $stats['assigned_user_fixed']++;
-            }
-        }
-
-        $skipReason = $sync->describePushSkipReason($appointment, $calendarUserId);
-        $hasStaleLink = $sync->hasGoogleLink($appointment->getId())
-            && !$sync->isGoogleEventAlive($appointment, $calendarUserId);
-        $needsPush = $skipReason === null || $hasStaleLink;
-
-        if (!$needsPush) {
-            $stats['google_push_skipped']++;
-
-            if ($verbose && $skipReason !== null) {
-                fwrite(STDOUT, '[SKIP] ' . formatAppointmentLabel($appointment) . " — {$skipReason}\n");
-            }
-
-            continue;
-        }
-
-        $label = formatAppointmentLabel($appointment);
-        $action = $hasStaleLink ? '[REPAIR+PUSH]' : '[PUSH GOOGLE]';
-        fwrite(STDOUT, "{$action} {$label}\n");
-
-        if ($dryRun) {
-            $stats['google_pushed']++;
-
-            continue;
-        }
-
-        $result = $sync->bonificaPushMissing($appointment, $calendarUserId);
-
-        if ($result === 'pushed') {
-            $stats['google_pushed']++;
-        } elseif ($result === 'failed') {
-            $stats['google_push_failed']++;
-            fwrite(STDOUT, "  → ERRORE push Google (controlla log Espo)\n");
-        } else {
-            $stats['google_push_skipped']++;
-
-            if ($verbose) {
-                fwrite(STDOUT, "  → saltato dopo tentativo\n");
-            }
-        }
-    }
-
-    fwrite(STDOUT, "\n");
 }
 
 summary:

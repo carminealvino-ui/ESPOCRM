@@ -33,7 +33,9 @@ done
 chmod +x "${CRM_ROOT}/tools/bonifica-appuntamento-google-calendar.php" 2>/dev/null || true
 
 if [[ -f "${CRM_ROOT}/clear_cache.php" ]]; then
-  (cd "${CRM_ROOT}" && php clear_cache.php)
+  (cd "${CRM_ROOT}" && php clear_cache.php && php rebuild.php)
+elif [[ -f "${CRM_ROOT}/command.php" ]]; then
+  (cd "${CRM_ROOT}" && php command.php rebuild && php command.php clearCache)
 fi
 
 echo ""
