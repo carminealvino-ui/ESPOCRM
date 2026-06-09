@@ -28,6 +28,7 @@ TOOL_FILES=(
   "tools/backup-dev-batch.sh"
   "tools/backup-manifests/google-sync.files"
   "tools/backup-manifests/prospect-form-ui.files"
+  "tools/backup-manifests/calendar-durata-fix.files"
   "tools/install-backup-dev-tools.sh"
   "tools/deploy-prospect-appuntamento-form-ui.sh"
   "tools/backup-quote-layouts.sh"
