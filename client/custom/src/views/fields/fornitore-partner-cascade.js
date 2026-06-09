@@ -14,7 +14,7 @@ define('custom:views/fields/fornitore-partner-cascade', ['views/fields/link'], f
             Dep.prototype.setup.call(this);
 
             this.listenTo(this.model, 'change:fornitorePartnerId', function (model, value, options) {
-                if (!options || !options.ui) {
+                if (!options || !options.ui || options.prospectSync) {
                     return;
                 }
 

@@ -3,13 +3,13 @@
         "rows": [
             [
                 {
-                    "name": "name"
+                    "name": "firstName"
+                },
+                {
+                    "name": "lastName"
                 }
             ],
             [
-                {
-                    "name": "azienda"
-                },
                 {
                     "name": "origine"
                 }
