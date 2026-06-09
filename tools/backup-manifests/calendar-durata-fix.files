@@ -1,0 +1,9 @@
+# Fix calendario Appuntamento — durata 1h30 + modal senza blocco (2026-06)
+client/custom/src/views/appuntamento/fields/duration.js
+custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json
+client/custom/src/helpers/appuntamento-prospect-sync.js
+client/custom/src/views/appuntamento/record/edit.js
+client/custom/src/views/appuntamento/record/edit-small.js
+custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
+client/custom/src/views/calendar/calendar.js
+client/custom/src/views/calendar/modals/edit.js
