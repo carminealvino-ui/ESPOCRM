@@ -34,21 +34,21 @@ has_google_sync_backup() {
   [[ -n "${latest}" && -f "${latest}/manifest.txt" && -f "${latest}/files.list" ]]
 }
 
-if [[ "${BACKUP_CONFIRMED:-}" != "1" ]] && ! has_google_sync_backup; then
+if [[ "${SKIP_BACKUP_CHECK:-}" == "1" ]]; then
+  echo "ATTENZIONE: SKIP_BACKUP_CHECK=1 — deploy senza verifica backup"
+elif has_google_sync_backup; then
+  latest_session="$(find "${CRM_ROOT}/backup_dev/_sessions" -maxdepth 1 -type d -name '*_google-sync' 2>/dev/null | sort -r | head -1)"
+  echo "Backup rilevato: ${latest_session#${CRM_ROOT}/}"
+else
   echo ""
   echo "PASSO 0 OBBLIGATORIO — backup in backup_dev/ prima del deploy:"
   echo "  cd ${CRM_ROOT}"
   echo "  bash tools/backup-dev-batch.sh google-sync --manifest tools/backup-manifests/google-sync.files"
   echo ""
-  echo "Poi ripeti il deploy (export necessario con pipe):"
-  echo "  export BACKUP_CONFIRMED=1"
-  echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-fix-appuntamento-google-sync.sh?t=\$(date +%s)\" | bash"
+  echo "Poi esegui il deploy salvando lo script su disco (NON usare pipe):"
+  echo "  curl -fsSL \".../deploy-fix-appuntamento-google-sync.sh\" -o tools/deploy-fix-appuntamento-google-sync.sh"
+  echo "  bash tools/deploy-fix-appuntamento-google-sync.sh"
   exit 1
-fi
-
-if has_google_sync_backup; then
-  latest_session="$(find "${CRM_ROOT}/backup_dev/_sessions" -maxdepth 1 -type d -name '*_google-sync' 2>/dev/null | sort -r | head -1)"
-  echo "Backup rilevato: ${latest_session#${CRM_ROOT}/}"
 fi
 echo ""
 
