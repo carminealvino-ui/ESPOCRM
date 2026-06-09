@@ -1,3 +1,9 @@
 {
-    "calendarView": "custom:views/calendar/calendar"
+    "calendarView": "custom:views/calendar/calendar",
+    "scopeList": [
+        "Appuntamento",
+        "Meeting",
+        "Call",
+        "Task"
+    ]
 }

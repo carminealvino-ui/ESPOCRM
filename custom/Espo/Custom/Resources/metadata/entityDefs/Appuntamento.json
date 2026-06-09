@@ -52,6 +52,7 @@
         },
         "duration": {
             "type": "duration",
+            "view": "custom:views/appuntamento/fields/duration",
             "start": "dateStart",
             "end": "dateEnd",
             "options": [

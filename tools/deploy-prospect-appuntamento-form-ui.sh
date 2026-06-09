@@ -19,6 +19,8 @@ FILES=(
   "custom/Espo/Custom/Resources/layouts/Prospect/detailSmall.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detail.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/defaultSidePanel.json"
+  "client/custom/src/views/appuntamento/fields/duration.js"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
   "client/custom/src/helpers/appuntamento-prospect-sync.js"
   "client/custom/src/views/appuntamento/record/edit.js"
   "client/custom/src/views/appuntamento/record/edit-small.js"

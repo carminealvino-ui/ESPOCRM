@@ -11,7 +11,6 @@ define('custom:views/appuntamento/record/edit', [
             Dep.prototype.setup.call(this);
 
             ProspectSync.setupProspectSync(this);
-            ProspectSync.setupDefaultDuration(this);
         },
     });
 });
