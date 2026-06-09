@@ -384,6 +384,19 @@ class AppuntamentoGoogleSync
                 return 'removed';
             }
 
+            // Evento già assente su Google: pulisci solo il link Espo (evita 400+ "failed" in bonifica).
+            if (!$this->isGoogleEventAlive($entity, $calendarUserId)) {
+                $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entityId);
+
+                return 'removed';
+            }
+
+            if ($this->bonificaDeleteOrphanGoogleEvent($entity, $calendarUserId)) {
+                $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entityId);
+
+                return 'removed';
+            }
+
             return 'failed';
         }
 
