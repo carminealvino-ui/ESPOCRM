@@ -31,6 +31,7 @@ install_one "tools/backup-dev-batch.sh"
 install_one "tools/backup-dev-save.sh"
 install_one "tools/backup-manifests/google-sync.files"
 install_one "tools/backup-manifests/prospect-form-ui.files"
+install_one "tools/backup-manifests/calendar-durata-fix.files"
 install_one "tools/deploy-prospect-appuntamento-form-ui.sh"
 chmod +x "${CRM_ROOT}/tools/backup-dev-batch.sh" "${CRM_ROOT}/tools/backup-dev-save.sh" 2>/dev/null || true
 
