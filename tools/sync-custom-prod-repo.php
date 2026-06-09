@@ -1,8 +1,8 @@
 <?php
 
 // =============================================================================
-// VERSIONE: 1.1.0
-// DATA: 2026-06-02
+// VERSIONE: 1.2.0
+// DATA: 2026-06-09
 // FILE: tools/sync-custom-prod-repo.php
 //
 // Allinea custom produzione <-> repository GitHub (modifiche fatte a mano in prod).
@@ -31,6 +31,7 @@
 //   --repo=owner/name
 //   --local-repo=PATH     usa repo locale invece di scaricare GitHub
 //   --limit=N             limita righe in output status (default 80)
+//   --refresh-cache       riscarica archivio GitHub (ignora cache locale)
 // =============================================================================
 
 declare(strict_types=1);
@@ -58,6 +59,9 @@ function main(array $argv): void
             break;
         case 'export-delta':
             runExportDelta($crmRoot, $config, $options);
+            break;
+        case 'clear-cache':
+            clearRepoCache($crmRoot, $config);
             break;
         case 'apply-delta':
             $deltaPath = $argv[2] ?? '';
@@ -104,6 +108,8 @@ function parseOptions(array $argv): array
             $options['local_repo'] = substr($arg, 13);
         } elseif (str_starts_with($arg, '--limit=')) {
             $options['limit'] = (int) substr($arg, 8);
+        } elseif ($arg === '--refresh-cache') {
+            $options['refresh_cache'] = true;
         }
     }
 
@@ -167,7 +173,7 @@ function findEspoRoot(): string
 
 function runStatus(string $crmRoot, array $config, array $options): void
 {
-    $repoRoot = resolveRepoRoot($crmRoot, $config);
+    $repoRoot = resolveRepoRoot($crmRoot, $config, !empty($options['refresh_cache']));
     $prodIndex = buildFileIndex($crmRoot, $config, 'production');
     $repoIndex = buildFileIndex($repoRoot, $config, 'repo');
 
@@ -191,6 +197,15 @@ function runStatus(string $crmRoot, array $config, array $options): void
     echo "Produzione: {$crmRoot}\n";
     echo "Repository: {$repoRoot}\n";
     echo "Branch: {$config['github']['branch']}\n";
+    echo 'File indicizzati prod: ' . count($prodIndex) . "\n";
+    echo 'File indicizzati repo: ' . count($repoIndex) . "\n";
+
+    if (count($repoIndex) < 100) {
+        echo "\nATTENZIONE: cache repo incompleta. Ripetere con:\n";
+        echo "  php tools/sync-custom-prod-repo.php clear-cache --branch={$config['github']['branch']}\n";
+        echo "  php tools/sync-custom-prod-repo.php status --branch={$config['github']['branch']} --refresh-cache\n\n";
+    }
+
     echo "\n";
     echo "Identici:     {$identical}\n";
     echo "Diversi:      " . count($different) . "\n";
@@ -233,7 +248,7 @@ function runStatus(string $crmRoot, array $config, array $options): void
 
 function runExportDelta(string $crmRoot, array $config, array $options): void
 {
-    $repoRoot = resolveRepoRoot($crmRoot, $config);
+    $repoRoot = resolveRepoRoot($crmRoot, $config, !empty($options['refresh_cache']));
     $prodIndex = buildFileIndex($crmRoot, $config, 'production');
     $repoIndex = buildFileIndex($repoRoot, $config, 'repo');
 
@@ -396,7 +411,23 @@ function runApplyDelta(string $crmRoot, string $deltaPath, array $options): void
     echo "\nVerifica con: git status\n";
 }
 
-function resolveRepoRoot(string $crmRoot, array $config): string
+function clearRepoCache(string $crmRoot, array $config): void
+{
+    $cacheDir = $crmRoot . '/exports/sync/.cache';
+    $cacheKey = preg_replace('/[^a-zA-Z0-9_-]+/', '-', $config['github']['branch']);
+    $extracted = "{$cacheDir}/repo-{$cacheKey}";
+
+    if (is_dir($extracted)) {
+        removeDirectory($extracted);
+        echo "Cache rimossa: {$extracted}\n";
+
+        return;
+    }
+
+    echo "Nessuna cache da rimuovere.\n";
+}
+
+function resolveRepoRoot(string $crmRoot, array $config, bool $refresh = false): string
 {
     if (!empty($config['local_repo']) && is_dir($config['local_repo'])) {
         return $config['local_repo'];
@@ -408,8 +439,13 @@ function resolveRepoRoot(string $crmRoot, array $config): string
     $cacheKey = preg_replace('/[^a-zA-Z0-9_-]+/', '-', $branch);
     $extracted = "{$cacheDir}/repo-{$cacheKey}";
 
-    if (is_dir($extracted . '/custom/Espo/Custom')) {
+    if (!$refresh && isValidRepoCache($extracted)) {
         return $extracted;
+    }
+
+    if (is_dir($extracted)) {
+        echo "Cache repo obsoleta o incompleta, riscarico branch {$branch}...\n";
+        removeDirectory($extracted);
     }
 
     if (!is_dir($cacheDir)) {
@@ -470,6 +506,30 @@ function findExtractedRepoRoot(string $tmp): string
     }
 
     fail('Archivio GitHub estratto ma custom/Espo/Custom non trovato.');
+}
+
+function isValidRepoCache(string $extracted): bool
+{
+    if (!is_dir($extracted . '/custom/Espo/Custom')) {
+        return false;
+    }
+
+    $count = 0;
+
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator(
+            $extracted . '/custom/Espo/Custom',
+            FilesystemIterator::SKIP_DOTS
+        )
+    );
+
+    foreach ($iterator as $item) {
+        if ($item->isFile()) {
+            $count++;
+        }
+    }
+
+    return $count >= 100;
 }
 
 function buildFileIndex(string $root, array $config, string $label): array

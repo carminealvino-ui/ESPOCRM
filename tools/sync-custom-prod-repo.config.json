@@ -30,7 +30,10 @@
         "/.git/",
         "/node_modules/",
         "/custom/Espo/Custom/client/custom-views/cache",
-        "/Modules/Sales/vendor/"
+        "/Modules/Sales/vendor/",
+        "/client/custom/modules/advanced/",
+        "/client/custom/modules/google/",
+        "/client/custom/modules/outlook/"
     ],
     "excludePathRegex": [
         "#/i18n/(?!it_IT/)#"

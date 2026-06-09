@@ -21,10 +21,19 @@
 ```bash
 cd ~/public_html/crm/mec-group
 curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/bootstrap-server-tools.sh?t=$(date +%s)" | bash
-php tools/sync-custom-prod-repo.php status --branch=main
+php tools/sync-custom-prod-repo.php clear-cache --branch=main
+php tools/sync-custom-prod-repo.php status --branch=main --refresh-cache
 ```
 
-**Atteso dopo deploy corretto:** pochi file **Diversi** / **Solo prod** (solo modifiche manuali residue).
+**Interpretazione:**
+
+| Esito | Significato |
+|-------|-------------|
+| `File indicizzati repo` < 100 | Cache GitHub incompleta → usare `clear-cache` + `--refresh-cache` |
+| `Solo prod` ~2000+ con `advanced/google/outlook` | Normale: moduli estensione in prod, esclusi dal sync |
+| `Identici` alto, `Solo prod` basso | Allineamento OK per custom MEC |
+
+**Atteso dopo deploy corretto:** `Identici` nell’ordine delle centinaia, pochi **Diversi** / **Solo prod** (solo custom MEC).
 
 ---
 
