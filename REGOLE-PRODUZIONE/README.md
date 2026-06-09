@@ -75,9 +75,10 @@ Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
 | `docs/PRODUZIONE-SYNC-LAYOUT-20260601.md` | Sync repo ↔ server (panoramica) |
 | `05-SYNC-REPO-DAL-SERVER.md` | Prod → GitHub: **export-delta sempre per primo**, poi ZIP → PC → apply → push |
 | `08-AVVIO-SYNC-CPANEL.md` | **Checklist cPanel** (token.txt, export → apply → push script) |
+| `09-ALLINEAMENTO-GOOGLE-SYNC-20260609.md` | Allineamento post-fix Google Calendar Appuntamento |
 | `06-PUSH-GITHUB-DAL-SERVER.md` | Push delta su GitHub dal server (PAT) |
 | `07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md` | Verifica allineamento: `status --branch=main` |
 
 ---
 
-*Ultimo aggiornamento regole: 2026-06-02*
+*Ultimo aggiornamento regole: 2026-06-09*

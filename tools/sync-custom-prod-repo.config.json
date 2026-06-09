@@ -4,7 +4,9 @@
         "client/custom",
         "custom/Espo/Modules/Sales/Resources",
         "custom/Espo/Modules/Sales/Hooks",
-        "custom/Espo/Modules/Sales/Classes"
+        "custom/Espo/Modules/Sales/Classes",
+        "custom/Espo/Modules/Google/Hooks",
+        "tools"
     ],
     "prodToRepoPathAliases": [
         {

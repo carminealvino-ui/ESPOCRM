@@ -37,7 +37,12 @@ TOOL_FILES=(
   "tools/backfill-appuntamento-account-link.php"
   "tools/sync-custom-prod-repo.php"
   "tools/sync-custom-prod-repo.config.json"
+  "tools/sync-apply-delta-cpanel.sh"
+  "tools/sync-push-github-cpanel.sh"
   "tools/bootstrap-regole-produzione.sh"
+  "tools/deploy-fix-appuntamento-google-sync.sh"
+  "tools/deploy-bonifica-appuntamento-google-calendar.sh"
+  "tools/bonifica-appuntamento-google-calendar.php"
   "tools/fix-contratto-importo-minusplus-standalone.php"
   "tools/layouts-samples/Quote/detail-prezzi-minusplus.json"
 )
