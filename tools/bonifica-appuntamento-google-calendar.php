@@ -193,7 +193,7 @@ $stats = [
 
 $purgeSince = date('Y-m-d', strtotime('-' . $pushSinceDays . ' days'));
 
-if ($onlyPurgeGhosts || (!$onlyIngestibili && !$onlyPush && !$reconcileOnly)) {
+if ($onlyPurgeGhosts || (!$onlyIngestibili && !$onlyPush && !$reconcileOnly && !$onlyPurgeDuplicates && !$backfillSyncFlag)) {
     fwrite(STDOUT, "[PURGE GHOSTS] Duplicati senza prospect dal {$purgeSince}\n");
 
     if ($dryRun) {
