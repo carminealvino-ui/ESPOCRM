@@ -22,6 +22,7 @@
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --reconcile
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-ghosts
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --backfill-sync-flag
+ *   php tools/bonifica-appuntamento-google-calendar.php --dry-run --only-purge-duplicates --from-date=2026-04-20 --to-date=2026-04-27
  *
  * @noinspection PhpUnhandledExceptionInspection
  */
@@ -57,13 +58,22 @@ $onlyNotHeld = in_array('--only-not-held', $argv, true);
 $onlyPush = in_array('--only-push', $argv, true);
 $reconcileOnly = in_array('--reconcile', $argv, true);
 $onlyPurgeGhosts = in_array('--only-purge-ghosts', $argv, true);
+$onlyPurgeDuplicates = in_array('--only-purge-duplicates', $argv, true);
 $backfillSyncFlag = in_array('--backfill-sync-flag', $argv, true);
 $verbose = in_array('--verbose', $argv, true);
 $pushSinceDays = 21;
+$purgeFromDate = date('Y-m-d', strtotime('-30 days'));
+$purgeToDate = date('Y-m-d', strtotime('+14 days'));
 
 foreach ($argv as $arg) {
     if (str_starts_with($arg, '--push-since-days=')) {
         $pushSinceDays = max(1, (int) substr($arg, 18));
+    }
+    if (str_starts_with($arg, '--from-date=')) {
+        $purgeFromDate = substr($arg, 12);
+    }
+    if (str_starts_with($arg, '--to-date=')) {
+        $purgeToDate = substr($arg, 10);
     }
 }
 $userIdArg = null;
@@ -137,7 +147,7 @@ $googleOk = $externalAccount
     && $externalAccount->get('enabled')
     && ($externalAccount->get('calendarEnabled') || $externalAccount->get('googleCalendarEnabled'));
 
-fwrite(STDOUT, "=== Bonifica Google Calendar Appuntamenti (v1.6.1) ===\n");
+fwrite(STDOUT, "=== Bonifica Google Calendar Appuntamenti (v1.7.0) ===\n");
 fwrite(STDOUT, 'Modalità: ' . ($dryRun ? 'DRY-RUN (nessuna modifica)' : 'APPLY') . "\n");
 if ($onlyIngestibili) {
     fwrite(STDOUT, "Filtro: solo correzione Ingestibile (admin → consulente)\n");
@@ -157,6 +167,9 @@ if ($onlyPurgeGhosts) {
 if ($backfillSyncFlag) {
     fwrite(STDOUT, "Filtro: migrazione syncConGoogle=true (vecchio default false)\n");
 }
+if ($onlyPurgeDuplicates) {
+    fwrite(STDOUT, "Filtro: rimuove duplicati Google (stesso codice + slot) {$purgeFromDate} → {$purgeToDate}\n");
+}
 fwrite(STDOUT, "Consulente calendario: {$calendarUserLabel} (id {$calendarUserId})\n");
 fwrite(STDOUT, 'Google collegato: ' . ($googleOk ? 'sì' : 'NO — delete API potrebbe fallire') . "\n\n");
 
@@ -175,6 +188,7 @@ $stats = [
     'google_reconcile_removed' => 0,
     'ghosts_purged' => 0,
     'sync_flag_backfilled' => 0,
+    'google_duplicates_removed' => 0,
 ];
 
 $purgeSince = date('Y-m-d', strtotime('-' . $pushSinceDays . ' days'));
@@ -215,6 +229,37 @@ if ($onlyPurgeGhosts) {
     goto summary;
 }
 
+if ($onlyPurgeDuplicates) {
+    fwrite(STDOUT, "[PURGE DUPLICATES] Google {$purgeFromDate} → {$purgeToDate}\n");
+
+    $dupResult = $sync->bonificaPurgeGoogleDuplicateEvents(
+        $calendarUserId,
+        $purgeFromDate,
+        $purgeToDate,
+        !$dryRun
+    );
+
+    fwrite(STDOUT, '  eventi appuntamento su Google: ' . $dupResult['scanned'] . "\n");
+    fwrite(STDOUT, '  gruppi duplicati: ' . $dupResult['duplicate_groups'] . "\n");
+    fwrite(STDOUT, '  eventi da rimuovere: ' . $dupResult['candidates'] . "\n");
+
+    foreach ($dupResult['details'] as $detail) {
+        fwrite(STDOUT, '  [DUP] ' . $detail['slot'] . "\n");
+        fwrite(STDOUT, '    KEEP: ' . $detail['keep'] . "\n");
+
+        foreach ($detail['remove'] as $removeSummary) {
+            fwrite(STDOUT, '    DEL:  ' . $removeSummary . "\n");
+        }
+    }
+
+    $stats['google_duplicates_removed'] = $dryRun
+        ? $dupResult['candidates']
+        : $dupResult['removed'];
+    fwrite(STDOUT, ($dryRun ? '  (dry-run) ' : '') . 'rimossi: ' . $stats['google_duplicates_removed'] . "\n\n");
+
+    goto summary;
+}
+
 if ($backfillSyncFlag) {
     fwrite(STDOUT, "[BACKFILL SYNC FLAG] syncConGoogle=true per appuntamenti sincronizzabili dal {$purgeSince}\n");
 
@@ -247,9 +292,9 @@ if ($backfillSyncFlag) {
     goto summary;
 }
 
-$runReconcile = $reconcileOnly || (!$onlyIngestibili && !$onlyPush);
-$runPush = $onlyPush || (!$onlyIngestibili && !$onlyNotHeld);
-$runCleanup = !$onlyIngestibili && !$onlyPush;
+$runReconcile = $reconcileOnly || (!$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates);
+$runPush = $onlyPush || (!$onlyIngestibili && !$onlyNotHeld && !$onlyPurgeDuplicates);
+$runCleanup = !$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates;
 
 if ($runReconcile) {
     $reconcileFrom = date('Y-m-d', strtotime('-14 days'));

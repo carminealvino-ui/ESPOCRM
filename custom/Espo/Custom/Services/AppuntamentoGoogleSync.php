@@ -599,6 +599,140 @@ class AppuntamentoGoogleSync
         ];
     }
 
+    /**
+     * Rimuove eventi Google duplicati (stesso codice appuntamento + stesso slot).
+     * Tipico dopo doppia sync (modulo Google + push custom): resta il link Espo o il titolo più completo.
+     *
+     * @return array{
+     *   removed: int,
+     *   scanned: int,
+     *   duplicate_groups: int,
+     *   candidates: int,
+     *   details: list<array{slot: string, keep: string, remove: list<string>}>
+     * }
+     */
+    public function bonificaPurgeGoogleDuplicateEvents(
+        string $calendarUserId,
+        string $fromDate,
+        string $toDate,
+        bool $apply = true
+    ): array {
+        $empty = [
+            'removed' => 0,
+            'scanned' => 0,
+            'duplicate_groups' => 0,
+            'candidates' => 0,
+            'details' => [],
+        ];
+
+        if (!$this->isGoogleCalendarApiAvailableForUser($calendarUserId)) {
+            return $empty;
+        }
+
+        $calendarId = $this->resolveMainGoogleCalendarIdForUser($calendarUserId);
+
+        if ($calendarId === null) {
+            return $empty;
+        }
+
+        $userTz = $this->resolveUserTimeZone($calendarUserId);
+        $client = null;
+
+        try {
+            $client = $this->clientManager->create('Google', $calendarUserId);
+            $items = $this->fetchGoogleAppuntamentoEventsInRange(
+                $client->getCalendarClient(),
+                $calendarId,
+                $fromDate,
+                $toDate,
+                $userTz
+            );
+        } catch (\Throwable $e) {
+            $GLOBALS['log']->error('AppuntamentoGoogleSync: purge duplicates list failed: ' . $e->getMessage());
+
+            return $empty;
+        }
+
+        if ($client === null) {
+            return $empty;
+        }
+
+        $groups = [];
+
+        foreach ($items as $item) {
+            $slotKey = $this->buildGoogleEventSlotKey($item, $userTz);
+
+            if ($slotKey === null) {
+                continue;
+            }
+
+            $groups[$slotKey][] = $item;
+        }
+
+        $removed = 0;
+        $candidates = 0;
+        $duplicateGroups = 0;
+        $details = [];
+
+        foreach ($groups as $slotKey => $events) {
+            if (count($events) < 2) {
+                continue;
+            }
+
+            $duplicateGroups++;
+            $appointment = $this->findAppointmentForGoogleEvent(
+                (string) ($events[0]['summary'] ?? ''),
+                $events[0],
+                $userTz
+            );
+            $keeper = $this->resolveGoogleDuplicateKeeper($events, $appointment);
+            $keeperId = (string) ($keeper['id'] ?? '');
+
+            $removeSummaries = [];
+
+            foreach ($events as $event) {
+                $eventId = (string) ($event['id'] ?? '');
+
+                if ($eventId === '' || $eventId === $keeperId) {
+                    continue;
+                }
+
+                $candidates++;
+                $removeSummaries[] = (string) ($event['summary'] ?? $eventId);
+
+                if (!$apply) {
+                    continue;
+                }
+
+                try {
+                    if ($client->getCalendarClient()->deleteEvent($calendarId, $eventId)) {
+                        $removed++;
+                    }
+                } catch (\Throwable $e) {
+                    $GLOBALS['log']->error(
+                        'AppuntamentoGoogleSync: duplicate delete ' . $eventId . ': ' . $e->getMessage()
+                    );
+                }
+            }
+
+            if ($removeSummaries !== []) {
+                $details[] = [
+                    'slot' => $slotKey,
+                    'keep' => (string) ($keeper['summary'] ?? $keeperId),
+                    'remove' => $removeSummaries,
+                ];
+            }
+        }
+
+        return [
+            'removed' => $removed,
+            'scanned' => count($items),
+            'duplicate_groups' => $duplicateGroups,
+            'candidates' => $candidates,
+            'details' => $details,
+        ];
+    }
+
     public function isSyncConGoogleEnabled(Entity $entity): bool
     {
         // Opt-out: sincronizza sempre salvo disattivazione esplicita del flag.
@@ -1362,6 +1496,146 @@ class AppuntamentoGoogleSync
         }
 
         return str_contains($summary, 'LZ/');
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function fetchGoogleAppuntamentoEventsInRange(
+        object $calendarClient,
+        string $calendarId,
+        string $fromDate,
+        string $toDate,
+        \DateTimeZone $userTz
+    ): array {
+        try {
+            $rangeStart = new \DateTime($fromDate . ' 00:00:00', $userTz);
+            $rangeEnd = new \DateTime($toDate . ' 23:59:59', $userTz);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $timeMin = (clone $rangeStart)->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
+        $timeMax = (clone $rangeEnd)->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
+        $items = [];
+        $pageToken = null;
+
+        do {
+            $params = [
+                'timeMin' => $timeMin,
+                'timeMax' => $timeMax,
+                'singleEvents' => 'true',
+                'maxResults' => 250,
+            ];
+
+            if (is_string($pageToken) && $pageToken !== '') {
+                $params['pageToken'] = $pageToken;
+            }
+
+            $response = $calendarClient->getEventList($calendarId, $params);
+
+            if (!is_array($response) || !is_array($response['items'] ?? null)) {
+                break;
+            }
+
+            foreach ($response['items'] as $item) {
+                if (!is_array($item) || empty($item['id'])) {
+                    continue;
+                }
+
+                $summary = (string) ($item['summary'] ?? '');
+
+                if ($summary === '' || str_starts_with($summary, 'Too Good To Go')) {
+                    continue;
+                }
+
+                if (!$this->looksLikeAppuntamentoGoogleEvent($summary)) {
+                    continue;
+                }
+
+                $items[] = $item;
+            }
+
+            $pageToken = $response['nextPageToken'] ?? null;
+        } while (is_string($pageToken) && $pageToken !== '');
+
+        return $items;
+    }
+
+    /**
+     * @param array<string, mixed> $item
+     */
+    private function buildGoogleEventSlotKey(array $item, \DateTimeZone $userTz): ?string
+    {
+        $summary = (string) ($item['summary'] ?? '');
+        $code = null;
+
+        if (preg_match('/(?:^|\s)(\d{5})\s*-/', $summary, $matches)) {
+            $code = $matches[1];
+        } elseif (preg_match('/\b(\d{5})\b/', $summary, $matches)) {
+            $code = $matches[1];
+        }
+
+        if ($code === null) {
+            return null;
+        }
+
+        $eventStart = $item['start']['dateTime'] ?? $item['start']['date'] ?? null;
+
+        if (!is_string($eventStart) || $eventStart === '') {
+            return null;
+        }
+
+        try {
+            $eventDt = new \DateTime($eventStart);
+            $eventDt->setTimezone($userTz);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return $code . '|' . $eventDt->format('Y-m-d H:i');
+    }
+
+    /**
+     * @param list<array<string, mixed>> $events
+     * @return array<string, mixed>
+     */
+    private function resolveGoogleDuplicateKeeper(array $events, ?Entity $appointment): array
+    {
+        $linkedId = null;
+
+        if ($appointment?->getId()) {
+            $googleData = $this->getGoogleRepository()->getEventEntityGoogleData(
+                self::ENTITY_TYPE,
+                $appointment->getId()
+            );
+
+            if (is_array($googleData) && !empty($googleData['googleCalendarEventId'])) {
+                $candidate = (string) $googleData['googleCalendarEventId'];
+
+                if ($candidate !== '' && $candidate !== 'FAIL') {
+                    $linkedId = $candidate;
+                }
+            }
+        }
+
+        if ($linkedId !== null) {
+            foreach ($events as $event) {
+                if ((string) ($event['id'] ?? '') === $linkedId) {
+                    return $event;
+                }
+            }
+        }
+
+        $sorted = $events;
+        usort($sorted, static function (array $a, array $b): int {
+            $lenA = strlen((string) ($a['summary'] ?? ''));
+            $lenB = strlen((string) ($b['summary'] ?? ''));
+
+            return $lenB <=> $lenA;
+        });
+
+        return $sorted[0];
     }
 
     private function resolveUserTimeZone(string $userId): \DateTimeZone
