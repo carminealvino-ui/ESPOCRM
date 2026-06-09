@@ -25,15 +25,30 @@ FILES=(
 )
 
 echo "=== Fix Appuntamento Google Calendar sync → ${CRM_ROOT} ==="
-if [[ "${BACKUP_CONFIRMED:-}" != "1" ]]; then
+
+has_google_sync_backup() {
+  local sessions="${CRM_ROOT}/backup_dev/_sessions"
+  [[ -d "${sessions}" ]] || return 1
+  local latest
+  latest="$(find "${sessions}" -maxdepth 1 -type d -name '*_google-sync' 2>/dev/null | sort -r | head -1)"
+  [[ -n "${latest}" && -f "${latest}/manifest.txt" && -f "${latest}/files.list" ]]
+}
+
+if [[ "${BACKUP_CONFIRMED:-}" != "1" ]] && ! has_google_sync_backup; then
   echo ""
   echo "PASSO 0 OBBLIGATORIO — backup in backup_dev/ prima del deploy:"
   echo "  cd ${CRM_ROOT}"
   echo "  bash tools/backup-dev-batch.sh google-sync --manifest tools/backup-manifests/google-sync.files"
   echo ""
-  echo "Poi ripeti il deploy con:"
-  echo "  BACKUP_CONFIRMED=1 curl -fsSL \"...deploy-fix-appuntamento-google-sync.sh\" | bash"
+  echo "Poi ripeti il deploy (export necessario con pipe):"
+  echo "  export BACKUP_CONFIRMED=1"
+  echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-fix-appuntamento-google-sync.sh?t=\$(date +%s)\" | bash"
   exit 1
+fi
+
+if has_google_sync_backup; then
+  latest_session="$(find "${CRM_ROOT}/backup_dev/_sessions" -maxdepth 1 -type d -name '*_google-sync' 2>/dev/null | sort -r | head -1)"
+  echo "Backup rilevato: ${latest_session#${CRM_ROOT}/}"
 fi
 echo ""
 
