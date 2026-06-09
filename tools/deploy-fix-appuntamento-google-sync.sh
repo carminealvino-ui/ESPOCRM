@@ -25,6 +25,17 @@ FILES=(
 )
 
 echo "=== Fix Appuntamento Google Calendar sync → ${CRM_ROOT} ==="
+if [[ "${BACKUP_CONFIRMED:-}" != "1" ]]; then
+  echo ""
+  echo "PASSO 0 OBBLIGATORIO — backup in backup_dev/ prima del deploy:"
+  echo "  cd ${CRM_ROOT}"
+  echo "  bash tools/backup-dev-batch.sh google-sync --manifest tools/backup-manifests/google-sync.files"
+  echo ""
+  echo "Poi ripeti il deploy con:"
+  echo "  BACKUP_CONFIRMED=1 curl -fsSL \"...deploy-fix-appuntamento-google-sync.sh\" | bash"
+  exit 1
+fi
+echo ""
 
 for rel in "${FILES[@]}"; do
   target="${CRM_ROOT}/${rel}"

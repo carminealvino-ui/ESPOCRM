@@ -2,9 +2,20 @@
 
 ## Prima di qualsiasi modifica
 
+**Procedura obbligatoria:** [`00-PASSO-ZERO-BACKUP-OBBLIGATORIO.md`](00-PASSO-ZERO-BACKUP-OBBLIGATORIO.md)
+
 Leggere la struttura cartelle: [`04-STRUTTURA-BACKUP-DEV.md`](04-STRUTTURA-BACKUP-DEV.md).
 
-### A) File singoli (hook, PHP, JS, metadata JSON)
+### A) Più file (sessione deploy — consigliato)
+
+```bash
+cd ~/public_html/crm/mec-group
+bash tools/backup-dev-batch.sh NOME-FIX --manifest tools/backup-manifests/google-sync.files
+# oppure:
+bash tools/backup-dev-batch.sh NOME-FIX path/relativo/file1 path/relativo/file2
+```
+
+### B) File singoli (hook, PHP, JS, metadata JSON)
 
 ```bash
 cd ~/public_html/crm/mec-group
@@ -19,7 +30,7 @@ bash tools/backup-dev-save.sh Appuntamento elenco-produzione hooks GlobalLogic.p
 
 Copia in: `backup_dev/Appuntamento/hooks/YYYYMMDD-HHMMSS_elenco-produzione_hooks_GlobalLogic.php`
 
-### B) Layout (intera cartella entità)
+### C) Layout (intera cartella entità)
 
 ```bash
 bash tools/backup-quote-layouts.sh      # Contratto → custom/backup-layouts/.../Quote/
@@ -32,7 +43,7 @@ Se `tools/` manca:
 curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/bootstrap-server-tools.sh?t=$(date +%s)" | bash
 ```
 
-### C) Backup manuale d’emergenza (senza script)
+### D) Backup manuale d’emergenza (senza script)
 
 ```bash
 STAMP=$(date +%Y%m%d-%H%M%S)

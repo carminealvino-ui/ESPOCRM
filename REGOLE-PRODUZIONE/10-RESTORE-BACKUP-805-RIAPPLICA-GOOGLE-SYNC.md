@@ -46,6 +46,15 @@ php tools/sync-custom-prod-repo.php status --branch=main --refresh-cache
 
 ## Fase 2 — Deploy Google Sync da `main` (repo → prod)
 
+### Passo 0 — Backup obbligatorio in `backup_dev/`
+
+```bash
+cd ~/public_html/crm/mec-group
+bash tools/backup-dev-batch.sh google-sync --manifest tools/backup-manifests/google-sync.files
+```
+
+### Deploy
+
 Un solo comando scarica i file del fix da GitHub `main`:
 
 ```bash

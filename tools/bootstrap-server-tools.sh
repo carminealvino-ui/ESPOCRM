@@ -24,6 +24,9 @@ cd "${CRM_ROOT}"
 mkdir -p tools tools/layouts-samples/Quote exports/sync
 
 TOOL_FILES=(
+  "tools/backup-dev-save.sh"
+  "tools/backup-dev-batch.sh"
+  "tools/backup-manifests/google-sync.files"
   "tools/backup-quote-layouts.sh"
   "tools/restore-quote-layouts.sh"
   "tools/backup-account-layouts.sh"
@@ -84,6 +87,7 @@ done
 
 echo ""
 echo "Script in ${CRM_ROOT}/tools/"
+echo "Passo 0 backup: bash tools/backup-dev-batch.sh FIX --manifest tools/backup-manifests/google-sync.files"
 echo "  bash tools/backup-quote-layouts.sh"
 echo "  bash tools/backup-account-layouts.sh"
 echo "  php tools/sync-custom-prod-repo.php status --branch=main"

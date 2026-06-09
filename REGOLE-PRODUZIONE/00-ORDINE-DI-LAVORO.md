@@ -8,7 +8,12 @@ Usare questa sequenza per **ogni** intervento (fix, deploy, layout).
 └─────────────────┬───────────────────┘
                   ▼
 ┌─────────────────────────────────────┐
-│ 1. Backup (backup_dev + layout se UI)│
+│ 0b. BACKUP OBBLIGATORIO backup_dev/ │  ← NON SALTARE (vedi 00-PASSO-ZERO)
+│     backup-dev-batch.sh o save.sh   │
+└─────────────────┬───────────────────┘
+                  ▼
+┌─────────────────────────────────────┐
+│ 1. Backup layout se UI massiva      │
 └─────────────────┬───────────────────┘
                   ▼
 ┌─────────────────────────────────────┐
@@ -48,7 +53,8 @@ Non saltare l’export usando delta vecchi.
 
 - [ ] Ho letto le tre regole in `REGOLE-PRODUZIONE/README.md`
 - [ ] Esiste `tools/` sul server (`bootstrap-server-tools.sh` se manca)
-- [ ] Backup fatto e percorso annotato (timestamp)
+- [ ] **Passo 0:** backup `backup_dev/` eseguito (`backup-dev-batch.sh` o `backup-dev-save.sh`)
+- [ ] Screenshot/output backup con timestamp salvato
 - [ ] Un solo passo eseguito
 - [ ] Screenshot o output terminale verificato
 - [ ] Solo ora passo al passo successivo

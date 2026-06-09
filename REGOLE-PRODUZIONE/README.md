@@ -16,9 +16,10 @@ Dettaglio: [`01-UN-ISTRUZIONE-ALLA-VOLTA.md`](01-UN-ISTRUZIONE-ALLA-VOLTA.md)
 
 ---
 
-## Regola 2 — Backup del fix (storico e rollback)
+## Regola 2 — Backup del fix (storico e rollback) — **OBBLIGATORIO**
 
-- **Prima** di ogni modifica in produzione: backup con naming e cartella documentati.
+- **Prima** di ogni modifica in produzione: backup in `backup_dev/` — **passo 0, non saltare**.
+- Procedura standard: [`00-PASSO-ZERO-BACKUP-OBBLIGATORIO.md`](00-PASSO-ZERO-BACKUP-OBBLIGATORIO.md)
 - Due livelli complementari:
 
 | Tipo | Dove | Quando |
@@ -61,7 +62,8 @@ Dettaglio: [`04-STRUTTURA-BACKUP-DEV.md`](04-STRUTTURA-BACKUP-DEV.md) e [`backup
 
 ## Ordine obbligatorio di lavoro
 
-Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
+1. **Passo 0 backup:** [`00-PASSO-ZERO-BACKUP-OBBLIGATORIO.md`](00-PASSO-ZERO-BACKUP-OBBLIGATORIO.md)
+2. Flusso completo: [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md)
 
 ---
 
