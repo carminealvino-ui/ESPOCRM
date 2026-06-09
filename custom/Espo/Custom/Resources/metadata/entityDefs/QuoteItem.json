@@ -3,7 +3,9 @@
         "prezzoCodice": {
             "type": "currency",
             "isCustom": true,
-            "onlyDefaultCurrency": true
+            "onlyDefaultCurrency": true,
+            "readOnly": true,
+            "itemNotReadOnly": true
         },
         "prezzoCodiceCurrency": {
             "default": "EUR",

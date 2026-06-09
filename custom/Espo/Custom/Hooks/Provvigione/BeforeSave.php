@@ -2,91 +2,127 @@
 
 namespace Espo\Custom\Hooks\Provvigione;
 
-use Espo\ORM\Entity;
 use Espo\Core\Hooks\Base;
+use Espo\ORM\Entity;
 
+/**
+ * Provvigione manuale: importo = tassoProvvigioni % × imponibile contratto.
+ * Nessuna regola provvigionale. Hook Base (compatibilità Espo produzione).
+ */
 class BeforeSave extends Base
 {
-    public function beforeSave(Entity $entity, array $options)
+    public function beforeSave(Entity $entity, array $options): void
     {
-        if (!$entity->get('contrattoId')) {
+        $quoteId = $entity->get('contrattoId');
+
+        if (!$quoteId) {
             return;
         }
 
         $em = $this->getEntityManager();
-
-        $quote = $em->getRepository('Quote')
-            ->where(['id' => $entity->get('contrattoId')])
-            ->findOne();
+        $quote = $em->getEntityById('Quote', $quoteId);
 
         if (!$quote) {
             return;
         }
 
-        $tipo = $entity->get('tipo');
-        $tasso = (float) $entity->get('tassoProvvigioni');
-
-        $base = 0;
-
-        // BASE CALCOLO
-        if ($tipo === 'Provvigione Base') {
-            $base = (float) $quote->get('amount');
-        }
-
-        elseif ($tipo === 'Plus Provvigionale' || $tipo === 'Minus Provvigionale') {
-            $base = (float) $quote->get('minusPlus');
-        }
-
-        elseif ($tipo === 'Bonus (Sabato-Domenica)') {
-
-            $date = $quote->get('dateQuoted');
-
-            if ($date) {
-                $day = date('N', strtotime($date));
-
-                if ($day >= 6) {
-                    $base = (float) $quote->get('amount');
-                }
-            }
-        }
-
-        elseif (strpos($tipo, 'Gara') !== false) {
-
-            $amount = (float) $quote->get('amount');
-
-            if (strpos($tipo, '2.5') !== false && $amount > 2500) {
-                $base = $amount;
-            }
-
-            if (strpos($tipo, '3.5') !== false && $amount > 3500) {
-                $base = $amount;
-            }
-
-            if (strpos($tipo, '5') !== false && $amount > 5000) {
-                $base = $amount;
-            }
-        }
-
-        // CALCOLO
-        $importo = 0;
-
-        if ($base > 0 && $tasso > 0) {
-            $importo = ($base * $tasso) / 100;
-        }
-
-        // SET DIRETTO → senza save
-        $entity->set('importo', $importo);
+        $this->syncLinksFromQuote($entity, $quote);
+        $this->applyImporto($entity, $quote);
+        $entity->set('name', $this->buildName($entity, $quote));
     }
 
-    /**
-     * Aggiorna totaleProvvigioni sul contratto (anche save silent da subpanel).
-     */
     public function afterSave(Entity $entity, array $options): void
     {
         if (!empty($options['skipHooks'])) {
             return;
         }
 
+        $this->syncTotaleProvvigioni($entity);
+    }
+
+    public function afterRemove(Entity $entity, array $options): void
+    {
+        if (!empty($options['skipHooks'])) {
+            return;
+        }
+
+        $this->syncTotaleProvvigioni($entity);
+    }
+
+    private function syncLinksFromQuote(Entity $entity, Entity $quote): void
+    {
+        $quoteName = $quote->get('name');
+
+        if (is_string($quoteName) && $quoteName !== '') {
+            $entity->set('contrattoName', $quoteName);
+        }
+
+        $accountId = $quote->get('accountId');
+
+        if (!$accountId) {
+            return;
+        }
+
+        $entity->set('clienteId', $accountId);
+
+        $accountName = $quote->get('accountName');
+
+        if (is_string($accountName) && $accountName !== '') {
+            $entity->set('clienteName', $accountName);
+        }
+    }
+
+    private function applyImporto(Entity $entity, Entity $quote): void
+    {
+        $tasso = $this->toFloat($entity->get('tassoProvvigioni'));
+
+        if ($tasso <= 0) {
+            return;
+        }
+
+        $base = 0.0;
+
+        if ($entity->hasAttribute('importoContratto')) {
+            $base = $this->toFloat($entity->get('importoContratto'));
+        }
+
+        if ($base <= 0) {
+            $base = $this->toFloat($quote->get('amount'));
+        }
+
+        if ($base <= 0) {
+            $base = $this->toFloat($quote->get('importoContratto'));
+        }
+
+        if ($base <= 0) {
+            return;
+        }
+
+        $entity->set('importo', round($base * $tasso / 100, 2));
+    }
+
+    private function buildName(Entity $entity, Entity $quote): string
+    {
+        $clientLabel = trim((string) ($quote->get('billingContactName') ?: $quote->get('accountName') ?: ''));
+        $tipo = $entity->get('tipo');
+        $importo = $this->toFloat($entity->get('importo'));
+        $parts = [];
+
+        if ($clientLabel !== '') {
+            $parts[] = $clientLabel;
+        }
+
+        if (is_string($tipo) && $tipo !== '') {
+            $parts[] = $tipo;
+        }
+
+        $parts[] = '€. ' . number_format($importo, 2, '.', '');
+
+        return strtoupper(implode(' - ', $parts));
+    }
+
+    private function syncTotaleProvvigioni(Entity $entity): void
+    {
         $quoteId = $entity->get('contrattoId');
 
         if (!$quoteId) {
@@ -115,8 +151,12 @@ class BeforeSave extends Base
         $em->saveEntity($quote, ['skipHooks' => true, 'silent' => true]);
     }
 
-    public function afterRemove(Entity $entity, array $options): void
+    private function toFloat(mixed $value): float
     {
-        $this->afterSave($entity, $options);
+        if ($value === null || $value === '' || !is_numeric($value)) {
+            return 0.0;
+        }
+
+        return (float) $value;
     }
 }

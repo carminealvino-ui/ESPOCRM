@@ -53,6 +53,14 @@ define('custom:views/disponibilita/create', 'views/record/edit', function (Dep) 
             // ============================================
             // Cambio data → aggiorna orari (se consentito)
             // ============================================
+            this.listenTo(this.model, 'change:dateStart', () => {
+                this.updateFromDateStart();
+            });
+
+            this.listenTo(this.model, 'change:dateStartDate', () => {
+                this.updateFromDateStart();
+            });
+
             this.listenTo(this.model, 'change:datadisponibilita', () => {
                 this.updateFromDataDisponibilita();
             });
@@ -72,26 +80,50 @@ define('custom:views/disponibilita/create', 'views/record/edit', function (Dep) 
 
             if (!this.model.isNew()) return;
 
-            let dataDisp = this.model.get('datadisponibilita');
+            let dateStart = this.model.get('dateStart');
+            let dataDisp = dateStart
+                ? moment(dateStart).format('YYYY-MM-DD')
+                : this.model.get('datadisponibilita');
 
-            // default data = oggi
             if (!dataDisp) {
-                let today = moment().format('YYYY-MM-DD');
-                this.model.set('datadisponibilita', today);
-                dataDisp = today;
+                dataDisp = moment().format('YYYY-MM-DD');
             }
 
-            // default orario inizio
+            if (!dateStart) {
+                this.model.set('dateStart', dataDisp + ' 11:30:00');
+            }
+
+            this.model.set('datadisponibilita', dataDisp);
+
             if (!this.model.get('orarioInizio')) {
                 this.model.set('orarioInizio', dataDisp + ' 11:30:00');
             }
 
-            // default orario fine
             if (!this.model.get('orarioFine')) {
                 this.model.set('orarioFine', dataDisp + ' 18:30:00');
             }
+        },
 
-            // NOTA: dateStart/dateEnd gestiti dal Hook PHP
+        updateFromDateStart: function () {
+            if (this.userModifiedTime) return;
+
+            let dateStartDate = this.model.get('dateStartDate');
+            let dateStart = this.model.get('dateStart');
+            let dataDisp = dateStartDate
+                ? moment(dateStartDate).format('YYYY-MM-DD')
+                : (dateStart ? moment(dateStart).format('YYYY-MM-DD') : null);
+
+            if (!dataDisp) return;
+
+            this.model.set('datadisponibilita', dataDisp);
+
+            if (!this.model.get('orarioInizio')) {
+                this.model.set('orarioInizio', dataDisp + ' 11:30:00');
+            }
+
+            if (!this.model.get('orarioFine')) {
+                this.model.set('orarioFine', dataDisp + ' 18:30:00');
+            }
         },
 
         // ============================================

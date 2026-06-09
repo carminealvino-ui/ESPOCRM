@@ -1,0 +1,35 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "dataInizioGenerazione"
+                },
+                {
+                    "name": "dataFineGenerazione"
+                }
+            ],
+            [
+                {
+                    "name": "generazioneProductBrand"
+                },
+                {
+                    "name": "generazioneStatus"
+                }
+            ],
+            [
+                {
+                    "name": "generazioneArea",
+                    "fullWidth": true
+                }
+            ],
+            [
+                {
+                    "name": "generazioneCollaborators",
+                    "fullWidth": true
+                }
+            ]
+        ],
+        "label": "Generazione Disponibilità"
+    }
+]

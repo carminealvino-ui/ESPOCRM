@@ -227,6 +227,10 @@
                 "inlineEditDisabled",
                 "tooltipText"
             ]
+        },
+        "productBrand": {
+            "type": "link",
+            "isCustom": true
         }
     },
     "links": {
@@ -269,6 +273,13 @@
             "type": "hasMany",
             "foreign": "disponibilita",
             "entity": "FornitorePartner",
+            "audited": false,
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "belongsTo",
+            "foreign": "disponibilita",
+            "entity": "ProductBrand",
             "audited": false,
             "isCustom": true
         }

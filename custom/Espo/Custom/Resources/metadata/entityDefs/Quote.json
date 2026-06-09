@@ -105,7 +105,8 @@
         "dataInstallazione": {
             "notNull": false,
             "type": "date",
-            "isCustom": true
+            "isCustom": true,
+            "useNumericFormat": true
         },
         "codiceContratto": {
             "type": "varchar",

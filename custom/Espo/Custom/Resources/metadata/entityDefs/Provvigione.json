@@ -43,18 +43,14 @@
                 "Bonus (Sabato-Domenica)",
                 "Plus Provvigionale",
                 "Minus Provvigionale",
-                "Gara (Soglia >2.5k)",
-                "Gara (Soglia >3.5)",
-                "Gara (Soglia >5k)"
+                "Referenza Personale"
             ],
             "style": {
                 "Provvigione Base": null,
                 "Bonus (Sabato-Domenica)": null,
                 "Plus Provvigionale": null,
                 "Minus Provvigionale": null,
-                "Gara (Soglia >2.5k)": null,
-                "Gara (Soglia >3.5)": null,
-                "Gara (Soglia >5k)": null
+                "Referenza Personale": null
             },
             "default": "Provvigione Base",
             "maxLength": 100,

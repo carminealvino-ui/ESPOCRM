@@ -23,5 +23,47 @@
         "listForProduct": {
             "type": "list"
         }
+    },
+    "bottomPanels": {
+        "detail": [
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "custom:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "edit": [
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "custom:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "detailSmall": [
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "custom:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "editSmall": [
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "custom:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ]
     }
 }

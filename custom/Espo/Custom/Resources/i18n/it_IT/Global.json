@@ -211,7 +211,8 @@
         "WorkflowCategory": "Workflow - Categorie",
         "WorkflowLogRecord": "Workflow - Log",
         "WorkflowRoundRobin": "Workflow - Round Robin",
-        "PriceRuleCondition": "Listino Prezzi - Regola Condizioni"
+        "PriceRuleCondition": "Listino Prezzi - Regola Condizioni",
+        "WorkingTimeCalendar": "Disponibilità Ricorrenti"
     },
     "scopeNames": {
         "Meeting": "Impegno",
@@ -338,7 +339,8 @@
         "TransferOrder": "Bolla di Consegna",
         "TransferOrderItem": "Bolla di Consegna - Voce",
         "WorkflowCategory": "Processo - Categoria Flusso",
-        "CampaignLogRecord": "Campagna - Registro"
+        "CampaignLogRecord": "Campagna - Registro",
+        "WorkingTimeCalendar": "Disponibilità Ricorrente"
     },
     "dashlets": {
         "OpportunitiesByStage": "Opportunità per Stato",

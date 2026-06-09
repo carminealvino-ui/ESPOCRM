@@ -1,6 +1,6 @@
 {
     "fields": {
-        "parent": "Genitore",
+        "parent": "Relazionato a",
         "dateStart": "Data inizio",
         "dateEnd": "Data termine",
         "duration": "Durata",
@@ -9,7 +9,7 @@
         "dateStartDate": "Data inizio (tutto il giorno)",
         "dateEndDate": "Data fine (tutto il giorno)",
         "isAllDay": "È tutto il giorno",
-        "azienda": "Azienda",
+        "productBrand": "Brand",
         "area": "Area",
         "name": "Disponibilità",
         "datadisponibilita": "Data Disponibilità",
@@ -19,8 +19,9 @@
         "fornitorePartner": "Fornitore/Partner"
     },
     "links": {
-        "parent": "Genitore",
-        "fornitorePartner": "Fornitore/Partner"
+        "parent": "Relazionato a",
+        "fornitorePartner": "Fornitore/Partner",
+        "productBrand": "Brand"
     },
     "options": {
         "status": {
@@ -53,15 +54,12 @@
         }
     },
     "labels": {
-        "Create Disponibilita": "Creare Disponibilità",
-        "Schedule Disponibilita": "Pianificazione Disponibilita",
-        "Log Disponibilita": "Registro Disponibilita",
-        "Set Held": "Imposta trattenuto",
-        "Set Not Held": "Imposta non trattenuto"
+        "Disponibilità Ricorrenti": "Disponibilità Ricorrenti",
+        "Create Disponibilita": "Crea Disponibilità"
     },
     "massActions": {
-        "setHeld": "Imposta trattenuto",
-        "setNotHeld": "Imposta non trattenuto"
+        "setHeld": "Imposta Svolto",
+        "setNotHeld": "Imposta non Svolto"
     },
     "presetFilters": {
         "planned": "Pianificato",

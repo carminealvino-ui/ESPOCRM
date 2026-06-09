@@ -1,14 +1,28 @@
 [
     {
+        "name": "contratto",
+        "width": 35,
+        "align": "left"
+    },
+    {
         "name": "name",
-        "link": true
+        "width": 35,
+        "link": true,
+        "align": "left"
     },
     {
         "name": "tipo",
-        "width": 16
+        "width": 12,
+        "align": "left"
+    },
+    {
+        "name": "tassoProvvigioni",
+        "width": 12,
+        "align": "left"
     },
     {
         "name": "importo",
-        "width": 16
+        "width": 12,
+        "align": "left"
     }
 ]

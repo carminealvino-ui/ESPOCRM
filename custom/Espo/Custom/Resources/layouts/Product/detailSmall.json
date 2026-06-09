@@ -39,25 +39,27 @@
         "rows": [
             [
                 {
-                    "name": "costPrice"
+                    "name": "dataInizioValidita"
                 },
                 {
-                    "name": "pricingType"
+                    "name": "aliquotaIva"
                 }
             ],
             [
                 {
-                    "name": "listPrice"
+                    "name": "prezzoListinoIvaEsclusa"
                 },
                 {
-                    "name": "pricingFactor"
+                    "name": "prezzoListinoIvaInclusa"
                 }
             ],
             [
                 {
-                    "name": "unitPrice"
+                    "name": "prezzoCodice"
                 },
-                false
+                {
+                    "name": "prezzoCodiceIvaInclusa"
+                }
             ]
         ],
         "style": "default",

@@ -6,13 +6,52 @@
             "options": [],
             "isCustom": true
         },
+        "elencoCatalogo": {
+            "type": "int",
+            "min": 0,
+            "isCustom": true,
+            "audited": true
+        },
         "opportunita": {
             "type": "link"
+        },
+        "dataInizioValidita": {
+            "type": "date",
+            "isCustom": true,
+            "audited": true
+        },
+        "aliquotaIva": {
+            "type": "float",
+            "default": 10,
+            "min": 0,
+            "max": 100,
+            "isCustom": true,
+            "audited": true,
+            "tooltip": true
+        },
+        "prezzoListinoIvaEsclusa": {
+            "type": "currency",
+            "isCustom": true,
+            "onlyDefaultCurrency": true,
+            "audited": true
+        },
+        "prezzoListinoIvaInclusa": {
+            "type": "currency",
+            "isCustom": true,
+            "onlyDefaultCurrency": true,
+            "audited": true
         },
         "prezzoCodice": {
             "type": "currency",
             "isCustom": true,
-            "onlyDefaultCurrency": true
+            "onlyDefaultCurrency": true,
+            "audited": true
+        },
+        "prezzoCodiceIvaInclusa": {
+            "type": "currency",
+            "isCustom": true,
+            "onlyDefaultCurrency": true,
+            "audited": true
         },
         "name": {
             "required": false,
@@ -47,7 +86,7 @@
         }
     },
     "collection": {
-        "orderBy": "name",
+        "orderBy": "elencoCatalogo",
         "order": "asc",
         "textFilterFields": [
             "name"

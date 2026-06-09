@@ -25,6 +25,10 @@
         "align": "left"
     },
     {
+        "name": "dataInstallazione",
+        "width": 16
+    },
+    {
         "name": "importoContratto",
         "width": 16,
         "align": "left"

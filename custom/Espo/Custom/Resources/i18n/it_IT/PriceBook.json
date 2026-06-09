@@ -8,6 +8,7 @@
         "Create PriceBook": "Crea Listino Prezzi"
     },
     "links": {
-        "childPriceBooks": "Listino Prezzi Relazionato"
+        "childPriceBooks": "Listino Prezzi Relazionato",
+        "productBrands": "Brand"
     }
 }
