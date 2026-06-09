@@ -1,0 +1,9 @@
+# Form Prospect + Appuntamento UI — backup prima del deploy
+custom/Espo/Custom/Resources/layouts/Prospect/detailSmall.json
+custom/Espo/Custom/Resources/layouts/Appuntamento/detail.json
+custom/Espo/Custom/Resources/layouts/Appuntamento/defaultSidePanel.json
+client/custom/src/helpers/appuntamento-prospect-sync.js
+client/custom/src/views/appuntamento/record/edit.js
+client/custom/src/views/appuntamento/record/edit-small.js
+client/custom/src/views/fields/fornitore-partner-cascade.js
+client/custom/src/views/fields/product-brand-by-partner.js
