@@ -18,6 +18,8 @@ BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 
 FILES=(
   "custom/Espo/Custom/Services/AppuntamentoGoogleSync.php"
+  "custom/Espo/Custom/Hooks/Appuntamento/PreventDuplicate.php"
+  "custom/Espo/Modules/Google/Hooks/Common/GoogleCalendar.php"
   "tools/bonifica-appuntamento-google-calendar.php"
 )
 

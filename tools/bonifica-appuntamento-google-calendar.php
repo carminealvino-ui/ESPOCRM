@@ -41,7 +41,6 @@ use Espo\Core\InjectableFactory;
 use Espo\Custom\Services\AppuntamentoGoogleSync;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
-use Espo\ORM\Query\SelectBuilder;
 
 $app = new Application();
 $app->setupSystemUser();
@@ -138,7 +137,7 @@ $googleOk = $externalAccount
     && $externalAccount->get('enabled')
     && ($externalAccount->get('calendarEnabled') || $externalAccount->get('googleCalendarEnabled'));
 
-fwrite(STDOUT, "=== Bonifica Google Calendar Appuntamenti ===\n");
+fwrite(STDOUT, "=== Bonifica Google Calendar Appuntamenti (v1.6.1) ===\n");
 fwrite(STDOUT, 'Modalità: ' . ($dryRun ? 'DRY-RUN (nessuna modifica)' : 'APPLY') . "\n");
 if ($onlyIngestibili) {
     fwrite(STDOUT, "Filtro: solo correzione Ingestibile (admin → consulente)\n");
@@ -441,16 +440,7 @@ foreach ($linkRows as $link) {
 }
 
 // --- Fase 2: Not Held / deleted con link residuo (senza riga in scan se già puliti) ---
-$staleWhere = $onlyNotHeld
-    ? ['status' => 'Not Held', 'deleted' => false]
-    : [
-        'OR' => [
-            ['deleted' => true],
-            ['status' => 'Not Held'],
-        ],
-    ];
-
-$staleAppointments = findAppointmentsIncludingDeleted($em, $staleWhere);
+$staleAppointments = findAppointmentsIncludingDeleted($em, $onlyNotHeld);
 
 foreach ($staleAppointments as $appointment) {
     $googleData = $em->getRepository('GoogleCalendar')->getEventEntityGoogleData(
@@ -579,32 +569,102 @@ fwrite(STDOUT, "\nNota: esegui un solo comando per riga (usa --user-id=67c93e694
 
 function findAppointmentIncludingDeleted(EntityManager $em, string $entityId): ?Entity
 {
-    return $em->getRDBRepository('Appuntamento')
-        ->clone(
-            SelectBuilder::create()
-                ->from('Appuntamento')
-                ->withDeleted()
-                ->build()
-        )
-        ->where(['id' => $entityId])
-        ->findOne();
+    $appointment = $em->getEntityById('Appuntamento', $entityId);
+
+    if ($appointment) {
+        return $appointment;
+    }
+
+    $pdo = $em->getPDO();
+
+    if (!$pdo instanceof \PDO) {
+        return null;
+    }
+
+    $stmt = $pdo->prepare(
+        'SELECT id, name, status, date_start AS dateStart, date_end AS dateEnd,
+                assigned_user_id AS assignedUserId, sync_con_google AS syncConGoogle, deleted
+         FROM appuntamento WHERE id = ? LIMIT 1'
+    );
+    $stmt->execute([$entityId]);
+    $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+    if (!$row) {
+        return null;
+    }
+
+    $appointment = $em->getNewEntity('Appuntamento');
+
+    foreach ($row as $field => $value) {
+        if ($field === 'syncConGoogle') {
+            $appointment->set($field, (bool) $value);
+
+            continue;
+        }
+
+        if ($field === 'deleted') {
+            $appointment->set($field, (bool) $value);
+
+            continue;
+        }
+
+        $appointment->set($field, $value);
+    }
+
+    return $appointment;
 }
 
 /**
- * @param array<string, mixed> $where
  * @return iterable<Entity>
  */
-function findAppointmentsIncludingDeleted(EntityManager $em, array $where): iterable
+function findAppointmentsIncludingDeleted(EntityManager $em, bool $onlyNotHeld): iterable
 {
-    return $em->getRDBRepository('Appuntamento')
-        ->clone(
-            SelectBuilder::create()
-                ->from('Appuntamento')
-                ->withDeleted()
-                ->build()
-        )
-        ->where($where)
-        ->find();
+    if ($onlyNotHeld) {
+        return $em->getRDBRepository('Appuntamento')
+            ->where(['status' => 'Not Held', 'deleted' => false])
+            ->find();
+    }
+
+    $pdo = $em->getPDO();
+
+    if (!$pdo instanceof \PDO) {
+        return $em->getRDBRepository('Appuntamento')
+            ->where(['status' => 'Not Held', 'deleted' => false])
+            ->find();
+    }
+
+    $stmt = $pdo->query(
+        "SELECT DISTINCT a.id
+         FROM appuntamento a
+         INNER JOIN google_calendar_event g
+            ON g.entity_id = a.id AND g.entity_type = 'Appuntamento'
+         WHERE (a.deleted = 1 OR a.status = 'Not Held')
+           AND g.google_calendar_event_id IS NOT NULL
+           AND g.google_calendar_event_id != ''
+           AND g.google_calendar_event_id != 'FAIL'"
+    );
+
+    if ($stmt === false) {
+        return [];
+    }
+
+    $results = [];
+
+    while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+        $appointment = findAppointmentIncludingDeleted($em, (string) $row['id']);
+
+        if ($appointment) {
+            $results[] = $appointment;
+        }
+    }
+
+    foreach ($em->getRDBRepository('Appuntamento')
+        ->where(['status' => 'Not Held', 'deleted' => false])
+        ->find() as $appointment) {
+        $results[$appointment->getId()] = $appointment;
+    }
+
+    return array_values($results);
 }
 
 function formatAppointmentLabel(Entity $appointment): string

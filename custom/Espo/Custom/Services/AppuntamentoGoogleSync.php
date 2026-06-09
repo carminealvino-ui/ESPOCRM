@@ -688,6 +688,22 @@ class AppuntamentoGoogleSync
      */
     public function bonificaBackfillSyncConGoogleFlag(string $sinceDate): int
     {
+        $pdo = $this->entityManager->getPDO();
+
+        if ($pdo instanceof \PDO) {
+            $stmt = $pdo->prepare(
+                'UPDATE appuntamento SET sync_con_google = 1
+                WHERE deleted = 0
+                AND sync_con_google = 0
+                AND status IN (\'Planned\', \'Held\', \'Ingestibile\')
+                AND date_start >= ?
+                AND name NOT LIKE ?'
+            );
+            $stmt->execute([$sinceDate . ' 00:00:00', '%' . self::GHOST_NAME_MARKER . '%']);
+
+            return $stmt->rowCount();
+        }
+
         $updated = 0;
 
         $appointments = $this->entityManager

@@ -1,9 +1,13 @@
 <?php
 
 // ========================================
-// VERSIONE: 1.0.5
-// DATA: 2026-06-08
+// VERSIONE: 1.0.6
+// DATA: 2026-06-09
 // ----------------------------------------
+// FIX 1.0.6:
+// ✔ Blocca creazione nuovi appuntamenti senza prospect/cliente
+// ✔ Purge ghost nello slot senza filtro assignedUserId (admin vs consulente)
+//
 // FIX 1.0.5:
 // ✔ Modifica appuntamento con prospect: non bloccare se esiste ghost nello slot
 // ✔ Rimuove ghost PRIMA del controllo duplicati (beforeSave), non solo dopo
@@ -47,6 +51,10 @@ class PreventDuplicate implements BeforeSave, AfterSave
 
         if (!$start || !$end) {
             return;
+        }
+
+        if ($entity->isNew() && $this->buildIdentityKey($entity) === null) {
+            throw new Error('Appuntamento senza prospect o cliente non consentito');
         }
 
         if ($this->buildIdentityKey($entity) !== null) {
@@ -183,12 +191,6 @@ class PreventDuplicate implements BeforeSave, AfterSave
 
         if (!$entity->isNew() && $entity->getId()) {
             $query['id!='] = $entity->getId();
-        }
-
-        $assignedUserId = $entity->get('assignedUserId');
-
-        if ($assignedUserId) {
-            $query['assignedUserId'] = $assignedUserId;
         }
 
         foreach ($this->entityManager->getRDBRepository(self::ENTITY_TYPE)->where($query)->find() as $ghost) {

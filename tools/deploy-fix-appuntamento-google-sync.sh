@@ -18,6 +18,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Appuntamento/GoogleCalendarSyncAfterGlobal.php"
   "custom/Espo/Custom/Hooks/Appuntamento/PreventDuplicate.php"
   "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
+  "custom/Espo/Modules/Google/Hooks/Common/GoogleCalendar.php"
   "custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
   "tools/bonifica-appuntamento-google-calendar.php"
@@ -35,9 +36,11 @@ done
 chmod +x "${CRM_ROOT}/tools/bonifica-appuntamento-google-calendar.php" 2>/dev/null || true
 
 if [[ -f "${CRM_ROOT}/clear_cache.php" ]]; then
-  (cd "${CRM_ROOT}" && php clear_cache.php && php rebuild.php)
+  (cd "${CRM_ROOT}" && php clear_cache.php)
+  (cd "${CRM_ROOT}" && php rebuild.php)
 elif [[ -f "${CRM_ROOT}/command.php" ]]; then
-  (cd "${CRM_ROOT}" && php command.php rebuild && php command.php clearCache)
+  (cd "${CRM_ROOT}" && php command.php clearCache)
+  (cd "${CRM_ROOT}" && php command.php rebuild)
 fi
 
 echo ""
@@ -52,6 +55,7 @@ echo "Allinea agenda (rimuove annullati + push venerdì/sabato):"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --user-id=67c93e694705fde80"
 echo "Solo push mancanti:"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --only-push --user-id=67c93e694705fde80"
-echo "Dopo deploy, esegui in ordine (una tantum migrazione flag):"
+echo "Dopo deploy, UN COMANDO PER RIGA:"
+echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-ghosts --user-id=67c93e694705fde80"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --backfill-sync-flag --user-id=67c93e694705fde80"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --verbose --user-id=67c93e694705fde80"
