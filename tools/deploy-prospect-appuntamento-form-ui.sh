@@ -24,6 +24,9 @@ FILES=(
   "client/custom/src/views/appuntamento/record/edit-small.js"
   "client/custom/src/views/fields/fornitore-partner-cascade.js"
   "client/custom/src/views/fields/product-brand-by-partner.js"
+  "custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json"
+  "client/custom/src/views/calendar/calendar.js"
+  "client/custom/src/views/calendar/modals/edit.js"
 )
 
 echo "=== Deploy form Prospect/Appuntamento UI → ${CRM_ROOT} ==="

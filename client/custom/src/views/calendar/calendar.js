@@ -1,14 +1,22 @@
 /* global define */
 
-define('custom:views/calendar/calendar', [
-    'custom:handlers/calendar-default-duration',
-    'crm:views/calendar/calendar',
-], function (_calendarDurationHandler, CalendarViewModule) {
+define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], function (CalendarViewModule) {
 
     const CalendarView = CalendarViewModule.default || CalendarViewModule;
-    const DEFAULT_DURATION_SECONDS = 5400;
 
     return class CustomCalendarView extends CalendarView {
+
+        getDefaultDurationSeconds() {
+            const fromMeta = this.getMetadata().get(
+                ['entityDefs', 'Appuntamento', 'fields', 'duration', 'default']
+            );
+
+            if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
+                return parseInt(fromMeta, 10);
+            }
+
+            return 5400;
+        }
 
         normalizeCreateEventValues(values) {
             if (!values || values.allDay || !values.dateStart) {
@@ -25,7 +33,7 @@ define('custom:views/calendar/calendar', [
         getDefaultDateEnd(dateStart) {
             return this.getDateTime()
                 .toMoment(dateStart)
-                .add(DEFAULT_DURATION_SECONDS, 'seconds')
+                .add(this.getDefaultDurationSeconds(), 'seconds')
                 .format(this.getDateTime().internalDateTimeFormat);
         }
 

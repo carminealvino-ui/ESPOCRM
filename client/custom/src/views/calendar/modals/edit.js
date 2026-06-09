@@ -1,14 +1,12 @@
 /* global define */
 
 define('custom:views/calendar/modals/edit', [
-    'custom:handlers/calendar-default-duration',
     'crm:views/calendar/modals/edit',
-], function (_calendarDurationHandler, CalendarEditModalModule) {
+    'custom:helpers/appuntamento-prospect-sync',
+], function (CalendarEditModalModule, ProspectSync) {
 
     const CalendarEditModalView = CalendarEditModalModule.default || CalendarEditModalModule;
-
     const APPUNTAMENTO_SCOPE = 'Appuntamento';
-    const DEFAULT_DURATION_SECONDS = 5400;
 
     return class CustomCalendarEditModalView extends CalendarEditModalView {
 
@@ -25,11 +23,25 @@ define('custom:views/calendar/modals/edit', [
 
             super.createRecordView(model, (view) => {
                 this.applyDefaultDurationToModel(model);
+                ProspectSync.setupDefaultDuration(view);
+                ProspectSync.setupProspectSync(view);
 
                 callback(view);
 
                 this.applyDefaultDurationToEditView();
             });
+        }
+
+        getDefaultDurationSeconds() {
+            const fromMeta = this.getMetadata().get(
+                ['entityDefs', APPUNTAMENTO_SCOPE, 'fields', 'duration', 'default']
+            );
+
+            if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
+                return parseInt(fromMeta, 10);
+            }
+
+            return ProspectSync.FALLBACK_DURATION_SECONDS;
         }
 
         applyDefaultDurationOptions() {
@@ -51,9 +63,12 @@ define('custom:views/calendar/modals/edit', [
                 return;
             }
 
+            const seconds = this.getDefaultDurationSeconds();
+
             model.set({
                 dateEnd: this.getAppuntamentoDefaultDateEnd(dateStart),
-            }, {updatedByDuration: true});
+                duration: seconds,
+            }, {defaultDuration: true});
         }
 
         applyDefaultDurationToEditView() {
@@ -71,7 +86,7 @@ define('custom:views/calendar/modals/edit', [
         }
 
         shouldApplyDefaultDuration() {
-            if (this.id || this.dateIsChanged || this.options.allDay) {
+            if (this.options.allDay) {
                 return false;
             }
 
@@ -79,13 +94,18 @@ define('custom:views/calendar/modals/edit', [
                 return false;
             }
 
-            return Boolean(this.options.dateStart);
+            if (!this.options.dateStart) {
+                return false;
+            }
+
+            // Nuovo appuntamento da calendario: sovrascrive la durata dello slot
+            return !this.id;
         }
 
         getAppuntamentoDefaultDateEnd(dateStart) {
             return this.getDateTime()
                 .toMoment(dateStart)
-                .add(DEFAULT_DURATION_SECONDS, 'seconds')
+                .add(this.getDefaultDurationSeconds(), 'seconds')
                 .format(this.getDateTime().internalDateTimeFormat);
         }
     };

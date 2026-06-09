@@ -11,7 +11,26 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         'productCategoryName',
     ].join(',');
 
-    const DEFAULT_DURATION_SECONDS = 5400;
+    const FALLBACK_DURATION_SECONDS = 5400;
+
+    const getDefaultDurationSeconds = function (view) {
+        const fromField = view.model.getFieldParam('duration', 'default');
+
+        if (fromField !== null && fromField !== undefined && fromField !== '') {
+            return parseInt(fromField, 10);
+        }
+
+        const entityType = view.model.entityType || view.model.name;
+        const fromMeta = view.getMetadata().get(
+            ['entityDefs', entityType, 'fields', 'duration', 'default']
+        );
+
+        if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
+            return parseInt(fromMeta, 10);
+        }
+
+        return FALLBACK_DURATION_SECONDS;
+    };
 
     const syncBrandPartnerFromProspect = function (view) {
         if (view.model.get('parentType') !== 'Prospect') {
@@ -49,19 +68,28 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
             return;
         }
 
+        const defaultSeconds = getDefaultDurationSeconds(view);
         const dateEnd = view.getDateTime()
             .toMoment(dateStart)
-            .add(DEFAULT_DURATION_SECONDS, 'seconds')
+            .add(defaultSeconds, 'seconds')
             .format(view.getDateTime().internalDateTimeFormat);
 
         view.model.set({
             dateEnd: dateEnd,
-            duration: DEFAULT_DURATION_SECONDS,
-        });
+            duration: defaultSeconds,
+        }, {ui: true, defaultDuration: true});
+    };
+
+    const scheduleDefaultDuration = function (view) {
+        applyDefaultDuration(view);
+        setTimeout(() => applyDefaultDuration(view), 0);
+        setTimeout(() => applyDefaultDuration(view), 150);
     };
 
     return {
-        DEFAULT_DURATION_SECONDS: DEFAULT_DURATION_SECONDS,
+        FALLBACK_DURATION_SECONDS: FALLBACK_DURATION_SECONDS,
+        getDefaultDurationSeconds: getDefaultDurationSeconds,
+        applyDefaultDuration: applyDefaultDuration,
 
         setupProspectSync: function (view) {
             view.listenTo(view.model, 'change:parentId change:parentType', () => {
@@ -82,8 +110,20 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
                 applyDefaultDuration(view);
             });
 
-            view.once('after:render', () => {
+            view.listenTo(view.model, 'change:dateEnd', (model, value, options) => {
+                if (options && options.defaultDuration) {
+                    return;
+                }
+
+                if (!model.isNew()) {
+                    return;
+                }
+
                 applyDefaultDuration(view);
+            });
+
+            view.once('after:render', () => {
+                scheduleDefaultDuration(view);
             });
         },
     };
