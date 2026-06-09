@@ -55,7 +55,10 @@ define('custom:views/calendar/modals/edit', [
 
             super.createRecordView(model, (view) => {
                 ProspectSync.setupProspectSync(view);
-                callback(view);
+
+                if (typeof callback === 'function') {
+                    callback(view);
+                }
             });
         }
     };
