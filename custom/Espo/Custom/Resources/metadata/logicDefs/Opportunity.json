@@ -12,20 +12,7 @@
             }
         },
         "motivoDecisione": {
-            "visible": {
-                "conditionGroup": [
-                    {
-                        "type": "equals",
-                        "attribute": "stage",
-                        "value": "Closed Won"
-                    },
-                    {
-                        "type": "equals",
-                        "attribute": "stage",
-                        "value": "Closed Lost"
-                    }
-                ]
-            }
+            "visible": null
         },
         "installazione": {
             "visible": {

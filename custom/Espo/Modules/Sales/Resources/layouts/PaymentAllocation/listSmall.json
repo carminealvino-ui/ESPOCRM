@@ -1,0 +1,30 @@
+[
+    {
+        "name": "source",
+        "notSortable": true
+    },
+    {
+        "name": "target",
+        "width": 16,
+        "notSortable": true
+    },
+    {
+        "name": "date",
+        "width": 14
+    },
+    {
+        "name": "amount",
+        "width": 16,
+        "align": "right"
+    },
+    {
+        "name": "amountLocal",
+        "width": 16,
+        "align": "right"
+    },
+    {
+        "name": "fxGainLoss",
+        "width": 14,
+        "align": "right"
+    }
+]

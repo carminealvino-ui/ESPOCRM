@@ -1,0 +1,45 @@
+{
+    "labels": {
+        "Create SubscriptionTemplate": "Create Template",
+        "Add Item": "Add Item",
+        "Items": "Items"
+    },
+    "fields": {
+        "status": "Status",
+        "hasTrial": "Trial Period",
+        "trialPeriodDays": "Trial Period Days",
+        "billingPlans": "Billing Plans",
+        "itemList": "Item List",
+        "primaryProduct": "Primary Product",
+        "products": "Products",
+        "hasTerm": "Fixed Term",
+        "termUnit": "Term Unit",
+        "termLength": "Term Length",
+        "hasQuantity": "Has Quantity"
+    },
+    "links": {
+        "items": "Items",
+        "billingPlans": "Billing Plans",
+        "billingContact": "Billing Contact",
+        "priceBook": "Price Book",
+        "invoices": "Invoices",
+        "billingPlan": "Billing Plan",
+        "periods": "Periods",
+        "primaryProduct": "Primary Product",
+        "products": "Products"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "active": "Active"
+    },
+    "tooltips": {
+        "hasTerm": "Subscriptions will have a fixed duration."
+    },
+    "messages": {}
+}

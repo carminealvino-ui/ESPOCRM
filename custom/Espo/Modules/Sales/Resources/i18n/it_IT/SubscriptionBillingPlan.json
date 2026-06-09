@@ -1,0 +1,50 @@
+{
+  "labels": {
+    "Create SubscriptionBillingPlan": "Crea piano di fatturazione"
+  },
+  "fields": {
+    "status": "Stato",
+    "interval": "Periodo di addebito",
+    "billingCycleLength": "Durata ciclo di fatturazione",
+    "gracePeriodDays": "Giorni di tolleranza",
+    "invoiceDuePeriodDays": "Giorni del periodo di scadenza fattura",
+    "invoiceLeadTimeDays": "Giorni di anticipo fattura",
+    "createPaymentRequests": "Crea richieste di pagamento",
+    "sendPaymentRequests": "Invia richieste di pagamento",
+    "sendInvoices": "Invia fatture",
+    "alignmentType": "Allineamento",
+    "alignmentDays": "Giorni di allineamento",
+    "alignmentWeekdays": "Giorni della settimana di allineamento",
+    "alignmentProrationPolicy": "Politica di prorata per allineamento",
+    "alignmentChargeMinDays": "Giorni minimi di addebito per allineamento",
+    "intervalUnit": "Unità intervallo",
+    "templates": "Modelli"
+  },
+  "links": {
+    "subscriptions": "Abbonamenti",
+    "templates": "Modelli"
+  },
+  "tooltips": {
+    "alignmentChargeMinDays": "I periodi prorata di allineamento più brevi del numero di giorni specificato non saranno addebitati.",
+    "alignmentProrationPolicy": "Controlla se i periodi prorata di allineamento vengono addebitati.",
+    "alignmentType": "Abilita l'allineamento del ciclo di fatturazione.\n\nImmediato. Viene creato prima un periodo prorata per allineare il ciclo di fatturazione. Il periodo successivo è un normale periodo di fatturazione.\n\nRitardato. Viene creato prima un normale periodo di fatturazione. Il periodo successivo è prorata per allineare il ciclo di fatturazione.",
+    "invoiceLeadTimeDays": "Con quanti giorni di anticipo rispetto al prossimo ciclo di fatturazione viene creata la fattura.",
+    "billingCycleLength": "Numero di periodi di addebito all'interno di un ciclo di fatturazione. Ad esempio, se la durata del ciclo è 12 e il periodo di addebito è 1 mese, il cliente riceverà una fattura all'anno."
+  },
+  "intervalUnits": {
+    "Y": "Anno",
+    "M": "Mese",
+    "D": "Giorno",
+    "W": "Settimana"
+  },
+  "options": {
+    "alignmentType": {
+      "Immediate": "Immediato",
+      "Delayed": "Ritardato"
+    },
+    "alignmentProrationPolicy": {
+      "Immediate": "Nessun addebito",
+      "Delayed": "Addebita"
+    }
+  }
+}

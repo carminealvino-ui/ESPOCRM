@@ -1,0 +1,12 @@
+{
+  "labels": {
+    "Create TaxClass": "Steuerklasse erstellen"
+  },
+  "links": {
+    "products": "Produkte"
+  },
+  "messages": {
+    "cannotRemoveReferencedInProduct": "Die Steuerklasse kann nicht entfernt werden, da sie von einem oder mehreren Produkten referenziert wird.",
+    "cannotRemoveReferencedInItemRule": "Die Steuerklasse kann nicht entfernt werden, da sie von einer oder mehreren Steuerpositionsregeln referenziert wird."
+  }
+}

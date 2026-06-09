@@ -1,0 +1,46 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "product"
+                },
+                {
+                    "name": "supplier"
+                }
+            ],
+            [
+                {
+                    "name": "price"
+                },
+                {
+                    "name": "status"
+                }
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "minQuantity"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "dateStart"
+                },
+                {
+                    "name": "dateEnd"
+                }
+            ],
+            [
+
+                {
+                    "name": "description"
+                }
+            ]
+        ]
+    }
+]

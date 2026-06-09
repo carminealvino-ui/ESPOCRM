@@ -1,0 +1,23 @@
+[
+    {
+        "name": "tax",
+        "notSortable": true,
+        "link": true
+    },
+    {
+        "name": "class",
+        "notSortable": true,
+        "width": 30
+    },
+    {
+        "name": "status",
+        "width": 20,
+        "notSortable": true
+    },
+    {
+        "name": "taxDisplay",
+        "width": 20,
+        "align": "right",
+        "notSortable": true
+    }
+]

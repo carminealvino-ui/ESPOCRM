@@ -1,0 +1,25 @@
+{
+    "fields": {
+        "dateInvoiced": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "status",
+                        "value": "Approved"
+                    }
+                ]
+            }
+        },
+        "statoFinanziamento": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        }
+    }
+}

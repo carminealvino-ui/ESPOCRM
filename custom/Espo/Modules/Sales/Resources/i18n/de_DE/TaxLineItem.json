@@ -1,0 +1,30 @@
+{
+  "fields": {
+    "order": "Positionsindex",
+    "component": "Komponente",
+    "item": "Position",
+    "source": "Quelle",
+    "product": "Produkt",
+    "taxCode": "Steuercode",
+    "rate": "Satz",
+    "amount": "Steuerbetrag",
+    "baseAmount": "Basis",
+    "amountLocal": "Lokaler Steuerbetrag",
+    "baseAmountLocal": "Basis lokal",
+    "amountPrecise": "Steuerbetrag (präzise)",
+    "amountLocalPrecise": "Lokaler Steuerbetrag (präzise)",
+    "baseAmountLocalPrecise": "Basis lokal (Präzise)"
+  },
+  "links": {
+    "product": "Produkt",
+    "taxCode": "Steuercode",
+    "item": "Artikel",
+    "source": "Quelle"
+  },
+  "options": {
+    "component": {
+      "Item": "Position",
+      "Shipping": "Versand"
+    }
+  }
+}

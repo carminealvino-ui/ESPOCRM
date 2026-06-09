@@ -1,0 +1,27 @@
+{
+  "labels": {
+    "Create InventoryTransaction": "Transaktion erstellen"
+  },
+  "fields": {
+    "number": "Nummer",
+    "type": "Typ",
+    "parent": "Bezieht sich auf",
+    "quantity": "Menge",
+    "product": "Produkt",
+    "warehouse": "Lager",
+    "inventoryNumber": "Inventarnummer"
+  },
+  "links": {
+    "parent": "Bezieht sich auf",
+    "product": "Produkt",
+    "warehouse": "Lager",
+    "inventoryNumber": "Inventarnummer"
+  },
+  "options": {
+    "type": {
+      "Transfer": "Umlagern",
+      "Reserve": "Reservieren",
+      "Soft Reserve": "Weich Reservieren"
+    }
+  }
+}

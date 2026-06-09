@@ -1,0 +1,26 @@
+[
+    {
+        "rows": [
+            [{"name": "number"}, false],
+            [{"name": "status"}, {"name": "dateIssued"}],
+            [{"name": "account"}, {"name": "invoice"}],
+            [{"name": "grandTotalAmount"}, false]
+        ]
+    },
+    {
+        "rows": [
+            [
+
+                {
+                    "name": "allocations"
+                }
+            ],
+            [
+                {
+                    "name": "unallocatedAmount"
+                },
+                false
+            ]
+        ]
+    }
+]

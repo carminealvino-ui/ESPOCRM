@@ -1,0 +1,12 @@
+{
+  "massActions": {
+    "pushToOutlook": "Надіслати в Outlook"
+  },
+  "actions": {
+    "pushToOutlook": "Надіслати в Outlook"
+  },
+  "messages": {
+    "confirmationOutlookContactsPush": "Ви хочете надіслати вибрані ліди до Контактів Outlook?",
+    "successOutlookContactsPush": "{count} запис(и) успішно надіслано. Решта надсилаються в фоновому режимі."
+  }
+}

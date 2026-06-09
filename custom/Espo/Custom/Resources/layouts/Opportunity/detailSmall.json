@@ -1,0 +1,99 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "appuntamento"
+                }
+            ],
+            [
+                {
+                    "name": "leadSource"
+                },
+                {
+                    "name": "fornitorePartner"
+                }
+            ],
+            [
+                {
+                    "name": "productBrand"
+                },
+                {
+                    "name": "productCategory"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ],
+            [
+                {
+                    "name": "stage"
+                },
+                {
+                    "name": "closeDate"
+                }
+            ],
+            [
+                {
+                    "name": "statoContratto"
+                },
+                {
+                    "name": "motivoDecisione"
+                }
+            ],
+            [
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "statoFinanziamento"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": ""
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "priceBook"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "iVAListino"
+                },
+                {
+                    "name": "prezzoListinoIVAInclusa"
+                }
+            ],
+            [
+                {
+                    "name": "iVA"
+                },
+                {
+                    "name": "prezzoCodiceIvaInclusa"
+                }
+            ],
+            [
+                false,
+                {
+                    "name": "amount"
+                }
+            ],
+            [
+                {
+                    "name": "note"
+                }
+            ]
+        ],
+        "dynamicLogicVisible": null,
+        "style": "default",
+        "hidden": false,
+        "customLabel": "Formulazione Offerta"
+    }
+]

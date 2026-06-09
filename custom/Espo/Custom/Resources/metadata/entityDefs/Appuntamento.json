@@ -26,7 +26,6 @@
         "dateStart": {
             "type": "datetimeOptional",
             "notNull": false,
-            "view": "crm:views/meeting/fields/date-start",
             "required": true,
             "default": "javascript: return this.dateTime.getNow(15);",
             "audited": true,
@@ -36,7 +35,6 @@
         "dateEnd": {
             "type": "datetimeOptional",
             "notNull": false,
-            "view": "crm:views/meeting/fields/date-end",
             "required": true,
             "after": "dateStart",
             "useNumericFormat": true,
@@ -97,8 +95,11 @@
         "reminders": {
             "type": "jsonArray",
             "notStorable": true,
-            "view": "crm:views/meeting/fields/reminders",
-            "layoutListDisabled": true
+            "view": "custom:views/fields/reminders-disabled",
+            "layoutListDisabled": true,
+            "layoutDetailDisabled": true,
+            "layoutDetailSmallDisabled": true,
+            "layoutMassUpdateDisabled": true
         },
         "createdAt": {
             "notNull": false,
@@ -178,11 +179,11 @@
                 "Fuori Target",
                 "In ristrutturazione/In costruzione/Cantiere",
                 "In Trattativa",
-                "Infattibilit\u00e0 Tecnica",
-                "Modalit\u00e0 di pagamento",
+                "Infattibilità Tecnica",
+                "Modalità di pagamento",
                 "Marito/Moglie Assente",
                 "No Caparra",
-                "Non detraibile per et\u00e0",
+                "Non detraibile per età",
                 "Non detraibile per prodotto",
                 "Non detraibile per esposizione",
                 "Non Finanziabile",
@@ -214,11 +215,11 @@
                 "Fuori Target": null,
                 "In ristrutturazione/In costruzione/Cantiere": null,
                 "In Trattativa": null,
-                "Infattibilit\u00e0 Tecnica": null,
-                "Modalit\u00e0 di pagamento": null,
+                "Infattibilità Tecnica": null,
+                "Modalità di pagamento": null,
                 "Marito/Moglie Assente": null,
                 "No Caparra": null,
-                "Non detraibile per et\u00e0": null,
+                "Non detraibile per età": null,
                 "Non detraibile per prodotto": null,
                 "Non detraibile per esposizione": null,
                 "Non Finanziabile": null,
@@ -265,7 +266,7 @@
                 "Non Confermato",
                 "Solo Informazioni",
                 "Non Ricevuto",
-                "Infattibilit\u00e0 Tecnica",
+                "Infattibilità Tecnica",
                 "Non Gestito",
                 "Annullato",
                 "Prodotto non Conforme",
@@ -281,7 +282,7 @@
                 "Non Confermato": "primary",
                 "Solo Informazioni": "primary",
                 "Non Ricevuto": "warning",
-                "Infattibilit\u00e0 Tecnica": "warning",
+                "Infattibilità Tecnica": "warning",
                 "Non Gestito": "info",
                 "Annullato": "primary",
                 "Prodotto non Conforme": "warning",
@@ -450,17 +451,11 @@
         "impegno": {
             "type": "link"
         },
-        "meetingRef": {
-            "type": "varchar",
-            "maxLength": 100,
-            "options": [],
-            "isCustom": true
-        },
         "syncConGoogle": {
             "notNull": true,
             "type": "bool",
             "isCustom": true,
-            "default": false
+            "default": true
         },
         "noteCallCenter": {
             "type": "text",

@@ -1,0 +1,34 @@
+[
+    {
+        "name": "product"
+    },
+    {
+        "name": "priceBook",
+        "width": 18
+    },
+    {
+        "name": "status",
+        "width": 10
+    },
+    {
+        "name": "interval",
+        "width": 10
+    },
+    {
+        "name": "dateStart",
+        "width": 10
+    },
+    {
+        "name": "dateEnd",
+        "width": 10
+    },
+    {
+        "name": "minQuantity",
+        "width": 10
+    },
+    {
+        "name": "price",
+        "width": 15,
+        "align": "right"
+    }
+]

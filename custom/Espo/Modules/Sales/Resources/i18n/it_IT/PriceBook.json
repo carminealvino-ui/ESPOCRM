@@ -1,0 +1,28 @@
+{
+  "labels": {
+    "Create PriceBook": "Crea listino prezzi"
+  },
+  "fields": {
+    "parentPriceBook": "Listino prezzi principale",
+    "status": "Stato",
+    "isDefault": "Predefinito",
+    "isTaxInclusive": "IVA inclusa"
+  },
+  "links": {
+    "products": "Prodotti",
+    "parentPriceBook": "Listino prezzi principale",
+    "accounts": "Clienti",
+    "prices": "Prezzi",
+    "rules": "Regole",
+    "childPriceBooks": "Libri prezzi figlio"
+  },
+  "presetFilters": {
+    "active": "Attivo"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  }
+}

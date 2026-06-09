@@ -1,0 +1,9 @@
+[
+    "account",
+    "invoices",
+    "amount",
+    "status",
+    "method",
+    "expirationDate",
+    "referenceId"
+]

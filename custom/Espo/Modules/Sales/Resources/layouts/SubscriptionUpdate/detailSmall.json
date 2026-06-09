@@ -1,0 +1,31 @@
+[
+    {
+        "rows": [
+            [{"name": "number"}, {"name": "status"}],
+            [{"name": "subscription"}, {"name": "billingStatus"}],
+            [{"name": "date"}, {"name": "amount"}]
+        ]
+    },
+    {
+        "name": "amounts",
+        "rows": [
+            [
+                {"name": "invoiceGrandTotalAmount"},
+                {"name": "creditNoteGrandTotalAmount"},
+                {"name": "netAmount"}
+            ],
+            [
+                {"name": "billingAction"},
+                false
+            ],
+            [
+                {"name": "createPaymentRequest"},
+                {"name": "sendInvoice"}
+            ],
+            [
+                {"name": "sendPaymentRequest"},
+                false
+            ]
+        ]
+    }
+]

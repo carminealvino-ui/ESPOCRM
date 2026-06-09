@@ -1,0 +1,23 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "account",
+        "width": 23
+    },
+    {
+        "name": "dateQuoted",
+        "width": 12
+    },
+    {
+        "name": "amount",
+        "width": 12,
+        "align": "right"
+    }
+]

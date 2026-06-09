@@ -1,0 +1,46 @@
+{
+    "labels": {
+        "Create InventoryNumber": "Create Number",
+        "Quantity": "Quantity",
+        "Warehouses": "Warehouses",
+        "Inventory History": "Inventory History",
+        "View History": "View History",
+        "Received": "Received",
+        "Shipped": "Shipped",
+        "Orders": "Orders"
+    },
+    "fields": {
+        "type": "Type",
+        "product": "Product",
+        "quantityOnHand": "On Hand",
+        "quantityReserved": "Reserved",
+        "quantityInTransit": "In Transit",
+        "incomingDate": "Incoming Date",
+        "productionDate": "Production Date",
+        "expirationDate": "Expiration Date",
+        "warehousesOnHand": "Warehouses (On Hand)",
+        "deleteId": "Delete ID",
+        "number": "Internal Number",
+        "orderFifo": "Order FIFO",
+        "orderFefo": "Order FEFO",
+        "orderLifo": "Order LIFO",
+        "quantityWarehouseOnHand": "On Hand in Warehouse",
+        "quantityWarehouseReserved": "Reserved in Warehouse"
+    },
+    "links": {
+        "product": "Product",
+        "inventoryTransactions": "Inventory Transactions",
+        "inventoryAdjustmentItems": "Adjustments"
+    },
+    "presetFilters": {
+        "onHand": "On Hand",
+        "notOnHand": "Not On Hand"
+    },
+    "messages": {
+        "alreadyExists": "The same inventory number already exists."
+    },
+    "tabs": {
+        "inventory": "Inventory",
+        "orders": "Orders"
+    }
+}

@@ -1,0 +1,70 @@
+{
+    "labels": {
+        "Create TaxCode": "Create Tax Code"
+    },
+    "fields": {
+        "code": "Code",
+        "status": "Status",
+        "type": "Type",
+        "label": "Label",
+        "rate": "Rate",
+        "amount": "Amount",
+        "applyToProportionalShipping": "Apply to Proportional Shipping",
+        "includedInPrice": "Included in Price",
+        "roundingLevel": "Rounding Level",
+        "roundingFactor": "Rounding Factor",
+        "items": "Items",
+        "order": "Order",
+        "isSelectable": "Selectable",
+        "isForSales": "For Sales",
+        "isForPurchases": "For Purchases",
+        "base": "Base",
+        "country": "Country"
+    },
+    "links": {
+        "taxes": "Taxes",
+        "taxItemRules": "Tax Item Rules",
+        "parentItems": "Parent Items",
+        "items": "Items"
+    },
+    "options": {
+        "type": {
+            "Percentage": "Percentage",
+            "Fixed": "Fixed",
+            "Composite": "Composite"
+        },
+        "base": {
+            "Net Amount": "Net Amount",
+            "Cumulative Total": "Cumulative Total",
+            "Previous Tax": "Previous Tax"
+        },
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        },
+        "roundingLevel": {
+            "Line": "Line",
+            "Total": "Total"
+        }
+    },
+    "presetFilters": {
+        "active": "Active",
+        "selectableSales": "For Sales",
+        "selectablePurchases": "For Purchases",
+        "groupable": "Groupable",
+        "salesNonComposite": "Sales Non-Composite",
+        "purchaseNonComposite": "Purchase Non-Composite"
+    },
+    "tooltips": {
+        "includedInPrice": "Whether the tax amount is included in the unit price.\n\nYou may need to enable this parameter for taxes like excise. For taxes like VAT or GST, this parameter usually should be disabled.",
+        "roundingLevel": "Defines how tax amounts are rounded.\n\n- Line – Amounts are rounded on each line\n- Total – Precise line-level amounts are summed and then rounded",
+        "base": "Specifies which value is used as the tax base.\n\n- Net Amount – The amount excluding taxes\n- Cumulative Total – The net amount plus all previously applied taxes\n\nCumulative Total has an effect only when the tax code is used in a composite tax.",
+        "applyToProportionalShipping": "If enabled, this tax code will be included in proportional shipping tax calculations. You may need to disable this parameter for certain tax codes used in a composite tax.\n\nIf the proportional method is not used, this parameter has no effect.",
+        "roundingFactor": "If not specified, the system will round to the currency's smallest unit.\n\nExamples:\n- 1 – to a whole number\n- 0.5 – to 50 cents\n- 0.01 – to 1 cent",
+        "label": "An optional label shown to customers."
+    },
+    "messages": {
+        "cannotRemoveUsedInComposite": "Cannot remove as it's used in a composite tax code. You can make it non-selectable instead.",
+        "cannotRemoveUsedInIssuedDocument": "Cannot remove as it's used in an issued document. You can change status to inactive instead."
+    }
+}

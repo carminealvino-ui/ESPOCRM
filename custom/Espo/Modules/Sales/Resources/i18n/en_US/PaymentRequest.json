@@ -1,0 +1,63 @@
+{
+    "labels": {
+        "Create PaymentRequest": "Create Payment Request",
+        "Generate new reference ID": "Generate new reference ID",
+        "Send in Email": "Send in Email"
+    },
+    "fields": {
+        "amount": "Amount",
+        "amountCurrency": "Amount Currency",
+        "amountConverted": "Amount Converted",
+        "referenceId": "Reference ID",
+        "number": "Number",
+        "account": "Account",
+        "status": "Status",
+        "expirationDate": "Expiration Date",
+        "method": "Method",
+        "invoices": "Invoices",
+        "invoiceAmounts": "Invoice Amounts",
+        "paymentUrl": "Payment URL"
+    },
+    "links": {
+        "account": "Account",
+        "paymentEntries": "Payments",
+        "method": "Method",
+        "invoices": "Invoices"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Pending": "Pending",
+            "In Progress": "In Progress",
+            "Paid": "Paid",
+            "Canceled": "Canceled",
+            "Expired": "Expired"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "paid": "Paid"
+    },
+    "messages": {
+        "currencyNotAllowedForChannel": "Currency is not allowed for the method.",
+        "methodIsNotActive": "Method is not active.",
+        "checkoutSuccessInProcess": "Checkout completed. The payment is now being processed.",
+        "checkoutSuccessPaid": "The payment is completed.",
+        "cannotChangeMethod": "Cannot change the method. Only an admin user is allowed to change.",
+        "cannotChangeAmountAutomatedChannel": "Cannot change the amount as the payment method is automated.",
+        "cannotChangeExpirationDateAutomatedChannel": "Cannot change the expiration date as the payment method is automated.",
+        "cannotChangeStatusForAutomatedChannel": "Cannot change the status as the payment method is automated. Only an admin user is allowed to change the status manually.",
+        "cannotSetExpired": "The status cannot be set to Expired manually.",
+        "draftMessage": "The payment request is in Draft status. To proceed, it must be set to Pending.",
+        "generateNewReferenceIdConfirmation": "Are you sure you want to generate a new reference ID? The payment URL will be changed.",
+        "accountMismatch": "Account does not match the invoice account.",
+        "invoicesCurrencyCodeMismatch": "Invoices with different currencies cannot be selected.",
+        "currencyCodeMismatch": "Amount currency does not match the currency of the invoice.",
+        "invoiceNotActual": "Selected invoice is not open."
+    },
+    "strings": {
+        "generateSepaXml": "Generate SEPA XML",
+        "paymentLink": "Payment link",
+        "proceed": "Proceed to Payment"
+    }
+}

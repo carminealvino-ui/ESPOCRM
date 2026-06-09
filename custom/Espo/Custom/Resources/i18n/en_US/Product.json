@@ -1,0 +1,14 @@
+{
+    "fields": {
+        "denominazione": "Denominazione",
+        "opportunita": "Opportunità",
+        "prezzoCodice": "Prezzo Codice",
+        "prezzoCodiceCurrency": "Prezzo Codice (Valuta)",
+        "prezzoCodiceConverted": "Prezzo Codice (Convertito)",
+        "contratti": "Contratti"
+    },
+    "links": {
+        "opportunita": "Opportunità",
+        "contratti": "Contratti"
+    }
+}

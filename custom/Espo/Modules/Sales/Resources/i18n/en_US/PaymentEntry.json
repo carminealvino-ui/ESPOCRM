@@ -1,0 +1,77 @@
+{
+    "labels": {
+        "Create PaymentEntry": "Create Payment",
+        "View Cash Basis Taxes": "View Cash Basis Taxes",
+        "Cash Basis Taxes": "Cash Basis Taxes"
+    },
+    "fields": {
+        "number": "Number",
+        "numberA": "Number (auto-incremented)",
+        "account": "Account",
+        "supplier": "Supplier",
+        "status": "Status",
+        "type": "Type",
+        "partyType": "Party Type",
+        "transactionId": "Transaction ID",
+        "datePaid": "Date Paid",
+        "method": "Method",
+        "amount": "Amount",
+        "amountConverted": "Amount (converted)",
+        "amountCurrency": "Amount Currency",
+        "allocations": "Allocations",
+        "unallocatedAmount": "Unallocated Amount",
+        "request": "Request",
+        "amountLocal": "Amount Local",
+        "amountLocalCurrency": "Amount Local Currency",
+        "amountLocalConverted": "Amount Local (Converted)"
+    },
+    "links": {
+        "method": "Method",
+        "account": "Account",
+        "supplier": "Supplier",
+        "allocations": "Allocations",
+        "request": "Request"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "In Progress": "In Progress",
+            "Paid": "Paid",
+            "Completed": "Completed",
+            "Canceled": "Canceled"
+        },
+        "type": {
+            "Inbound": "Inbound",
+            "Outbound": "Outbound"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "completed": "Completed"
+    },
+    "otherFields": {
+        "allocatedAmount": "Allocated Amount",
+        "target": "Target"
+    },
+    "messages": {
+        "allocationsOnlyIfPaid": "Cannot change status – allocations should be removed first.",
+        "unallocatedAmountMustBeZero": "Cannot complete – the transaction amount must be fully allocated.",
+        "unallocatedAmountMustNotBeLessThanZero": "The allocated amount cannot exceed the transaction amount.",
+        "cannotAllocateMoreThanOnce": "Cannot allocate to the same entity more than once.",
+        "draftCannotHaveAllocations": "Draft cannot have allocations.",
+        "requestIsLocked": "Payment request is locked.",
+        "allocationTargetAccountMismatch": "Allocation target is related to a different Account.",
+        "allocationTargetSupplierMismatch": "Allocation target is related to a different Supplier.",
+        "allocationTargetCurrencyMismatch": "Allocation target has different currency.",
+        "allocationTargetLocalCurrencyMismatch": "Allocation target has different local currency.",
+        "allocationTargetIsNotOpen": "Allocation target is not open.",
+        "allocationTargetIsLocked": "Allocation target is locked.",
+        "noEditAccessToAllocationTarget": "No edit access to allocation target.",
+        "allocationTargetNotAllowed": "Allocation target is not allowed.",
+        "allocationTargetNotFound": "Allocation target not found.",
+        "removedAllocationTargetIsNotOpen": "Cannot remove allocation from a non-open target.",
+        "removedAllocationTargetIsLocked": "Cannot remove allocation from a locked target.",
+        "cannotConvertWithAllocations": "Cannot convert currency if payment with allocations.",
+        "cannotAllocateToNonIssuedTarget": "Cannot allocate to a non-issued document."
+    }
+}

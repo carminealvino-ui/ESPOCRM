@@ -1,0 +1,23 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "quantityOnHand",
+        "width": 18
+    },
+    {
+        "name": "quantityReserved",
+        "width": 18
+    },
+    {
+        "name": "expirationDate",
+        "width": 18
+    },
+    {
+        "name": "incomingDate",
+        "width": 15,
+        "hidden": true
+    }
+]

@@ -1,0 +1,22 @@
+[
+    {
+        "name": "name",
+        "width": 35,
+        "link": "true"
+    },
+    {
+        "name": "accounts",
+        "notSortable": true
+    },
+    {
+        "name": "originalLead",
+        "width": 20
+    },
+    {
+        "name": "phoneNumber"
+    },
+    {
+        "name": "emailAddress",
+        "notSortable": true
+    }
+]

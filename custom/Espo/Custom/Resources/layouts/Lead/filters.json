@@ -1,0 +1,23 @@
+[
+    "accountName",
+    "b2B",
+    "azienda",
+    "fornitorePartner",
+    "productBrand",
+    "cAP",
+    "addressCity",
+    "codiceCliente",
+    "cluster",
+    "industry",
+    "source",
+    "status",
+    "statoGestione",
+    "meseImportazioneCB",
+    "codicePOS",
+    "campaign",
+    "assignedUser",
+    "teams",
+    "createdAt",
+    "createdBy",
+    "modifiedAt"
+]

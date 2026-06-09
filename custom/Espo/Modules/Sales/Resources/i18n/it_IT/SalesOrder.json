@@ -1,0 +1,89 @@
+{
+  "labels": {
+    "Create SalesOrder": "Crea un ordine di vendita",
+    "Taxes": "Tasse",
+    "Shipping Providers": "Fornitori di spedizioni",
+    "Add Item": "Aggiungi Articolo",
+    "Templates": "Modelli",
+    "Items": "Articoli",
+    "Sales Order Items": "Articoli dell'ordine di vendita",
+    "Create Delivery": "Crea consegna",
+    "Add Delivery": "Aggiungi consegna",
+    "Not Created": "Non creato"
+  },
+  "fields": {
+    "status": "Stato",
+    "number": "Numero",
+    "numberA": "Numero (incrementato automaticamente)",
+    "account": "Cliente",
+    "opportunity": "Opportunità",
+    "quote": "Preventivo",
+    "billingAddress": "Indirizzo di fatturazione",
+    "shippingAddress": "Indirizzo di spedizione",
+    "billingContact": "Contatto di fatturazione",
+    "shippingContact": "Contatto di spedizione",
+    "tax": "Profilo fiscale",
+    "taxRate": "Aliquota Fiscale",
+    "shippingProvider": "Corriere per la spedizione",
+    "taxAmount": "L'Importo della Tassa",
+    "discountAmount": "Importo Sconto",
+    "amount": "Importo",
+    "preDiscountedAmount": "Importo pre-sconto",
+    "grandTotalAmount": "Totale complessivo",
+    "itemList": "Lista articoli",
+    "dateOrdered": "Data Ordine",
+    "dateInvoiced": "Data di fatturazione",
+    "weight": "Peso",
+    "amountConverted": "Importo (convertito)",
+    "taxAmountConverted": "Importo dell'imposta (convertito)",
+    "preDiscountedAmountConverted": "Importo pre-sconto (convertito)",
+    "discountAmountConverted": "Importo sconto (convertito)",
+    "grandTotalAmountConverted": "Totale generale (convertito)",
+    "taxAmountCurrency": "Importo imposta Valuta",
+    "discountAmountCurrency": "Importo sconto Valuta",
+    "amountCurrency": "Importo Valuta",
+    "preDiscountedAmountCurrency": "Valuta dell'importo pre-sconto",
+    "grandTotalAmountCurrency": "Valuta totale generale",
+    "currency": "Valuta",
+    "priceBook": "Listino Prezzi",
+    "inventoryData": "Dati dell’inventario",
+    "inventoryStatus": "Stato Giacenza",
+    "isDeliveryCreated": "Consegna creata",
+    "hasInventoryItems": "Ha articoli di magazzino",
+    "isDone": "Fatto",
+    "isDeliverable": "Consegnabile"
+  },
+  "links": {
+    "items": "Articoli",
+    "billingContact": "Contatto di fatturazione",
+    "shippingContact": "Contatto di spedizione",
+    "shippingProvider": "Corriere per la spedizione",
+    "opportunity": "Opportunità",
+    "account": "Cliente",
+    "tax": "Profilo fiscale",
+    "quote": "Preventivo",
+    "invoices": "Fatture",
+    "deliveryOrders": "Ordini di consegna",
+    "returnOrders": "Ordini di reso",
+    "priceBook": "Listino Prezzi",
+    "inventoryTransactions": "Transazioni di magazzino"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Ready": "Pronto",
+      "Active": "Attivo",
+      "Approved": "Approvato",
+      "Completed": "Completato",
+      "Rejected": "Respinto",
+      "Canceled": "Cancellato"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperto",
+    "completed": "Completato"
+  },
+  "messages": {
+    "cannotCreateDeliveryInEditMode": "Non è possibile creare ordini di consegna in modalità di modifica."
+  }
+}

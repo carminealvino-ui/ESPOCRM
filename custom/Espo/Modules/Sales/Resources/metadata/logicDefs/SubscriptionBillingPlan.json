@@ -1,0 +1,129 @@
+{
+    "fields": {
+        "sendPaymentRequests": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "createPaymentRequests"
+                    }
+                ]
+            }
+        },
+        "alignmentType": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "intervalUnit",
+                        "value": ["W", "M", "Y"]
+                    }
+                ]
+            }
+        },
+        "alignmentDays": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "alignmentType"
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "intervalUnit",
+                        "value": ["M", "Y"]
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "alignmentType"
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "intervalUnit",
+                        "value": ["M", "Y"]
+                    }
+                ]
+            }
+        },
+        "alignmentWeekdays": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "alignmentType"
+                    },
+                    {
+                        "type": "equals",
+                        "attribute": "intervalUnit",
+                        "value": "W"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "alignmentType"
+                    },
+                    {
+                        "type": "equals",
+                        "attribute": "intervalUnit",
+                        "value": "W"
+                    }
+                ]
+            }
+        },
+        "alignmentProrationPolicy": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "alignmentType"
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "intervalUnit",
+                        "value": ["M", "Y", "W"]
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "alignmentType"
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "intervalUnit",
+                        "value": ["M", "Y", "W"]
+                    }
+                ]
+            }
+        },
+        "alignmentChargeMinDays": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "alignmentType"
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "intervalUnit",
+                        "value": ["M", "Y", "W"]
+                    },
+                    {
+                        "type": "equals",
+                        "attribute": "alignmentProrationPolicy",
+                        "value": "Charge"
+                    }
+                ]
+            }
+        }
+    }
+}

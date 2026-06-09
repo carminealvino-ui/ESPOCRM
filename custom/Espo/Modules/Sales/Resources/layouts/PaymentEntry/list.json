@@ -1,0 +1,43 @@
+[
+    {
+        "name": "number",
+        "link": true
+    },
+    {
+        "name": "type",
+        "width": 12
+    },
+    {
+        "name": "status",
+        "width": 12
+    },
+    {
+        "name": "partyType",
+        "width": 12,
+        "hidden": true
+    },
+    {
+        "name": "account",
+        "width": 20
+    },
+    {
+        "name": "datePaid",
+        "width": 12
+    },
+    {
+        "name": "postingDate",
+        "width": 10,
+        "hidden": true
+    },
+    {
+        "name": "unallocatedAmount",
+        "width": 14,
+        "align": "right",
+        "hidden": true
+    },
+    {
+        "name": "amount",
+        "width": 14,
+        "align": "right"
+    }
+]

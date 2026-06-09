@@ -1,0 +1,81 @@
+{
+  "labels": {
+    "Create PurchaseOrder": "Creare Ordini di Acquisto",
+    "Add Item": "Aggiungi Articolo",
+    "Items": "Articoli",
+    "Purchase Order Items": "Articoli dell'ordine di acquisto",
+    "Create Receipt": "Crea ricevuta"
+  },
+  "fields": {
+    "status": "Stato",
+    "number": "Numero",
+    "numberA": "Numero (incrementato automaticamente)",
+    "account": "Cliente",
+    "billingAddress": "Indirizzo di fatturazione",
+    "shippingAddress": "Indirizzo di spedizione",
+    "billingContact": "Contatto di fatturazione",
+    "shippingContact": "Contatto di spedizione",
+    "supplierAddress": "Indirizzo del fornitore",
+    "supplierAddressStreet": "Via (Fornitore)",
+    "supplierAddressCity": "Città (Fornitore)",
+    "supplierAddressState": "Stato (Fornitore)",
+    "supplierAddressCountry": "Paese (Fornitore)",
+    "supplierAddressPostalCode": "Codice postale (fornitore)",
+    "tax": "Profilo fiscale",
+    "taxRate": "Aliquota Fiscale",
+    "shippingProvider": "Corriere per la spedizione",
+    "taxAmount": "L'Importo della Tassa",
+    "discountAmount": "Importo Sconto",
+    "amount": "Importo",
+    "preDiscountedAmount": "Importo pre-sconto",
+    "grandTotalAmount": "Totale complessivo",
+    "itemList": "Lista articoli",
+    "dateOrdered": "Data Ordine",
+    "deliveryDate": "Data Consegna",
+    "weight": "Peso",
+    "amountConverted": "Importo (convertito)",
+    "taxAmountConverted": "Importo dell'imposta (convertito)",
+    "preDiscountedAmountConverted": "Importo pre-sconto (convertito)",
+    "discountAmountConverted": "Importo sconto (convertito)",
+    "grandTotalAmountConverted": "Totale generale (convertito)",
+    "taxAmountCurrency": "Importo imposta Valuta",
+    "discountAmountCurrency": "Importo sconto Valuta",
+    "amountCurrency": "Importo Valuta",
+    "preDiscountedAmountCurrency": "Valuta dell'importo pre-sconto",
+    "grandTotalAmountCurrency": "Valuta totale generale",
+    "currency": "Valuta",
+    "supplier": "Fornitore",
+    "warehouse": "Spedisci a magazzino",
+    "isReceiptFullyCreated": "Ricevuta completamente creata",
+    "hasInventoryItems": "Include prodotti a magazzino",
+    "isDone": "Fatto"
+  },
+  "links": {
+    "items": "Articoli",
+    "billingContact": "Contatto di fatturazione",
+    "shippingContact": "Contatto di spedizione",
+    "shippingProvider": "Corriere per la spedizione",
+    "account": "Cliente",
+    "tax": "Profilo fiscale",
+    "supplier": "Fornitore",
+    "inventoryTransactions": "Transazioni di magazzino",
+    "receiptOrders": "Ordini ricevuti",
+    "supplierBills": "Fatture fornitore",
+    "warehouse": "Magazzino"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Released": "Rilasciato",
+      "Completed": "Completato",
+      "Canceled": "Annullato"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperto",
+    "completed": "Completato"
+  },
+  "messages": {
+    "cannotCreateReceiptInEditMode": "Impossibile creare ordini ricevuti in modalità di modifica."
+  }
+}

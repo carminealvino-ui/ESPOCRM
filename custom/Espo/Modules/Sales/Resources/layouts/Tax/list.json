@@ -1,0 +1,19 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+
+    {
+        "name": "status",
+        "width": 20
+    },
+    {
+        "name": "taxDisplay",
+        "width": 20
+    },
+    {
+        "name": "shippingMode",
+        "width": 20
+    }
+]

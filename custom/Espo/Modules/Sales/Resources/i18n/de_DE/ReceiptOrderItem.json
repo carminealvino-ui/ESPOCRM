@@ -1,0 +1,26 @@
+{
+  "fields": {
+    "name": "Betreff",
+    "qty": "Mng",
+    "qtyReceived": "Mng Empf",
+    "quantity": "Menge",
+    "quantityInt": "Menge (Int)",
+    "quantityReceived": "Empfangene Menge",
+    "quantityReceivedInt": "Empfangene Menge (Int)",
+    "product": "Produkt",
+    "order": "Positionsnummer",
+    "receiptOrder": "Empfangsauftrag",
+    "weight": "Gewicht",
+    "unitWeight": "Einzelgewicht",
+    "description": "Beschreibung",
+    "account": "Firma",
+    "receiptOrderStatus": "Empfangsauftragsstatus",
+    "inventoryNumberType": "Inventarnummertyp",
+    "isInventory": "Ist Inventar"
+  },
+  "links": {
+    "receiptOrder": "Empfangsauftrag",
+    "product": "Produkt",
+    "account": "Firma"
+  }
+}

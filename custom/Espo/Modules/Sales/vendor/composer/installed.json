@@ -1,0 +1,177 @@
+{
+    "packages": [
+        {
+            "name": "digitick/sepa-xml",
+            "version": "2.2.1",
+            "version_normalized": "2.2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-sepa-xml/php-sepa-xml.git",
+                "reference": "3a0108d6003cde8e62c6d94e86b908096a97d7ac"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-sepa-xml/php-sepa-xml/zipball/3a0108d6003cde8e62c6d94e86b908096a97d7ac",
+                "reference": "3a0108d6003cde8e62c6d94e86b908096a97d7ac",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "php": ">=7.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.0 | ^9.0"
+            },
+            "time": "2024-05-16T09:58:03+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Digitick\\Sepa\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Ianaré Sévi"
+                },
+                {
+                    "name": "Digitick, SA",
+                    "email": "info@digitick.net"
+                },
+                {
+                    "name": "Sören Rohweder (monofone)",
+                    "email": "s.rohweder@blage.net"
+                }
+            ],
+            "description": "Creates Single Euro Payments Area (SEPA) XML files for the Direct Debit and Credit Transfer operations.",
+            "keywords": [
+                "Banking",
+                "sepa",
+                "xml"
+            ],
+            "support": {
+                "issues": "https://github.com/php-sepa-xml/php-sepa-xml/issues",
+                "source": "https://github.com/php-sepa-xml/php-sepa-xml/tree/2.2.1"
+            },
+            "install-path": "../digitick/sepa-xml"
+        },
+        {
+            "name": "josemmo/einvoicing",
+            "version": "v0.3.1",
+            "version_normalized": "0.3.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/josemmo/einvoicing.git",
+                "reference": "6e042d17a0722c698cc40c83a4dd0c70b1bfd73c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/josemmo/einvoicing/zipball/6e042d17a0722c698cc40c83a4dd0c70b1bfd73c",
+                "reference": "6e042d17a0722c698cc40c83a4dd0c70b1bfd73c",
+                "shasum": ""
+            },
+            "require": {
+                "josemmo/uxml": "^0.1.4",
+                "php": ">=7.1"
+            },
+            "require-dev": {
+                "ext-openssl": "*",
+                "phan/phan": "*",
+                "phpdocumentor/reflection": "^3.0|^5.2|^6.1",
+                "symfony/phpunit-bridge": "*"
+            },
+            "time": "2025-06-09T09:33:47+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Einvoicing\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "José Miguel Moreno",
+                    "email": "josemmo@pm.me",
+                    "homepage": "https://github.com/josemmo"
+                }
+            ],
+            "description": "Library for reading and creating European-compliant electronic invoices (EN 16931)",
+            "homepage": "https://github.com/josemmo/einvoicing",
+            "keywords": [
+                "cii",
+                "invoice",
+                "invoicing",
+                "peppol",
+                "ubl"
+            ],
+            "support": {
+                "issues": "https://github.com/josemmo/einvoicing/issues",
+                "source": "https://github.com/josemmo/einvoicing/tree/v0.3.1"
+            },
+            "install-path": "../josemmo/einvoicing"
+        },
+        {
+            "name": "josemmo/uxml",
+            "version": "v0.1.4",
+            "version_normalized": "0.1.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/josemmo/uxml.git",
+                "reference": "bcd7d8e410285c642116294e01581374d6be696f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/josemmo/uxml/zipball/bcd7d8e410285c642116294e01581374d6be696f",
+                "reference": "bcd7d8e410285c642116294e01581374d6be696f",
+                "shasum": ""
+            },
+            "require": {
+                "lib-libxml": "*",
+                "php": ">=7.1"
+            },
+            "require-dev": {
+                "phan/phan": "*",
+                "symfony/phpunit-bridge": "*"
+            },
+            "time": "2022-05-28T16:43:25+00:00",
+            "type": "library",
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "UXML\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "José Miguel Moreno",
+                    "email": "josemmo@pm.me",
+                    "homepage": "https://github.com/josemmo"
+                }
+            ],
+            "description": "Uncomplicated XML manipulation library with a clean and concise syntax",
+            "homepage": "https://github.com/josemmo/uxml",
+            "keywords": [
+                "xml"
+            ],
+            "support": {
+                "issues": "https://github.com/josemmo/uxml/issues",
+                "source": "https://github.com/josemmo/uxml/tree/v0.1.4"
+            },
+            "install-path": "../josemmo/uxml"
+        }
+    ],
+    "dev": false,
+    "dev-package-names": []
+}

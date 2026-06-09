@@ -1,0 +1,19 @@
+[
+    "status",
+    "billingState",
+    "billingPlan",
+    "account",
+    "assignedUser",
+    "teams",
+    "amount",
+    "endDate",
+    "billingContact",
+    "number",
+    "products",
+    "priceBook",
+    "paymentMethod",
+    "tax",
+    "anchorDay",
+    "createdAt",
+    "createdBy"
+]

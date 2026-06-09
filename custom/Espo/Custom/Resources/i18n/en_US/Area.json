@@ -1,0 +1,17 @@
+{
+    "fields": {
+        "macroArea": "Macro Area",
+        "zona": "Zona",
+        "cAP": "CAP",
+        "codiceArea": "Codice Area",
+        "codiceMacroArea": "Codice Macro Area"
+    },
+    "links": {
+        "macroArea": "Macro Area",
+        "zona": "Zona",
+        "cAP": "CAP"
+    },
+    "labels": {
+        "Create Area": "Create Area"
+    }
+}

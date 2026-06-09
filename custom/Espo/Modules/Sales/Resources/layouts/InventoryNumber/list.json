@@ -1,0 +1,28 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "product",
+        "width": 30
+    },
+    {
+        "name": "type",
+        "width": 20
+    },
+    {
+        "name": "quantityOnHand",
+        "width": 15
+    },
+    {
+        "name": "incomingDate",
+        "width": 15,
+        "hidden": true
+    },
+    {
+        "name": "expirationDate",
+        "width": 15,
+        "hidden": true
+    }
+]

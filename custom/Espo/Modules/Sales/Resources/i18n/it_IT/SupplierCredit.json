@@ -1,0 +1,71 @@
+{
+  "labels": {
+    "Create SupplierCredit": "Crea nota di credito fornitore",
+    "Items": "Voci"
+  },
+  "fields": {
+    "status": "Stato",
+    "reference": "Riferimento",
+    "number": "Numero",
+    "numberA": "Numero (incremento automatico)",
+    "account": "Azienda",
+    "supplier": "Fornitore",
+    "supplierBill": "Fattura fornitore",
+    "billingAddress": "Indirizzo di fatturazione",
+    "billingContact": "Contatto di fatturazione",
+    "supplierAddress": "Indirizzo fornitore",
+    "supplierAddressStreet": "Via (Fornitore)",
+    "supplierAddressCity": "Città (Fornitore)",
+    "supplierAddressState": "Provincia/Stato (Fornitore)",
+    "supplierAddressCountry": "Paese (Fornitore)",
+    "supplierAddressPostalCode": "CAP (Fornitore)",
+    "tax": "Profilo fiscale",
+    "taxRate": "Aliquota imposta",
+    "shippingProvider": "Corriere",
+    "taxAmount": "Imposta",
+    "amount": "Totale netto",
+    "grandTotalAmount": "Totale complessivo",
+    "itemList": "Elenco voci",
+    "dateIssued": "Data di emissione",
+    "dateDue": "Data scadenza",
+    "amountConverted": "Totale netto (convertito)",
+    "taxAmountConverted": "Imposta (convertita)",
+    "grandTotalAmountConverted": "Totale complessivo (convertito)",
+    "taxAmountCurrency": "Valuta imposta",
+    "amountCurrency": "Valuta importo",
+    "currency": "Valuta",
+    "isDone": "Completato",
+    "amountDue": "Importo dovuto",
+    "amountDueCurrency": "Valuta importo dovuto",
+    "allocations": "Allocazioni",
+    "unallocatedAmount": "Importo non allocato",
+    "document": "Documento originale"
+  },
+  "links": {
+    "items": "Voci",
+    "supplierBill": "Fattura fornitore",
+    "billingContact": "Contatto di fatturazione",
+    "shippingProvider": "Corriere",
+    "tax": "Profilo fiscale",
+    "account": "Azienda",
+    "supplier": "Fornitore",
+    "allocations": "Allocazioni"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Issued": "Emessa",
+      "Resolved": "Chiusa",
+      "Canceled": "Annullato"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperta",
+    "resolved": "Chiusa",
+    "openIssued": "Emessa, aperta"
+  },
+  "message": {
+    "cannotCompleteWithAmountDue": "Impossibile chiudere perché l'importo dovuto non è stato compensato. Alloca prima il credito fornitore a una fattura fornitore. In alternativa, crea un pagamento in entrata e allocarlo a questo credito fornitore.",
+    "cannotCancelWithAmountDue": "Impossibile annullare un credito fornitore emesso, poiché l'importo dovuto non è stato compensato. Alloca prima il credito fornitore a una fattura fornitore."
+  }
+}

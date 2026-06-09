@@ -47,7 +47,7 @@
         },
         "numberA": {
             "prefix": "Contratto_",
-            "nextNumber": 2
+            "nextNumber": 100
         },
         "totalPrezzoCodice": {
             "type": "currency",
@@ -81,32 +81,16 @@
             "readOnly": true,
             "isCustom": true
         },
-        "dataInstallazione": {
-            "type": "date",
-            "useNumericFormat": true,
-            "isCustom": true
-        },
-        "dataAttivazione": {
-            "type": "date",
-            "useNumericFormat": true,
-            "isCustom": true
-        },
-        "dataCompetenza": {
-            "type": "date",
-            "useNumericFormat": true,
-            "isCustom": true
-        },
         "opportunita": {
             "type": "link",
             "readOnly": true,
             "isCustom": true
         },
-        "numeroPod": {
-            "type": "int",
-            "minValue": 0,
+        "prezzoListinoIvaEsclusa": {
+            "type": "currency",
             "isCustom": true
         },
-        "prezzoListinoIvaEsclusa": {
+        "prezzoListinoIvaInclusa": {
             "type": "currency",
             "isCustom": true
         },
@@ -114,25 +98,86 @@
             "type": "currency",
             "isCustom": true
         },
-        "margineSuListino": {
-            "type": "float",
-            "decimalPlaces": 2,
-            "readOnly": true,
+        "prezzoCodiceIvaInclusa": {
+            "type": "currency",
             "isCustom": true
         },
-        "contattoPersonaleArquati": {
+        "dataInstallazione": {
+            "notNull": false,
+            "type": "date",
+            "isCustom": true
+        },
+        "codiceContratto": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
+        "numeroContratto": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
+        "venditaAbbinataAdAltroProdotto": {
+            "notNull": true,
             "type": "bool",
-            "default": false,
             "isCustom": true
         },
-        "integrazionePncPercentuale": {
+        "scontoVenditaAbbinata": {
+            "notNull": false,
             "type": "float",
-            "decimalPlaces": 2,
             "isCustom": true
         },
-        "ordineIncompletoAriel": {
+        "finanziamento": {
+            "notNull": true,
             "type": "bool",
-            "default": false,
+            "isCustom": true
+        },
+        "statoFinanziamento": {
+            "type": "enum",
+            "options": [
+                "",
+                "In lavorazione",
+                "In rivalutazione",
+                "In Attesa Documentazione",
+                "Approvato",
+                "Respinto",
+                "Annullato"
+            ],
+            "style": {
+                "": null,
+                "In lavorazione": null,
+                "In rivalutazione": null,
+                "In Attesa Documentazione": null,
+                "Approvato": null,
+                "Respinto": null,
+                "Annullato": null
+            },
+            "default": null,
+            "isCustom": true
+        },
+        "statoContratto": {
+            "type": "enum",
+            "options": [
+                "",
+                "In lavorazione",
+                "Inserito",
+                "Installato",
+                "Sospeso",
+                "Annullato",
+                "Recesso"
+            ],
+            "style": {
+                "": null,
+                "In lavorazione": null,
+                "Inserito": null,
+                "Installato": null,
+                "Sospeso": null,
+                "Annullato": null,
+                "Recesso": null
+            },
+            "default": null,
             "isCustom": true
         }
     },

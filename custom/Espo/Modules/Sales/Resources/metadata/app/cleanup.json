@@ -1,0 +1,5 @@
+{
+    "salesIntegrity": {
+        "className": "Espo\\Modules\\Sales\\Classes\\Cleanup\\Integrity"
+    }
+}

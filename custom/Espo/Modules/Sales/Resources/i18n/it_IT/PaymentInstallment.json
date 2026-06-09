@@ -1,0 +1,22 @@
+{
+  "fields": {
+    "percentage": "Percentuale",
+    "days": "Giorni",
+    "state": "Avanzamento",
+    "status": "Stato",
+    "amountDue": "Scaduto"
+  },
+  "options": {
+    "status": {
+      "Unsettled": "Non saldato",
+      "Partially Settled": "Parzialmente saldato",
+      "Settled": "Saldato"
+    },
+    "state": {
+      "Due": "Scaduto",
+      "Partially Settled": "Parzialmente saldato",
+      "Settled": "Saldato",
+      "Canceled": "Annullato"
+    }
+  }
+}

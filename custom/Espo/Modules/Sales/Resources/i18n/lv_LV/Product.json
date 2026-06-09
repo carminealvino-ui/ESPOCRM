@@ -1,0 +1,44 @@
+{
+    "labels": {
+        "Create Product": "Izveidot produktu",
+        "Price": "Cena",
+        "Brands": "Zīmoli",
+        "Categories": "Kategorijas"
+    },
+    "fields": {
+        "status": "Statuss",
+        "brand": "Zīmols",
+        "partNumber": "Daļas numurs",
+        "category": "Kategorija",
+        "pricingType": "Cenu veidošanas veids",
+        "pricingFactor": "Cenu noteikšanas faktors",
+        "costPrice": "Izmaksas Cena",
+        "listPrice": "Saraksta cena",
+        "unitPrice": "Vienības cena",
+        "costPriceCurrency": "Izmaksas Cena Valūta",
+        "listPriceCurrency": "Saraksta cena Valūta",
+        "unitPriceCurrency": "Vienības cena Valūta",
+        "costPriceConverted": "Pašizmaksa (konvertētā)",
+        "listPriceConverted": "Saraksta cena (konvertēta)",
+        "unitPriceConverted": "Vienības cena (konvertēta)",
+        "url": "URL",
+        "isTaxFree": "No nodokļiem atbrīvots",
+        "weight": "Svars"
+    },
+    "links": {
+        "brand": "Zīmols",
+        "category": "Kategorija"
+    },
+    "options": {
+        "pricingType": {
+            "Same as List": "Tāpat kā sarakstā",
+            "Fixed": "Fiksēts",
+            "Discount from List": "Atlaide no saraksta",
+            "Markup over Cost": "Uzcenojums virs izmaksām",
+            "Profit Margin": "Peļņas norma"
+        }
+    },
+    "presetFilters": {
+        "available": "Pieejams"
+    }
+}

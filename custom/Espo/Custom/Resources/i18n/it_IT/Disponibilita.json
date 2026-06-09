@@ -1,0 +1,71 @@
+{
+    "fields": {
+        "parent": "Genitore",
+        "dateStart": "Data inizio",
+        "dateEnd": "Data termine",
+        "duration": "Durata",
+        "status": "Stato",
+        "reminders": "Promemoria",
+        "dateStartDate": "Data inizio (tutto il giorno)",
+        "dateEndDate": "Data fine (tutto il giorno)",
+        "isAllDay": "È tutto il giorno",
+        "azienda": "Azienda",
+        "area": "Area",
+        "name": "Disponibilità",
+        "datadisponibilita": "Data Disponibilità",
+        "color": "Color",
+        "orarioInizio": "Orario Inizio",
+        "orarioFine": "Orario Fine",
+        "fornitorePartner": "Fornitore/Partner"
+    },
+    "links": {
+        "parent": "Genitore",
+        "fornitorePartner": "Fornitore/Partner"
+    },
+    "options": {
+        "status": {
+            "Planned": "Pianificato",
+            "Held": "Trattenuto",
+            "Not Held": "Non trattenuto",
+            "Disponibile": "Disponibile",
+            "Non Disponibile": "Non Disponibile",
+            "Presente": "Presente",
+            "Ferie": "Ferie",
+            "Malattia": "Malattia",
+            "Motivazioni Personali": "Motivazioni Personali",
+            "Auto": "Auto",
+            "Indisponibile": "Indisponibile"
+        },
+        "azienda": {
+            "": "",
+            "ARQUATI": "ARQUATI",
+            "ARIEL": "ARIEL",
+            "PROGETTO": "PROGETTO"
+        },
+        "area": {
+            "ROMA SUD": "ROMA SUD",
+            "ROMA EST": "ROMA EST",
+            "ROMA NORD": "ROMA NORD",
+            "PESCARA": "PESCARA",
+            "CHIETI": "CHIETI",
+            "LATINA": "LATINA",
+            "FROSINONE": "FROSINONE"
+        }
+    },
+    "labels": {
+        "Create Disponibilita": "Creare Disponibilità",
+        "Schedule Disponibilita": "Pianificazione Disponibilita",
+        "Log Disponibilita": "Registro Disponibilita",
+        "Set Held": "Imposta trattenuto",
+        "Set Not Held": "Imposta non trattenuto"
+    },
+    "massActions": {
+        "setHeld": "Imposta trattenuto",
+        "setNotHeld": "Imposta non trattenuto"
+    },
+    "presetFilters": {
+        "planned": "Pianificato",
+        "held": "Trattenuto",
+        "todays": "Di oggi"
+    }
+}

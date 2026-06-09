@@ -1,0 +1,25 @@
+{
+    "fields": {
+        "name": "Name",
+        "qty": "Qty",
+        "quantity": "Quantity",
+        "quantityInt": "Quantity (Int)",
+        "product": "Product",
+        "order": "Line Number",
+        "deliveryOrder": "Delivery Order",
+        "weight": "Weight",
+        "unitWeight": "Unit Weight",
+        "description": "Description",
+        "account": "Account",
+        "deliveryOrderStatus": "Delivery Order Status",
+        "inventoryNumber": "Inventory Number",
+        "inventoryNumberType": "Inventory Number Type",
+        "isInventory": "Is Inventory"
+    },
+    "links": {
+        "deliveryOrder": "Delivery Order",
+        "product": "Product",
+        "account": "Account",
+        "inventoryNumber": "Inventory Number"
+    }
+}

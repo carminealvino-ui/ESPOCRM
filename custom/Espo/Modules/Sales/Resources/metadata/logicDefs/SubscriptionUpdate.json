@@ -1,0 +1,295 @@
+{
+    "fields": {
+        "number": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "status": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            },
+            "readOnlySaved": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "status",
+                        "value": [
+                            "Applied",
+                            "Canceled"
+                        ]
+                    }
+                ]
+            }
+        },
+        "date": {
+            "readOnlySaved": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "status",
+                        "value": [
+                            "Applied",
+                            "Canceled"
+                        ]
+                    }
+                ]
+            }
+        },
+        "itemList": {
+            "readOnlySaved": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "status",
+                        "value": [
+                            "Applied",
+                            "Canceled"
+                        ]
+                    }
+                ]
+            }
+        },
+        "invoiceGrandTotalAmount": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "billingStatus",
+                        "value": [
+                            "Pending"
+                        ]
+                    },
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "creditNoteGrandTotalAmount": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "billingStatus",
+                        "value": [
+                            "Pending"
+                        ]
+                    },
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "netAmount": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "billingStatus",
+                        "value": [
+                            "Pending"
+                        ]
+                    },
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "billingAction": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "billingStatus",
+                        "value": [
+                            "Pending"
+                        ]
+                    }
+                ]
+            }
+        },
+        "sendInvoice": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "billingStatus",
+                        "value": [
+                            "Pending"
+                        ]
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "billingAction",
+                        "value": [
+                            "Issue"
+                        ]
+                    }
+                ]
+            }
+        },
+        "createPaymentRequest": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "billingStatus",
+                        "value": [
+                            "Pending"
+                        ]
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "billingAction",
+                        "value": [
+                            "Issue"
+                        ]
+                    }
+                ]
+            }
+        },
+        "sendPaymentRequest": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "billingStatus",
+                        "value": [
+                            "Pending"
+                        ]
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "billingAction",
+                        "value": [
+                            "Issue"
+                        ]
+                    },
+                    {
+                        "type": "isTrue",
+                        "attribute": "createPaymentRequest"
+                    }
+                ]
+            }
+        }
+    },
+    "options": {
+        "billingStatus": [
+            {
+                "optionList": [
+                    "Pending",
+                    "Settled"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isEmpty",
+                                "attribute": "id"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "optionList": [
+                    "Pending",
+                    "Settled",
+                    "Canceled"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "in",
+                                "attribute": "status",
+                                "value": [
+                                    "Draft"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "billingAction": [
+            {
+                "optionList": [
+                    "Draft",
+                    "Issue"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "and",
+                        "value": [
+                            {
+                                "type": "in",
+                                "attribute": "billingStatus",
+                                "value": [
+                                    "Pending"
+                                ]
+                            },
+                            {
+                                "type": "isEmpty",
+                                "attribute": "id"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "panels": {
+        "amounts": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "billingStatus",
+                        "value": [
+                            "Pending"
+                        ]
+                    },
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        }
+    }
+}

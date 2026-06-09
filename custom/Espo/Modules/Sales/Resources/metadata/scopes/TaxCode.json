@@ -1,0 +1,13 @@
+{
+    "entity": true,
+    "tab": true,
+    "acl": true,
+    "aclLevelList": ["all", "no"],
+    "aclFieldLevelDisabled": true,
+    "module": "Sales",
+    "importable": true,
+    "duplicateCheckFieldList": [
+        "name",
+        "code"
+    ]
+}

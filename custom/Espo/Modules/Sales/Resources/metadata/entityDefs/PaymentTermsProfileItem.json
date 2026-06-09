@@ -1,0 +1,48 @@
+{
+    "fields": {
+        "order": {
+            "type": "int",
+            "readOnly": true
+        },
+        "percentage": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "min": 0,
+            "max": 100,
+            "decimalPlaces": 2,
+            "precision": 6,
+            "scale": 2,
+            "validationList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\General\\Decimal\\Valid",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\General\\Decimal\\Range"
+            ],
+            "view": "modules/sales/views/fields/decimal"
+        },
+        "days": {
+            "type": "int",
+            "min": 0,
+            "default": 0
+        },
+        "type": {
+            "type": "enum",
+            "options": [
+                "Invoice Date",
+                "End of Month"
+            ]
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "profile": {
+            "type": "belongsTo",
+            "entity": "PaymentTermsProfile"
+        }
+    }
+}

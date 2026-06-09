@@ -1,72 +1,55 @@
 // ========================================
-// VERSIONE: 1.0.4
-// DATA: 2026-05-23
+// VERSIONE: 1.0.0
+// DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + IA
 // FILE: client/custom/src/action-handlers/opportunity/create-contratto.js
+// ========================================
+//
+// OBIETTIVO:
+// Mostrare ed eseguire Crea Contratto solo quando
+// Opportunity.stage = Closed Won.
+//
+// NOTA:
+// La mappatura Lead resta gestita da Appuntamento.sottostato.
+// Questo handler controlla solo il pulsante Contratto.
 // ========================================
 
 /* global define, Espo */
 
 define('custom:action-handlers/opportunity/create-contratto', ['action-handler'], function (Dep) {
 
-    return Dep.extend({
+    return class extends Dep {
 
-        initCreateContratto: function () {
-            if (this.view && this.view.updateCreateContrattoButton) {
-                this.view.updateCreateContrattoButton();
-            }
-        },
+        isCreateContrattoVisible() {
+            return this.view.model.get('stage') === 'Closed Won';
+        }
 
-        isCreateContrattoVisible: function () {
-            if (!this.view || !this.view.model) {
-                return false;
-            }
-
-            if (this.view.isClosedWon) {
-                return this.view.isClosedWon();
-            }
-
-            var stage = this.view.model.get('stage');
-
-            if (stage === 'Closed Won' || stage === 'Chiuso Positivamente') {
-                return true;
-            }
-
-            if (stage === 'Closed Lost' || stage === 'Chiusa persa' || stage === 'Chiuso Negativamente') {
-                return false;
-            }
-
-            var probability = this.view.model.get('probability');
-
-            return probability === 100 || probability === '100';
-        },
-
-        createContratto: function () {
+        async createContratto() {
             if (!this.isCreateContrattoVisible()) {
-                Espo.Ui.warning('Disponibile solo su opportunita concluse positivamente.');
-
                 return;
             }
 
-            var self = this;
-
             this.view.disableMenuItem('createContratto');
 
-            Espo.Ajax.postRequest(
-                'Opportunity/action/createContratto',
-                {
-                    id: this.view.model.id
-                }
-            ).then(function (result) {
-                self.view.enableMenuItem('createContratto');
+            let result;
 
-                if (result && result.quoteId) {
-                    window.location.hash = '#Quote/view/' + result.quoteId;
-                }
-            }).catch(function (e) {
-                self.view.enableMenuItem('createContratto');
+            try {
+                result = await Espo.Ajax.postRequest(
+                    'Opportunity/action/createContratto',
+                    {
+                        id: this.view.model.id
+                    }
+                );
+            } catch (e) {
+                this.view.enableMenuItem('createContratto');
                 throw e;
-            });
+            }
+
+            this.view.enableMenuItem('createContratto');
+
+            if (result && result.quoteId) {
+                window.location.hash = '#Quote/view/' + result.quoteId;
+            }
         }
-    });
+    };
 });

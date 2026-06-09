@@ -1,0 +1,23 @@
+{
+    "labels": {
+        "Create TaxPurchaseRule": "Create Tax Purchase Rule"
+    },
+    "fields": {
+        "logic": "Conditions",
+        "tax": "Tax Profile",
+        "status": "Status",
+        "order": "Order"
+    },
+    "links": {
+        "tax": "Tax Profile"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    },
+    "presetFilters": {
+        "active": "Active"
+    }
+}

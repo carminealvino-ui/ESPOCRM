@@ -1,0 +1,40 @@
+{
+    "controller": "controllers/record",
+    "acl": "modules/sales/acl/quote-item",
+    "views": {
+        "list": "modules/sales/views/quote-item/list"
+    },
+    "recordViews": {
+        "list": "modules/sales/views/quote-item/record/list"
+    },
+    "mergeDisabled": true,
+    "convertCurrencyDisabled": true,
+    "duplicateDisabled": true,
+    "menu": {
+        "list": {
+            "buttons": [
+                {
+                    "labelTranslation": "Global.scopeNames.SupplierBill",
+                    "link": "#SupplierBill",
+                    "acl": "read",
+                    "aclScope": "SupplierBill"
+                }
+            ]
+        }
+    },
+    "additionalLayouts": {
+        "listItem": {
+            "type": "listSmall",
+            "dataAttributeList": [
+                "name",
+                "align",
+                "widthComplex",
+                "width",
+                "widthPx",
+                "link",
+                "view",
+                "customLabel"
+            ]
+        }
+    }
+}

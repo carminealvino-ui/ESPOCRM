@@ -1,0 +1,26 @@
+[
+    {
+        "rows": [
+            [{"name": "number"}, {"name": "reference"}],
+            [{"name": "status"}, {"name": "dateIssued"}],
+            [{"name": "supplier"}, {"name": "supplierBill"}],
+            [{"name": "grandTotalAmount"}, {"name": "dateDue"}]
+        ]
+    },
+    {
+        "rows": [
+            [
+
+                {
+                    "name": "allocations"
+                }
+            ],
+            [
+                {
+                    "name": "unallocatedAmount"
+                },
+                false
+            ]
+        ]
+    }
+]

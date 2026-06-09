@@ -1,31 +1,22 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit', ['crm:views/meeting/record/edit'], function (MeetingEditModule) {
+define('custom:views/appuntamento/record/edit', ['views/record/edit'], function (Dep) {
 
-    const Parent = MeetingEditModule.default || MeetingEditModule;
-    const DEFAULT_DURATION_SECONDS = 5400;
+    return Dep.extend({
 
-    return class AppuntamentoEditView extends Parent {
-
-        setup() {
-            super.setup();
+        setup: function () {
+            Dep.prototype.setup.call(this);
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
             }
 
-            this.listenTo(this.model, 'change:dateStart', () => {
-                this.applyDefaultDuration();
-            });
-
             this.once('after:render', () => {
                 this.applyDefaultDuration();
-                setTimeout(() => this.applyDefaultDuration(), 0);
-                setTimeout(() => this.applyDefaultDuration(), 150);
             });
-        }
+        },
 
-        applyDefaultDuration() {
+        applyDefaultDuration: function () {
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
             }
@@ -36,14 +27,15 @@ define('custom:views/appuntamento/record/edit', ['crm:views/meeting/record/edit'
                 return;
             }
 
+            const defaultSeconds = 5400;
             const dateEnd = this.getDateTime()
                 .toMoment(dateStart)
-                .add(DEFAULT_DURATION_SECONDS, 'seconds')
+                .add(defaultSeconds, 'seconds')
                 .format(this.getDateTime().internalDateTimeFormat);
 
             this.model.set({
                 dateEnd: dateEnd,
-            }, {updatedByDuration: true});
-        }
-    };
+            });
+        },
+    });
 });

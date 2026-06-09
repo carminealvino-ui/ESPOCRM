@@ -1,0 +1,17 @@
+{
+  "labels": {
+    "Create ProductAttribute": "Attribut erstellen",
+    "Move to Top": "zu Anfang",
+    "Move Up": "Aufwärts",
+    "Move Down": "Abwärts",
+    "Move to Bottom": "zum Ende"
+  },
+  "fields": {
+    "order": "Auftrag",
+    "options": "Optionen"
+  },
+  "links": {
+    "options": "Optionen",
+    "products": "Produkte"
+  }
+}

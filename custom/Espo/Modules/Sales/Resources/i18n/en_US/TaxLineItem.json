@@ -1,0 +1,30 @@
+{
+    "fields": {
+        "order": "Line Index",
+        "component": "Component",
+        "item": "Line Item",
+        "source": "Source",
+        "product": "Product",
+        "taxCode": "Tax Code",
+        "rate": "Rate",
+        "amount": "Tax",
+        "baseAmount": "Base",
+        "amountLocal": "Tax Local",
+        "baseAmountLocal": "Base Local",
+        "amountPrecise": "Tax (Precise)",
+        "amountLocalPrecise": "Tax Local (Precise)",
+        "baseAmountLocalPrecise": "Base Local (Precise)"
+    },
+    "links": {
+        "product": "Product",
+        "taxCode": "Tax Code",
+        "item": "Item",
+        "source": "Source"
+    },
+    "options": {
+        "component": {
+            "Item": "Line Item",
+            "Shipping": "Shipping"
+        }
+    }
+}

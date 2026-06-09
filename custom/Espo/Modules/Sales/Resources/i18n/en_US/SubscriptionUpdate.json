@@ -1,0 +1,52 @@
+{
+    "labels": {
+        "Create SubscriptionUpdate": "Create Subscription Update"
+    },
+    "fields": {
+        "number": "Number",
+        "date": "Date",
+        "subscription": "Subscription",
+        "status": "Status",
+        "billingStatus": "Billing Status",
+        "itemList": "Item List",
+        "amount": "Amount",
+        "currency": "Currency",
+        "invoiceGrandTotalAmount": "To Invoice",
+        "creditNoteGrandTotalAmount": "To Credit",
+        "netAmount": "Net Amount",
+        "billingAction": "Billing Action",
+        "createPaymentRequest": "Create Payment Request",
+        "sendPaymentRequest": "Send Payment Request",
+        "sendInvoice": "Send Invoice"
+    },
+    "links": {
+        "subscription": "Subscription",
+        "invoices": "Invoices",
+        "creditNotes": "Credit Notes",
+        "items": "Items"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Applied": "Applied",
+            "Canceled": "Canceled"
+        },
+        "billingStatus": {
+            "Invoiced": "Invoiced",
+            "Paid": "Paid",
+            "Canceled": "Canceled"
+        },
+        "billingAction": {
+            "Draft": "Draft",
+            "Issue": "Issue"
+        }
+    },
+    "messages": {
+        "noChangesInUpdate": "No any changes made.",
+        "cannotUpdateNonDraft": "Cannot modify a non-draft."
+    },
+    "actions": {
+    },
+    "otherFields": {
+    }
+}

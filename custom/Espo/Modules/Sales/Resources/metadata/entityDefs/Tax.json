@@ -1,0 +1,133 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "audited": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Active",
+                "Inactive"
+            ],
+            "maxLength": 8,
+            "default": "Active",
+            "style": {
+                "Inactive": "info"
+            },
+            "audited": true,
+            "customizationDisabled": true
+        },
+        "basis": {
+            "type": "enum",
+            "options": [
+                "Tax Code",
+                "Rate"
+            ],
+            "default": "Tax Code",
+            "maxLength": 8,
+            "readOnlyAfterCreate": true,
+            "customizationDisabled": true
+        },
+        "taxCode": {
+            "type": "link",
+            "audited": true,
+            "customizationDisabled": true,
+            "autocompleteOnEmpty": true,
+            "tooltip": true
+        },
+        "shippingTaxCode": {
+            "type": "link",
+            "audited": true,
+            "customizationDisabled": true,
+            "autocompleteOnEmpty": true,
+            "tooltip": true
+        },
+        "rate": {
+            "type": "float",
+            "min": 0,
+            "max": 100,
+            "decimalPlaces": 2,
+            "audited": true,
+            "view": "modules/sales/views/quote-item/fields/tax-rate",
+            "customizationDisabled": true
+        },
+        "shippingMode": {
+            "type": "enum",
+            "options": [
+                "",
+                "Proportional",
+                "Fixed"
+            ],
+            "maxLength": 12,
+            "audited": true,
+            "customizationDisabled": true,
+            "tooltip": true
+        },
+        "taxDisplay": {
+            "type": "base",
+            "notStorable": true,
+            "readOnly": true,
+            "directAccessDisabled": true,
+            "directUpdateDisabled": true,
+            "orderDisabled": true,
+            "layoutAvailabilityList": ["list"],
+            "view": "modules/sales/views/tax/fields/tax-display",
+            "customizationDisabled": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "taxCode": {
+            "type": "belongsTo",
+            "entity": "TaxCode",
+            "foreign": "taxes",
+            "foreignName": "code"
+        },
+        "itemRules": {
+            "type": "hasMany",
+            "entity": "TaxItemRule",
+            "foreign": "tax",
+            "readOnly": true,
+            "orderBy": "order",
+            "order": "asc",
+            "customizationDisabled": true
+        },
+        "shippingTaxCode": {
+            "type": "belongsTo",
+            "entity": "TaxCode",
+            "foreignName": "code"
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "name",
+        "order": "asc"
+    }
+}

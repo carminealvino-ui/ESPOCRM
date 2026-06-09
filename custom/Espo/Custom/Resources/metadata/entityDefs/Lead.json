@@ -82,6 +82,7 @@
         "source": {
             "options": [
                 "",
+                "Generazione Lead",
                 "Call Center",
                 "Call",
                 "Vodafone Assegnazione CB",
@@ -97,6 +98,7 @@
             ],
             "style": {
                 "": null,
+                "Generazione Lead": null,
                 "Call Center": null,
                 "Call": null,
                 "Vodafone Assegnazione CB": null,

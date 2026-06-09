@@ -1,0 +1,28 @@
+[
+    {
+        "name": "product",
+        "align": "left",
+        "width": 50
+    },
+    {
+        "name": "prezzoListino"
+    },
+    {
+        "name": "prezzoCodice"
+    },
+    {
+        "name": "unitPrice",
+        "align": "right",
+        "width": 20
+    },
+    {
+        "name": "quantity",
+        "align": "right",
+        "width": 10
+    },
+    {
+        "name": "amount",
+        "align": "right",
+        "width": 20
+    }
+]

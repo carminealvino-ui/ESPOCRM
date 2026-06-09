@@ -1,0 +1,8 @@
+{
+    "labels": {
+        "Create ShippingProvider": "Izveidot piegādes pakalpojumu sniedzēju"
+    },
+    "fields": {
+        "website": "Tīmekļa vietne"
+    }
+}

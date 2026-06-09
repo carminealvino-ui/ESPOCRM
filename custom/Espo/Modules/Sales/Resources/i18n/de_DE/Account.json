@@ -1,0 +1,38 @@
+{
+  "fields": {
+    "priceBook": "Preisbuch",
+    "electronicAddressScheme": "Elektronisches Adressschema",
+    "electronicAddressIdentifier": "Elektronischer Adressidentifikator",
+    "paymentMethods": "Zahlungsarten",
+    "paymentMethod": "Primäre Zahlungsart",
+    "taxNumber": "Steuernummer",
+    "paymentTermsProfile": "Zahlungsbedingungen Profil"
+  },
+  "links": {
+    "priceBook": "Preisbuch",
+    "supplier": "Lieferant",
+    "quotes": "Angebote",
+    "quoteItems": "Angebotspositionen",
+    "salesOrders": "Kundenaufträge",
+    "salesOrderItems": "Kundenauftragspositionen",
+    "invoices": "Rechnungen",
+    "invoiceItems": "Rechnungspositionen",
+    "purchaseOrders": "Bestellungen",
+    "purchaseOrderItems": "Bestellpositionen",
+    "deliveryOrders": "Lieferaufträge",
+    "deliveryOrderItems": "Lieferauftragspositionen",
+    "receiptOrders": "Empfangsaufträge",
+    "receiptOrderItems": "Empfangsauftragspositionen",
+    "returnOrders": "Rücksendungen",
+    "returnOrderItems": "Rücksendungspositionen",
+    "writeOffEntries": "Ausbuchungen",
+    "paymentEntries": "Zahlungen",
+    "creditNotes": "Gutschriften",
+    "creditNoteItems": "Gutschriftspositionen",
+    "paymentRequests": "Zahlungsaufforderungen",
+    "paymentMethods": "Zahlungsarten",
+    "subscriptions": "Abonnements",
+    "subscriptionItems": "Abonnementpositionen",
+    "paymentTermsProfile": "Zahlungsbedingungen Profil"
+  }
+}

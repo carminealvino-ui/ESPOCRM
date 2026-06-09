@@ -1,0 +1,51 @@
+{
+    "functionClassNameMap": {
+        "ext\\priceRule\\productAttribute": "Espo\\Modules\\Sales\\Classes\\FormulaFunctions\\PriceRule\\ProductAttribute",
+        "ext\\priceRule\\accountAttribute": "Espo\\Modules\\Sales\\Classes\\FormulaFunctions\\PriceRule\\AccountAttribute",
+        "ext\\product\\quantity": "Espo\\Modules\\Sales\\Classes\\FormulaFunctions\\Product\\Quantity",
+        "ext\\product\\quantityOnHand": "Espo\\Modules\\Sales\\Classes\\FormulaFunctions\\Product\\QuantityOnHand",
+        "ext\\product\\quantityReserved": "Espo\\Modules\\Sales\\Classes\\FormulaFunctions\\Product\\QuantityReserved",
+        "ext\\product\\quantityInTransit": "Espo\\Modules\\Sales\\Classes\\FormulaFunctions\\Product\\QuantityInTransit",
+        "ext\\inventoryNumber\\quantityOnHand": "Espo\\Modules\\Sales\\Classes\\FormulaFunctions\\InventoryNumber\\QuantityOnHand",
+        "ext\\inventoryNumber\\quantityReserved": "Espo\\Modules\\Sales\\Classes\\FormulaFunctions\\InventoryNumber\\QuantityReserved",
+        "ext\\inventoryNumber\\quantityInTransit": "Espo\\Modules\\Sales\\Classes\\FormulaFunctions\\InventoryNumber\\QuantityInTransit"
+    },
+    "functionList": [
+        "__APPEND__",
+        {
+            "name": "ext\\product\\quantity",
+            "insertText": "ext\\product\\quantity(PRODUCT_ID, WAREHOUSE_ID)",
+            "returnType": "float"
+        },
+        {
+            "name": "ext\\product\\quantityOnHand",
+            "insertText": "ext\\product\\quantityOnHand(PRODUCT_ID, WAREHOUSE_ID)",
+            "returnType": "float"
+        },
+        {
+            "name": "ext\\product\\quantityReserved",
+            "insertText": "ext\\product\\quantityReserved(PRODUCT_ID, WAREHOUSE_ID)",
+            "returnType": "float"
+        },
+        {
+            "name": "ext\\product\\quantityInTransit",
+            "insertText": "ext\\product\\quantityInTransit(PRODUCT_ID)",
+            "returnType": "float"
+        },
+        {
+            "name": "ext\\inventoryNumber\\quantityOnHand",
+            "insertText": "ext\\inventoryNumber\\quantityOnHand(INVENTORY_NUMBER_ID, WAREHOUSE_ID)",
+            "returnType": "float"
+        },
+        {
+            "name": "ext\\inventoryNumber\\quantityReserved",
+            "insertText": "ext\\inventoryNumber\\quantityReserved(INVENTORY_NUMBER_ID, WAREHOUSE_ID)",
+            "returnType": "float"
+        },
+        {
+            "name": "ext\\inventoryNumber\\quantityInTransit",
+            "insertText": "ext\\inventoryNumber\\quantityInTransit(INVENTORY_NUMBER_ID)",
+            "returnType": "float"
+        }
+    ]
+}

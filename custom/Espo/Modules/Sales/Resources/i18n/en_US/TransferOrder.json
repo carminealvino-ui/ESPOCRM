@@ -1,0 +1,63 @@
+{
+    "labels": {
+        "Create TransferOrder": "Create Transfer Order",
+        "Add Item": "Add Item",
+        "Items": "Items",
+        "Valid": "Valid",
+        "Invalid": "Invalid",
+        "Show Availability": "Show Availability",
+        "Availability": "Availability",
+        "Total": "Total"
+    },
+    "fields": {
+        "status": "Status",
+        "number": "Number",
+        "numberA": "Number (auto-incremented)",
+        "fromWarehouse": "From Warehouse",
+        "toWarehouse": "To Warehouse",
+        "fromAddress": "Ship from Address",
+        "toAddress": "Ship to Address",
+        "amount": "Amount",
+        "amountCurrency": "Amount Currency",
+        "shippingProvider": "Shipping Provider",
+        "itemList": "Item List",
+        "dateOrdered": "Date Ordered",
+        "shippingDate": "Shipping Date",
+        "deliveryDate": "Delivery Date",
+        "weight": "Weight",
+        "currency": "Currency",
+        "inventoryData": "Inventory Data",
+        "inventoryStatus": "Inventory Status",
+        "isDone": "Is Done"
+    },
+    "links": {
+        "items": "Items",
+        "shippingContact": "Shipping Contact",
+        "shippingProvider": "Shipping Provider",
+        "inventoryTransactions": "Inventory Transactions",
+        "fromWarehouse": "From Warehouse",
+        "toWarehouse": "To Warehouse"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Ready": "Ready",
+            "In Progress": "In Progress",
+            "Completed": "Completed",
+            "Canceled": "Canceled",
+            "Failed": "Failed"
+        },
+        "inventoryStatus": {
+            "Available": "Available",
+            "On Hand": "On Hand",
+            "Not Available": "Not Available"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "completed": "Completed"
+    },
+    "messages": {
+        "warehousesAreSame": "Warehouses must be different"
+    }
+}

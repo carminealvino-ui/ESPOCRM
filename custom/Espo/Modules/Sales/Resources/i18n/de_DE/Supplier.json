@@ -1,0 +1,30 @@
+{
+  "labels": {
+    "Create Supplier": "Lieferant erstellen"
+  },
+  "fields": {
+    "account": "Firma"
+  },
+  "links": {
+    "account": "Firma",
+    "prices": "Preise",
+    "purchaseOrders": "Bestellungen",
+    "receiptOrders": "Empfangsaufträge",
+    "supplierBills": "Eingangsrechnungen",
+    "supplierCredits": "Eingangsgutschriften",
+    "paymentEntries": "Zahlungen"
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "tabs": {
+    "transactions": "Transaktionen",
+    "prices": "Preise"
+  }
+}

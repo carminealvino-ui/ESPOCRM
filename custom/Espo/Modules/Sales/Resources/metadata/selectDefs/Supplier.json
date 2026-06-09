@@ -1,0 +1,5 @@
+{
+    "primaryFilterClassNameMap": {
+        "active": "Espo\\Modules\\Sales\\Classes\\Select\\Supplier\\PrimaryFilters\\Active"
+    }
+}

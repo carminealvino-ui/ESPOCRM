@@ -90,7 +90,7 @@ php rebuild.php
 
 ## 5. Note produzione MEC Group
 
-- Deploy custom: **solo file mirati** o script in `backup/hooks_cleanup/` — non sostituire tutto `custom/` da Git senza verifica.
+- Deploy custom: **solo file mirati** o script in `backup_dev/` — non sostituire tutto `custom/` da Git senza verifica.
 - Hook critici: `Appuntamento/GlobalLogic.php` (1.7.3), `Opportunity/GlobalLogic.php`.
 - `clientDefs/Appuntamento.json`: viste Meeting standard (non lasciare `{}` vuoto).
 - **Non** deployare `clientDefs/Calendar.json` con controller custom.

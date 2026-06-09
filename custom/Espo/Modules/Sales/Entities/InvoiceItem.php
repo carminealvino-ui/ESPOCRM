@@ -1,0 +1,52 @@
+<?php
+/***********************************************************************************
+ * The contents of this file are subject to the Extension License Agreement
+ * ("Agreement") which can be viewed at
+ * https://www.espocrm.com/extension-license-agreement/.
+ * By copying, installing downloading, or using this file, You have unconditionally
+ * agreed to the terms and conditions of the Agreement, and You may not use this
+ * file except in compliance with the Agreement. Under the terms of the Agreement,
+ * You shall not license, sublicense, sell, resell, rent, lease, lend, distribute,
+ * redistribute, market, publish, commercialize, or otherwise transfer rights or
+ * usage to the software or any modified version or derivative work of the software
+ * created by or for you.
+ *
+ * Copyright (C) 2015-2026 EspoCRM, Inc.
+ *
+ * License ID: 11af5a568c1a72dce4e164257d1a0207
+ ************************************************************************************/
+
+namespace Espo\Modules\Sales\Entities;
+
+use Espo\Core\Field\Date;
+
+class InvoiceItem extends QuoteItem
+{
+    public const ENTITY_TYPE = 'InvoiceItem';
+
+    public const FIELD_UNIT_PRICE = 'unitPrice';
+    public const FIELD_LIST_PRICE = 'listPrice';
+    public const FIELD_AMOUNT = 'amount';
+    public const FIELD_TAX_RATE = 'taxRate';
+    public const FIELD_TAX_CODE = 'taxCode';
+    public const FIELD_PERIOD_START_DATE = 'periodStartDate';
+    public const FIELD_PERIOD_END_DATE = 'periodEndDate';
+    public const FIELD_PRODUCT_IS_SUBSCRIBABLE = 'productIsSubscribable';
+    public const FIELD_DESCRIPTION = 'description';
+    public const FIELD_UNIT_PRICE_NET = 'unitPriceNet';
+    public const FIELD_TAX_AMOUNT = 'taxAmount';
+
+    public const LINK_INVOICE = 'invoice';
+
+    public function getPeriodStartDate(): ?Date
+    {
+        /** @var ?Date */
+        return $this->getValueObject(self::FIELD_PERIOD_START_DATE);
+    }
+
+    public function getPeriodEndDate(): ?Date
+    {
+        /** @var ?Date */
+        return $this->getValueObject(self::FIELD_PERIOD_END_DATE);
+    }
+}

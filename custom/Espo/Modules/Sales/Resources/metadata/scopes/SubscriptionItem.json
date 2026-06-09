@@ -1,0 +1,15 @@
+{
+    "entity": true,
+    "object": true,
+    "module": "Sales",
+    "currencyConversionAccessRequiredFieldList": ["amount"],
+    "customizable": true,
+    "entityManager": {
+        "edit": false,
+        "layouts": false,
+        "fields": true,
+        "formula": false,
+        "addField": true,
+        "relationships": false
+    }
+}

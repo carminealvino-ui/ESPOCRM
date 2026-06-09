@@ -1,0 +1,20 @@
+{
+    "entity": true,
+    "layouts": true,
+    "tab": false,
+    "acl": false,
+    "module": "Sales",
+    "importable": false,
+    "notifications": false,
+    "object": true,
+    "currencyConversionAccessRequiredFieldList": [],
+    "customizable": true,
+    "entityManager": {
+        "edit": false,
+        "layouts": true,
+        "fields": true,
+        "formula": true,
+        "addField": true,
+        "relationships": true
+    }
+}

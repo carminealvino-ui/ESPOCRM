@@ -1,0 +1,259 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "maxLength": 32,
+            "required": true,
+            "audited": true
+        },
+        "code": {
+            "type": "varchar",
+            "maxLength": 5,
+            "required": true,
+            "audited": true
+        },
+        "label": {
+            "type": "varchar",
+            "maxLength": 32,
+            "audited": true,
+            "tooltip": true
+        },
+        "order": {
+            "type": "int",
+            "readOnly": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Active",
+                "Inactive"
+            ],
+            "maxLength": 8,
+            "default": "Active",
+            "style": {
+                "Inactive": "info"
+            },
+            "audited": true
+        },
+        "isSelectable": {
+            "type": "bool",
+            "default": true
+        },
+        "isForSales": {
+            "type": "bool",
+            "default": true
+        },
+        "isForPurchases": {
+            "type": "bool",
+            "default": true
+        },
+        "type": {
+            "type": "enum",
+            "options": [
+                "Percentage",
+                "Fixed",
+                "Composite"
+            ],
+            "default": "Percentage",
+            "readOnlyAfterCreate": true,
+            "maxLength": 10,
+            "audited": true
+        },
+        "rate": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "min": 0,
+            "max": 100,
+            "audited": true,
+            "precision": 8,
+            "scale": 3,
+            "decimalPlaces": 3,
+            "validationList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\General\\Decimal\\Valid",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\General\\Decimal\\Range"
+            ],
+            "view": "modules/sales/views/fields/decimal"
+        },
+        "amount": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "audited": true,
+            "min": 0,
+            "decimalPlaces": 3,
+            "precision": 13,
+            "scale": 3,
+            "validationList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\General\\Decimal\\Valid",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\General\\Decimal\\Range"
+            ],
+            "view": "modules/sales/views/fields/decimal"
+        },
+        "base": {
+            "type": "enum",
+            "options": [
+                "Net Amount",
+                "Cumulative Total"
+            ],
+            "default": "Net Amount",
+            "maxLength": 16,
+            "tooltip": true
+        },
+        "includedInPrice": {
+            "type": "bool",
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\TaxCode\\IncludedInPrice\\PriceInclusiveMustPrecedeInComposite"
+            ],
+            "tooltip": true
+        },
+        "applyToProportionalShipping": {
+            "type": "bool",
+            "default": true,
+            "tooltip": true
+        },
+        "roundingLevel": {
+            "type": "enum",
+            "options": [
+                "Line",
+                "Total"
+            ],
+            "default": "Line",
+            "maxLength": 5,
+            "tooltip": true
+        },
+        "roundingFactor": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "audited": true,
+            "min": 0.001,
+            "max": 10,
+            "precision": 13,
+            "scale": 3,
+            "decimalPlaces": 3,
+            "validationList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\General\\Decimal\\Valid",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\General\\Decimal\\Range"
+            ],
+            "view": "modules/sales/views/fields/decimal",
+            "tooltip": true
+        },
+        "items": {
+            "type": "jsonArray",
+            "view": "modules/sales/views/tax-code/fields/items",
+            "notStorable": true,
+            "massUpdateDisabled": true,
+            "forceValidation": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\TaxCode\\Items\\Valid",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\TaxCode\\Items\\NoGroupNoInactiveItems",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\TaxCode\\Items\\PriceInclusiveMustPrecede"
+            ],
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\TaxCode\\Items",
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "audited",
+                    "type": "bool"
+                }
+            ],
+            "audited": true,
+            "duplicateIgnore": true
+        },
+        "itemOrder": {
+            "type": "int",
+            "notStorable": true,
+            "utility": true,
+            "orderDisabled": true,
+            "readOnly": true,
+            "order": {
+                "order": [
+                    ["taxCodeTaxCode.order", "{direction}"]
+                ]
+            }
+        },
+        "country": {
+            "type": "varchar",
+            "maxLength": 100,
+            "view": "views/fields/address-country",
+            "audited": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "taxes": {
+            "type": "hasMany",
+            "entity": "Tax",
+            "foreign": "taxCode",
+            "readOnly": true
+        },
+        "taxItemRules": {
+            "type": "hasMany",
+            "entity": "TaxItemRule",
+            "foreign": "taxCode",
+            "readOnly": true
+        },
+        "parentItems": {
+            "type": "hasMany",
+            "entity": "TaxCode",
+            "foreign": "items",
+            "readOnly": true
+        },
+        "items": {
+            "type": "hasMany",
+            "entity": "TaxCode",
+            "foreign": "parentItems",
+            "relationName": "taxCodeTaxCode",
+            "readOnly": true,
+            "orderBy": "itemOrder",
+            "order": "asc",
+            "additionalColumns": {
+                "order": {
+                    "type": "int"
+                }
+            },
+            "columnAttributeMap": {
+                "order": "itemOrder"
+            }
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "textFilterFields": [
+            "name",
+            "code"
+        ],
+        "orderBy": "order",
+        "order": "asc"
+    },
+    "indexes": {
+        "orderStatus": {
+            "columns": [
+                "order",
+                "status"
+            ]
+        }
+    }
+}

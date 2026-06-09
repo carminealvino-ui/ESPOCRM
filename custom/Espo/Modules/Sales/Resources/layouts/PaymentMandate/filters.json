@@ -1,0 +1,9 @@
+[
+    "account",
+    "status",
+    "type",
+    "iban",
+    "referenceId",
+    "accountHolder",
+    "dateSigned"
+]

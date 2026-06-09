@@ -1,0 +1,29 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "codiceMacroArea"
+                },
+                {
+                    "name": "macroArea"
+                }
+            ],
+            [
+                {
+                    "name": "codiceArea"
+                },
+                {
+                    "name": "name"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": "Overview"
+    }
+]

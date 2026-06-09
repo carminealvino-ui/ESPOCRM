@@ -1,0 +1,27 @@
+{
+    "labels": {
+        "Create TaxRule": "Create Tax Rule"
+    },
+    "fields": {
+        "logic": "Conditions",
+        "tax": "Tax Profile",
+        "status": "Status",
+        "order": "Order"
+    },
+    "links": {
+        "tax": "Tax Profile"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    },
+    "presetFilters": {
+        "active": "Active"
+    },
+    "tooltips": {
+        "tax": "Tax Profile applied by this rule.",
+        "logic": "Conditions that must be met for this rule to apply."
+    }
+}

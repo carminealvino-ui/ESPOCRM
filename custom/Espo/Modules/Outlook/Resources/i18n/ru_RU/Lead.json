@@ -1,0 +1,12 @@
+{
+  "massActions": {
+    "pushToOutlook": "Отправить в Outlook"
+  },
+  "actions": {
+    "pushToOutlook": "Отправить в Outlook"
+  },
+  "messages": {
+    "confirmationOutlookContactsPush": "Хотите отправить выбранных кандидатов в Контакты Outlook?",
+    "successOutlookContactsPush": "{count} запись(и) успешно отправлены. Остальные отправляются в фоновом режиме."
+  }
+}

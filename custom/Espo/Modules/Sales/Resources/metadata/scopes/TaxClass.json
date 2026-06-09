@@ -1,0 +1,8 @@
+{
+    "entity": true,
+    "module": "Sales",
+    "acl": true,
+    "aclActionList": ["read"],
+    "aclLevelList": ["all", "no"],
+    "importable": true
+}

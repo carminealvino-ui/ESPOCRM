@@ -1,0 +1,27 @@
+{
+    "controller": "controllers/record",
+    "recordViews": {
+        "detail": "custom:views/quote/record/detail"
+    },
+    "viewSetupHandlers": {
+        "record/detail": [
+            "__APPEND__",
+            "custom:handlers/quote/crea-prodotto-articoli"
+        ],
+        "record/edit": [
+            "__APPEND__",
+            "custom:handlers/quote/crea-prodotto-articoli"
+        ]
+    },
+    "relationshipPanels": {
+        "fornitorePartner": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        }
+    },
+    "additionalLayouts": {
+        "listForProduct": {
+            "type": "list"
+        }
+    }
+}

@@ -1,0 +1,43 @@
+{
+  "labels": {
+    "Create Product": "Crear producto",
+    "Price": "Precio",
+    "Brands": "Marcas",
+    "Categories": "Categorias"
+  },
+  "fields": {
+    "status": "Estado",
+    "brand": "Marca",
+    "partNumber": "Número de pieza",
+    "category": "Categoría",
+    "pricingType": "Tipo de precio",
+    "pricingFactor": "Factor de precio",
+    "costPrice": "Precio de coste",
+    "listPrice": "Precio de lista",
+    "unitPrice": "Precio unitario",
+    "costPriceCurrency": "Moneda del precio de coste",
+    "listPriceCurrency": "Moneda del precio de lista",
+    "unitPriceCurrency": "Moneda del precio unitario",
+    "costPriceConverted": "Precio de coste (convertido)",
+    "listPriceConverted": "Precio de lista (convertido)",
+    "unitPriceConverted": "Precio unitario (convertido)",
+    "isTaxFree": "Libre de impuestos",
+    "weight": "Peso"
+  },
+  "links": {
+    "brand": "Marca",
+    "category": "Categoría"
+  },
+  "options": {
+    "pricingType": {
+      "Same as List": "Igual que la lista",
+      "Fixed": "Fijo",
+      "Discount from List": "Descontar de la lista",
+      "Markup over Cost": "Margen sobre coste",
+      "Profit Margin": "Margen de beneficio"
+    }
+  },
+  "presetFilters": {
+    "available": "Disponible"
+  }
+}

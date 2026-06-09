@@ -1,0 +1,62 @@
+{
+  "labels": {
+    "Create TransferOrder": "Umlagerungsauftrag erstellen",
+    "Add Item": "Artikel hinzufügen",
+    "Items": "Artikel",
+    "Valid": "Gültig",
+    "Invalid": "Ungültig",
+    "Show Availability": "Verfügbarkeit anzeigen",
+    "Availability": "Verfügbarkeit",
+    "Total": "Gesamt"
+  },
+  "fields": {
+    "number": "Nummer",
+    "numberA": "Nummer (auto-inkrement)",
+    "fromWarehouse": "Ab Lager",
+    "toWarehouse": "Zum Lager",
+    "fromAddress": "Senden von der Adresse",
+    "toAddress": "Senden an folgende Adresse",
+    "amount": "Betrag",
+    "amountCurrency": "Betragswährung",
+    "shippingProvider": "Versender",
+    "itemList": "Artikelliste",
+    "dateOrdered": "Bestelldatum",
+    "shippingDate": "Versanddatum",
+    "deliveryDate": "Lieferdatum",
+    "weight": "Gewicht",
+    "currency": "Währung",
+    "inventoryData": "Inventar Daten",
+    "inventoryStatus": "Inventarstatus",
+    "isDone": "Erledigt"
+  },
+  "links": {
+    "items": "Artikel",
+    "shippingContact": "Kontakt f. Lieferadresse",
+    "shippingProvider": "Versender",
+    "inventoryTransactions": "Inventartransaktionen",
+    "fromWarehouse": "Ab Lager",
+    "toWarehouse": "Zum Lager"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Ready": "Bereit",
+      "In Progress": "In Bearbeitung",
+      "Completed": "Abgeschlossen",
+      "Canceled": "Storniert",
+      "Failed": "Fehlgeschlagen"
+    },
+    "inventoryStatus": {
+      "Available": "Verfügbar",
+      "On Hand": "Zum Lagerbestand",
+      "Not Available": "Nicht verfügbar"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "completed": "Abgeschlossen"
+  },
+  "messages": {
+    "warehousesAreSame": "Lager müssen anders sein"
+  }
+}

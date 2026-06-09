@@ -1,0 +1,50 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "azienda"
+                },
+                {
+                    "name": "area"
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "datadisponibilita"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "dateStart"
+                },
+                {
+                    "name": "dateEnd"
+                }
+            ],
+            [
+                {
+                    "name": "orarioInizio"
+                },
+                {
+                    "name": "orarioFine"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": "Overview"
+    }
+]

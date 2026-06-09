@@ -1,0 +1,15 @@
+[
+    "privato",
+    "account",
+    "dateCompleted",
+    "dateStart",
+    "dateEnd",
+    "status",
+    "parent",
+    "priority",
+    "assignedUser",
+    "teams",
+    "createdAt",
+    "modifiedAt",
+    "createdBy"
+]

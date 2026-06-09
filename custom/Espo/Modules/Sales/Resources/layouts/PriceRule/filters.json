@@ -1,0 +1,14 @@
+[
+    "target",
+    "priceBook",
+    "basedOn",
+    "discount",
+    "productCategory",
+    "minQuantity",
+    "dateStart",
+    "dateEnd",
+    "roundingMethod",
+    "roundingFactor",
+    "surcharge",
+    "supplier"
+]

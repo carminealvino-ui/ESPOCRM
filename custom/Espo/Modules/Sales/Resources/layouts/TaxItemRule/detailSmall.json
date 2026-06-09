@@ -1,0 +1,34 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "tax"
+                },
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "basis"
+                },
+                {
+                    "name": "class"
+                }
+            ],
+            [
+                {
+                    "name": "taxCode"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "rate"
+                },
+                false
+            ]
+        ]
+    }
+]

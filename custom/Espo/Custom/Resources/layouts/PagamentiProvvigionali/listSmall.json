@@ -1,0 +1,17 @@
+[
+    {
+        "name": "dataPagamento",
+        "width": 25,
+        "align": "left"
+    },
+    {
+        "name": "opportunita",
+        "width": 50,
+        "align": "left"
+    },
+    {
+        "name": "importo",
+        "width": 25,
+        "align": "left"
+    }
+]

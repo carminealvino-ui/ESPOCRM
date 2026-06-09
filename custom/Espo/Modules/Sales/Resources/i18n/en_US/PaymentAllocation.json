@@ -1,0 +1,27 @@
+{
+    "fields": {
+        "paymentEntry": "Payment",
+        "writeOffEntry": "Write-Off",
+        "creditNote": "Credit Note",
+        "supplierCredit": "Bill Credit",
+        "target": "Target",
+        "amount": "Amount",
+        "datePaid": "Date Paid",
+        "dateIssued": "Date Issued",
+        "sourceDate": "Date",
+        "source": "Source",
+        "amountLocal": "Amount Local",
+        "fxGainLoss": "FX Gain/Loss",
+        "date": "Allocation Date"
+    },
+    "links": {
+        "creditNote": "Credit Note",
+        "paymentEntry": "Payment",
+        "writeOffEntry": "Write-Off",
+        "supplierCredit": "Bill Credit",
+        "target": "Target"
+    },
+    "messages": {
+        "cannotBeZero": "Amount must be greater than 0."
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "layouts": {
+        "listItem": "Sąrašas (prekė)",
+        "detailBottomTotal": "Apatinė suma"
+    },
+    "fields": {
+        "useAutoincrement": "Automatinis padidinimas",
+        "copyFieldList": "Kopijuotini laukai"
+    },
+    "templates": {
+        "salesEmailPdf": "El. paštu PDF (pardavimas)"
+    }
+}

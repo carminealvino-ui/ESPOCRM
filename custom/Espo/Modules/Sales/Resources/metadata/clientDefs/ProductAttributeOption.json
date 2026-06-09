@@ -1,0 +1,18 @@
+{
+    "controller": "controllers/record",
+    "massRemoveDisabled": true,
+    "massUpdateDisabled": true,
+    "mergeDisabled": true,
+    "relationshipPanels": {
+        "products": {
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "createDisabled": true
+        },
+        "productVariants": {
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "createDisabled": true
+        }
+    }
+}

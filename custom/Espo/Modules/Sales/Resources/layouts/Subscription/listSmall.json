@@ -1,0 +1,19 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "interval",
+        "width": 15,
+        "hidden": true
+    },
+    {
+        "name": "account",
+        "width": 25
+    }
+]

@@ -1,0 +1,22 @@
+[
+    "status",
+    "account",
+    "invoice",
+    "billingContact",
+    "assignedUser",
+    "teams",
+    "createdAt",
+    "createdBy",
+    "dateIssued",
+    "dateDue",
+    "postingDate",
+    "number",
+    "amountConverted",
+    "grandTotalAmountConverted",
+    "amountDue",
+    "products",
+    "tax",
+    "roundingProfile",
+    "isIssued",
+    "isLocked"
+]

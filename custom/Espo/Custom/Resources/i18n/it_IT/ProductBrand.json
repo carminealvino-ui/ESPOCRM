@@ -1,0 +1,17 @@
+{
+    "fields": {
+        "fornitorePartner": "Fornitore/Partner",
+        "appuntamenti": "Appuntamenti",
+        "productCategories": "Prodotto - Categoria",
+        "name": "Prodotto - Brand"
+    },
+    "links": {
+        "fornitorePartner": "Fornitore/Partner",
+        "appuntamenti": "Appuntamenti",
+        "productCategories": "Prodotto - Categoria",
+        "quotes": "Contratto"
+    },
+    "labels": {
+        "Create ProductBrand": "Crea Prodotto - Brand"
+    }
+}

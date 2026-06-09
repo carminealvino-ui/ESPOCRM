@@ -1,0 +1,44 @@
+{
+    "entity": true,
+    "layouts": true,
+    "tab": true,
+    "acl": true,
+    "aclPortal": true,
+    "aclPortalLevelList":  [
+        "all",
+        "account",
+        "contact",
+        "no"
+    ],
+    "module": "Sales",
+    "customizable": true,
+    "importable": true,
+    "notifications": true,
+    "object": true,
+    "preserveAuditLog": true,
+    "currencyConversionAccessRequiredFieldList": ["amount"],
+    "lockableFieldList": [
+        "status",
+        "itemList",
+        "shippingCost",
+        "amount",
+        "dateQuoted",
+        "account",
+        "opportunity",
+        "number",
+        "priceBook",
+        "billingAddress",
+        "shippingAddress",
+        "tax",
+        "taxRate",
+        "shippingProvider",
+        "billingContact",
+        "shippingContact"
+    ],
+    "doneStatusList": [
+        "Approved"
+    ],
+    "canceledStatusList": [
+        "Canceled"
+    ]
+}

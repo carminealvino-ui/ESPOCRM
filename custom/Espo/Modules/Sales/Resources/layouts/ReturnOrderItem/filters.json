@@ -1,0 +1,12 @@
+[
+    "account",
+    "returnOrder",
+    "product",
+    "inventoryNumber",
+    "returnOrderStatus",
+    "quantity",
+    "unitPriceConverted",
+    "amountConverted",
+    "createdBy",
+    "createdAt"
+]

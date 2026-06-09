@@ -1,0 +1,79 @@
+{
+    "fieldTypes": {
+        "floatExtended": "FloatExtended"
+    },
+    "fields": {
+        "unit": "Unit",
+        "RenderOn": "Render On",
+        "isBold": "Bold Text",
+        "isItalic": "Italic Text",
+        "useColorLabel": "Use Label Color",
+        "labelThresholdLowValue": "Label Threshold Low Value",
+        "labelThresholdLowClass": "Label Threshold Low Class",
+        "labelThresholdHighValue": "Label Threshold High Value",
+        "labelThresholdHighClass": "Label Threshold High Class",
+        "labelThresholdDefaultClass": "Label Threshold Default Class",
+        "useColorText": "Use Text Color",
+        "textThresholdLowValue": "Text Threshold Low Value",
+        "textThresholdLowClass": "Text Threshold Low Class",
+        "textThresholdHighValue": "Text Threshold High Value",
+        "textThresholdHighClass": "Text Threshold High Class",
+        "textThresholdDefaultClass": "Text Threshold Default Class"
+    },
+    "options": {
+        "labelThresholdLowClass": {
+          "label-default": "Muted (Gray)",
+          "label-primary": "Primary (Dark Blue)",
+          "label-success": "Success (Green)",
+          "label-warning": "Warning (Orange)",
+          "label-danger": "Danger (Red)",
+          "label-info": "Info (Light Blue)",
+          "label-dark": "Dark (Black)"
+        },
+        "labelThresholdHighClass": {
+          "label-default": "Muted (Gray)",
+          "label-primary": "Primary (Dark Blue)",
+          "label-success": "Success (Green)",
+          "label-warning": "Warning (Orange)",
+          "label-danger": "Danger (Red)",
+          "label-info": "Info (Light Blue)",
+          "label-dark": "Dark (Black)"
+        },
+        "labelThresholdDefaultClass": {
+          "label-default": "Muted (Gray)",
+          "label-primary": "Primary (Dark Blue)",
+          "label-success": "Success (Green)",
+          "label-warning": "Warning (Orange)",
+          "label-danger": "Danger (Red)",
+          "label-info": "Info (Light Blue)",
+          "label-dark": "Dark (Black)"
+        },
+        "textThresholdLowClass": {
+          "text-muted": "Muted (Gray)",
+          "text-primary": "Primary (Blue)",
+          "text-success": "Success (Green)",
+          "text-info": "Info (Light Blue)",
+          "text-warning": "Warning (Orange)",
+          "text-danger": "Danger (Red)",
+          "text-dark": "Dark (Black)"
+        },
+        "textThresholdHighClass": {
+          "text-muted": "Muted (Gray)",
+          "text-primary": "Primary (Blue)",
+          "text-success": "Success (Green)",
+          "text-info": "Info (Light Blue)",
+          "text-warning": "Warning (Orange)",
+          "text-danger": "Danger (Red)",
+          "text-dark": "Dark (Black)"
+        },
+        "textThresholdDefaultClass": {
+          "text-muted": "Muted (Gray)",
+          "text-primary": "Primary (Blue)",
+          "text-success": "Success (Green)",
+          "text-info": "Info (Light Blue)",
+          "text-warning": "Warning (Orange)",
+          "text-danger": "Danger (Red)",
+          "text-dark": "Dark (Black)"
+        }
+    }
+}

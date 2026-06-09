@@ -1,0 +1,50 @@
+{
+    "controller": "controllers/record",
+    "acl": "sales:acl/quote-item",
+    "views": {
+        "list": "sales:views/quote-item/list"
+    },
+    "recordViews": {
+        "list": "sales:views/quote-item/record/list"
+    },
+    "mergeDisabled": true,
+    "convertCurrencyDisabled": true,
+    "duplicateDisabled": true,
+    "menu": {
+        "list": {
+            "buttons": [
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.InventoryAdjustment",
+                    "link": "#InventoryAdjustment",
+                    "acl": "read",
+                    "aclScope": "InventoryAdjustment"
+                }
+            ]
+        }
+    },
+    "additionalLayouts": {
+        "listItem": {
+            "type": "listSmall",
+            "dataAttributeList": [
+                "name",
+                "align",
+                "widthComplex",
+                "width",
+                "widthPx",
+                "link",
+                "view",
+                "customLabel"
+            ]
+        },
+        "listForProduct": {
+            "type": "listSmall"
+        }
+    },
+    "relationshipPanels": {
+        "inventoryNumber": {
+            "selectHandler": "sales:handlers/delivery-order-item/select-inventory-number",
+            "selectLayout": "listForProduct",
+            "createHandler": "sales:handlers/inventory-adjustment-item/create-inventory-number"
+        }
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "actions": {
+        "merge": {
+            "disabled": true
+        }
+    },
+    "massActions": {
+        "delete": {
+            "allowed": true
+        },
+        "update": {
+            "allowed": true
+        }
+    },
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Tax\\BeforeSave"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Tax\\BeforeSave"
+    ],
+    "defaultsPopulatorClassName": "Espo\\Modules\\Sales\\Classes\\Record\\Tax\\DefaultsPopulator"
+}

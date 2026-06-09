@@ -2,6 +2,7 @@
     "fields": {
         "productCategory": "Categoria prodotto",
         "fornitorePartner": "Fornitore / Partner",
-        "productBrand": "Brand"
+        "productBrand": "Brand",
+        "address": "Indirizzo"
     }
 }

@@ -1,0 +1,32 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "fromWarehouse",
+        "width": 20
+    },
+    {
+        "name": "toWarehouse",
+        "width": 20
+    },
+    {
+        "name": "dateOrdered",
+        "width": 12
+    },
+    {
+        "name": "shippingDate",
+        "width": 11,
+        "hidden": true
+    },
+    {
+        "name": "deliveryDate",
+        "width": 11,
+        "hidden": true
+    }
+]
