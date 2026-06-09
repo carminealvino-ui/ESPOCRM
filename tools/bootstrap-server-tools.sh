@@ -27,6 +27,7 @@ TOOL_FILES=(
   "tools/backup-dev-save.sh"
   "tools/backup-dev-batch.sh"
   "tools/backup-manifests/google-sync.files"
+  "tools/install-backup-dev-tools.sh"
   "tools/backup-quote-layouts.sh"
   "tools/restore-quote-layouts.sh"
   "tools/backup-account-layouts.sh"
