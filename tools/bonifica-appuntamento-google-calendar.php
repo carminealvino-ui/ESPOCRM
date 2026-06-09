@@ -40,6 +40,8 @@ use Espo\Core\Application;
 use Espo\Core\InjectableFactory;
 use Espo\Custom\Services\AppuntamentoGoogleSync;
 use Espo\ORM\Entity;
+use Espo\ORM\EntityManager;
+use Espo\ORM\Query\SelectBuilder;
 
 $app = new Application();
 $app->setupSystemUser();
@@ -395,10 +397,7 @@ foreach ($linkRows as $link) {
     $entityId = $link->get('entityId');
     $googleEventId = $link->get('googleCalendarEventId');
 
-    $appointment = $em->getRDBRepository('Appuntamento')
-        ->where(['id' => $entityId])
-        ->withDeleted()
-        ->findOne();
+    $appointment = findAppointmentIncludingDeleted($em, $entityId);
 
     if (!$appointment) {
         fwrite(STDOUT, "[ORPHAN LINK] entityId={$entityId} googleEvent={$googleEventId} — appuntamento assente\n");
@@ -451,10 +450,7 @@ $staleWhere = $onlyNotHeld
         ],
     ];
 
-$staleAppointments = $em->getRDBRepository('Appuntamento')
-    ->where($staleWhere)
-    ->withDeleted()
-    ->find();
+$staleAppointments = findAppointmentsIncludingDeleted($em, $staleWhere);
 
 foreach ($staleAppointments as $appointment) {
     $googleData = $em->getRepository('GoogleCalendar')->getEventEntityGoogleData(
@@ -580,6 +576,36 @@ if ($dryRun) {
 }
 
 fwrite(STDOUT, "\nNota: esegui un solo comando per riga (usa --user-id=67c93e694705fde80 se serve).\n");
+
+function findAppointmentIncludingDeleted(EntityManager $em, string $entityId): ?Entity
+{
+    return $em->getRDBRepository('Appuntamento')
+        ->clone(
+            SelectBuilder::create()
+                ->from('Appuntamento')
+                ->withDeleted()
+                ->build()
+        )
+        ->where(['id' => $entityId])
+        ->findOne();
+}
+
+/**
+ * @param array<string, mixed> $where
+ * @return iterable<Entity>
+ */
+function findAppointmentsIncludingDeleted(EntityManager $em, array $where): iterable
+{
+    return $em->getRDBRepository('Appuntamento')
+        ->clone(
+            SelectBuilder::create()
+                ->from('Appuntamento')
+                ->withDeleted()
+                ->build()
+        )
+        ->where($where)
+        ->find();
+}
 
 function formatAppointmentLabel(Entity $appointment): string
 {

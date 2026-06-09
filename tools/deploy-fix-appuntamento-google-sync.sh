@@ -20,6 +20,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
   "custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
+  "tools/bonifica-appuntamento-google-calendar.php"
 )
 
 echo "=== Fix Appuntamento Google Calendar sync → ${CRM_ROOT} ==="
@@ -30,6 +31,8 @@ for rel in "${FILES[@]}"; do
   curl -fsSL -o "${target}" "${BASE}/${rel}?t=$(date +%s)"
   echo "OK ${rel}"
 done
+
+chmod +x "${CRM_ROOT}/tools/bonifica-appuntamento-google-calendar.php" 2>/dev/null || true
 
 if [[ -f "${CRM_ROOT}/clear_cache.php" ]]; then
   (cd "${CRM_ROOT}" && php clear_cache.php && php rebuild.php)
@@ -49,5 +52,6 @@ echo "Allinea agenda (rimuove annullati + push venerdì/sabato):"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --user-id=67c93e694705fde80"
 echo "Solo push mancanti:"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --only-push --user-id=67c93e694705fde80"
-echo "Migrazione vecchio default false → true (una tantum se serve):"
+echo "Dopo deploy, esegui in ordine (una tantum migrazione flag):"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --backfill-sync-flag --user-id=67c93e694705fde80"
+echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --verbose --user-id=67c93e694705fde80"
