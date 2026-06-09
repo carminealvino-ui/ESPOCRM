@@ -50,39 +50,11 @@ define('custom:views/calendar/modals/edit', [
             );
         }
 
-        applyAppuntamentoDurationToModel(model) {
-            const dateStart = model.get('dateStart') || this.options.dateStart;
-
-            if (!dateStart) {
-                return;
-            }
-
-            const seconds = this.getDefaultDurationSeconds();
-
-            model.set({
-                dateStart: dateStart,
-                dateEnd: ProspectSync.computeDateEnd(this, dateStart, seconds),
-            });
-        }
-
         createRecordView(model, callback) {
             this.patchAppuntamentoDurationOptions();
 
-            if (this.shouldPatchAppuntamentoDuration()) {
-                this.applyAppuntamentoDurationToModel(model);
-            }
-
             super.createRecordView(model, (view) => {
-                if (this.shouldPatchAppuntamentoDuration()) {
-                    this.applyAppuntamentoDurationToModel(view.model);
-
-                    view.once('after:render', () => {
-                        ProspectSync.refreshDurationField(view);
-                    });
-                }
-
                 ProspectSync.setupProspectSync(view);
-
                 callback(view);
             });
         }

@@ -4,6 +4,8 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
 
     return Dep.extend({
 
+        _enforcingDefaultDuration: false,
+
         getDefaultDurationSeconds: function () {
             const fromField = this.model.getFieldParam(this.name, 'default');
 
@@ -21,12 +23,31 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
                 .format(this.getDateTime().internalDateTimeFormat);
         },
 
+        getDateTimeUnix: function (value) {
+            if (!value) {
+                return null;
+            }
+
+            return this.getDateTime().toMoment(value).unix();
+        },
+
+        isSameDateTime: function (left, right) {
+            const leftUnix = this.getDateTimeUnix(left);
+            const rightUnix = this.getDateTimeUnix(right);
+
+            if (leftUnix === null || rightUnix === null) {
+                return left === right;
+            }
+
+            return leftUnix === rightUnix;
+        },
+
         shouldEnforceDefaultDuration: function () {
             return this.model.isNew() && !this.model.get('isAllDay');
         },
 
         enforceDefaultDuration: function () {
-            if (!this.shouldEnforceDefaultDuration()) {
+            if (!this.shouldEnforceDefaultDuration() || this._enforcingDefaultDuration) {
                 return;
             }
 
@@ -44,8 +65,16 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
 
             this.seconds = defaultSeconds;
 
-            if (currentEnd !== expectedEnd) {
+            if (this.isSameDateTime(currentEnd, expectedEnd)) {
+                return;
+            }
+
+            this._enforcingDefaultDuration = true;
+
+            try {
                 this.model.set(this.endField, expectedEnd, {updatedByDuration: true});
+            } finally {
+                this._enforcingDefaultDuration = false;
             }
         },
 

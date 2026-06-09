@@ -67,24 +67,14 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
     const refreshDurationField = function (view) {
         const fieldView = view.getFieldView && view.getFieldView('duration');
 
-        if (!fieldView) {
+        if (!fieldView || typeof fieldView.enforceDefaultDuration !== 'function') {
             return;
         }
 
-        const start = view.model.get('dateStart');
-        const end = view.model.get('dateEnd');
-
-        if (!start || !end) {
-            return;
-        }
-
-        fieldView.seconds = view.getDateTime().toMoment(end).unix() -
-            view.getDateTime().toMoment(start).unix();
+        fieldView.enforceDefaultDuration();
 
         if (typeof fieldView.updateDuration === 'function') {
             fieldView.updateDuration();
-        } else if (typeof fieldView.reRender === 'function') {
-            fieldView.reRender();
         }
     };
 
