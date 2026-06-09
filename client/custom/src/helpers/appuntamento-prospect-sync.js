@@ -32,6 +32,13 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         return FALLBACK_DURATION_SECONDS;
     };
 
+    const computeDateEnd = function (view, dateStart, seconds) {
+        return view.getDateTime()
+            .toMoment(dateStart)
+            .add(seconds, 'seconds')
+            .format(view.getDateTime().internalDateTimeFormat);
+    };
+
     const syncBrandPartnerFromProspect = function (view) {
         if (view.model.get('parentType') !== 'Prospect') {
             return;
@@ -57,6 +64,30 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         });
     };
 
+    const refreshDurationField = function (view) {
+        const fieldView = view.getFieldView && view.getFieldView('duration');
+
+        if (!fieldView) {
+            return;
+        }
+
+        const start = view.model.get('dateStart');
+        const end = view.model.get('dateEnd');
+
+        if (!start || !end) {
+            return;
+        }
+
+        fieldView.seconds = view.getDateTime().toMoment(end).unix() -
+            view.getDateTime().toMoment(start).unix();
+
+        if (typeof fieldView.updateDuration === 'function') {
+            fieldView.updateDuration();
+        } else if (typeof fieldView.reRender === 'function') {
+            fieldView.reRender();
+        }
+    };
+
     const applyDefaultDuration = function (view) {
         if (!view.model.isNew() || view.model.get('isAllDay')) {
             return;
@@ -69,26 +100,21 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         }
 
         const defaultSeconds = getDefaultDurationSeconds(view);
-        const dateEnd = view.getDateTime()
-            .toMoment(dateStart)
-            .add(defaultSeconds, 'seconds')
-            .format(view.getDateTime().internalDateTimeFormat);
+        const dateEnd = computeDateEnd(view, dateStart, defaultSeconds);
 
         view.model.set({
             dateEnd: dateEnd,
             duration: defaultSeconds,
-        }, {ui: true, defaultDuration: true});
-    };
+        }, {ui: true});
 
-    const scheduleDefaultDuration = function (view) {
-        applyDefaultDuration(view);
-        setTimeout(() => applyDefaultDuration(view), 0);
-        setTimeout(() => applyDefaultDuration(view), 150);
+        refreshDurationField(view);
     };
 
     return {
         FALLBACK_DURATION_SECONDS: FALLBACK_DURATION_SECONDS,
         getDefaultDurationSeconds: getDefaultDurationSeconds,
+        computeDateEnd: computeDateEnd,
+        refreshDurationField: refreshDurationField,
         applyDefaultDuration: applyDefaultDuration,
 
         setupProspectSync: function (view) {
@@ -110,20 +136,8 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
                 applyDefaultDuration(view);
             });
 
-            view.listenTo(view.model, 'change:dateEnd', (model, value, options) => {
-                if (options && options.defaultDuration) {
-                    return;
-                }
-
-                if (!model.isNew()) {
-                    return;
-                }
-
-                applyDefaultDuration(view);
-            });
-
             view.once('after:render', () => {
-                scheduleDefaultDuration(view);
+                applyDefaultDuration(view);
             });
         },
     };

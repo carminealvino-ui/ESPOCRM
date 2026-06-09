@@ -12,24 +12,7 @@ define('custom:views/calendar/modals/edit', [
 
         setup() {
             super.setup();
-
-            this.once('after:render', () => {
-                this.applyDefaultDurationToEditView();
-            });
-        }
-
-        createRecordView(model, callback) {
-            this.applyDefaultDurationOptions();
-
-            super.createRecordView(model, (view) => {
-                this.applyDefaultDurationToModel(model);
-                ProspectSync.setupDefaultDuration(view);
-                ProspectSync.setupProspectSync(view);
-
-                callback(view);
-
-                this.applyDefaultDurationToEditView();
-            });
+            this.patchAppuntamentoDurationOptions();
         }
 
         getDefaultDurationSeconds() {
@@ -44,19 +27,30 @@ define('custom:views/calendar/modals/edit', [
             return ProspectSync.FALLBACK_DURATION_SECONDS;
         }
 
-        applyDefaultDurationOptions() {
-            if (!this.shouldApplyDefaultDuration()) {
-                return;
-            }
-
-            this.options.dateEnd = this.getAppuntamentoDefaultDateEnd(this.options.dateStart);
+        getActiveScope() {
+            return this.scope || this.options.scope;
         }
 
-        applyDefaultDurationToModel(model) {
-            if (!this.shouldApplyDefaultDuration()) {
+        shouldPatchAppuntamentoDuration() {
+            return !this.id &&
+                !this.options.allDay &&
+                Boolean(this.options.dateStart) &&
+                this.getActiveScope() === APPUNTAMENTO_SCOPE;
+        }
+
+        patchAppuntamentoDurationOptions() {
+            if (!this.shouldPatchAppuntamentoDuration()) {
                 return;
             }
 
+            this.options.dateEnd = ProspectSync.computeDateEnd(
+                this,
+                this.options.dateStart,
+                this.getDefaultDurationSeconds()
+            );
+        }
+
+        applyAppuntamentoDurationToModel(model) {
             const dateStart = model.get('dateStart') || this.options.dateStart;
 
             if (!dateStart) {
@@ -66,47 +60,31 @@ define('custom:views/calendar/modals/edit', [
             const seconds = this.getDefaultDurationSeconds();
 
             model.set({
-                dateEnd: this.getAppuntamentoDefaultDateEnd(dateStart),
-                duration: seconds,
-            }, {defaultDuration: true});
+                dateStart: dateStart,
+                dateEnd: ProspectSync.computeDateEnd(this, dateStart, seconds),
+            });
         }
 
-        applyDefaultDurationToEditView() {
-            if (!this.shouldApplyDefaultDuration()) {
-                return;
+        createRecordView(model, callback) {
+            this.patchAppuntamentoDurationOptions();
+
+            if (this.shouldPatchAppuntamentoDuration()) {
+                this.applyAppuntamentoDurationToModel(model);
             }
 
-            const editView = this.hasView('edit') ? this.getView('edit') : null;
+            super.createRecordView(model, (view) => {
+                if (this.shouldPatchAppuntamentoDuration()) {
+                    this.applyAppuntamentoDurationToModel(view.model);
 
-            if (!editView || !editView.model) {
-                return;
-            }
+                    view.once('after:render', () => {
+                        ProspectSync.refreshDurationField(view);
+                    });
+                }
 
-            this.applyDefaultDurationToModel(editView.model);
-        }
+                ProspectSync.setupProspectSync(view);
 
-        shouldApplyDefaultDuration() {
-            if (this.options.allDay) {
-                return false;
-            }
-
-            if (this.scope !== APPUNTAMENTO_SCOPE) {
-                return false;
-            }
-
-            if (!this.options.dateStart) {
-                return false;
-            }
-
-            // Nuovo appuntamento da calendario: sovrascrive la durata dello slot
-            return !this.id;
-        }
-
-        getAppuntamentoDefaultDateEnd(dateStart) {
-            return this.getDateTime()
-                .toMoment(dateStart)
-                .add(this.getDefaultDurationSeconds(), 'seconds')
-                .format(this.getDateTime().internalDateTimeFormat);
+                callback(view);
+            });
         }
     };
 });

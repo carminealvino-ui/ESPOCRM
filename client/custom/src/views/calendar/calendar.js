@@ -3,12 +3,13 @@
 define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], function (CalendarViewModule) {
 
     const CalendarView = CalendarViewModule.default || CalendarViewModule;
+    const APPUNTAMENTO_SCOPE = 'Appuntamento';
 
     return class CustomCalendarView extends CalendarView {
 
         getDefaultDurationSeconds() {
             const fromMeta = this.getMetadata().get(
-                ['entityDefs', 'Appuntamento', 'fields', 'duration', 'default']
+                ['entityDefs', APPUNTAMENTO_SCOPE, 'fields', 'duration', 'default']
             );
 
             if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
@@ -18,18 +19,6 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
             return 5400;
         }
 
-        normalizeCreateEventValues(values) {
-            if (!values || values.allDay || !values.dateStart) {
-                return values;
-            }
-
-            const next = {...values};
-
-            next.dateEnd = this.getDefaultDateEnd(next.dateStart);
-
-            return next;
-        }
-
         getDefaultDateEnd(dateStart) {
             return this.getDateTime()
                 .toMoment(dateStart)
@@ -37,24 +26,27 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
                 .format(this.getDateTime().internalDateTimeFormat);
         }
 
-        async createEvent(values) {
-            values = this.normalizeCreateEventValues(values || {});
-
-            const originalCreateView = this.createView.bind(this);
-
-            this.createView = (name, viewName, options) => {
-                if (name === 'dialog' && viewName === 'crm:views/calendar/modals/edit') {
-                    viewName = 'custom:views/calendar/modals/edit';
-                }
-
-                return originalCreateView(name, viewName, options);
-            };
-
-            try {
-                return await super.createEvent(values);
-            } finally {
-                this.createView = originalCreateView;
+        normalizeCreateEventValues(values) {
+            if (!values || values.allDay || !values.dateStart) {
+                return values;
             }
+
+            return {
+                ...values,
+                dateEnd: this.getDefaultDateEnd(values.dateStart),
+            };
+        }
+
+        async createView(name, viewName, options) {
+            if (name === 'dialog' && viewName === 'crm:views/calendar/modals/edit') {
+                viewName = 'custom:views/calendar/modals/edit';
+            }
+
+            return super.createView(name, viewName, options);
+        }
+
+        async createEvent(values) {
+            return super.createEvent(this.normalizeCreateEventValues(values || {}));
         }
     };
 });
