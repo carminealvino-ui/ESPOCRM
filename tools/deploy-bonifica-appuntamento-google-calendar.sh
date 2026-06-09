@@ -2,7 +2,7 @@
 # Deploy script bonifica Google Calendar + servizio sync aggiornato.
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-appuntamento-google-sync-9999/tools/deploy-bonifica-appuntamento-google-calendar.sh?t=$(date +%s)" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-bonifica-appuntamento-google-calendar.sh?t=$(date +%s)" | bash
 #
 # Poi dry-run:
 #   php tools/bonifica-appuntamento-google-calendar.php --dry-run
@@ -12,7 +12,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="${2:-cursor/fix-appuntamento-google-sync-9999}"
+BRANCH="${2:-main}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 

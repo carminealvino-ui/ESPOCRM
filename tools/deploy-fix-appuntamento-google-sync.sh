@@ -2,12 +2,12 @@
 # Google Calendar: rimuove su Not Held/delete, mantiene Ingestibile, cambio consulente.
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-appuntamento-google-sync-9999/tools/deploy-fix-appuntamento-google-sync.sh?t=$(date +%s)" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-fix-appuntamento-google-sync.sh?t=$(date +%s)" | bash
 
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="${2:-cursor/fix-appuntamento-google-sync-9999}"
+BRANCH="${2:-main}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 
@@ -59,3 +59,8 @@ echo "Dopo deploy, UN COMANDO PER RIGA:"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-ghosts --user-id=67c93e694705fde80"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --backfill-sync-flag --user-id=67c93e694705fde80"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --verbose --user-id=67c93e694705fde80"
+echo "Duplicati Google (stesso codice + slot):"
+echo "  php tools/bonifica-appuntamento-google-calendar.php --dry-run --only-purge-duplicates --from-date=2026-04-20 --to-date=2026-04-27 --user-id=67c93e694705fde80"
+echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-duplicates --from-date=2026-04-20 --to-date=2026-04-27 --user-id=67c93e694705fde80"
+echo ""
+echo "NON interrompere rebuild.php (rischio slim-routes.php corrotto)."
