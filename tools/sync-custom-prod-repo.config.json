@@ -1,4 +1,5 @@
 {
+    "gitClonePath": "~/ESPOCRM-git",
     "scanRoots": [
         "custom/Espo/Custom",
         "client/custom",
@@ -27,13 +28,13 @@
         ".DS_Store"
     ],
     "excludePathContains": [
-        "/.git/",
-        "/node_modules/",
-        "/custom/Espo/Custom/client/custom-views/cache",
-        "/Modules/Sales/vendor/",
-        "/client/custom/modules/advanced/",
-        "/client/custom/modules/google/",
-        "/client/custom/modules/outlook/"
+        ".git/",
+        "node_modules/",
+        "custom/Espo/Custom/client/custom-views/cache",
+        "Modules/Sales/vendor/",
+        "client/custom/modules/advanced/",
+        "client/custom/modules/google/",
+        "client/custom/modules/outlook/"
     ],
     "excludePathRegex": [
         "#/i18n/(?!it_IT/)#"

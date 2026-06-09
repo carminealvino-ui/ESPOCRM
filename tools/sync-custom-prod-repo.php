@@ -1,7 +1,7 @@
 <?php
 
 // =============================================================================
-// VERSIONE: 1.2.0
+// VERSIONE: 1.3.0
 // DATA: 2026-06-09
 // FILE: tools/sync-custom-prod-repo.php
 //
@@ -174,6 +174,7 @@ function findEspoRoot(): string
 function runStatus(string $crmRoot, array $config, array $options): void
 {
     $repoRoot = resolveRepoRoot($crmRoot, $config, !empty($options['refresh_cache']));
+    $config['_repo_source'] = $GLOBALS['sync_repo_source'] ?? 'cache';
     $prodIndex = buildFileIndex($crmRoot, $config, 'production');
     $repoIndex = buildFileIndex($repoRoot, $config, 'repo');
 
@@ -196,6 +197,7 @@ function runStatus(string $crmRoot, array $config, array $options): void
     echo "=== SYNC PRODUZIONE <-> REPO ===\n";
     echo "Produzione: {$crmRoot}\n";
     echo "Repository: {$repoRoot}\n";
+    echo 'Sorgente repo: ' . ($config['_repo_source'] ?? 'cache') . "\n";
     echo "Branch: {$config['github']['branch']}\n";
     echo 'File indicizzati prod: ' . count($prodIndex) . "\n";
     echo 'File indicizzati repo: ' . count($repoIndex) . "\n";
@@ -430,11 +432,23 @@ function clearRepoCache(string $crmRoot, array $config): void
 function resolveRepoRoot(string $crmRoot, array $config, bool $refresh = false): string
 {
     if (!empty($config['local_repo']) && is_dir($config['local_repo'])) {
+        $config['_repo_source'] = 'local';
+
         return $config['local_repo'];
+    }
+
+    $gitClone = resolveGitClonePath($config);
+
+    if ($gitClone !== null) {
+        syncGitClone($gitClone, $config['github']['branch'], $refresh);
+        $GLOBALS['sync_repo_source'] = 'git-clone';
+
+        return $gitClone;
     }
 
     $repo = $config['github']['repository'];
     $branch = $config['github']['branch'];
+    $GLOBALS['sync_repo_source'] = 'github-archive';
     $cacheDir = $crmRoot . '/exports/sync/.cache';
     $cacheKey = preg_replace('/[^a-zA-Z0-9_-]+/', '-', $branch);
     $extracted = "{$cacheDir}/repo-{$cacheKey}";
@@ -458,13 +472,22 @@ function resolveRepoRoot(string $crmRoot, array $config, bool $refresh = false):
     $archiveUrl = "https://github.com/{$repo}/archive/refs/heads/" . rawurlencode($branch) . '.tar.gz';
     $tarPath = "{$tmp}/branch.tar.gz";
 
-    echo "Download branch {$branch} da GitHub...\n";
+    echo "Download branch {$branch} da GitHub (archivio tar.gz)...\n";
+
+    $headers = ['Accept: application/vnd.github+json'];
+
+    $token = readGithubToken($crmRoot . '/exports/sync/token.txt');
+
+    if ($token !== null) {
+        $headers[] = 'Authorization: Bearer ' . $token;
+    }
 
     $ch = curl_init($archiveUrl);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_FAILONERROR => true,
+        CURLOPT_HTTPHEADER => $headers,
     ]);
     $body = curl_exec($ch);
     $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -476,8 +499,28 @@ function resolveRepoRoot(string $crmRoot, array $config, bool $refresh = false):
 
     file_put_contents($tarPath, $body);
 
-    $phar = new PharData($tarPath);
-    $phar->extractTo($tmp);
+    if (strlen($body) < 10000) {
+        fail('Download troppo piccolo (' . strlen($body) . ' byte). Repo privato? Usa ~/ESPOCRM-git o token in exports/sync/token.txt');
+    }
+
+    try {
+        $phar = new PharData($tarPath);
+
+        if (str_ends_with($tarPath, '.gz')) {
+            $tarOnly = preg_replace('/\.gz$/', '', $tarPath);
+
+            if (!is_string($tarOnly)) {
+                fail('Percorso archivio non valido.');
+            }
+
+            $phar->decompress();
+            $phar = new PharData($tarOnly);
+        }
+
+        $phar->extractTo($tmp);
+    } catch (\Throwable $e) {
+        fail('Estrazione archivio fallita: ' . $e->getMessage() . '. Usa clone Git ~/ESPOCRM-git');
+    }
 
     $src = findExtractedRepoRoot($tmp);
 
@@ -488,7 +531,118 @@ function resolveRepoRoot(string $crmRoot, array $config, bool $refresh = false):
     rename($src, $extracted);
     removeDirectory($tmp);
 
+    if (!isValidRepoCache($extracted)) {
+        $customCount = countFilesUnder($extracted . '/custom/Espo/Custom');
+        fail(
+            "Cache estratta incompleta ({$customCount} file in custom/Espo/Custom). "
+            . "Configura clone Git: git clone https://github.com/{$repo}.git ~/ESPOCRM-git"
+        );
+    }
+
     return $extracted;
+}
+
+function resolveGitClonePath(array $config): ?string
+{
+    $home = getenv('HOME') ?: '';
+    $candidates = [];
+
+    if (!empty($config['gitClonePath'])) {
+        $candidates[] = $config['gitClonePath'];
+    }
+
+    $candidates[] = '~/ESPOCRM-git';
+
+    foreach ($candidates as $candidate) {
+        if (!is_string($candidate) || $candidate === '') {
+            continue;
+        }
+
+        $path = str_starts_with($candidate, '~/')
+            ? $home . substr($candidate, 1)
+            : $candidate;
+
+        if (is_dir($path . '/.git') && is_dir($path . '/custom/Espo/Custom')) {
+            return $path;
+        }
+    }
+
+    return null;
+}
+
+function syncGitClone(string $clonePath, string $branch, bool $refresh): void
+{
+    if (!$refresh && isValidRepoCache($clonePath)) {
+        return;
+    }
+
+    echo "Aggiorno clone Git: {$clonePath} (branch {$branch})\n";
+
+    $commands = [
+        ['git', '-C', $clonePath, 'fetch', 'origin', $branch, '--quiet'],
+        ['git', '-C', $clonePath, 'checkout', $branch, '--quiet'],
+        ['git', '-C', $clonePath, 'pull', '--ff-only', 'origin', $branch, '--quiet'],
+    ];
+
+    foreach ($commands as $command) {
+        $result = runCommand($command);
+
+        if ($result['exitCode'] !== 0) {
+            $cmdLine = implode(' ', array_map('escapeshellarg', $command));
+            fail("Git fallito ({$result['exitCode']}): {$cmdLine}\n{$result['stderr']}");
+        }
+    }
+}
+
+/**
+ * @param list<string> $command
+ * @return array{exitCode: int, stdout: string, stderr: string}
+ */
+function runCommand(array $command): array
+{
+    $descriptors = [
+        0 => ['pipe', 'r'],
+        1 => ['pipe', 'w'],
+        2 => ['pipe', 'w'],
+    ];
+
+    $process = proc_open($command, $descriptors, $pipes);
+
+    if (!is_resource($process)) {
+        return ['exitCode' => 1, 'stdout' => '', 'stderr' => 'proc_open failed'];
+    }
+
+    fclose($pipes[0]);
+    $stdout = stream_get_contents($pipes[1]);
+    $stderr = stream_get_contents($pipes[2]);
+    fclose($pipes[1]);
+    fclose($pipes[2]);
+
+    return [
+        'exitCode' => proc_close($process),
+        'stdout' => is_string($stdout) ? $stdout : '',
+        'stderr' => is_string($stderr) ? $stderr : '',
+    ];
+}
+
+function countFilesUnder(string $directory): int
+{
+    if (!is_dir($directory)) {
+        return 0;
+    }
+
+    $count = 0;
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS)
+    );
+
+    foreach ($iterator as $item) {
+        if ($item->isFile()) {
+            $count++;
+        }
+    }
+
+    return $count;
 }
 
 function findExtractedRepoRoot(string $tmp): string
@@ -510,26 +664,19 @@ function findExtractedRepoRoot(string $tmp): string
 
 function isValidRepoCache(string $extracted): bool
 {
-    if (!is_dir($extracted . '/custom/Espo/Custom')) {
-        return false;
+    return is_dir($extracted . '/custom/Espo/Custom')
+        && countFilesUnder($extracted . '/custom/Espo/Custom') >= 100;
+}
+
+function readGithubToken(string $tokenFile): ?string
+{
+    if (!is_readable($tokenFile)) {
+        return null;
     }
 
-    $count = 0;
+    $token = trim((string) file_get_contents($tokenFile));
 
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator(
-            $extracted . '/custom/Espo/Custom',
-            FilesystemIterator::SKIP_DOTS
-        )
-    );
-
-    foreach ($iterator as $item) {
-        if ($item->isFile()) {
-            $count++;
-        }
-    }
-
-    return $count >= 100;
+    return strlen($token) >= 20 ? $token : null;
 }
 
 function buildFileIndex(string $root, array $config, string $label): array

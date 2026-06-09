@@ -18,12 +18,23 @@
 
 ## Passo 1 — Verifica allineamento (server)
 
+**Setup clone Git (una tantum, se manca):**
+
+```bash
+cd ~
+git clone https://github.com/carminealvino-ui/ESPOCRM.git ESPOCRM-git
+cd ~/ESPOCRM-git && git checkout main && git pull origin main
+```
+
+**Verifica:**
+
 ```bash
 cd ~/public_html/crm/mec-group
 curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/bootstrap-server-tools.sh?t=$(date +%s)" | bash
-php tools/sync-custom-prod-repo.php clear-cache --branch=main
 php tools/sync-custom-prod-repo.php status --branch=main --refresh-cache
 ```
+
+Atteso: `Sorgente repo: git-clone` e `File indicizzati repo` > 500.
 
 **Interpretazione:**
 
