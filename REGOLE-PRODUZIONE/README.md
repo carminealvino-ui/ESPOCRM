@@ -20,14 +20,18 @@ Dettaglio: [`01-UN-ISTRUZIONE-ALLA-VOLTA.md`](01-UN-ISTRUZIONE-ALLA-VOLTA.md)
 
 - **Prima** di ogni modifica in produzione: backup in `backup_dev/` — **passo 0, non saltare**.
 - Procedura standard: [`00-PASSO-ZERO-BACKUP-OBBLIGATORIO.md`](00-PASSO-ZERO-BACKUP-OBBLIGATORIO.md)
-- Due livelli complementari:
+- **Unica cartella:** `backup_dev/` — tutti i backup (hook, layout, snapshot, sessioni).
 
-| Tipo | Dove | Quando |
-|------|------|--------|
-| **Fix mirato** (hook, layout, metadata, client) | `backup_dev/{Entità}/…` | Ogni modifica a file custom |
-| **Layout deploy** (snapshot cartella) | `custom/backup-layouts/YYYYMMDD-HHMMSS/` | Prima di deploy layout / script che toccano UI |
+| Tipo | Dove in `backup_dev/` |
+|------|------------------------|
+| File singoli | `{Entità}/hooks/`, `layouts/`, `metadata/`, … |
+| Sessione batch | `_sessions/YYYYMMDD-HHMMSS_FIX/` |
+| Snapshot Quote | `Quote/layouts-snapshots/YYYYMMDD-HHMMSS/` |
+| Snapshot Account | `Account/snapshots/YYYYMMDD-HHMMSS/` |
+| Snapshot Appuntamento | `Appuntamento/snapshots/YYYYMMDD-HHMMSS/` |
 
-- Nome file in `backup_dev`: `DATA_FIX_AGGIORNAMENTO_OBIETTIVO` (vedi `backup_dev/README.md`).
+- Nome file: `DATA_FIX_AGGIORNAMENTO_OBIETTIVO` (vedi `backup_dev/README.md`).
+- **Non** usare `custom/backup-layouts/` (deprecato).
 
 Dettaglio: [`02-BACKUP-FIX-E-ROLLBACK.md`](02-BACKUP-FIX-E-ROLLBACK.md)
 

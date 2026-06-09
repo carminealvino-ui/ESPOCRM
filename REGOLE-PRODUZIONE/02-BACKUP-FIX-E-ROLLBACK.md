@@ -30,11 +30,11 @@ bash tools/backup-dev-save.sh Appuntamento elenco-produzione hooks GlobalLogic.p
 
 Copia in: `backup_dev/Appuntamento/hooks/YYYYMMDD-HHMMSS_elenco-produzione_hooks_GlobalLogic.php`
 
-### C) Layout (intera cartella entità)
+### C) Layout (intera cartella entità) → sempre `backup_dev/`
 
 ```bash
-bash tools/backup-quote-layouts.sh      # Contratto → custom/backup-layouts/.../Quote/
-bash tools/backup-account-layouts.sh    # Cliente
+bash tools/backup-quote-layouts.sh      # → backup_dev/Quote/layouts-snapshots/
+bash tools/backup-account-layouts.sh    # → backup_dev/Account/snapshots/
 ```
 
 Se `tools/` manca:
@@ -47,9 +47,9 @@ curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tool
 
 ```bash
 STAMP=$(date +%Y%m%d-%H%M%S)
-mkdir -p "custom/backup-layouts/${STAMP}/Quote"
-cp -a custom/Espo/Custom/Resources/layouts/Quote/. "custom/backup-layouts/${STAMP}/Quote/"
-echo "Salvato in custom/backup-layouts/${STAMP}"
+mkdir -p "backup_dev/Quote/layouts-snapshots/${STAMP}"
+cp -a custom/Espo/Custom/Resources/layouts/Quote/. "backup_dev/Quote/layouts-snapshots/${STAMP}/"
+echo "Salvato in backup_dev/Quote/layouts-snapshots/${STAMP}"
 ```
 
 ## Rollback layout Contratto

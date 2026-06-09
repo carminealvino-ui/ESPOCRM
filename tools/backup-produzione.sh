@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
-# Backup file prima di deploy in produzione → custom/backup-layouts/YYYYMMDD-HHMMSS/
+# Backup file Appuntamento prima di deploy → backup_dev/Appuntamento/snapshots/
 #
 #   bash tools/backup-produzione.sh
-#   bash tools/backup-produzione.sh Appuntamento   # solo etichetta nel manifest
+#   bash tools/backup-produzione.sh Appuntamento
+#
+# Preferire: bash tools/backup-dev-batch.sh FIX --manifest tools/backup-manifests/....files
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 LABEL="${1:-deploy}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
-DEST="${CRM_ROOT}/custom/backup-layouts/${STAMP}"
+DEST="${CRM_ROOT}/backup_dev/Appuntamento/snapshots/${STAMP}"
 
-# File toccati da fix Appuntamento / deploy emergenza (aggiungere qui altri path se serve)
 BACKUP_PATHS=(
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"

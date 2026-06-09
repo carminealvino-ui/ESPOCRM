@@ -33,5 +33,5 @@ Confonderli causa rollback sul path sbagliato.
 
 - [ ] So se il fix è hooks / layouts / metadata / client JS
 - [ ] Backup in `backup_dev/{Entità}/...` (non cartella sbagliata)
-- [ ] Se layout: anche `custom/backup-layouts/` se cambio più file JSON
+- [ ] Se layout massivo: `backup_dev/{Entità}/layouts-snapshots/` o `snapshots/` (mai `custom/backup-layouts/`)
 - [ ] Annotato timestamp file per rollback

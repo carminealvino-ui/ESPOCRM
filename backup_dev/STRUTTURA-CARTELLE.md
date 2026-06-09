@@ -71,7 +71,7 @@ Prima di modificare in produzione, usare **`tools/backup-dev-save.sh`** con l’
 | Vista JS detail | `client-detail` | `backup-dev-save.sh Opportunity btn-contratto client-detail edit.js` |
 | Handler JS | `client-handlers` | `backup-dev-save.sh Opportunity handler client-handlers create-contratto.js` |
 
-Layout massivi: anche `custom/backup-layouts/YYYYMMDD/Quote/` (snapshot intera cartella).
+Layout massivi: `backup_dev/Quote/layouts-snapshots/YYYYMMDD-HHMMSS/` (snapshot intera cartella).
 
 ---
 

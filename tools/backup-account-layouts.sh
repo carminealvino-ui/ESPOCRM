@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Backup layout + metadata Account prima di deploy subpanel Appuntamenti/Contratti.
+# Backup layout + metadata Account → backup_dev/Account/snapshots/
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
-DEST="${CRM_ROOT}/custom/backup-layouts/${STAMP}/Account"
+DEST="${CRM_ROOT}/backup_dev/Account/snapshots/${STAMP}"
 
 PATHS=(
   "custom/Espo/Custom/Resources/layouts/Account"
@@ -25,5 +25,5 @@ for rel in "${PATHS[@]}"; do
   fi
 done
 
-echo "${STAMP}" > "${CRM_ROOT}/custom/backup-layouts/LAST_ACCOUNT_BACKUP.txt"
+echo "${STAMP}" > "${CRM_ROOT}/backup_dev/Account/LAST_BACKUP.txt"
 echo "Backup Account: ${DEST}"
