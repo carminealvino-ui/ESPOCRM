@@ -50,6 +50,7 @@ TOOL_FILES=(
   "tools/deploy-fix-appuntamento-google-sync.sh"
   "tools/deploy-bonifica-appuntamento-google-calendar.sh"
   "tools/bonifica-appuntamento-google-calendar.php"
+  "tools/run-google-sync-bonifica-session.sh"
   "tools/fix-contratto-importo-minusplus-standalone.php"
   "tools/layouts-samples/Quote/detail-prezzi-minusplus.json"
 )

@@ -54,10 +54,11 @@ Se `status` mostra file **Solo in repo** per Google sync:
 
 ```bash
 cd ~/public_html/crm/mec-group
-curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-fix-appuntamento-google-sync.sh?t=$(date +%s)" | bash
+curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-fix-appuntamento-google-sync.sh" -o tools/deploy-fix-appuntamento-google-sync.sh
+bash tools/deploy-fix-appuntamento-google-sync.sh
 ```
 
-Poi bonifica (un comando per riga):
+Poi bonifica — vedi [`11-GOOGLE-SYNC-GHOST-BONIFICA.md`](11-GOOGLE-SYNC-GHOST-BONIFICA.md) oppure:
 
 ```bash
 php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-ghosts --user-id=67c93e694705fde80
