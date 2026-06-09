@@ -14,7 +14,7 @@ define('custom:views/fields/product-brand-by-partner', ['views/fields/link'], fu
             Dep.prototype.setup.call(this);
 
             this.listenTo(this.model, 'change:productBrandId', function (model, value, options) {
-                if (!options || !options.ui) {
+                if (!options || !options.ui || options.prospectSync) {
                     return;
                 }
 
