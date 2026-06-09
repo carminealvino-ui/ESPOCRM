@@ -87,7 +87,11 @@ done
 
 echo ""
 echo "Script in ${CRM_ROOT}/tools/"
-echo "Passo 0 backup: bash tools/backup-dev-batch.sh FIX --manifest tools/backup-manifests/google-sync.files"
+echo ""
+echo "=== Passo 0 OBBLIGATORIO: backup in backup_dev/ ==="
+echo "  bash tools/backup-dev-batch.sh FIX --manifest tools/backup-manifests/google-sync.files"
+echo "  bash tools/backup-dev-save.sh ENTITA FIX TIPO FILE"
 echo "  bash tools/backup-quote-layouts.sh"
 echo "  bash tools/backup-account-layouts.sh"
+echo ""
 echo "  php tools/sync-custom-prod-repo.php status --branch=main"
