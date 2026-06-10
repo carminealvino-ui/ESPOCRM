@@ -227,8 +227,9 @@
         "setNotHeld": "Set Not Held"
     },
     "presetFilters": {
-        "planned": "Planned",
-        "held": "Held",
-        "todays": "Today's"
+        "pianificato": "Planned",
+        "svolto": "Held",
+        "nonSvolto": "Not Held",
+        "ingestibile": "Ingestibile"
     }
 }

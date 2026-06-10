@@ -1,0 +1,31 @@
+{
+    "controller": "controllers/record",
+    "views": {
+        "detail": "views/detail",
+        "list": "views/list"
+    },
+    "recordViews": {
+        "list": "views/record/list",
+        "detail": "custom:views/appuntamento/record/detail",
+        "edit": "custom:views/appuntamento/record/edit",
+        "editSmall": "custom:views/appuntamento/record/edit-small"
+    },
+    "modalViews": {
+        "detail": "views/modals/detail"
+    },
+    "filterList": [
+        {
+            "name": "svolto",
+            "label": "Svolto",
+            "style": "success"
+        },
+        {
+            "name": "nonSvolto",
+            "label": "Non Svolto",
+            "style": "danger"
+        }
+    ],
+    "kanbanViewMode": false,
+    "color": null,
+    "iconClass": "fas fa-table-list"
+}
