@@ -974,7 +974,7 @@ class AppuntamentoGoogleSync
 
         return [
             'removed' => $removed,
-            'scanned' => count($items),
+            'scanned' => $ghostScanned,
             'candidates' => $candidates,
             'repaired_push' => $repairedPush,
         ];
