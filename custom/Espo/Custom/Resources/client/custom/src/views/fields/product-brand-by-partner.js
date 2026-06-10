@@ -1,7 +1,7 @@
 // ========================================
-// VERSIONE: 1.2.0
-// DATA: 2026-05-26
-// FILE: custom/Espo/Custom/Resources/client/custom/src/views/fields/product-brand-by-partner.js
+// VERSIONE: 1.3.0
+// DATA: 2026-06-10
+// FILE: client/custom/src/views/fields/product-brand-by-partner.js
 // ========================================
 
 /* global define */
@@ -14,7 +14,7 @@ define('custom:views/fields/product-brand-by-partner', ['views/fields/link'], fu
             Dep.prototype.setup.call(this);
 
             this.listenTo(this.model, 'change:productBrandId', function (model, value, options) {
-                if (!options || !options.ui) {
+                if (!options || !options.ui || options.prospectSync) {
                     return;
                 }
 

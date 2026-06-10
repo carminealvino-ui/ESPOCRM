@@ -1,7 +1,7 @@
 // ========================================
-// VERSIONE: 1.1.0
-// DATA: 2026-05-24
-// FILE: custom/Espo/Custom/Resources/client/custom/src/views/fields/fornitore-partner-cascade.js
+// VERSIONE: 1.2.0
+// DATA: 2026-06-10
+// FILE: client/custom/src/views/fields/fornitore-partner-cascade.js
 // ========================================
 
 /* global define */
@@ -14,7 +14,7 @@ define('custom:views/fields/fornitore-partner-cascade', ['views/fields/link'], f
             Dep.prototype.setup.call(this);
 
             this.listenTo(this.model, 'change:fornitorePartnerId', function (model, value, options) {
-                if (!options || !options.ui) {
+                if (!options || !options.ui || options.prospectSync) {
                     return;
                 }
 
