@@ -173,6 +173,15 @@ class AppuntamentoGoogleSync
 
         if ($this->hasGoogleLink($entity->getId())) {
             if ($this->isGoogleEventAlive($entity, $userId)) {
+                if (
+                    !$this->isGhostAppointment($entity)
+                    && $this->linkedGoogleEventHasGhostTitle($entity, $userId)
+                ) {
+                    $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entity->getId());
+
+                    return $this->pushEntityToGoogle($entity, $userId);
+                }
+
                 return false;
             }
 
@@ -743,6 +752,231 @@ class AppuntamentoGoogleSync
             'duplicate_groups' => $duplicateGroups,
             'candidates' => $candidates,
             'details' => $details,
+        ];
+    }
+
+    public function isGoogleSummaryGhostTitle(string $summary): bool
+    {
+        return str_contains($summary, self::GHOST_NAME_MARKER);
+    }
+
+    public function linkedGoogleEventHasGhostTitle(Entity $entity, string $calendarUserId): bool
+    {
+        $entityId = $entity->getId();
+
+        if (!$entityId || !$this->hasGoogleLink($entityId)) {
+            return false;
+        }
+
+        $googleData = $this->getGoogleRepository()->getEventEntityGoogleData(self::ENTITY_TYPE, $entityId);
+
+        if (!is_array($googleData) || empty($googleData['googleCalendarEventId'])) {
+            return false;
+        }
+
+        $calendarId = $this->resolveMainGoogleCalendarIdForUser($calendarUserId);
+
+        if ($calendarId === null) {
+            return false;
+        }
+
+        try {
+            $client = $this->clientManager->create('Google', $calendarUserId);
+            $event = $client->getCalendarClient()->retrieveEvent(
+                $calendarId,
+                (string) $googleData['googleCalendarEventId']
+            );
+        } catch (\Throwable) {
+            return false;
+        }
+
+        if (!is_array($event)) {
+            return false;
+        }
+
+        return $this->isGoogleSummaryGhostTitle((string) ($event['summary'] ?? ''));
+    }
+
+    /**
+     * Appuntamento reale (con prospect/parent/indirizzo) nello stesso slot di un evento Google.
+     *
+     * @param array<string, mixed> $googleItem
+     */
+    public function findRealAppointmentAtGoogleEvent(array $googleItem, \DateTimeZone $userTz): ?Entity
+    {
+        $eventStart = $googleItem['start']['dateTime'] ?? $googleItem['start']['date'] ?? null;
+
+        if (!is_string($eventStart) || $eventStart === '') {
+            return null;
+        }
+
+        try {
+            $eventDt = new \DateTime($eventStart);
+            $eventDt->setTimezone($userTz);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        $day = $eventDt->format('Y-m-d');
+        $eventMinutes = (int) $eventDt->format('H') * 60 + (int) $eventDt->format('i');
+
+        $candidates = $this->entityManager
+            ->getRDBRepository(self::ENTITY_TYPE)
+            ->where([
+                'deleted' => false,
+                'dateStart>=' => $day . ' 00:00:00',
+                'dateStart<=' => $day . ' 23:59:59',
+            ])
+            ->find();
+
+        $best = null;
+        $bestDelta = 9999;
+
+        foreach ($candidates as $candidate) {
+            if ($this->isGhostAppointment($candidate)) {
+                continue;
+            }
+
+            $start = $candidate->get('dateStart');
+
+            if (!is_string($start) || strlen($start) < 16) {
+                continue;
+            }
+
+            try {
+                $appDt = new \DateTime($start, $userTz);
+            } catch (\Throwable) {
+                continue;
+            }
+
+            $appMinutes = (int) $appDt->format('H') * 60 + (int) $appDt->format('i');
+            $delta = abs($appMinutes - $eventMinutes);
+
+            if ($delta <= 5 && $delta < $bestDelta) {
+                $best = $candidate;
+                $bestDelta = $delta;
+            }
+        }
+
+        return $best;
+    }
+
+    /**
+     * Rimuove da Google gli eventi con titolo "(APPUNTAMENTO SENZA PROSPECT)" orfani
+     * e ripusha l'appuntamento reale nello stesso slot con titolo corretto.
+     *
+     * @return array{removed: int, scanned: int, candidates: int, repaired_push: int}
+     */
+    public function bonificaPurgeGoogleGhostTitleEvents(
+        string $calendarUserId,
+        string $fromDate,
+        string $toDate,
+        bool $apply = true
+    ): array {
+        $empty = [
+            'removed' => 0,
+            'scanned' => 0,
+            'candidates' => 0,
+            'repaired_push' => 0,
+        ];
+
+        if (!$this->isGoogleCalendarApiAvailableForUser($calendarUserId)) {
+            return $empty;
+        }
+
+        $calendarId = $this->resolveMainGoogleCalendarIdForUser($calendarUserId);
+
+        if ($calendarId === null) {
+            return $empty;
+        }
+
+        $userTz = $this->resolveUserTimeZone($calendarUserId);
+
+        try {
+            $client = $this->clientManager->create('Google', $calendarUserId);
+            $items = $this->fetchAllGoogleEventsInRange(
+                $client->getCalendarClient(),
+                $calendarId,
+                $fromDate,
+                $toDate,
+                $userTz
+            );
+        } catch (\Throwable $e) {
+            $GLOBALS['log']->error(
+                'AppuntamentoGoogleSync: purge google ghost titles list failed: ' . $e->getMessage()
+            );
+
+            return $empty;
+        }
+
+        $removed = 0;
+        $candidates = 0;
+        $repairedPush = 0;
+        $ghostScanned = 0;
+
+        foreach ($items as $item) {
+            $summary = (string) ($item['summary'] ?? '');
+
+            if (!$this->isGoogleSummaryGhostTitle($summary)) {
+                continue;
+            }
+
+            $ghostScanned++;
+            $candidates++;
+            $eventId = (string) ($item['id'] ?? '');
+
+            if ($eventId === '') {
+                continue;
+            }
+
+            $real = $this->findRealAppointmentAtGoogleEvent($item, $userTz);
+
+            if (!$apply) {
+                continue;
+            }
+
+            if ($real !== null && $real->getId()) {
+                $googleData = $this->getGoogleRepository()->getEventEntityGoogleData(
+                    self::ENTITY_TYPE,
+                    $real->getId()
+                );
+                $linkedId = is_array($googleData)
+                    ? (string) ($googleData['googleCalendarEventId'] ?? '')
+                    : '';
+
+                if ($linkedId !== '' && $linkedId === $eventId) {
+                    $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $real->getId());
+                }
+            }
+
+            try {
+                if (!$client->getCalendarClient()->deleteEvent($calendarId, $eventId)) {
+                    continue;
+                }
+            } catch (\Throwable $e) {
+                $GLOBALS['log']->error(
+                    'AppuntamentoGoogleSync: google ghost title delete ' . $eventId . ': ' . $e->getMessage()
+                );
+
+                continue;
+            }
+
+            $removed++;
+
+            if (
+                $real !== null
+                && $this->shouldStayOnConsultantGoogleCalendar($real, $calendarUserId)
+                && $this->bonificaPushMissing($real, $calendarUserId) === 'pushed'
+            ) {
+                $repairedPush++;
+            }
+        }
+
+        return [
+            'removed' => $removed,
+            'scanned' => count($items),
+            'candidates' => $candidates,
+            'repaired_push' => $repairedPush,
         ];
     }
 
@@ -1509,6 +1743,66 @@ class AppuntamentoGoogleSync
         }
 
         return str_contains($summary, 'LZ/');
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function fetchAllGoogleEventsInRange(
+        object $calendarClient,
+        string $calendarId,
+        string $fromDate,
+        string $toDate,
+        \DateTimeZone $userTz
+    ): array {
+        try {
+            $rangeStart = new \DateTime($fromDate . ' 00:00:00', $userTz);
+            $rangeEnd = new \DateTime($toDate . ' 23:59:59', $userTz);
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $timeMin = (clone $rangeStart)->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
+        $timeMax = (clone $rangeEnd)->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
+        $items = [];
+        $pageToken = null;
+
+        do {
+            $params = [
+                'timeMin' => $timeMin,
+                'timeMax' => $timeMax,
+                'singleEvents' => 'true',
+                'maxResults' => 250,
+            ];
+
+            if (is_string($pageToken) && $pageToken !== '') {
+                $params['pageToken'] = $pageToken;
+            }
+
+            $response = $calendarClient->getEventList($calendarId, $params);
+
+            if (!is_array($response) || !is_array($response['items'] ?? null)) {
+                break;
+            }
+
+            foreach ($response['items'] as $item) {
+                if (!is_array($item) || empty($item['id'])) {
+                    continue;
+                }
+
+                $summary = (string) ($item['summary'] ?? '');
+
+                if ($summary === '' || str_starts_with($summary, 'Too Good To Go')) {
+                    continue;
+                }
+
+                $items[] = $item;
+            }
+
+            $pageToken = $response['nextPageToken'] ?? null;
+        } while (is_string($pageToken) && $pageToken !== '');
+
+        return $items;
     }
 
     /**

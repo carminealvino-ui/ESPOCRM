@@ -20,7 +20,7 @@
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-not-held
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-push
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --reconcile
- *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-ghosts
+ *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-google-ghost-titles
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --backfill-sync-flag
  *   php tools/bonifica-appuntamento-google-calendar.php --dry-run --only-purge-duplicates --from-date=2026-04-20 --to-date=2026-04-27
  *
@@ -59,6 +59,7 @@ $onlyPush = in_array('--only-push', $argv, true);
 $reconcileOnly = in_array('--reconcile', $argv, true);
 $onlyPurgeGhosts = in_array('--only-purge-ghosts', $argv, true);
 $onlyPurgeDuplicates = in_array('--only-purge-duplicates', $argv, true);
+$onlyPurgeGoogleGhostTitles = in_array('--only-purge-google-ghost-titles', $argv, true);
 $backfillSyncFlag = in_array('--backfill-sync-flag', $argv, true);
 $verbose = in_array('--verbose', $argv, true);
 $pushSinceDays = 21;
@@ -147,7 +148,7 @@ $googleOk = $externalAccount
     && $externalAccount->get('enabled')
     && ($externalAccount->get('calendarEnabled') || $externalAccount->get('googleCalendarEnabled'));
 
-fwrite(STDOUT, "=== Bonifica Google Calendar Appuntamenti (v1.7.0) ===\n");
+fwrite(STDOUT, "=== Bonifica Google Calendar Appuntamenti (v1.8.0) ===\n");
 fwrite(STDOUT, 'Modalità: ' . ($dryRun ? 'DRY-RUN (nessuna modifica)' : 'APPLY') . "\n");
 if ($onlyIngestibili) {
     fwrite(STDOUT, "Filtro: solo correzione Ingestibile (admin → consulente)\n");
@@ -170,6 +171,9 @@ if ($backfillSyncFlag) {
 if ($onlyPurgeDuplicates) {
     fwrite(STDOUT, "Filtro: rimuove duplicati Google (stesso codice + slot) {$purgeFromDate} → {$purgeToDate}\n");
 }
+if ($onlyPurgeGoogleGhostTitles) {
+    fwrite(STDOUT, "Filtro: rimuove titoli ghost su Google + ripush appuntamento reale {$purgeFromDate} → {$purgeToDate}\n");
+}
 fwrite(STDOUT, "Consulente calendario: {$calendarUserLabel} (id {$calendarUserId})\n");
 fwrite(STDOUT, 'Google collegato: ' . ($googleOk ? 'sì' : 'NO — delete API potrebbe fallire') . "\n\n");
 
@@ -189,11 +193,13 @@ $stats = [
     'ghosts_purged' => 0,
     'sync_flag_backfilled' => 0,
     'google_duplicates_removed' => 0,
+    'google_ghost_titles_removed' => 0,
+    'google_ghost_titles_repaired' => 0,
 ];
 
 $purgeSince = date('Y-m-d', strtotime('-' . $pushSinceDays . ' days'));
 
-if ($onlyPurgeGhosts || (!$onlyIngestibili && !$onlyPush && !$reconcileOnly && !$onlyPurgeDuplicates && !$backfillSyncFlag)) {
+if ($onlyPurgeGhosts || (!$onlyIngestibili && !$onlyPush && !$reconcileOnly && !$onlyPurgeDuplicates && !$backfillSyncFlag && !$onlyPurgeGoogleGhostTitles)) {
     fwrite(STDOUT, "[PURGE GHOSTS] Duplicati senza prospect dal {$purgeSince}\n");
 
     if ($dryRun) {
@@ -226,6 +232,29 @@ if ($onlyPurgeGhosts || (!$onlyIngestibili && !$onlyPush && !$reconcileOnly && !
 }
 
 if ($onlyPurgeGhosts) {
+    goto summary;
+}
+
+if ($onlyPurgeGoogleGhostTitles) {
+    fwrite(STDOUT, "[PURGE GOOGLE GHOST TITLES] {$purgeFromDate} → {$purgeToDate}\n");
+
+    $ghostTitleResult = $sync->bonificaPurgeGoogleGhostTitleEvents(
+        $calendarUserId,
+        $purgeFromDate,
+        $purgeToDate,
+        !$dryRun
+    );
+
+    fwrite(STDOUT, '  eventi su Google (range): ' . $ghostTitleResult['scanned'] . "\n");
+    fwrite(STDOUT, '  titoli ghost "(APPUNTAMENTO SENZA PROSPECT)": ' . $ghostTitleResult['candidates'] . "\n");
+    fwrite(STDOUT, '  rimossi da Google: ' . ($dryRun ? $ghostTitleResult['candidates'] : $ghostTitleResult['removed']) . "\n");
+    fwrite(STDOUT, '  ripushati con titolo corretto: ' . $ghostTitleResult['repaired_push'] . "\n\n");
+
+    $stats['google_ghost_titles_removed'] = $dryRun
+        ? $ghostTitleResult['candidates']
+        : $ghostTitleResult['removed'];
+    $stats['google_ghost_titles_repaired'] = $ghostTitleResult['repaired_push'];
+
     goto summary;
 }
 
@@ -292,9 +321,11 @@ if ($backfillSyncFlag) {
     goto summary;
 }
 
-$runReconcile = $reconcileOnly || (!$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates);
-$runPush = $onlyPush || (!$onlyIngestibili && !$onlyNotHeld && !$onlyPurgeDuplicates);
-$runCleanup = !$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates;
+$runReconcile = $reconcileOnly || (!$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles);
+$runPush = $onlyPush || (!$onlyIngestibili && !$onlyNotHeld && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles);
+$runCleanup = !$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles;
+$runPurgeGoogleGhostTitles = !$onlyIngestibili && !$onlyPush && !$onlyNotHeld && !$onlyPurgeDuplicates
+    && !$backfillSyncFlag && !$reconcileOnly;
 
 if ($runReconcile) {
     $reconcileFrom = date('Y-m-d', strtotime('-14 days'));
@@ -315,6 +346,28 @@ if ($runReconcile) {
 
 if ($reconcileOnly) {
     goto summary;
+}
+
+if ($runPurgeGoogleGhostTitles) {
+    $ghostFrom = date('Y-m-d', strtotime('-30 days'));
+    $ghostTo = date('Y-m-d', strtotime('+14 days'));
+    fwrite(STDOUT, "[PURGE GOOGLE GHOST TITLES] {$ghostFrom} → {$ghostTo}\n");
+
+    $ghostTitleResult = $sync->bonificaPurgeGoogleGhostTitleEvents(
+        $calendarUserId,
+        $ghostFrom,
+        $ghostTo,
+        !$dryRun
+    );
+
+    fwrite(STDOUT, '  titoli ghost "(APPUNTAMENTO SENZA PROSPECT)": ' . $ghostTitleResult['candidates'] . "\n");
+    fwrite(STDOUT, '  rimossi da Google: ' . ($dryRun ? $ghostTitleResult['candidates'] : $ghostTitleResult['removed']) . "\n");
+    fwrite(STDOUT, '  ripushati con titolo corretto: ' . $ghostTitleResult['repaired_push'] . "\n\n");
+
+    $stats['google_ghost_titles_removed'] = $dryRun
+        ? $ghostTitleResult['candidates']
+        : $ghostTitleResult['removed'];
+    $stats['google_ghost_titles_repaired'] = $ghostTitleResult['repaired_push'];
 }
 
 // --- Fase 5 (priorità): push su Google prima della pulizia link ---
@@ -353,10 +406,23 @@ if ($runPush) {
 
         $skipReason = $sync->describePushSkipReason($appointment, $calendarUserId);
         $syncUserId = $sync->resolveSyncableConsultantUserId($appointment);
+
+        if (
+            $skipReason === 'già presente su Google'
+            && $syncUserId === $calendarUserId
+            && !$sync->isGhostAppointment($appointment)
+            && $sync->linkedGoogleEventHasGhostTitle($appointment, $syncUserId)
+        ) {
+            $skipReason = null;
+        }
+
         $hasStaleLink = $syncUserId === $calendarUserId
             && $sync->hasGoogleLink($appointment->getId())
             && !$sync->isGoogleEventAlive($appointment, $syncUserId);
-        $needsPush = $skipReason === null || $hasStaleLink;
+        $hasGhostTitleLink = $syncUserId === $calendarUserId
+            && !$sync->isGhostAppointment($appointment)
+            && $sync->linkedGoogleEventHasGhostTitle($appointment, $syncUserId);
+        $needsPush = $skipReason === null || $hasStaleLink || $hasGhostTitleLink;
 
         if (!$needsPush) {
             $stats['google_push_skipped']++;
@@ -369,7 +435,7 @@ if ($runPush) {
         }
 
         $label = formatAppointmentLabel($appointment);
-        $action = $hasStaleLink ? '[REPAIR+PUSH]' : '[PUSH GOOGLE]';
+        $action = $hasStaleLink || $hasGhostTitleLink ? '[REPAIR+PUSH]' : '[PUSH GOOGLE]';
         fwrite(STDOUT, "{$action} {$label}\n");
 
         if ($dryRun) {
