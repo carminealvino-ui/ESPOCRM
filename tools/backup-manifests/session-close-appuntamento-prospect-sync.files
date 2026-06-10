@@ -1,0 +1,13 @@
+# Sessione 2026-06-10 — sync Prospect → Appuntamento (v1.2.5 stabile)
+custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json
+custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
+custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json
+client/custom/src/views/fields/appuntamento-parent.js
+client/custom/src/views/fields/fornitore-partner-cascade.js
+client/custom/src/views/fields/product-brand-by-partner.js
+client/custom/src/views/appuntamento/record/edit.js
+client/custom/src/views/appuntamento/record/edit-small.js
+client/custom/src/views/calendar/calendar.js
+client/custom/src/views/calendar/modals/edit.js
+tools/deploy-prospect-appuntamento-form-ui.sh
+tools/backup-manifests/prospect-form-ui.files
