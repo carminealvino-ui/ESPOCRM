@@ -89,6 +89,13 @@
         "Shipping Providers": "Installatore"
     },
     "options": {
+        "status": {
+            "Draft": "Bozza",
+            "Presented": "Presentato",
+            "Installed": "Installato",
+            "Approved": "Approvato",
+            "Canceled": "Annullato"
+        },
         "inventoryStatus": {
             "Available": "Disponibile",
             "Not Available": "Non Disponibile"

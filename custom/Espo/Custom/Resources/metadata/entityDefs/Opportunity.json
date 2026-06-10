@@ -237,14 +237,16 @@
                 "Annullato",
                 "Recesso"
             ],
+            "view": "views/fields/enum-styled",
+            "displayAsLabel": true,
             "style": {
                 "": null,
-                "In lavorazione": null,
-                "Inserito": null,
-                "Installato": null,
-                "Sospeso": null,
-                "Annullato": null,
-                "Recesso": null
+                "In lavorazione": "primary",
+                "Inserito": "info",
+                "Installato": "installato",
+                "Sospeso": "warning",
+                "Annullato": "danger",
+                "Recesso": "default"
             },
             "default": null,
             "isCustom": true
