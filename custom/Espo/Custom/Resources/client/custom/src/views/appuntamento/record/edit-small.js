@@ -1,14 +1,13 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record/edit-small'], function (MeetingEditSmallModule) {
+define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'], function (Dep) {
 
-    const Parent = MeetingEditSmallModule.default || MeetingEditSmallModule;
-    const DEFAULT_DURATION_SECONDS = 5400;
+    const FALLBACK_DURATION_SECONDS = 5400;
 
-    return class AppuntamentoEditSmallView extends Parent {
+    return Dep.extend({
 
-        setup() {
-            super.setup();
+        setup: function () {
+            Dep.prototype.setup.call(this);
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
@@ -20,12 +19,29 @@ define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record
 
             this.once('after:render', () => {
                 this.applyDefaultDuration();
-                setTimeout(() => this.applyDefaultDuration(), 0);
-                setTimeout(() => this.applyDefaultDuration(), 150);
             });
-        }
+        },
 
-        applyDefaultDuration() {
+        getDefaultDurationSeconds: function () {
+            const fromField = this.model.getFieldParam('duration', 'default');
+
+            if (fromField !== null && fromField !== undefined && fromField !== '') {
+                return parseInt(fromField, 10);
+            }
+
+            const entityType = this.model.entityType || this.model.name;
+            const fromMeta = this.getMetadata().get(
+                ['entityDefs', entityType, 'fields', 'duration', 'default']
+            );
+
+            if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
+                return parseInt(fromMeta, 10);
+            }
+
+            return FALLBACK_DURATION_SECONDS;
+        },
+
+        applyDefaultDuration: function () {
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
             }
@@ -36,14 +52,16 @@ define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record
                 return;
             }
 
+            const seconds = this.getDefaultDurationSeconds();
             const dateEnd = this.getDateTime()
                 .toMoment(dateStart)
-                .add(DEFAULT_DURATION_SECONDS, 'seconds')
+                .add(seconds, 'seconds')
                 .format(this.getDateTime().internalDateTimeFormat);
 
             this.model.set({
                 dateEnd: dateEnd,
-            }, {updatedByDuration: true});
-        }
-    };
+                duration: seconds,
+            }, {ui: true});
+        },
+    });
 });
