@@ -2,11 +2,11 @@
 
 /**
  * Campo Relazionato a — sync autonomo (nessuna dipendenza esterna).
- * VERSIONE: 1.2.3
+ * VERSIONE: 1.2.4
  */
 define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], function (Dep) {
 
-    const VERSION = '1.2.3';
+    const VERSION = '1.2.4';
 
     const PROSPECT_SELECT = [
         'name',
@@ -88,9 +88,13 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
         });
     };
 
-    const refreshLinkFields = function (view) {
+    const refreshLinkFields = function (recordView) {
+        if (!recordView || typeof recordView.getFieldView !== 'function') {
+            return;
+        }
+
         LINK_FIELDS.forEach(name => {
-            const fieldView = view.getFieldView && view.getFieldView(name);
+            const fieldView = recordView.getFieldView(name);
 
             if (fieldView && typeof fieldView.reRender === 'function') {
                 fieldView.reRender();
@@ -98,7 +102,7 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
         });
     };
 
-    const applySyncData = function (view, prospectId, response) {
+    const applySyncData = function (model, prospectId, response, recordView) {
         const data = {
             prospectId: prospectId,
             prospectName: response.name || null,
@@ -115,7 +119,7 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
             .then(resolveBrandFromCategory)
             .then(resolvePartnerFromBrand)
             .then(resolved => {
-                view.model.set({
+                model.set({
                     prospectId: resolved.prospectId,
                     prospectName: resolved.prospectName,
                     azienda: resolved.azienda,
@@ -127,11 +131,11 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
                     productCategoryName: resolved.productCategoryName,
                 }, {ui: true, prospectSync: true});
 
-                refreshLinkFields(view);
+                refreshLinkFields(recordView);
             });
     };
 
-    const syncFromProspect = function (view, prospectId) {
+    const syncFromProspect = function (model, prospectId, recordView) {
         if (!prospectId) {
             return;
         }
@@ -139,7 +143,7 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
         Espo.Ajax.getRequest('Prospect/' + prospectId, {
             select: PROSPECT_SELECT,
         }).then(response => {
-            return applySyncData(view, prospectId, response);
+            return applySyncData(model, prospectId, response, recordView);
         }).catch(error => {
             console.error('[appuntamento-parent ' + VERSION + ']', error);
         });
@@ -155,18 +159,41 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
             });
         },
 
+        findRecordView: function () {
+            if (typeof this.getRecordView === 'function') {
+                const view = this.getRecordView();
+
+                if (view) {
+                    return view;
+                }
+            }
+
+            let parent = this.getParentView && this.getParentView();
+
+            while (parent) {
+                if (typeof parent.getFieldView === 'function') {
+                    return parent;
+                }
+
+                parent = parent.getParentView && parent.getParentView();
+            }
+
+            return null;
+        },
+
         runProspectSync: function () {
             if (this.model.get('parentType') !== 'Prospect' || !this.model.get('parentId')) {
                 return;
             }
 
-            const recordView = this.getRecordView();
+            const prospectId = this.model.get('parentId');
+            const fieldView = this;
 
-            if (!recordView) {
-                return;
-            }
+            window.setTimeout(() => {
+                const recordView = fieldView.findRecordView();
 
-            syncFromProspect(recordView, this.model.get('parentId'));
+                syncFromProspect(fieldView.model, prospectId, recordView);
+            }, 0);
         },
     });
 });

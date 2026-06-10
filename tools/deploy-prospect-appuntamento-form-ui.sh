@@ -16,7 +16,7 @@ fi
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 FIX_TAG="prospect-form-ui"
-VERSION_MARKER="VERSION = '1.2.3'"
+VERSION_MARKER="VERSION = '1.2.4'"
 
 FILES=(
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
@@ -31,7 +31,7 @@ FILES=(
   "client/custom/src/views/fields/product-brand-by-partner.js"
 )
 
-echo "=== Deploy sync Prospect → Appuntamento v1.2.3 ==="
+echo "=== Deploy sync Prospect → Appuntamento v1.2.4 ==="
 echo "CRM_ROOT: ${CRM_ROOT}"
 echo "BRANCH:   ${BRANCH}"
 echo ""
@@ -140,4 +140,4 @@ fi
 
 echo ""
 echo "Fatto. Ctrl+Shift+R."
-echo "Sync attivo su campo Relazionato a (appuntamento-parent.js v1.2.3)."
+echo "Sync attivo su campo Relazionato a (appuntamento-parent.js v1.2.4)."
