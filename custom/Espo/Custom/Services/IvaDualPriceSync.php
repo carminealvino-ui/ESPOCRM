@@ -58,6 +58,54 @@ class IvaDualPriceSync
         $this->syncInputNativePrice($data, $taxInclusive);
     }
 
+    /**
+     * Pannello Prezzo su Product: allinea coppie IVA inclusa/esclusa (listino e codice).
+     */
+    public function syncProductOnBeforeSave(Entity $entity): void
+    {
+        if ($entity->getEntityType() !== 'Product') {
+            return;
+        }
+
+        $aliquota = $this->floatOrNull($entity->get('aliquotaIva'));
+
+        if ($aliquota === null || $aliquota <= 0) {
+            $aliquota = self::DEFAULT_ALIQUOTA_IVA;
+            $entity->set('aliquotaIva', $aliquota);
+        }
+
+        $this->syncIvaPair($entity, 'prezzoListinoIvaInclusa', 'prezzoListinoIvaEsclusa', $aliquota);
+        $this->syncIvaPair($entity, 'prezzoCodiceIvaInclusa', 'prezzoCodice', $aliquota);
+
+        $net = $this->floatOrNull($entity->get('prezzoListinoIvaEsclusa'));
+
+        if ($net !== null && $net > 0) {
+            if ($entity->hasAttribute('listPrice')) {
+                $entity->set('listPrice', round($net, 2));
+            }
+
+            if ($entity->hasAttribute('unitPrice')) {
+                $entity->set('unitPrice', round($net, 2));
+            }
+
+            return;
+        }
+
+        $ivi = $this->floatOrNull($entity->get('prezzoListinoIvaInclusa'));
+
+        if ($ivi !== null && $ivi > 0) {
+            $net = self::toEsclusa($ivi, $aliquota);
+
+            if ($entity->hasAttribute('listPrice')) {
+                $entity->set('listPrice', round($net, 2));
+            }
+
+            if ($entity->hasAttribute('unitPrice')) {
+                $entity->set('unitPrice', round($net, 2));
+            }
+        }
+    }
+
     public function syncProductFromProductPrice(Entity $productPrice): void
     {
         $productId = $productPrice->get('productId');
