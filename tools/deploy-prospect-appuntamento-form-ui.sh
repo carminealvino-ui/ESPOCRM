@@ -64,12 +64,20 @@ if has_backup; then
 fi
 echo ""
 
-client_targets() {
+deploy_client_file() {
   local rel="$1"
+  local tmp="$2"
   local suffix="${rel#client/custom/}"
-  echo "${CRM_ROOT}/${rel}"
-  echo "${CRM_ROOT}/custom/Espo/Custom/Resources/client/custom/${suffix}"
-  echo "${CRM_ROOT}/custom/Espo/Custom/client/custom/${suffix}"
+  local target
+
+  for target in \
+    "${CRM_ROOT}/${rel}" \
+    "${CRM_ROOT}/custom/Espo/Custom/Resources/client/custom/${suffix}" \
+    "${CRM_ROOT}/custom/Espo/Custom/client/custom/${suffix}"; do
+    mkdir -p "$(dirname "${target}")"
+    cp "${tmp}" "${target}"
+    echo "OK ${target#${CRM_ROOT}/}"
+  done
 }
 
 for rel in "${FILES[@]}"; do
@@ -85,11 +93,7 @@ for rel in "${FILES[@]}"; do
   fi
 
   if [[ "${rel}" == client/custom/* ]]; then
-    while IFS= read -r target; do
-      mkdir -p "$(dirname "${target}")"
-      cp "${TMP}" "${target}"
-      echo "OK ${target#${CRM_ROOT}/}"
-    done < <(client_targets "${rel}")
+    deploy_client_file "${rel}" "${TMP}"
   else
     target="${CRM_ROOT}/${rel}"
     mkdir -p "$(dirname "${target}")"
