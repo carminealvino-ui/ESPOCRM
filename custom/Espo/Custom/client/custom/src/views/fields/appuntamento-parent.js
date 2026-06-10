@@ -2,7 +2,7 @@
 
 define('custom:views/fields/appuntamento-parent', [
     'views/fields/link-parent',
-    'custom:helpers/appuntamento-prospect-sync',
+    'custom:views/appuntamento/helpers/prospect-sync',
 ], function (Dep, ProspectSync) {
 
     return Dep.extend({
@@ -11,18 +11,20 @@ define('custom:views/fields/appuntamento-parent', [
             Dep.prototype.setup.call(this);
 
             this.listenTo(this.model, 'change:parentId change:parentType', () => {
-                this.syncFromProspect();
+                this.runProspectSync();
             });
         },
 
-        syncFromProspect: function () {
-            const recordView = this.getRecordView();
-
-            if (!recordView) {
+        runProspectSync: function () {
+            if (this.model.get('parentType') !== 'Prospect' || !this.model.get('parentId')) {
                 return;
             }
 
-            ProspectSync.syncFromProspect(recordView);
+            const recordView = this.getRecordView();
+
+            if (recordView) {
+                ProspectSync.syncFromProspect(recordView);
+            }
         },
     });
 });

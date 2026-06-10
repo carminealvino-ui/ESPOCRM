@@ -2,7 +2,7 @@
 
 define('custom:views/appuntamento/record/edit', [
     'views/record/edit',
-    'custom:helpers/appuntamento-prospect-sync',
+    'custom:views/appuntamento/helpers/prospect-sync',
 ], function (Dep, ProspectSync) {
 
     return Dep.extend({

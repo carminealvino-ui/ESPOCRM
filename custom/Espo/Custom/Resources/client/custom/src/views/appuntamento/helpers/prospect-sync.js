@@ -1,8 +1,8 @@
 /* global define */
 
-define('custom:helpers/appuntamento-prospect-sync', [], function () {
+define('custom:views/appuntamento/helpers/prospect-sync', [], function () {
 
-    const VERSION = '1.2.0';
+    const VERSION = '1.2.1';
 
     const PROSPECT_SELECT = [
         'name',
@@ -23,32 +23,6 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         'productCategory',
         'prospect',
     ];
-
-    const getDefaultDurationSeconds = function (view) {
-        const fromField = view.model.getFieldParam('duration', 'default');
-
-        if (fromField !== null && fromField !== undefined && fromField !== '') {
-            return parseInt(fromField, 10);
-        }
-
-        const entityType = view.model.entityType || view.model.name;
-        const fromMeta = view.getMetadata().get(
-            ['entityDefs', entityType, 'fields', 'duration', 'default']
-        );
-
-        if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
-            return parseInt(fromMeta, 10);
-        }
-
-        return FALLBACK_DURATION_SECONDS;
-    };
-
-    const computeDateEnd = function (view, dateStart, seconds) {
-        return view.getDateTime()
-            .toMoment(dateStart)
-            .add(seconds, 'seconds')
-            .format(view.getDateTime().internalDateTimeFormat);
-    };
 
     const getProspectId = function (model) {
         if (model.get('parentType') === 'Prospect' && model.get('parentId')) {
@@ -125,7 +99,7 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
     };
 
     const buildSyncData = function (prospectId, response) {
-        const data = {
+        return {
             prospectId: prospectId,
             prospectName: response.name || null,
             azienda: response.azienda || null,
@@ -136,12 +110,6 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
             productCategoryId: response.productCategoryId || null,
             productCategoryName: response.productCategoryName || null,
         };
-
-        if (!data.prospectName && response.name) {
-            data.prospectName = response.name;
-        }
-
-        return data;
     };
 
     const refreshLinkFields = function (view) {
@@ -155,8 +123,6 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
     };
 
     const applySyncData = function (view, data) {
-        const opts = {ui: true, prospectSync: true};
-
         view.model.set({
             prospectId: data.prospectId,
             prospectName: data.prospectName,
@@ -167,12 +133,12 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
             productBrandName: data.productBrandName,
             productCategoryId: data.productCategoryId,
             productCategoryName: data.productCategoryName,
-        }, opts);
+        }, {ui: true, prospectSync: true});
 
         refreshLinkFields(view);
     };
 
-    const syncBrandPartnerFromProspect = function (view) {
+    const syncFromProspect = function (view) {
         const prospectId = getProspectId(view.model);
 
         if (!prospectId) {
@@ -194,22 +160,34 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
 
             applySyncData(view, data);
         }).catch(error => {
-            console.error('[appuntamento-prospect-sync ' + VERSION + ']', error);
+            console.error('[prospect-sync ' + VERSION + ']', error);
         });
     };
 
-    const refreshDurationField = function (view) {
-        const fieldView = view.getFieldView && view.getFieldView('duration');
+    const getDefaultDurationSeconds = function (view) {
+        const fromField = view.model.getFieldParam('duration', 'default');
 
-        if (!fieldView || typeof fieldView.enforceDefaultDuration !== 'function') {
-            return;
+        if (fromField !== null && fromField !== undefined && fromField !== '') {
+            return parseInt(fromField, 10);
         }
 
-        fieldView.enforceDefaultDuration();
+        const entityType = view.model.entityType || view.model.name;
+        const fromMeta = view.getMetadata().get(
+            ['entityDefs', entityType, 'fields', 'duration', 'default']
+        );
 
-        if (typeof fieldView.updateDuration === 'function') {
-            fieldView.updateDuration();
+        if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
+            return parseInt(fromMeta, 10);
         }
+
+        return FALLBACK_DURATION_SECONDS;
+    };
+
+    const computeDateEnd = function (view, dateStart, seconds) {
+        return view.getDateTime()
+            .toMoment(dateStart)
+            .add(seconds, 'seconds')
+            .format(view.getDateTime().internalDateTimeFormat);
     };
 
     const applyDefaultDuration = function (view) {
@@ -230,26 +208,22 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
             dateEnd: dateEnd,
             duration: defaultSeconds,
         }, {ui: true});
-
-        refreshDurationField(view);
     };
 
     return {
         VERSION: VERSION,
-        syncFromProspect: syncBrandPartnerFromProspect,
+        syncFromProspect: syncFromProspect,
         FALLBACK_DURATION_SECONDS: FALLBACK_DURATION_SECONDS,
-        getDefaultDurationSeconds: getDefaultDurationSeconds,
         computeDateEnd: computeDateEnd,
-        refreshDurationField: refreshDurationField,
         applyDefaultDuration: applyDefaultDuration,
 
         setupProspectSync: function (view) {
             view.listenTo(view.model, 'change:parentId change:parentType change:prospectId', () => {
-                syncBrandPartnerFromProspect(view);
+                syncFromProspect(view);
             });
 
             view.once('after:render', () => {
-                syncBrandPartnerFromProspect(view);
+                syncFromProspect(view);
             });
         },
 

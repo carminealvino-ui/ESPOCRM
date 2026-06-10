@@ -4,8 +4,7 @@
 # PASSO 0 — backup:
 #   bash tools/backup-dev-batch.sh prospect-form-ui --manifest tools/backup-manifests/prospect-form-ui.files
 #
-# Deploy (dalla root CRM, es. ~/public_html/crm/mec-group):
-#   bash tools/deploy-prospect-appuntamento-form-ui.sh
+# Deploy (dalla root CRM):
 #   bash tools/deploy-prospect-appuntamento-form-ui.sh cursor/fix-appuntamento-prospect-sync-9999
 set -euo pipefail
 
@@ -20,13 +19,13 @@ fi
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 FIX_TAG="prospect-form-ui"
-VERSION_MARKER="VERSION = '1.2.0'"
+VERSION_MARKER="VERSION = '1.2.1'"
 
 FILES=(
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
-  "client/custom/src/helpers/appuntamento-prospect-sync.js"
+  "client/custom/src/views/appuntamento/helpers/prospect-sync.js"
   "client/custom/src/views/appuntamento/record/edit.js"
   "client/custom/src/views/appuntamento/record/edit-small.js"
   "client/custom/src/views/calendar/calendar.js"
@@ -36,7 +35,7 @@ FILES=(
   "client/custom/src/views/fields/product-brand-by-partner.js"
 )
 
-echo "=== Deploy sync Prospect → Appuntamento ==="
+echo "=== Deploy sync Prospect → Appuntamento v1.2.1 ==="
 echo "CRM_ROOT: ${CRM_ROOT}"
 echo "BRANCH:   ${BRANCH}"
 echo ""
@@ -77,7 +76,7 @@ for rel in "${FILES[@]}"; do
   TMP="$(mktemp)"
   curl -fsSL -o "${TMP}" "${BASE}/${rel}?t=$(date +%s)"
 
-  if [[ "${rel}" == "client/custom/src/helpers/appuntamento-prospect-sync.js" ]]; then
+  if [[ "${rel}" == *prospect-sync.js ]]; then
     if ! grep -q "${VERSION_MARKER}" "${TMP}"; then
       echo "ERRORE: ${rel} remoto non contiene ${VERSION_MARKER}" >&2
       rm -f "${TMP}"
@@ -101,6 +100,17 @@ for rel in "${FILES[@]}"; do
   rm -f "${TMP}"
 done
 
+# Rimuovi vecchio path helpers non supportato da Espo loader
+for stale in \
+  "${CRM_ROOT}/client/custom/src/helpers/appuntamento-prospect-sync.js" \
+  "${CRM_ROOT}/custom/Espo/Custom/Resources/client/custom/src/helpers/appuntamento-prospect-sync.js" \
+  "${CRM_ROOT}/custom/Espo/Custom/client/custom/src/helpers/appuntamento-prospect-sync.js"; do
+  if [[ -f "${stale}" ]]; then
+    rm -f "${stale}"
+    echo "RM ${stale#${CRM_ROOT}/}"
+  fi
+done
+
 if [[ -f "${CRM_ROOT}/clear_cache.php" ]]; then
   (cd "${CRM_ROOT}" && php clear_cache.php && php rebuild.php)
 elif [[ -f "${CRM_ROOT}/command.php" ]]; then
@@ -110,7 +120,6 @@ fi
 echo ""
 echo "Fatto. Ctrl+Shift+R nel browser."
 echo ""
-echo "Verifica in console browser (F12):"
-echo "  require('custom:helpers/appuntamento-prospect-sync').VERSION  => 1.2.0"
-echo ""
-echo "Test: Crea Appuntamento → Prospect in Relazionato a → Fornitore/Brand/Categoria compilati"
+echo "Verifica in console (F12):"
+echo "  Espo.loader.requirePromise('custom:views/appuntamento/helpers/prospect-sync').then(m => console.log(m.VERSION))"
+echo "  // deve stampare 1.2.1"
