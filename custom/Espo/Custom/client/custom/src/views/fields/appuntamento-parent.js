@@ -1,12 +1,12 @@
 /* global define */
 
 /**
- * Campo Relazionato a — sync autonomo (nessuna dipendenza esterna).
- * VERSIONE: 1.2.4
+ * Campo Relazionato a — sync Fornitore/Brand/Categoria da Prospect.
+ * VERSIONE: 1.2.5
  */
 define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], function (Dep) {
 
-    const VERSION = '1.2.4';
+    const VERSION = '1.2.5';
 
     const PROSPECT_SELECT = [
         'name',
@@ -154,20 +154,14 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
         setup: function () {
             Dep.prototype.setup.call(this);
 
+            this._prospectSyncTimer = null;
+
             this.listenTo(this.model, 'change:parentId change:parentType', () => {
-                this.runProspectSync();
+                this.scheduleProspectSync();
             });
         },
 
         findRecordView: function () {
-            if (typeof this.getRecordView === 'function') {
-                const view = this.getRecordView();
-
-                if (view) {
-                    return view;
-                }
-            }
-
             let parent = this.getParentView && this.getParentView();
 
             while (parent) {
@@ -181,19 +175,27 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
             return null;
         },
 
+        scheduleProspectSync: function () {
+            if (this._prospectSyncTimer) {
+                window.clearTimeout(this._prospectSyncTimer);
+            }
+
+            this._prospectSyncTimer = window.setTimeout(() => {
+                this._prospectSyncTimer = null;
+                this.runProspectSync();
+            }, 250);
+        },
+
         runProspectSync: function () {
             if (this.model.get('parentType') !== 'Prospect' || !this.model.get('parentId')) {
                 return;
             }
 
-            const prospectId = this.model.get('parentId');
-            const fieldView = this;
-
-            window.setTimeout(() => {
-                const recordView = fieldView.findRecordView();
-
-                syncFromProspect(fieldView.model, prospectId, recordView);
-            }, 0);
+            syncFromProspect(
+                this.model,
+                this.model.get('parentId'),
+                this.findRecordView()
+            );
         },
     });
 });
