@@ -2,11 +2,11 @@
 
 /**
  * Campo Relazionato a — sync autonomo (nessuna dipendenza esterna).
- * VERSIONE: 1.2.2
+ * VERSIONE: 1.2.3
  */
 define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], function (Dep) {
 
-    const VERSION = '1.2.2';
+    const VERSION = '1.2.3';
 
     const PROSPECT_SELECT = [
         'name',

@@ -1,12 +1,10 @@
 /* global define */
 
-define('custom:views/calendar/modals/edit', [
-    'crm:views/calendar/modals/edit',
-    'custom:views/appuntamento/prospect-sync',
-], function (CalendarEditModalModule, ProspectSync) {
+define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], function (CalendarEditModalModule) {
 
     const CalendarEditModalView = CalendarEditModalModule.default || CalendarEditModalModule;
     const APPUNTAMENTO_SCOPE = 'Appuntamento';
+    const FALLBACK_DURATION_SECONDS = 5400;
 
     return class CustomCalendarEditModalView extends CalendarEditModalView {
 
@@ -24,7 +22,14 @@ define('custom:views/calendar/modals/edit', [
                 return parseInt(fromMeta, 10);
             }
 
-            return ProspectSync.FALLBACK_DURATION_SECONDS;
+            return FALLBACK_DURATION_SECONDS;
+        }
+
+        computeDateEnd(dateStart, seconds) {
+            return this.getDateTime()
+                .toMoment(dateStart)
+                .add(seconds, 'seconds')
+                .format(this.getDateTime().internalDateTimeFormat);
         }
 
         getActiveScope() {
@@ -43,8 +48,7 @@ define('custom:views/calendar/modals/edit', [
                 return;
             }
 
-            this.options.dateEnd = ProspectSync.computeDateEnd(
-                this,
+            this.options.dateEnd = this.computeDateEnd(
                 this.options.dateStart,
                 this.getDefaultDurationSeconds()
             );
@@ -54,9 +58,6 @@ define('custom:views/calendar/modals/edit', [
             this.patchAppuntamentoDurationOptions();
 
             super.createRecordView(model, (view) => {
-                ProspectSync.setupProspectSync(view);
-                ProspectSync.setupDefaultDuration(view);
-
                 if (typeof callback === 'function') {
                     callback(view);
                 }
