@@ -1032,12 +1032,20 @@ class AppuntamentoGoogleSync
 
     public function isAssignedOnlyToAdmin(Entity $entity): bool
     {
-        $adminIds = $this->resolveAdminUserIds();
         $userIds = $this->collectAssigneeUserIds($entity);
 
         if ($userIds === []) {
             return false;
         }
+
+        // Consulente con ruolo admin ma Google collegato: non è "admin senza calendario".
+        foreach ($userIds as $userId) {
+            if ($this->isGoogleCalendarApiAvailableForUser($userId)) {
+                return false;
+            }
+        }
+
+        $adminIds = $this->resolveAdminUserIds();
 
         foreach ($userIds as $userId) {
             if (!in_array($userId, $adminIds, true)) {
@@ -1050,13 +1058,8 @@ class AppuntamentoGoogleSync
 
     public function resolveSyncableConsultantUserId(Entity $entity, bool $preferFetched = false): ?string
     {
-        $adminIds = $this->resolveAdminUserIds();
-
         foreach ($this->collectAssigneeUserIds($entity, $preferFetched) as $userId) {
-            if (
-                !in_array($userId, $adminIds, true)
-                && $this->isGoogleCalendarApiAvailableForUser($userId)
-            ) {
+            if ($this->isGoogleCalendarApiAvailableForUser($userId)) {
                 return $userId;
             }
         }
@@ -1713,7 +1716,6 @@ class AppuntamentoGoogleSync
 
     private function resolveGoogleCalendarUserIdForEntity(Entity $entity, bool $preferFetched): ?string
     {
-        $adminIds = $this->resolveAdminUserIds();
         $candidates = [];
 
         if ($preferFetched) {
@@ -1733,7 +1735,6 @@ class AppuntamentoGoogleSync
             if (
                 is_string($userId)
                 && $userId !== ''
-                && !in_array($userId, $adminIds, true)
                 && $this->isGoogleCalendarApiAvailableForUser($userId)
             ) {
                 return $userId;
@@ -1751,12 +1752,6 @@ class AppuntamentoGoogleSync
                 if ($ownerId !== null) {
                     return $ownerId;
                 }
-            }
-        }
-
-        foreach ($candidates as $userId) {
-            if (is_string($userId) && $userId !== '' && $this->isGoogleCalendarApiAvailableForUser($userId)) {
-                return $userId;
             }
         }
 
