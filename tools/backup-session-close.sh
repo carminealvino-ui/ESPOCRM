@@ -3,9 +3,6 @@
 #
 # Uso (dalla root CRM):
 #   bash tools/backup-session-close.sh [ETICHETTA]
-#
-# Esempio:
-#   bash tools/backup-session-close.sh appuntamento-prospect-sync-ok
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
@@ -15,7 +12,21 @@ REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 TS="$(date +%Y%m%d-%H%M%S)"
 SNAP_DIR="${CRM_ROOT}/backup_dev/_snapshots/${TS}_${LABEL}"
-MANIFEST_REL="tools/backup-manifests/session-close-appuntamento-prospect-sync.files"
+
+# File del fix Prospect → Appuntamento v1.2.5 (lista inline, no manifest esterno)
+SESSION_FILES=(
+  "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
+  "custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
+  "client/custom/src/views/fields/appuntamento-parent.js"
+  "client/custom/src/views/fields/fornitore-partner-cascade.js"
+  "client/custom/src/views/fields/product-brand-by-partner.js"
+  "client/custom/src/views/appuntamento/record/edit.js"
+  "client/custom/src/views/appuntamento/record/edit-small.js"
+  "client/custom/src/views/calendar/calendar.js"
+  "client/custom/src/views/calendar/modals/edit.js"
+  "tools/deploy-prospect-appuntamento-form-ui.sh"
+)
 
 cd "${CRM_ROOT}"
 
@@ -23,25 +34,15 @@ echo "=== Backup chiusura sessione: ${LABEL} ==="
 echo "CRM_ROOT: ${CRM_ROOT}"
 echo ""
 
-ensure_tool() {
-  local rel="$1"
-  local target="${CRM_ROOT}/${rel}"
-
-  if [[ -f "${target}" ]]; then
-    return 0
-  fi
-
-  mkdir -p "$(dirname "${target}")"
-  echo "Download ${rel} ..."
-  curl -fsSL -o "${target}" "${BASE}/${rel}?t=$(date +%s)"
-  chmod +x "${target}" 2>/dev/null || true
-}
-
-ensure_tool "tools/backup-dev-batch.sh"
-ensure_tool "${MANIFEST_REL}"
+if [[ ! -f tools/backup-dev-batch.sh ]]; then
+  echo "Download tools/backup-dev-batch.sh ..."
+  mkdir -p tools
+  curl -fsSL -o tools/backup-dev-batch.sh "${BASE}/tools/backup-dev-batch.sh?t=$(date +%s)"
+  chmod +x tools/backup-dev-batch.sh
+fi
 
 echo "==> 1) backup_dev sessione file fix"
-bash tools/backup-dev-batch.sh "${LABEL}" --manifest "${MANIFEST_REL}"
+bash tools/backup-dev-batch.sh "${LABEL}" "${SESSION_FILES[@]}"
 
 echo ""
 echo "==> 2) Snapshot tar custom + client/custom"
@@ -61,7 +62,6 @@ fi
   echo "timestamp=${TS}"
   echo "label=${LABEL}"
   echo "crm_root=${CRM_ROOT}"
-  echo "branch=${BRANCH}"
   echo "note=Backup chiusura sessione — sync Prospect Appuntamento v1.2.5"
   echo "verify_appuntamento_parent=$(grep 'VERSION' client/custom/src/views/fields/appuntamento-parent.js 2>/dev/null | head -1 || echo 'n/d')"
   echo ""
@@ -72,6 +72,3 @@ echo ""
 echo "=== Backup sessione completato ==="
 echo "Snapshot: backup_dev/_snapshots/${TS}_${LABEL}/"
 echo "Manifest: ${SNAP_DIR}/MANIFEST.txt"
-echo ""
-echo "Verifica rapida:"
-echo "  grep VERSION client/custom/src/views/fields/appuntamento-parent.js"
