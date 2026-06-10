@@ -116,6 +116,10 @@
 // - hookVersion quote sempre CreateContratto-* (non copiare 2.1.5 da opportunità)
 // - Nome impostato in PHP prima e dopo save (formula non sovrascrive)
 // - billingContactName da accountName se referente assente
+//
+// 1.12.1
+// -----------------------------------------------------
+// - getNewEntity + saveEntity (non createEntity: salvava Quote vuoto → formula /0)
 // -----------------------------------------------------
 // - importoOpportunit (nome campo corretto)
 // - Cliente da Prospect.cliente / creazione Account
@@ -565,7 +569,7 @@ class CreateContratto
         $productCategoryName = $partnerData['productCategoryName'];
 
         // Non usare hookVersion opportunità (es. 2.1.5): la formula Quote lo interpreta e ricalcola il nome.
-        $hookVersion = 'CreateContratto-1.12.0';
+        $hookVersion = 'CreateContratto-1.12.1';
         $installatoreId = $opportunity->get('installatoreId');
 
         $contractDisplayName = $this->buildContractDisplayName(
@@ -580,10 +584,7 @@ class CreateContratto
         // CREAZIONE CONTRATTO
         // =====================================================
 
-        $quote = $this->entityManager
-            ->createEntity(
-                'Quote'
-            );
+        $quote = $this->entityManager->getNewEntity('Quote');
 
         $quote->set([
 
@@ -754,6 +755,21 @@ class CreateContratto
             'teamsIds' =>
                 $teamsIds
         ]);
+
+        // IVA esplicita: evita che la formula ricalcoli taxRate con amount/taxAmount incoerenti.
+        if ($amount !== null && $amount !== '' && $taxRate !== null && $taxRate !== '') {
+            $taxRateFloat = (float) $taxRate;
+            $grandTotal = (float) $amount;
+
+            if ($grandTotal > 0 && (1 + $taxRateFloat) != 0.0) {
+                $net = $grandTotal / (1 + $taxRateFloat);
+                $quote->set([
+                    'grandTotalAmount' => round($grandTotal, 2),
+                    'taxAmount' => round($grandTotal - $net, 2),
+                    'aliquotaIVA' => round($taxRateFloat * 100, 2),
+                ]);
+            }
+        }
 
         // =====================================================
         // SAVE CONTRATTO
@@ -1303,7 +1319,7 @@ class CreateContratto
                 $importo
             ),
             'itemList' => [],
-            'hookVersion' => 'CreateContratto-1.12.0',
+            'hookVersion' => 'CreateContratto-1.12.1',
         ];
 
         foreach ([
