@@ -11,3 +11,10 @@ html {
 .navbar {
     border-top: 5px solid red !important;
 }
+
+/* Contratto / Opportunità — stato Installato (verde scuro) */
+.label.label-installato {
+    background-color: #1b5e20 !important;
+    border-color: #145214 !important;
+    color: #fff !important;
+}
