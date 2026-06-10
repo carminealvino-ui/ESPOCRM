@@ -1219,11 +1219,21 @@ class AppuntamentoGoogleSync
     }
 
     /**
-     * Ingestibile assegnato ad admin (errore GlobalLogic storico) → consulente calendario.
+     * Planned/Held/Ingestibile assegnati solo ad admin (errore storico) → consulente calendario.
      */
-    public function needsIngestibileConsultantFix(Entity $entity, string $consultantUserId): bool
+    public function needsAdminOnlyConsultantReassignment(Entity $entity, string $consultantUserId): bool
     {
-        if ($entity->get('status') !== 'Ingestibile' || $entity->get('deleted')) {
+        if ($entity->get('deleted') || $this->isGhostAppointment($entity)) {
+            return false;
+        }
+
+        if (!$this->isSyncConGoogleEnabled($entity)) {
+            return false;
+        }
+
+        $status = (string) ($entity->get('status') ?? '');
+
+        if (!in_array($status, ['Planned', 'Held', 'Ingestibile'], true)) {
             return false;
         }
 
@@ -1233,7 +1243,16 @@ class AppuntamentoGoogleSync
             return false;
         }
 
-        return $this->isAssignedToAdmin($entity);
+        return $this->isAssignedOnlyToAdmin($entity);
+    }
+
+    /**
+     * @deprecated Usare needsAdminOnlyConsultantReassignment (stesso comportamento su Ingestibile).
+     */
+    public function needsIngestibileConsultantFix(Entity $entity, string $consultantUserId): bool
+    {
+        return $entity->get('status') === 'Ingestibile'
+            && $this->needsAdminOnlyConsultantReassignment($entity, $consultantUserId);
     }
 
     public function isAssignedToAdmin(Entity $entity): bool
@@ -1296,11 +1315,11 @@ class AppuntamentoGoogleSync
     }
 
     /**
-     * Corregge Ingestibile assegnati per errore ad admin invece che al consulente.
+     * Riassegna al consulente calendario gli appuntamenti sincronizzabili assegnati solo ad admin.
      */
-    public function bonificaFixIngestibileConsultant(Entity $entity, string $consultantUserId): bool
+    public function bonificaReassignAdminOnlyToConsultant(Entity $entity, string $consultantUserId): bool
     {
-        if (!$this->needsIngestibileConsultantFix($entity, $consultantUserId)) {
+        if (!$this->needsAdminOnlyConsultantReassignment($entity, $consultantUserId)) {
             return false;
         }
 
@@ -1309,6 +1328,14 @@ class AppuntamentoGoogleSync
         $this->entityManager->saveEntity($entity, ['skipHooks' => true]);
 
         return true;
+    }
+
+    /**
+     * @deprecated Usare bonificaReassignAdminOnlyToConsultant.
+     */
+    public function bonificaFixIngestibileConsultant(Entity $entity, string $consultantUserId): bool
+    {
+        return $this->bonificaReassignAdminOnlyToConsultant($entity, $consultantUserId);
     }
 
     /**

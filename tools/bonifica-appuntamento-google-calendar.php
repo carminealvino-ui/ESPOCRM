@@ -10,7 +10,7 @@
  *
  * Mantiene su Google: Planned, Held, Ingestibile del consulente con Google attivo.
  * Rimuove: admin, consulente diverso, syncConGoogle off, Not Held, eliminato, ghost.
- * Corregge Ingestibile assegnati per errore ad admin → consulente calendario.
+ * Corregge Planned/Held/Ingestibile assegnati solo ad admin → consulente calendario.
  *
  * Uso (da root CRM, es. ~/public_html/crm/mec-group):
  *   php tools/bonifica-appuntamento-google-calendar.php --dry-run
@@ -22,6 +22,7 @@
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --reconcile
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-google-ghost-titles
  *   php tools/bonifica-appuntamento-google-calendar.php --apply --backfill-sync-flag
+ *   php tools/bonifica-appuntamento-google-calendar.php --apply --only-fix-admin-assignment --push-since-days=60
  *   php tools/bonifica-appuntamento-google-calendar.php --dry-run --only-purge-duplicates --from-date=2026-04-20 --to-date=2026-04-27
  *
  * @noinspection PhpUnhandledExceptionInspection
@@ -61,6 +62,7 @@ $onlyPurgeGhosts = in_array('--only-purge-ghosts', $argv, true);
 $onlyPurgeDuplicates = in_array('--only-purge-duplicates', $argv, true);
 $onlyPurgeGoogleGhostTitles = in_array('--only-purge-google-ghost-titles', $argv, true);
 $backfillSyncFlag = in_array('--backfill-sync-flag', $argv, true);
+$onlyFixAdminAssignment = in_array('--only-fix-admin-assignment', $argv, true);
 $verbose = in_array('--verbose', $argv, true);
 $pushSinceDays = 21;
 $purgeFromDate = date('Y-m-d', strtotime('-30 days'));
@@ -148,7 +150,7 @@ $googleOk = $externalAccount
     && $externalAccount->get('enabled')
     && ($externalAccount->get('calendarEnabled') || $externalAccount->get('googleCalendarEnabled'));
 
-fwrite(STDOUT, "=== Bonifica Google Calendar Appuntamenti (v1.8.0) ===\n");
+fwrite(STDOUT, "=== Bonifica Google Calendar Appuntamenti (v1.8.1) ===\n");
 fwrite(STDOUT, 'Modalità: ' . ($dryRun ? 'DRY-RUN (nessuna modifica)' : 'APPLY') . "\n");
 if ($onlyIngestibili) {
     fwrite(STDOUT, "Filtro: solo correzione Ingestibile (admin → consulente)\n");
@@ -167,6 +169,9 @@ if ($onlyPurgeGhosts) {
 }
 if ($backfillSyncFlag) {
     fwrite(STDOUT, "Filtro: migrazione syncConGoogle=true (vecchio default false)\n");
+}
+if ($onlyFixAdminAssignment) {
+    fwrite(STDOUT, "Filtro: riassegna admin → consulente calendario (ultimi {$pushSinceDays} giorni e futuri)\n");
 }
 if ($onlyPurgeDuplicates) {
     fwrite(STDOUT, "Filtro: rimuove duplicati Google (stesso codice + slot) {$purgeFromDate} → {$purgeToDate}\n");
@@ -321,11 +326,50 @@ if ($backfillSyncFlag) {
     goto summary;
 }
 
-$runReconcile = $reconcileOnly || (!$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles);
-$runPush = $onlyPush || (!$onlyIngestibili && !$onlyNotHeld && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles);
-$runCleanup = !$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles;
+if ($onlyFixAdminAssignment) {
+    $fixSince = date('Y-m-d 00:00:00', strtotime('-' . $pushSinceDays . ' days'));
+    fwrite(STDOUT, "[FIX ADMIN→CONSULENTE] appuntamenti sincronizzabili dal {$fixSince}\n");
+
+    $adminFixList = $em->getRDBRepository('Appuntamento')
+        ->where([
+            'deleted' => false,
+            'status' => ['Planned', 'Held', 'Ingestibile'],
+            'dateStart>=' => $fixSince,
+        ])
+        ->order('dateStart', 'ASC')
+        ->find();
+
+    foreach ($adminFixList as $appointment) {
+        if (!$sync->needsAdminOnlyConsultantReassignment($appointment, $calendarUserId)) {
+            continue;
+        }
+
+        $label = formatAppointmentLabel($appointment);
+        $current = $sync->describeAssignee($appointment);
+        fwrite(STDOUT, "[FIX ADMIN→CONSULENTE] {$label}\n");
+        fwrite(STDOUT, "  assegnatario attuale: {$current} → {$calendarUserLabel}\n");
+
+        if ($dryRun) {
+            $stats['assigned_user_fixed']++;
+
+            continue;
+        }
+
+        if ($sync->bonificaReassignAdminOnlyToConsultant($appointment, $calendarUserId)) {
+            $stats['assigned_user_fixed']++;
+        }
+    }
+
+    fwrite(STDOUT, '  riassegnati: ' . $stats['assigned_user_fixed'] . "\n\n");
+
+    goto summary;
+}
+
+$runReconcile = $reconcileOnly || (!$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles && !$onlyFixAdminAssignment);
+$runPush = $onlyPush || (!$onlyIngestibili && !$onlyNotHeld && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles && !$onlyFixAdminAssignment);
+$runCleanup = !$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles && !$onlyFixAdminAssignment;
 $runPurgeGoogleGhostTitles = !$onlyIngestibili && !$onlyPush && !$onlyNotHeld && !$onlyPurgeDuplicates
-    && !$backfillSyncFlag && !$reconcileOnly;
+    && !$backfillSyncFlag && !$reconcileOnly && !$onlyFixAdminAssignment;
 
 if ($runReconcile) {
     $reconcileFrom = date('Y-m-d', strtotime('-14 days'));
@@ -393,6 +437,22 @@ if ($runPush) {
     fwrite(STDOUT, '  appuntamenti da verificare: ' . count($pushList) . "\n");
 
     foreach ($pushList as $appointment) {
+        if ($sync->needsAdminOnlyConsultantReassignment($appointment, $calendarUserId)) {
+            $label = formatAppointmentLabel($appointment);
+            fwrite(STDOUT, "[FIX ADMIN→CONSULENTE] {$label}\n");
+
+            if (!$dryRun && $sync->bonificaReassignAdminOnlyToConsultant($appointment, $calendarUserId)) {
+                $stats['assigned_user_fixed']++;
+                $reloaded = $em->getEntityById('Appuntamento', $appointment->getId());
+
+                if ($reloaded) {
+                    $appointment = $reloaded;
+                }
+            } elseif ($dryRun) {
+                $stats['assigned_user_fixed']++;
+            }
+        }
+
         if ($sync->needsAssignedUserIdFix($appointment)) {
             $label = formatAppointmentLabel($appointment);
             fwrite(STDOUT, "[FIX ASSIGNED USER] {$label}\n");
@@ -630,35 +690,51 @@ foreach ($ghosts as $appointment) {
 
 }
 
-// --- Fase 4: Ingestibile assegnati ad admin → consulente (Carmine Alvino) ---
+// --- Fase 4: admin-only → consulente calendario ---
 if (!$onlyPush && ($onlyIngestibili || (!$onlyIngestibili && !$onlyNotHeld))) {
-$ingestibili = $em->getRDBRepository('Appuntamento')
+$adminFixStatus = $onlyIngestibili ? 'Ingestibile' : ['Planned', 'Held', 'Ingestibile'];
+$adminFixCandidates = $em->getRDBRepository('Appuntamento')
     ->where([
-        'status' => 'Ingestibile',
+        'status' => $adminFixStatus,
         'deleted' => false,
     ])
     ->find();
 
-foreach ($ingestibili as $appointment) {
-    if (!$sync->needsIngestibileConsultantFix($appointment, $calendarUserId)) {
-        $stats['ingestibile_ok']++;
+foreach ($adminFixCandidates as $appointment) {
+    $needsFix = $onlyIngestibili
+        ? $sync->needsIngestibileConsultantFix($appointment, $calendarUserId)
+        : $sync->needsAdminOnlyConsultantReassignment($appointment, $calendarUserId);
+
+    if (!$needsFix) {
+        if ($onlyIngestibili) {
+            $stats['ingestibile_ok']++;
+        }
 
         continue;
     }
 
     $label = formatAppointmentLabel($appointment);
     $current = $sync->describeAssignee($appointment);
-    fwrite(STDOUT, "[FIX INGESTIBILE] {$label}\n");
-    fwrite(STDOUT, "  consulente attuale: {$current} → {$calendarUserLabel}\n");
+    $fixLabel = $onlyIngestibili ? '[FIX INGESTIBILE]' : '[FIX ADMIN→CONSULENTE]';
+    fwrite(STDOUT, "{$fixLabel} {$label}\n");
+    fwrite(STDOUT, "  assegnatario attuale: {$current} → {$calendarUserLabel}\n");
 
     if ($dryRun) {
-        $stats['ingestibile_fixed']++;
+        if ($onlyIngestibili) {
+            $stats['ingestibile_fixed']++;
+        } else {
+            $stats['assigned_user_fixed']++;
+        }
 
         continue;
     }
 
-    if ($sync->bonificaFixIngestibileConsultant($appointment, $calendarUserId)) {
-        $stats['ingestibile_fixed']++;
+    if ($sync->bonificaReassignAdminOnlyToConsultant($appointment, $calendarUserId)) {
+        if ($onlyIngestibili) {
+            $stats['ingestibile_fixed']++;
+        } else {
+            $stats['assigned_user_fixed']++;
+        }
     }
 }
 
