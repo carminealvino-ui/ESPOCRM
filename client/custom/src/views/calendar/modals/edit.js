@@ -2,7 +2,7 @@
 
 define('custom:views/calendar/modals/edit', [
     'crm:views/calendar/modals/edit',
-    'custom:views/appuntamento/helpers/prospect-sync',
+    'custom:views/appuntamento/prospect-sync',
 ], function (CalendarEditModalModule, ProspectSync) {
 
     const CalendarEditModalView = CalendarEditModalModule.default || CalendarEditModalModule;

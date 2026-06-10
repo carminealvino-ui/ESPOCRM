@@ -1,8 +1,8 @@
 /* global define */
 
-define('custom:views/appuntamento/helpers/prospect-sync', [], function () {
+define('custom:views/appuntamento/prospect-sync', [], function () {
 
-    const VERSION = '1.2.1';
+    const VERSION = '1.2.2';
 
     const PROSPECT_SELECT = [
         'name',
