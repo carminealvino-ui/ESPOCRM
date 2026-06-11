@@ -16,7 +16,7 @@ fi
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 FIX_TAG="opportunity-appuntamento-sync"
-VERSION_MARKER="VERSION = '1.0.3'"
+VERSION_MARKER="VERSION = '1.0.4'"
 HOOK_VERSION="2.2.7"
 
 FILES=(

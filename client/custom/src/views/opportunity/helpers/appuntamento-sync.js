@@ -2,7 +2,7 @@
 
 define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
 
-    const VERSION = '1.0.3';
+    const VERSION = '1.0.4';
 
     const APPUNTAMENTO_SELECT = [
         'name',
