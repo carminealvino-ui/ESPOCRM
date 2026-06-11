@@ -2,7 +2,7 @@
 
 define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
 
-    const VERSION = '1.0.2';
+    const VERSION = '1.0.3';
 
     const APPUNTAMENTO_SELECT = [
         'name',
@@ -59,22 +59,59 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
     };
 
     const LEAD_SOURCE_CANDIDATES = {
-        TELCALL: ['Call Center', 'TELCALL', 'Call'],
-        'Appuntamento Call Center': ['Call Center', 'TELCALL', 'Call'],
-        'Appuntamento da Gestione Lead': ['Lead', 'Existing Customer'],
-        'Appuntamento da Gestione CB': ['Partner', 'Existing Customer'],
-        'Referenza Personale': ['Partner', 'Existing Customer'],
+        TELCALL: ['Call', 'Call Center', 'TELCALL'],
+        'Appuntamento Call Center': ['Call', 'Call Center', 'TELCALL'],
+        'Appuntamento da Gestione Lead': ['Existing Customer', 'Lead', 'Other'],
+        'Appuntamento da Gestione CB': ['Partner', 'Existing Customer', 'Vodafone Assegnazione CB'],
+        'Referenza Personale': ['Partner', 'Existing Customer', 'Other'],
     };
 
-    const resolveLeadSource = function (view, appuntamento) {
-        if (!view.model.isNew() || view.model.get('leadSource')) {
+    const getDateToday = function () {
+        const d = new Date();
+
+        return d.getFullYear() + '-' +
+            String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+    };
+
+    const parseDateParts = function (refDate) {
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(refDate).substring(0, 10));
+
+        if (!match) {
             return null;
         }
 
-        const options = view.getMetadata().get(
-            ['entityDefs', 'Opportunity', 'fields', 'leadSource', 'options']
-        ) || [];
+        return {
+            year: parseInt(match[1], 10),
+            month: parseInt(match[2], 10),
+        };
+    };
 
+    const matchLeadSourceOption = function (options, candidates) {
+        for (let i = 0; i < candidates.length; i++) {
+            const candidate = String(candidates[i] || '').trim();
+
+            if (!candidate) {
+                continue;
+            }
+
+            for (let j = 0; j < options.length; j++) {
+                const option = String(options[j] || '').trim();
+
+                if (!option) {
+                    continue;
+                }
+
+                if (option.toLowerCase() === candidate.toLowerCase()) {
+                    return options[j];
+                }
+            }
+        }
+
+        return null;
+    };
+
+    const collectLeadSourceCandidates = function (appuntamento, extraSources) {
         const candidates = [];
 
         if (appuntamento.callCenter && LEAD_SOURCE_CANDIDATES[appuntamento.callCenter]) {
@@ -90,6 +127,10 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
                 if (LEAD_SOURCE_CANDIDATES[t]) {
                     candidates.push.apply(candidates, LEAD_SOURCE_CANDIDATES[t]);
                 }
+
+                if (String(t).toLowerCase().indexOf('call center') !== -1) {
+                    candidates.push('Call', 'Call Center');
+                }
             });
         }
 
@@ -97,13 +138,45 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
             candidates.push(appuntamento.callCenter);
         }
 
-        for (let i = 0; i < candidates.length; i++) {
-            if (options.indexOf(candidates[i]) !== -1) {
-                return candidates[i];
-            }
+        if (extraSources && extraSources.length) {
+            candidates.push.apply(candidates, extraSources);
         }
 
-        return null;
+        return candidates;
+    };
+
+    const resolveLeadSource = function (view, appuntamento, extraSources) {
+        const current = view.model.get('leadSource');
+
+        if (!view.model.isNew() || (current !== null && current !== undefined && current !== '')) {
+            return null;
+        }
+
+        const options = view.getMetadata().get(
+            ['entityDefs', 'Opportunity', 'fields', 'leadSource', 'options']
+        ) || [];
+
+        const candidates = collectLeadSourceCandidates(appuntamento, extraSources);
+
+        return matchLeadSourceOption(options, candidates);
+    };
+
+    const fetchRelatedLeadSources = function (appuntamento) {
+        const requests = [];
+
+        if (appuntamento.leadId) {
+            requests.push(
+                Espo.Ajax.getRequest('Lead/' + appuntamento.leadId, {select: 'source'})
+                    .then(r => r.source || null)
+                    .catch(() => null)
+            );
+        }
+
+        if (!requests.length) {
+            return Promise.resolve([]);
+        }
+
+        return Promise.all(requests).then(values => values.filter(Boolean));
     };
 
     const resolveBrandFromAzienda = function (azienda, data) {
@@ -161,7 +234,11 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
             data.dataOpportunit = String(appuntamento.dateStart).substring(0, 10);
         }
 
-        const leadSource = resolveLeadSource(view, appuntamento);
+        return data;
+    };
+
+    const applyLeadSource = function (view, appuntamento, data, extraSources) {
+        const leadSource = resolveLeadSource(view, appuntamento, extraSources);
 
         if (leadSource) {
             data.leadSource = leadSource;
@@ -199,7 +276,16 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
         }).then(response => {
             let data = buildDataFromAppuntamento(view, response);
 
-            return resolveBrandFromAzienda(data.azienda, data);
+            return resolveBrandFromAzienda(data.azienda, data).then(brandData => ({
+                response: response,
+                data: brandData,
+            }));
+        }).then(payload => {
+            return fetchRelatedLeadSources(payload.response).then(extraSources => {
+                applyLeadSource(view, payload.response, payload.data, extraSources);
+
+                return payload.data;
+            });
         }).then(data => {
             applySyncData(view, data);
             return resolvePriceBook(view);
@@ -215,7 +301,7 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
             return String(date).substring(0, 10);
         }
 
-        return Espo.Utils.getDateToday();
+        return getDateToday();
     };
 
     const resolveBrandKey = function (view) {
@@ -229,13 +315,13 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
             return false;
         }
 
-        const m = Espo.Utils.getDateMoment(refDate);
+        const parts = parseDateParts(refDate);
 
-        if (!m || !m.isValid()) {
+        if (!parts || !parts.month || !parts.year) {
             return false;
         }
 
-        const label = IT_MONTHS[m.month() + 1] + ' ' + m.year();
+        const label = IT_MONTHS[parts.month] + ' ' + parts.year;
 
         return String(name).toLowerCase().indexOf(label.toLowerCase()) !== -1;
     };
@@ -307,6 +393,12 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
                 value: view.model.get('productBrandId'),
             }];
         }
+
+        where.push({
+            type: 'equals',
+            attribute: 'status',
+            value: 'Active',
+        });
 
         return Espo.Ajax.getRequest('PriceBook', {
             where: where,
