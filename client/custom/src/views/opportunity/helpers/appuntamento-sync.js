@@ -2,7 +2,7 @@
 
 define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
 
-    const VERSION = '1.0.1';
+    const VERSION = '1.0.2';
 
     const APPUNTAMENTO_SELECT = [
         'name',
@@ -39,6 +39,24 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
         '', 'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
         'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
     ];
+
+    const debounce = function (fn, wait) {
+        let timer = null;
+
+        return function () {
+            const context = this;
+            const args = arguments;
+
+            if (timer) {
+                window.clearTimeout(timer);
+            }
+
+            timer = window.setTimeout(() => {
+                timer = null;
+                fn.apply(context, args);
+            }, wait);
+        };
+    };
 
     const LEAD_SOURCE_CANDIDATES = {
         TELCALL: ['Call Center', 'TELCALL', 'Call'],
@@ -333,7 +351,7 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
     };
 
     const setupPriceBookListeners = function (view) {
-        const debounced = Espo.Utils.debounce(() => {
+        const debounced = debounce(() => {
             resolvePriceBook(view);
         }, 300);
 
