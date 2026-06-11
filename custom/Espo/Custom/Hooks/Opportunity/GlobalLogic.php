@@ -1,8 +1,8 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.6
-// DATA: 2026-05-27
+// VERSIONE: 2.2.7
+// DATA: 2026-06-10
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
 //
@@ -348,7 +348,7 @@ class GlobalLogic
 
         $entity->set(
             'hookVersion',
-            '2.2.6'
+            '2.2.7'
         );
 
 
@@ -583,6 +583,8 @@ class GlobalLogic
 
             $this->normalizeProductCascade($entity);
         }
+
+        $this->syncLeadSourceFromAppuntamento($entity, $appuntamento);
 
 
         // =====================================================
@@ -912,6 +914,79 @@ class GlobalLogic
                 $source->get($field)
             );
         }
+    }
+
+    private function syncLeadSourceFromAppuntamento(
+        Entity $entity,
+        Entity $appuntamento
+    ): void {
+
+        if (!$entity->hasAttribute('leadSource')) {
+            return;
+        }
+
+        if ($entity->get('leadSource')) {
+            return;
+        }
+
+        $leadSource = $this->resolveLeadSourceFromAppuntamento($appuntamento);
+
+        if (!$leadSource) {
+            return;
+        }
+
+        $this->setEntityFieldIfEmpty(
+            $entity,
+            'leadSource',
+            $leadSource
+        );
+    }
+
+    private function resolveLeadSourceFromAppuntamento(Entity $appuntamento): ?string
+    {
+        $metadata = $this->entityManager
+            ->getMetadata()
+            ->get(['entityDefs', 'Opportunity', 'fields', 'leadSource', 'options']) ?? [];
+
+        $candidates = [];
+
+        $map = [
+            'TELCALL' => ['Call Center', 'TELCALL', 'Call'],
+            'Appuntamento Call Center' => ['Call Center', 'TELCALL', 'Call'],
+            'Appuntamento da Gestione Lead' => ['Lead', 'Existing Customer'],
+            'Appuntamento da Gestione CB' => ['Partner', 'Existing Customer'],
+            'Referenza Personale' => ['Partner', 'Existing Customer'],
+        ];
+
+        $callCenter = $appuntamento->get('callCenter');
+
+        if ($callCenter && isset($map[$callCenter])) {
+            $candidates = array_merge($candidates, $map[$callCenter]);
+        }
+
+        $tipo = $appuntamento->get('tipo');
+
+        if ($tipo) {
+            $types = is_array($tipo) ? $tipo : [$tipo];
+
+            foreach ($types as $t) {
+                if (isset($map[$t])) {
+                    $candidates = array_merge($candidates, $map[$t]);
+                }
+            }
+        }
+
+        if ($callCenter) {
+            $candidates[] = $callCenter;
+        }
+
+        foreach ($candidates as $candidate) {
+            if (in_array($candidate, $metadata, true)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     private function setEntityFieldIfEmpty(
