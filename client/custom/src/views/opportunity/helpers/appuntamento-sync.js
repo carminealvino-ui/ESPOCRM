@@ -364,50 +364,12 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
         return score;
     };
 
-    const priceBookHasAttribute = function (view, attribute) {
-        const fields = view.getMetadata().get(['entityDefs', 'PriceBook', 'fields']);
-
-        return !!(fields && Object.prototype.hasOwnProperty.call(fields, attribute));
-    };
-
-    const buildPriceBookWhere = function (view, brandKey) {
-        const where = [];
-
-        if (view.model.get('productBrandId') && priceBookHasAttribute(view, 'productBrandId')) {
-            where.push({
-                type: 'equals',
-                attribute: 'productBrandId',
-                value: view.model.get('productBrandId'),
-            });
-        } else {
-            where.push({
-                type: 'startsWith',
-                attribute: 'name',
-                value: brandKey,
-            });
-        }
-
-        if (priceBookHasAttribute(view, 'status')) {
-            where.push({
-                type: 'equals',
-                attribute: 'status',
-                value: 'Active',
-            });
-        }
-
-        return where;
-    };
-
-    const buildPriceBookSelect = function (view) {
-        const select = ['id', 'name'];
-
-        ['dateStart', 'dateEnd', 'productBrandId'].forEach(attribute => {
-            if (priceBookHasAttribute(view, attribute)) {
-                select.push(attribute);
-            }
-        });
-
-        return select;
+    const buildPriceBookWhere = function (brandKey) {
+        return [{
+            type: 'startsWith',
+            attribute: 'name',
+            value: brandKey,
+        }];
     };
 
     const resolvePriceBook = function (view) {
@@ -427,8 +389,8 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
         }
 
         return Espo.Ajax.getRequest('PriceBook', {
-            where: buildPriceBookWhere(view, brandKey),
-            select: buildPriceBookSelect(view),
+            where: buildPriceBookWhere(brandKey),
+            select: ['id', 'name', 'dateStart', 'dateEnd', 'status'],
             maxSize: 200,
         }).then(response => {
             if (!response.list || !response.list.length) {
@@ -439,6 +401,10 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
             let bestScore = -1;
 
             response.list.forEach(item => {
+                if (item.status && item.status !== 'Active') {
+                    return;
+                }
+
                 if (!isEffectiveOnDate(item, refDate)) {
                     return;
                 }
@@ -465,6 +431,8 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
             if (fieldView && typeof fieldView.reRender === 'function') {
                 fieldView.reRender();
             }
+        }).catch(error => {
+            console.error('[opportunity-appuntamento-sync ' + VERSION + '] priceBook', error);
         });
     };
 
