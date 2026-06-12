@@ -2,7 +2,7 @@
 
 define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
 
-    const VERSION = '1.0.5';
+    const VERSION = '1.0.6';
 
     const APPUNTAMENTO_SELECT = [
         'name',
@@ -15,6 +15,8 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
         'prospectName',
         'leadId',
         'leadName',
+        'parentId',
+        'parentType',
         'fornitorePartnerId',
         'fornitorePartnerName',
         'productBrandId',
@@ -87,9 +89,39 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
         };
     };
 
+    const LEAD_SOURCE_ALIASES = {
+        'Call Center': ['Call', 'Call Center'],
+        TELCALL: ['Call', 'Call Center', 'TELCALL'],
+        Call: ['Call', 'Call Center'],
+        Lead: ['Existing Customer', 'Lead', 'Other'],
+        Partner: ['Partner', 'Existing Customer'],
+    };
+
+    const expandLeadSourceCandidates = function (values) {
+        const expanded = [];
+
+        (values || []).forEach(value => {
+            const key = String(value || '').trim();
+
+            if (!key) {
+                return;
+            }
+
+            expanded.push(key);
+
+            if (LEAD_SOURCE_ALIASES[key]) {
+                expanded.push.apply(expanded, LEAD_SOURCE_ALIASES[key]);
+            }
+        });
+
+        return expanded;
+    };
+
     const matchLeadSourceOption = function (options, candidates) {
-        for (let i = 0; i < candidates.length; i++) {
-            const candidate = String(candidates[i] || '').trim();
+        const normalized = expandLeadSourceCandidates(candidates);
+
+        for (let i = 0; i < normalized.length; i++) {
+            const candidate = String(normalized[i] || '').trim();
 
             if (!candidate) {
                 continue;
@@ -103,6 +135,28 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
                 }
 
                 if (option.toLowerCase() === candidate.toLowerCase()) {
+                    return options[j];
+                }
+            }
+        }
+
+        for (let i = 0; i < normalized.length; i++) {
+            const candidate = String(normalized[i] || '').trim().toLowerCase();
+
+            if (!candidate) {
+                continue;
+            }
+
+            for (let j = 0; j < options.length; j++) {
+                const option = String(options[j] || '').trim();
+
+                if (!option) {
+                    continue;
+                }
+
+                const optionLower = option.toLowerCase();
+
+                if (optionLower.indexOf(candidate) !== -1 || candidate.indexOf(optionLower) !== -1) {
                     return options[j];
                 }
             }
@@ -161,22 +215,36 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
         return matchLeadSourceOption(options, candidates);
     };
 
-    const fetchRelatedLeadSources = function (appuntamento) {
-        const requests = [];
-
+    const resolveLeadIdFromAppuntamento = function (appuntamento) {
         if (appuntamento.leadId) {
-            requests.push(
-                Espo.Ajax.getRequest('Lead/' + appuntamento.leadId, {select: 'source'})
-                    .then(r => r.source || null)
-                    .catch(() => null)
-            );
+            return appuntamento.leadId;
         }
 
-        if (!requests.length) {
+        if (appuntamento.parentType === 'Lead' && appuntamento.parentId) {
+            return appuntamento.parentId;
+        }
+
+        return null;
+    };
+
+    const fetchRelatedLeadSources = function (appuntamento) {
+        const leadId = resolveLeadIdFromAppuntamento(appuntamento);
+
+        if (!leadId) {
             return Promise.resolve([]);
         }
 
-        return Promise.all(requests).then(values => values.filter(Boolean));
+        return Espo.Ajax.getRequest('Lead/' + leadId, {select: 'source'})
+            .then(r => {
+                const values = [];
+
+                if (r.source) {
+                    values.push(r.source);
+                }
+
+                return values;
+            })
+            .catch(() => []);
     };
 
     const resolveBrandFromAzienda = function (azienda, data) {
@@ -238,7 +306,15 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
     };
 
     const applyLeadSource = function (view, appuntamento, data, extraSources) {
-        const leadSource = resolveLeadSource(view, appuntamento, extraSources);
+        const options = view.getMetadata().get(
+            ['entityDefs', 'Opportunity', 'fields', 'leadSource', 'options']
+        ) || [];
+
+        let leadSource = resolveLeadSource(view, appuntamento, extraSources);
+
+        if (!leadSource) {
+            leadSource = matchLeadSourceOption(options, ['Call', 'Call Center', 'Partner', 'Existing Customer']);
+        }
 
         if (leadSource) {
             data.leadSource = leadSource;
@@ -349,8 +425,12 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
         let score = 0;
         const name = String(priceBook.name || '').toUpperCase();
 
-        if (name.indexOf(brandKey) === 0) {
+        if (name.indexOf(brandKey) !== -1) {
             score += 10;
+        }
+
+        if (name.indexOf(brandKey) === 0) {
+            score += 5;
         }
 
         if (nameMatchesReferenceMonth(priceBook.name, refDate)) {
@@ -366,10 +446,34 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
 
     const buildPriceBookWhere = function (brandKey) {
         return [{
-            type: 'startsWith',
+            type: 'contains',
             attribute: 'name',
             value: brandKey,
         }];
+    };
+
+    const pickBestPriceBook = function (list, refDate, brandKey, requireEffectiveDate) {
+        let best = null;
+        let bestScore = -1;
+
+        list.forEach(item => {
+            if (item.status && item.status !== 'Active') {
+                return;
+            }
+
+            if (requireEffectiveDate && !isEffectiveOnDate(item, refDate)) {
+                return;
+            }
+
+            const score = scoreCandidate(item, refDate, brandKey);
+
+            if (score > bestScore) {
+                bestScore = score;
+                best = item;
+            }
+        });
+
+        return best;
     };
 
     const resolvePriceBook = function (view) {
@@ -392,30 +496,18 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
             where: buildPriceBookWhere(brandKey),
             select: ['id', 'name', 'dateStart', 'dateEnd', 'status'],
             maxSize: 200,
+            orderBy: 'name',
+            order: 'desc',
         }).then(response => {
             if (!response.list || !response.list.length) {
                 return;
             }
 
-            let best = null;
-            let bestScore = -1;
+            let best = pickBestPriceBook(response.list, refDate, brandKey, true);
 
-            response.list.forEach(item => {
-                if (item.status && item.status !== 'Active') {
-                    return;
-                }
-
-                if (!isEffectiveOnDate(item, refDate)) {
-                    return;
-                }
-
-                const score = scoreCandidate(item, refDate, brandKey);
-
-                if (score > bestScore) {
-                    bestScore = score;
-                    best = item;
-                }
-            });
+            if (!best) {
+                best = pickBestPriceBook(response.list, refDate, brandKey, false);
+            }
 
             if (!best) {
                 return;
@@ -426,11 +518,7 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
                 priceBookName: best.name,
             }, {ui: true, prospectSync: true});
 
-            const fieldView = view.getFieldView && view.getFieldView('priceBook');
-
-            if (fieldView && typeof fieldView.reRender === 'function') {
-                fieldView.reRender();
-            }
+            refreshUiFields(view);
         }).catch(error => {
             console.error('[opportunity-appuntamento-sync ' + VERSION + '] priceBook', error);
         });

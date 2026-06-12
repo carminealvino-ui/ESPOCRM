@@ -16,7 +16,7 @@ fi
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 FIX_TAG="opportunity-appuntamento-sync"
-VERSION_MARKER="VERSION = '1.0.5'"
+VERSION_MARKER="VERSION = '1.0.6'"
 HOOK_VERSION="2.2.7"
 
 FILES=(
@@ -29,7 +29,7 @@ FILES=(
   "client/custom/src/views/opportunity/record/edit.js"
 )
 
-echo "=== Deploy sync Appuntamento → Opportunità v1.0.4 ==="
+echo "=== Deploy sync Appuntamento → Opportunità v1.0.6 ==="
 echo "CRM_ROOT: ${CRM_ROOT}"
 echo "BRANCH:   ${BRANCH}"
 echo ""
@@ -133,4 +133,4 @@ fi
 
 echo ""
 echo "Fatto. Ctrl+Shift+R."
-echo "Sync attivo su Crea Opportunità (appuntamento-sync.js v1.0.4)."
+echo "Sync attivo su Crea Opportunità (appuntamento-sync.js v1.0.6)."
