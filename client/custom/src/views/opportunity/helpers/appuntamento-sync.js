@@ -2,7 +2,7 @@
 
 define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
 
-    const VERSION = '1.0.4';
+    const VERSION = '1.0.5';
 
     const APPUNTAMENTO_SELECT = [
         'name',
@@ -364,6 +364,52 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
         return score;
     };
 
+    const priceBookHasAttribute = function (view, attribute) {
+        const fields = view.getMetadata().get(['entityDefs', 'PriceBook', 'fields']);
+
+        return !!(fields && Object.prototype.hasOwnProperty.call(fields, attribute));
+    };
+
+    const buildPriceBookWhere = function (view, brandKey) {
+        const where = [];
+
+        if (view.model.get('productBrandId') && priceBookHasAttribute(view, 'productBrandId')) {
+            where.push({
+                type: 'equals',
+                attribute: 'productBrandId',
+                value: view.model.get('productBrandId'),
+            });
+        } else {
+            where.push({
+                type: 'startsWith',
+                attribute: 'name',
+                value: brandKey,
+            });
+        }
+
+        if (priceBookHasAttribute(view, 'status')) {
+            where.push({
+                type: 'equals',
+                attribute: 'status',
+                value: 'Active',
+            });
+        }
+
+        return where;
+    };
+
+    const buildPriceBookSelect = function (view) {
+        const select = ['id', 'name'];
+
+        ['dateStart', 'dateEnd', 'productBrandId'].forEach(attribute => {
+            if (priceBookHasAttribute(view, attribute)) {
+                select.push(attribute);
+            }
+        });
+
+        return select;
+    };
+
     const resolvePriceBook = function (view) {
         if (!view.model.has('priceBookId')) {
             return Promise.resolve();
@@ -380,29 +426,9 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
             return Promise.resolve();
         }
 
-        let where = [{
-            type: 'startsWith',
-            attribute: 'name',
-            value: brandKey,
-        }];
-
-        if (view.model.get('productBrandId')) {
-            where = [{
-                type: 'equals',
-                attribute: 'productBrandId',
-                value: view.model.get('productBrandId'),
-            }];
-        }
-
-        where.push({
-            type: 'equals',
-            attribute: 'status',
-            value: 'Active',
-        });
-
         return Espo.Ajax.getRequest('PriceBook', {
-            where: where,
-            select: ['id', 'name', 'dateStart', 'dateEnd', 'productBrandId'],
+            where: buildPriceBookWhere(view, brandKey),
+            select: buildPriceBookSelect(view),
             maxSize: 200,
         }).then(response => {
             if (!response.list || !response.list.length) {
