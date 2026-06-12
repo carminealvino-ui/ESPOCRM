@@ -1,8 +1,8 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.7
-// DATA: 2026-06-10
+// VERSIONE: 2.2.8
+// DATA: 2026-06-11
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
 //
@@ -348,7 +348,7 @@ class GlobalLogic
 
         $entity->set(
             'hookVersion',
-            '2.2.7'
+            '2.2.8'
         );
 
 
@@ -584,7 +584,7 @@ class GlobalLogic
             $this->normalizeProductCascade($entity);
         }
 
-        $this->syncLeadSourceFromAppuntamento($entity, $appuntamento);
+        $this->syncLeadSourceFromAppuntamento($entity, $appuntamento, $prospect);
 
 
         // =====================================================
@@ -918,7 +918,8 @@ class GlobalLogic
 
     private function syncLeadSourceFromAppuntamento(
         Entity $entity,
-        Entity $appuntamento
+        Entity $appuntamento,
+        ?Entity $prospect = null
     ): void {
 
         if (!$entity->hasAttribute('leadSource')) {
@@ -929,7 +930,7 @@ class GlobalLogic
             return;
         }
 
-        $leadSource = $this->resolveLeadSourceFromAppuntamento($appuntamento);
+        $leadSource = $this->resolveLeadSourceFromAppuntamento($appuntamento, $prospect);
 
         if (!$leadSource) {
             return;
@@ -942,20 +943,30 @@ class GlobalLogic
         );
     }
 
-    private function resolveLeadSourceFromAppuntamento(Entity $appuntamento): ?string
-    {
+    private function resolveLeadSourceFromAppuntamento(
+        Entity $appuntamento,
+        ?Entity $prospect = null
+    ): ?string {
         $metadata = $this->entityManager
             ->getMetadata()
             ->get(['entityDefs', 'Opportunity', 'fields', 'leadSource', 'options']) ?? [];
 
         $candidates = [];
 
+        if ($prospect && $prospect->get('origine')) {
+            $candidates[] = $prospect->get('origine');
+        }
+
         $map = [
-            'TELCALL' => ['Call Center', 'TELCALL', 'Call'],
-            'Appuntamento Call Center' => ['Call Center', 'TELCALL', 'Call'],
-            'Appuntamento da Gestione Lead' => ['Lead', 'Existing Customer'],
-            'Appuntamento da Gestione CB' => ['Partner', 'Existing Customer'],
-            'Referenza Personale' => ['Partner', 'Existing Customer'],
+            'TELCALL' => ['Call', 'Call Center', 'TELCALL'],
+            'Appuntamento Call Center' => ['Call', 'Call Center', 'TELCALL'],
+            'Appuntamento da Gestione Lead' => ['Generazione Lead', 'Lead', 'Existing Customer'],
+            'Appuntamento da Gestione CB' => ['Partner', 'Existing Customer', 'Assegnazione CB'],
+            'Referenza Personale' => ['Referenza Personale', 'Partner', 'Existing Customer'],
+            'Generazione Lead' => ['Generazione Lead', 'Lead', 'Existing Customer'],
+            'Extractor' => ['Extractor', 'Other'],
+            'Assegnazione CB' => ['Assegnazione CB', 'Partner', 'Vodafone Assegnazione CB'],
+            'Call Center' => ['Call', 'Call Center'],
         ];
 
         $callCenter = $appuntamento->get('callCenter');
@@ -983,6 +994,22 @@ class GlobalLogic
         foreach ($candidates as $candidate) {
             if (in_array($candidate, $metadata, true)) {
                 return $candidate;
+            }
+        }
+
+        foreach ($candidates as $candidate) {
+            $candidateLower = strtolower((string) $candidate);
+
+            foreach ($metadata as $option) {
+                $optionLower = strtolower((string) $option);
+
+                if (
+                    $optionLower === $candidateLower
+                    || str_contains($optionLower, $candidateLower)
+                    || str_contains($candidateLower, $optionLower)
+                ) {
+                    return $option;
+                }
             }
         }
 

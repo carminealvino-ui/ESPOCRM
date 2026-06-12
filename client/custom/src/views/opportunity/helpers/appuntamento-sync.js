@@ -2,7 +2,7 @@
 
 define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
 
-    const VERSION = '1.0.6';
+    const VERSION = '1.0.7';
 
     const APPUNTAMENTO_SELECT = [
         'name',
@@ -63,7 +63,7 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
     const LEAD_SOURCE_CANDIDATES = {
         TELCALL: ['Call', 'Call Center', 'TELCALL'],
         'Appuntamento Call Center': ['Call', 'Call Center', 'TELCALL'],
-        'Appuntamento da Gestione Lead': ['Existing Customer', 'Lead', 'Other'],
+        'Appuntamento da Gestione Lead': ['Generazione Lead', 'Lead', 'Existing Customer', 'Other'],
         'Appuntamento da Gestione CB': ['Partner', 'Existing Customer', 'Vodafone Assegnazione CB'],
         'Referenza Personale': ['Partner', 'Existing Customer', 'Other'],
     };
@@ -95,6 +95,10 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
         Call: ['Call', 'Call Center'],
         Lead: ['Existing Customer', 'Lead', 'Other'],
         Partner: ['Partner', 'Existing Customer'],
+        'Generazione Lead': ['Generazione Lead', 'Lead', 'Existing Customer'],
+        Extractor: ['Extractor', 'Other'],
+        'Assegnazione CB': ['Assegnazione CB', 'Partner', 'Vodafone Assegnazione CB'],
+        'Referenza Personale': ['Referenza Personale', 'Partner', 'Existing Customer'],
     };
 
     const expandLeadSourceCandidates = function (values) {
@@ -168,6 +172,10 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
     const collectLeadSourceCandidates = function (appuntamento, extraSources) {
         const candidates = [];
 
+        if (extraSources && extraSources.length) {
+            candidates.push.apply(candidates, extraSources);
+        }
+
         if (appuntamento.callCenter && LEAD_SOURCE_CANDIDATES[appuntamento.callCenter]) {
             candidates.push.apply(candidates, LEAD_SOURCE_CANDIDATES[appuntamento.callCenter]);
         }
@@ -190,10 +198,6 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
 
         if (appuntamento.callCenter) {
             candidates.push(appuntamento.callCenter);
-        }
-
-        if (extraSources && extraSources.length) {
-            candidates.push.apply(candidates, extraSources);
         }
 
         return candidates;
@@ -227,24 +231,41 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
         return null;
     };
 
-    const fetchRelatedLeadSources = function (appuntamento) {
+    const fetchLeadSourceHints = function (appuntamento) {
+        const requests = [];
+        const values = [];
+
+        if (appuntamento.prospectId) {
+            requests.push(
+                Espo.Ajax.getRequest('Prospect/' + appuntamento.prospectId, {select: 'origine'})
+                    .then(r => {
+                        if (r.origine) {
+                            values.push(r.origine);
+                        }
+                    })
+                    .catch(() => null)
+            );
+        }
+
         const leadId = resolveLeadIdFromAppuntamento(appuntamento);
 
-        if (!leadId) {
+        if (leadId) {
+            requests.push(
+                Espo.Ajax.getRequest('Lead/' + leadId, {select: 'source'})
+                    .then(r => {
+                        if (r.source) {
+                            values.push(r.source);
+                        }
+                    })
+                    .catch(() => null)
+            );
+        }
+
+        if (!requests.length) {
             return Promise.resolve([]);
         }
 
-        return Espo.Ajax.getRequest('Lead/' + leadId, {select: 'source'})
-            .then(r => {
-                const values = [];
-
-                if (r.source) {
-                    values.push(r.source);
-                }
-
-                return values;
-            })
-            .catch(() => []);
+        return Promise.all(requests).then(() => values);
     };
 
     const resolveBrandFromAzienda = function (azienda, data) {
@@ -312,7 +333,7 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
 
         let leadSource = resolveLeadSource(view, appuntamento, extraSources);
 
-        if (!leadSource) {
+        if (!leadSource && (!extraSources || !extraSources.length)) {
             leadSource = matchLeadSourceOption(options, ['Call', 'Call Center', 'Partner', 'Existing Customer']);
         }
 
@@ -357,7 +378,7 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
                 data: brandData,
             }));
         }).then(payload => {
-            return fetchRelatedLeadSources(payload.response).then(extraSources => {
+            return fetchLeadSourceHints(payload.response).then(extraSources => {
                 applyLeadSource(view, payload.response, payload.data, extraSources);
 
                 return payload.data;
@@ -418,7 +439,11 @@ define('custom:views/opportunity/helpers/appuntamento-sync', [], function () {
             return true;
         }
 
-        return nameMatchesReferenceMonth(priceBook.name, refDate);
+        if (nameMatchesReferenceMonth(priceBook.name, refDate)) {
+            return true;
+        }
+
+        return true;
     };
 
     const scoreCandidate = function (priceBook, refDate, brandKey) {
