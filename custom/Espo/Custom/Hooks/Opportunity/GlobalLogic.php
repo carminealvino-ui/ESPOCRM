@@ -1,8 +1,8 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.6
-// DATA: 2026-05-27
+// VERSIONE: 2.2.8
+// DATA: 2026-06-11
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
 //
@@ -348,7 +348,7 @@ class GlobalLogic
 
         $entity->set(
             'hookVersion',
-            '2.2.6'
+            '2.2.8'
         );
 
 
@@ -412,6 +412,10 @@ class GlobalLogic
             || $entity->isAttributeChanged('azienda');
 
         if (!$shouldResolve) {
+            return;
+        }
+
+        if (!class_exists(OpportunityPriceBookResolver::class)) {
             return;
         }
 
@@ -583,6 +587,8 @@ class GlobalLogic
 
             $this->normalizeProductCascade($entity);
         }
+
+        $this->syncLeadSourceFromAppuntamento($entity, $appuntamento, $prospect);
 
 
         // =====================================================
@@ -912,6 +918,106 @@ class GlobalLogic
                 $source->get($field)
             );
         }
+    }
+
+    private function syncLeadSourceFromAppuntamento(
+        Entity $entity,
+        Entity $appuntamento,
+        ?Entity $prospect = null
+    ): void {
+
+        if (!$entity->hasAttribute('leadSource')) {
+            return;
+        }
+
+        if ($entity->get('leadSource')) {
+            return;
+        }
+
+        $leadSource = $this->resolveLeadSourceFromAppuntamento($appuntamento, $prospect);
+
+        if (!$leadSource) {
+            return;
+        }
+
+        $this->setEntityFieldIfEmpty(
+            $entity,
+            'leadSource',
+            $leadSource
+        );
+    }
+
+    private function resolveLeadSourceFromAppuntamento(
+        Entity $appuntamento,
+        ?Entity $prospect = null
+    ): ?string {
+        $metadata = $this->entityManager
+            ->getMetadata()
+            ->get(['entityDefs', 'Opportunity', 'fields', 'leadSource', 'options']) ?? [];
+
+        $candidates = [];
+
+        if ($prospect && $prospect->get('origine')) {
+            $candidates[] = $prospect->get('origine');
+        }
+
+        $map = [
+            'TELCALL' => ['Call', 'Call Center', 'TELCALL'],
+            'Appuntamento Call Center' => ['Call', 'Call Center', 'TELCALL'],
+            'Appuntamento da Gestione Lead' => ['Generazione Lead', 'Lead', 'Existing Customer'],
+            'Appuntamento da Gestione CB' => ['Partner', 'Existing Customer', 'Assegnazione CB'],
+            'Referenza Personale' => ['Referenza Personale', 'Partner', 'Existing Customer'],
+            'Generazione Lead' => ['Generazione Lead', 'Lead', 'Existing Customer'],
+            'Extractor' => ['Extractor', 'Other'],
+            'Assegnazione CB' => ['Assegnazione CB', 'Partner', 'Vodafone Assegnazione CB'],
+            'Call Center' => ['Call', 'Call Center'],
+        ];
+
+        $callCenter = $appuntamento->get('callCenter');
+
+        if ($callCenter && isset($map[$callCenter])) {
+            $candidates = array_merge($candidates, $map[$callCenter]);
+        }
+
+        $tipo = $appuntamento->get('tipo');
+
+        if ($tipo) {
+            $types = is_array($tipo) ? $tipo : [$tipo];
+
+            foreach ($types as $t) {
+                if (isset($map[$t])) {
+                    $candidates = array_merge($candidates, $map[$t]);
+                }
+            }
+        }
+
+        if ($callCenter) {
+            $candidates[] = $callCenter;
+        }
+
+        foreach ($candidates as $candidate) {
+            if (in_array($candidate, $metadata, true)) {
+                return $candidate;
+            }
+        }
+
+        foreach ($candidates as $candidate) {
+            $candidateLower = strtolower((string) $candidate);
+
+            foreach ($metadata as $option) {
+                $optionLower = strtolower((string) $option);
+
+                if (
+                    $optionLower === $candidateLower
+                    || str_contains($optionLower, $candidateLower)
+                    || str_contains($candidateLower, $optionLower)
+                ) {
+                    return $option;
+                }
+            }
+        }
+
+        return null;
     }
 
     private function setEntityFieldIfEmpty(

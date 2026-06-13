@@ -1,0 +1,8 @@
+custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json
+custom/Espo/Custom/Resources/metadata/clientDefs/Opportunity.json
+custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
+custom/Espo/Custom/Services/OpportunityPriceBookResolver.php
+client/custom/src/views/appuntamento/record/detail.js
+client/custom/src/views/opportunity/helpers/appuntamento-sync.js
+client/custom/src/views/opportunity/record/edit-small.js
+client/custom/src/views/opportunity/record/edit.js

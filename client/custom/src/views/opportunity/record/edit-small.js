@@ -1,7 +1,7 @@
 /* global define */
 
-define('custom:views/opportunity/record/edit', [
-    'crm:views/opportunity/record/edit',
+define('custom:views/opportunity/record/edit-small', [
+    'crm:views/opportunity/record/edit-small',
     'custom:views/opportunity/helpers/appuntamento-sync',
 ], function (Dep, AppuntamentoSync) {
 
