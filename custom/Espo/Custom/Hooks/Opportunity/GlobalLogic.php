@@ -415,6 +415,10 @@ class GlobalLogic
             return;
         }
 
+        if (!class_exists(OpportunityPriceBookResolver::class)) {
+            return;
+        }
+
         $priceBook = (new OpportunityPriceBookResolver($this->entityManager))
             ->resolveForOpportunity($entity);
 
