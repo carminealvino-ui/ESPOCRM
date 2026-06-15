@@ -9,10 +9,8 @@
         {{notificationData.name}}
     </a>
 </div>
-<div class="cell" data-name="date">
-    <span class="field" data-name="dateField"></span>
-</div>
-<div class="cell esito-popup-fields">
+<div class="cell record no-side-margin esito-popup-fields">
+    <div class="field" data-name="{{dateFieldName}}"></div>
     {{#each fieldNames}}
     <div class="field" data-name="{{this}}"></div>
     {{/each}}
