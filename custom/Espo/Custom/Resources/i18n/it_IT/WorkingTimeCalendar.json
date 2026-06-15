@@ -17,6 +17,7 @@
     "labels": {
         "Generazione Disponibilità": "Generazione Disponibilità",
         "Disponibilità Ricorrenti": "Disponibilità Ricorrenti",
+        "Genera Disponibilità": "Genera Disponibilità",
         "Overview": "Panoramica",
         "Create WorkingTimeCalendar": "Crea Disponibilità Ricorrente"
     },
