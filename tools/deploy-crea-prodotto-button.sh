@@ -7,7 +7,7 @@
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${BRANCH:-cursor/quote-prezzi-iva-inclusa-9999}"
+BRANCH="${BRANCH:-cursor/fix-doppio-crea-prodotto-9999}"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 CLIENT_JSON="${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/app/client.json"
 LEGACY_SCRIPT="client/custom/src/custom-product-button.js"
@@ -26,6 +26,7 @@ fetch() {
 
 echo "=== Deploy Crea prodotto (senza calculation-handler) ==="
 
+fetch "custom/Espo/Custom/Resources/metadata/app/client.json"
 fetch "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
 fetch "custom/Espo/Custom/Resources/metadata/formula/Quote.json"
 fetch "client/custom/src/handlers/quote/crea-prodotto-articoli.js"
