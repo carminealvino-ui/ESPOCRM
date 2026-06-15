@@ -123,9 +123,14 @@ define('custom:views/appuntamento/popup-notification', [
 
         createFieldView(viewKey, fieldName, mode, readOnly) {
             const model = this.esitoModel;
+            const $target = this.$el.find('.field[data-name="' + fieldName + '"]');
+
+            if (!$target.length) {
+                return Promise.resolve();
+            }
+
             const fieldType = model.getFieldType(fieldName) || 'base';
             const viewName = this.getFieldManager().getViewName(fieldType);
-            const selector = this.getSelector() + ' .field[data-name="' + fieldName + '"]';
 
             if (this.hasView(viewKey)) {
                 this.clearView(viewKey);
@@ -135,7 +140,7 @@ define('custom:views/appuntamento/popup-notification', [
                 this.createView(viewKey, viewName, {
                     model: model,
                     mode: mode,
-                    selector: selector,
+                    el: $target,
                     name: fieldName,
                     readOnly: readOnly,
                 }, view => {
