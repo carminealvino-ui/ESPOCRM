@@ -122,16 +122,6 @@ define('custom:views/appuntamento/popup-notification', [
                     }).then(() => {
                         this.esitoModel = model;
                         this.esitoEntityType = entityType;
-
-                        const tasks = [
-                            this.createFieldView('date', dateField, 'detail', true),
-                        ];
-
-                        config.fields.forEach(fieldName => {
-                            tasks.push(this.createFieldView(fieldName, fieldName, 'edit', false));
-                        });
-
-                        return Promise.all(tasks);
                     });
                 });
 
@@ -140,9 +130,14 @@ define('custom:views/appuntamento/popup-notification', [
 
         createFieldView(viewKey, fieldName, mode, readOnly) {
             const model = this.esitoModel;
+            const holder = this.$el.get(0).querySelector('.' + this.fieldHolderClass(fieldName));
+
+            if (!holder) {
+                return Promise.resolve();
+            }
+
             const fieldType = model.getFieldType(fieldName) || 'base';
             const viewName = this.getFieldManager().getViewName(fieldType);
-            const selector = '.' + this.fieldHolderClass(fieldName);
 
             if (this.hasView(viewKey)) {
                 this.clearView(viewKey);
@@ -152,13 +147,28 @@ define('custom:views/appuntamento/popup-notification', [
                 this.createView(viewKey, viewName, {
                     model: model,
                     mode: mode,
-                    selector: selector,
+                    el: holder,
                     name: fieldName,
                     readOnly: readOnly,
-                }, () => {
+                }, view => {
+                    view.render();
                     resolve();
                 });
             });
+        }
+
+        renderEsitoFieldViews() {
+            const config = this.esitoPopupConfig;
+            const dateField = this.esitoDateField;
+            const tasks = [
+                this.createFieldView('date', dateField, 'detail', true),
+            ];
+
+            config.fields.forEach(fieldName => {
+                tasks.push(this.createFieldView(fieldName, fieldName, 'edit', false));
+            });
+
+            return Promise.all(tasks);
         }
 
         data() {
@@ -189,6 +199,13 @@ define('custom:views/appuntamento/popup-notification', [
 
             this.$el.find('[data-action="close"]').addClass('hidden');
             this.$el.find('[data-action="collapse"]').addClass('hidden');
+
+            if (this.esitoFieldsRendered || !this.esitoModel) {
+                return;
+            }
+
+            this.esitoFieldsRendered = true;
+            this.renderEsitoFieldViews();
         }
 
         resolveCancel() {
