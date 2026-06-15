@@ -13,6 +13,66 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             this.popupDisplayActive = false;
         }
 
+        getPopupNotificationView(id) {
+            return this.getView('popup-' + id);
+        }
+
+        getCollapsedStorageKey(id) {
+            return 'popupNotificationCollapsed-' + id;
+        }
+
+        markPopupRemoved(id) {
+            const index = this.shownNotificationIds.indexOf(id);
+
+            if (index > -1) {
+                this.shownNotificationIds.splice(index, 1);
+            }
+
+            if (this.shownNotificationIds.length === 0) {
+                this.$popupContainer.addClass('hidden');
+            }
+
+            this.closedNotificationIds.push(id);
+        }
+
+        checkBypass() {
+            const last = this.getRouter().getLast() || {};
+            const pageAction = (last.options || {}).page || null;
+
+            if (
+                last.controller === 'Admin' &&
+                last.action === 'page' &&
+                ['upgrade', 'extensions'].includes(pageAction)
+            ) {
+                return true;
+            }
+
+            return false;
+        }
+
+        collapsePopupNotification(id, silent = false) {
+            const view = this.getPopupNotificationView(id);
+
+            if (!view) {
+                return;
+            }
+
+            if (!silent || !view.isCollapsed) {
+                this.modalBarProvider.get()?.addModalView(view, {
+                    title: view.getTitle() ?? this.translate('Notification'),
+                });
+            }
+
+            if (silent) {
+                view.makeCollapsed();
+
+                return;
+            }
+
+            localStorage.setItem('messageCollapsePopupNotificationId', id);
+            this.getStorage().set('state', this.getCollapsedStorageKey(id), true);
+        }
+
         getPopupSortDate(data) {
             const notificationData = data.data || {};
             const dateField = notificationData.dateField || 'dateStart';
