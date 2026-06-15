@@ -31,6 +31,10 @@ FILES=(
   "client/custom/src/views/appuntamento/popup-notification.js"
   "client/custom/res/templates/appuntamento/popup-notification.tpl"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsito.json"
+  "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
+  "custom/Espo/Custom/Resources/layouts/Meeting/detailEsitoPopup.json"
+  "custom/Espo/Custom/Resources/layouts/Call/detailEsitoPopup.json"
+  "custom/Espo/Custom/Resources/layouts/Task/detailEsitoPopup.json"
   "custom/Espo/Custom/Resources/metadata/app/popupNotifications.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Appuntamento.json"
 )

@@ -9,12 +9,7 @@
         {{notificationData.name}}
     </a>
 </div>
-<div class="cell record no-side-margin esito-popup-fields">
-    <div class="field" data-name="{{dateFieldName}}"></div>
-    {{#each fieldNames}}
-    <div class="field" data-name="{{this}}"></div>
-    {{/each}}
-</div>
+<div class="cell record no-side-margin esito-popup-record"></div>
 <div class="cell margin-top-small">
     <button type="button" class="btn btn-primary btn-sm" data-action="saveEsito">
         {{translate 'Save'}}

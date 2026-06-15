@@ -1,0 +1,32 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "dateStart",
+                    "readOnly": true
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "sottostato"
+                }
+            ],
+            [
+                {
+                    "name": "esito"
+                }
+            ],
+            [
+                {
+                    "name": "noteEsito",
+                    "fullWidth": true
+                }
+            ]
+        ],
+        "label": ""
+    }
+]

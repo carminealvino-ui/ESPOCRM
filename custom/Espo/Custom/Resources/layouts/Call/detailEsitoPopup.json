@@ -1,0 +1,37 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "dateStart",
+                    "readOnly": true
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "description",
+                    "fullWidth": true
+                }
+            ],
+            [
+                {
+                    "name": "daRichiamare"
+                },
+                {
+                    "name": "dataRichiamo"
+                }
+            ],
+            [
+                {
+                    "name": "richiamo"
+                }
+            ]
+        ],
+        "label": ""
+    }
+]

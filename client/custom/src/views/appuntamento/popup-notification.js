@@ -8,7 +8,7 @@ define('custom:views/appuntamento/popup-notification', [
 
     const ESITO_POPUP_SCOPES = {
         Appuntamento: {
-            fields: ['status', 'sottostato', 'esito', 'noteEsito'],
+            layoutName: 'detailEsitoPopup',
             isComplete: function (model) {
                 const status = model.get('status');
 
@@ -25,7 +25,7 @@ define('custom:views/appuntamento/popup-notification', [
             incompleteMessage: 'Compilare Stato, Sottostato, Esito e Note Esito, poi cliccare Salva.',
         },
         Meeting: {
-            fields: ['status'],
+            layoutName: 'detailEsitoPopup',
             isComplete: function (model) {
                 const status = model.get('status');
 
@@ -34,7 +34,7 @@ define('custom:views/appuntamento/popup-notification', [
             incompleteMessage: 'Selezionare Stato (Svolto o Non svolto) e cliccare Salva.',
         },
         Call: {
-            fields: ['status', 'description', 'daRichiamare', 'dataRichiamo', 'richiamo'],
+            layoutName: 'detailEsitoPopup',
             isComplete: function (model) {
                 const status = model.get('status');
 
@@ -57,7 +57,7 @@ define('custom:views/appuntamento/popup-notification', [
             incompleteMessage: 'Compilare Stato, descrizione esito e dati richiamo (se attivo), poi cliccare Salva.',
         },
         Task: {
-            fields: ['status', 'dateCompleted'],
+            layoutName: 'detailEsitoPopup',
             isComplete: function (model) {
                 const status = model.get('status');
 
@@ -96,26 +96,21 @@ define('custom:views/appuntamento/popup-notification', [
 
             this.addActionHandler('saveEsito', () => this.actionSaveEsito());
 
-            this.setupEsitoPopup(entityType, config);
+            this.setupEsitoPopup(entityType);
         }
 
-        setupEsitoPopup(entityType, config) {
+        setupEsitoPopup(entityType) {
             const id = this.notificationData.id;
-            const dateField = this.notificationData.dateField || 'dateStart';
-            const selectFields = config.fields.concat([dateField, 'name']);
-
-            this.esitoDateField = dateField;
 
             const promise = this.getModelFactory().create(entityType)
                 .then(model => {
                     model.id = id;
 
-                    return model.fetch({
-                        select: selectFields.join(','),
-                    }).then(() => {
-                        this.esitoModel = model;
-                        this.esitoEntityType = entityType;
-                    });
+                    return model.fetch();
+                })
+                .then(model => {
+                    this.esitoModel = model;
+                    this.esitoEntityType = entityType;
                 });
 
             this.wait(promise);
@@ -125,48 +120,27 @@ define('custom:views/appuntamento/popup-notification', [
             return this.containerSelector || ('#' + this.id);
         }
 
-        createFieldView(viewKey, fieldName, mode, readOnly) {
-            const model = this.esitoModel;
-            const selector = this.getPopupRootSelector() + ' .field[data-name="' + fieldName + '"]';
-            const $target = $(selector);
-
-            if (!$target.length) {
-                return Promise.resolve();
-            }
-
-            const fieldType = model.getFieldType(fieldName) || 'base';
-            const viewName = this.getFieldManager().getViewName(fieldType);
-
-            if (this.hasView(viewKey)) {
-                this.clearView(viewKey);
+        renderEsitoRecordView() {
+            if (this.hasView('record')) {
+                this.clearView('record');
             }
 
             return new Promise(resolve => {
-                this.createView(viewKey, viewName, {
-                    model: model,
-                    mode: mode,
-                    el: $target.get(0),
-                    name: fieldName,
-                    readOnly: readOnly,
+                this.createView('record', 'views/record/edit', {
+                    model: this.esitoModel,
+                    scope: this.esitoEntityType,
+                    type: 'edit',
+                    layoutName: this.esitoPopupConfig.layoutName,
+                    selector: this.getPopupRootSelector() + ' .esito-popup-record',
+                    sideDisabled: true,
+                    bottomDisabled: true,
+                    buttonsDisabled: true,
+                    focusForCreate: false,
                 }, view => {
                     view.render();
                     resolve();
                 });
             });
-        }
-
-        renderEsitoFieldViews() {
-            const config = this.esitoPopupConfig;
-            const dateField = this.esitoDateField;
-            const tasks = [
-                this.createFieldView('date', dateField, 'detail', true),
-            ];
-
-            config.fields.forEach(fieldName => {
-                tasks.push(this.createFieldView(fieldName, fieldName, 'edit', false));
-            });
-
-            return Promise.all(tasks);
         }
 
         data() {
@@ -181,8 +155,6 @@ define('custom:views/appuntamento/popup-notification', [
                 notificationId: this.notificationId,
                 closeButton: false,
                 collapseButton: false,
-                fieldNames: this.esitoPopupConfig.fields,
-                dateFieldName: this.esitoDateField || 'dateStart',
             };
         }
 
@@ -201,7 +173,7 @@ define('custom:views/appuntamento/popup-notification', [
             }
 
             this.esitoFieldsRendered = true;
-            this.renderEsitoFieldViews();
+            this.renderEsitoRecordView();
         }
 
         resolveCancel() {
