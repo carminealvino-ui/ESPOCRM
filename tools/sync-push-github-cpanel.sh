@@ -32,7 +32,7 @@ cd "$GIT_CLONE"
 git config user.email "${GIT_COMMITTER_EMAIL:-sync@mec-group.local}"
 git config user.name "${GIT_COMMITTER_NAME:-MEC Sync Produzione}"
 
-git add custom client/custom
+git add custom client/custom tools
 if git diff --cached --quiet; then
   echo "Nessuna modifica da committare."
 else
