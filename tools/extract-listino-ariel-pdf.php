@@ -53,8 +53,6 @@ for ($i = 0; $i < $n; $i++) {
 
     // --- Caldaie + Falcon (Prezzo Retail) ---
     if ($ctx['caldaia'] !== ''
-        && $ctx['biomassa'] === ''
-        && stripos($ctx['listino'], 'CALDAIE + Clima') !== false
         && preg_match('/^(00\.\d{2}\.\d{2}\.\d)\s+(\d+\s*kW|\d+-\d+\s*LT)\s+[\d.,\s€]+\s+[\d.,\s€]+\s+([\d.]+,\d{2})\s*€/iu', $line, $m)
     ) {
         $rows[] = makeRow(
@@ -88,21 +86,12 @@ for ($i = 0; $i < $n; $i++) {
     }
 
     // --- Biomassa righe codice ---
-    if ($ctx['biomassa'] !== ''
-        && stripos($ctx['listino'], 'BIOMASSA') !== false
-        && preg_match('/^(00\.\d{2}\.\d{2}\.\d)\s+(.+?)\s+([\d.]+,\d{2})\s*€/u', $line, $m)
-    ) {
+    if ($ctx['biomassa'] !== '' && preg_match('/^(00\.\d{2}\.\d{2}\.\d)\s+(.+?)\s+([\d.]+,\d{2})\s*€/u', $line, $m)) {
         $potenza = rtrim(trim($m[2]), '*');
-        $label = $ctx['biomassa'];
-
-        if (stripos($label, 'CALDAIA PELLET') !== false) {
-            $label = 'CALDAIA PELLET BOILER 2S';
-        }
-
         $rows[] = makeRow(
             $brand,
             'BIOMASSA',
-            $label . ' ' . $potenza,
+            $ctx['biomassa'] . ' ' . $potenza,
             $m[1],
             parseEuro($m[3]),
             null,
@@ -193,22 +182,10 @@ function updateContext(array &$ctx, string $line): void
     } elseif (preg_match('/Listino ACCESSORI.*BIOMASSA/i', $line)) {
         $ctx['accessori'] = 'BIOMASSA';
         $ctx['acc_titolo'] = '';
-    } elseif (preg_match('/^Listino CLIMA|^Listino CLIMATIZZAZIONE/i', $line)) {
+    } else    if (preg_match('/^Listino CLIMA|^Listino CLIMATIZZAZIONE/i', $line)) {
         $ctx['accessori'] = '';
         $ctx['caldaia'] = '';
         $ctx['biomassa'] = '';
-    }
-
-    if (preg_match('/Listino BIOMASSA/i', $line)) {
-        $ctx['listino'] = 'BIOMASSA';
-        $ctx['biomassa'] = '';
-        $ctx['caldaia'] = '';
-        $ctx['accessori'] = '';
-    }
-
-    if (preg_match('/CONDIZIONI DI VENDITA/i', $line)) {
-        $ctx['accessori'] = '';
-        $ctx['acc_titolo'] = '';
     }
 
     if ($ctx['accessori'] !== '' && preg_match('/^Descrizione\s+Prezzo$/i', str_replace('  ', ' ', $line))) {
@@ -446,11 +423,7 @@ function parseAccessorioLine(string $line, array &$ctx): ?array
     $denom = strtoupper($titolo . $desc);
     $denom = preg_replace('/\s+/u', ' ', $denom) ?? $denom;
 
-    if (strlen($denom) < 12 || strlen($denom) > 95 || preg_match('/^(VIGENTE|PREZZO PER)/i', $denom)) {
-        return null;
-    }
-
-    if (preg_match('/CONDIZIONI DI VENDITA|PER LEGGE LA NUOVA|SPECIFICHE PROMO/i', $denom)) {
+    if (strlen($denom) < 12 || preg_match('/^(VIGENTE|PREZZO PER)/i', $denom)) {
         return null;
     }
 
@@ -572,26 +545,6 @@ function normalizeLine(string $line): string
 }
 
 /** @return array<string, string> */
-function derivePrezzoCodiceIviFromCodice(string $codiceArticolo): ?float
-{
-    $parts = array_values(array_filter(explode('.', $codiceArticolo), static fn ($p) => $p !== ''));
-
-    if (count($parts) < 4) {
-        return null;
-    }
-
-    $segments = array_slice($parts, 1, 3);
-    $digits = ltrim(implode('', $segments), '0');
-
-    if ($digits === '' || !ctype_digit($digits)) {
-        return null;
-    }
-
-    $value = (float) $digits;
-
-    return $value > 0 ? round($value, 2) : null;
-}
-
 function makeRow(
     string $brand,
     string $categoria,
@@ -602,10 +555,6 @@ function makeRow(
     string $tipo,
     string $note
 ): array {
-    if ($prezzoCodice === null && $codice !== '') {
-        $prezzoCodice = derivePrezzoCodiceIviFromCodice($codice);
-    }
-
     return [
         'brand' => $brand,
         'categoria' => $categoria,

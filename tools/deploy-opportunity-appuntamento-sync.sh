@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# UI Appuntamento: sync Fornitore/Brand/Categoria da Prospect (campo parent autonomo).
+# UI Opportunità: sync Fonte Lead / Partner / Brand / Categoria / Listino da Appuntamento.
 #
 # Deploy:
-#   bash tools/deploy-prospect-appuntamento-form-ui.sh cursor/fix-appuntamento-prospect-sync-9999
+#   bash tools/deploy-opportunity-appuntamento-sync.sh cursor/opportunity-from-appuntamento-sync-9999
 set -euo pipefail
 
 if [[ "${1:-}" == cursor/* ]]; then
@@ -10,28 +10,26 @@ if [[ "${1:-}" == cursor/* ]]; then
   CRM_ROOT="${2:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
 else
   CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-  BRANCH="${2:-cursor/fix-appuntamento-prospect-sync-9999}"
+  BRANCH="${2:-cursor/opportunity-from-appuntamento-sync-9999}"
 fi
 
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
-FIX_TAG="prospect-form-ui"
-VERSION_MARKER="VERSION = '1.2.3'"
+FIX_TAG="opportunity-appuntamento-sync"
+VERSION_MARKER="VERSION = '1.0.1'"
+HOOK_VERSION="2.2.7"
 
 FILES=(
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
-  "custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json"
-  "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
-  "client/custom/src/views/appuntamento/record/edit.js"
-  "client/custom/src/views/appuntamento/record/edit-small.js"
-  "client/custom/src/views/calendar/calendar.js"
-  "client/custom/src/views/calendar/modals/edit.js"
-  "client/custom/src/views/fields/appuntamento-parent.js"
-  "client/custom/src/views/fields/fornitore-partner-cascade.js"
-  "client/custom/src/views/fields/product-brand-by-partner.js"
+  "custom/Espo/Custom/Resources/metadata/clientDefs/Opportunity.json"
+  "custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php"
+  "client/custom/src/views/appuntamento/record/detail.js"
+  "client/custom/src/views/opportunity/helpers/appuntamento-sync.js"
+  "client/custom/src/views/opportunity/record/edit-small.js"
+  "client/custom/src/views/opportunity/record/edit.js"
 )
 
-echo "=== Deploy sync Prospect → Appuntamento v1.2.3 ==="
+echo "=== Deploy sync Appuntamento → Opportunità v1.0.1 ==="
 echo "CRM_ROOT: ${CRM_ROOT}"
 echo "BRANCH:   ${BRANCH}"
 echo ""
@@ -46,7 +44,7 @@ has_backup() {
 
 if [[ "${SKIP_BACKUP_CHECK:-}" != "1" ]] && ! has_backup; then
   echo "PASSO 0 — backup:"
-  echo "  bash tools/backup-dev-batch.sh ${FIX_TAG} --manifest tools/backup-manifests/prospect-form-ui.files"
+  echo "  bash tools/backup-dev-batch.sh ${FIX_TAG} --manifest tools/backup-manifests/opportunity-appuntamento-sync.files"
   exit 1
 fi
 
@@ -89,9 +87,17 @@ for rel in "${FILES[@]}"; do
   TMP="$(mktemp)"
   curl -fsSL -o "${TMP}" "${BASE}/${rel}?t=$(date +%s)"
 
-  if [[ "${rel}" == *appuntamento-parent.js ]]; then
+  if [[ "${rel}" == *appuntamento-sync.js ]]; then
     if ! grep -q "${VERSION_MARKER}" "${TMP}"; then
       echo "ERRORE: ${rel} non contiene ${VERSION_MARKER}" >&2
+      rm -f "${TMP}"
+      exit 1
+    fi
+  fi
+
+  if [[ "${rel}" == custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php ]]; then
+    if ! grep -q "VERSIONE: ${HOOK_VERSION}" "${TMP}"; then
+      echo "ERRORE: GlobalLogic.php non è versione ${HOOK_VERSION}" >&2
       rm -f "${TMP}"
       exit 1
     fi
@@ -110,20 +116,7 @@ for rel in "${FILES[@]}"; do
   rm -f "${TMP}"
 done
 
-# Rimuovi prospect-sync.js (causava 403 e blocco calendario)
-for stale in \
-  "${CRM_ROOT}/client/custom/src/views/appuntamento/prospect-sync.js" \
-  "${CRM_ROOT}/client/custom/src/helpers/appuntamento-prospect-sync.js" \
-  "${CRM_ROOT}/client/custom/src/views/appuntamento/helpers/prospect-sync.js" \
-  "${CRM_ROOT}/custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/prospect-sync.js" \
-  "${CRM_ROOT}/custom/Espo/Custom/client/custom/src/views/appuntamento/prospect-sync.js"; do
-  if [[ -f "${stale}" ]]; then
-    rm -f "${stale}"
-    echo "RM ${stale#${CRM_ROOT}/}"
-  fi
-done
-
-VERIFY="${CRM_ROOT}/client/custom/src/views/fields/appuntamento-parent.js"
+VERIFY="${CRM_ROOT}/client/custom/src/views/opportunity/helpers/appuntamento-sync.js"
 if [[ ! -f "${VERIFY}" ]]; then
   echo "ERRORE: manca ${VERIFY}" >&2
   exit 1
@@ -140,4 +133,4 @@ fi
 
 echo ""
 echo "Fatto. Ctrl+Shift+R."
-echo "Sync attivo su campo Relazionato a (appuntamento-parent.js v1.2.3)."
+echo "Sync attivo su Crea Opportunità (appuntamento-sync.js v1.0.1)."

@@ -88,8 +88,5 @@ echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --verbose --
 echo "Duplicati Google (stesso codice + slot):"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --dry-run --only-purge-duplicates --from-date=2026-04-20 --to-date=2026-04-27 --user-id=67c93e694705fde80"
 echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-duplicates --from-date=2026-04-20 --to-date=2026-04-27 --user-id=67c93e694705fde80"
-echo "Titoli ghost su Google (APPUNTAMENTO SENZA PROSPECT):"
-echo "  php tools/bonifica-appuntamento-google-calendar.php --dry-run --only-purge-google-ghost-titles --from-date=2026-06-01 --to-date=2026-06-14 --user-id=67c93e694705fde80"
-echo "  php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-google-ghost-titles --from-date=2026-06-01 --to-date=2026-06-14 --user-id=67c93e694705fde80"
 echo ""
 echo "NON interrompere rebuild.php (rischio slim-routes.php corrotto)."

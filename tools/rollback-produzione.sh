@@ -1,22 +1,16 @@
 #!/usr/bin/env bash
-# Ripristino da backup_dev/Appuntamento/snapshots/YYYYMMDD-HHMMSS/
+# Ripristino da custom/backup-layouts/YYYYMMDD-HHMMSS/
 #
-#   bash tools/rollback-produzione.sh
+#   bash tools/rollback-produzione.sh                  # ultimo backup
 #   bash tools/rollback-produzione.sh 20260529-143000
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BACKUP_ROOT="${CRM_ROOT}/backup_dev/Appuntamento/snapshots"
-LEGACY_ROOT="${CRM_ROOT}/custom/backup-layouts"
+BACKUP_ROOT="${CRM_ROOT}/custom/backup-layouts"
 
 if [[ ! -d "${BACKUP_ROOT}" ]]; then
-  if [[ -d "${LEGACY_ROOT}" ]]; then
-    echo "ATTENZIONE: uso backup legacy custom/backup-layouts/ (migrare in backup_dev/)"
-    BACKUP_ROOT="${LEGACY_ROOT}"
-  else
-    echo "ERRORE: nessuna cartella ${BACKUP_ROOT}"
-    exit 1
-  fi
+  echo "ERRORE: nessuna cartella ${BACKUP_ROOT}"
+  exit 1
 fi
 
 pick_stamp() {
@@ -49,7 +43,7 @@ fi
 cd "${CRM_ROOT}"
 LIST="${SRC}/files.list"
 if [[ ! -f "${LIST}" ]]; then
-  echo "ERRORE: ${LIST} mancante"
+  echo "ERRORE: ${LIST} mancante (backup vecchio formato)"
   exit 1
 fi
 

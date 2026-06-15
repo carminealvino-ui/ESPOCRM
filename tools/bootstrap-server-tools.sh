@@ -24,13 +24,6 @@ cd "${CRM_ROOT}"
 mkdir -p tools tools/layouts-samples/Quote exports/sync
 
 TOOL_FILES=(
-  "tools/backup-dev-save.sh"
-  "tools/backup-dev-batch.sh"
-  "tools/backup-manifests/google-sync.files"
-  "tools/backup-manifests/prospect-form-ui.files"
-  "tools/backup-manifests/calendar-durata-fix.files"
-  "tools/install-backup-dev-tools.sh"
-  "tools/deploy-prospect-appuntamento-form-ui.sh"
   "tools/backup-quote-layouts.sh"
   "tools/restore-quote-layouts.sh"
   "tools/backup-account-layouts.sh"
@@ -50,7 +43,6 @@ TOOL_FILES=(
   "tools/deploy-fix-appuntamento-google-sync.sh"
   "tools/deploy-bonifica-appuntamento-google-calendar.sh"
   "tools/bonifica-appuntamento-google-calendar.php"
-  "tools/run-google-sync-bonifica-session.sh"
   "tools/fix-contratto-importo-minusplus-standalone.php"
   "tools/layouts-samples/Quote/detail-prezzi-minusplus.json"
 )
@@ -92,11 +84,6 @@ done
 
 echo ""
 echo "Script in ${CRM_ROOT}/tools/"
-echo ""
-echo "=== Passo 0 OBBLIGATORIO: backup in backup_dev/ ==="
-echo "  bash tools/backup-dev-batch.sh FIX --manifest tools/backup-manifests/google-sync.files"
-echo "  bash tools/backup-dev-save.sh ENTITA FIX TIPO FILE"
 echo "  bash tools/backup-quote-layouts.sh"
 echo "  bash tools/backup-account-layouts.sh"
-echo ""
 echo "  php tools/sync-custom-prod-repo.php status --branch=main"
