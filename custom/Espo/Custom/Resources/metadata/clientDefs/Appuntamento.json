@@ -1,17 +1,17 @@
 {
     "controller": "controllers/record",
+    "acl": "crm:acl/meeting",
     "views": {
-        "detail": "views/detail",
-        "list": "views/list"
+        "detail": "crm:views/meeting/detail"
     },
     "recordViews": {
-        "list": "views/record/list",
+        "list": "crm:views/meeting/record/list",
         "detail": "custom:views/appuntamento/record/detail",
         "edit": "custom:views/appuntamento/record/edit",
         "editSmall": "custom:views/appuntamento/record/edit-small"
     },
     "modalViews": {
-        "detail": "views/modals/detail"
+        "detail": "crm:views/meeting/modals/detail"
     },
     "filterList": [
         {
@@ -34,8 +34,5 @@
             "label": "Ingestibile",
             "style": "warning"
         }
-    ],
-    "kanbanViewMode": false,
-    "color": null,
-    "iconClass": "fas fa-table-list"
+    ]
 }

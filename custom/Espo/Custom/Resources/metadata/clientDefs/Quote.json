@@ -65,5 +65,8 @@
                 "isForm": true
             }
         ]
-    }
+    },
+    "kanbanViewMode": false,
+    "color": null,
+    "iconClass": "fas fa-file-lines"
 }

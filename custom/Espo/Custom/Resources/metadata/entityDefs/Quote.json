@@ -162,8 +162,9 @@
             "type": "enum",
             "options": [
                 "",
-                "In lavorazione",
                 "Inserito",
+                "In lavorazione",
+                "Appuntamento Fissato",
                 "Installato",
                 "Sospeso",
                 "Annullato",
@@ -171,15 +172,38 @@
             ],
             "style": {
                 "": null,
-                "In lavorazione": null,
                 "Inserito": null,
+                "In lavorazione": null,
+                "Appuntamento Fissato": null,
                 "Installato": null,
                 "Sospeso": null,
                 "Annullato": null,
                 "Recesso": null
             },
-            "default": null,
+            "default": "Inserito",
             "isCustom": true
+        },
+        "status": {
+            "options": [
+                "Draft",
+                "Presented",
+                "In lavorazione",
+                "Approved",
+                "Installato",
+                "Recesso",
+                "Finanziamento Rifiutato",
+                "Canceled"
+            ],
+            "style": {
+                "Draft": null,
+                "Presented": "primary",
+                "In lavorazione": "primary",
+                "Approved": "info",
+                "Installato": "success",
+                "Recesso": "danger",
+                "Finanziamento Rifiutato": "warning",
+                "Canceled": "info"
+            }
         }
     },
     "links": {
@@ -228,7 +252,7 @@
         }
     },
     "collection": {
-        "orderBy": "createdAt",
+        "orderBy": "dateQuoted",
         "order": "desc",
         "textFilterFields": [
             "name",

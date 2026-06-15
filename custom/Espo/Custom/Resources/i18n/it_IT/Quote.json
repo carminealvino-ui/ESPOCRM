@@ -109,7 +109,18 @@
             "": "",
             "Sospeso": "Sospeso",
             "Inserito": "Inserito",
-            "Recesso": "Recesso"
+            "Recesso": "Recesso",
+            "Appuntamento Fissato": "Appuntamento Fissato"
+        },
+        "status": {
+            "Draft": "Bozza",
+            "Presented": "Presentato",
+            "Approved": "In Pagamento",
+            "Installato": "Installato",
+            "Recesso": "Recesso",
+            "Finanziamento Rifiutato": "Finanziamento Rifiutato",
+            "Canceled": "Annullato",
+            "In lavorazione": "In lavorazione"
         }
     }
 }

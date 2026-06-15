@@ -1,8 +1,8 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.5
-// DATA: 2026-05-27
+// VERSIONE: 2.2.7
+// DATA: 2026-06-10
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
 //
@@ -134,6 +134,13 @@
 //
 // Rollback:
 // backup/hooks_cleanup/backup-opportunity-globallogic-2.2.2-category-cascade-stabile.php
+//
+// FIX 2.2.6
+// -----------------------------------------------------
+// LISTINO PREZZI (Price Book) in vigore per data opportunità + brand
+//
+// - OpportunityPriceBookResolver in beforeSave
+// - Solo se priceBookId vuoto o cambiano data/brand (non se utente cambia listino)
 //
 // FIX 2.2.5
 // -----------------------------------------------------
@@ -303,6 +310,7 @@ namespace Espo\Custom\Hooks\Opportunity;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 use Espo\Custom\Services\LineaProdottoCategorySync;
+use Espo\Custom\Services\OpportunityPriceBookResolver;
 use Espo\Custom\Services\ReferenteContactService;
 
 class GlobalLogic
@@ -340,7 +348,7 @@ class GlobalLogic
 
         $entity->set(
             'hookVersion',
-            '2.2.5'
+            '2.2.7'
         );
 
 
@@ -381,6 +389,43 @@ class GlobalLogic
                 $options,
                 $importFromSource
             );
+        }
+
+        $this->applyPriceBookFromEffectiveDate($entity);
+    }
+
+    private function applyPriceBookFromEffectiveDate(Entity $entity): void
+    {
+        if (!$entity->hasAttribute('priceBookId')) {
+            return;
+        }
+
+        if ($entity->isAttributeChanged('priceBookId')) {
+            return;
+        }
+
+        $shouldResolve = $entity->isNew()
+            || !$entity->get('priceBookId')
+            || $entity->isAttributeChanged('dataOpportunit')
+            || $entity->isAttributeChanged('productBrandId')
+            || $entity->isAttributeChanged('productBrandName')
+            || $entity->isAttributeChanged('azienda');
+
+        if (!$shouldResolve) {
+            return;
+        }
+
+        $priceBook = (new OpportunityPriceBookResolver($this->entityManager))
+            ->resolveForOpportunity($entity);
+
+        if (!$priceBook) {
+            return;
+        }
+
+        $entity->set('priceBookId', $priceBook->getId());
+
+        if ($entity->hasAttribute('priceBookName')) {
+            $entity->set('priceBookName', $priceBook->get('name'));
         }
     }
 
@@ -538,6 +583,8 @@ class GlobalLogic
 
             $this->normalizeProductCascade($entity);
         }
+
+        $this->syncLeadSourceFromAppuntamento($entity, $appuntamento);
 
 
         // =====================================================
@@ -867,6 +914,79 @@ class GlobalLogic
                 $source->get($field)
             );
         }
+    }
+
+    private function syncLeadSourceFromAppuntamento(
+        Entity $entity,
+        Entity $appuntamento
+    ): void {
+
+        if (!$entity->hasAttribute('leadSource')) {
+            return;
+        }
+
+        if ($entity->get('leadSource')) {
+            return;
+        }
+
+        $leadSource = $this->resolveLeadSourceFromAppuntamento($appuntamento);
+
+        if (!$leadSource) {
+            return;
+        }
+
+        $this->setEntityFieldIfEmpty(
+            $entity,
+            'leadSource',
+            $leadSource
+        );
+    }
+
+    private function resolveLeadSourceFromAppuntamento(Entity $appuntamento): ?string
+    {
+        $metadata = $this->entityManager
+            ->getMetadata()
+            ->get(['entityDefs', 'Opportunity', 'fields', 'leadSource', 'options']) ?? [];
+
+        $candidates = [];
+
+        $map = [
+            'TELCALL' => ['Call Center', 'TELCALL', 'Call'],
+            'Appuntamento Call Center' => ['Call Center', 'TELCALL', 'Call'],
+            'Appuntamento da Gestione Lead' => ['Lead', 'Existing Customer'],
+            'Appuntamento da Gestione CB' => ['Partner', 'Existing Customer'],
+            'Referenza Personale' => ['Partner', 'Existing Customer'],
+        ];
+
+        $callCenter = $appuntamento->get('callCenter');
+
+        if ($callCenter && isset($map[$callCenter])) {
+            $candidates = array_merge($candidates, $map[$callCenter]);
+        }
+
+        $tipo = $appuntamento->get('tipo');
+
+        if ($tipo) {
+            $types = is_array($tipo) ? $tipo : [$tipo];
+
+            foreach ($types as $t) {
+                if (isset($map[$t])) {
+                    $candidates = array_merge($candidates, $map[$t]);
+                }
+            }
+        }
+
+        if ($callCenter) {
+            $candidates[] = $callCenter;
+        }
+
+        foreach ($candidates as $candidate) {
+            if (in_array($candidate, $metadata, true)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 
     private function setEntityFieldIfEmpty(

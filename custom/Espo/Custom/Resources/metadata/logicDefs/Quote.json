@@ -20,6 +20,16 @@
                     }
                 ]
             }
+        },
+        "status": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isLocked"
+                    }
+                ]
+            }
         }
     }
 }
