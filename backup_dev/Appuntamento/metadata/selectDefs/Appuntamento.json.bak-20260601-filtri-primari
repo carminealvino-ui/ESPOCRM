@@ -1,0 +1,8 @@
+{
+    "primaryFilterClassNameMap": {
+        "pianificato": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\Pianificato",
+        "svolto": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\Svolto",
+        "nonSvolto": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\NonSvolto",
+        "ingestibile": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\Ingestibile"
+    }
+}
