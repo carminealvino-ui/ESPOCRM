@@ -1,9 +1,56 @@
 .popup-notification.esito-popup-wide {
-    width: 420px;
-    max-width: 95vw;
+    width: min(480px, 95vw);
+    box-sizing: border-box;
+}
+
+.popup-notification.esito-popup-wide .cell {
+    width: 100%;
 }
 
 .popup-notification.esito-popup-wide .esito-popup-record {
+    width: 100%;
+    max-width: 100%;
     max-height: 60vh;
     overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record > .record,
+.popup-notification.esito-popup-wide .esito-popup-record .detail {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .panel {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .panel-body {
+    width: 100%;
+    padding: 0;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .cell.form-group {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .field {
+    width: 100%;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record textarea.form-control {
+    width: 100%;
 }

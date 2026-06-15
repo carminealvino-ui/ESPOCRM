@@ -153,6 +153,7 @@ define('custom:views/appuntamento/popup-notification', [
                                 buttonsDisabled: true,
                                 detailDisabled: true,
                                 focusForCreate: false,
+                                isWide: true,
                             }, view => {
                                 view.render();
                                 resolve();
