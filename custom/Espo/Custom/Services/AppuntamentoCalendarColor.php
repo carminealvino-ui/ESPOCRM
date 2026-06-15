@@ -89,6 +89,59 @@ class AppuntamentoCalendarColor
         return $color !== '' ? $color : null;
     }
 
+    public function resolveDisponibilitaColor(Entity $entity): ?string
+    {
+        $brandName = $this->resolveDisponibilitaBrandName($entity);
+
+        if ($brandName === '') {
+            return null;
+        }
+
+        $brand = $this->entityManager
+            ->getRDBRepository('ProductBrand')
+            ->where(['name' => $brandName])
+            ->findOne();
+
+        if ($brand) {
+            $color = trim((string) ($brand->get('color') ?: ''));
+
+            if ($color !== '') {
+                return $color;
+            }
+        }
+
+        $key = strtoupper($brandName);
+
+        return self::BRAND_PALETTE_DALTON[$key] ?? null;
+    }
+
+    private function resolveDisponibilitaBrandName(Entity $entity): string
+    {
+        $brandId = $entity->get('productBrandId');
+
+        if ($brandId) {
+            $brand = $this->entityManager->getEntityById('ProductBrand', $brandId);
+
+            if ($brand) {
+                return trim((string) $brand->get('name'));
+            }
+        }
+
+        $azienda = trim((string) ($entity->get('azienda') ?: ''));
+
+        if ($azienda !== '') {
+            return $azienda;
+        }
+
+        $name = trim((string) ($entity->get('name') ?: ''));
+
+        if ($name !== '' && preg_match('/^([^|]+)/u', $name, $matches)) {
+            return trim($matches[1]);
+        }
+
+        return '';
+    }
+
     /**
      * @return array<string, string>
      */

@@ -3,6 +3,7 @@
 namespace Espo\Custom\Hooks\Disponibilita;
 
 use Espo\Core\ORM\EntityManager;
+use Espo\Custom\Services\AppuntamentoCalendarColor;
 use Espo\ORM\Entity;
 
 /**
@@ -76,9 +77,10 @@ class SetName
 
         $entity->set('name', $nome);
 
-        $colore = $brand ? trim((string) ($brand->get('color') ?: '')) : '';
+        $colorService = new AppuntamentoCalendarColor($this->entityManager);
+        $colore = $colorService->resolveDisponibilitaColor($entity);
 
-        if ($colore !== '') {
+        if ($colore !== null && $colore !== '') {
             $entity->set('color', $colore);
         }
     }
