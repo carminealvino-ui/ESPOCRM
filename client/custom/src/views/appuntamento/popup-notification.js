@@ -8,8 +8,7 @@ define('custom:views/appuntamento/popup-notification', [
 
     const ESITO_POPUP_SCOPES = {
         Appuntamento: {
-            dateField: 'dateStart',
-            fields: ['status', 'sottostato', 'esito', 'noteEsito'],
+            layoutName: 'detailEsitoPopup',
             isComplete: function (model) {
                 const status = model.get('status');
 
@@ -26,8 +25,7 @@ define('custom:views/appuntamento/popup-notification', [
             incompleteMessage: 'Compilare Stato, Sottostato, Esito e Note Esito, poi cliccare Salva.',
         },
         Meeting: {
-            dateField: 'dateStart',
-            fields: ['status'],
+            layoutName: 'detailEsitoPopup',
             isComplete: function (model) {
                 const status = model.get('status');
 
@@ -36,8 +34,7 @@ define('custom:views/appuntamento/popup-notification', [
             incompleteMessage: 'Selezionare Stato (Svolto o Non svolto) e cliccare Salva.',
         },
         Call: {
-            dateField: 'dateStart',
-            fields: ['status', 'description', 'daRichiamare', 'dataRichiamo', 'richiamo'],
+            layoutName: 'detailEsitoPopup',
             isComplete: function (model) {
                 const status = model.get('status');
 
@@ -60,8 +57,7 @@ define('custom:views/appuntamento/popup-notification', [
             incompleteMessage: 'Compilare Stato, descrizione esito e dati richiamo (se attivo), poi cliccare Salva.',
         },
         Task: {
-            dateField: 'dateEnd',
-            fields: ['status', 'dateCompleted'],
+            layoutName: 'detailEsitoPopup',
             isComplete: function (model) {
                 const status = model.get('status');
 
@@ -86,7 +82,6 @@ define('custom:views/appuntamento/popup-notification', [
             const config = ESITO_POPUP_SCOPES[entityType];
 
             if (!config) {
-                this.template = 'crm:meeting/popup-notification';
                 super.setup();
 
                 return;
@@ -97,86 +92,14 @@ define('custom:views/appuntamento/popup-notification', [
             this.closeButton = false;
             this.collapseButton = false;
             this.template = 'custom:appuntamento/popup-notification';
-            this.esitoDateField = this.notificationData.dateField || config.dateField || 'dateStart';
 
             this.addActionHandler('saveEsito', () => this.actionSaveEsito());
-
-            this.setupEsitoPopup(entityType, config);
-        }
-
-        fieldHolderClass(fieldName) {
-            return 'field-holder-' + String(fieldName).replace(/[^a-zA-Z0-9]/g, '_');
-        }
-
-        setupEsitoPopup(entityType, config) {
-            const id = this.notificationData.id;
-            const dateField = this.esitoDateField;
-            const fieldNames = [dateField].concat(config.fields);
-
-            const promise = this.getModelFactory().create(entityType)
-                .then(model => {
-                    model.id = id;
-
-                    return model.fetch({
-                        select: fieldNames.concat(['name']).join(','),
-                    }).then(() => {
-                        this.esitoModel = model;
-                        this.esitoEntityType = entityType;
-                    });
-                });
-
-            this.wait(promise);
-        }
-
-        createFieldView(viewKey, fieldName, mode, readOnly) {
-            const model = this.esitoModel;
-            const holder = this.$el.get(0).querySelector('.' + this.fieldHolderClass(fieldName));
-
-            if (!holder) {
-                return Promise.resolve();
-            }
-
-            const fieldType = model.getFieldType(fieldName) || 'base';
-            const viewName = this.getFieldManager().getViewName(fieldType);
-
-            if (this.hasView(viewKey)) {
-                this.clearView(viewKey);
-            }
-
-            return new Promise(resolve => {
-                this.createView(viewKey, viewName, {
-                    model: model,
-                    mode: mode,
-                    el: holder,
-                    name: fieldName,
-                    readOnly: readOnly,
-                }, view => {
-                    view.render();
-                    resolve();
-                });
-            });
-        }
-
-        renderEsitoFieldViews() {
-            const config = this.esitoPopupConfig;
-            const dateField = this.esitoDateField;
-            const tasks = [
-                this.createFieldView('date', dateField, 'detail', true),
-            ];
-
-            config.fields.forEach(fieldName => {
-                tasks.push(this.createFieldView(fieldName, fieldName, 'edit', false));
-            });
-
-            return Promise.all(tasks);
         }
 
         data() {
             if (!this.isEsitoPopup) {
                 return super.data();
             }
-
-            const config = this.esitoPopupConfig;
 
             return {
                 header: this.translate(this.notificationData.entityType, 'scopeNames'),
@@ -185,8 +108,6 @@ define('custom:views/appuntamento/popup-notification', [
                 notificationId: this.notificationId,
                 closeButton: false,
                 collapseButton: false,
-                dateHolderClass: this.fieldHolderClass(this.esitoDateField),
-                fieldHolderClasses: config.fields.map(fieldName => this.fieldHolderClass(fieldName)),
             };
         }
 
@@ -199,13 +120,58 @@ define('custom:views/appuntamento/popup-notification', [
 
             this.$el.find('[data-action="close"]').addClass('hidden');
             this.$el.find('[data-action="collapse"]').addClass('hidden');
+            this.$el.addClass('esito-popup-wide');
 
-            if (this.esitoFieldsRendered || !this.esitoModel) {
-                return;
+            if (!this.hasView('esitoRecord')) {
+                this.createEsitoRecordView();
+            }
+        }
+
+        createEsitoRecordView() {
+            const entityType = this.notificationData.entityType;
+            const config = this.esitoPopupConfig;
+            const id = this.notificationData.id;
+            const container = this.getSelector() + ' .esito-popup-record';
+
+            const promise = this.getModelFactory().create(entityType)
+                .then(model => {
+                    model.id = id;
+
+                    return model.fetch().then(() => {
+                        this.esitoModel = model;
+                        this.esitoEntityType = entityType;
+
+                        return new Promise(resolve => {
+                            this.createView('esitoRecord', 'views/record/edit', {
+                                scope: entityType,
+                                model: model,
+                                type: 'edit',
+                                layoutName: config.layoutName,
+                                el: container,
+                                sideDisabled: true,
+                                bottomDisabled: true,
+                                buttonsDisabled: true,
+                                detailDisabled: true,
+                                focusForCreate: false,
+                            }, view => {
+                                view.render();
+                                resolve();
+                            });
+                        });
+                    });
+                });
+
+            this.wait(promise);
+        }
+
+        getEsitoModel() {
+            const recordView = this.getView('esitoRecord');
+
+            if (recordView && recordView.model) {
+                return recordView.model;
             }
 
-            this.esitoFieldsRendered = true;
-            this.renderEsitoFieldViews();
+            return this.esitoModel;
         }
 
         resolveCancel() {
@@ -219,11 +185,13 @@ define('custom:views/appuntamento/popup-notification', [
         }
 
         isEsitoComplete() {
-            if (!this.esitoModel || !this.esitoPopupConfig) {
+            const model = this.getEsitoModel();
+
+            if (!model || !this.esitoPopupConfig) {
                 return false;
             }
 
-            return this.esitoPopupConfig.isComplete(this.esitoModel);
+            return this.esitoPopupConfig.isComplete(model);
         }
 
         getIncompleteMessage() {
@@ -237,9 +205,11 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
+            const model = this.getEsitoModel();
+
             Espo.Ui.notify(' ...');
 
-            this.esitoModel.save()
+            model.save()
                 .then(() => {
                     Espo.Ui.notify();
                     super.resolveCancel();

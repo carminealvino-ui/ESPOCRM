@@ -36,6 +36,8 @@ FILES=(
   "custom/Espo/Custom/Resources/layouts/Call/detailEsitoPopup.json"
   "custom/Espo/Custom/Resources/layouts/Task/detailEsitoPopup.json"
   "custom/Espo/Custom/Resources/metadata/app/popupNotifications.json"
+  "custom/Espo/Custom/Resources/metadata/app/client.json"
+  "client/custom/res/css/esito-popup-notification.css"
   "custom/Espo/Custom/Resources/i18n/it_IT/Appuntamento.json"
 )
 

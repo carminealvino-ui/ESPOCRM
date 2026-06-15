@@ -1,0 +1,9 @@
+.popup-notification.esito-popup-wide {
+    width: 420px;
+    max-width: 95vw;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record {
+    max-height: 60vh;
+    overflow-y: auto;
+}
