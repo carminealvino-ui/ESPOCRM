@@ -28,7 +28,10 @@ backup_if_exists() {
 
 FILES=(
   "client/custom/src/views/calendar/calendar.js"
+  "client/custom/src/views/appuntamento/popup-notification.js"
+  "client/custom/res/templates/appuntamento/popup-notification.tpl"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsito.json"
+  "custom/Espo/Custom/Resources/metadata/app/popupNotifications.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Appuntamento.json"
 )
 
@@ -49,3 +52,4 @@ echo "=== Prossimo passo (sul server) ==="
 echo "  cd ${CRM_ROOT} && php clear_cache.php && php rebuild.php"
 echo ""
 echo "Poi apri Calendario, clicca un Appuntamento: compare solo la sezione Esito."
+echo "Il promemoria popup per Appuntamento include Stato/Sottostato/Esito/Note e si chiude solo dopo Salva."

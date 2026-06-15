@@ -1,0 +1,5 @@
+{
+    "event": {
+        "view": "custom:views/appuntamento/popup-notification"
+    }
+}
