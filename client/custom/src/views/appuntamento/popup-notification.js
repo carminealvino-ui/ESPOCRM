@@ -97,18 +97,21 @@ define('custom:views/appuntamento/popup-notification', [
             this.closeButton = false;
             this.collapseButton = false;
             this.template = 'custom:appuntamento/popup-notification';
+            this.esitoDateField = this.notificationData.dateField || config.dateField || 'dateStart';
 
             this.addActionHandler('saveEsito', () => this.actionSaveEsito());
 
             this.setupEsitoPopup(entityType, config);
         }
 
+        fieldHolderClass(fieldName) {
+            return 'field-holder-' + String(fieldName).replace(/[^a-zA-Z0-9]/g, '_');
+        }
+
         setupEsitoPopup(entityType, config) {
             const id = this.notificationData.id;
-            const dateField = this.notificationData.dateField || config.dateField || 'dateStart';
+            const dateField = this.esitoDateField;
             const fieldNames = [dateField].concat(config.fields);
-
-            this.esitoDateField = dateField;
 
             const promise = this.getModelFactory().create(entityType)
                 .then(model => {
@@ -119,44 +122,27 @@ define('custom:views/appuntamento/popup-notification', [
                     }).then(() => {
                         this.esitoModel = model;
                         this.esitoEntityType = entityType;
+
+                        const tasks = [
+                            this.createFieldView('date', dateField, 'detail', true),
+                        ];
+
+                        config.fields.forEach(fieldName => {
+                            tasks.push(this.createFieldView(fieldName, fieldName, 'edit', false));
+                        });
+
+                        return Promise.all(tasks);
                     });
                 });
 
             this.wait(promise);
         }
 
-        getPopupRootSelector() {
-            return this.containerSelector || ('#' + this.id);
-        }
-
-        fieldHolderClass(fieldName) {
-            return 'field-holder-' + String(fieldName).replace(/[^a-zA-Z0-9]/g, '_');
-        }
-
-        buildFieldHolders() {
-            const config = this.esitoPopupConfig;
-            const $container = $(this.getPopupRootSelector() + ' .esito-popup-record');
-            const fieldNames = [this.esitoDateField].concat(config.fields);
-
-            $container.empty();
-
-            fieldNames.forEach(fieldName => {
-                $container.append(
-                    '<div class="field-holder ' + this.fieldHolderClass(fieldName) + '"></div>'
-                );
-            });
-        }
-
         createFieldView(viewKey, fieldName, mode, readOnly) {
             const model = this.esitoModel;
-            const el = this.getPopupRootSelector() + ' .' + this.fieldHolderClass(fieldName);
-
-            if (!$(el).length) {
-                return Promise.resolve();
-            }
-
             const fieldType = model.getFieldType(fieldName) || 'base';
             const viewName = this.getFieldManager().getViewName(fieldType);
+            const selector = '.' + this.fieldHolderClass(fieldName);
 
             if (this.hasView(viewKey)) {
                 this.clearView(viewKey);
@@ -166,34 +152,21 @@ define('custom:views/appuntamento/popup-notification', [
                 this.createView(viewKey, viewName, {
                     model: model,
                     mode: mode,
-                    el: el,
+                    selector: selector,
                     name: fieldName,
                     readOnly: readOnly,
-                }, view => {
-                    view.render();
+                }, () => {
                     resolve();
                 });
             });
-        }
-
-        renderEsitoFieldViews() {
-            const config = this.esitoPopupConfig;
-            const dateField = this.esitoDateField;
-            const tasks = [
-                this.createFieldView('date', dateField, 'detail', true),
-            ];
-
-            config.fields.forEach(fieldName => {
-                tasks.push(this.createFieldView(fieldName, fieldName, 'edit', false));
-            });
-
-            return Promise.all(tasks);
         }
 
         data() {
             if (!this.isEsitoPopup) {
                 return super.data();
             }
+
+            const config = this.esitoPopupConfig;
 
             return {
                 header: this.translate(this.notificationData.entityType, 'scopeNames'),
@@ -202,6 +175,8 @@ define('custom:views/appuntamento/popup-notification', [
                 notificationId: this.notificationId,
                 closeButton: false,
                 collapseButton: false,
+                dateHolderClass: this.fieldHolderClass(this.esitoDateField),
+                fieldHolderClasses: config.fields.map(fieldName => this.fieldHolderClass(fieldName)),
             };
         }
 
@@ -214,14 +189,6 @@ define('custom:views/appuntamento/popup-notification', [
 
             this.$el.find('[data-action="close"]').addClass('hidden');
             this.$el.find('[data-action="collapse"]').addClass('hidden');
-
-            if (this.esitoFieldsRendered || !this.esitoModel) {
-                return;
-            }
-
-            this.esitoFieldsRendered = true;
-            this.buildFieldHolders();
-            this.renderEsitoFieldViews();
         }
 
         resolveCancel() {
