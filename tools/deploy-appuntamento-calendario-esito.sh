@@ -28,6 +28,7 @@ backup_if_exists() {
 
 FILES=(
   "client/custom/src/views/calendar/calendar.js"
+  "client/custom/src/views/notification/badge.js"
   "client/custom/src/views/appuntamento/popup-notification.js"
   "client/custom/res/templates/appuntamento/popup-notification.tpl"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsito.json"
@@ -36,7 +37,9 @@ FILES=(
   "custom/Espo/Custom/Resources/layouts/Call/detailEsitoPopup.json"
   "custom/Espo/Custom/Resources/layouts/Task/detailEsitoPopup.json"
   "custom/Espo/Custom/Resources/metadata/app/popupNotifications.json"
+  "custom/Espo/Custom/Resources/metadata/app/clientNavbar.json"
   "custom/Espo/Custom/Resources/metadata/app/client.json"
+  "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
   "client/custom/res/css/esito-popup-notification.css"
   "custom/Espo/Custom/Resources/i18n/it_IT/Appuntamento.json"
 )

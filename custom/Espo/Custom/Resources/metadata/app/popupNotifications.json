@@ -1,5 +1,6 @@
 {
     "event": {
-        "view": "custom:views/appuntamento/popup-notification"
+        "view": "custom:views/appuntamento/popup-notification",
+        "providerClassName": "Espo\\Custom\\Tools\\Activities\\PopupNotificationsProvider"
     }
 }
