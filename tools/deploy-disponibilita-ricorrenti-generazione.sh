@@ -28,11 +28,14 @@ backup_if_exists() {
 
 FILES=(
   "custom/Espo/Custom/Hooks/WorkingTimeCalendar/AutoGeneraDisponibilita.php"
+  "custom/Espo/Custom/Hooks/Disponibilita/SetName.php"
   "custom/Espo/Custom/Services/WorkingTimeCalendarDisponibilitaGenerator.php"
   "custom/Espo/Custom/Resources/metadata/hooks/WorkingTimeCalendar.json"
+  "custom/Espo/Custom/Resources/metadata/hooks/Disponibilita.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/WorkingTimeCalendar.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/WorkingTimeCalendar.json"
   "client/custom/src/views/working-time-calendar/record/detail.js"
+  "tools/fix-disponibilita-calendario-display.php"
 )
 
 for rel in "${FILES[@]}"; do
