@@ -151,7 +151,7 @@ define('custom:views/appuntamento/popup-notification', [
             const entityType = this.notificationData.entityType;
             const config = this.esitoPopupConfig;
             const id = this.notificationData.id;
-            const container = this.getSelector() + ' .esito-popup-record';
+            const container = this.getSelector() + ' .esito-popup-record .record';
 
             const promise = this.getModelFactory().create(entityType)
                 .then(model => {

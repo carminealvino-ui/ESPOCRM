@@ -9,7 +9,9 @@
         {{notificationData.name}}
     </a>
 </div>
-<div class="cell no-side-margin esito-popup-record"></div>
+<div class="cell esito-popup-record">
+    <div class="record no-side-margin"></div>
+</div>
 <div class="cell margin-top-small esito-popup-actions">
     <button type="button" class="btn btn-primary btn-sm" data-action="saveEsito" data-role="save">
         {{translate 'Save'}}
