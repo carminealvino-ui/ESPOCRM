@@ -1,0 +1,146 @@
+.popup-notification.esito-popup-wide {
+    width: min(480px, 95vw);
+    max-height: 90vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-notification.esito-popup-wide .cell {
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record {
+    width: 100%;
+    max-width: 100%;
+    min-height: 220px;
+    flex: 1 1 auto;
+    overflow: visible;
+    box-sizing: border-box;
+    padding-top: 4px;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-actions {
+    flex-shrink: 0;
+    padding-top: 8px;
+    padding-bottom: 4px;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .record,
+.popup-notification.esito-popup-wide .esito-popup-record .record > .record,
+.popup-notification.esito-popup-wide .esito-popup-record .detail,
+.popup-notification.esito-popup-wide .esito-popup-record .edit {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    box-shadow: none !important;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .record-grid,
+.popup-notification.esito-popup-wide .esito-popup-record .left,
+.popup-notification.esito-popup-wide .esito-popup-record .middle {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .record .middle {
+    margin-bottom: 0;
+}
+
+/* Stesso effetto di .modal-body .record.no-side-margin, ma nel popup promemoria */
+.popup-notification.esito-popup-wide .esito-popup-record .record.no-side-margin > div > .panel,
+.popup-notification.esito-popup-wide .esito-popup-record .record.no-side-margin .left > .middle > .panel,
+.popup-notification.esito-popup-wide .esito-popup-record .record.no-side-margin .left > .bottom > .panel {
+    border: none !important;
+    border-width: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    margin: 0 !important;
+    overflow: visible;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .record.no-side-margin .left > .middle > .panel::before,
+.popup-notification.esito-popup-wide .esito-popup-record .record.no-side-margin .left > .middle > .panel::after,
+.popup-notification.esito-popup-wide .esito-popup-record .record.no-side-margin .panel::before,
+.popup-notification.esito-popup-wide .esito-popup-record .record.no-side-margin .panel::after {
+    display: none !important;
+    content: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .record .middle > .panel,
+.popup-notification.esito-popup-wide .esito-popup-record .record .middle > .panel:first-child,
+.popup-notification.esito-popup-wide .esito-popup-record .record .middle > .panel:last-child,
+.popup-notification.esito-popup-wide .esito-popup-record .record .middle > .panel.first,
+.popup-notification.esito-popup-wide .esito-popup-record .record .middle > .panel.last,
+.popup-notification.esito-popup-wide .esito-popup-record .record .middle > .panel.in-middle {
+    border: none !important;
+    border-top-width: 0 !important;
+    border-bottom-width: 0 !important;
+    border-left-width: 0 !important;
+    border-right-width: 0 !important;
+    outline: none !important;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .panel,
+.popup-notification.esito-popup-wide .esito-popup-record .panel.panel-default,
+.popup-notification.esito-popup-wide .esito-popup-record .panel.first,
+.popup-notification.esito-popup-wide .esito-popup-record .panel.last,
+.popup-notification.esito-popup-wide .esito-popup-record .panel.in-middle {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 !important;
+    border: none !important;
+    border-width: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    overflow: visible;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .panel-heading {
+    display: none !important;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .panel-body,
+.popup-notification.esito-popup-wide .esito-popup-record .panel-body.panel-body-form {
+    width: 100%;
+    margin: 0;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    overflow: visible;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .cell.form-group {
+    padding-left: 0;
+    padding-right: 0;
+    margin-bottom: 12px;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record .field {
+    width: 100%;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-record textarea.form-control {
+    width: 100%;
+    min-height: 90px;
+}
+
+#popup-notifications-container {
+    max-height: 95vh;
+    overflow-y: auto;
+}

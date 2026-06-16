@@ -236,13 +236,26 @@ class WorkingTimeCalendarDisponibilitaGenerator
             return [];
         }
 
-        $ranges = $calendar->get('weekday' . $weekday . 'TimeRanges');
+        $weekdayRanges = $calendar->get('weekday' . $weekday . 'TimeRanges');
+        $globalRanges = $calendar->get('timeRanges');
 
-        if (!is_array($ranges) || $ranges === []) {
-            $ranges = $calendar->get('timeRanges');
+        if ($this->hasCustomWeekdayRanges($weekdayRanges)) {
+            $slots = $this->parseTimeRanges($weekdayRanges, $dateStr);
+
+            if ($slots !== []) {
+                return $slots;
+            }
         }
 
-        return $this->parseTimeRanges($ranges, $dateStr);
+        return $this->parseTimeRanges($globalRanges, $dateStr);
+    }
+
+    /**
+     * Allineato a Espo\Core: orario per giorno solo se valorizzato esplicitamente.
+     */
+    private function hasCustomWeekdayRanges(mixed $ranges): bool
+    {
+        return is_array($ranges) && $ranges !== [];
     }
 
     /**

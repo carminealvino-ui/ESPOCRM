@@ -4,6 +4,7 @@
         "edit": "custom:views/modals/working-time-calendar-edit"
     },
     "recordViews": {
+        "detail": "custom:views/working-time-calendar/record/detail",
         "edit": "views/record/edit",
         "editSmall": "views/record/edit"
     }

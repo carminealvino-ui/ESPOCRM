@@ -1,0 +1,7 @@
+{
+    "items": {
+        "notificationBadge": {
+            "view": "custom:views/notification/badge"
+        }
+    }
+}
