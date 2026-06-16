@@ -22,9 +22,26 @@ define('custom:views/appuntamento/popup-notification', [
                     return false;
                 }
 
-                return !!(model.get('noteEsito') || '').trim();
+                return true;
             },
-            incompleteMessage: 'Compilare Stato, Sottostato, Esito e Note Esito, poi cliccare Salva.',
+            incompleteMessage: 'Compilare Stato, Sottostato ed Esito, poi cliccare Salva.',
+            getMissingFields: function (model) {
+                const missing = [];
+
+                if (!model.get('status') || model.get('status') === 'Planned') {
+                    missing.push('Stato');
+                }
+
+                if (!model.get('sottostato')) {
+                    missing.push('Sottostato');
+                }
+
+                if (!model.get('esito')) {
+                    missing.push('Esito');
+                }
+
+                return missing;
+            },
         },
         Meeting: {
             layoutName: 'detailEsitoPopup',
@@ -171,6 +188,8 @@ define('custom:views/appuntamento/popup-notification', [
         }
 
         getEsitoModel() {
+            this.syncEsitoRecordModel();
+
             const recordView = this.getView('esitoRecord');
 
             if (recordView && recordView.model) {
@@ -178,6 +197,50 @@ define('custom:views/appuntamento/popup-notification', [
             }
 
             return this.esitoModel;
+        }
+
+        syncEsitoRecordModel() {
+            const recordView = this.getView('esitoRecord');
+
+            if (!recordView) {
+                return;
+            }
+
+            if (typeof recordView.fetch === 'function') {
+                recordView.fetch();
+            }
+
+            const model = recordView.model || this.esitoModel;
+
+            if (!model) {
+                return;
+            }
+
+            ['status', 'sottostato', 'esito', 'noteEsito'].forEach(fieldName => {
+                const fieldView = recordView.getFieldView && recordView.getFieldView(fieldName);
+
+                if (fieldView && typeof fieldView.fetch === 'function') {
+                    fieldView.fetch();
+                }
+            });
+        }
+
+        getMissingEsitoFields() {
+            const model = this.getEsitoModel();
+
+            if (!model || !this.esitoPopupConfig) {
+                return ['Stato', 'Sottostato', 'Esito'];
+            }
+
+            if (typeof this.esitoPopupConfig.getMissingFields === 'function') {
+                return this.esitoPopupConfig.getMissingFields(model);
+            }
+
+            if (!this.isEsitoComplete()) {
+                return ['campi obbligatori'];
+            }
+
+            return [];
         }
 
         resolveCancel() {
@@ -201,8 +264,18 @@ define('custom:views/appuntamento/popup-notification', [
         }
 
         getIncompleteMessage() {
+            const missing = this.getMissingEsitoFields();
+
+            if (missing.length) {
+                const actionLabel = this.shouldShowCreateOpportunity() ?
+                    'Crea Opportunità' :
+                    'Salva';
+
+                return 'Compilare ' + missing.join(', ') + ', poi cliccare ' + actionLabel + '.';
+            }
+
             if (this.shouldShowCreateOpportunity()) {
-                return 'Compilare Stato, Sottostato, Esito e Note Esito, poi cliccare Crea Opportunità.';
+                return 'Compilare Stato, Sottostato ed Esito, poi cliccare Crea Opportunità.';
             }
 
             return this.esitoPopupConfig.incompleteMessage;

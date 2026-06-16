@@ -23,7 +23,10 @@
             [
                 {
                     "name": "noteEsito",
-                    "fullWidth": true
+                    "fullWidth": true,
+                    "params": {
+                        "rows": 4
+                    }
                 }
             ]
         ],
