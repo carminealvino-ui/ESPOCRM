@@ -159,7 +159,7 @@ define('custom:views/appuntamento/popup-notification', [
                                 isWide: true,
                             }, view => {
                                 view.render();
-                                this.listenTo(model, 'change:status', () => this.updateActionButtons());
+                                this.setupActionButtonListeners(view);
                                 this.updateActionButtons();
                                 resolve();
                             });
@@ -208,26 +208,111 @@ define('custom:views/appuntamento/popup-notification', [
             return this.esitoPopupConfig.incompleteMessage;
         }
 
+        setupActionButtonListeners(recordView) {
+            const recordModel = recordView.model || this.esitoModel;
+
+            if (recordModel) {
+                this.listenTo(recordModel, 'change:status', () => this.updateActionButtons());
+                this.listenTo(recordModel, 'change', () => {
+                    if (recordModel.hasChanged('status')) {
+                        this.updateActionButtons();
+                    }
+                });
+            }
+
+            const bindStatusField = () => {
+                if (!recordView.getFieldView) {
+                    return false;
+                }
+
+                const statusField = recordView.getFieldView('status');
+
+                if (!statusField) {
+                    return false;
+                }
+
+                this.listenTo(statusField, 'change', () => this.updateActionButtons());
+
+                return true;
+            };
+
+            if (!bindStatusField()) {
+                this.listenToOnce(recordView, 'after:render', () => {
+                    bindStatusField();
+                    this.updateActionButtons();
+                });
+            }
+
+            this.$el.off('change.esitoStatus input.esitoStatus click.esitoStatus');
+
+            this.$el.on(
+                'change.esitoStatus input.esitoStatus',
+                '.field[data-name="status"] select, .field[data-name="status"] input',
+                () => {
+                    window.setTimeout(() => this.updateActionButtons(), 0);
+                }
+            );
+
+            this.$el.on(
+                'click.esitoStatus',
+                '.field[data-name="status"] .selectize-dropdown-content .option',
+                () => {
+                    window.setTimeout(() => this.updateActionButtons(), 50);
+                }
+            );
+        }
+
+        getCurrentStatus() {
+            const recordView = this.getView('esitoRecord');
+            let status = null;
+
+            if (recordView && recordView.model) {
+                status = recordView.model.get('status');
+            } else if (this.esitoModel) {
+                status = this.esitoModel.get('status');
+            }
+
+            const $select = this.$el.find('.field[data-name="status"] select');
+
+            if ($select.length) {
+                const domValue = $select.val();
+
+                if (domValue) {
+                    status = domValue;
+                }
+            }
+
+            return status;
+        }
+
         shouldShowCreateOpportunity() {
-            if (this.esitoEntityType !== 'Appuntamento') {
+            const entityType = this.esitoEntityType || this.notificationData.entityType;
+
+            if (entityType !== 'Appuntamento') {
                 return false;
             }
 
-            const model = this.getEsitoModel();
-
-            return !!model && model.get('status') === 'Held';
+            return this.getCurrentStatus() === 'Held';
         }
 
         updateActionButtons() {
-            if (this.esitoEntityType !== 'Appuntamento') {
+            const entityType = this.esitoEntityType || this.notificationData.entityType;
+
+            if (entityType !== 'Appuntamento') {
                 return;
             }
 
             const showCreateOpportunity = this.shouldShowCreateOpportunity();
+            const $save = this.$el.find('[data-role="save"]');
+            const $create = this.$el.find('[data-role="create-opportunity"]');
 
-            this.$el.find('[data-role="save"]').toggleClass('hidden', showCreateOpportunity);
-            this.$el.find('[data-role="create-opportunity"]')
-                .toggleClass('hidden', !showCreateOpportunity);
+            if (showCreateOpportunity) {
+                $save.addClass('hidden');
+                $create.removeClass('hidden');
+            } else {
+                $save.removeClass('hidden');
+                $create.addClass('hidden');
+            }
         }
 
         getAppuntamentoSyncPayload(model) {
