@@ -88,7 +88,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             }
         }
 
-        foreach ($this->findPlannedActivityEntityItems($user, $seenEntityKeys) as $item) {
+        foreach ($this->findPastPlannedActivityEntityItems($user, $seenEntityKeys) as $item) {
             $items[] = $item;
         }
 
@@ -141,15 +141,22 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
      * @param array<string, bool> $seenEntityKeys
      * @return Item[]
      */
-    private function findPlannedActivityEntityItems(User $user, array $seenEntityKeys): array
+    private function findPastPlannedActivityEntityItems(User $user, array $seenEntityKeys): array
     {
         $resultList = [];
+        $now = (new DateTime())->format(DateTimeUtil::SYSTEM_DATE_TIME_FORMAT);
 
         foreach (self::PLANNED_STATUS_BY_ENTITY_TYPE as $entityType => $statusList) {
             try {
-                $items = $this->findPlannedEntityItemsForType($user, $entityType, $statusList, $seenEntityKeys);
+                $items = $this->findPastPlannedEntityItemsForType(
+                    $user,
+                    $entityType,
+                    $statusList,
+                    $now,
+                    $seenEntityKeys
+                );
             } catch (Throwable $e) {
-                $this->log->error('PopupNotificationsProvider planned query failed for ' . $entityType, [
+                $this->log->error('PopupNotificationsProvider past planned query failed for ' . $entityType, [
                     'exception' => $e,
                 ]);
 
@@ -169,10 +176,11 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
      * @param array<string, bool> $seenEntityKeys
      * @return Item[]
      */
-    private function findPlannedEntityItemsForType(
+    private function findPastPlannedEntityItemsForType(
         User $user,
         string $entityType,
         array $statusList,
+        string $now,
         array &$seenEntityKeys
     ): array {
         if (!$this->entityManager->hasRepository($entityType)) {
@@ -180,6 +188,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         $userId = $user->getId();
+        $dateField = $entityType === Task::ENTITY_TYPE ? 'dateEnd' : 'dateStart';
         $resultList = [];
 
         $collection = $this->entityManager
@@ -197,7 +206,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             ->where([
                 'status' => $statusList,
                 'assignedUserId' => $userId,
+                $dateField . '<' => $now,
             ])
+            ->order($dateField, 'ASC')
+            ->limit(0, 50)
             ->find();
 
         foreach ($collection as $entity) {
@@ -205,46 +217,6 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
             if ($item !== null) {
                 $resultList[] = $item;
-            }
-        }
-
-        if (in_array($entityType, ['Meeting', 'Call'], true)) {
-            try {
-                $usersCollection = $this->entityManager
-                    ->getRDBRepository($entityType)
-                    ->distinct()
-                    ->select([
-                        Field::ID,
-                        Field::NAME,
-                        'status',
-                        'dateStart',
-                        'dateStartDate',
-                        'dateEnd',
-                        'dateEndDate',
-                        'assignedUserId',
-                    ])
-                    ->leftJoin('users')
-                    ->where([
-                        'status' => $statusList,
-                        'users.id' => $userId,
-                    ])
-                    ->find();
-
-                foreach ($usersCollection as $entity) {
-                    if (!$this->userCanSeeActivity($entity, $userId)) {
-                        continue;
-                    }
-
-                    $item = $this->buildEntityItemIfNew($entity, $seenEntityKeys);
-
-                    if ($item !== null) {
-                        $resultList[] = $item;
-                    }
-                }
-            } catch (Throwable $e) {
-                $this->log->warning('PopupNotificationsProvider users join failed for ' . $entityType, [
-                    'exception' => $e,
-                ]);
             }
         }
 

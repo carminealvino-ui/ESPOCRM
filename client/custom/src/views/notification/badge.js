@@ -11,6 +11,7 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
 
             this.popupDisplayQueue = [];
             this.popupDisplayActive = false;
+            this.shownEntityKeys = {};
         }
 
         getPopupNotificationView(id) {
@@ -26,6 +27,12 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
 
             if (index > -1) {
                 this.shownNotificationIds.splice(index, 1);
+            }
+
+            const entityKey = this.getEntityKeyFromPopupId(id);
+
+            if (entityKey) {
+                delete this.shownEntityKeys[entityKey];
             }
 
             if (this.shownNotificationIds.length === 0) {
@@ -87,43 +94,81 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             });
         }
 
-        buildPopupQueueKey(name, data) {
+        buildEntityKey(data) {
+            const notificationData = data.data || {};
+            const entityType = notificationData.entityType || '';
+            const entityId = notificationData.id || '';
+
+            if (!entityType || !entityId) {
+                return null;
+            }
+
+            return entityType + ':' + entityId;
+        }
+
+        buildStablePopupId(name, data) {
             const notificationId = data.id || null;
 
             if (notificationId) {
                 return name + '_' + notificationId;
             }
 
-            const entityId = (data.data && data.data.id) || '';
+            const notificationData = data.data || {};
+            const entityType = notificationData.entityType || '';
+            const entityId = notificationData.id || '';
 
-            return name + '_entity_' + entityId;
+            if (entityType && entityId) {
+                return name + '__' + entityType + '__' + entityId;
+            }
+
+            return name + '_anon_' + this.lastId++;
+        }
+
+        getEntityKeyFromPopupId(id) {
+            const parts = (id || '').split('__');
+
+            if (parts.length !== 3) {
+                return null;
+            }
+
+            return parts[1] + ':' + parts[2];
+        }
+
+        buildPopupQueueKey(name, data) {
+            return this.buildStablePopupId(name, data);
         }
 
         enqueuePopupNotification(name, data, isNotFirstCheck = false) {
+            const id = this.buildStablePopupId(name, data);
+            const entityKey = this.buildEntityKey(data);
             const notificationId = data.id || null;
 
-            if (notificationId) {
-                const id = name + '_' + notificationId;
+            if (this.shownNotificationIds.includes(id)) {
+                const notificationView = this.getPopupNotificationView(id);
 
-                if (this.shownNotificationIds.includes(id)) {
-                    const notificationView = this.getPopupNotificationView(id);
-
-                    if (notificationView) {
-                        notificationView.trigger('update-data', data.data);
-                    }
-
-                    return;
+                if (notificationView) {
+                    notificationView.trigger('update-data', data.data);
                 }
 
-                if (this.closedNotificationIds.includes(notificationId)) {
-                    return;
-                }
+                return;
+            }
+
+            if (entityKey && this.shownEntityKeys[entityKey]) {
+                return;
+            }
+
+            if (notificationId && this.closedNotificationIds.includes(notificationId)) {
+                return;
+            }
+
+            if (this.closedNotificationIds.includes(id)) {
+                return;
             }
 
             const key = this.buildPopupQueueKey(name, data);
-            const exists = this.popupDisplayQueue.some(item => item.key === key);
+            const existsInQueue = this.popupDisplayQueue.some(item => item.key === key);
 
-            if (exists) {
+            if (existsInQueue) {
                 return;
             }
 
@@ -174,17 +219,14 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
                 return;
             }
 
-            let id;
-
-            const notificationId = data.id || null;
-
-            if (notificationId) {
-                id = name + '_' + notificationId;
-            } else {
-                id = this.lastId++;
-            }
+            const id = this.buildStablePopupId(name, data);
+            const entityKey = this.buildEntityKey(data);
 
             this.shownNotificationIds.push(id);
+
+            if (entityKey) {
+                this.shownEntityKeys[entityKey] = true;
+            }
 
             const view = await this.createView('popup-' + id, viewName, {
                 notificationData: data.data ?? {},
