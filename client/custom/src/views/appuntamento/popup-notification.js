@@ -398,5 +398,13 @@ define('custom:views/appuntamento/popup-notification', [
 
             return super.getTitle();
         }
+
+        onCancel() {
+            if (!this.notificationId) {
+                return;
+            }
+
+            super.onCancel();
+        }
     };
 });
