@@ -2,9 +2,11 @@
 
 define('custom:views/appuntamento/popup-notification', [
     'crm:views/meeting/popup-notification',
-], function (MeetingPopupModule) {
+    'custom:views/opportunity/helpers/appuntamento-sync',
+], function (MeetingPopupModule, AppuntamentoSyncModule) {
 
     const Parent = MeetingPopupModule.default || MeetingPopupModule;
+    const AppuntamentoSync = AppuntamentoSyncModule.default || AppuntamentoSyncModule;
 
     const ESITO_POPUP_SCOPES = {
         Appuntamento: {
@@ -94,6 +96,7 @@ define('custom:views/appuntamento/popup-notification', [
             this.template = 'custom:appuntamento/popup-notification';
 
             this.addActionHandler('saveEsito', () => this.actionSaveEsito());
+            this.addActionHandler('createOpportunity', () => this.actionCreateOpportunity());
         }
 
         data() {
@@ -156,6 +159,8 @@ define('custom:views/appuntamento/popup-notification', [
                                 isWide: true,
                             }, view => {
                                 view.render();
+                                this.listenTo(model, 'change:status', () => this.updateActionButtons());
+                                this.updateActionButtons();
                                 resolve();
                             });
                         });
@@ -196,7 +201,90 @@ define('custom:views/appuntamento/popup-notification', [
         }
 
         getIncompleteMessage() {
+            if (this.shouldShowCreateOpportunity()) {
+                return 'Compilare Stato, Sottostato, Esito e Note Esito, poi cliccare Crea Opportunità.';
+            }
+
             return this.esitoPopupConfig.incompleteMessage;
+        }
+
+        shouldShowCreateOpportunity() {
+            if (this.esitoEntityType !== 'Appuntamento') {
+                return false;
+            }
+
+            const model = this.getEsitoModel();
+
+            return !!model && model.get('status') === 'Held';
+        }
+
+        updateActionButtons() {
+            if (this.esitoEntityType !== 'Appuntamento') {
+                return;
+            }
+
+            const showCreateOpportunity = this.shouldShowCreateOpportunity();
+
+            this.$el.find('[data-role="save"]').toggleClass('hidden', showCreateOpportunity);
+            this.$el.find('[data-role="create-opportunity"]')
+                .toggleClass('hidden', !showCreateOpportunity);
+        }
+
+        getAppuntamentoSyncPayload(model) {
+            return {
+                id: model.id,
+                name: model.get('name'),
+                dateStart: model.get('dateStart'),
+                azienda: model.get('azienda'),
+                fornitorePartnerId: model.get('fornitorePartnerId'),
+                fornitorePartnerName: model.get('fornitorePartnerName'),
+                productBrandId: model.get('productBrandId'),
+                productBrandName: model.get('productBrandName'),
+                productCategoryId: model.get('productCategoryId'),
+                productCategoryName: model.get('productCategoryName'),
+                prospectId: model.get('prospectId'),
+                prospectName: model.get('prospectName'),
+                telefono: model.get('telefono'),
+            };
+        }
+
+        openCreateOpportunityModal(model) {
+            const attributes = AppuntamentoSync.buildAttributesFromAppuntamento(
+                this.getAppuntamentoSyncPayload(model)
+            );
+
+            this.createView('createOpportunityDialog', 'views/modals/edit', {
+                scope: 'Opportunity',
+                attributes: attributes,
+            }, view => {
+                view.render();
+
+                this.listenToOnce(view, 'after:save', () => {
+                    super.resolveCancel();
+                });
+            });
+        }
+
+        actionCreateOpportunity() {
+            if (!this.shouldShowCreateOpportunity()) {
+                return;
+            }
+
+            if (!this.isEsitoComplete()) {
+                Espo.Ui.warning(this.getIncompleteMessage());
+
+                return;
+            }
+
+            const model = this.getEsitoModel();
+
+            Espo.Ui.notify(' ...');
+
+            model.save()
+                .then(() => {
+                    Espo.Ui.notify();
+                    this.openCreateOpportunityModal(model);
+                });
         }
 
         actionSaveEsito() {

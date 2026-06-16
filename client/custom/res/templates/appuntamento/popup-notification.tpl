@@ -10,8 +10,11 @@
     </a>
 </div>
 <div class="cell no-side-margin esito-popup-record"></div>
-<div class="cell margin-top-small">
-    <button type="button" class="btn btn-primary btn-sm" data-action="saveEsito">
+<div class="cell margin-top-small esito-popup-actions">
+    <button type="button" class="btn btn-primary btn-sm" data-action="saveEsito" data-role="save">
         {{translate 'Save'}}
+    </button>
+    <button type="button" class="btn btn-primary btn-sm hidden" data-action="createOpportunity" data-role="create-opportunity">
+        Crea Opportunità
     </button>
 </div>
