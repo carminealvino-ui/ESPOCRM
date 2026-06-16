@@ -2,28 +2,39 @@
 
 namespace Espo\Custom\Tools\Activities;
 
+use DateTime;
 use Espo\Core\Name\Field;
 use Espo\Core\ORM\Entity as CoreEntity;
 use Espo\Core\Utils\Config;
 use Espo\Core\Utils\DateTime as DateTimeUtil;
+use Espo\Core\Utils\Log;
 use Espo\Entities\User;
 use Espo\Modules\Crm\Entities\Meeting;
 use Espo\Modules\Crm\Entities\Reminder;
+use Espo\Modules\Crm\Entities\Task;
 use Espo\Modules\Crm\Tools\Activities\PopupNotificationsProvider as BasePopupNotificationsProvider;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 use Espo\Tools\PopupNotification\Item;
 use Exception;
+use Throwable;
 
 class PopupNotificationsProvider extends BasePopupNotificationsProvider
 {
-    private const APPUNTAMENTO_ENTITY_TYPE = 'Appuntamento';
-
-    private const APPUNTAMENTO_STATUS_PLANNED = 'Planned';
+    /**
+     * @var array<string, string[]>
+     */
+    private const PLANNED_STATUS_BY_ENTITY_TYPE = [
+        'Appuntamento' => ['Planned'],
+        'Meeting' => ['Planned'],
+        'Call' => ['Planned'],
+        'Task' => ['Not Started', 'Started'],
+    ];
 
     public function __construct(
         private Config $config,
         private EntityManager $entityManager,
+        private Log $log,
     ) {
         parent::__construct($config, $entityManager);
     }
@@ -37,7 +48,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         $items = parent::get($user);
 
         $seenReminderIds = [];
-        $seenEntityIds = [];
+        $seenEntityKeys = [];
 
         foreach ($items as $item) {
             $reminderId = $item->getId();
@@ -46,23 +57,23 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
                 $seenReminderIds[$reminderId] = true;
             }
 
-            $entityId = $this->getItemEntityId($item);
+            $entityKey = $this->getItemEntityKey($item);
 
-            if ($entityId) {
-                $seenEntityIds[$entityId] = true;
+            if ($entityKey) {
+                $seenEntityKeys[$entityKey] = true;
             }
         }
 
-        foreach ($this->findPlannedAppuntamentoReminderItems($user) as $item) {
+        foreach ($this->findPlannedReminderItems($user) as $item) {
             $reminderId = $item->getId();
 
             if ($reminderId && isset($seenReminderIds[$reminderId])) {
                 continue;
             }
 
-            $entityId = $this->getItemEntityId($item);
+            $entityKey = $this->getItemEntityKey($item);
 
-            if ($entityId && isset($seenEntityIds[$entityId])) {
+            if ($entityKey && isset($seenEntityKeys[$entityKey])) {
                 continue;
             }
 
@@ -72,12 +83,12 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
                 $seenReminderIds[$reminderId] = true;
             }
 
-            if ($entityId) {
-                $seenEntityIds[$entityId] = true;
+            if ($entityKey) {
+                $seenEntityKeys[$entityKey] = true;
             }
         }
 
-        foreach ($this->findPlannedAppuntamentoEntityItems($user, $seenEntityIds) as $item) {
+        foreach ($this->findPlannedActivityEntityItems($user, $seenEntityKeys) as $item) {
             $items[] = $item;
         }
 
@@ -91,7 +102,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
     /**
      * @return Item[]
      */
-    private function findPlannedAppuntamentoReminderItems(User $user): array
+    private function findPlannedReminderItems(User $user): array
     {
         $userId = $user->getId();
         $now = (new DateTime())->format(DateTimeUtil::SYSTEM_DATE_TIME_FORMAT);
@@ -108,7 +119,6 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
                 'type' => Reminder::TYPE_POPUP,
                 'userId' => $userId,
                 'remindAt<=' => $now,
-                'entityType' => self::APPUNTAMENTO_ENTITY_TYPE,
             ])
             ->find();
 
@@ -128,47 +138,114 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
     }
 
     /**
-     * @param array<string, bool> $seenEntityIds
+     * @param array<string, bool> $seenEntityKeys
      * @return Item[]
      */
-    private function findPlannedAppuntamentoEntityItems(User $user, array $seenEntityIds): array
+    private function findPlannedActivityEntityItems(User $user, array $seenEntityKeys): array
     {
-        $userId = $user->getId();
-
-        $collection = $this->entityManager
-            ->getRDBRepository(self::APPUNTAMENTO_ENTITY_TYPE)
-            ->distinct()
-            ->select([
-                Field::ID,
-                Field::NAME,
-                'dateStart',
-                'dateStartDate',
-                'status',
-            ])
-            ->leftJoin('assignedUsers')
-            ->leftJoin('collaborators')
-            ->where([
-                'status' => self::APPUNTAMENTO_STATUS_PLANNED,
-                [
-                    'assignedUserId' => $userId,
-                    'assignedUsers.id' => $userId,
-                    'collaborators.id' => $userId,
-                ],
-            ])
-            ->find();
-
         $resultList = [];
 
-        foreach ($collection as $entity) {
-            $entityId = $entity->getId();
+        foreach (self::PLANNED_STATUS_BY_ENTITY_TYPE as $entityType => $statusList) {
+            try {
+                $items = $this->findPlannedEntityItemsForType($user, $entityType, $statusList, $seenEntityKeys);
+            } catch (Throwable $e) {
+                $this->log->error('PopupNotificationsProvider planned query failed for ' . $entityType, [
+                    'exception' => $e,
+                ]);
 
-            if (!$entityId || isset($seenEntityIds[$entityId])) {
                 continue;
             }
 
-            $resultList[] = $this->buildAppuntamentoItem($entity);
+            foreach ($items as $item) {
+                $resultList[] = $item;
+            }
+        }
 
-            $seenEntityIds[$entityId] = true;
+        return $resultList;
+    }
+
+    /**
+     * @param string[] $statusList
+     * @param array<string, bool> $seenEntityKeys
+     * @return Item[]
+     */
+    private function findPlannedEntityItemsForType(
+        User $user,
+        string $entityType,
+        array $statusList,
+        array &$seenEntityKeys
+    ): array {
+        if (!$this->entityManager->hasRepository($entityType)) {
+            return [];
+        }
+
+        $userId = $user->getId();
+        $resultList = [];
+
+        $collection = $this->entityManager
+            ->getRDBRepository($entityType)
+            ->select([
+                Field::ID,
+                Field::NAME,
+                'status',
+                'dateStart',
+                'dateStartDate',
+                'dateEnd',
+                'dateEndDate',
+                'assignedUserId',
+            ])
+            ->where([
+                'status' => $statusList,
+                'assignedUserId' => $userId,
+            ])
+            ->find();
+
+        foreach ($collection as $entity) {
+            $item = $this->buildEntityItemIfNew($entity, $seenEntityKeys);
+
+            if ($item !== null) {
+                $resultList[] = $item;
+            }
+        }
+
+        if (in_array($entityType, ['Meeting', 'Call'], true)) {
+            try {
+                $usersCollection = $this->entityManager
+                    ->getRDBRepository($entityType)
+                    ->distinct()
+                    ->select([
+                        Field::ID,
+                        Field::NAME,
+                        'status',
+                        'dateStart',
+                        'dateStartDate',
+                        'dateEnd',
+                        'dateEndDate',
+                        'assignedUserId',
+                    ])
+                    ->leftJoin('users')
+                    ->where([
+                        'status' => $statusList,
+                        'users.id' => $userId,
+                    ])
+                    ->find();
+
+                foreach ($usersCollection as $entity) {
+                    if (!$this->userCanSeeActivity($entity, $userId)) {
+                        continue;
+                    }
+
+                    $item = $this->buildEntityItemIfNew($entity, $seenEntityKeys);
+
+                    if ($item !== null) {
+                        $resultList[] = $item;
+                    }
+                }
+            } catch (Throwable $e) {
+                $this->log->warning('PopupNotificationsProvider users join failed for ' . $entityType, [
+                    'exception' => $e,
+                ]);
+            }
         }
 
         return $resultList;
@@ -186,11 +263,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
         $entity = $this->entityManager->getEntityById($entityType, $entityId);
 
-        if (!$entity) {
-            return null;
-        }
-
-        if (!$this->isPlannedAppuntamento($entity)) {
+        if (!$entity || !$this->isPlannedActivity($entity) || !$this->userCanSeeActivity($entity, $userId)) {
             return null;
         }
 
@@ -206,39 +279,95 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             }
         }
 
-        return new Item($reminderId, $this->buildAppuntamentoData($entity));
+        return new Item($reminderId, $this->buildActivityData($entity));
     }
 
-    private function buildAppuntamentoItem(Entity $entity): Item
+    /**
+     * @param array<string, bool> $seenEntityKeys
+     */
+    private function buildEntityItemIfNew(Entity $entity, array &$seenEntityKeys): ?Item
     {
-        return new Item(null, $this->buildAppuntamentoData($entity));
+        $entityKey = $this->getEntityKey($entity->getEntityType(), $entity->getId());
+
+        if (!$entityKey || isset($seenEntityKeys[$entityKey])) {
+            return null;
+        }
+
+        if (!$this->isPlannedActivity($entity)) {
+            return null;
+        }
+
+        $seenEntityKeys[$entityKey] = true;
+
+        return new Item(null, $this->buildActivityData($entity));
     }
 
-    private function buildAppuntamentoData(Entity $entity): object
+    private function buildActivityData(Entity $entity): object
     {
+        $entityType = $entity->getEntityType();
+        $dateField = $entityType === Task::ENTITY_TYPE ? 'dateEnd' : 'dateStart';
+
         return (object) [
             'id' => $entity->getId(),
-            'entityType' => self::APPUNTAMENTO_ENTITY_TYPE,
+            'entityType' => $entityType,
             'name' => $entity->get(Field::NAME),
-            'dateField' => 'dateStart',
+            'dateField' => $dateField,
             'attributes' => (object) [
-                'dateStart' => $entity->get('dateStart'),
-                'dateStartDate' => $entity->get('dateStartDate'),
+                $dateField => $entity->get($dateField),
+                $dateField . 'Date' => $entity->get($dateField . 'Date'),
             ],
         ];
     }
 
-    private function isPlannedAppuntamento(Entity $entity): bool
+    private function isPlannedActivity(Entity $entity): bool
     {
-        return $entity->getEntityType() === self::APPUNTAMENTO_ENTITY_TYPE &&
-            $entity->get('status') === self::APPUNTAMENTO_STATUS_PLANNED;
+        $entityType = $entity->getEntityType();
+        $statusList = self::PLANNED_STATUS_BY_ENTITY_TYPE[$entityType] ?? null;
+
+        if ($statusList === null) {
+            return false;
+        }
+
+        return in_array($entity->get('status'), $statusList, true);
     }
 
-    private function getItemEntityId(Item $item): ?string
+    private function userCanSeeActivity(Entity $entity, string $userId): bool
+    {
+        if ($entity->get('assignedUserId') === $userId) {
+            return true;
+        }
+
+        foreach (['assignedUsers', 'collaborators', 'users'] as $link) {
+            if (!$entity->hasRelation($link)) {
+                continue;
+            }
+
+            $ids = $entity->getLinkMultipleIdList($link);
+
+            if (in_array($userId, $ids, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function getItemEntityKey(Item $item): ?string
     {
         $data = $item->getData();
+        $entityType = $data->entityType ?? null;
+        $entityId = $data->id ?? null;
 
-        return $data->id ?? null;
+        if (!$entityType || !$entityId) {
+            return null;
+        }
+
+        return $this->getEntityKey($entityType, $entityId);
+    }
+
+    private function getEntityKey(string $entityType, string $entityId): string
+    {
+        return $entityType . ':' . $entityId;
     }
 
     private function getItemSortDate(Item $item): string
