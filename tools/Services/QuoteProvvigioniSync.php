@@ -2,6 +2,8 @@
 
 namespace Espo\Custom\Services;
 
+use Espo\Core\Utils\Config;
+use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
 /**
@@ -10,7 +12,8 @@ use Espo\ORM\EntityManager;
 class QuoteProvvigioniSync
 {
     public function __construct(
-        private EntityManager $entityManager
+        private EntityManager $entityManager,
+        private Config $config
     ) {}
 
     public function sumTotaleProvvigioni(string $quoteId): float
@@ -39,19 +42,48 @@ class QuoteProvvigioniSync
             return $totale;
         }
 
+        $currency = $this->resolveQuoteCurrency($quote);
         $current = (float) ($quote->get('totaleProvvigioni') ?? 0);
+        $currentCurrency = $quote->get('totaleProvvigioniCurrency');
+        $currentConverted = $quote->get('totaleProvvigioniConverted');
 
-        if (abs($current - $totale) < 0.001) {
+        $needsSave = abs($current - $totale) >= 0.001
+            || $currentCurrency !== $currency
+            || ($totale > 0 && ($currentConverted === null || $currentConverted === ''));
+
+        if (!$needsSave) {
             return $totale;
         }
 
-        $quote->set('totaleProvvigioni', $totale);
+        $quote->set([
+            'totaleProvvigioni' => $totale,
+            'totaleProvvigioniCurrency' => $currency,
+        ]);
 
         $this->entityManager->saveEntity($quote, [
-            'skipHooks' => true,
             'silent' => true,
+            'skipProvvigioniQuoteSync' => true,
         ]);
 
         return $totale;
+    }
+
+    private function resolveQuoteCurrency(Entity $quote): string
+    {
+        foreach (['importoContrattoCurrency', 'amountCurrency', 'grandTotalAmountCurrency'] as $field) {
+            $currency = $quote->get($field);
+
+            if (is_string($currency) && $currency !== '') {
+                return $currency;
+            }
+        }
+
+        $default = $this->config->get('defaultCurrency');
+
+        if (is_string($default) && $default !== '') {
+            return $default;
+        }
+
+        return 'EUR';
     }
 }
