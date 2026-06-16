@@ -31,24 +31,6 @@ class BeforeSave extends Base
         $entity->set('name', $this->buildName($entity, $quote));
     }
 
-    public function afterSave(Entity $entity, array $options): void
-    {
-        if (!empty($options['skipHooks'])) {
-            return;
-        }
-
-        $this->syncTotaleProvvigioni($entity);
-    }
-
-    public function afterRemove(Entity $entity, array $options): void
-    {
-        if (!empty($options['skipHooks'])) {
-            return;
-        }
-
-        $this->syncTotaleProvvigioni($entity);
-    }
-
     private function syncLinksFromQuote(Entity $entity, Entity $quote): void
     {
         $quoteName = $quote->get('name');
@@ -119,36 +101,6 @@ class BeforeSave extends Base
         $parts[] = '€. ' . number_format($importo, 2, '.', '');
 
         return strtoupper(implode(' - ', $parts));
-    }
-
-    private function syncTotaleProvvigioni(Entity $entity): void
-    {
-        $quoteId = $entity->get('contrattoId');
-
-        if (!$quoteId) {
-            return;
-        }
-
-        $em = $this->getEntityManager();
-        $totale = 0.0;
-
-        foreach ($em->getRepository('Provvigione')->where(['contrattoId' => $quoteId])->find() as $row) {
-            $totale += (float) ($row->get('importo') ?? 0);
-        }
-
-        $totale = round($totale, 2);
-        $quote = $em->getEntityById('Quote', $quoteId);
-
-        if (!$quote) {
-            return;
-        }
-
-        if (abs((float) ($quote->get('totaleProvvigioni') ?? 0) - $totale) < 0.001) {
-            return;
-        }
-
-        $quote->set('totaleProvvigioni', $totale);
-        $em->saveEntity($quote, ['skipHooks' => true, 'silent' => true]);
     }
 
     private function toFloat(mixed $value): float
