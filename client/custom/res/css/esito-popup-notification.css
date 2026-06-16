@@ -1,18 +1,29 @@
 .popup-notification.esito-popup-wide {
     width: min(480px, 95vw);
+    max-height: 90vh;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .popup-notification.esito-popup-wide .cell {
     width: 100%;
+    flex-shrink: 0;
 }
 
 .popup-notification.esito-popup-wide .esito-popup-record {
     width: 100%;
     max-width: 100%;
-    max-height: 60vh;
-    overflow-y: auto;
+    min-height: 220px;
+    flex: 1 1 auto;
+    overflow: visible;
     box-sizing: border-box;
+}
+
+.popup-notification.esito-popup-wide .esito-popup-actions {
+    flex-shrink: 0;
+    padding-top: 8px;
+    padding-bottom: 4px;
 }
 
 .popup-notification.esito-popup-wide .esito-popup-record > .record,
@@ -22,6 +33,7 @@
     max-width: 100%;
     margin: 0;
     padding: 0;
+    overflow: visible;
 }
 
 .popup-notification.esito-popup-wide .esito-popup-record .record-grid,
@@ -31,6 +43,7 @@
     max-width: 100%;
     margin: 0;
     padding: 0;
+    overflow: visible;
 }
 
 .popup-notification.esito-popup-wide .esito-popup-record .panel,
@@ -46,6 +59,7 @@
     border-radius: 0 !important;
     box-shadow: none !important;
     background: transparent !important;
+    overflow: visible;
 }
 
 .popup-notification.esito-popup-wide .esito-popup-record .panel-heading {
@@ -59,6 +73,7 @@
     padding: 0 !important;
     border: none !important;
     background: transparent !important;
+    overflow: visible;
 }
 
 .popup-notification.esito-popup-wide .esito-popup-record .row {
@@ -69,6 +84,7 @@
 .popup-notification.esito-popup-wide .esito-popup-record .cell.form-group {
     padding-left: 0;
     padding-right: 0;
+    margin-bottom: 10px;
 }
 
 .popup-notification.esito-popup-wide .esito-popup-record .field {
@@ -77,4 +93,10 @@
 
 .popup-notification.esito-popup-wide .esito-popup-record textarea.form-control {
     width: 100%;
+    min-height: 90px;
+}
+
+#popup-notifications-container {
+    max-height: 95vh;
+    overflow-y: auto;
 }
