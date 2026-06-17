@@ -1,5 +1,7 @@
 {
     "fields": {
+        "name": "Nome e Cognome",
+        "telefono": "Telefono",
         "productCategory": "Categoria prodotto",
         "fornitorePartner": "Fornitore / Partner",
         "productBrand": "Brand",

@@ -1,5 +1,6 @@
 {
     "fields": {
+        "name": "Name",
         "address": "Address",
         "cAP": "CAP",
         "appuntamenti": "Appuntamenti",
