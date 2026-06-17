@@ -89,3 +89,25 @@ bash tools/deploy-crea-prodotto-button.sh
 ## Esportare il layout di produzione nel repo (opzionale)
 
 Solo con approvazione: copiare da server i JSON di `layouts/Quote/` in un branch dedicato, così non si perdono `defaultSidePanel.json` e `detailBottomTotal.json` che oggi non sono nel repository.
+
+### Solo layout Contratto (dopo modifica Layout Manager)
+
+```bash
+cd ~/public_html/crm/mec-group
+bash tools/backup-quote-layouts.sh
+bash tools/align-quote-layouts-prod-repo.sh
+```
+
+Lo script esporta `layouts/Quote/`, applica sul clone `~/ESPOCRM-git` e fa push su `main` (serve `exports/sync/token.txt`).
+
+Export manuale senza push:
+
+```bash
+bash tools/export-quote-layouts-for-repo.sh
+# poi sul PC / cloud agent:
+bash tools/apply-quote-layouts-from-export.sh exports/sync/quote-layouts-YYYYMMDD-HHMMSS
+```
+
+### Sync completo custom (tutto MEC)
+
+Vedi `REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md` — `export-delta` + `apply-delta`.
