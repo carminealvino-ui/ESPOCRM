@@ -2,12 +2,12 @@
 # Appuntamento Pending → Call automatica +2 giorni alle 9:30 (weekend → lunedì).
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/appuntamento-pending-auto-call-9999/tools/deploy-appuntamento-pending-call.sh?t=$(date +%s)" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-appuntamento-pending-call-9999/tools/deploy-appuntamento-pending-call.sh?t=$(date +%s)" | bash
 
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="${2:-cursor/appuntamento-pending-auto-call-9999}"
+BRANCH="${2:-cursor/fix-appuntamento-pending-call-9999}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 STAMP=$(date +%Y%m%d-%H%M%S)
