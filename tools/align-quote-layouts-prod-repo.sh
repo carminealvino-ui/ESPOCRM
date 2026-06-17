@@ -21,7 +21,7 @@ fi
 
 if [[ -z "${EXPORT_NAME}" ]]; then
   bash "${CRM_ROOT}/tools/export-quote-layouts-for-repo.sh"
-  EXPORT_NAME="$(ls -1dt "${CRM_ROOT}"/exports/sync/quote-layouts-* 2>/dev/null | head -1 | xargs basename)"
+  EXPORT_NAME="$(ls -1dt "${CRM_ROOT}"/exports/sync/quote-layouts-* 2>/dev/null | while read -r x; do [ -d "$x" ] && basename "$x"; done | head -1)"
 fi
 
 EXPORT_PATH="${CRM_ROOT}/exports/sync/${EXPORT_NAME}"
