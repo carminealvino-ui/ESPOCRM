@@ -21,6 +21,46 @@
                 ]
             }
         },
+        "importoCaparra": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "importoFinanziato": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "nrRate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "tassoZero": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
         "status": {
             "readOnly": {
                 "conditionGroup": [

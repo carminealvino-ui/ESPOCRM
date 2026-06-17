@@ -22,6 +22,24 @@
             ],
             [
                 {
+                    "name": "importoCaparra"
+                },
+                {
+                    "name": "importoFinanziato"
+                },
+                {
+                    "name": "nrRate"
+                }
+            ],
+            [
+                {
+                    "name": "tassoZero"
+                },
+                false,
+                false
+            ],
+            [
+                {
                     "name": "numeroContratto"
                 },
                 {

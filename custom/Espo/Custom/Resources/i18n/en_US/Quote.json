@@ -19,7 +19,18 @@
         "totaleProvvigioni": "Provvigioni Totali",
         "totaleProvvigioniCurrency": "Provvigioni Totali (Valuta)",
         "totaleProvvigioniConverted": "Provvigioni Totali (Convertito)",
-        "hookVersion": "HookVersion"
+        "hookVersion": "HookVersion",
+        "finanziamento": "Finanziamento",
+        "statoFinanziamento": "Stato Finanziamento",
+        "statoContratto": "Stato Contratto",
+        "importoCaparra": "Importo Caparra",
+        "importoCaparraCurrency": "Importo Caparra (Currency)",
+        "importoCaparraConverted": "Importo Caparra (Converted)",
+        "importoFinanziato": "Importo Finanziato",
+        "importoFinanziatoCurrency": "Importo Finanziato (Currency)",
+        "importoFinanziatoConverted": "Importo Finanziato (Converted)",
+        "nrRate": "Nr. Rate",
+        "tassoZero": "Tasso Zero"
     },
     "links": {
         "cAP": "CAP",

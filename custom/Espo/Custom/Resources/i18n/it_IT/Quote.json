@@ -70,7 +70,15 @@
         "scontoVenditaAbbinata": "% Sconto Vendita Abbinata",
         "finanziamento": "Finanziamento",
         "statoFinanziamento": "Stato Finanziamento",
-        "statoContratto": "Stato Contratto"
+        "statoContratto": "Stato Contratto",
+        "importoCaparra": "Importo Caparra",
+        "importoCaparraCurrency": "Importo Caparra (Valuta)",
+        "importoCaparraConverted": "Importo Caparra (Convertito)",
+        "importoFinanziato": "Importo Finanziato",
+        "importoFinanziatoCurrency": "Importo Finanziato (Valuta)",
+        "importoFinanziatoConverted": "Importo Finanziato (Convertito)",
+        "nrRate": "Nr. Rate",
+        "tassoZero": "Tasso Zero"
     },
     "links": {
         "cAP": "CAP",
