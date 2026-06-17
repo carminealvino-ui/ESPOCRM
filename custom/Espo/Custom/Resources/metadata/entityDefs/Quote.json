@@ -158,6 +158,32 @@
             "default": null,
             "isCustom": true
         },
+        "importoCaparra": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoFinanziato": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "nrRate": {
+            "type": "int",
+            "isCustom": true
+        },
+        "tassoZero": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "rataPrestito": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoSaldo": {
+            "type": "currency",
+            "readOnly": true,
+            "isCustom": true
+        },
         "statoContratto": {
             "type": "enum",
             "options": [

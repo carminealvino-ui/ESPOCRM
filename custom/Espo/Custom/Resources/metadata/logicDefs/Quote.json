@@ -21,6 +21,64 @@
                 ]
             }
         },
+        "importoFinanziato": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "nrRate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "tassoZero": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "rataPrestito": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "importoSaldo": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isFalse",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            },
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isFalse",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
         "status": {
             "readOnly": {
                 "conditionGroup": [

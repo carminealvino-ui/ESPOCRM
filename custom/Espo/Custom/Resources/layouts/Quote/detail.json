@@ -14,6 +14,28 @@
                     "name": "statoContratto"
                 },
                 {
+                    "name": "numeroContratto"
+                },
+                {
+                    "name": "dateQuoted"
+                }
+            ],
+            [
+                {
+                    "name": "importoContratto"
+                },
+                {
+                    "name": "rataPrestito"
+                },
+                {
+                    "name": "importoSaldo"
+                }
+            ],
+            [
+                {
+                    "name": "importoCaparra"
+                },
+                {
                     "name": "finanziamento"
                 },
                 {
@@ -22,13 +44,13 @@
             ],
             [
                 {
-                    "name": "numeroContratto"
+                    "name": "importoFinanziato"
                 },
                 {
-                    "name": "dateQuoted"
+                    "name": "nrRate"
                 },
                 {
-                    "name": "importoContratto"
+                    "name": "tassoZero"
                 }
             ],
             [
