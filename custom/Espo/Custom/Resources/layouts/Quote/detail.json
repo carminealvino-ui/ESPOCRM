@@ -6,51 +6,7 @@
                     "name": "number"
                 },
                 {
-                    "name": "status"
-                }
-            ],
-            [
-                {
-                    "name": "statoContratto"
-                },
-                {
-                    "name": "numeroContratto"
-                },
-                {
-                    "name": "dateQuoted"
-                }
-            ],
-            [
-                {
-                    "name": "importoContratto"
-                },
-                {
-                    "name": "rataPrestito"
-                },
-                {
-                    "name": "importoSaldo"
-                }
-            ],
-            [
-                {
-                    "name": "importoCaparra"
-                },
-                {
-                    "name": "finanziamento"
-                },
-                {
-                    "name": "statoFinanziamento"
-                }
-            ],
-            [
-                {
-                    "name": "importoFinanziato"
-                },
-                {
-                    "name": "nrRate"
-                },
-                {
-                    "name": "tassoZero"
+                    "name": "opportunity"
                 }
             ],
             [
@@ -61,11 +17,6 @@
             ],
             [
                 {
-                    "name": "opportunity"
-                }
-            ],
-            [
-                {
                     "name": "fornitorePartner"
                 },
                 {
@@ -73,8 +24,58 @@
                 }
             ],
             [
+                false,
                 {
                     "name": "productCategory"
+                }
+            ],
+            [
+                {
+                    "name": "numeroContratto"
+                },
+                {
+                    "name": "dateQuoted"
+                },
+                {
+                    "name": "importoContratto"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "statoContratto"
+                },
+                {
+                    "name": "importoCaparra"
+                },
+                {
+                    "name": "importoSaldo"
+                }
+            ],
+            [
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "statoFinanziamento"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "tassoZero"
+                },
+                {
+                    "name": "importoFinanziato"
+                },
+                {
+                    "name": "rataPrestito"
+                },
+                {
+                    "name": "nrRate"
                 }
             ],
             [
