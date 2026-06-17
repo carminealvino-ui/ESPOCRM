@@ -19,41 +19,47 @@ class AppuntamentoPendingCallCreator
         private Log $log
     ) {}
 
-    public function createIfNeeded(Entity $appuntamento): void
+    public function createIfNeeded(Entity $appuntamento): ?string
     {
         if ($appuntamento->get('status') !== 'Held') {
-            return;
+            return null;
         }
 
         if ($appuntamento->get('sottostato') !== 'Pending') {
-            return;
-        }
-
-        if (!$this->shouldCreate($appuntamento)) {
-            return;
+            return null;
         }
 
         $appuntamentoId = $appuntamento->getId();
 
         if (!$appuntamentoId) {
-            return;
+            return null;
         }
 
-        if ($this->findExistingCall($appuntamentoId)) {
-            return;
+        if ($this->findExistingCallId($appuntamentoId)) {
+            return null;
         }
 
-        $leadId = $appuntamento->get('parentId');
-        $leadType = $appuntamento->get('parentType');
+        $appuntamento = $this->reloadAppuntamento($appuntamentoId) ?? $appuntamento;
 
-        if ($leadType !== 'Lead' || !$leadId) {
-            return;
+        $leadId = $this->resolveLeadId($appuntamento);
+
+        if (!$leadId) {
+            $this->log->warning(
+                'Auto-create Call Pending: Lead non trovato per Appuntamento {id} (parentType={parentType}, prospectId={prospectId})',
+                [
+                    'id' => $appuntamentoId,
+                    'parentType' => (string) $appuntamento->get('parentType'),
+                    'prospectId' => (string) $appuntamento->get('prospectId'),
+                ]
+            );
+
+            return null;
         }
 
         $lead = $this->entityManager->getEntityById('Lead', $leadId);
 
         if (!$lead) {
-            return;
+            return null;
         }
 
         $callDateStart = PendingCallDateTime::fromAppointmentDateStart(
@@ -61,7 +67,12 @@ class AppuntamentoPendingCallCreator
         );
 
         if (!$callDateStart) {
-            return;
+            $this->log->warning(
+                'Auto-create Call Pending: dateStart mancante per Appuntamento {id}',
+                ['id' => $appuntamentoId]
+            );
+
+            return null;
         }
 
         $parentName = $appuntamento->get('parentName') ?: $lead->get('name');
@@ -82,6 +93,8 @@ class AppuntamentoPendingCallCreator
             'dateStart' => $callDateStart,
             'assignedUserId' => self::CALL_CENTER_USER_ID,
             'daRichiamare' => false,
+            'whatsApp' => false,
+            'vocale' => true,
             'nota' => self::NOTA_PREFIX . ' ' . $appuntamentoId,
             'description' => 'Richiamo automatico per appuntamento Pending del '
                 . $appuntamento->get('dateStart'),
@@ -94,23 +107,53 @@ class AppuntamentoPendingCallCreator
         ]);
 
         $this->entityManager->saveEntity($call);
+
+        $this->log->info(
+            'Auto-create Call Pending: creata Call {callId} per Appuntamento {id} il {dateStart}',
+            [
+                'callId' => $call->getId(),
+                'id' => $appuntamentoId,
+                'dateStart' => $callDateStart,
+            ]
+        );
+
+        return $call->getId();
     }
 
-    private function shouldCreate(Entity $appuntamento): bool
+    private function reloadAppuntamento(string $appuntamentoId): ?Entity
     {
-        if (
-            $appuntamento->isAttributeChanged('sottostato') &&
-            $appuntamento->get('sottostato') === 'Pending'
-        ) {
-            return true;
+        return $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
+    }
+
+    private function resolveLeadId(Entity $appuntamento): ?string
+    {
+        if ($appuntamento->get('parentType') === 'Lead') {
+            $parentId = $appuntamento->get('parentId');
+
+            if ($parentId) {
+                return $parentId;
+            }
         }
 
-        return $appuntamento->isAttributeChanged('status') &&
-            $appuntamento->get('status') === 'Held' &&
-            $appuntamento->get('sottostato') === 'Pending';
+        $prospectId = $appuntamento->get('prospectId');
+
+        if (!$prospectId) {
+            return null;
+        }
+
+        $prospect = $this->entityManager->getEntityById('Prospect', $prospectId);
+
+        if (!$prospect) {
+            return null;
+        }
+
+        $lead = (new LeadProspectSync($this->entityManager))
+            ->findExistingLeadByProspect($prospect);
+
+        return $lead?->getId();
     }
 
-    private function findExistingCall(string $appuntamentoId): bool
+    private function findExistingCallId(string $appuntamentoId): ?string
     {
         $existing = $this->entityManager
             ->getRDBRepository('Call')
@@ -119,6 +162,6 @@ class AppuntamentoPendingCallCreator
             ])
             ->findOne();
 
-        return (bool) $existing;
+        return $existing?->getId();
     }
 }

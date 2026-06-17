@@ -31,6 +31,7 @@ FILES=(
   "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"
   "custom/Espo/Custom/Hooks/Appuntamento/AutoCreatePendingCall.php"
   "custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json"
+  "tools/backfill-pending-calls.php"
 )
 
 for rel in "${FILES[@]}"; do
@@ -51,3 +52,7 @@ echo "  cd ${CRM_ROOT} && php clear_cache.php && php rebuild.php"
 echo ""
 echo "Test: segna un Appuntamento come Svolto + sottostato Pending."
 echo "Viene creata una Call pianificata +2 giorni alle 9:30 (lun se weekend), con promemoria."
+echo ""
+echo "Backfill appuntamenti Pending già esistenti:"
+echo "  cd ${CRM_ROOT} && php tools/backfill-pending-calls.php --dry-run"
+echo "  cd ${CRM_ROOT} && php tools/backfill-pending-calls.php"

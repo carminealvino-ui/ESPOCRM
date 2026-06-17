@@ -41,11 +41,12 @@ class AutoCreatePendingCall implements AfterSave
 
             $creator->createIfNeeded($entity);
         } catch (\Throwable $e) {
-            $this->log->warning(
+            $this->log->error(
                 'Auto-create Call Pending per Appuntamento {id} fallita: {message}',
                 [
                     'id' => $entity->getId(),
                     'message' => $e->getMessage(),
+                    'exception' => $e,
                 ]
             );
         }
