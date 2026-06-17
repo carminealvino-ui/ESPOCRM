@@ -6,18 +6,27 @@
                     "name": "number"
                 },
                 {
-                    "name": "status"
+                    "name": "opportunity"
                 }
             ],
             [
                 {
-                    "name": "statoContratto"
+                    "name": "account"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "fornitorePartner"
                 },
                 {
-                    "name": "finanziamento"
-                },
+                    "name": "productBrand"
+                }
+            ],
+            [
+                false,
                 {
-                    "name": "statoFinanziamento"
+                    "name": "productCategory"
                 }
             ],
             [
@@ -29,30 +38,44 @@
                 },
                 {
                     "name": "importoContratto"
-                }
-            ],
-            [
-                {
-                    "name": "account"
                 },
                 false
             ],
             [
                 {
-                    "name": "opportunity"
-                }
-            ],
-            [
-                {
-                    "name": "fornitorePartner"
+                    "name": "status"
                 },
                 {
-                    "name": "productBrand"
+                    "name": "statoContratto"
+                },
+                {
+                    "name": "importoCaparra"
+                },
+                {
+                    "name": "importoSaldo"
                 }
             ],
             [
                 {
-                    "name": "productCategory"
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "statoFinanziamento"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "tassoZero"
+                },
+                {
+                    "name": "importoFinanziato"
+                },
+                {
+                    "name": "rataPrestito"
+                },
+                {
+                    "name": "nrRate"
                 }
             ],
             [
