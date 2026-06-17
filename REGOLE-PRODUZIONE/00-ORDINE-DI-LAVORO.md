@@ -33,9 +33,11 @@ Usare questa sequenza per **ogni** intervento (fix, deploy, layout).
 └─────────────────┬───────────────────┘
                   ▼
 ┌─────────────────────────────────────┐
-│ 5. Allineamento prod → GitHub       │
-│    (vedi 05-SYNC: export SEMPRE     │
-│     per primo, poi PC apply+push)   │
+│ 5. Allineamento prod → GitHub       │  ← OBBLIGATORIO (Regola 0)
+│    Nessun intervento chiuso senza   │
+│    export + push se si è scritto    │
+│    qualcosa sul server              │
+│    (vedi 00-REGOLA-SERVER-REPO)     │
 └─────────────────────────────────────┘
 ```
 
@@ -51,10 +53,12 @@ Non saltare l’export usando delta vecchi.
 
 ## Checklist rapida (spuntare mentalmente)
 
-- [ ] Ho letto le tre regole in `REGOLE-PRODUZIONE/README.md`
+- [ ] Ho letto **Regola 0** in `00-REGOLA-SERVER-REPO.md` (server ↔ repo)
+- [ ] Ho letto le regole in `REGOLE-PRODUZIONE/README.md`
 - [ ] Esiste `tools/` sul server (`bootstrap-server-tools.sh` se manca)
 - [ ] **Passo 0:** backup `backup_dev/` eseguito (`backup-dev-batch.sh` o `backup-dev-save.sh`)
 - [ ] Screenshot/output backup con timestamp salvato
 - [ ] Un solo passo eseguito
 - [ ] Screenshot o output terminale verificato
 - [ ] Solo ora passo al passo successivo
+- [ ] **Chiusura:** export-delta (o align layout) + push GitHub se ho modificato il server

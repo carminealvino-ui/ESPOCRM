@@ -6,6 +6,28 @@ Ambiente: `~/public_html/crm/mec-group` (produzione EspoCRM).
 
 ---
 
+## Regola 0 — Server e repo sempre allineati (**OBBLIGATORIA**)
+
+**Tutto ciò che si scrive o modifica sul server** (`custom/`, `client/custom/`, layout da Layout Manager, …) **deve essere allineato al repository GitHub** prima di considerare il lavoro concluso.
+
+- Flusso preferito: **repo → server** (branch, PR, deploy).
+- Se si modifica **direttamente in produzione**: obbligo di **export + commit + push** subito dopo (vedi sotto).
+
+Dettaglio completo: **[`00-REGOLA-SERVER-REPO.md`](00-REGOLA-SERVER-REPO.md)**
+
+Comandi rapidi:
+
+```bash
+# Sync completo custom (dopo ogni sessione con modifiche in prod)
+php tools/sync-custom-prod-repo.php export-delta --branch=main
+# poi apply-delta + git push (vedi 05-SYNC e 08-AVVIO-SYNC-CPANEL)
+
+# Solo layout Contratto
+bash tools/align-quote-layouts-prod-repo.sh
+```
+
+---
+
 ## Regola 1 — Un’istruzione alla volta
 
 - Si fornisce **una sola** azione per messaggio (un comando, un file, un deploy).
@@ -75,6 +97,7 @@ Dettaglio: [`04-STRUTTURA-BACKUP-DEV.md`](04-STRUTTURA-BACKUP-DEV.md) e [`backup
 
 | Documento | Contenuto |
 |-----------|-----------|
+| **`00-REGOLA-SERVER-REPO.md`** | **Regola 0: tutto sul server va allineato al repo** |
 | `tools/LEGGI-PRIMA.md` | Punto di ingresso per script |
 | `tools/LAYOUT-NON-SOVRASCRIVERE.md` | Deploy che non toccano layout Contratto |
 | `backup_dev/README.md` | Struttura backup per entità |
@@ -87,4 +110,4 @@ Dettaglio: [`04-STRUTTURA-BACKUP-DEV.md`](04-STRUTTURA-BACKUP-DEV.md) e [`backup
 
 ---
 
-*Ultimo aggiornamento regole: 2026-06-09*
+*Ultimo aggiornamento regole: 2026-06-17*
