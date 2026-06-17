@@ -31,6 +31,18 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         'Task' => ['Not Started', 'Started'],
     ];
 
+    /**
+     * Entity con colonne date_start_date / date_end_date in DB.
+     * Call non le ha: selezionarle causa SQLSTATE 42S22 in produzione.
+     *
+     * @var string[]
+     */
+    private const ENTITIES_WITH_DATE_PART_COLUMNS = [
+        'Appuntamento',
+        'Meeting',
+        'Task',
+    ];
+
     public function __construct(
         private Config $config,
         private EntityManager $entityManager,
@@ -45,7 +57,15 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
      */
     public function get(User $user): array
     {
-        $items = parent::get($user);
+        try {
+            $items = parent::get($user);
+        } catch (Throwable $e) {
+            $this->log->error('PopupNotificationsProvider parent::get failed', [
+                'exception' => $e,
+            ]);
+
+            $items = [];
+        }
 
         $seenReminderIds = [];
         $seenEntityKeys = [];
@@ -125,7 +145,17 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         $resultList = [];
 
         foreach ($reminderCollection as $reminder) {
-            $item = $this->buildReminderItem($reminder, $userId);
+            try {
+                $item = $this->buildReminderItem($reminder, $userId);
+            } catch (Throwable $e) {
+                $this->log->error('PopupNotificationsProvider reminder item failed', [
+                    'reminderId' => $reminder->getId(),
+                    'entityType' => $reminder->getTargetEntityType(),
+                    'exception' => $e,
+                ]);
+
+                continue;
+            }
 
             if ($item === null) {
                 continue;
@@ -193,16 +223,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
         $collection = $this->entityManager
             ->getRDBRepository($entityType)
-            ->select([
-                Field::ID,
-                Field::NAME,
-                'status',
-                'dateStart',
-                'dateStartDate',
-                'dateEnd',
-                'dateEndDate',
-                'assignedUserId',
-            ])
+            ->select($this->getPastPlannedSelect($entityType))
             ->where([
                 'status' => $statusList,
                 'assignedUserId' => $userId,
@@ -223,6 +244,28 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         return $resultList;
     }
 
+    /**
+     * @return string[]
+     */
+    private function getPastPlannedSelect(string $entityType): array
+    {
+        $select = [
+            Field::ID,
+            Field::NAME,
+            'status',
+            'dateStart',
+            'dateEnd',
+            'assignedUserId',
+        ];
+
+        if (in_array($entityType, self::ENTITIES_WITH_DATE_PART_COLUMNS, true)) {
+            $select[] = 'dateStartDate';
+            $select[] = 'dateEndDate';
+        }
+
+        return $select;
+    }
+
     private function buildReminderItem(Reminder $reminder, string $userId): ?Item
     {
         $reminderId = $reminder->getId();
@@ -233,7 +276,11 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             return null;
         }
 
-        $entity = $this->entityManager->getEntityById($entityType, $entityId);
+        $entity = $this->entityManager
+            ->getRDBRepository($entityType)
+            ->select($this->getPastPlannedSelect($entityType))
+            ->where([Field::ID => $entityId])
+            ->findOne();
 
         if (!$entity || !$this->isPlannedActivity($entity) || !$this->userCanSeeActivity($entity, $userId)) {
             return null;
@@ -279,15 +326,22 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         $entityType = $entity->getEntityType();
         $dateField = $entityType === Task::ENTITY_TYPE ? 'dateEnd' : 'dateStart';
 
+        $attributes = (object) [
+            $dateField => $entity->get($dateField),
+        ];
+
+        $datePartField = $dateField . 'Date';
+
+        if ($entity->hasAttribute($datePartField)) {
+            $attributes->{$datePartField} = $entity->get($datePartField);
+        }
+
         return (object) [
             'id' => $entity->getId(),
             'entityType' => $entityType,
             'name' => $entity->get(Field::NAME),
             'dateField' => $dateField,
-            'attributes' => (object) [
-                $dateField => $entity->get($dateField),
-                $dateField . 'Date' => $entity->get($dateField . 'Date'),
-            ],
+            'attributes' => $attributes,
         ];
     }
 
