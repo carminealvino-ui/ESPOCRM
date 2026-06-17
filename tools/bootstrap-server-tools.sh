@@ -26,6 +26,9 @@ mkdir -p tools tools/layouts-samples/Quote exports/sync
 TOOL_FILES=(
   "tools/backup-quote-layouts.sh"
   "tools/restore-quote-layouts.sh"
+  "tools/export-quote-layouts-for-repo.sh"
+  "tools/apply-quote-layouts-from-export.sh"
+  "tools/align-quote-layouts-prod-repo.sh"
   "tools/backup-account-layouts.sh"
   "tools/backup-contratto-prima-deploy.sh"
   "tools/backup-produzione.sh"

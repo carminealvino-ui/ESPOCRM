@@ -22,6 +22,16 @@ exports/sync/delta-YYYYMMDD-HHMMSS.zip
 
 Generati da `php tools/sync-custom-prod-repo.php export-delta --branch=main`
 
+## Export solo layout Contratto (Quote)
+
+```text
+exports/sync/quote-layouts-YYYYMMDD-HHMMSS/
+exports/sync/quote-layouts-YYYYMMDD-HHMMSS.zip
+```
+
+Generati da `bash tools/export-quote-layouts-for-repo.sh`  
+Allineamento completo su GitHub: `bash tools/align-quote-layouts-prod-repo.sh`
+
 ## Procedura completa
 
 Vedi [`REGOLE-PRODUZIONE/08-AVVIO-SYNC-CPANEL.md`](../../REGOLE-PRODUZIONE/08-AVVIO-SYNC-CPANEL.md)
