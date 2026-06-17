@@ -181,7 +181,6 @@
         },
         "importoSaldo": {
             "type": "currency",
-            "readOnly": true,
             "isCustom": true
         },
         "statoContratto": {

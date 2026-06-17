@@ -69,14 +69,6 @@
                         "attribute": "finanziamento"
                     }
                 ]
-            },
-            "readOnly": {
-                "conditionGroup": [
-                    {
-                        "type": "isFalse",
-                        "attribute": "finanziamento"
-                    }
-                ]
             }
         },
         "status": {
