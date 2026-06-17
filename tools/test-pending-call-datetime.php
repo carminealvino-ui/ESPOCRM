@@ -28,4 +28,14 @@ foreach ($cases as [$input, $expected]) {
     }
 }
 
+$notBefore = new DateTimeImmutable('2026-06-17', new DateTimeZone('Europe/Rome'));
+$actualPast = PendingCallDateTime::fromAppointmentDateStart('2024-01-10 10:00:00', $notBefore);
+
+if ($actualPast !== '2026-06-17 09:30:00') {
+    echo "FAIL notBefore: {$actualPast}, expected 2026-06-17 09:30:00\n";
+    $failed++;
+} else {
+    echo "OK notBefore: {$actualPast}\n";
+}
+
 exit($failed > 0 ? 1 : 0);

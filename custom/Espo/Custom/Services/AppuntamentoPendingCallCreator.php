@@ -19,8 +19,10 @@ class AppuntamentoPendingCallCreator
         private Log $log
     ) {}
 
-    public function createIfNeeded(Entity $appuntamento): ?string
-    {
+    public function createIfNeeded(
+        Entity $appuntamento,
+        ?\DateTimeImmutable $notBefore = null
+    ): ?string {
         if ($appuntamento->get('status') !== 'Held') {
             return null;
         }
@@ -63,7 +65,8 @@ class AppuntamentoPendingCallCreator
         }
 
         $callDateStart = PendingCallDateTime::fromAppointmentDateStart(
-            $appuntamento->get('dateStart')
+            $appuntamento->get('dateStart'),
+            $notBefore
         );
 
         if (!$callDateStart) {

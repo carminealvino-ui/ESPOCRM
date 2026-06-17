@@ -14,8 +14,10 @@ class PendingCallDateTime
     private const CALL_MINUTE = 30;
     private const DAYS_OFFSET = 2;
 
-    public static function fromAppointmentDateStart(?string $dateStart): ?string
-    {
+    public static function fromAppointmentDateStart(
+        ?string $dateStart,
+        ?\DateTimeImmutable $notBefore = null
+    ): ?string {
         if (!$dateStart) {
             return null;
         }
@@ -33,6 +35,16 @@ class PendingCallDateTime
             ->modify('+' . self::DAYS_OFFSET . ' days');
 
         $date = self::adjustWeekendToMonday($date);
+
+        if ($notBefore !== null) {
+            $minDate = $notBefore
+                ->setTimezone($timezone)
+                ->setTime(0, 0, 0);
+
+            if ($date < $minDate) {
+                $date = self::adjustWeekendToMonday($minDate);
+            }
+        }
 
         return $date
             ->setTime(self::CALL_HOUR, self::CALL_MINUTE, 0)
