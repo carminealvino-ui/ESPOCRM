@@ -19,11 +19,13 @@ if (!is_file($root . '/bootstrap.php')) {
 
 require_once $root . '/bootstrap.php';
 
+require_once $root . '/custom/Espo/Custom/Tools/DateTime/BusinessDateTime.php';
 require_once $root . '/custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php';
 
 use Espo\Core\Application;
 use Espo\Custom\Services\AppuntamentoPendingCallCreator;
 use Espo\Custom\Tools\Appuntamento\PendingCallDateTime;
+use Espo\Custom\Tools\DateTime\BusinessDateTime;
 
 $argv = $GLOBALS['argv'] ?? [];
 $dryRun = in_array('--dry-run', $argv, true);
@@ -34,11 +36,10 @@ $app->setupSystemUser();
 $container = $app->getContainer();
 $entityManager = $container->get('entityManager');
 $log = $container->get('log');
-$config = $container->get('config');
-$creator = new AppuntamentoPendingCallCreator($entityManager, $log, $config);
+$creator = new AppuntamentoPendingCallCreator($entityManager, $log);
 
-$applicationTimeZone = (string) ($config->get('timeZone') ?: PendingCallDateTime::BUSINESS_TIMEZONE);
-echo "Timezone applicazione Espo: {$applicationTimeZone}\n\n";
+echo 'Modello datetime: storage ' . BusinessDateTime::STORAGE_TIMEZONE
+    . ', business ' . BusinessDateTime::BUSINESS_TIMEZONE . "\n\n";
 
 $collection = $entityManager
     ->getRDBRepository('Call')
@@ -68,9 +69,9 @@ foreach ($collection as $call) {
         continue;
     }
 
-    $expectedDateStart = $creator->buildExpectedCallDateStart($appuntamento);
+    $expectedUtc = $creator->buildExpectedCallDateStartUtc($appuntamento);
 
-    if (!$expectedDateStart) {
+    if (!$expectedUtc) {
         $skipped++;
         continue;
     }
@@ -89,12 +90,10 @@ foreach ($collection as $call) {
         $call->get('telefono')
     );
 
-    $expectedStored = PendingCallDateTime::toStoredUtc($expectedDateStart, $applicationTimeZone);
-
     $currentDateStart = (string) $call->get('dateStart');
     $currentUserId = (string) $call->get('assignedUserId');
 
-    $needsUpdate = $currentDateStart !== $expectedStored
+    $needsUpdate = $currentDateStart !== $expectedUtc
         || (string) $expectedUserId !== $currentUserId
         || $call->get('name') !== $presentation['name'];
 
@@ -107,19 +106,23 @@ foreach ($collection as $call) {
 
     if ($dryRun) {
         $updated++;
-        echo "DRY-RUN Call {$callId}: dateStart DB {$currentDateStart} -> {$expectedStored} ({$localLabel}), assignedUser {$currentUserId} -> {$expectedUserId}\n";
+        $currentRome = $currentDateStart !== ''
+            ? BusinessDateTime::formatBusiness($currentDateStart)
+            : '(vuoto)';
+        echo "DRY-RUN Call {$callId}: DB {$currentDateStart} ({$currentRome}) -> {$expectedUtc} ({$localLabel}), utente {$currentUserId} -> {$expectedUserId}\n";
         continue;
     }
 
     try {
         $call->set(array_merge($presentation, [
-            'dateStart' => $expectedDateStart,
+            'dateStart' => $expectedUtc,
             'assignedUserId' => $expectedUserId,
         ]));
 
         $entityManager->saveEntity($call, [
             'skipAcl' => true,
             'silent' => true,
+            'skipHooks' => true,
         ]);
 
         $updated++;

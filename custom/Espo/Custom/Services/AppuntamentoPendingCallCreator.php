@@ -2,9 +2,9 @@
 
 namespace Espo\Custom\Services;
 
-use Espo\Core\Utils\Config;
 use Espo\Core\Utils\Log;
 use Espo\Custom\Tools\Appuntamento\PendingCallDateTime;
+use Espo\Custom\Tools\DateTime\BusinessDateTime;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
@@ -19,8 +19,7 @@ class AppuntamentoPendingCallCreator
 
     public function __construct(
         private EntityManager $entityManager,
-        private Log $log,
-        private ?Config $config = null
+        private Log $log
     ) {}
 
     public static function rememberLeadId(string $appuntamentoId, string $leadId): void
@@ -91,14 +90,13 @@ class AppuntamentoPendingCallCreator
 
         unset(self::$rememberedLeadIds[$appuntamentoId]);
 
-        $applicationTimeZone = $this->getApplicationTimeZone();
         $callInstant = $this->buildCallInstantFromAppointment($appuntamento, $notBefore);
 
         if (!$callInstant) {
             return null;
         }
 
-        $callDateStart = PendingCallDateTime::formatForApplicationTimezone($callInstant, $applicationTimeZone);
+        $callDateStartUtc = BusinessDateTime::businessToStorage($callInstant);
 
         $parentName = $appuntamento->get('parentName') ?: $lead->get('name');
         $telefono = $appuntamento->get('telefono') ?: $lead->get('phoneNumber');
@@ -117,7 +115,7 @@ class AppuntamentoPendingCallCreator
             'prospectId' => $appuntamento->get('prospectId'),
             'prospectName' => $appuntamento->get('prospectName'),
             'telefono' => $telefono,
-            'dateStart' => $callDateStart,
+            'dateStart' => $callDateStartUtc,
             'assignedUserId' => $ownerUserId,
             'daRichiamare' => false,
             'whatsApp' => false,
@@ -131,20 +129,20 @@ class AppuntamentoPendingCallCreator
             ],
         ]));
 
-        // Niente skipHooks: il repository Event converte dateStart (tz app → UTC).
-        // La formula Call salta grazie al marker in nota.
+        // skipHooks: bypass formula Call; dateStart già in UTC (come Disponibilita/SetName).
         $this->entityManager->saveEntity($call, [
             'skipAcl' => true,
             'silent' => true,
+            'skipHooks' => true,
         ]);
 
         $this->log->info(
-            'Auto-create Call Pending: creata Call {callId} per Appuntamento {id} alle {dateStart} ({timeZone})',
+            'Auto-create Call Pending: creata Call {callId} per Appuntamento {id} UTC {dateStartUtc} (Rome {dateStartRome})',
             [
                 'callId' => $call->getId(),
                 'id' => $appuntamentoId,
-                'dateStart' => $callDateStart,
-                'timeZone' => $applicationTimeZone,
+                'dateStartUtc' => $callDateStartUtc,
+                'dateStartRome' => PendingCallDateTime::formatBusinessDateTime($callInstant),
             ]
         );
 
@@ -170,7 +168,7 @@ class AppuntamentoPendingCallCreator
         return $createdById ? (string) $createdById : null;
     }
 
-    public function buildExpectedCallDateStart(
+    public function buildExpectedCallDateStartUtc(
         Entity $appuntamento,
         ?\DateTimeImmutable $notBefore = null
     ): ?string {
@@ -180,10 +178,7 @@ class AppuntamentoPendingCallCreator
             return null;
         }
 
-        return PendingCallDateTime::formatForApplicationTimezone(
-            $instant,
-            $this->getApplicationTimeZone()
-        );
+        return BusinessDateTime::businessToStorage($instant);
     }
 
     public function buildCallInstantFromAppointment(
@@ -197,7 +192,7 @@ class AppuntamentoPendingCallCreator
         }
 
         return PendingCallDateTime::computeCallInstant(
-            $this->parseAppointmentStoredDateTime($dateStart),
+            BusinessDateTime::storageToBusiness($dateStart),
             $notBefore
         );
     }
@@ -236,34 +231,6 @@ class AppuntamentoPendingCallCreator
         ];
     }
 
-    private function getApplicationTimeZone(): string
-    {
-        $timeZone = $this->config?->get('timeZone');
-
-        if (is_string($timeZone) && $timeZone !== '') {
-            return $timeZone;
-        }
-
-        return PendingCallDateTime::BUSINESS_TIMEZONE;
-    }
-
-    private function parseAppointmentStoredDateTime(?string $dateStart): \DateTimeImmutable
-    {
-        $utc = new \DateTimeZone('UTC');
-
-        if (!$dateStart) {
-            return new \DateTimeImmutable('now', $utc);
-        }
-
-        $parsed = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dateStart, $utc);
-
-        if ($parsed) {
-            return $parsed;
-        }
-
-        return new \DateTimeImmutable($dateStart, $utc);
-    }
-
     private function buildNota(string $appuntamentoId, ?string $appointmentDateStart): string
     {
         $lines = [
@@ -271,7 +238,8 @@ class AppuntamentoPendingCallCreator
         ];
 
         if ($appointmentDateStart) {
-            $lines[] = 'Richiamo automatico per appuntamento Pending del ' . $appointmentDateStart;
+            $lines[] = 'Richiamo automatico per appuntamento Pending del '
+                . BusinessDateTime::formatBusiness($appointmentDateStart, 'd/m/Y H:i');
         }
 
         return implode("\n", $lines);

@@ -27,6 +27,7 @@ backup_if_exists() {
 }
 
 FILES=(
+  "custom/Espo/Custom/Tools/DateTime/BusinessDateTime.php"
   "custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php"
   "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"
   "custom/Espo/Custom/Hooks/Appuntamento/AutoCreatePendingCall.php"

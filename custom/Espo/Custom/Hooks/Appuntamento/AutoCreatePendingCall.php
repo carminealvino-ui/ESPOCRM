@@ -3,7 +3,6 @@
 namespace Espo\Custom\Hooks\Appuntamento;
 
 use Espo\Core\Hook\Hook\AfterSave;
-use Espo\Core\Utils\Config;
 use Espo\Core\Utils\Log;
 use Espo\Custom\Services\AppuntamentoPendingCallCreator;
 use Espo\ORM\Entity;
@@ -20,8 +19,7 @@ class AutoCreatePendingCall implements AfterSave
 
     public function __construct(
         private EntityManager $entityManager,
-        private Log $log,
-        private Config $config
+        private Log $log
     ) {}
 
     public function afterSave(Entity $entity, SaveOptions $options): void
@@ -39,7 +37,7 @@ class AutoCreatePendingCall implements AfterSave
         }
 
         try {
-            $creator = new AppuntamentoPendingCallCreator($this->entityManager, $this->log, $this->config);
+            $creator = new AppuntamentoPendingCallCreator($this->entityManager, $this->log);
 
             $creator->createIfNeeded($entity);
         } catch (\Throwable $e) {
