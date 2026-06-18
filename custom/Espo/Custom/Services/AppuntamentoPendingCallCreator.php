@@ -102,10 +102,11 @@ class AppuntamentoPendingCallCreator
 
         $parentName = $appuntamento->get('parentName') ?: $lead->get('name');
         $telefono = $appuntamento->get('telefono') ?: $lead->get('phoneNumber');
+        $presentation = $this->buildCallPresentationFields($callDateStart, $parentName, $telefono);
 
         $call = $this->entityManager->createEntity('Call');
 
-        $call->set([
+        $call->set(array_merge($presentation, [
             'status' => 'Planned',
             'direction' => 'Outbound',
             'tipologia' => self::TIPOLOGIA,
@@ -131,11 +132,12 @@ class AppuntamentoPendingCallCreator
                     'seconds' => self::REMINDER_SECONDS,
                 ],
             ],
-        ]);
+        ]));
 
         $this->entityManager->saveEntity($call, [
             'skipAcl' => true,
             'silent' => true,
+            'skipFormula' => true,
         ]);
 
         $this->log->info(
@@ -148,6 +150,43 @@ class AppuntamentoPendingCallCreator
         );
 
         return $call->getId();
+    }
+
+    /**
+     * @return array{name: string, data: string, whatsAppNumero: ?string, dateEnd: null}
+     */
+    private function buildCallPresentationFields(
+        string $callDateStart,
+        ?string $parentName,
+        ?string $telefono
+    ): array {
+        $timezone = new \DateTimeZone('Europe/Amsterdam');
+
+        $dateTime = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $callDateStart, $timezone)
+            ?: new \DateTimeImmutable($callDateStart, $timezone);
+
+        $parentName = trim((string) $parentName);
+        $telefono = trim((string) $telefono);
+        $dataLabel = $dateTime->format('d/m/Y H:i');
+
+        $name = mb_strtoupper(
+            $dataLabel . ' - ' . self::TIPOLOGIA . ' - ' . $parentName . ' - ' . $telefono,
+            'UTF-8'
+        );
+
+        $whatsAppNumero = null;
+
+        if ($telefono !== '') {
+            $digits = preg_replace('/\D+/', '', $telefono) ?: '';
+            $whatsAppNumero = $digits !== '' ? 'https://wa.me/+39' . $digits : null;
+        }
+
+        return [
+            'name' => $name,
+            'data' => $dateTime->format('Y-m-d'),
+            'whatsAppNumero' => $whatsAppNumero,
+            'dateEnd' => null,
+        ];
     }
 
     private function resolveLeadId(Entity $appuntamento): ?string

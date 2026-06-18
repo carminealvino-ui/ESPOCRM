@@ -32,6 +32,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Appuntamento/AutoCreatePendingCall.php"
   "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
   "custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json"
+  "custom/Espo/Custom/Resources/metadata/formula/Call.json"
   "tools/backfill-pending-calls.php"
   "tools/diagnose-pending-call.php"
 )
