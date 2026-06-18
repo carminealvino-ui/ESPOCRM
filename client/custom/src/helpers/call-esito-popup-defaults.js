@@ -7,38 +7,107 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         'Salve, sono Carmine Alvino di ARIEL ENERGIA, mi fa sapere entro la giornata di oggi '
         + 'poi cosa ha deciso rispetto alla proposta che le ho fatto, Grazie';
 
-    const isAutoPendingCall = function (model) {
-        const nota = model.get('nota') || '';
-
-        return nota.indexOf(AUTO_PENDING_NOTA_PREFIX) !== -1
-            || model.get('tipologia') === LEGACY_TIPOLOGIA;
+    const CANALE_LABELS = {
+        call: 'Chiamata',
+        whatsapp: 'WhatsApp',
     };
 
-    const applyDefaults = function (model) {
-        if (!isAutoPendingCall(model)) {
-            return;
+    const normalize = function (value) {
+        return (value || '').toString().trim();
+    };
+
+    const containsLegacyTipologia = function (value) {
+        value = normalize(value).toUpperCase();
+
+        return value.indexOf('CONTATTO DOPO PRIMA VISITA') !== -1;
+    };
+
+    const isAutoPendingCall = function (model, notificationName) {
+        const nota = normalize(model.get('nota'));
+        const tipologia = normalize(model.get('tipologia'));
+        const name = normalize(model.get('name'));
+        const popupName = normalize(notificationName);
+
+        return nota.indexOf(AUTO_PENDING_NOTA_PREFIX) !== -1
+            || tipologia === LEGACY_TIPOLOGIA
+            || containsLegacyTipologia(name)
+            || containsLegacyTipologia(popupName);
+    };
+
+    const getDefaultAttributes = function (model, notificationName) {
+        if (!isAutoPendingCall(model, notificationName)) {
+            return null;
         }
 
-        model.set('tipologia', TIPOLOGIA_RICHIAMO_OPPORTUNITA);
+        const attributes = {
+            tipologia: TIPOLOGIA_RICHIAMO_OPPORTUNITA,
+        };
 
-        if (!(model.get('description') || '').trim()) {
-            model.set('description', DESCRIPTION_STANDARD);
+        if (!normalize(model.get('description'))) {
+            attributes.description = DESCRIPTION_STANDARD;
         }
+
+        return attributes;
+    };
+
+    const applyDefaults = function (model, notificationName) {
+        const attributes = getDefaultAttributes(model, notificationName);
+
+        if (!attributes) {
+            return false;
+        }
+
+        model.set(attributes);
+
+        return true;
     };
 
     const applyWhatsAppDescription = function (model) {
-        if (model.get('tipologia') !== TIPOLOGIA_RICHIAMO_OPPORTUNITA) {
+        const tipologia = normalize(model.get('tipologia'));
+
+        if (tipologia !== TIPOLOGIA_RICHIAMO_OPPORTUNITA
+            && !containsLegacyTipologia(tipologia)) {
+            return false;
+        }
+
+        if (normalize(model.get('description'))) {
+            return false;
+        }
+
+        model.set('description', DESCRIPTION_STANDARD);
+
+        return true;
+    };
+
+    const refreshRecordFields = function (recordView, fieldNames) {
+        if (!recordView) {
             return;
         }
 
-        if (!(model.get('description') || '').trim()) {
-            model.set('description', DESCRIPTION_STANDARD);
+        fieldNames.forEach(fieldName => {
+            const fieldView = recordView.getFieldView && recordView.getFieldView(fieldName);
+
+            if (fieldView && typeof fieldView.reRender === 'function') {
+                fieldView.reRender();
+            }
+        });
+
+        const description = recordView.model && recordView.model.get('description');
+
+        if (description && recordView.$el) {
+            recordView.$el
+                .find('.field[data-name="description"] textarea')
+                .val(description);
         }
     };
 
     return {
         applyDefaults: applyDefaults,
         applyWhatsAppDescription: applyWhatsAppDescription,
+        refreshRecordFields: refreshRecordFields,
+        getCanaleLabel: function (value) {
+            return CANALE_LABELS[value] || value;
+        },
         TIPOLOGIA_RICHIAMO_OPPORTUNITA: TIPOLOGIA_RICHIAMO_OPPORTUNITA,
         DESCRIPTION_STANDARD: DESCRIPTION_STANDARD,
     };

@@ -45,7 +45,7 @@ define('custom:views/fields/call-canale-contatto', [
         getOptions: function () {
             return ['call', 'whatsapp'].map(value => ({
                 value: value,
-                label: this.translate(value, 'options', this.entityType, this.name),
+                label: CallEsitoDefaults.getCanaleLabel(value),
             }));
         },
 
@@ -61,22 +61,26 @@ define('custom:views/fields/call-canale-contatto', [
 
             if (value === 'whatsapp') {
                 CallEsitoDefaults.applyWhatsAppDescription(this.model);
-                this.refreshDescriptionField();
+                CallEsitoDefaults.refreshRecordFields(this.getRecordView(), ['description']);
             }
         },
 
+        getRecordView: function () {
+            let view = this;
+
+            while (view) {
+                if (view.name === 'esitoRecord' || view.scope === 'Call' && view.type === 'edit') {
+                    return view;
+                }
+
+                view = view.getParentView && view.getParentView();
+            }
+
+            return this.getParentView && this.getParentView();
+        },
+
         refreshDescriptionField: function () {
-            const recordView = this.getParentView && this.getParentView();
-
-            if (!recordView || typeof recordView.getFieldView !== 'function') {
-                return;
-            }
-
-            const descriptionField = recordView.getFieldView('description');
-
-            if (descriptionField && typeof descriptionField.reRender === 'function') {
-                descriptionField.reRender();
-            }
+            CallEsitoDefaults.refreshRecordFields(this.getRecordView(), ['description']);
         },
 
         fetch: function () {

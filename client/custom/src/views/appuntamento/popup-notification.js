@@ -163,10 +163,6 @@ define('custom:views/appuntamento/popup-notification', [
                         this.esitoModel = model;
                         this.esitoEntityType = entityType;
 
-                        if (entityType === 'Call') {
-                            CallEsitoDefaults.applyDefaults(model);
-                        }
-
                         return new Promise(resolve => {
                             this.createView('esitoRecord', 'views/record/edit', {
                                 scope: entityType,
@@ -182,6 +178,11 @@ define('custom:views/appuntamento/popup-notification', [
                                 isWide: true,
                             }, view => {
                                 view.render();
+
+                                if (entityType === 'Call') {
+                                    this.applyCallEsitoDefaults(view);
+                                }
+
                                 this.setupActionButtonListeners(view);
                                 this.updateActionButtons();
                                 resolve();
@@ -191,6 +192,23 @@ define('custom:views/appuntamento/popup-notification', [
                 });
 
             this.wait(promise);
+        }
+
+        applyCallEsitoDefaults(recordView) {
+            const model = recordView.model || this.esitoModel;
+
+            if (!model) {
+                return;
+            }
+
+            const notificationName = this.notificationData && this.notificationData.name;
+            const applied = CallEsitoDefaults.applyDefaults(model, notificationName);
+
+            if (!applied) {
+                return;
+            }
+
+            CallEsitoDefaults.refreshRecordFields(recordView, ['tipologia', 'description']);
         }
 
         getEsitoModel() {
