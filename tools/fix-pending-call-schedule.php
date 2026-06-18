@@ -31,9 +31,14 @@ $dryRun = in_array('--dry-run', $argv, true);
 $app = new Application();
 $app->setupSystemUser();
 
-$entityManager = $app->getContainer()->get('entityManager');
-$log = $app->getContainer()->get('log');
-$creator = new AppuntamentoPendingCallCreator($entityManager, $log);
+$container = $app->getContainer();
+$entityManager = $container->get('entityManager');
+$log = $container->get('log');
+$config = $container->get('config');
+$creator = new AppuntamentoPendingCallCreator($entityManager, $log, $config);
+
+$applicationTimeZone = (string) ($config->get('timeZone') ?: PendingCallDateTime::BUSINESS_TIMEZONE);
+echo "Timezone applicazione Espo: {$applicationTimeZone}\n\n";
 
 $collection = $entityManager
     ->getRDBRepository('Call')
@@ -63,24 +68,33 @@ foreach ($collection as $call) {
         continue;
     }
 
-    $expectedDateStart = PendingCallDateTime::fromAppointmentDateStart(
-        $appuntamento->get('dateStart')
-    );
+    $expectedDateStart = $creator->buildExpectedCallDateStart($appuntamento);
 
     if (!$expectedDateStart) {
         $skipped++;
         continue;
     }
 
-    $expectedUserId = $appuntamento->get('assignedUserId') ?: $appuntamento->get('createdById');
-    $parentName = $call->get('parentName');
-    $telefono = $call->get('telefono');
-    $presentation = $creator->buildCallPresentationFields($expectedDateStart, $parentName, $telefono);
+    $expectedUserId = $creator->resolveOwnerUserId($appuntamento);
+    $callInstant = $creator->buildCallInstantFromAppointment($appuntamento);
+
+    if (!$callInstant) {
+        $skipped++;
+        continue;
+    }
+
+    $presentation = $creator->buildCallPresentationFields(
+        $callInstant,
+        $call->get('parentName'),
+        $call->get('telefono')
+    );
+
+    $expectedStored = PendingCallDateTime::toStoredUtc($expectedDateStart, $applicationTimeZone);
 
     $currentDateStart = (string) $call->get('dateStart');
     $currentUserId = (string) $call->get('assignedUserId');
 
-    $needsUpdate = $currentDateStart !== $expectedDateStart
+    $needsUpdate = $currentDateStart !== $expectedStored
         || (string) $expectedUserId !== $currentUserId
         || $call->get('name') !== $presentation['name'];
 
@@ -89,11 +103,11 @@ foreach ($collection as $call) {
         continue;
     }
 
-    $localLabel = PendingCallDateTime::formatLocalDateTime($expectedDateStart);
+    $localLabel = PendingCallDateTime::formatBusinessDateTime($callInstant);
 
     if ($dryRun) {
         $updated++;
-        echo "DRY-RUN Call {$callId}: dateStart {$currentDateStart} -> {$expectedDateStart} ({$localLabel}), assignedUser {$currentUserId} -> {$expectedUserId}\n";
+        echo "DRY-RUN Call {$callId}: dateStart DB {$currentDateStart} -> {$expectedStored} ({$localLabel}), assignedUser {$currentUserId} -> {$expectedUserId}\n";
         continue;
     }
 
@@ -106,7 +120,6 @@ foreach ($collection as $call) {
         $entityManager->saveEntity($call, [
             'skipAcl' => true,
             'silent' => true,
-            'skipHooks' => true,
         ]);
 
         $updated++;

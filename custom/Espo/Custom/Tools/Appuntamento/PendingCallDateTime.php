@@ -6,12 +6,10 @@ namespace Espo\Custom\Tools\Appuntamento;
  * Calcola data/ora richiamo Call per Appuntamento Pending:
  * +2 giorni dalla data appuntamento, ore 9:30 (Europe/Rome).
  * Se il risultato cade sabato o domenica, slitta al lunedì successivo.
- *
- * EspoCRM salva i datetime in UTC: fromAppointmentDateStart restituisce UTC.
  */
 class PendingCallDateTime
 {
-    private const TIMEZONE = 'Europe/Rome';
+    public const BUSINESS_TIMEZONE = 'Europe/Rome';
     private const STORAGE_TIMEZONE = 'UTC';
     private const CALL_HOUR = 9;
     private const CALL_MINUTE = 30;
@@ -27,75 +25,43 @@ class PendingCallDateTime
         }
 
         $appointment = self::parseStoredDateTime($dateStart)
-            ->setTimezone(new \DateTimeZone(self::TIMEZONE));
+            ->setTimezone(new \DateTimeZone(self::BUSINESS_TIMEZONE));
 
         $cutoff = new \DateTimeImmutable(
             self::MIN_APPOINTMENT_DATE . ' 00:00:00',
-            new \DateTimeZone(self::TIMEZONE)
+            new \DateTimeZone(self::BUSINESS_TIMEZONE)
         );
 
         return $appointment >= $cutoff;
     }
 
     /**
-     * @return string|null Datetime in formato system (UTC) per salvataggio su Call
+     * @return string|null Valore per Call::dateStart (timezone applicazione, come da UI Espo)
      */
     public static function fromAppointmentDateStart(
         ?string $dateStart,
-        ?\DateTimeImmutable $notBefore = null
+        ?\DateTimeImmutable $notBefore = null,
+        string $applicationTimeZone = self::BUSINESS_TIMEZONE
     ): ?string {
         if (!$dateStart) {
             return null;
         }
 
-        $localCall = self::computeLocalCallDateTime(
+        $instant = self::computeCallInstant(
             self::parseStoredDateTime($dateStart),
             $notBefore
         );
 
-        return self::toStorageDateTime($localCall);
+        return self::formatForApplicationTimezone($instant, $applicationTimeZone);
     }
 
-    /**
-     * Converte un datetime UTC salvato in Espo in etichetta locale Europe/Rome.
-     */
-    public static function formatLocalDateTime(string $storageDateTime, string $format = 'd/m/Y H:i'): string
-    {
-        return self::parseStoredDateTime($storageDateTime)
-            ->setTimezone(new \DateTimeZone(self::TIMEZONE))
-            ->format($format);
-    }
-
-    /**
-     * @return string Datetime UTC (Y-m-d H:i:s)
-     */
-    public static function toStorageDateTime(\DateTimeImmutable $localDateTime): string
-    {
-        return $localDateTime
-            ->setTimezone(new \DateTimeZone(self::STORAGE_TIMEZONE))
-            ->format('Y-m-d H:i:s');
-    }
-
-    private static function parseStoredDateTime(string $dateStart): \DateTimeImmutable
-    {
-        $utc = new \DateTimeZone(self::STORAGE_TIMEZONE);
-
-        $parsed = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dateStart, $utc);
-
-        if ($parsed) {
-            return $parsed;
-        }
-
-        return new \DateTimeImmutable($dateStart, $utc);
-    }
-
-    private static function computeLocalCallDateTime(
-        \DateTimeImmutable $appointmentUtc,
-        ?\DateTimeImmutable $notBefore
+    public static function computeCallInstant(
+        \DateTimeImmutable $appointmentStored,
+        ?\DateTimeImmutable $notBefore = null
     ): \DateTimeImmutable {
-        $timezone = new \DateTimeZone(self::TIMEZONE);
+        $timezone = new \DateTimeZone(self::BUSINESS_TIMEZONE);
 
-        $appointment = $appointmentUtc->setTimezone($timezone);
+        $appointment = $appointmentStored->setTimezone($timezone);
 
         $date = $appointment
             ->setTime(0, 0, 0)
@@ -114,6 +80,67 @@ class PendingCallDateTime
         }
 
         return $date->setTime(self::CALL_HOUR, self::CALL_MINUTE, 0);
+    }
+
+    public static function formatForApplicationTimezone(
+        \DateTimeImmutable $instant,
+        string $applicationTimeZone
+    ): string {
+        return $instant
+            ->setTimezone(new \DateTimeZone($applicationTimeZone))
+            ->format('Y-m-d H:i:s');
+    }
+
+    public static function formatBusinessDateTime(
+        \DateTimeImmutable $instant,
+        string $format = 'd/m/Y H:i'
+    ): string {
+        return $instant
+            ->setTimezone(new \DateTimeZone(self::BUSINESS_TIMEZONE))
+            ->format($format);
+    }
+
+    /**
+     * Converte come il repository Event di Espo (input timezone app → UTC in DB).
+     */
+    public static function toStoredUtc(
+        string $applicationDateTime,
+        string $applicationTimeZone
+    ): string {
+        $appTz = new \DateTimeZone($applicationTimeZone);
+        $utc = new \DateTimeZone(self::STORAGE_TIMEZONE);
+
+        $parsed = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $applicationDateTime, $appTz)
+            ?: new \DateTimeImmutable($applicationDateTime, $appTz);
+
+        return $parsed->setTimezone($utc)->format('Y-m-d H:i:s');
+    }
+
+    public static function formatLocalDateTime(
+        string $storageDateTime,
+        string $format = 'd/m/Y H:i',
+        string $applicationTimeZone = self::BUSINESS_TIMEZONE
+    ): string {
+        $utc = new \DateTimeZone(self::STORAGE_TIMEZONE);
+        $parsed = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $storageDateTime, $utc)
+            ?: new \DateTimeImmutable($storageDateTime, $utc);
+
+        return $parsed
+            ->setTimezone(new \DateTimeZone($applicationTimeZone))
+            ->format($format);
+    }
+
+    private static function parseStoredDateTime(string $dateStart): \DateTimeImmutable
+    {
+        $utc = new \DateTimeZone(self::STORAGE_TIMEZONE);
+
+        $parsed = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dateStart, $utc);
+
+        if ($parsed) {
+            return $parsed;
+        }
+
+        return new \DateTimeImmutable($dateStart, $utc);
     }
 
     private static function adjustWeekendToMonday(\DateTimeImmutable $date): \DateTimeImmutable

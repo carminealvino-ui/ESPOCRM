@@ -19,8 +19,11 @@ if (!is_file($root . '/bootstrap.php')) {
 
 require_once $root . '/bootstrap.php';
 
+require_once $root . '/custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php';
+
 use Espo\Core\Application;
 use Espo\Custom\Services\AppuntamentoPendingCallCreator;
+use Espo\Custom\Tools\Appuntamento\PendingCallDateTime;
 
 $argv = $GLOBALS['argv'] ?? [];
 $id = null;
@@ -43,6 +46,8 @@ $app->setupSystemUser();
 $container = $app->getContainer();
 $entityManager = $container->get('entityManager');
 $log = $container->get('log');
+$config = $container->get('config');
+$creator = new AppuntamentoPendingCallCreator($entityManager, $log, $config);
 
 $appuntamento = $entityManager->getEntityById('Appuntamento', $id);
 
@@ -64,7 +69,22 @@ echo '  dateStart: ' . ($appuntamento->get('dateStart') ?: '(vuoto)') . "\n";
 echo '  parentType: ' . ($appuntamento->get('parentType') ?: '(vuoto)') . "\n";
 echo '  parentId: ' . ($appuntamento->get('parentId') ?: '(vuoto)') . "\n";
 echo '  prospectId: ' . ($appuntamento->get('prospectId') ?: '(vuoto)') . "\n";
+echo '  assignedUserId: ' . ($appuntamento->get('assignedUserId') ?: '(vuoto)') . "\n";
+$assignedUsersIds = $appuntamento->get('assignedUsersIds') ?: [];
+echo '  assignedUsersIds: ' . ($assignedUsersIds === [] ? '(vuoto)' : implode(', ', $assignedUsersIds)) . "\n";
+echo '  owner Call atteso: ' . ($creator->resolveOwnerUserId($appuntamento) ?: '(vuoto)') . "\n";
+$expectedCallDate = $creator->buildExpectedCallDateStart($appuntamento);
+echo '  dateStart Call atteso (tz app): ' . ($expectedCallDate ?: '(vuoto)') . "\n";
+$callInstant = $creator->buildCallInstantFromAppointment($appuntamento);
+if ($callInstant) {
+    echo '  ora Call attesa (Rome): ' . PendingCallDateTime::formatBusinessDateTime($callInstant) . "\n";
+}
+echo '  timezone applicazione: ' . ($config->get('timeZone') ?: PendingCallDateTime::BUSINESS_TIMEZONE) . "\n";
 echo '  call esistente: ' . ($existingCall ? $existingCall->getId() : 'no') . "\n";
+if ($existingCall) {
+    echo '  call dateStart DB: ' . ($existingCall->get('dateStart') ?: '(vuoto)') . "\n";
+    echo '  call assignedUserId: ' . ($existingCall->get('assignedUserId') ?: '(vuoto)') . "\n";
+}
 
 $hookFile = $root . '/custom/Espo/Custom/Hooks/Appuntamento/AutoCreatePendingCall.php';
 $hooksMeta = $root . '/custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json';
@@ -95,8 +115,10 @@ $creatorFile = $root . '/custom/Espo/Custom/Services/AppuntamentoPendingCallCrea
 
 if (is_file($creatorFile)) {
     $creatorRaw = (string) file_get_contents($creatorFile);
-    $usesSkipHooks = str_contains($creatorRaw, "'skipHooks' => true");
-    echo '  creator skipHooks: ' . ($usesSkipHooks ? 'OK' : 'MANCANTE (usa skipFormula?)') . "\n";
+    $usesAssignedUsers = str_contains($creatorRaw, 'assignedUsersIds');
+    $usesEventRepo = !str_contains($creatorRaw, "'skipHooks' => true");
+    echo '  creator assignedUsersIds: ' . ($usesAssignedUsers ? 'OK' : 'MANCANTE') . "\n";
+    echo '  creator usa repository Event (no skipHooks): ' . ($usesEventRepo ? 'OK' : 'MANCANTE') . "\n";
 } else {
     echo "  creator: MANCANTE\n";
 }
@@ -105,8 +127,6 @@ if (!$create) {
     echo "\nPer provare la creazione: php tools/diagnose-pending-call.php --id={$id} --create\n";
     exit(0);
 }
-
-$creator = new AppuntamentoPendingCallCreator($entityManager, $log);
 
 try {
     $callId = $creator->createIfNeeded($appuntamento);

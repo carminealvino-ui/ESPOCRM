@@ -42,8 +42,9 @@ $app->setupSystemUser();
 $container = $app->getContainer();
 $entityManager = $container->get('entityManager');
 $log = $container->get('log');
+$config = $container->get('config');
 
-$creator = new AppuntamentoPendingCallCreator($entityManager, $log);
+$creator = new AppuntamentoPendingCallCreator($entityManager, $log, $config);
 $notBefore = new DateTimeImmutable('today', new DateTimeZone('Europe/Rome'));
 
 $query = $entityManager
