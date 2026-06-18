@@ -67,10 +67,10 @@ foreach ($collection as $appuntamento) {
     $id = $appuntamento->getId();
 
     if ($dryRun) {
-        $nota = 'Auto-Pending-Appuntamento: ' . $id;
+        $notaMarker = 'Auto-Pending-Appuntamento: ' . $id;
         $existing = $entityManager
             ->getRDBRepository('Call')
-            ->where(['nota' => $nota])
+            ->where(['nota*' => $notaMarker])
             ->findOne();
 
         if ($existing) {

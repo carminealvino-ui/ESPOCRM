@@ -123,9 +123,7 @@ class AppuntamentoPendingCallCreator
             'daRichiamare' => false,
             'whatsApp' => false,
             'vocale' => true,
-            'nota' => self::NOTA_PREFIX . ' ' . $appuntamentoId,
-            'description' => 'Richiamo automatico per appuntamento Pending del '
-                . $appuntamento->get('dateStart'),
+            'nota' => $this->buildNota($appuntamentoId, $appuntamento->get('dateStart')),
             'reminders' => [
                 [
                     'type' => 'popup',
@@ -189,6 +187,19 @@ class AppuntamentoPendingCallCreator
         ];
     }
 
+    private function buildNota(string $appuntamentoId, ?string $appointmentDateStart): string
+    {
+        $lines = [
+            self::NOTA_PREFIX . ' ' . $appuntamentoId,
+        ];
+
+        if ($appointmentDateStart) {
+            $lines[] = 'Richiamo automatico per appuntamento Pending del ' . $appointmentDateStart;
+        }
+
+        return implode("\n", $lines);
+    }
+
     private function resolveLeadId(Entity $appuntamento): ?string
     {
         $appuntamentoId = $appuntamento->getId();
@@ -228,7 +239,7 @@ class AppuntamentoPendingCallCreator
         $existing = $this->entityManager
             ->getRDBRepository('Call')
             ->where([
-                'nota' => self::NOTA_PREFIX . ' ' . $appuntamentoId,
+                'nota*' => self::NOTA_PREFIX . ' ' . $appuntamentoId,
             ])
             ->findOne();
 

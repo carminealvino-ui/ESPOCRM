@@ -35,6 +35,7 @@ FILES=(
   "custom/Espo/Custom/Resources/metadata/formula/Call.json"
   "tools/backfill-pending-calls.php"
   "tools/diagnose-pending-call.php"
+  "tools/fix-pending-call-nota.php"
 )
 
 for rel in "${FILES[@]}"; do

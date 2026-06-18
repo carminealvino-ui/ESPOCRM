@@ -51,10 +51,10 @@ if (!$appuntamento) {
     exit(1);
 }
 
-$nota = 'Auto-Pending-Appuntamento: ' . $id;
+$notaMarker = 'Auto-Pending-Appuntamento: ' . $id;
 $existingCall = $entityManager
     ->getRDBRepository('Call')
-    ->where(['nota' => $nota])
+    ->where(['nota*' => $notaMarker])
     ->findOne();
 
 echo "Appuntamento {$id}\n";
