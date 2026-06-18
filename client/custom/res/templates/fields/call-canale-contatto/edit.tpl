@@ -1,13 +1,10 @@
 <div class="call-canale-contatto">
-{{#each options}}
     <label class="radio-inline" style="margin-right: 16px;">
-        <input
-            type="radio"
-            name="canaleContatto"
-            data-name="canaleContatto"
-            value="{{value}}"
-        >
-        {{label}}
+        <input type="radio" name="canaleContatto" data-name="canaleContatto" value="call">
+        Chiamata
     </label>
-{{/each}}
+    <label class="radio-inline" style="margin-right: 16px;">
+        <input type="radio" name="canaleContatto" data-name="canaleContatto" value="whatsapp">
+        WhatsApp
+    </label>
 </div>

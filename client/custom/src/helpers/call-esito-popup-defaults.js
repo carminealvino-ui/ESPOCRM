@@ -42,11 +42,8 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         const attributes = {
             tipologia: TIPOLOGIA_RICHIAMO_OPPORTUNITA,
             direction: 'Outbound',
+            description: DESCRIPTION_STANDARD,
         };
-
-        if (!normalize(model.get('description'))) {
-            attributes.description = DESCRIPTION_STANDARD;
-        }
 
         return attributes;
     };
@@ -67,7 +64,8 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         const tipologia = normalize(model.get('tipologia'));
 
         if (tipologia !== TIPOLOGIA_RICHIAMO_OPPORTUNITA
-            && !containsLegacyTipologia(tipologia)) {
+            && !containsLegacyTipologia(tipologia)
+            && !containsLegacyTipologia(model.get('name'))) {
             return false;
         }
 
@@ -92,20 +90,55 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
                 fieldView.reRender();
             }
         });
+    };
 
-        const description = recordView.model && recordView.model.get('description');
-
-        if (description && recordView.$el) {
-            recordView.$el
-                .find('.field[data-name="description"] textarea')
-                .val(description);
+    const forceDomValues = function (recordView) {
+        if (!recordView || !recordView.$el || !recordView.model) {
+            return;
         }
+
+        const $el = recordView.$el;
+        const description = normalize(recordView.model.get('description'));
+        const tipologia = normalize(recordView.model.get('tipologia'));
+
+        if (description) {
+            $el.find('.field[data-name="description"] textarea')
+                .val(description)
+                .trigger('change');
+        }
+
+        if (tipologia) {
+            $el.find('.field[data-name="tipologia"] .field-value, '
+                + '.field[data-name="tipologia"] .form-control-static')
+                .text(tipologia);
+        }
+    };
+
+    const applyWithRetry = function (recordView, notificationName) {
+        const model = recordView.model;
+
+        if (!model) {
+            return false;
+        }
+
+        const applied = applyDefaults(model, notificationName);
+
+        if (!applied) {
+            return false;
+        }
+
+        refreshRecordFields(recordView, ['tipologia', 'direction', 'description']);
+        forceDomValues(recordView);
+
+        return true;
     };
 
     return {
         applyDefaults: applyDefaults,
         applyWhatsAppDescription: applyWhatsAppDescription,
         refreshRecordFields: refreshRecordFields,
+        forceDomValues: forceDomValues,
+        applyWithRetry: applyWithRetry,
         getCanaleLabel: function (value) {
             return CANALE_LABELS[value] || value;
         },

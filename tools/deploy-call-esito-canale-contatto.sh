@@ -33,6 +33,7 @@ FILES=(
   "client/custom/res/templates/fields/call-canale-contatto/edit.tpl"
   "custom/Espo/Custom/Resources/layouts/Call/detailEsitoPopup.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Call.json"
+  "custom/Espo/Custom/Resources/metadata/logicDefs/Call.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Call.json"
   "custom/Espo/Custom/Resources/i18n/en_US/Call.json"
   "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"

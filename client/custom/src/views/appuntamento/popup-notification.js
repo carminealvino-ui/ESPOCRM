@@ -163,6 +163,10 @@ define('custom:views/appuntamento/popup-notification', [
                         this.esitoModel = model;
                         this.esitoEntityType = entityType;
 
+                        if (entityType === 'Call') {
+                            CallEsitoDefaults.applyDefaults(model, this.notificationData.name);
+                        }
+
                         return new Promise(resolve => {
                             this.createView('esitoRecord', 'views/record/edit', {
                                 scope: entityType,
@@ -180,7 +184,7 @@ define('custom:views/appuntamento/popup-notification', [
                                 view.render();
 
                                 if (entityType === 'Call') {
-                                    this.applyCallEsitoDefaults(view);
+                                    this.setupCallEsitoPopup(view);
                                 }
 
                                 this.setupActionButtonListeners(view);
@@ -194,21 +198,53 @@ define('custom:views/appuntamento/popup-notification', [
             this.wait(promise);
         }
 
-        applyCallEsitoDefaults(recordView) {
-            const model = recordView.model || this.esitoModel;
+        setupCallEsitoPopup(recordView) {
+            const notificationName = this.notificationData && this.notificationData.name;
+            const apply = () => {
+                CallEsitoDefaults.applyWithRetry(recordView, notificationName);
+            };
+
+            apply();
+
+            window.setTimeout(apply, 0);
+            window.setTimeout(apply, 200);
+
+            this.listenToOnce(recordView, 'after:render', apply);
+            this.setupCallRichiamoVisibility(recordView);
+        }
+
+        setupCallRichiamoVisibility(recordView) {
+            const model = recordView.model;
 
             if (!model) {
                 return;
             }
 
+            const update = () => {
+                const show = !!model.get('daRichiamare');
+
+                ['dataRichiamo', 'richiamo'].forEach(fieldName => {
+                    recordView.$el
+                        .find('.field[data-name="' + fieldName + '"]')
+                        .closest('.cell, .form-group')
+                        .toggle(show);
+                });
+            };
+
+            update();
+            this.listenTo(model, 'change:daRichiamare', update);
+
+            this.$el.on(
+                'change.callRichiamo click.callRichiamo',
+                '.field[data-name="daRichiamare"] input',
+                () => window.setTimeout(update, 0)
+            );
+        }
+
+        applyCallEsitoDefaults(recordView) {
             const notificationName = this.notificationData && this.notificationData.name;
-            const applied = CallEsitoDefaults.applyDefaults(model, notificationName);
 
-            if (!applied) {
-                return;
-            }
-
-            CallEsitoDefaults.refreshRecordFields(recordView, ['tipologia', 'direction', 'description']);
+            CallEsitoDefaults.applyWithRetry(recordView, notificationName);
         }
 
         getEsitoModel() {

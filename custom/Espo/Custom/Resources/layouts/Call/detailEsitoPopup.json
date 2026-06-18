@@ -35,17 +35,30 @@
             [
                 {
                     "name": "daRichiamare"
-                },
+                }
+            ]
+        ],
+        "label": ""
+    },
+    {
+        "rows": [
+            [
                 {
                     "name": "dataRichiamo"
-                }
-            ],
-            [
+                },
                 {
                     "name": "richiamo"
                 }
             ]
         ],
+        "dynamicLogicVisible": {
+            "conditionGroup": [
+                {
+                    "type": "isTrue",
+                    "attribute": "daRichiamare"
+                }
+            ]
+        },
         "label": ""
     },
     {
