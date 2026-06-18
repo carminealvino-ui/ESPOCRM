@@ -1,4 +1,9 @@
-define('custom:views/fields/call-canale-contatto', ['views/fields/base'], function (Dep) {
+define('custom:views/fields/call-canale-contatto', [
+    'views/fields/base',
+    'custom:helpers/call-esito-popup-defaults',
+], function (Dep, CallEsitoDefaultsModule) {
+
+    const CallEsitoDefaults = CallEsitoDefaultsModule.default || CallEsitoDefaultsModule;
 
     return Dep.extend({
 
@@ -38,16 +43,10 @@ define('custom:views/fields/call-canale-contatto', ['views/fields/base'], functi
         },
 
         getOptions: function () {
-            return [
-                {
-                    value: 'call',
-                    label: this.translate('call', 'options', 'Call'),
-                },
-                {
-                    value: 'whatsapp',
-                    label: this.translate('whatsapp', 'options', 'Call'),
-                },
-            ];
+            return ['call', 'whatsapp'].map(value => ({
+                value: value,
+                label: this.translate(value, 'options', this.entityType, this.name),
+            }));
         },
 
         syncChannelFields: function () {
@@ -59,6 +58,25 @@ define('custom:views/fields/call-canale-contatto', ['views/fields/base'], functi
                 vocale: value === 'call',
                 whatsApp: value === 'whatsapp',
             });
+
+            if (value === 'whatsapp') {
+                CallEsitoDefaults.applyWhatsAppDescription(this.model);
+                this.refreshDescriptionField();
+            }
+        },
+
+        refreshDescriptionField: function () {
+            const recordView = this.getParentView && this.getParentView();
+
+            if (!recordView || typeof recordView.getFieldView !== 'function') {
+                return;
+            }
+
+            const descriptionField = recordView.getFieldView('description');
+
+            if (descriptionField && typeof descriptionField.reRender === 'function') {
+                descriptionField.reRender();
+            }
         },
 
         fetch: function () {

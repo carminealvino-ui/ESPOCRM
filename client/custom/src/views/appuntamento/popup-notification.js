@@ -3,10 +3,12 @@
 define('custom:views/appuntamento/popup-notification', [
     'crm:views/meeting/popup-notification',
     'custom:views/opportunity/helpers/appuntamento-sync',
-], function (MeetingPopupModule, AppuntamentoSyncModule) {
+    'custom:helpers/call-esito-popup-defaults',
+], function (MeetingPopupModule, AppuntamentoSyncModule, CallEsitoDefaultsModule) {
 
     const Parent = MeetingPopupModule.default || MeetingPopupModule;
     const AppuntamentoSync = AppuntamentoSyncModule.default || AppuntamentoSyncModule;
+    const CallEsitoDefaults = CallEsitoDefaultsModule.default || CallEsitoDefaultsModule;
 
     const ESITO_POPUP_SCOPES = {
         Appuntamento: {
@@ -161,6 +163,10 @@ define('custom:views/appuntamento/popup-notification', [
                         this.esitoModel = model;
                         this.esitoEntityType = entityType;
 
+                        if (entityType === 'Call') {
+                            CallEsitoDefaults.applyDefaults(model);
+                        }
+
                         return new Promise(resolve => {
                             this.createView('esitoRecord', 'views/record/edit', {
                                 scope: entityType,
@@ -216,7 +222,7 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
-            ['status', 'sottostato', 'esito', 'noteEsito', 'canaleContatto', 'description', 'daRichiamare', 'dataRichiamo', 'richiamo'].forEach(fieldName => {
+            ['status', 'sottostato', 'esito', 'noteEsito', 'tipologia', 'canaleContatto', 'description', 'daRichiamare', 'dataRichiamo', 'richiamo'].forEach(fieldName => {
                 const fieldView = recordView.getFieldView && recordView.getFieldView(fieldName);
 
                 if (fieldView && typeof fieldView.fetch === 'function') {

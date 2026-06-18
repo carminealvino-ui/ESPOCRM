@@ -29,11 +29,13 @@ backup_if_exists() {
 FILES=(
   "client/custom/src/views/appuntamento/popup-notification.js"
   "client/custom/src/views/fields/call-canale-contatto.js"
+  "client/custom/src/helpers/call-esito-popup-defaults.js"
   "client/custom/res/templates/fields/call-canale-contatto/edit.tpl"
   "custom/Espo/Custom/Resources/layouts/Call/detailEsitoPopup.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Call.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Call.json"
   "custom/Espo/Custom/Resources/i18n/en_US/Call.json"
+  "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"
 )
 
 for rel in "${FILES[@]}"; do
@@ -52,4 +54,4 @@ echo ""
 echo "=== Prossimo passo (sul server) ==="
 echo "  cd ${CRM_ROOT} && php clear_cache.php && php rebuild.php"
 echo ""
-echo "Nel popup Contatto Telefonico compare la scelta Chiamata / WhatsApp."
+echo "Nel popup Contatto Telefonico: tipologia Richiamo su Opportunità Generata e testo standard in descrizione."
