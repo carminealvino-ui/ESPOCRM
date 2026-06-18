@@ -1,0 +1,61 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "dateStart",
+                    "readOnly": true
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "canaleContatto"
+                }
+            ],
+            [
+                {
+                    "name": "description",
+                    "fullWidth": true
+                }
+            ],
+            [
+                {
+                    "name": "daRichiamare"
+                },
+                {
+                    "name": "dataRichiamo"
+                }
+            ],
+            [
+                {
+                    "name": "richiamo"
+                }
+            ]
+        ],
+        "label": ""
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "whatsAppNumero",
+                    "readOnly": true
+                }
+            ]
+        ],
+        "dynamicLogicVisible": {
+            "conditionGroup": [
+                {
+                    "type": "isTrue",
+                    "attribute": "whatsApp"
+                }
+            ]
+        },
+        "label": ""
+    }
+]
