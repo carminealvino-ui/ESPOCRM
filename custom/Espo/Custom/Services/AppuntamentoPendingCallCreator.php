@@ -11,7 +11,6 @@ class AppuntamentoPendingCallCreator
 {
     private const NOTA_PREFIX = 'Auto-Pending-Appuntamento:';
     private const TIPOLOGIA = 'Contatto dopo Prima Visita';
-    private const CALL_CENTER_USER_ID = '1';
     private const REMINDER_SECONDS = 900;
 
     /** @var array<string, string> */
@@ -107,6 +106,7 @@ class AppuntamentoPendingCallCreator
         $parentName = $appuntamento->get('parentName') ?: $lead->get('name');
         $telefono = $appuntamento->get('telefono') ?: $lead->get('phoneNumber');
         $presentation = $this->buildCallPresentationFields($callDateStart, $parentName, $telefono);
+        $ownerUserId = $appuntamento->get('assignedUserId') ?: $appuntamento->get('createdById');
 
         $call = $this->entityManager->createEntity('Call');
 
@@ -121,9 +121,7 @@ class AppuntamentoPendingCallCreator
             'prospectName' => $appuntamento->get('prospectName'),
             'telefono' => $telefono,
             'dateStart' => $callDateStart,
-            'assignedUserId' => self::CALL_CENTER_USER_ID,
-            'createdById' => self::CALL_CENTER_USER_ID,
-            'modifiedById' => self::CALL_CENTER_USER_ID,
+            'assignedUserId' => $ownerUserId,
             'daRichiamare' => false,
             'whatsApp' => false,
             'vocale' => true,
@@ -157,19 +155,16 @@ class AppuntamentoPendingCallCreator
     /**
      * @return array{name: string, data: string, whatsAppNumero: ?string, dateEnd: null}
      */
-    private function buildCallPresentationFields(
-        string $callDateStart,
+    public function buildCallPresentationFields(
+        string $callDateStartUtc,
         ?string $parentName,
         ?string $telefono
     ): array {
-        $timezone = new \DateTimeZone('Europe/Amsterdam');
-
-        $dateTime = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $callDateStart, $timezone)
-            ?: new \DateTimeImmutable($callDateStart, $timezone);
+        $dataLabel = PendingCallDateTime::formatLocalDateTime($callDateStartUtc);
+        $localDate = PendingCallDateTime::formatLocalDateTime($callDateStartUtc, 'Y-m-d');
 
         $parentName = trim((string) $parentName);
         $telefono = trim((string) $telefono);
-        $dataLabel = $dateTime->format('d/m/Y H:i');
 
         $name = mb_strtoupper(
             $dataLabel . ' - ' . self::TIPOLOGIA . ' - ' . $parentName . ' - ' . $telefono,
@@ -185,7 +180,7 @@ class AppuntamentoPendingCallCreator
 
         return [
             'name' => $name,
-            'data' => $dateTime->format('Y-m-d'),
+            'data' => $localDate,
             'whatsAppNumero' => $whatsAppNumero,
             'dateEnd' => null,
         ];
