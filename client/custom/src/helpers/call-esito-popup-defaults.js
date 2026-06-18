@@ -41,6 +41,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
 
         const attributes = {
             tipologia: TIPOLOGIA_RICHIAMO_OPPORTUNITA,
+            direction: 'Outbound',
         };
 
         if (!normalize(model.get('description'))) {

@@ -208,7 +208,7 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
-            CallEsitoDefaults.refreshRecordFields(recordView, ['tipologia', 'description']);
+            CallEsitoDefaults.refreshRecordFields(recordView, ['tipologia', 'direction', 'description']);
         }
 
         getEsitoModel() {
@@ -240,7 +240,7 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
-            ['status', 'sottostato', 'esito', 'noteEsito', 'tipologia', 'canaleContatto', 'description', 'daRichiamare', 'dataRichiamo', 'richiamo'].forEach(fieldName => {
+            ['status', 'direction', 'sottostato', 'esito', 'noteEsito', 'tipologia', 'canaleContatto', 'description', 'daRichiamare', 'dataRichiamo', 'richiamo'].forEach(fieldName => {
                 const fieldView = recordView.getFieldView && recordView.getFieldView(fieldName);
 
                 if (fieldView && typeof fieldView.fetch === 'function') {

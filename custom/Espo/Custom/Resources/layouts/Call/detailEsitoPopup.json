@@ -10,6 +10,9 @@
             [
                 {
                     "name": "status"
+                },
+                {
+                    "name": "direction"
                 }
             ],
             [
