@@ -15,7 +15,7 @@ use Espo\ORM\Repository\Option\SaveOptions;
  */
 class AutoCreatePendingCall implements AfterSave
 {
-    public static int $order = 7;
+    public static int $order = 5;
 
     public function __construct(
         private EntityManager $entityManager,

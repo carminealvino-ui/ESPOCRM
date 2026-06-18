@@ -14,14 +14,27 @@ class AppuntamentoPendingCallCreator
     private const CALL_CENTER_USER_ID = '1';
     private const REMINDER_SECONDS = 900;
 
+    /** @var array<string, string> */
+    private static array $rememberedLeadIds = [];
+
     public function __construct(
         private EntityManager $entityManager,
         private Log $log
     ) {}
 
+    public static function rememberLeadId(string $appuntamentoId, string $leadId): void
+    {
+        if ($appuntamentoId === '' || $leadId === '') {
+            return;
+        }
+
+        self::$rememberedLeadIds[$appuntamentoId] = $leadId;
+    }
+
     public function createIfNeeded(
         Entity $appuntamento,
-        ?\DateTimeImmutable $notBefore = null
+        ?\DateTimeImmutable $notBefore = null,
+        ?string $leadIdOverride = null
     ): ?string {
         if ($appuntamento->get('status') !== 'Held') {
             return null;
@@ -41,16 +54,15 @@ class AppuntamentoPendingCallCreator
             return null;
         }
 
-        $appuntamento = $this->reloadAppuntamento($appuntamentoId) ?? $appuntamento;
-
-        $leadId = $this->resolveLeadId($appuntamento);
+        $leadId = $leadIdOverride ?: $this->resolveLeadId($appuntamento);
 
         if (!$leadId) {
             $this->log->warning(
-                'Auto-create Call Pending: Lead non trovato per Appuntamento {id} (parentType={parentType}, prospectId={prospectId})',
+                'Auto-create Call Pending: Lead non trovato per Appuntamento {id} (parentType={parentType}, parentId={parentId}, prospectId={prospectId})',
                 [
                     'id' => $appuntamentoId,
                     'parentType' => (string) $appuntamento->get('parentType'),
+                    'parentId' => (string) $appuntamento->get('parentId'),
                     'prospectId' => (string) $appuntamento->get('prospectId'),
                 ]
             );
@@ -61,8 +73,18 @@ class AppuntamentoPendingCallCreator
         $lead = $this->entityManager->getEntityById('Lead', $leadId);
 
         if (!$lead) {
+            $this->log->warning(
+                'Auto-create Call Pending: Lead {leadId} inesistente per Appuntamento {id}',
+                [
+                    'id' => $appuntamentoId,
+                    'leadId' => $leadId,
+                ]
+            );
+
             return null;
         }
+
+        unset(self::$rememberedLeadIds[$appuntamentoId]);
 
         $callDateStart = PendingCallDateTime::fromAppointmentDateStart(
             $appuntamento->get('dateStart'),
@@ -95,6 +117,8 @@ class AppuntamentoPendingCallCreator
             'telefono' => $telefono,
             'dateStart' => $callDateStart,
             'assignedUserId' => self::CALL_CENTER_USER_ID,
+            'createdById' => self::CALL_CENTER_USER_ID,
+            'modifiedById' => self::CALL_CENTER_USER_ID,
             'daRichiamare' => false,
             'whatsApp' => false,
             'vocale' => true,
@@ -109,7 +133,10 @@ class AppuntamentoPendingCallCreator
             ],
         ]);
 
-        $this->entityManager->saveEntity($call);
+        $this->entityManager->saveEntity($call, [
+            'skipAcl' => true,
+            'silent' => true,
+        ]);
 
         $this->log->info(
             'Auto-create Call Pending: creata Call {callId} per Appuntamento {id} il {dateStart}',
@@ -123,13 +150,14 @@ class AppuntamentoPendingCallCreator
         return $call->getId();
     }
 
-    private function reloadAppuntamento(string $appuntamentoId): ?Entity
-    {
-        return $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
-    }
-
     private function resolveLeadId(Entity $appuntamento): ?string
     {
+        $appuntamentoId = $appuntamento->getId();
+
+        if ($appuntamentoId && isset(self::$rememberedLeadIds[$appuntamentoId])) {
+            return self::$rememberedLeadIds[$appuntamentoId];
+        }
+
         if ($appuntamento->get('parentType') === 'Lead') {
             $parentId = $appuntamento->get('parentId');
 

@@ -30,8 +30,10 @@ FILES=(
   "custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php"
   "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"
   "custom/Espo/Custom/Hooks/Appuntamento/AutoCreatePendingCall.php"
+  "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
   "custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json"
   "tools/backfill-pending-calls.php"
+  "tools/diagnose-pending-call.php"
 )
 
 for rel in "${FILES[@]}"; do
