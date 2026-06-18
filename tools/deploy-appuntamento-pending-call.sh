@@ -36,6 +36,7 @@ FILES=(
   "tools/backfill-pending-calls.php"
   "tools/diagnose-pending-call.php"
   "tools/fix-pending-call-nota.php"
+  "tools/purge-pending-calls-before.php"
 )
 
 for rel in "${FILES[@]}"; do
@@ -60,3 +61,7 @@ echo ""
 echo "Backfill appuntamenti Pending già esistenti:"
 echo "  cd ${CRM_ROOT} && php tools/backfill-pending-calls.php --dry-run"
 echo "  cd ${CRM_ROOT} && php tools/backfill-pending-calls.php"
+echo ""
+echo "Elimina Call auto-create per appuntamenti prima del 2026-01-01:"
+echo "  cd ${CRM_ROOT} && php tools/purge-pending-calls-before.php --dry-run"
+echo "  cd ${CRM_ROOT} && php tools/purge-pending-calls-before.php"

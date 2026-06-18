@@ -14,6 +14,28 @@ class PendingCallDateTime
     private const CALL_MINUTE = 30;
     private const DAYS_OFFSET = 2;
 
+    /** Appuntamenti con dateStart precedente non generano Call automatiche. */
+    public const MIN_APPOINTMENT_DATE = '2026-01-01';
+
+    public static function isAppointmentEligible(?string $dateStart): bool
+    {
+        if (!$dateStart) {
+            return false;
+        }
+
+        $timezone = new \DateTimeZone(self::TIMEZONE);
+
+        $appointment = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $dateStart, $timezone);
+
+        if (!$appointment) {
+            $appointment = new \DateTimeImmutable($dateStart, $timezone);
+        }
+
+        $cutoff = new \DateTimeImmutable(self::MIN_APPOINTMENT_DATE . ' 00:00:00', $timezone);
+
+        return $appointment >= $cutoff;
+    }
+
     public static function fromAppointmentDateStart(
         ?string $dateStart,
         ?\DateTimeImmutable $notBefore = null

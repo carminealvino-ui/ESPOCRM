@@ -24,6 +24,7 @@ require_once $root . '/bootstrap.php';
 
 use Espo\Core\Application;
 use Espo\Custom\Services\AppuntamentoPendingCallCreator;
+use Espo\Custom\Tools\Appuntamento\PendingCallDateTime;
 
 $argv = $GLOBALS['argv'] ?? [];
 $dryRun = in_array('--dry-run', $argv, true);
@@ -50,6 +51,7 @@ $query = $entityManager
     ->where([
         'status' => 'Held',
         'sottostato' => 'Pending',
+        'dateStart>=' => PendingCallDateTime::MIN_APPOINTMENT_DATE,
     ])
     ->order('dateStart', 'DESC');
 

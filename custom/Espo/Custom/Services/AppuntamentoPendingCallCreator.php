@@ -44,6 +44,10 @@ class AppuntamentoPendingCallCreator
             return null;
         }
 
+        if (!PendingCallDateTime::isAppointmentEligible($appuntamento->get('dateStart'))) {
+            return null;
+        }
+
         $appuntamentoId = $appuntamento->getId();
 
         if (!$appuntamentoId) {
