@@ -137,7 +137,7 @@ class AppuntamentoPendingCallCreator
         $this->entityManager->saveEntity($call, [
             'skipAcl' => true,
             'silent' => true,
-            'skipFormula' => true,
+            'skipHooks' => true,
         ]);
 
         $this->log->info(

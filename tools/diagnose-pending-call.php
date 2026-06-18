@@ -79,6 +79,28 @@ if (is_file($hooksMeta)) {
     echo "  hook metadata: MANCANTE\n";
 }
 
+$formulaMeta = $root . '/custom/Espo/Custom/Resources/metadata/formula/Call.json';
+
+if (is_file($formulaMeta)) {
+    $formulaRaw = (string) file_get_contents($formulaMeta);
+    $hasPendingGuard = str_contains($formulaRaw, 'Auto-Pending-Appuntamento:');
+    $hasDateStartGuard = str_contains($formulaRaw, '!empty(dateStart)');
+    echo '  formula Call guard Pending: ' . ($hasPendingGuard ? 'OK' : 'MANCANTE') . "\n";
+    echo '  formula Call guard dateStart: ' . ($hasDateStartGuard ? 'OK' : 'MANCANTE') . "\n";
+} else {
+    echo "  formula Call.json: MANCANTE\n";
+}
+
+$creatorFile = $root . '/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php';
+
+if (is_file($creatorFile)) {
+    $creatorRaw = (string) file_get_contents($creatorFile);
+    $usesSkipHooks = str_contains($creatorRaw, "'skipHooks' => true");
+    echo '  creator skipHooks: ' . ($usesSkipHooks ? 'OK' : 'MANCANTE (usa skipFormula?)') . "\n";
+} else {
+    echo "  creator: MANCANTE\n";
+}
+
 if (!$create) {
     echo "\nPer provare la creazione: php tools/diagnose-pending-call.php --id={$id} --create\n";
     exit(0);
