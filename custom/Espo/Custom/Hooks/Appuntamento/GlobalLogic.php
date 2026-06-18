@@ -148,6 +148,7 @@ namespace Espo\Custom\Hooks\Appuntamento;
 
 use Espo\Core\ORM\EntityManager;
 use Espo\Custom\Services\LeadProspectSync;
+use Espo\Custom\Services\AppuntamentoPendingCallCreator;
 use Espo\Custom\Services\LineaProdottoCategorySync;
 use Espo\ORM\Entity;
 
@@ -657,6 +658,17 @@ class GlobalLogic
                     'assignedUsersIds',
                     ['1']
                 );
+            }
+
+            if ($status === 'Held' && $sottostato === 'Pending') {
+                $appuntamentoId = $entity->getId();
+
+                if ($appuntamentoId && $entity->get('parentType') === 'Lead' && $entity->get('parentId')) {
+                    AppuntamentoPendingCallCreator::rememberLeadId(
+                        $appuntamentoId,
+                        $entity->get('parentId')
+                    );
+                }
             }
 
         } finally {

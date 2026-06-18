@@ -2,12 +2,12 @@
 # Appuntamento Pending → Call automatica +2 giorni alle 9:30 (weekend → lunedì).
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/appuntamento-pending-auto-call-9999/tools/deploy-appuntamento-pending-call.sh?t=$(date +%s)" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-appuntamento-pending-call-9999/tools/deploy-appuntamento-pending-call.sh?t=$(date +%s)" | bash
 
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="${2:-cursor/appuntamento-pending-auto-call-9999}"
+BRANCH="${2:-cursor/fix-appuntamento-pending-call-9999}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 STAMP=$(date +%Y%m%d-%H%M%S)
@@ -27,10 +27,18 @@ backup_if_exists() {
 }
 
 FILES=(
+  "custom/Espo/Custom/Tools/DateTime/BusinessDateTime.php"
   "custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php"
   "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"
   "custom/Espo/Custom/Hooks/Appuntamento/AutoCreatePendingCall.php"
+  "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
   "custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json"
+  "custom/Espo/Custom/Resources/metadata/formula/Call.json"
+  "tools/backfill-pending-calls.php"
+  "tools/diagnose-pending-call.php"
+  "tools/fix-pending-call-nota.php"
+  "tools/purge-pending-calls-before.php"
+  "tools/fix-pending-call-schedule.php"
 )
 
 for rel in "${FILES[@]}"; do
@@ -51,3 +59,15 @@ echo "  cd ${CRM_ROOT} && php clear_cache.php && php rebuild.php"
 echo ""
 echo "Test: segna un Appuntamento come Svolto + sottostato Pending."
 echo "Viene creata una Call pianificata +2 giorni alle 9:30 (lun se weekend), con promemoria."
+echo ""
+echo "Backfill appuntamenti Pending già esistenti:"
+echo "  cd ${CRM_ROOT} && php tools/backfill-pending-calls.php --dry-run"
+echo "  cd ${CRM_ROOT} && php tools/backfill-pending-calls.php"
+echo ""
+echo "Elimina Call auto-create per appuntamenti prima del 2026-01-01:"
+echo "  cd ${CRM_ROOT} && php tools/purge-pending-calls-before.php --dry-run"
+echo "  cd ${CRM_ROOT} && php tools/purge-pending-calls-before.php"
+echo ""
+echo "Corregge ora 09:30 e assegnatario sulle Call Pending esistenti:"
+echo "  cd ${CRM_ROOT} && php tools/fix-pending-call-schedule.php --dry-run"
+echo "  cd ${CRM_ROOT} && php tools/fix-pending-call-schedule.php"

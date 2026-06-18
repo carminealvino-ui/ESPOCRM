@@ -15,7 +15,7 @@ use Espo\ORM\Repository\Option\SaveOptions;
  */
 class AutoCreatePendingCall implements AfterSave
 {
-    public static int $order = 7;
+    public static int $order = 5;
 
     public function __construct(
         private EntityManager $entityManager,
@@ -41,11 +41,12 @@ class AutoCreatePendingCall implements AfterSave
 
             $creator->createIfNeeded($entity);
         } catch (\Throwable $e) {
-            $this->log->warning(
+            $this->log->error(
                 'Auto-create Call Pending per Appuntamento {id} fallita: {message}',
                 [
                     'id' => $entity->getId(),
                     'message' => $e->getMessage(),
+                    'exception' => $e,
                 ]
             );
         }
