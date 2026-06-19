@@ -28,7 +28,9 @@ backup_if_exists() {
 
 FILES=(
   "client/custom/src/views/appuntamento/popup-notification.js"
+  "client/custom/src/helpers/call-dashlet-defaults.js"
   "client/custom/src/views/dashlets/calls.js"
+  "client/custom/src/views/dashlets/records.js"
   "client/custom/src/views/call/record/edit.js"
   "client/custom/src/views/opportunity/helpers/appuntamento-sync.js"
   "client/custom/src/views/fields/call-canale-contatto.js"
@@ -40,6 +42,9 @@ FILES=(
   "client/custom/res/css/esito-popup-notification.css"
   "custom/Espo/Custom/Classes/Select/Call/PrimaryFilters/DaRiscontrare.php"
   "custom/Espo/Custom/Resources/metadata/selectDefs/Call.json"
+  "custom/Espo/Custom/Hooks/Call/NormalizeAutoPendingFields.php"
+  "custom/Espo/Custom/Hooks/Call/SyncLeadFromEsito.php"
+  "custom/Espo/Custom/Resources/metadata/dashlets/Records.json"
   "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
   "custom/Espo/Custom/Resources/layouts/Call/detail.json"
   "custom/Espo/Custom/Resources/layouts/Call/list.json"

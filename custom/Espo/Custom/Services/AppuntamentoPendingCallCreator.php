@@ -12,6 +12,9 @@ class AppuntamentoPendingCallCreator
 {
     private const NOTA_PREFIX = 'Auto-Pending-Appuntamento:';
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
+    private const TESTO_STANDARD =
+        'Salve, sono Carmine Alvino di ARIEL ENERGIA, mi fa sapere entro la giornata di oggi '
+        . 'poi cosa ha deciso rispetto alla proposta che le ho fatto, Grazie';
     private const REMINDER_SECONDS = 900;
 
     /** @var array<string, string> */
@@ -102,8 +105,15 @@ class AppuntamentoPendingCallCreator
         $telefono = $appuntamento->get('telefono') ?: $lead->get('phoneNumber');
         $presentation = $this->buildCallPresentationFields($callInstant, $parentName, $telefono);
         $ownerUserId = $this->resolveOwnerUserId($appuntamento);
+        $ownerUserName = $this->resolveOwnerUserName($ownerUserId);
 
         $call = $this->entityManager->createEntity('Call');
+
+        $usersNames = [];
+
+        if ($ownerUserId && $ownerUserName) {
+            $usersNames[$ownerUserId] = $ownerUserName;
+        }
 
         $call->set(array_merge($presentation, [
             'status' => 'Planned',
@@ -117,9 +127,13 @@ class AppuntamentoPendingCallCreator
             'telefono' => $telefono,
             'dateStart' => $callDateStartUtc,
             'assignedUserId' => $ownerUserId,
+            'assignedUserName' => $ownerUserName,
+            'usersIds' => $ownerUserId ? [$ownerUserId] : [],
+            'usersNames' => $usersNames,
             'daRichiamare' => false,
-            'whatsApp' => false,
-            'vocale' => true,
+            'whatsApp' => true,
+            'vocale' => false,
+            'testo' => self::TESTO_STANDARD,
             'nota' => $this->buildNota($appuntamentoId, $appuntamento->get('dateStart')),
             'reminders' => [
                 [
@@ -166,6 +180,17 @@ class AppuntamentoPendingCallCreator
         $createdById = $appuntamento->get('createdById');
 
         return $createdById ? (string) $createdById : null;
+    }
+
+    private function resolveOwnerUserName(?string $userId): ?string
+    {
+        if (!$userId) {
+            return null;
+        }
+
+        $user = $this->entityManager->getEntityById('User', $userId);
+
+        return $user ? (string) $user->get('name') : null;
     }
 
     public function buildExpectedCallDateStartUtc(

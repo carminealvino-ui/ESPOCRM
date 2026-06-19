@@ -60,8 +60,8 @@ define('custom:views/fields/call-canale-contatto', [
             });
 
             if (value === 'whatsapp') {
-                CallEsitoDefaults.applyWhatsAppDescription(this.model);
-                CallEsitoDefaults.refreshRecordFields(this.getRecordView(), ['description']);
+                CallEsitoDefaults.applyWhatsAppTesto(this.model);
+                CallEsitoDefaults.refreshRecordFields(this.getRecordView(), ['testo']);
             }
         },
 
@@ -80,7 +80,7 @@ define('custom:views/fields/call-canale-contatto', [
         },
 
         refreshDescriptionField: function () {
-            CallEsitoDefaults.refreshRecordFields(this.getRecordView(), ['description']);
+            CallEsitoDefaults.refreshRecordFields(this.getRecordView(), ['testo']);
         },
 
         fetch: function () {

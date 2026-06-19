@@ -3,9 +3,10 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
     const TIPOLOGIA_RICHIAMO_OPPORTUNITA = 'Richiamo su Opportunità Generata';
     const LEGACY_TIPOLOGIA = 'Contatto dopo Prima Visita';
     const AUTO_PENDING_NOTA_PREFIX = 'Auto-Pending-Appuntamento:';
-    const DESCRIPTION_STANDARD =
+    const TESTO_STANDARD =
         'Salve, sono Carmine Alvino di ARIEL ENERGIA, mi fa sapere entro la giornata di oggi '
         + 'poi cosa ha deciso rispetto alla proposta che le ho fatto, Grazie';
+    const AUTO_PENDING_DESCRIPTION_PREFIX = 'Richiamo automatico per appuntamento Pending del';
 
     const CANALE_LABELS = {
         call: 'Chiamata',
@@ -34,6 +35,10 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             || containsLegacyTipologia(popupName);
     };
 
+    const isAutoPendingDescription = function (value) {
+        return normalize(value).indexOf(AUTO_PENDING_DESCRIPTION_PREFIX) !== -1;
+    };
+
     const buildUpdatedName = function (model) {
         const currentName = normalize(model.get('name'));
         const tipologia = normalize(model.get('tipologia'));
@@ -53,6 +58,35 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         return parts.join(' - ').toUpperCase();
     };
 
+    const normalizeMisplacedFields = function (model) {
+        if (!model) {
+            return false;
+        }
+
+        let changed = false;
+        const description = normalize(model.get('description'));
+        const testo = normalize(model.get('testo'));
+        const nota = normalize(model.get('nota'));
+
+        if (description && isAutoPendingDescription(description)) {
+            if (nota.indexOf(description) === -1) {
+                model.set('nota', nota ? nota + '\n' + description : description);
+            }
+
+            model.set('description', '');
+            changed = true;
+        } else if (description === TESTO_STANDARD) {
+            if (!testo) {
+                model.set('testo', TESTO_STANDARD);
+            }
+
+            model.set('description', '');
+            changed = true;
+        }
+
+        return changed;
+    };
+
     const getDefaultAttributes = function (model, notificationName) {
         if (!isAutoPendingCall(model, notificationName)) {
             return null;
@@ -70,14 +104,16 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             attributes.tipologia = TIPOLOGIA_RICHIAMO_OPPORTUNITA;
         }
 
-        if (!normalize(model.get('description'))) {
-            attributes.description = DESCRIPTION_STANDARD;
+        if (!normalize(model.get('testo'))) {
+            attributes.testo = TESTO_STANDARD;
         }
 
         return attributes;
     };
 
     const applyDefaults = function (model, notificationName) {
+        normalizeMisplacedFields(model);
+
         const attributes = getDefaultAttributes(model, notificationName);
 
         if (!attributes) {
@@ -89,7 +125,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         return true;
     };
 
-    const applyWhatsAppDescription = function (model) {
+    const applyWhatsAppTesto = function (model) {
         const tipologia = normalize(model.get('tipologia'));
 
         if (tipologia !== TIPOLOGIA_RICHIAMO_OPPORTUNITA
@@ -98,11 +134,11 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             return false;
         }
 
-        if (normalize(model.get('description'))) {
+        if (normalize(model.get('testo'))) {
             return false;
         }
 
-        model.set('description', DESCRIPTION_STANDARD);
+        model.set('testo', TESTO_STANDARD);
 
         return true;
     };
@@ -126,12 +162,12 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             return;
         }
 
-        const description = normalize(recordView.model.get('description'));
+        const testo = normalize(recordView.model.get('testo'));
 
-        if (description) {
+        if (testo) {
             recordView.$el
-                .find('.field[data-name="description"] textarea')
-                .val(description)
+                .find('.field[data-name="testo"] textarea')
+                .val(testo)
                 .trigger('change');
         }
     };
@@ -149,7 +185,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             return false;
         }
 
-        refreshRecordFields(recordView, ['tipologia', 'direction', 'description']);
+        refreshRecordFields(recordView, ['tipologia', 'direction', 'testo']);
         forceDomValues(recordView);
 
         return true;
@@ -160,6 +196,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             return;
         }
 
+        normalizeMisplacedFields(model);
         applyDefaults(model, notificationName);
 
         const canale = model.get('canaleContatto');
@@ -186,6 +223,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             tipologia: model.get('tipologia'),
             esito: model.get('esito'),
             description: model.get('description'),
+            testo: model.get('testo'),
             vocale: model.get('vocale'),
             whatsApp: model.get('whatsApp'),
             daRichiamare: model.get('daRichiamare'),
@@ -206,7 +244,9 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
 
     return {
         applyDefaults: applyDefaults,
-        applyWhatsAppDescription: applyWhatsAppDescription,
+        applyWhatsAppTesto: applyWhatsAppTesto,
+        applyWhatsAppDescription: applyWhatsAppTesto,
+        normalizeMisplacedFields: normalizeMisplacedFields,
         refreshRecordFields: refreshRecordFields,
         forceDomValues: forceDomValues,
         applyWithRetry: applyWithRetry,
@@ -216,6 +256,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             return CANALE_LABELS[value] || value;
         },
         TIPOLOGIA_RICHIAMO_OPPORTUNITA: TIPOLOGIA_RICHIAMO_OPPORTUNITA,
-        DESCRIPTION_STANDARD: DESCRIPTION_STANDARD,
+        TESTO_STANDARD: TESTO_STANDARD,
+        DESCRIPTION_STANDARD: TESTO_STANDARD,
     };
 });

@@ -1,39 +1,9 @@
-define('custom:views/dashlets/calls', ['views/dashlets/abstract/record-list'], function (Dep) {
+define('custom:views/dashlets/calls', [
+    'views/dashlets/abstract/record-list',
+    'custom:helpers/call-dashlet-defaults',
+], function (Dep, CallDashletDefaultsModule) {
 
-    const EXPANDED_LAYOUT = {
-        rows: [
-            [
-                {
-                    name: 'name',
-                    link: true,
-                },
-            ],
-            [
-                {
-                    name: 'data',
-                    soft: true,
-                },
-                {
-                    name: 'dateStart',
-                    soft: true,
-                },
-            ],
-            [
-                {
-                    name: 'status',
-                    soft: true,
-                },
-                {
-                    name: 'parent',
-                    soft: true,
-                },
-            ],
-        ],
-    };
-
-    const SEARCH_DATA = {
-        primary: 'daRiscontrare',
-    };
+    const CallDashletDefaults = CallDashletDefaultsModule.default || CallDashletDefaultsModule;
 
     return Dep.extend({
 
@@ -43,36 +13,12 @@ define('custom:views/dashlets/calls', ['views/dashlets/abstract/record-list'], f
         rowActionsView: 'crm:views/call/record/row-actions/dashlet',
 
         setup: function () {
-            this.applyDashletDefaults();
-
+            CallDashletDefaults.applyToDashletOptions(this.options);
             Dep.prototype.setup.call(this);
         },
 
-        applyDashletDefaults: function () {
-            if (!this.options.data) {
-                this.options.data = {};
-            }
-
-            const data = this.options.data;
-
-            data.searchData = Espo.Utils.cloneDeep(SEARCH_DATA);
-            data.expandedLayout = Espo.Utils.cloneDeep(EXPANDED_LAYOUT);
-
-            if (!data.displayRecords) {
-                data.displayRecords = 10;
-            }
-
-            if (!data.orderBy) {
-                data.orderBy = 'dateStart';
-            }
-
-            if (!data.order) {
-                data.order = 'asc';
-            }
-        },
-
         getSearchData: function () {
-            return Espo.Utils.cloneDeep(SEARCH_DATA);
+            return CallDashletDefaults.getSearchData();
         },
     });
 });

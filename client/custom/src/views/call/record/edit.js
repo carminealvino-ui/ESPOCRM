@@ -1,10 +1,12 @@
 define('custom:views/call/record/edit', [
     'crm:views/call/record/edit',
     'custom:helpers/call-appuntamento-sync',
-], function (CallEditModule, CallAppuntamentoSyncModule) {
+    'custom:helpers/call-esito-popup-defaults',
+], function (CallEditModule, CallAppuntamentoSyncModule, CallEsitoDefaultsModule) {
 
     const Parent = CallEditModule.default || CallEditModule;
     const CallAppuntamentoSync = CallAppuntamentoSyncModule.default || CallAppuntamentoSyncModule;
+    const CallEsitoDefaults = CallEsitoDefaultsModule.default || CallEsitoDefaultsModule;
 
     return Parent.extend({
 
@@ -16,6 +18,8 @@ define('custom:views/call/record/edit', [
 
         setup: function () {
             Parent.prototype.setup.call(this);
+
+            CallEsitoDefaults.applyDefaults(this.model);
 
             this.listenTo(this.model, 'change:esito', () => this.toggleCreateAppuntamentoButton());
             this.listenTo(this.model, 'change:status', () => this.toggleCreateAppuntamentoButton());
@@ -74,6 +78,8 @@ define('custom:views/call/record/edit', [
         afterRender: function () {
             Parent.prototype.afterRender.call(this);
 
+            CallEsitoDefaults.applyDefaults(this.model);
+            CallEsitoDefaults.refreshRecordFields(this, ['testo', 'tipologia', 'description']);
             this.toggleCreateAppuntamentoButton();
         },
     });
