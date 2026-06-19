@@ -283,6 +283,10 @@ define('custom:views/appuntamento/popup-notification', [
                     fieldView.fetch();
                 }
             });
+
+            if (model.entityType === 'Call') {
+                CallEsitoDefaults.applyDefaults(model, this.notificationData && this.notificationData.name);
+            }
         }
 
         getMissingEsitoFields() {
@@ -512,11 +516,20 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
+            const entityType = this.esitoEntityType || this.notificationData.entityType;
             const model = this.getEsitoModel();
+            let saveAttributes = null;
+
+            if (entityType === 'Call') {
+                saveAttributes = CallEsitoDefaults.getSaveAttributes(
+                    model,
+                    this.notificationData && this.notificationData.name
+                );
+            }
 
             Espo.Ui.notify(' ...');
 
-            model.save()
+            model.save(saveAttributes)
                 .then(() => {
                     Espo.Ui.notify();
                     super.resolveCancel();

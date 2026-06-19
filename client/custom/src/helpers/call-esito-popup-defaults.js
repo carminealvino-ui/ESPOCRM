@@ -34,16 +34,43 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             || containsLegacyTipologia(popupName);
     };
 
+    const buildUpdatedName = function (model) {
+        const currentName = normalize(model.get('name'));
+        const tipologia = normalize(model.get('tipologia'));
+
+        if (!currentName || !tipologia) {
+            return null;
+        }
+
+        const parts = currentName.split(' - ');
+
+        if (parts.length < 4) {
+            return null;
+        }
+
+        parts[1] = tipologia;
+
+        return parts.join(' - ').toUpperCase();
+    };
+
     const getDefaultAttributes = function (model, notificationName) {
         if (!isAutoPendingCall(model, notificationName)) {
             return null;
         }
 
         const attributes = {
-            tipologia: TIPOLOGIA_RICHIAMO_OPPORTUNITA,
             direction: 'Outbound',
-            description: DESCRIPTION_STANDARD,
         };
+
+        const tipologia = normalize(model.get('tipologia'));
+
+        if (!tipologia || tipologia === LEGACY_TIPOLOGIA) {
+            attributes.tipologia = TIPOLOGIA_RICHIAMO_OPPORTUNITA;
+        }
+
+        if (!normalize(model.get('description'))) {
+            attributes.description = DESCRIPTION_STANDARD;
+        }
 
         return attributes;
     };
@@ -97,20 +124,13 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             return;
         }
 
-        const $el = recordView.$el;
         const description = normalize(recordView.model.get('description'));
-        const tipologia = normalize(recordView.model.get('tipologia'));
 
         if (description) {
-            $el.find('.field[data-name="description"] textarea')
+            recordView.$el
+                .find('.field[data-name="description"] textarea')
                 .val(description)
                 .trigger('change');
-        }
-
-        if (tipologia) {
-            $el.find('.field[data-name="tipologia"] .field-value, '
-                + '.field[data-name="tipologia"] .form-control-static')
-                .text(tipologia);
         }
     };
 
@@ -133,12 +153,62 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         return true;
     };
 
+    const ensureBeforeSave = function (model, notificationName) {
+        if (!model) {
+            return;
+        }
+
+        applyDefaults(model, notificationName);
+
+        const canale = model.get('canaleContatto');
+
+        if (canale === 'whatsapp') {
+            model.set({
+                vocale: false,
+                whatsApp: true,
+            });
+        } else if (canale === 'call') {
+            model.set({
+                vocale: true,
+                whatsApp: false,
+            });
+        }
+    };
+
+    const getSaveAttributes = function (model, notificationName) {
+        ensureBeforeSave(model, notificationName);
+
+        const attributes = {
+            status: model.get('status'),
+            direction: model.get('direction'),
+            tipologia: model.get('tipologia'),
+            description: model.get('description'),
+            vocale: model.get('vocale'),
+            whatsApp: model.get('whatsApp'),
+            daRichiamare: model.get('daRichiamare'),
+            dataRichiamo: model.get('dataRichiamo'),
+            richiamo: model.get('richiamo'),
+        };
+
+        if (isAutoPendingCall(model, notificationName)) {
+            const updatedName = buildUpdatedName(model);
+
+            if (updatedName) {
+                attributes.name = updatedName;
+            }
+        }
+
+        return attributes;
+    };
+
     return {
         applyDefaults: applyDefaults,
         applyWhatsAppDescription: applyWhatsAppDescription,
         refreshRecordFields: refreshRecordFields,
         forceDomValues: forceDomValues,
         applyWithRetry: applyWithRetry,
+        ensureBeforeSave: ensureBeforeSave,
+        getSaveAttributes: getSaveAttributes,
         getCanaleLabel: function (value) {
             return CANALE_LABELS[value] || value;
         },

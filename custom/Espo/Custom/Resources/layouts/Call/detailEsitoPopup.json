@@ -17,8 +17,7 @@
             ],
             [
                 {
-                    "name": "tipologia",
-                    "readOnly": true
+                    "name": "tipologia"
                 }
             ],
             [
