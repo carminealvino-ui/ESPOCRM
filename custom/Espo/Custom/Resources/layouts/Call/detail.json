@@ -74,6 +74,11 @@
         "rows": [
             [
                 {
+                    "name": "data"
+                }
+            ],
+            [
+                {
                     "name": "esito"
                 }
             ],
