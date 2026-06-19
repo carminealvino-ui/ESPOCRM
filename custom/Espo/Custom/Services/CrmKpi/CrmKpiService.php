@@ -72,8 +72,8 @@ class CrmKpiService
                     'changePercent' => $this->percentChange($amountCurrent, $amountPrevious),
                 ],
             ],
-            'funnel' => $this->getFunnel($from, $to),
-            'contractsByWeekday' => $this->getContractsByWeekday($from, $to),
+            'funnel' => $this->getFunnelSafe($from, $to),
+            'contractsByWeekday' => $this->getContractsByWeekdaySafe($from, $to),
             'alerts' => $this->getAlertsSafe(),
         ];
     }
@@ -158,6 +158,30 @@ class CrmKpiService
     /**
      * @return object[]
      */
+    private function getFunnelSafe(string $from, string $to): array
+    {
+        try {
+            return $this->getFunnel($from, $to);
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * @return object[]
+     */
+    private function getContractsByWeekdaySafe(string $from, string $to): array
+    {
+        try {
+            return $this->getContractsByWeekday($from, $to);
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * @return object[]
+     */
     private function getFunnel(string $from, string $to): array
     {
         $held = $this->countAppuntamentiHeld($from, $to);
@@ -165,7 +189,10 @@ class CrmKpiService
         $withOpportunity = (int) $this->entityManager
             ->getRDBRepository('Opportunity')
             ->where([
-                'appuntamentoId!=' => null,
+                'AND' => [
+                    ['appuntamentoId!=' => ''],
+                    ['appuntamentoId!=' => null],
+                ],
                 'createdAt>=' => $from . ' 00:00:00',
                 'createdAt<=' => $to . ' 23:59:59',
             ])
