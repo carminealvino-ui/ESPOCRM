@@ -58,6 +58,8 @@ FILES=(
   "tools/crea-report-vendite-mese.php"
   "tools/applica-dashboard-crm-kpi.php"
   "tools/rollback-dashboard-pre-kpi.php"
+  "tools/backup-dashboard-utente.sh"
+  "tools/riapplica-variazioni-post-restore.sh"
 )
 
 for rel in "${FILES[@]}"; do

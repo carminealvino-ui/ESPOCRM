@@ -91,6 +91,7 @@ Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
 | `06-PUSH-GITHUB-DAL-SERVER.md` | Push delta su GitHub dal server (PAT) |
 | `07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md` | Verifica allineamento: `status --branch=main` |
 | `09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md` | **Backup obbligatorio**, dashboard, Softaculous, **hookVersion** |
+| `10-RIAPPLICA-VARIAZIONI-DOPO-RESTORE.md` | Piano step post-restore Softaculous |
 
 ---
 
