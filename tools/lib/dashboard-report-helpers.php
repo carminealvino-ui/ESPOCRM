@@ -263,22 +263,20 @@ function buildReportAttributes(array $definition): object
     $dateFilterType = (string) ($definition['dateFilterType'] ?? 'currentMonth');
     $filtersData = buildDateFilterData($dateField, $dateFilterType, $definition['extraWhere'] ?? null);
 
+    $type = (string) ($definition['type'] ?? 'List');
+
     $attributes = [
         'name' => (string) $definition['name'],
         'entityType' => (string) $definition['entityType'],
-        'type' => (string) ($definition['type'] ?? 'List'),
+        'type' => $type,
         'columns' => array_values($definition['columns'] ?? []),
         'filtersData' => $filtersData,
         'filtersDataList' => [$filtersData],
     ];
 
-    if (!empty($definition['sums'])) {
-        $attributes['columnsData'] = (object) [];
-        $attributes['groupBy'] = [];
-    }
-
-    if (!empty($definition['sums'])) {
-        $attributes['sums'] = array_values($definition['sums']);
+    if ($type === 'Grid') {
+        $attributes['groupBy'] = array_values($definition['columns'] ?? []);
+        $attributes['sums'] = array_values($definition['sums'] ?? []);
     }
 
     if (!empty($definition['orderBy'])) {

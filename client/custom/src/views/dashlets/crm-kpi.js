@@ -1,9 +1,9 @@
-define('custom:views/dashlets/crm-kpi', ['views/dashlets/base'], function (Dep) {
+define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], function (Dep) {
 
     return Dep.extend({
 
         name: 'CrmKpi',
-        template: 'custom:views/dashlets/crm-kpi',
+        template: 'custom:dashlets/crm-kpi',
 
         events: {
             'click [data-action="refresh"]': function () {
@@ -28,26 +28,18 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/base'], function (Dep) 
             this.summary = null;
             this.loadError = null;
 
-            this.listenTo(this, 'resize', this.reRender);
-
-            if (this.getOption('autorefreshInterval')) {
-                this.initAutorefresh();
-            }
+            Dep.prototype.setup.call(this);
 
             this.wait(true);
             this.loadSummary();
         },
 
-        initAutorefresh: function () {
-            const interval = (this.getOption('autorefreshInterval') || 0) * 60 * 1000;
+        actionRefresh: function () {
+            this.loadSummary();
+        },
 
-            if (!interval) {
-                return;
-            }
-
-            this.autorefreshIntervalId = setInterval(() => {
-                this.loadSummary(true);
-            }, interval);
+        autoRefresh: function () {
+            this.loadSummary(true);
         },
 
         loadSummary: function (silent) {
@@ -62,16 +54,14 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/base'], function (Dep) 
                     this.summary = response;
                     this.loadError = null;
                     this.wait(false);
-
-                    if (silent) {
-                        this.reRender();
-                    }
+                    this.reRender();
                 })
                 .catch(xhr => {
                     this.loadError = xhr.responseJSON && xhr.responseJSON.message
                         ? xhr.responseJSON.message
                         : 'Errore caricamento KPI';
                     this.wait(false);
+                    this.reRender();
                 });
         },
 
@@ -166,10 +156,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/base'], function (Dep) 
             return 'text-muted';
         },
 
-        actionRefresh: function () {
-            this.loadSummary();
-        },
-
         actionOpenAppuntamentiSvolti: function () {
             this.getRouter().navigate('#Appuntamento/filter/meseCorrenteSvolto', {trigger: true});
         },
@@ -198,14 +184,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/base'], function (Dep) 
             }
 
             this.getRouter().navigate('#Appuntamento', {trigger: true});
-        },
-
-        onRemove: function () {
-            if (this.autorefreshIntervalId) {
-                clearInterval(this.autorefreshIntervalId);
-            }
-
-            Dep.prototype.onRemove.call(this);
         },
     });
 });

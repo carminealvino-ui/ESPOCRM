@@ -31,9 +31,11 @@ backup_if_exists() {
 
 FILES=(
   "client/custom/css/crm-kpi-dashlet.css"
-  "client/custom/res/templates/views/dashlets/crm-kpi.tpl"
+  "client/custom/res/templates/dashlets/crm-kpi.tpl"
   "client/custom/src/views/dashlets/crm-kpi.js"
   "custom/Espo/Custom/Controllers/CrmKpi.php"
+  "custom/Espo/Custom/Tools/CrmKpi/Api/GetSummary.php"
+  "custom/Espo/Custom/Resources/routes.json"
   "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
   "custom/Espo/Custom/Tools/CrmKpi/DateRange.php"
   "custom/Espo/Custom/Tools/CrmKpi/MonthRange.php"

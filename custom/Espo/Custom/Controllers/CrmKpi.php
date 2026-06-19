@@ -3,13 +3,13 @@
 namespace Espo\Custom\Controllers;
 
 use Espo\Core\Api\Request;
-use Espo\Core\Controllers\Base;
+use Espo\Core\Api\Response;
 use Espo\Core\InjectableFactory;
 use Espo\Custom\Services\CrmKpi\CrmKpiService;
 
-class CrmKpi extends Base
+class CrmKpi extends \Espo\Core\Templates\Controllers\Base
 {
-    public function getActionSummary(Request $request): object
+    public function getActionSummary(Request $request, Response $response): object
     {
         $period = $request->getQueryParam('period') ?? 'currentMonth';
 
