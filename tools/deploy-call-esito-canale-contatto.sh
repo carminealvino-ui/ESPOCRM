@@ -42,6 +42,7 @@ FILES=(
   "client/custom/res/css/esito-popup-notification.css"
   "custom/Espo/Custom/Classes/Select/Call/PrimaryFilters/DaRiscontrare.php"
   "custom/Espo/Custom/Resources/metadata/selectDefs/Call.json"
+  "custom/Espo/Custom/Hooks/Call/SyncOwnerFromAppuntamento.php"
   "custom/Espo/Custom/Hooks/Call/NormalizeAutoPendingFields.php"
   "custom/Espo/Custom/Hooks/Call/SyncLeadFromEsito.php"
   "custom/Espo/Custom/Resources/metadata/dashlets/Records.json"
@@ -61,6 +62,7 @@ FILES=(
   "custom/Espo/Custom/Resources/i18n/it_IT/Call.json"
   "custom/Espo/Custom/Resources/i18n/en_US/Call.json"
   "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"
+  "tools/fix-call-assignment-from-appuntamento.php"
 )
 
 for rel in "${FILES[@]}"; do
@@ -82,3 +84,5 @@ echo ""
 echo "Poi nel browser: svuota cache o hard refresh (Ctrl+Shift+R)."
 echo "Popup Call: solo Stato (Svolto/Non svolto) nel promemoria; esito e descrizione nella scheda Call."
 echo "Dashboard Contatti Telefonici: colonna Data Riscontro e tutte le chiamate Pianificate."
+echo "Riallineamento assegnatari Call esistenti:"
+echo "  php ${CRM_ROOT}/tools/fix-call-assignment-from-appuntamento.php"

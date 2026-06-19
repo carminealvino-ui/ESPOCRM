@@ -12,6 +12,7 @@ class AppuntamentoPendingCallCreator
 {
     private const NOTA_PREFIX = 'Auto-Pending-Appuntamento:';
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
+    private const ADMIN_USER_ID = '1';
     private const TESTO_STANDARD =
         'Salve, sono Carmine Alvino di ARIEL ENERGIA, mi fa sapere entro la giornata di oggi '
         . 'poi cosa ha deciso rispetto alla proposta che le ho fatto, Grazie';
@@ -57,8 +58,12 @@ class AppuntamentoPendingCallCreator
             return null;
         }
 
-        if ($this->findExistingCallId($appuntamentoId)) {
-            return null;
+        $existingCallId = $this->findExistingCallId($appuntamentoId);
+
+        if ($existingCallId) {
+            $this->syncCallOwnerFromAppuntamento($existingCallId, $appuntamento);
+
+            return $existingCallId;
         }
 
         $leadId = $leadIdOverride ?: $this->resolveLeadId($appuntamento);
@@ -165,21 +170,131 @@ class AppuntamentoPendingCallCreator
 
     public function resolveOwnerUserId(Entity $appuntamento): ?string
     {
+        $appuntamento = $this->reloadAppuntamento($appuntamento);
+
+        $assignedUserIds = $this->resolveAssignedUserIds($appuntamento);
+
+        if ($assignedUserIds !== []) {
+            return $this->preferNonAdminUserId($assignedUserIds);
+        }
+
+        $modifiedById = $appuntamento->get('modifiedById');
+
+        if ($modifiedById && (string) $modifiedById !== self::ADMIN_USER_ID) {
+            return (string) $modifiedById;
+        }
+
+        $createdById = $appuntamento->get('createdById');
+
+        if ($createdById && (string) $createdById !== self::ADMIN_USER_ID) {
+            return (string) $createdById;
+        }
+
+        return $modifiedById ? (string) $modifiedById : ($createdById ? (string) $createdById : null);
+    }
+
+    /**
+     * @return string[]
+     */
+    private function resolveAssignedUserIds(Entity $appuntamento): array
+    {
+        $ids = $appuntamento->getLinkMultipleIdList('assignedUsers');
+
+        if ($ids !== []) {
+            return array_values(array_map('strval', $ids));
+        }
+
         $assignedUsersIds = $appuntamento->get('assignedUsersIds');
 
         if (is_array($assignedUsersIds) && $assignedUsersIds !== []) {
-            return (string) $assignedUsersIds[0];
+            return array_values(array_map('strval', $assignedUsersIds));
         }
 
         $assignedUserId = $appuntamento->get('assignedUserId');
 
         if ($assignedUserId) {
-            return (string) $assignedUserId;
+            return [(string) $assignedUserId];
         }
 
-        $createdById = $appuntamento->get('createdById');
+        $collaboratorIds = $appuntamento->getLinkMultipleIdList('collaborators');
 
-        return $createdById ? (string) $createdById : null;
+        if ($collaboratorIds !== []) {
+            return array_values(array_map('strval', $collaboratorIds));
+        }
+
+        return [];
+    }
+
+    /**
+     * @param string[] $userIds
+     */
+    private function preferNonAdminUserId(array $userIds): string
+    {
+        foreach ($userIds as $userId) {
+            if ((string) $userId !== self::ADMIN_USER_ID) {
+                return (string) $userId;
+            }
+        }
+
+        return (string) $userIds[0];
+    }
+
+    private function reloadAppuntamento(Entity $appuntamento): Entity
+    {
+        $appuntamentoId = $appuntamento->getId();
+
+        if (!$appuntamentoId) {
+            return $appuntamento;
+        }
+
+        $fresh = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
+
+        return $fresh ?: $appuntamento;
+    }
+
+    private function syncCallOwnerFromAppuntamento(string $callId, Entity $appuntamento): void
+    {
+        $ownerUserId = $this->resolveOwnerUserId($appuntamento);
+
+        if (!$ownerUserId) {
+            return;
+        }
+
+        $call = $this->entityManager->getEntityById('Call', $callId);
+
+        if (!$call) {
+            return;
+        }
+
+        if ((string) $call->get('assignedUserId') === $ownerUserId) {
+            $usersIds = $call->get('usersIds') ?: [];
+
+            if (in_array($ownerUserId, $usersIds, true)) {
+                return;
+            }
+        }
+
+        $ownerUserName = $this->resolveOwnerUserName($ownerUserId);
+
+        $call->set([
+            'assignedUserId' => $ownerUserId,
+            'assignedUserName' => $ownerUserName,
+            'usersIds' => [$ownerUserId],
+            'usersNames' => $ownerUserName ? [$ownerUserId => $ownerUserName] : (object) [],
+        ]);
+
+        $this->entityManager->saveEntity($call, [
+            'skipAcl' => true,
+            'silent' => true,
+        ]);
+
+        $this->log->info(
+            'Auto-create Call Pending: aggiornato assegnatario Call {callId} -> user {userId}',
+            [
+                'callId' => $callId,
+                'userId' => $ownerUserId,
+            ]
+        );
     }
 
     private function resolveOwnerUserName(?string $userId): ?string
