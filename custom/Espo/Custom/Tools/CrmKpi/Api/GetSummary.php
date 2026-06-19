@@ -4,13 +4,12 @@ namespace Espo\Custom\Tools\CrmKpi\Api;
 
 use Espo\Core\Api\Action;
 use Espo\Core\Api\Request;
+use Espo\Core\Error\Body;
+use Espo\Core\Exceptions\Error;
 use Espo\Core\InjectableFactory;
 use Espo\Custom\Services\CrmKpi\CrmKpiService;
 use Espo\Entities\User;
 
-/**
- * Fallback API esplicita: GET api/v1/CrmKpi/action/summary
- */
 class GetSummary implements Action
 {
     public function __construct(
@@ -26,8 +25,18 @@ class GetSummary implements Action
             $period = 'currentMonth';
         }
 
-        $service = $this->injectableFactory->create(CrmKpiService::class);
+        try {
+            $service = $this->injectableFactory->create(CrmKpiService::class);
 
-        return $service->getSummary($this->user, $period);
+            return $service->getSummary($this->user, $period);
+        } catch (\Throwable $e) {
+            throw new Error(
+                Body::create()
+                    ->withMessageTranslation('KPI CRM: ' . $e->getMessage(), null, ['scope' => 'Global'])
+                    ->encode(),
+                500,
+                $e
+            );
+        }
     }
 }

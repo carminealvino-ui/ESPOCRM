@@ -37,6 +37,7 @@ FILES=(
   "custom/Espo/Custom/Tools/CrmKpi/Api/GetSummary.php"
   "custom/Espo/Custom/Resources/routes.json"
   "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
+  "custom/Espo/Custom/Tools/DateTime/BusinessDateTime.php"
   "custom/Espo/Custom/Tools/CrmKpi/DateRange.php"
   "custom/Espo/Custom/Tools/CrmKpi/MonthRange.php"
   "custom/Espo/Custom/Classes/Select/Appuntamento/PrimaryFilters/MeseCorrente.php"
@@ -60,6 +61,7 @@ FILES=(
   "tools/rollback-dashboard-pre-kpi.php"
   "tools/backup-dashboard-utente.sh"
   "tools/riapplica-variazioni-post-restore.sh"
+  "tools/diagnose-crm-kpi-api.php"
 )
 
 for rel in "${FILES[@]}"; do

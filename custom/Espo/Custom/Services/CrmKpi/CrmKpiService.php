@@ -20,6 +20,13 @@ class CrmKpiService
         7 => 'Dom',
     ];
 
+    private const OPEN_OPPORTUNITY_WHERE = [
+        'AND' => [
+            ['stage!=' => 'Closed Won'],
+            ['stage!=' => 'Closed Lost'],
+        ],
+    ];
+
     public function __construct(
         private EntityManager $entityManager,
     ) {}
@@ -67,7 +74,7 @@ class CrmKpiService
             ],
             'funnel' => $this->getFunnel($from, $to),
             'contractsByWeekday' => $this->getContractsByWeekday($from, $to),
-            'alerts' => $this->getAlerts(),
+            'alerts' => $this->getAlertsSafe(),
         ];
     }
 
@@ -87,31 +94,16 @@ class CrmKpiService
     {
         return (int) $this->entityManager
             ->getRDBRepository('Opportunity')
-            ->where([
-                'stage!=' => ['Closed Won', 'Closed Lost'],
-            ])
+            ->where(self::OPEN_OPPORTUNITY_WHERE)
             ->count();
     }
 
     private function sumOpenOpportunityAmount(): float
     {
-        $sum = $this->entityManager
-            ->getRDBRepository('Opportunity')
-            ->where([
-                'stage!=' => ['Closed Won', 'Closed Lost'],
-            ])
-            ->sum('importoOpportunit');
-
-        if ($sum > 0) {
-            return (float) $sum;
-        }
-
-        return (float) $this->entityManager
-            ->getRDBRepository('Opportunity')
-            ->where([
-                'stage!=' => ['Closed Won', 'Closed Lost'],
-            ])
-            ->sum('amount');
+        return $this->safeSum('Opportunity', self::OPEN_OPPORTUNITY_WHERE, [
+            'importoOpportunit',
+            'amount',
+        ]);
     }
 
     private function countContracts(string $from, string $to): int
@@ -127,25 +119,40 @@ class CrmKpiService
 
     private function sumContractAmount(string $from, string $to): float
     {
-        $sum = $this->entityManager
-            ->getRDBRepository('Quote')
-            ->where([
-                'dateQuoted>=' => $from,
-                'dateQuoted<=' => $to,
-            ])
-            ->sum('importoContratto');
+        $where = [
+            'dateQuoted>=' => $from,
+            'dateQuoted<=' => $to,
+        ];
 
-        if ($sum > 0) {
-            return (float) $sum;
+        return $this->safeSum('Quote', $where, [
+            'importoContratto',
+            'amount',
+            'grandTotalAmount',
+        ]);
+    }
+
+    /**
+     * @param array<string, mixed> $where
+     * @param string[] $attributes
+     */
+    private function safeSum(string $entityType, array $where, array $attributes): float
+    {
+        foreach ($attributes as $attribute) {
+            try {
+                $sum = $this->entityManager
+                    ->getRDBRepository($entityType)
+                    ->where($where)
+                    ->sum($attribute);
+
+                if ($sum !== null && (float) $sum !== 0.0) {
+                    return (float) $sum;
+                }
+            } catch (\Throwable) {
+                continue;
+            }
         }
 
-        return (float) $this->entityManager
-            ->getRDBRepository('Quote')
-            ->where([
-                'dateQuoted>=' => $from,
-                'dateQuoted<=' => $to,
-            ])
-            ->sum('amount');
+        return 0.0;
     }
 
     /**
@@ -243,6 +250,18 @@ class CrmKpiService
     /**
      * @return object[]
      */
+    private function getAlertsSafe(): array
+    {
+        try {
+            return $this->getAlerts();
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * @return object[]
+     */
     private function getAlerts(): array
     {
         $now = (new DateTime())->format(DateTimeUtil::SYSTEM_DATE_TIME_FORMAT);
@@ -282,12 +301,7 @@ class CrmKpiService
             ->find();
 
         foreach ($negotiationCollection as $opportunity) {
-            $quote = $this->entityManager
-                ->getRDBRepository('Quote')
-                ->where(['opportunitaId' => $opportunity->getId()])
-                ->findOne();
-
-            if (!$quote) {
+            if (!$this->opportunityHasQuote($opportunity->getId())) {
                 $negotiationWithoutContract++;
             }
         }
@@ -320,6 +334,26 @@ class CrmKpiService
                 'link' => '#Call',
             ],
         ];
+    }
+
+    private function opportunityHasQuote(string $opportunityId): bool
+    {
+        foreach (['opportunitaId', 'opportunityId'] as $attribute) {
+            try {
+                $quote = $this->entityManager
+                    ->getRDBRepository('Quote')
+                    ->where([$attribute => $opportunityId])
+                    ->findOne();
+
+                if ($quote) {
+                    return true;
+                }
+            } catch (\Throwable) {
+                continue;
+            }
+        }
+
+        return false;
     }
 
     private function percentChange(float|int $current, float|int $previous): ?float
