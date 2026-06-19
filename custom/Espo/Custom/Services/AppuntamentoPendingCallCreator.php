@@ -338,7 +338,7 @@ class AppuntamentoPendingCallCreator
     }
 
     /**
-     * @return array{name: string, data: string, whatsAppNumero: ?string, dateEnd: null}
+     * @return array{name: string, whatsAppNumero: ?string, dateEnd: null}
      */
     public function buildCallPresentationFields(
         \DateTimeImmutable $callInstant,
@@ -346,7 +346,6 @@ class AppuntamentoPendingCallCreator
         ?string $telefono
     ): array {
         $dataLabel = PendingCallDateTime::formatBusinessDateTime($callInstant);
-        $localDate = PendingCallDateTime::formatBusinessDateTime($callInstant, 'Y-m-d');
 
         $parentName = trim((string) $parentName);
         $telefono = trim((string) $telefono);
@@ -365,7 +364,6 @@ class AppuntamentoPendingCallCreator
 
         return [
             'name' => $name,
-            'data' => $localDate,
             'whatsAppNumero' => $whatsAppNumero,
             'dateEnd' => null,
         ];
