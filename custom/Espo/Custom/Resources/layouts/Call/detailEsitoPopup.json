@@ -27,6 +27,11 @@
             ],
             [
                 {
+                    "name": "esito"
+                }
+            ],
+            [
+                {
                     "name": "description",
                     "fullWidth": true
                 }

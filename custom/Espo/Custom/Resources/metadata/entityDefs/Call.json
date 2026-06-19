@@ -70,6 +70,23 @@
             "default": "",
             "isCustom": true
         },
+        "esito": {
+            "type": "enum",
+            "options": [
+                "",
+                "Non interessato",
+                "In Trattativa",
+                "Opportunità Accettata"
+            ],
+            "style": {
+                "": null,
+                "Non interessato": "danger",
+                "In Trattativa": "warning",
+                "Opportunità Accettata": "success"
+            },
+            "default": "",
+            "isCustom": true
+        },
         "vocale": {
             "notNull": true,
             "type": "bool",

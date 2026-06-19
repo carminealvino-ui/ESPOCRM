@@ -60,6 +60,8 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
 
         const attributes = {
             direction: 'Outbound',
+            whatsApp: true,
+            vocale: false,
         };
 
         const tipologia = normalize(model.get('tipologia'));
@@ -182,6 +184,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             status: model.get('status'),
             direction: model.get('direction'),
             tipologia: model.get('tipologia'),
+            esito: model.get('esito'),
             description: model.get('description'),
             vocale: model.get('vocale'),
             whatsApp: model.get('whatsApp'),

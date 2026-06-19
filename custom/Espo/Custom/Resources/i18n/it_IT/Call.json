@@ -8,6 +8,7 @@
         "tipologia": "Tipologia",
         "vocale": "Vocale",
         "canaleContatto": "Canale",
+        "esito": "Esito",
         "whatsAppNumero": "WhatsApp Numero",
         "data": "Data",
         "dataRichiamo": "Data Richiamo",
@@ -44,6 +45,12 @@
         "canaleContatto": {
             "call": "Chiamata",
             "whatsapp": "WhatsApp"
+        },
+        "esito": {
+            "": "",
+            "Non interessato": "Non interessato",
+            "In Trattativa": "In Trattativa",
+            "Opportunità Accettata": "Opportunità Accettata"
         },
         "richiamo": {
             "": "",

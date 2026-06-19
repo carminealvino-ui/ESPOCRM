@@ -19,4 +19,7 @@
     <button type="button" class="btn btn-primary btn-sm hidden" data-action="createOpportunity" data-role="create-opportunity">
         Crea Opportunità
     </button>
+    <button type="button" class="btn btn-primary btn-sm hidden" data-action="createAppuntamento" data-role="create-appuntamento">
+        Crea Appuntamento
+    </button>
 </div>
