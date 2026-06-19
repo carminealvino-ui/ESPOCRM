@@ -68,10 +68,7 @@
                 ]
             },
             "searchData": {
-                "bool": {
-                    "onlyMy": true
-                },
-                "primary": "planned"
+                "primary": "daRiscontrare"
             }
         },
         "layout": [

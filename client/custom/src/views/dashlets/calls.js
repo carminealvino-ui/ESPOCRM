@@ -1,6 +1,6 @@
-define('custom:views/dashlets/calls', ['crm:views/dashlets/calls'], function (Dep) {
+define('custom:views/dashlets/calls', ['views/dashlets/abstract/record-list'], function (Dep) {
 
-    const DEFAULT_EXPANDED_LAYOUT = {
+    const EXPANDED_LAYOUT = {
         rows: [
             [
                 {
@@ -31,81 +31,48 @@ define('custom:views/dashlets/calls', ['crm:views/dashlets/calls'], function (De
         ],
     };
 
-    const DEFAULT_SEARCH_DATA = {
-        bool: {
-            onlyMy: true,
-        },
-        primary: 'planned',
+    const SEARCH_DATA = {
+        primary: 'daRiscontrare',
     };
 
     return Dep.extend({
 
+        name: 'Calls',
+        scope: 'Call',
+        listView: 'crm:views/call/record/list-expanded',
+        rowActionsView: 'crm:views/call/record/row-actions/dashlet',
+
         setup: function () {
-            this.ensureDashletOptions();
+            this.applyDashletDefaults();
 
             Dep.prototype.setup.call(this);
         },
 
-        ensureDashletOptions: function () {
+        applyDashletDefaults: function () {
             if (!this.options.data) {
                 this.options.data = {};
             }
 
             const data = this.options.data;
 
-            data.expandedLayout = this.ensureDataInLayout(
-                Espo.Utils.cloneDeep(data.expandedLayout || DEFAULT_EXPANDED_LAYOUT)
-            );
+            data.searchData = Espo.Utils.cloneDeep(SEARCH_DATA);
+            data.expandedLayout = Espo.Utils.cloneDeep(EXPANDED_LAYOUT);
 
-            data.searchData = DEFAULT_SEARCH_DATA;
-        },
-
-        ensureDataInLayout: function (layout) {
-            if (this.layoutHasField(layout, 'data')) {
-                return layout;
+            if (!data.displayRecords) {
+                data.displayRecords = 10;
             }
 
-            if (!layout.rows) {
-                layout.rows = [];
+            if (!data.orderBy) {
+                data.orderBy = 'dateStart';
             }
 
-            if (layout.rows.length > 1 && Array.isArray(layout.rows[1])) {
-                layout.rows[1].unshift({
-                    name: 'data',
-                    soft: true,
-                });
-
-                return layout;
+            if (!data.order) {
+                data.order = 'asc';
             }
-
-            layout.rows.push([
-                {
-                    name: 'data',
-                    soft: true,
-                },
-                {
-                    name: 'dateStart',
-                    soft: true,
-                },
-            ]);
-
-            return layout;
-        },
-
-        layoutHasField: function (layout, fieldName) {
-            if (!layout || !layout.rows) {
-                return false;
-            }
-
-            return layout.rows.some(function (row) {
-                return row.some(function (cell) {
-                    return cell && cell.name === fieldName;
-                });
-            });
         },
 
         getSearchData: function () {
-            return Espo.Utils.cloneDeep(DEFAULT_SEARCH_DATA);
+            return Espo.Utils.cloneDeep(SEARCH_DATA);
         },
     });
 });

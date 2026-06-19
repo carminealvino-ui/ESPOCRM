@@ -1,0 +1,5 @@
+{
+    "primaryFilterClassNameMap": {
+        "daRiscontrare": "Espo\\Custom\\Classes\\Select\\Call\\PrimaryFilters\\DaRiscontrare"
+    }
+}
