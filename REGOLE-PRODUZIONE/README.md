@@ -18,6 +18,10 @@ Dettaglio: [`01-UN-ISTRUZIONE-ALLA-VOLTA.md`](01-UN-ISTRUZIONE-ALLA-VOLTA.md)
 
 ## Regola 2 — Backup del fix (storico e rollback)
 
+**Obbligatorio prima di ogni modifica.** Nessun codice nuovo in produzione senza backup verificato e rollback annotato.
+
+Dettaglio completo (dashboard, Softaculous, hookVersion): [`09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md`](09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md)
+
 - **Prima** di ogni modifica in produzione: backup con naming e cartella documentati.
 - Due livelli complementari:
 
@@ -59,6 +63,15 @@ Dettaglio: [`04-STRUTTURA-BACKUP-DEV.md`](04-STRUTTURA-BACKUP-DEV.md) e [`backup
 
 ---
 
+## Regola 5 — hookVersion su ogni fix hook
+
+- Ogni hook su entità con campo `hookVersion` deve aggiornare **`$entity->set('hookVersion', 'x.y.z')`** con la stessa versione dell’header del file PHP.
+- Incrementare la versione ad ogni modifica; verificare su un record in CRM dopo il deploy.
+
+Dettaglio: [`09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md`](09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md)
+
+---
+
 ## Ordine obbligatorio di lavoro
 
 Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
@@ -77,7 +90,8 @@ Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
 | `08-AVVIO-SYNC-CPANEL.md` | **Checklist cPanel** (token.txt, export → apply → push script) |
 | `06-PUSH-GITHUB-DAL-SERVER.md` | Push delta su GitHub dal server (PAT) |
 | `07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md` | Verifica allineamento: `status --branch=main` |
+| `09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md` | **Backup obbligatorio**, dashboard, Softaculous, **hookVersion** |
 
 ---
 
-*Ultimo aggiornamento regole: 2026-06-02*
+*Ultimo aggiornamento regole: 2026-06-19*
