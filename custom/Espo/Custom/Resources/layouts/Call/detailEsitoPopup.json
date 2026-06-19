@@ -10,78 +10,9 @@
             [
                 {
                     "name": "status"
-                },
-                {
-                    "name": "direction"
-                }
-            ],
-            [
-                {
-                    "name": "tipologia"
-                }
-            ],
-            [
-                {
-                    "name": "canaleContatto"
-                }
-            ],
-            [
-                {
-                    "name": "esito"
-                }
-            ],
-            [
-                {
-                    "name": "description",
-                    "fullWidth": true
-                }
-            ],
-            [
-                {
-                    "name": "daRichiamare"
                 }
             ]
         ],
-        "label": ""
-    },
-    {
-        "rows": [
-            [
-                {
-                    "name": "dataRichiamo"
-                },
-                {
-                    "name": "richiamo"
-                }
-            ]
-        ],
-        "dynamicLogicVisible": {
-            "conditionGroup": [
-                {
-                    "type": "isTrue",
-                    "attribute": "daRichiamare"
-                }
-            ]
-        },
-        "label": ""
-    },
-    {
-        "rows": [
-            [
-                {
-                    "name": "whatsAppNumero",
-                    "readOnly": true
-                }
-            ]
-        ],
-        "dynamicLogicVisible": {
-            "conditionGroup": [
-                {
-                    "type": "isTrue",
-                    "attribute": "whatsApp"
-                }
-            ]
-        },
         "label": ""
     }
 ]

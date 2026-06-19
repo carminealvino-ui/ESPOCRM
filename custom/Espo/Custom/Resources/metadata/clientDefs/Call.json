@@ -2,6 +2,9 @@
     "kanbanViewMode": false,
     "color": null,
     "iconClass": "fas fa-phone",
+    "recordViews": {
+        "edit": "custom:views/call/record/edit"
+    },
     "relationshipPanels": {
         "parent": {
             "layout": null,

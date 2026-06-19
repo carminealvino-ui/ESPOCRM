@@ -3,14 +3,10 @@
 define('custom:views/appuntamento/popup-notification', [
     'crm:views/meeting/popup-notification',
     'custom:views/opportunity/helpers/appuntamento-sync',
-    'custom:helpers/call-esito-popup-defaults',
-    'custom:helpers/call-appuntamento-sync',
-], function (MeetingPopupModule, AppuntamentoSyncModule, CallEsitoDefaultsModule, CallAppuntamentoSyncModule) {
+], function (MeetingPopupModule, AppuntamentoSyncModule) {
 
     const Parent = MeetingPopupModule.default || MeetingPopupModule;
     const AppuntamentoSync = AppuntamentoSyncModule.default || AppuntamentoSyncModule;
-    const CallEsitoDefaults = CallEsitoDefaultsModule.default || CallEsitoDefaultsModule;
-    const CallAppuntamentoSync = CallAppuntamentoSyncModule.default || CallAppuntamentoSyncModule;
 
     const ESITO_POPUP_SCOPES = {
         Appuntamento: {
@@ -61,46 +57,15 @@ define('custom:views/appuntamento/popup-notification', [
             isComplete: function (model) {
                 const status = model.get('status');
 
-                if (!status || status === 'Planned') {
-                    return false;
-                }
-
-                if (status === 'Held' && !model.get('esito')) {
-                    return false;
-                }
-
-                if (model.get('daRichiamare')) {
-                    if (!model.get('dataRichiamo') || !model.get('richiamo')) {
-                        return false;
-                    }
-                }
-
-                return true;
+                return !!status && status !== 'Planned';
             },
-            incompleteMessage: 'Compilare Stato, Esito (se Svolto) e dati richiamo (se attivo), poi cliccare Salva.',
+            incompleteMessage: 'Selezionare Stato (Svolto o Non svolto) e cliccare Salva.',
             getMissingFields: function (model) {
-                const missing = [];
-                const status = model.get('status');
-
-                if (!status || status === 'Planned') {
-                    missing.push('Stato');
+                if (!model.get('status') || model.get('status') === 'Planned') {
+                    return ['Stato'];
                 }
 
-                if (status === 'Held' && !model.get('esito')) {
-                    missing.push('Esito');
-                }
-
-                if (model.get('daRichiamare')) {
-                    if (!model.get('dataRichiamo')) {
-                        missing.push('Data Richiamo');
-                    }
-
-                    if (!model.get('richiamo')) {
-                        missing.push('Richiamo');
-                    }
-                }
-
-                return missing;
+                return [];
             },
         },
         Task: {
@@ -142,7 +107,6 @@ define('custom:views/appuntamento/popup-notification', [
 
             this.addActionHandler('saveEsito', () => this.actionSaveEsito());
             this.addActionHandler('createOpportunity', () => this.actionCreateOpportunity());
-            this.addActionHandler('createAppuntamento', () => this.actionCreateAppuntamento());
         }
 
         data() {
@@ -190,10 +154,6 @@ define('custom:views/appuntamento/popup-notification', [
                         this.esitoModel = model;
                         this.esitoEntityType = entityType;
 
-                        if (entityType === 'Call') {
-                            CallEsitoDefaults.applyDefaults(model, this.notificationData.name);
-                        }
-
                         return new Promise(resolve => {
                             this.createView('esitoRecord', 'views/record/edit', {
                                 scope: entityType,
@@ -209,11 +169,6 @@ define('custom:views/appuntamento/popup-notification', [
                                 isWide: true,
                             }, view => {
                                 view.render();
-
-                                if (entityType === 'Call') {
-                                    this.setupCallEsitoPopup(view);
-                                }
-
                                 this.setupActionButtonListeners(view);
                                 this.updateActionButtons();
                                 resolve();
@@ -223,55 +178,6 @@ define('custom:views/appuntamento/popup-notification', [
                 });
 
             this.wait(promise);
-        }
-
-        setupCallEsitoPopup(recordView) {
-            const notificationName = this.notificationData && this.notificationData.name;
-            const apply = () => {
-                CallEsitoDefaults.applyWithRetry(recordView, notificationName);
-            };
-
-            apply();
-
-            window.setTimeout(apply, 0);
-            window.setTimeout(apply, 200);
-
-            this.listenToOnce(recordView, 'after:render', apply);
-            this.setupCallRichiamoVisibility(recordView);
-        }
-
-        setupCallRichiamoVisibility(recordView) {
-            const model = recordView.model;
-
-            if (!model) {
-                return;
-            }
-
-            const update = () => {
-                const show = !!model.get('daRichiamare');
-
-                ['dataRichiamo', 'richiamo'].forEach(fieldName => {
-                    recordView.$el
-                        .find('.field[data-name="' + fieldName + '"]')
-                        .closest('.cell, .form-group')
-                        .toggle(show);
-                });
-            };
-
-            update();
-            this.listenTo(model, 'change:daRichiamare', update);
-
-            this.$el.on(
-                'change.callRichiamo click.callRichiamo',
-                '.field[data-name="daRichiamare"] input',
-                () => window.setTimeout(update, 0)
-            );
-        }
-
-        applyCallEsitoDefaults(recordView) {
-            const notificationName = this.notificationData && this.notificationData.name;
-
-            CallEsitoDefaults.applyWithRetry(recordView, notificationName);
         }
 
         getEsitoModel() {
@@ -303,7 +209,11 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
-            ['status', 'direction', 'sottostato', 'esito', 'noteEsito', 'tipologia', 'canaleContatto', 'description', 'daRichiamare', 'dataRichiamo', 'richiamo'].forEach(fieldName => {
+            const fieldNames = model.entityType === 'Call' ?
+                ['status'] :
+                ['status', 'direction', 'sottostato', 'esito', 'noteEsito', 'tipologia', 'canaleContatto', 'description', 'daRichiamare', 'dataRichiamo', 'richiamo'];
+
+            fieldNames.forEach(fieldName => {
                 const fieldView = recordView.getFieldView && recordView.getFieldView(fieldName);
 
                 if (fieldView && typeof fieldView.fetch === 'function') {
@@ -311,9 +221,6 @@ define('custom:views/appuntamento/popup-notification', [
                 }
             });
 
-            if (model.entityType === 'Call') {
-                CallEsitoDefaults.applyDefaults(model, this.notificationData && this.notificationData.name);
-            }
         }
 
         getMissingEsitoFields() {
@@ -360,17 +267,13 @@ define('custom:views/appuntamento/popup-notification', [
             if (missing.length) {
                 const actionLabel = this.shouldShowCreateOpportunity() ?
                     'Crea Opportunità' :
-                    (this.shouldShowCreateAppuntamento() ? 'Crea Appuntamento' : 'Salva');
+                    'Salva';
 
                 return 'Compilare ' + missing.join(', ') + ', poi cliccare ' + actionLabel + '.';
             }
 
             if (this.shouldShowCreateOpportunity()) {
                 return 'Compilare Stato, Sottostato ed Esito, poi cliccare Crea Opportunità.';
-            }
-
-            if (this.shouldShowCreateAppuntamento()) {
-                return 'Compilare Stato ed Esito, poi cliccare Crea Appuntamento.';
             }
 
             return this.esitoPopupConfig.incompleteMessage;
@@ -381,9 +284,8 @@ define('custom:views/appuntamento/popup-notification', [
 
             if (recordModel) {
                 this.listenTo(recordModel, 'change:status', () => this.updateActionButtons());
-                this.listenTo(recordModel, 'change:esito', () => this.updateActionButtons());
                 this.listenTo(recordModel, 'change', () => {
-                    if (recordModel.hasChanged('status') || recordModel.hasChanged('esito')) {
+                    if (recordModel.hasChanged('status')) {
                         this.updateActionButtons();
                     }
                 });
@@ -408,18 +310,15 @@ define('custom:views/appuntamento/popup-notification', [
             if (!bindField('status')) {
                 this.listenToOnce(recordView, 'after:render', () => {
                     bindField('status');
-                    bindField('esito');
                     this.updateActionButtons();
                 });
-            } else {
-                bindField('esito');
             }
 
             this.$el.off('change.esitoStatus input.esitoStatus click.esitoStatus');
 
             this.$el.on(
                 'change.esitoStatus input.esitoStatus',
-                '.field[data-name="status"] select, .field[data-name="status"] input, .field[data-name="esito"] select, .field[data-name="esito"] input',
+                '.field[data-name="status"] select, .field[data-name="status"] input',
                 () => {
                     window.setTimeout(() => this.updateActionButtons(), 0);
                 }
@@ -427,7 +326,7 @@ define('custom:views/appuntamento/popup-notification', [
 
             this.$el.on(
                 'click.esitoStatus',
-                '.field[data-name="status"] .selectize-dropdown-content .option, .field[data-name="esito"] .selectize-dropdown-content .option',
+                '.field[data-name="status"] .selectize-dropdown-content .option',
                 () => {
                     window.setTimeout(() => this.updateActionButtons(), 50);
                 }
@@ -457,29 +356,6 @@ define('custom:views/appuntamento/popup-notification', [
             return status;
         }
 
-        getCurrentEsito() {
-            const recordView = this.getView('esitoRecord');
-            let esito = null;
-
-            if (recordView && recordView.model) {
-                esito = recordView.model.get('esito');
-            } else if (this.esitoModel) {
-                esito = this.esitoModel.get('esito');
-            }
-
-            const $select = this.$el.find('.field[data-name="esito"] select');
-
-            if ($select.length) {
-                const domValue = $select.val();
-
-                if (domValue) {
-                    esito = domValue;
-                }
-            }
-
-            return esito;
-        }
-
         shouldShowCreateOpportunity() {
             const entityType = this.esitoEntityType || this.notificationData.entityType;
 
@@ -490,48 +366,26 @@ define('custom:views/appuntamento/popup-notification', [
             return this.getCurrentStatus() === 'Held';
         }
 
-        shouldShowCreateAppuntamento() {
-            const entityType = this.esitoEntityType || this.notificationData.entityType;
-
-            if (entityType !== 'Call') {
-                return false;
-            }
-
-            return this.getCurrentStatus() === 'Held'
-                && this.getCurrentEsito() === CallAppuntamentoSync.ESITO_OPPORTUNITA_ACCETTATA;
-        }
-
         updateActionButtons() {
             const entityType = this.esitoEntityType || this.notificationData.entityType;
             const $save = this.$el.find('[data-role="save"]');
             const $createOpportunity = this.$el.find('[data-role="create-opportunity"]');
-            const $createAppuntamento = this.$el.find('[data-role="create-appuntamento"]');
 
             $createOpportunity.addClass('hidden');
-            $createAppuntamento.addClass('hidden');
 
-            if (entityType === 'Appuntamento') {
-                const showCreateOpportunity = this.shouldShowCreateOpportunity();
-
-                if (showCreateOpportunity) {
-                    $save.addClass('hidden');
-                    $createOpportunity.removeClass('hidden');
-                } else {
-                    $save.removeClass('hidden');
-                }
+            if (entityType !== 'Appuntamento') {
+                $save.removeClass('hidden');
 
                 return;
             }
 
-            if (entityType === 'Call') {
-                const showCreateAppuntamento = this.shouldShowCreateAppuntamento();
+            const showCreateOpportunity = this.shouldShowCreateOpportunity();
 
-                if (showCreateAppuntamento) {
-                    $save.addClass('hidden');
-                    $createAppuntamento.removeClass('hidden');
-                } else {
-                    $save.removeClass('hidden');
-                }
+            if (showCreateOpportunity) {
+                $save.addClass('hidden');
+                $createOpportunity.removeClass('hidden');
+            } else {
+                $save.removeClass('hidden');
             }
         }
 
@@ -551,65 +405,6 @@ define('custom:views/appuntamento/popup-notification', [
                 prospectName: model.get('prospectName'),
                 telefono: model.get('telefono'),
             };
-        }
-
-        openCreateAppuntamentoModal(model) {
-            const attributes = CallAppuntamentoSync.buildAttributesFromCall(model);
-            const leadId = CallAppuntamentoSync.resolveLeadId(model);
-
-            const openModal = (attrs) => {
-                this.createView('createAppuntamentoDialog', 'views/modals/edit', {
-                    scope: 'Appuntamento',
-                    attributes: attrs,
-                }, view => {
-                    view.render();
-
-                    this.listenToOnce(view, 'after:save', () => {
-                        super.resolveCancel();
-                    });
-                });
-            };
-
-            if (!leadId) {
-                openModal(attributes);
-
-                return;
-            }
-
-            this.getModelFactory().create('Lead')
-                .then(leadModel => {
-                    leadModel.id = leadId;
-
-                    return leadModel.fetch().then(() => {
-                        openModal(CallAppuntamentoSync.enrichFromLead(attributes, leadModel));
-                    });
-                });
-        }
-
-        actionCreateAppuntamento() {
-            if (!this.shouldShowCreateAppuntamento()) {
-                return;
-            }
-
-            if (!this.isEsitoComplete()) {
-                Espo.Ui.warning(this.getIncompleteMessage());
-
-                return;
-            }
-
-            const model = this.getEsitoModel();
-            const saveAttributes = CallEsitoDefaults.getSaveAttributes(
-                model,
-                this.notificationData && this.notificationData.name
-            );
-
-            Espo.Ui.notify(' ...');
-
-            model.save(saveAttributes)
-                .then(() => {
-                    Espo.Ui.notify();
-                    this.openCreateAppuntamentoModal(model);
-                });
         }
 
         openCreateOpportunityModal(model) {
@@ -663,10 +458,9 @@ define('custom:views/appuntamento/popup-notification', [
             let saveAttributes = null;
 
             if (entityType === 'Call') {
-                saveAttributes = CallEsitoDefaults.getSaveAttributes(
-                    model,
-                    this.notificationData && this.notificationData.name
-                );
+                saveAttributes = {
+                    status: model.get('status'),
+                };
             }
 
             Espo.Ui.notify(' ...');
