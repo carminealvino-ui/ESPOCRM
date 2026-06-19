@@ -28,19 +28,15 @@ function parseRunUserName(array $argv): string
     return is_string($fromEnv) && $fromEnv !== '' ? $fromEnv : 'admin';
 }
 
-function setupRunUser(Container $container, EntityManager $em, array $argv): void
+function resolveRunUser(EntityManager $em, array $argv): Entity
 {
-    $userName = parseRunUserName($argv);
-    $appUser = $container->getByClass(ApplicationUser::class);
+    $requested = parseRunUserName($argv);
 
-    if ($userName === 'system') {
-        $appUser->setupSystemUser();
-        echo "Utente esecuzione: system\n\n";
-
-        return;
+    if ($requested === 'system') {
+        fail('resolveRunUser non supporta system. Usare setupRunUser().');
     }
 
-    $user = $em->getRDBRepository('User')->where(['userName' => $userName])->findOne();
+    $user = $em->getRDBRepository('User')->where(['userName' => $requested])->findOne();
 
     if (!$user) {
         $user = $em->getRDBRepository('User')
@@ -50,11 +46,34 @@ function setupRunUser(Container $container, EntityManager $em, array $argv): voi
     }
 
     if (!$user) {
-        fail('Nessun utente admin trovato.');
+        fail('Utente non trovato: ' . $requested . ' (nessun admin attivo disponibile).');
     }
+
+    if ($user->get('userName') !== $requested) {
+        echo "Nota: --user={$requested} non trovato, uso {$user->get('userName')}\n";
+    }
+
+    return $user;
+}
+
+function setupRunUser(Container $container, EntityManager $em, array $argv): Entity
+{
+    $requested = parseRunUserName($argv);
+    $appUser = $container->getByClass(ApplicationUser::class);
+
+    if ($requested === 'system') {
+        $appUser->setupSystemUser();
+        echo "Utente esecuzione: system\n\n";
+
+        return $em->getRDBRepository('User')->getById('system');
+    }
+
+    $user = resolveRunUser($em, $argv);
 
     $appUser->setUser($user);
     echo 'Utente esecuzione: ' . $user->get('userName') . "\n\n";
+
+    return $user;
 }
 
 /**

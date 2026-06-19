@@ -5,7 +5,7 @@
  *
  *   php tools/crea-report-vendite-mese.php --dry-run
  *   php tools/crea-report-vendite-mese.php --reports-only --force
- *   php tools/crea-report-vendite-mese.php --dashboard-only --force --user=admin
+ *   php tools/crea-report-vendite-mese.php --dashboard-only --force --user=carmine_alvino
  *   php tools/crea-report-vendite-mese.php --force
  */
 declare(strict_types=1);
@@ -52,7 +52,7 @@ $em = $container->get('entityManager');
 $recordServiceContainer = $container->get('recordServiceContainer');
 $reportService = $recordServiceContainer->get('Report');
 
-setupRunUser($container, $em, $argv);
+$user = setupRunUser($container, $em, $argv);
 
 $tabName = (string) ($template['tabName'] ?? 'Vendite Mese');
 $prefix = (string) ($template['prefix'] ?? 'Vendite Mese - ');
@@ -136,12 +136,6 @@ if ($reportIdMap === []) {
 }
 
 $layout = buildReportTabLayout($reportIdMap, $definitions, $prefix);
-$userName = parseRunUserName($argv);
-$user = $em->getRDBRepository('User')->where(['userName' => $userName])->findOne();
-
-if (!$user) {
-    fail('Utente non trovato: ' . $userName);
-}
 
 $backupDir = $root . '/backup_dev/dashboard-vendite-mese-' . date('Ymd-His');
 mkdir($backupDir, 0755, true);
@@ -149,7 +143,7 @@ mkdir($backupDir, 0755, true);
 $pref = $em->getEntityById('Preferences', $user->getId());
 
 if (!$pref) {
-    fail('Preferenze non trovate per ' . $userName);
+    fail('Preferenze non trovate per ' . $user->get('userName'));
 }
 
 $tabs = getPreferenceDashboardTabs($pref, $em) ?? [];

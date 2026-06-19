@@ -4,7 +4,7 @@
  * Aggiunge/aggiorna il tab dashboard "CRM" con il dashlet KPI.
  *
  *   php tools/applica-dashboard-crm-kpi.php --dry-run
- *   php tools/applica-dashboard-crm-kpi.php --force --user=admin
+ *   php tools/applica-dashboard-crm-kpi.php --force --user=carmine_alvino
  */
 declare(strict_types=1);
 
@@ -30,7 +30,7 @@ $app = new Application();
 $container = $app->getContainer();
 $em = $container->get('entityManager');
 
-setupRunUser($container, $em, $argv);
+$user = setupRunUser($container, $em, $argv);
 
 $layout = [
     [
@@ -47,13 +47,6 @@ $layout = [
         ],
     ],
 ];
-
-$userName = parseRunUserName($argv);
-$user = $em->getRDBRepository('User')->where(['userName' => $userName])->findOne();
-
-if (!$user) {
-    fail('Utente non trovato: ' . $userName);
-}
 
 $pref = $em->getEntityById('Preferences', $user->getId());
 
