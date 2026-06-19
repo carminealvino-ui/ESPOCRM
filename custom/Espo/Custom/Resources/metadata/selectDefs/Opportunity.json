@@ -1,0 +1,6 @@
+{
+    "primaryFilterClassNameMap": {
+        "meseCorrente": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\MeseCorrente",
+        "aperte": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\Aperte"
+    }
+}

@@ -77,5 +77,8 @@
             "Available": "Disponibile",
             "Not Available": "Non Disponibile"
         }
+    },
+    "presetFilters": {
+        "meseCorrente": "Mese corrente"
     }
 }

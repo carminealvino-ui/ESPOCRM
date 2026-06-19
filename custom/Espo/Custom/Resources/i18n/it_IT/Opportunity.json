@@ -3,5 +3,9 @@
         "productCategory": "Categoria prodotto",
         "fornitorePartner": "Fornitore / Partner",
         "productBrand": "Brand"
+    },
+    "presetFilters": {
+        "meseCorrente": "Mese corrente",
+        "aperte": "Aperte"
     }
 }

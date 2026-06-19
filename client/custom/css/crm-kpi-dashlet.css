@@ -1,0 +1,117 @@
+.crm-kpi-dashlet {
+    padding: 4px 2px 8px;
+}
+
+.crm-kpi-tiles {
+    margin-bottom: 12px;
+}
+
+.crm-kpi-tile {
+    background: var(--panel-bg, #f8f9fa);
+    border: 1px solid var(--border-color, #dee2e6);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    min-height: 88px;
+}
+
+.crm-kpi-tile:hover {
+    border-color: var(--brand-primary, #5c9acf);
+}
+
+.crm-kpi-tile-label {
+    font-size: 0.85rem;
+    color: var(--text-muted-color, #6c757d);
+    margin-bottom: 4px;
+}
+
+.crm-kpi-tile-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.crm-kpi-tile-meta {
+    font-size: 0.8rem;
+    margin-top: 4px;
+}
+
+.crm-kpi-section {
+    margin-top: 10px;
+    margin-bottom: 8px;
+}
+
+.crm-kpi-section-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.crm-kpi-funnel-step,
+.crm-kpi-weekday {
+    display: grid;
+    grid-template-columns: 120px 1fr 72px;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.crm-kpi-funnel-bar-wrap,
+.crm-kpi-weekday-bar-wrap {
+    background: var(--border-color, #e9ecef);
+    border-radius: 4px;
+    height: 10px;
+    overflow: hidden;
+}
+
+.crm-kpi-funnel-bar,
+.crm-kpi-weekday-bar {
+    background: var(--brand-primary, #5c9acf);
+    height: 100%;
+    min-width: 2px;
+}
+
+.crm-kpi-funnel-value,
+.crm-kpi-weekday-value {
+    text-align: right;
+    font-size: 0.9rem;
+}
+
+.crm-kpi-alert {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid var(--border-color, #dee2e6);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    cursor: pointer;
+}
+
+.crm-kpi-alert-warn {
+    border-color: #f0ad4e;
+    background: rgba(240, 173, 78, 0.08);
+}
+
+.crm-kpi-alert-value {
+    font-weight: 700;
+    min-width: 24px;
+    text-align: center;
+}
+
+.crm-kpi-alert-label {
+    font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+    .crm-kpi-funnel-step,
+    .crm-kpi-weekday {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .crm-kpi-funnel-value,
+    .crm-kpi-weekday-value {
+        text-align: left;
+    }
+}

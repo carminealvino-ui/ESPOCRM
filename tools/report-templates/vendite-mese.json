@@ -1,0 +1,75 @@
+{
+    "tabName": "Vendite Mese",
+    "prefix": "Vendite Mese - ",
+    "reports": [
+        {
+            "name": "Vendite Mese - Elenco contratti",
+            "entityType": "Quote",
+            "type": "List",
+            "columns": [
+                "name",
+                "dateQuoted",
+                "importoContratto",
+                "totaleProvvigioni",
+                "productBrand",
+                "opportunita",
+                "assignedUser"
+            ],
+            "orderBy": "dateQuoted",
+            "order": "desc",
+            "dateField": "dateQuoted",
+            "dateFilterType": "currentMonth"
+        },
+        {
+            "name": "Vendite Mese - Opportunità vinte",
+            "entityType": "Opportunity",
+            "type": "List",
+            "columns": [
+                "name",
+                "closeDate",
+                "stage",
+                "importoOpportunit",
+                "productBrand",
+                "appuntamento",
+                "assignedUser"
+            ],
+            "orderBy": "closeDate",
+            "order": "desc",
+            "dateField": "closeDate",
+            "dateFilterType": "currentMonth",
+            "extraWhere": {
+                "stage": "Closed Won"
+            }
+        },
+        {
+            "name": "Vendite Mese - Provvigioni contratti",
+            "entityType": "Quote",
+            "type": "List",
+            "columns": [
+                "name",
+                "dateQuoted",
+                "totaleProvvigioni",
+                "importoContratto",
+                "productBrand",
+                "opportunita"
+            ],
+            "orderBy": "totaleProvvigioni",
+            "order": "desc",
+            "dateField": "dateQuoted",
+            "dateFilterType": "currentMonth"
+        },
+        {
+            "name": "Vendite Mese - Contratti per brand",
+            "entityType": "Quote",
+            "type": "Grid",
+            "columns": [
+                "productBrand"
+            ],
+            "sums": [
+                "importoContratto"
+            ],
+            "dateField": "dateQuoted",
+            "dateFilterType": "currentMonth"
+        }
+    ]
+}
