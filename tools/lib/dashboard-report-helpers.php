@@ -168,24 +168,146 @@ function backupJson(string $dir, string $filename, $data): void
 }
 
 /**
- * @param array<int, array<string, mixed>> $tabs
+ * @param mixed $tabs
+ * @return string[]
+ */
+function listTabNames($tabs): array
+{
+    if (!is_array($tabs)) {
+        return [];
+    }
+
+    $names = [];
+
+    foreach ($tabs as $tab) {
+        if (is_array($tab) && isset($tab['name'])) {
+            $names[] = (string) $tab['name'];
+        }
+    }
+
+    return $names;
+}
+
+/**
+ * @return array<int, array<string, mixed>>|null
+ */
+function loadTabsFromBackupFile(string $path): ?array
+{
+    if (!is_file($path)) {
+        return null;
+    }
+
+    $decoded = json_decode((string) file_get_contents($path), true);
+
+    if (!is_array($decoded)) {
+        return null;
+    }
+
+    if ($decoded !== [] && array_is_list($decoded)) {
+        $first = $decoded[0] ?? null;
+
+        if (is_array($first) && (isset($first['name']) || isset($first['layout']))) {
+            return $decoded;
+        }
+    }
+
+    if (isset($decoded['dashboardLayout'])) {
+        return normalizeDashboardTabs($decoded['dashboardLayout']);
+    }
+
+    return null;
+}
+
+/**
  * @param array<int, array<string, mixed>> $layout
+ * @param array<string, mixed> $dashlet
  * @return array{0: array<int, array<string, mixed>>, 1: bool}
  */
-function upsertDashboardTab(array $tabs, string $tabName, array $layout): array
+function mergeDashletIntoTabLayout(array $layout, array $dashlet, string $dashletName): array
 {
     $changed = false;
+    $filtered = [];
 
+    foreach ($layout as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+
+        if (($item['name'] ?? '') === $dashletName) {
+            $changed = true;
+            continue;
+        }
+
+        $filtered[] = $item;
+    }
+
+    $maxBottom = 0;
+
+    foreach ($filtered as $item) {
+        $y = (int) ($item['y'] ?? 0);
+        $height = (int) ($item['height'] ?? 2);
+        $maxBottom = max($maxBottom, $y + $height);
+    }
+
+    if (!isset($dashlet['y'])) {
+        $dashlet['y'] = $maxBottom;
+    }
+
+    if (!isset($dashlet['x'])) {
+        $dashlet['x'] = 0;
+    }
+
+    $filtered[] = $dashlet;
+
+    return [$filtered, true];
+}
+
+/**
+ * Aggiunge il dashlet al tab esistente senza rimuovere gli altri.
+ * Se il tab non esiste, lo crea.
+ *
+ * @param array<int, array<string, mixed>> $tabs
+ * @param array<string, mixed> $dashlet
+ * @return array{0: array<int, array<string, mixed>>, 1: bool, 2: string}
+ */
+function appendDashletToDashboardTab(array $tabs, string $tabName, array $dashlet, string $dashletName): array
+{
     foreach ($tabs as $i => $tab) {
         if (!is_array($tab)) {
             continue;
         }
 
-        if (($tab['name'] ?? '') === $tabName) {
-            $tabs[$i]['layout'] = $layout;
-            $changed = true;
+        if (($tab['name'] ?? '') !== $tabName) {
+            continue;
+        }
 
-            return [$tabs, $changed];
+        $layout = is_array($tab['layout'] ?? null) ? $tab['layout'] : [];
+        [$newLayout, $changed] = mergeDashletIntoTabLayout($layout, $dashlet, $dashletName);
+        $tabs[$i]['layout'] = $newLayout;
+
+        return [$tabs, $changed, 'merged'];
+    }
+
+    $dashlet['y'] = $dashlet['y'] ?? 0;
+    $dashlet['x'] = $dashlet['x'] ?? 0;
+    $tabs[] = [
+        'name' => $tabName,
+        'layout' => [$dashlet],
+    ];
+
+    return [$tabs, true, 'created'];
+}
+
+/**
+ * @param array<int, array<string, mixed>> $tabs
+ * @param array<int, array<string, mixed>> $layout
+ * @return array{0: array<int, array<string, mixed>>, 1: bool}
+ */
+function appendDashboardTabIfMissing(array $tabs, string $tabName, array $layout): array
+{
+    foreach ($tabs as $tab) {
+        if (is_array($tab) && ($tab['name'] ?? '') === $tabName) {
+            return [$tabs, false];
         }
     }
 
@@ -195,6 +317,17 @@ function upsertDashboardTab(array $tabs, string $tabName, array $layout): array
     ];
 
     return [$tabs, true];
+}
+
+/**
+ * @param array<int, array<string, mixed>> $tabs
+ * @param array<int, array<string, mixed>> $layout
+ * @return array{0: array<int, array<string, mixed>>, 1: bool}
+ * @deprecated Prefer appendDashboardTabIfMissing — non sostituire tab esistenti.
+ */
+function upsertDashboardTab(array $tabs, string $tabName, array $layout): array
+{
+    return appendDashboardTabIfMissing($tabs, $tabName, $layout);
 }
 
 /**

@@ -1,12 +1,13 @@
 #!/usr/bin/env php
 <?php
 /**
- * Crea report tab "Vendite Mese" (Advanced Pack) e opzionalmente il tab dashboard.
+ * Crea report "Vendite Mese" in elenco CRM (Advanced Pack).
+ * La dashboard NON viene modificata salvo --dashboard-only esplicito.
  *
- *   php tools/crea-report-vendite-mese.php --dry-run
  *   php tools/crea-report-vendite-mese.php --reports-only --force
- *   php tools/crea-report-vendite-mese.php --dashboard-only --force --user=carmine_alvino
- *   php tools/crea-report-vendite-mese.php --force
+ *   php tools/crea-report-vendite-mese.php --dashboard-only --user=carmine_alvino
+ *
+ * --force rigenera solo i report, mai i tab dashboard esistenti.
  */
 declare(strict_types=1);
 
@@ -21,7 +22,6 @@ require_once $root . '/bootstrap.php';
 require_once __DIR__ . '/lib/dashboard-report-helpers.php';
 
 use Espo\Core\Application;
-use Espo\Core\ApplicationUser;
 use Espo\Core\Record\CreateParams;
 use Espo\Core\Record\DeleteParams;
 use Espo\Core\Record\ServiceContainer as RecordServiceContainer;
@@ -31,6 +31,11 @@ $dryRun = in_array('--dry-run', $argv, true);
 $force = in_array('--force', $argv, true);
 $reportsOnly = in_array('--reports-only', $argv, true);
 $dashboardOnly = in_array('--dashboard-only', $argv, true);
+
+if (!$reportsOnly && !$dashboardOnly) {
+    $reportsOnly = true;
+    echo "Nota: per default creo solo i report (--reports-only). Per il tab dashboard usare --dashboard-only.\n\n";
+}
 
 if ($reportsOnly && $dashboardOnly) {
     fail('Usare solo uno tra --reports-only e --dashboard-only.');
@@ -116,7 +121,7 @@ if ($dryRun) {
 
 if ($reportsOnly) {
     echo "\nReport creati: {$created}, già presenti: {$skipped}\n";
-    echo "Passo successivo: php tools/crea-report-vendite-mese.php --dashboard-only --force\n";
+    echo "I tab dashboard esistenti non sono stati modificati.\n";
     exit(0);
 }
 
@@ -137,9 +142,6 @@ if ($reportIdMap === []) {
 
 $layout = buildReportTabLayout($reportIdMap, $definitions, $prefix);
 
-$backupDir = $root . '/backup_dev/dashboard-vendite-mese-' . date('Ymd-His');
-mkdir($backupDir, 0755, true);
-
 $pref = $em->getEntityById('Preferences', $user->getId());
 
 if (!$pref) {
@@ -148,16 +150,26 @@ if (!$pref) {
 
 $tabs = getPreferenceDashboardTabs($pref, $em) ?? [];
 
-backupJson($backupDir, 'preferences-before.json', $tabs);
-[$newTabs, $changed] = upsertDashboardTab($tabs, $tabName, $layout);
-
-if ($changed) {
-    savePreferenceDashboardTabs($pref, $em, $newTabs);
-    $em->saveEntity($pref);
-    echo "Dashboard: tab \"{$tabName}\" aggiornato con " . countReportDashlets($layout) . " report.\n";
-} else {
-    echo "Dashboard: tab \"{$tabName}\" già presente.\n";
+if (in_array($tabName, listTabNames($tabs), true)) {
+    echo "Tab \"{$tabName}\" già presente: nessuna modifica (tab esistenti protetti).\n";
+    echo "Aggiungere i report manualmente da CRM oppure ripristinare backup se serve.\n";
+    exit(0);
 }
 
-echo "\nBackup: {$backupDir}\n";
-echo "Eseguire: php clear_cache.php && php rebuild.php\n";
+$backupDir = $root . '/backup_dev/dashboard-vendite-mese-' . date('Ymd-His');
+mkdir($backupDir, 0755, true);
+backupJson($backupDir, 'preferences-before.json', $tabs);
+
+[$newTabs, $changed] = appendDashboardTabIfMissing($tabs, $tabName, $layout);
+
+if (!$changed) {
+    echo "Nessuna modifica.\n";
+    exit(0);
+}
+
+savePreferenceDashboardTabs($pref, $em, $newTabs);
+$em->saveEntity($pref);
+
+echo "Creato tab \"{$tabName}\" con " . countReportDashlets($layout) . " report (tab preesistenti intatti).\n";
+echo "Backup: {$backupDir}\n";
+echo "Rollback: php tools/rollback-dashboard-pre-kpi.php --restore-from={$backupDir}/preferences-before.json\n";

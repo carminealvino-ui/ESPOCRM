@@ -57,6 +57,7 @@ FILES=(
   "tools/report-templates/vendite-mese.json"
   "tools/crea-report-vendite-mese.php"
   "tools/applica-dashboard-crm-kpi.php"
+  "tools/rollback-dashboard-pre-kpi.php"
 )
 
 for rel in "${FILES[@]}"; do
@@ -75,5 +76,13 @@ echo ""
 echo "=== Deploy completato ==="
 echo "Poi sul server:"
 echo "  cd ${CRM_ROOT} && php clear_cache.php && php rebuild.php"
-echo "  php tools/applica-dashboard-crm-kpi.php --force --user=carmine_alvino"
-echo "  php tools/crea-report-vendite-mese.php --force --user=carmine_alvino"
+echo ""
+echo "Ripristino tab (se modificati per errore):"
+echo "  php tools/rollback-dashboard-pre-kpi.php --list-backups"
+echo "  php tools/rollback-dashboard-pre-kpi.php --user=carmine_alvino --restore-latest"
+echo ""
+echo "Aggiunta KPI (solo merge, non sostituisce tab esistenti):"
+echo "  php tools/applica-dashboard-crm-kpi.php --user=carmine_alvino"
+echo ""
+echo "Report Vendite Mese (solo elenco CRM, non tocca dashboard):"
+echo "  php tools/crea-report-vendite-mese.php --reports-only --force --user=carmine_alvino"
