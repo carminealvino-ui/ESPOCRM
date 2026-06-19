@@ -193,16 +193,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
         $collection = $this->entityManager
             ->getRDBRepository($entityType)
-            ->select([
-                Field::ID,
-                Field::NAME,
-                'status',
-                'dateStart',
-                'dateStartDate',
-                'dateEnd',
-                'dateEndDate',
-                'assignedUserId',
-            ])
+            ->select($this->getPastPlannedSelectFields($entityType, $dateField))
             ->where([
                 'status' => $statusList,
                 'assignedUserId' => $userId,
@@ -353,5 +344,32 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         return $attributes->{$dateField} ?? $attributes->dateStart ?? '';
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getPastPlannedSelectFields(string $entityType, string $dateField): array
+    {
+        $select = [
+            Field::ID,
+            Field::NAME,
+            'status',
+            'assignedUserId',
+        ];
+
+        $defs = $this->entityManager->getDefs()->getEntity($entityType);
+
+        if ($defs->hasAttribute($dateField)) {
+            $select[] = $dateField;
+        }
+
+        $dateOnlyField = $dateField . 'Date';
+
+        if ($defs->hasAttribute($dateOnlyField)) {
+            $select[] = $dateOnlyField;
+        }
+
+        return $select;
     }
 }

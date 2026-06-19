@@ -1,7 +1,1 @@
-[
-    {
-        "route": "/CrmKpi/action/summary",
-        "method": "get",
-        "actionClassName": "Espo\\Custom\\Tools\\CrmKpi\\Api\\GetSummary"
-    }
-]
+[]

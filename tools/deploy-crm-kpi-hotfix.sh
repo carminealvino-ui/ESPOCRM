@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Hotfix rapido API KPI (solo 2 file PHP) — dopo errore 500 "Errore caricamento KPI"
+# Hotfix KPI API + popup Call + controller CrmKpi
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-dashlet-9999/tools/deploy-crm-kpi-hotfix.sh?t=$(date +%s)" | bash
@@ -19,8 +19,13 @@ echo "=== Hotfix KPI API in ${CRM_ROOT} ==="
 mkdir -p "${LOCAL_BACKUP}"
 
 FILES=(
+  "custom/Espo/Custom/Controllers/CrmKpi.php"
+  "custom/Espo/Custom/Resources/routes.json"
+  "custom/Espo/Custom/Resources/metadata/scopes/CrmKpi.json"
   "custom/Espo/Custom/Tools/CrmKpi/Api/GetSummary.php"
   "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
+  "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
+  "tools/diagnose-crm-kpi-api.php"
 )
 
 for rel in "${FILES[@]}"; do

@@ -22,6 +22,7 @@ require_once $root . '/bootstrap.php';
 use Espo\Core\Application;
 use Espo\Core\InjectableFactory;
 use Espo\Custom\Services\CrmKpi\CrmKpiService;
+use Espo\Custom\Tools\Activities\PopupNotificationsProvider;
 use Espo\ORM\EntityManager;
 
 $options = getopt('', ['user::']);
@@ -30,7 +31,9 @@ $userName = $options['user'] ?? 'carmine_alvino';
 $app = new Application();
 $app->setupSystemUser();
 
-$entityManager = $app->getContainer()->getByClass(EntityManager::class);
+$container = $app->getContainer();
+$entityManager = $container->getByClass(EntityManager::class);
+$injectableFactory = $container->getByClass(InjectableFactory::class);
 $user = $entityManager->getRDBRepository('User')->where(['userName' => $userName])->findOne();
 
 if (!$user) {
@@ -39,6 +42,8 @@ if (!$user) {
 }
 
 echo "=== Diagnostica KPI CRM (user: {$userName}) ===\n\n";
+
+$failed = 0;
 
 $checks = [
     'Appuntamenti Held mese corrente' => function () use ($entityManager): void {
@@ -88,9 +93,11 @@ $checks = [
             'dateStart<' => date('Y-m-d H:i:s'),
         ])->count();
     },
+    'Popup notifications (Call senza dateStartDate)' => function () use ($injectableFactory, $user): void {
+        $provider = $injectableFactory->create(PopupNotificationsProvider::class);
+        $provider->get($user);
+    },
 ];
-
-$failed = 0;
 
 foreach ($checks as $label => $callback) {
     try {
@@ -106,7 +113,6 @@ foreach ($checks as $label => $callback) {
 echo "\n=== Test servizio completo ===\n";
 
 try {
-    $injectableFactory = $app->getContainer()->getByClass(InjectableFactory::class);
     $service = $injectableFactory->create(CrmKpiService::class);
     $summary = $service->getSummary($user, 'currentMonth');
 

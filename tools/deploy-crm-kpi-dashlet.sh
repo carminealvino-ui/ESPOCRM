@@ -34,6 +34,8 @@ FILES=(
   "client/custom/res/templates/dashlets/crm-kpi.tpl"
   "client/custom/src/views/dashlets/crm-kpi.js"
   "custom/Espo/Custom/Controllers/CrmKpi.php"
+  "custom/Espo/Custom/Resources/routes.json"
+  "custom/Espo/Custom/Resources/metadata/scopes/CrmKpi.json"
   "custom/Espo/Custom/Tools/CrmKpi/Api/GetSummary.php"
   "custom/Espo/Custom/Resources/routes.json"
   "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
@@ -62,6 +64,7 @@ FILES=(
   "tools/backup-dashboard-utente.sh"
   "tools/riapplica-variazioni-post-restore.sh"
   "tools/diagnose-crm-kpi-api.php"
+  "tools/deploy-crm-kpi-hotfix.sh"
 )
 
 for rel in "${FILES[@]}"; do
