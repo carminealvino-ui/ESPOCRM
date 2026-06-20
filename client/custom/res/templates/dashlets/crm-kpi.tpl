@@ -21,7 +21,7 @@
             </div>
             <div class="col-sm-6 col-md-3">
                 <div class="crm-kpi-tile" data-action="openOpportunitaAperte">
-                    <div class="crm-kpi-tile-label">Opportunità aperte</div>
+                    <div class="crm-kpi-tile-label">Opportunità aperte (mese)</div>
                     <div class="crm-kpi-tile-value">{{tiles.opportunitaAperte.count}}</div>
                     <div class="crm-kpi-tile-meta">{{tiles.opportunitaAperte.amount}}</div>
                 </div>

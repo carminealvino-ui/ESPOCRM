@@ -6,6 +6,8 @@
     },
     "presetFilters": {
         "meseCorrente": "Mese corrente",
-        "aperte": "Aperte"
+        "aperte": "Aperte",
+        "aperteMeseCorrente": "Aperte mese corrente",
+        "aperteMesePrecedente": "Aperte mese precedente"
     }
 }

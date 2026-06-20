@@ -161,7 +161,10 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
         },
 
         actionOpenOpportunitaAperte: function () {
-            this.getRouter().navigate('#Opportunity/filter/aperte', {trigger: true});
+            const period = this.getOption('period') || 'currentMonth';
+            const filter = period === 'previousMonth' ? 'aperteMesePrecedente' : 'aperteMeseCorrente';
+
+            this.getRouter().navigate('#Opportunity/filter/' + filter, {trigger: true});
         },
 
         actionOpenContratti: function () {

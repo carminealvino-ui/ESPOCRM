@@ -5,6 +5,7 @@ namespace Espo\Custom\Services\CrmKpi;
 use DateTime;
 use Espo\Core\Utils\DateTime as DateTimeUtil;
 use Espo\Custom\Tools\CrmKpi\DateRange;
+use Espo\Custom\Tools\CrmKpi\OpenOpportunityPeriod;
 use Espo\Entities\User;
 use Espo\ORM\EntityManager;
 
@@ -20,13 +21,6 @@ class CrmKpiService
         7 => 'Dom',
     ];
 
-    private const OPEN_OPPORTUNITY_WHERE = [
-        'AND' => [
-            ['stage!=' => 'Closed Won'],
-            ['stage!=' => 'Closed Lost'],
-        ],
-    ];
-
     public function __construct(
         private EntityManager $entityManager,
     ) {}
@@ -38,8 +32,8 @@ class CrmKpiService
         $heldCurrent = $this->countAppuntamentiHeld($from, $to);
         $heldPrevious = $this->countAppuntamentiHeld($prevFrom, $prevTo);
 
-        $oppCurrent = $this->countOpenOpportunities();
-        $oppAmount = $this->sumOpenOpportunityAmount();
+        $oppCurrent = $this->countOpenOpportunities($period);
+        $oppAmount = $this->sumOpenOpportunityAmount($period);
 
         $contractsCurrent = $this->countContracts($from, $to);
         $contractsPrevious = $this->countContracts($prevFrom, $prevTo);
@@ -90,17 +84,17 @@ class CrmKpiService
             ->count();
     }
 
-    private function countOpenOpportunities(): int
+    private function countOpenOpportunities(string $period): int
     {
         return (int) $this->entityManager
             ->getRDBRepository('Opportunity')
-            ->where(self::OPEN_OPPORTUNITY_WHERE)
+            ->where(OpenOpportunityPeriod::where($period))
             ->count();
     }
 
-    private function sumOpenOpportunityAmount(): float
+    private function sumOpenOpportunityAmount(string $period): float
     {
-        return $this->safeSum('Opportunity', self::OPEN_OPPORTUNITY_WHERE, [
+        return $this->safeSum('Opportunity', OpenOpportunityPeriod::where($period), [
             'importoOpportunit',
             'amount',
         ]);

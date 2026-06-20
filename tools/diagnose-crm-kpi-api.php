@@ -53,19 +53,23 @@ $checks = [
             'dataAppuntamento<=' => date('Y-m-t'),
         ])->count();
     },
-    'Opportunità aperte (stage AND)' => function () use ($entityManager): void {
+    'Opportunità aperte mese corrente' => function () use ($entityManager): void {
         $entityManager->getRDBRepository('Opportunity')->where([
             'AND' => [
                 ['stage!=' => 'Closed Won'],
                 ['stage!=' => 'Closed Lost'],
+                ['dataOpportunit>=' => date('Y-m-01')],
+                ['dataOpportunit<=' => date('Y-m-t')],
             ],
         ])->count();
     },
-    'Somma importoOpportunit' => function () use ($entityManager): void {
+    'Somma importoOpportunit mese' => function () use ($entityManager): void {
         $entityManager->getRDBRepository('Opportunity')->where([
             'AND' => [
                 ['stage!=' => 'Closed Won'],
                 ['stage!=' => 'Closed Lost'],
+                ['dataOpportunit>=' => date('Y-m-01')],
+                ['dataOpportunit<=' => date('Y-m-t')],
             ],
         ])->sum('importoOpportunit');
     },
