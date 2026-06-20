@@ -479,7 +479,7 @@ class CrmKpiService
         return false;
     }
 
-    private function percentChange(float|int $current, float|int $previous): ?float
+    private function percentChange($current, $previous)
     {
         if ((float) $previous === 0.0) {
             return (float) $current > 0 ? 100.0 : 0.0;

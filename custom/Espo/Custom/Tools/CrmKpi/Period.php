@@ -7,21 +7,30 @@ namespace Espo\Custom\Tools\CrmKpi;
  */
 class Period
 {
-    public const TOTALS = DateRange::TOTALS;
-    public const CURRENT_YEAR = DateRange::CURRENT_YEAR;
-    public const PREVIOUS_YEAR = DateRange::PREVIOUS_YEAR;
-    public const CURRENT_QUARTER = DateRange::CURRENT_QUARTER;
-    public const PREVIOUS_QUARTER = DateRange::PREVIOUS_QUARTER;
-    public const CURRENT_MONTH = DateRange::CURRENT_MONTH;
-    public const PREVIOUS_MONTH = DateRange::PREVIOUS_MONTH;
-    public const ALL = DateRange::ALL;
+    const TOTALS = 'totals';
+    const CURRENT_YEAR = 'currentYear';
+    const PREVIOUS_YEAR = 'previousYear';
+    const CURRENT_QUARTER = 'currentQuarter';
+    const PREVIOUS_QUARTER = 'previousQuarter';
+    const CURRENT_MONTH = 'currentMonth';
+    const PREVIOUS_MONTH = 'previousMonth';
 
-    public static function isValid(string $period): bool
+    const ALL = [
+        self::TOTALS,
+        self::CURRENT_YEAR,
+        self::PREVIOUS_YEAR,
+        self::CURRENT_QUARTER,
+        self::PREVIOUS_QUARTER,
+        self::CURRENT_MONTH,
+        self::PREVIOUS_MONTH,
+    ];
+
+    public static function isValid($period)
     {
         return DateRange::isValid($period);
     }
 
-    public static function normalize(string $period): string
+    public static function normalize($period)
     {
         return DateRange::normalizePeriod($period);
     }

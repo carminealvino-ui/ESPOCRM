@@ -6,15 +6,15 @@ use Espo\Custom\Tools\DateTime\BusinessDateTime;
 
 class DateRange
 {
-    public const TOTALS = 'totals';
-    public const CURRENT_YEAR = 'currentYear';
-    public const PREVIOUS_YEAR = 'previousYear';
-    public const CURRENT_QUARTER = 'currentQuarter';
-    public const PREVIOUS_QUARTER = 'previousQuarter';
-    public const CURRENT_MONTH = 'currentMonth';
-    public const PREVIOUS_MONTH = 'previousMonth';
+    const TOTALS = 'totals';
+    const CURRENT_YEAR = 'currentYear';
+    const PREVIOUS_YEAR = 'previousYear';
+    const CURRENT_QUARTER = 'currentQuarter';
+    const PREVIOUS_QUARTER = 'previousQuarter';
+    const CURRENT_MONTH = 'currentMonth';
+    const PREVIOUS_MONTH = 'previousMonth';
 
-    public const ALL = [
+    const ALL = [
         self::TOTALS,
         self::CURRENT_YEAR,
         self::PREVIOUS_YEAR,
@@ -24,20 +24,20 @@ class DateRange
         self::PREVIOUS_MONTH,
     ];
 
-    public static function isValid(string $period): bool
+    public static function isValid($period)
     {
         return in_array($period, self::ALL, true);
     }
 
-    public static function normalizePeriod(string $period): string
+    public static function normalizePeriod($period)
     {
         return self::isValid($period) ? $period : self::CURRENT_MONTH;
     }
 
     /**
-     * @return array{0: ?string, 1: ?string, 2: ?string, 3: ?string}
+     * @return array
      */
-    public static function resolve(string $period): array
+    public static function resolve($period)
     {
         $period = self::normalizePeriod($period);
         $tz = new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE);
@@ -75,14 +75,14 @@ class DateRange
     }
 
     /**
-     * @return array{0: string, 1: string, 2: string, 3: string}
+     * @return array
      */
-    private static function monthPair(\DateTimeImmutable $now, int $offset): array
+    private static function monthPair(\DateTimeImmutable $now, $offset)
     {
         $monthStart = $now->modify('first day of this month');
 
-        if ($offset !== 0) {
-            $monthStart = $monthStart->modify($offset . ' months');
+        if ((int) $offset !== 0) {
+            $monthStart = $monthStart->modify((int) $offset . ' months');
         }
 
         $monthEnd = $monthStart->modify('last day of this month');
@@ -98,19 +98,26 @@ class DateRange
     }
 
     /**
-     * @return array{0: string, 1: string, 2: string, 3: string}
+     * @return array
      */
-    private static function quarterPair(\DateTimeImmutable $now, int $offset): array
+    private static function quarterPair(\DateTimeImmutable $now, $offset)
     {
-        [$year, $quarter] = self::shiftQuarter(
+        $shifted = self::shiftQuarter(
             (int) $now->format('Y'),
             (int) ceil(((int) $now->format('n')) / 3),
-            $offset
+            (int) $offset
         );
+        $year = $shifted[0];
+        $quarter = $shifted[1];
 
-        [$start, $end] = self::quarterBounds($year, $quarter, $now->getTimezone());
-        [$prevYear, $prevQuarter] = self::shiftQuarter($year, $quarter, -1);
-        [$prevStart, $prevEnd] = self::quarterBounds($prevYear, $prevQuarter, $now->getTimezone());
+        $bounds = self::quarterBounds($year, $quarter, $now->getTimezone());
+        $start = $bounds[0];
+        $end = $bounds[1];
+
+        $prevShifted = self::shiftQuarter($year, $quarter, -1);
+        $prevBounds = self::quarterBounds($prevShifted[0], $prevShifted[1], $now->getTimezone());
+        $prevStart = $prevBounds[0];
+        $prevEnd = $prevBounds[1];
 
         return [
             $start->format('Y-m-d'),
@@ -121,11 +128,11 @@ class DateRange
     }
 
     /**
-     * @return array{0: string, 1: string, 2: string, 3: string}
+     * @return array
      */
-    private static function yearPair(\DateTimeImmutable $now, int $offset): array
+    private static function yearPair(\DateTimeImmutable $now, $offset)
     {
-        $year = (int) $now->format('Y') + $offset;
+        $year = (int) $now->format('Y') + (int) $offset;
         $prevYear = $year - 1;
 
         return [
@@ -137,25 +144,27 @@ class DateRange
     }
 
     /**
-     * @return array{0: \DateTimeImmutable, 1: \DateTimeImmutable}
+     * @return array
      */
-    private static function quarterBounds(int $year, int $quarter, \DateTimeZone $tz): array
+    private static function quarterBounds($year, $quarter, \DateTimeZone $tz)
     {
         $startMonth = ($quarter - 1) * 3 + 1;
         $start = new \DateTimeImmutable(sprintf('%d-%02d-01', $year, $startMonth), $tz);
         $endMonth = $startMonth + 2;
-        $end = new \DateTimeImmutable(sprintf('%d-%02d-01', $year, $endMonth), $tz)
-            ->modify('last day of this month');
+        $end = new \DateTimeImmutable(sprintf('%d-%02d-01', $year, $endMonth), $tz);
+        $end = $end->modify('last day of this month');
 
         return [$start, $end];
     }
 
     /**
-     * @return array{0: int, 1: int}
+     * @return array
      */
-    private static function shiftQuarter(int $year, int $quarter, int $offset): array
+    private static function shiftQuarter($year, $quarter, $offset)
     {
-        $quarter += $offset;
+        $year = (int) $year;
+        $quarter = (int) $quarter;
+        $quarter += (int) $offset;
 
         while ($quarter < 1) {
             $quarter += 4;

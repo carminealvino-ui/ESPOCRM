@@ -47,7 +47,29 @@ foreach ($checks as $rel => $needle) {
 
 if ($failed === 0) {
     echo "\nDeploy file OK. Poi: php clear_cache.php && php rebuild.php\n";
-    echo "In browser (DevTools > Network) l'URL deve essere:\n";
+
+    $lintFiles = [
+        'custom/Espo/Custom/Tools/CrmKpi/DateRange.php',
+        'custom/Espo/Custom/Tools/CrmKpi/Period.php',
+        'custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php',
+    ];
+
+    foreach ($lintFiles as $rel) {
+        $path = $root . '/' . $rel;
+        $output = [];
+        $code = 0;
+        exec('php -l ' . escapeshellarg($path) . ' 2>&1', $output, $code);
+
+        if ($code !== 0) {
+            $failed++;
+            echo "[ERR] php -l {$rel}\n";
+            echo '      ' . implode("\n      ", $output) . "\n";
+        } else {
+            echo "[OK] php -l {$rel}\n";
+        }
+    }
+
+    echo "\nIn browser (DevTools > Network) l'URL deve essere:\n";
     echo "  /api/v1/Appuntamento/action/getSummary?period=currentMonth\n";
     echo "Se vedi ancora CrmKpi/action/getSummary → svuota cache browser (Ctrl+Shift+R o finestra anonima).\n";
 } else {
