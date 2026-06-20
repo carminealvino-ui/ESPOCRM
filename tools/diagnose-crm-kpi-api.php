@@ -129,6 +129,23 @@ try {
         $summary = $service->getSummary($user, $period);
         echo "[OK] getSummary({$period})\n";
         echo "     appuntamentiSvolti: " . ($summary->tiles->appuntamentiSvolti->value ?? '?') . "\n";
+        $tileOpp = $summary->tiles->opportunitaAperte->count ?? null;
+        $funnelOpp = null;
+
+        foreach ($summary->funnel ?? [] as $step) {
+            if (($step->key ?? '') === 'opportunity') {
+                $funnelOpp = $step->value ?? null;
+                break;
+            }
+        }
+
+        echo "     opportunita tile: " . ($tileOpp ?? '?') . " | funnel: " . ($funnelOpp ?? '?');
+
+        if ($tileOpp !== null && $funnelOpp !== null && (int) $tileOpp !== (int) $funnelOpp) {
+            echo " [WARN allineamento]";
+        }
+
+        echo "\n";
         echo "     contratti settimana mese: " . count($summary->contractsByWeekOfMonth ?? []) . " righe\n";
     }
 } catch (Throwable $e) {
