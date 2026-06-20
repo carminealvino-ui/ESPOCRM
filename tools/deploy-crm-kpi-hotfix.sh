@@ -28,6 +28,7 @@ FILES=(
   "custom/Espo/Custom/Classes/Select/Opportunity/PrimaryFilters/AperteMeseCorrente.php"
   "custom/Espo/Custom/Classes/Select/Opportunity/PrimaryFilters/AperteMesePrecedente.php"
   "custom/Espo/Custom/Resources/metadata/selectDefs/Opportunity.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Global.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json"
   "client/custom/res/templates/dashlets/crm-kpi.tpl"
   "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
