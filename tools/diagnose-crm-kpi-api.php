@@ -86,6 +86,39 @@ $checks = [
             'dataAppuntamento<=' => date('Y-m-d', strtotime('-3 days')),
         ])->limit(0, 5)->find();
     },
+    'Alert opportunità senza riscontro' => function () use ($entityManager): void {
+        $entityManager->getRDBRepository('Opportunity')->where([
+            'AND' => [
+                ['stage!=' => 'Closed Won'],
+                ['stage!=' => 'Closed Lost'],
+            ],
+        ])->limit(0, 5)->find();
+    },
+    'Alert contatti telefonici da fare' => function () use ($entityManager): void {
+        $entityManager->getRDBRepository('Call')->where([
+            'status' => 'Planned',
+        ])->count();
+    },
+    'Alert contratti backlog' => function () use ($entityManager): void {
+        $entityManager->getRDBRepository('Opportunity')->where([
+            'stage' => 'Closed Won',
+            'statoContratto' => 'Sospeso',
+        ])->count();
+    },
+    'Alert contratti in lavorazione' => function () use ($entityManager): void {
+        $entityManager->getRDBRepository('Opportunity')->where([
+            'stage' => 'Closed Won',
+            'statoContratto' => 'In lavorazione',
+        ])->count();
+    },
+    'Alert contratti in pagamento' => function () use ($entityManager): void {
+        $entityManager->getRDBRepository('Opportunity')->where([
+            'stage' => 'Closed Won',
+            'statoContratto' => 'Installato',
+            'installazione>=' => date('Y-m-01'),
+            'installazione<=' => date('Y-m-t'),
+        ])->count();
+    },
     'Alert trattativa senza contratto' => function () use ($entityManager): void {
         $entityManager->getRDBRepository('Opportunity')->where([
             'stage' => ['Proposal', 'Negotiation'],
@@ -147,6 +180,7 @@ try {
 
         echo "\n";
         echo "     contratti settimana mese: " . count($summary->contractsByWeekOfMonth ?? []) . " righe\n";
+        echo "     avvisi: " . count($summary->alerts ?? []) . "\n";
     }
 } catch (Throwable $e) {
     $failed++;

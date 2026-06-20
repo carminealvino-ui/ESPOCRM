@@ -72,6 +72,7 @@
     "presetFilters": {
         "held": "Svolto",
         "todays": "Odierni",
-        "daRiscontrare": "Da riscontrare"
+        "daRiscontrare": "Da riscontrare",
+        "contattiDaFare": "Contatti da fare"
     }
 }

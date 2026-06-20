@@ -110,7 +110,14 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                 })),
                 contractsByWeekday: this.mapContractChartRows(summary.contractsByWeekday),
                 contractsByWeekOfMonth: this.mapContractChartRows(summary.contractsByWeekOfMonth),
-                alerts: summary.alerts || [],
+                alerts: (summary.alerts || []).map(function (alert) {
+                    return {
+                        key: alert.key,
+                        label: alert.label,
+                        value: alert.value,
+                        meta: alert.meta || null,
+                    };
+                }),
             };
         },
 
@@ -244,26 +251,50 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
 
         actionOpenAlert: function (data) {
             const key = data && data.key;
+            const period = this.getOption('period') || 'currentMonth';
 
-            if (key === 'callsOverdue') {
-                this.getRouter().navigate('#Call/filter/daRiscontrare', {trigger: true});
-
-                return;
-            }
-
-            if (key === 'negotiationNoContract') {
-                this.getRouter().navigate('#Opportunity/filter/aperte', {trigger: true});
+            if (key === 'opportunityWithoutPhoneFollowUp') {
+                this.getRouter().navigate('#Opportunity/filter/senzaRiscontroTelefonico', {trigger: true});
 
                 return;
             }
 
-            if (key === 'pendingNoOpportunity') {
-                this.getRouter().navigate('#Appuntamento/filter/svolto', {trigger: true});
+            if (key === 'phoneContactsTodo') {
+                this.getRouter().navigate('#Call/filter/contattiDaFare', {trigger: true});
 
                 return;
             }
 
-            this.getRouter().navigate('#Appuntamento', {trigger: true});
+            if (key === 'contractsBacklog') {
+                this.getRouter().navigate('#Opportunity/filter/contrattiBacklog', {trigger: true});
+
+                return;
+            }
+
+            if (key === 'contractsInProgress') {
+                this.getRouter().navigate('#Opportunity/filter/contrattiInLavorazione', {trigger: true});
+
+                return;
+            }
+
+            if (key === 'contractsInPayment') {
+                const filter = period === 'previousMonth'
+                    ? 'installatoMesePrecedente'
+                    : 'installatoPeriodo';
+
+                this.getRouter().navigate('#Opportunity/filter/' + filter, {trigger: true});
+
+                return;
+            }
+
+            const alerts = (this.summary && this.summary.alerts) || [];
+            const alert = alerts.find(function (item) {
+                return item.key === key;
+            });
+
+            if (alert && alert.link) {
+                this.getRouter().navigate(alert.link, {trigger: true});
+            }
         },
     });
 });

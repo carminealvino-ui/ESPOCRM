@@ -3,7 +3,7 @@
 namespace Espo\Custom\Services\CrmKpi;
 
 use DateTime;
-use Espo\Core\Utils\DateTime as DateTimeUtil;
+use Espo\Custom\Tools\CrmKpi\Alerts;
 use Espo\Custom\Tools\CrmKpi\DateRange;
 use Espo\Custom\Tools\CrmKpi\OpenOpportunityPeriod;
 use Espo\Custom\Tools\CrmKpi\WeekOfMonth;
@@ -97,7 +97,7 @@ class CrmKpiService
             'funnel' => $this->getFunnelSafe($from, $to),
             'contractsByWeekday' => $this->getContractsByWeekdaySafe($from, $to),
             'contractsByWeekOfMonth' => $this->getContractsByWeekOfMonthSafe($from, $to),
-            'alerts' => $this->getAlertsSafe(),
+            'alerts' => $this->getAlertsSafe($from, $to),
         ];
     }
 
@@ -474,110 +474,13 @@ class CrmKpiService
     /**
      * @return object[]
      */
-    private function getAlertsSafe(): array
+    private function getAlertsSafe(?string $from, ?string $to): array
     {
         try {
-            return $this->getAlerts();
+            return (new Alerts($this->entityManager))->build($from, $to);
         } catch (\Throwable) {
             return [];
         }
-    }
-
-    /**
-     * @return object[]
-     */
-    private function getAlerts(): array
-    {
-        $now = (new DateTime())->format(DateTimeUtil::SYSTEM_DATE_TIME_FORMAT);
-        $threeDaysAgo = (new DateTime('-3 days'))->format(DateTimeUtil::SYSTEM_DATE_FORMAT);
-
-        $pendingWithoutOpp = 0;
-        $pendingCollection = $this->entityManager
-            ->getRDBRepository('Appuntamento')
-            ->select(['id'])
-            ->where([
-                'status' => 'Held',
-                'sottostato' => 'Pending',
-                'dataAppuntamento<=' => $threeDaysAgo,
-            ])
-            ->limit(0, 100)
-            ->find();
-
-        foreach ($pendingCollection as $appuntamento) {
-            $opportunity = $this->entityManager
-                ->getRDBRepository('Opportunity')
-                ->where(['appuntamentoId' => $appuntamento->getId()])
-                ->findOne();
-
-            if (!$opportunity) {
-                $pendingWithoutOpp++;
-            }
-        }
-
-        $negotiationWithoutContract = 0;
-        $negotiationCollection = $this->entityManager
-            ->getRDBRepository('Opportunity')
-            ->select(['id'])
-            ->where([
-                'stage' => ['Proposal', 'Negotiation'],
-            ])
-            ->limit(0, 200)
-            ->find();
-
-        foreach ($negotiationCollection as $opportunity) {
-            if (!$this->opportunityHasQuote($opportunity->getId())) {
-                $negotiationWithoutContract++;
-            }
-        }
-
-        $callsOverdue = (int) $this->entityManager
-            ->getRDBRepository('Call')
-            ->where([
-                'status' => 'Planned',
-                'dateStart<' => $now,
-            ])
-            ->count();
-
-        return [
-            (object) [
-                'key' => 'pendingNoOpportunity',
-                'label' => 'Appuntamenti Pending senza opportunità (>3 gg)',
-                'value' => $pendingWithoutOpp,
-                'link' => '#Appuntamento',
-            ],
-            (object) [
-                'key' => 'negotiationNoContract',
-                'label' => 'Opportunità in trattativa senza contratto',
-                'value' => $negotiationWithoutContract,
-                'link' => '#Opportunity',
-            ],
-            (object) [
-                'key' => 'callsOverdue',
-                'label' => 'Contatti telefonici pianificati scaduti',
-                'value' => $callsOverdue,
-                'link' => '#Call',
-            ],
-        ];
-    }
-
-    private function opportunityHasQuote(string $opportunityId): bool
-    {
-        foreach (['opportunitaId', 'opportunityId'] as $attribute) {
-            try {
-                $quote = $this->entityManager
-                    ->getRDBRepository('Quote')
-                    ->where([$attribute => $opportunityId])
-                    ->findOne();
-
-                if ($quote) {
-                    return true;
-                }
-            } catch (\Throwable) {
-                continue;
-            }
-        }
-
-        return false;
     }
 
     private function percentChange($current, $previous)

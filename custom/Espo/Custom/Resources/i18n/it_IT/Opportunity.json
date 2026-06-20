@@ -8,6 +8,11 @@
         "meseCorrente": "Mese corrente",
         "aperte": "Aperte",
         "aperteMeseCorrente": "Aperte mese corrente",
-        "aperteMesePrecedente": "Aperte mese precedente"
+        "aperteMesePrecedente": "Aperte mese precedente",
+        "senzaRiscontroTelefonico": "Senza riscontro telefonico",
+        "contrattiBacklog": "Contratti in backlog",
+        "contrattiInLavorazione": "Contratti in lavorazione",
+        "installatoPeriodo": "Installato nel periodo",
+        "installatoMesePrecedente": "Installato mese precedente"
     }
 }

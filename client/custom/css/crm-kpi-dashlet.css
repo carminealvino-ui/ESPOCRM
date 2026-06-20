@@ -91,7 +91,7 @@
 .crm-kpi-alert {
     display: flex;
     gap: 10px;
-    align-items: center;
+    align-items: flex-start;
     padding: 8px 10px;
     border: 1px solid var(--border-color, #dee2e6);
     border-radius: 6px;
@@ -111,7 +111,15 @@
 }
 
 .crm-kpi-alert-label {
+    display: block;
     font-size: 0.85rem;
+}
+
+.crm-kpi-alert-meta {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--text-muted-color, #6c757d);
+    margin-top: 2px;
 }
 
 @media (max-width: 768px) {
