@@ -82,6 +82,21 @@
                         {{/each}}
                     </div>
                 </div>
+                <div class="crm-kpi-section margin-top">
+                    <div class="crm-kpi-section-title">Contratti per settimana nel mese</div>
+                    <div class="crm-kpi-section-note text-muted small margin-bottom">Solo settimane con almeno 4 giorni nel mese</div>
+                    <div class="crm-kpi-weekdays">
+                        {{#each contractsByWeekOfMonth}}
+                            <div class="crm-kpi-weekday">
+                                <div class="crm-kpi-weekday-label">{{label}}</div>
+                                <div class="crm-kpi-weekday-bar-wrap">
+                                    <div class="crm-kpi-weekday-bar" style="width: {{widthPercent}}%;"></div>
+                                </div>
+                                <div class="crm-kpi-weekday-value">{{value}}</div>
+                            </div>
+                        {{/each}}
+                    </div>
+                </div>
             </div>
             <div class="col-md-5">
                 <div class="crm-kpi-section">

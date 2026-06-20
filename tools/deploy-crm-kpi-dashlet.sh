@@ -39,6 +39,7 @@ FILES=(
   "custom/Espo/Custom/Resources/metadata/scopes/CrmKpi.json"
   "custom/Espo/Custom/Tools/CrmKpi/Api/GetSummary.php"
   "custom/Espo/Custom/Resources/routes.json"
+  "custom/Espo/Custom/Tools/CrmKpi/WeekOfMonth.php"
   "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
   "custom/Espo/Custom/Tools/DateTime/BusinessDateTime.php"
   "custom/Espo/Custom/Tools/CrmKpi/DateRange.php"

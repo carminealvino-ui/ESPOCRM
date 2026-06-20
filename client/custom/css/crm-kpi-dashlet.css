@@ -47,10 +47,21 @@
     margin-bottom: 8px;
 }
 
-.crm-kpi-funnel-step,
-.crm-kpi-weekday {
+.crm-kpi-section-note {
+    margin-top: -4px;
+}
+
+.crm-kpi-funnel-step {
     display: grid;
     grid-template-columns: 120px 1fr 140px;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.crm-kpi-weekday {
+    display: grid;
+    grid-template-columns: 160px 1fr 56px;
     gap: 8px;
     align-items: center;
     margin-bottom: 6px;

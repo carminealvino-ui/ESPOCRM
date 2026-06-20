@@ -6,6 +6,7 @@ use DateTime;
 use Espo\Core\Utils\DateTime as DateTimeUtil;
 use Espo\Custom\Tools\CrmKpi\DateRange;
 use Espo\Custom\Tools\CrmKpi\OpenOpportunityPeriod;
+use Espo\Custom\Tools\CrmKpi\WeekOfMonth;
 use Espo\Entities\User;
 use Espo\ORM\EntityManager;
 
@@ -95,6 +96,7 @@ class CrmKpiService
             ],
             'funnel' => $this->getFunnelSafe($from, $to),
             'contractsByWeekday' => $this->getContractsByWeekdaySafe($from, $to),
+            'contractsByWeekOfMonth' => $this->getContractsByWeekOfMonthSafe($from, $to),
             'alerts' => $this->getAlertsSafe(),
         ];
     }
@@ -368,6 +370,65 @@ class CrmKpiService
         }
 
         return $result;
+    }
+
+    /**
+     * @return object[]
+     */
+    private function getContractsByWeekOfMonthSafe(?string $from, ?string $to): array
+    {
+        try {
+            return $this->getContractsByWeekOfMonth($from, $to);
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * @return object[]
+     */
+    private function getContractsByWeekOfMonth(?string $from, ?string $to): array
+    {
+        $counts = [];
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Quote')
+            ->select(['id', 'dateQuoted'])
+            ->where($this->dateWhere('dateQuoted', $from, $to))
+            ->find();
+
+        foreach ($collection as $quote) {
+            $weekIndex = WeekOfMonth::resolveIndexForDate($quote->get('dateQuoted'));
+
+            if ($weekIndex === null) {
+                continue;
+            }
+
+            if (!isset($counts[$weekIndex])) {
+                $counts[$weekIndex] = 0;
+            }
+
+            $counts[$weekIndex]++;
+        }
+
+        $weeks = $this->resolveWeekOfMonthLabels($from, $to);
+
+        return WeekOfMonth::buildChartRows($counts, $weeks);
+    }
+
+    /**
+     * @return array<int, array{index: int, start: string, end: string, label: string}>
+     */
+    private function resolveWeekOfMonthLabels(?string $from, ?string $to): array
+    {
+        if ($from && $to && substr($from, 0, 7) === substr($to, 0, 7)) {
+            return WeekOfMonth::validWeeksInMonth(
+                (int) substr($from, 0, 4),
+                (int) substr($from, 5, 2)
+            );
+        }
+
+        return WeekOfMonth::validWeeksForRange($from, $to);
     }
 
     /**

@@ -51,6 +51,7 @@ if ($failed === 0) {
     $lintFiles = [
         'custom/Espo/Custom/Tools/CrmKpi/DateRange.php',
         'custom/Espo/Custom/Tools/CrmKpi/Period.php',
+        'custom/Espo/Custom/Tools/CrmKpi/WeekOfMonth.php',
         'custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php',
     ];
 

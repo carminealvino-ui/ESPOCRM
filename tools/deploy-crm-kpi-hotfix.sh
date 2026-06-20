@@ -23,6 +23,7 @@ FILES=(
   "custom/Espo/Custom/Controllers/CrmKpi.php"
   "custom/Espo/Custom/Resources/routes.json"
   "custom/Espo/Custom/Resources/metadata/scopes/CrmKpi.json"
+  "custom/Espo/Custom/Tools/CrmKpi/WeekOfMonth.php"
   "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
   "custom/Espo/Custom/Tools/CrmKpi/Period.php"
   "custom/Espo/Custom/Tools/CrmKpi/DateRange.php"

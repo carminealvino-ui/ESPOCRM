@@ -109,6 +109,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                     percentOfPrevious: step.percentOfPrevious,
                 })),
                 contractsByWeekday: summary.contractsByWeekday || [],
+                contractsByWeekOfMonth: summary.contractsByWeekOfMonth || [],
                 alerts: summary.alerts || [],
             };
         },
