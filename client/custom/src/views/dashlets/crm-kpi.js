@@ -215,12 +215,25 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
         },
 
         actionOpenAppuntamentiSvolti: function () {
-            this.getRouter().navigate('#Appuntamento/filter/meseCorrenteSvolto', {trigger: true});
+            const period = this.getOption('period') || 'currentMonth';
+            let filter = 'svolto';
+
+            if (period === 'currentMonth') {
+                filter = 'meseCorrenteSvolto';
+            } else if (period === 'previousMonth') {
+                filter = 'svolto';
+            }
+
+            this.getRouter().navigate('#Appuntamento/filter/' + filter, {trigger: true});
         },
 
         actionOpenOpportunitaAperte: function () {
             const period = this.getOption('period') || 'currentMonth';
-            const filter = period === 'previousMonth' ? 'aperteMesePrecedente' : 'aperteMeseCorrente';
+            let filter = 'aperteMeseCorrente';
+
+            if (period === 'previousMonth') {
+                filter = 'aperteMesePrecedente';
+            }
 
             this.getRouter().navigate('#Opportunity/filter/' + filter, {trigger: true});
         },
@@ -240,6 +253,12 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
 
             if (key === 'negotiationNoContract') {
                 this.getRouter().navigate('#Opportunity/filter/aperte', {trigger: true});
+
+                return;
+            }
+
+            if (key === 'pendingNoOpportunity') {
+                this.getRouter().navigate('#Appuntamento/filter/svolto', {trigger: true});
 
                 return;
             }

@@ -50,8 +50,8 @@ class CrmKpiService
             ? $this->countAppuntamentiHeld($prevFrom, $prevTo)
             : null;
 
-        $oppCurrent = $this->countOpenOpportunities($period);
-        $oppAmount = $this->sumOpenOpportunityAmount($period);
+        $oppCurrent = $this->countOpportunitiesFromAppointmentsInPeriod($from, $to);
+        $oppAmount = $this->sumOpportunitiesFromAppointmentsInPeriod($from, $to);
 
         $contractsCurrent = $this->countContracts($from, $to);
         $contractsPrevious = $hasPreviousPeriod
@@ -205,6 +205,22 @@ class CrmKpiService
                 $this->dateWhere('dataAppuntamento', $from, $to)
             ))
             ->count();
+    }
+
+    private function sumOpportunitiesFromAppointmentsInPeriod(?string $from, ?string $to): float
+    {
+        $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to);
+
+        if ($appuntamentoIds === []) {
+            return 0.0;
+        }
+
+        return $this->safeSum('Opportunity', [
+            'appuntamentoId' => $appuntamentoIds,
+        ], [
+            'importoOpportunit',
+            'amount',
+        ]);
     }
 
     private function countOpenOpportunities(string $period): int

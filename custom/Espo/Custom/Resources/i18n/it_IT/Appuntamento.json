@@ -28,6 +28,7 @@
         "svolto": "Svolto",
         "nonSvolto": "Non Svolto",
         "meseCorrente": "Mese corrente",
-        "meseCorrenteSvolto": "Svolti mese corrente"
+        "meseCorrenteSvolto": "Svolti mese corrente",
+        "pianificato": "Pianificato"
     }
 }
