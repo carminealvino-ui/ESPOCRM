@@ -254,7 +254,11 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
             const period = this.getOption('period') || 'currentMonth';
 
             if (key === 'opportunityWithoutPhoneFollowUp') {
-                this.getRouter().navigate('#Opportunity/filter/senzaRiscontroTelefonico', {trigger: true});
+                const filter = period === 'previousMonth'
+                    ? 'senzaRiscontroMesePrecedente'
+                    : 'senzaRiscontroPeriodo';
+
+                this.getRouter().navigate('#Opportunity/filter/' + filter, {trigger: true});
 
                 return;
             }
@@ -266,13 +270,13 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
             }
 
             if (key === 'contractsBacklog') {
-                this.getRouter().navigate('#Opportunity/filter/contrattiBacklog', {trigger: true});
+                this.getRouter().navigate('#Quote/filter/contrattiBacklog', {trigger: true});
 
                 return;
             }
 
             if (key === 'contractsInProgress') {
-                this.getRouter().navigate('#Opportunity/filter/contrattiInLavorazione', {trigger: true});
+                this.getRouter().navigate('#Quote/filter/contrattiInLavorazione', {trigger: true});
 
                 return;
             }

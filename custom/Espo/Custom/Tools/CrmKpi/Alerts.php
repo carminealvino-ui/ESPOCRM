@@ -9,10 +9,15 @@ class Alerts
 {
     /** @var string[] */
     private const FINANCING_BACKLOG_STATES = [
-        'In lavorazione',
         'In rivalutazione',
         'In Attesa Documentazione',
         'Respinto',
+    ];
+
+    /** @var string[] */
+    private const CLOSED_CONTRACT_STATES = [
+        'Annullato',
+        'Recesso',
     ];
 
     public function __construct(
@@ -30,8 +35,8 @@ class Alerts
             $this->alert(
                 'opportunityWithoutPhoneFollowUp',
                 'Opportunità senza riscontro telefonico',
-                $this->countOpportunitiesWithoutPhoneFollowUp(),
-                '#Opportunity/filter/senzaRiscontroTelefonico'
+                $this->countOpportunitiesWithoutPhoneFollowUp($from, $to),
+                '#Opportunity/filter/senzaRiscontroPeriodo'
             ),
             $this->alert(
                 'phoneContactsTodo',
@@ -43,13 +48,13 @@ class Alerts
                 'contractsBacklog',
                 'Contratti in backlog (sospesi/sospesi per finanziamento)',
                 $this->countContractsBacklog(),
-                '#Opportunity/filter/contrattiBacklog'
+                '#Quote/filter/contrattiBacklog'
             ),
             $this->alert(
                 'contractsInProgress',
                 'Contratti in lavorazione',
                 $this->countContractsInProgress(),
-                '#Opportunity/filter/contrattiInLavorazione'
+                '#Quote/filter/contrattiInLavorazione'
             ),
             $this->alert(
                 'contractsInPayment',
@@ -82,20 +87,46 @@ class Alerts
         return $item;
     }
 
-    private function countOpportunitiesWithoutPhoneFollowUp(): int
+    /**
+     * @return string[]
+     */
+    private function getAppuntamentoIdsInPeriod(?string $from, ?string $to): array
     {
+        $ids = [];
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Appuntamento')
+            ->select(['id'])
+            ->where($this->dateWhere('dataAppuntamento', $from, $to))
+            ->find();
+
+        foreach ($collection as $appuntamento) {
+            $ids[] = $appuntamento->getId();
+        }
+
+        return $ids;
+    }
+
+    private function countOpportunitiesWithoutPhoneFollowUp(?string $from, ?string $to): int
+    {
+        $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to);
+
+        if ($appuntamentoIds === []) {
+            return 0;
+        }
+
         $count = 0;
 
         $collection = $this->entityManager
             ->getRDBRepository('Opportunity')
-            ->select(['id', 'leadId', 'prospectId'])
+            ->select(['id', 'leadId', 'prospectId', 'appuntamentoId'])
             ->where([
                 'AND' => [
                     ['stage!=' => 'Closed Won'],
                     ['stage!=' => 'Closed Lost'],
+                    ['appuntamentoId' => $appuntamentoIds],
                 ],
             ])
-            ->limit(0, 500)
             ->find();
 
         foreach ($collection as $opportunity) {
@@ -133,6 +164,14 @@ class Alerts
             ];
         }
 
+        $appuntamentoId = $opportunity->get('appuntamentoId');
+
+        if ($appuntamentoId) {
+            $orConditions[] = [
+                'nota*' => '%Auto-Pending-Appuntamento: ' . $appuntamentoId . '%',
+            ];
+        }
+
         $call = $this->entityManager
             ->getRDBRepository('Call')
             ->where([
@@ -157,9 +196,9 @@ class Alerts
     private function countContractsBacklog(): int
     {
         return (int) $this->entityManager
-            ->getRDBRepository('Opportunity')
+            ->getRDBRepository('Quote')
             ->where([
-                'stage' => 'Closed Won',
+                'statoContratto!=' => self::CLOSED_CONTRACT_STATES,
                 'OR' => [
                     ['statoContratto' => 'Sospeso'],
                     [
@@ -176,9 +215,8 @@ class Alerts
     private function countContractsInProgress(): int
     {
         return (int) $this->entityManager
-            ->getRDBRepository('Opportunity')
+            ->getRDBRepository('Quote')
             ->where([
-                'stage' => 'Closed Won',
                 'statoContratto' => 'In lavorazione',
             ])
             ->count();

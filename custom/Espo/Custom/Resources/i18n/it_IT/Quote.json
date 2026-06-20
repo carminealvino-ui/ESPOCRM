@@ -81,6 +81,8 @@
     "presetFilters": {
         "meseCorrente": "Mese corrente",
         "dataInstallazionePeriodo": "Data installazione nel periodo",
-        "dataInstallazioneMesePrecedente": "Data installazione mese precedente"
+        "dataInstallazioneMesePrecedente": "Data installazione mese precedente",
+        "contrattiBacklog": "Contratti in backlog",
+        "contrattiInLavorazione": "Contratti in lavorazione"
     }
 }

@@ -91,6 +91,8 @@ $checks = [
             'AND' => [
                 ['stage!=' => 'Closed Won'],
                 ['stage!=' => 'Closed Lost'],
+                ['appuntamentoId!=' => null],
+                ['appuntamentoId!=' => ''],
             ],
         ])->limit(0, 5)->find();
     },
@@ -100,14 +102,12 @@ $checks = [
         ])->count();
     },
     'Alert contratti backlog' => function () use ($entityManager): void {
-        $entityManager->getRDBRepository('Opportunity')->where([
-            'stage' => 'Closed Won',
+        $entityManager->getRDBRepository('Quote')->where([
             'statoContratto' => 'Sospeso',
         ])->count();
     },
     'Alert contratti in lavorazione' => function () use ($entityManager): void {
-        $entityManager->getRDBRepository('Opportunity')->where([
-            'stage' => 'Closed Won',
+        $entityManager->getRDBRepository('Quote')->where([
             'statoContratto' => 'In lavorazione',
         ])->count();
     },
