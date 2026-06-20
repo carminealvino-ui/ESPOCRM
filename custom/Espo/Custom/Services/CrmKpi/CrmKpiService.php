@@ -102,6 +102,17 @@ class CrmKpiService
             ->count();
     }
 
+    private function countAppuntamenti(string $from, string $to): int
+    {
+        return (int) $this->entityManager
+            ->getRDBRepository('Appuntamento')
+            ->where([
+                'dataAppuntamento>=' => $from,
+                'dataAppuntamento<=' => $to,
+            ])
+            ->count();
+    }
+
     private function countAppuntamentiHeld(string $from, string $to): int
     {
         return (int) $this->entityManager
@@ -208,30 +219,20 @@ class CrmKpiService
      */
     private function getFunnel(string $from, string $to): array
     {
+        $appuntamenti = $this->countAppuntamenti($from, $to);
         $held = $this->countAppuntamentiHeld($from, $to);
-
-        $withOpportunity = $this->countOpportunitiesFromHeldAppointments($from, $to);
-
-        $closedWon = (int) $this->entityManager
-            ->getRDBRepository('Opportunity')
-            ->where([
-                'stage' => 'Closed Won',
-                'closeDate>=' => $from,
-                'closeDate<=' => $to,
-            ])
-            ->count();
-
+        $opportunities = $this->countOpportunitiesFromHeldAppointments($from, $to);
         $contracts = $this->countContracts($from, $to);
 
         $steps = [
+            ['key' => 'appuntamenti', 'label' => 'Appuntamenti', 'value' => $appuntamenti],
             ['key' => 'held', 'label' => 'Appuntamenti svolti', 'value' => $held],
-            ['key' => 'opportunity', 'label' => 'Opportunità create', 'value' => $withOpportunity],
-            ['key' => 'closedWon', 'label' => 'Opportunità vinte', 'value' => $closedWon],
+            ['key' => 'opportunity', 'label' => 'Opportunità', 'value' => $opportunities],
             ['key' => 'contracts', 'label' => 'Contratti', 'value' => $contracts],
         ];
 
         $result = [];
-        $base = max($held, 1);
+        $base = max($appuntamenti, 1);
 
         foreach ($steps as $step) {
             $result[] = (object) [
