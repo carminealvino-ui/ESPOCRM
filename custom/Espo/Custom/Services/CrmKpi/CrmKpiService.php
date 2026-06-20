@@ -72,32 +72,74 @@ class CrmKpiService
         ];
     }
 
-    private function countOpportunitiesFromHeldAppointments(string $from, string $to): int
+    /**
+     * @return string[]
+     */
+    private function getAppuntamentoIdsInPeriod(string $from, string $to): array
     {
-        $heldAppuntamentoIds = [];
+        $ids = [];
 
-        $heldCollection = $this->entityManager
+        $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->select(['id'])
             ->where([
-                'status' => 'Held',
                 'dataAppuntamento>=' => $from,
                 'dataAppuntamento<=' => $to,
             ])
             ->find();
 
-        foreach ($heldCollection as $appuntamento) {
-            $heldAppuntamentoIds[] = $appuntamento->getId();
+        foreach ($collection as $appuntamento) {
+            $ids[] = $appuntamento->getId();
         }
 
-        if ($heldAppuntamentoIds === []) {
+        return $ids;
+    }
+
+    private function countAppuntamentiWithOpportunity(string $from, string $to): int
+    {
+        $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to);
+
+        if ($appuntamentoIds === []) {
+            return 0;
+        }
+
+        $withOpportunity = [];
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Opportunity')
+            ->select(['appuntamentoId'])
+            ->where([
+                'AND' => [
+                    ['appuntamentoId!=' => ''],
+                    ['appuntamentoId!=' => null],
+                ],
+                'appuntamentoId' => $appuntamentoIds,
+            ])
+            ->find();
+
+        foreach ($collection as $opportunity) {
+            $appuntamentoId = $opportunity->get('appuntamentoId');
+
+            if ($appuntamentoId) {
+                $withOpportunity[$appuntamentoId] = true;
+            }
+        }
+
+        return count($withOpportunity);
+    }
+
+    private function countOpportunitiesFromAppointmentsInPeriod(string $from, string $to): int
+    {
+        $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to);
+
+        if ($appuntamentoIds === []) {
             return 0;
         }
 
         return (int) $this->entityManager
             ->getRDBRepository('Opportunity')
             ->where([
-                'appuntamentoId' => $heldAppuntamentoIds,
+                'appuntamentoId' => $appuntamentoIds,
             ])
             ->count();
     }
@@ -220,13 +262,13 @@ class CrmKpiService
     private function getFunnel(string $from, string $to): array
     {
         $appuntamenti = $this->countAppuntamenti($from, $to);
-        $held = $this->countAppuntamentiHeld($from, $to);
-        $opportunities = $this->countOpportunitiesFromHeldAppointments($from, $to);
+        $appuntamentiSvolti = $this->countAppuntamentiWithOpportunity($from, $to);
+        $opportunities = $this->countOpportunitiesFromAppointmentsInPeriod($from, $to);
         $contracts = $this->countContracts($from, $to);
 
         $steps = [
             ['key' => 'appuntamenti', 'label' => 'Appuntamenti', 'value' => $appuntamenti],
-            ['key' => 'held', 'label' => 'Appuntamenti svolti', 'value' => $held],
+            ['key' => 'held', 'label' => 'Appuntamenti svolti', 'value' => $appuntamentiSvolti],
             ['key' => 'opportunity', 'label' => 'Opportunità', 'value' => $opportunities],
             ['key' => 'contracts', 'label' => 'Contratti', 'value' => $contracts],
         ];
