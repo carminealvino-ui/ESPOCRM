@@ -79,6 +79,8 @@
         }
     },
     "presetFilters": {
-        "meseCorrente": "Mese corrente"
+        "meseCorrente": "Mese corrente",
+        "dataInstallazionePeriodo": "Data installazione nel periodo",
+        "dataInstallazioneMesePrecedente": "Data installazione mese precedente"
     }
 }

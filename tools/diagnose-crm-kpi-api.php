@@ -112,11 +112,13 @@ $checks = [
         ])->count();
     },
     'Alert contratti in pagamento' => function () use ($entityManager): void {
-        $entityManager->getRDBRepository('Opportunity')->where([
-            'stage' => 'Closed Won',
-            'statoContratto' => 'Installato',
-            'installazione>=' => date('Y-m-01'),
-            'installazione<=' => date('Y-m-t'),
+        $entityManager->getRDBRepository('Quote')->where([
+            'AND' => [
+                ['dataInstallazione!=' => null],
+                ['dataInstallazione!=' => ''],
+                ['dataInstallazione>=' => date('Y-m-01')],
+                ['dataInstallazione<=' => date('Y-m-t')],
+            ],
         ])->count();
     },
     'Alert trattativa senza contratto' => function () use ($entityManager): void {

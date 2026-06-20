@@ -279,10 +279,10 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
 
             if (key === 'contractsInPayment') {
                 const filter = period === 'previousMonth'
-                    ? 'installatoMesePrecedente'
-                    : 'installatoPeriodo';
+                    ? 'dataInstallazioneMesePrecedente'
+                    : 'dataInstallazionePeriodo';
 
-                this.getRouter().navigate('#Opportunity/filter/' + filter, {trigger: true});
+                this.getRouter().navigate('#Quote/filter/' + filter, {trigger: true});
 
                 return;
             }

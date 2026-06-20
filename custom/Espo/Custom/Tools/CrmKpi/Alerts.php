@@ -53,10 +53,10 @@ class Alerts
             ),
             $this->alert(
                 'contractsInPayment',
-                'Contratti in pagamento (installato nel periodo)',
+                'Contratti in pagamento (data installazione nel periodo)',
                 $contractsInPayment['count'],
-                '#Opportunity/filter/installatoPeriodo',
-                $contractsInPayment['provvigioniMeta']
+                '#Quote/filter/dataInstallazionePeriodo',
+                $contractsInPayment['meta']
             ),
         ];
     }
@@ -185,59 +185,55 @@ class Alerts
     }
 
     /**
-     * @return array{count: int, provvigioniMeta: string}
+     * @return array{count: int, meta: string}
      */
     private function countContractsInPayment(?string $from, ?string $to): array
     {
         $where = array_merge(
             [
-                'stage' => 'Closed Won',
-                'statoContratto' => 'Installato',
+                'AND' => [
+                    ['dataInstallazione!=' => null],
+                    ['dataInstallazione!=' => ''],
+                ],
             ],
-            $this->dateWhere('installazione', $from, $to)
+            $this->dateWhere('dataInstallazione', $from, $to)
         );
 
-        $collection = $this->entityManager
-            ->getRDBRepository('Opportunity')
-            ->select(['id'])
+        $count = (int) $this->entityManager
+            ->getRDBRepository('Quote')
             ->where($where)
-            ->find();
+            ->count();
 
-        $opportunityIds = [];
+        $amount = $this->safeSum('Quote', $where, [
+            'importoContratto',
+            'amount',
+            'grandTotalAmount',
+        ]);
 
-        foreach ($collection as $opportunity) {
-            $opportunityIds[] = $opportunity->getId();
-        }
-
-        $count = count($opportunityIds);
-        $provvigioniAmount = $this->sumProvvigioniForOpportunities($opportunityIds);
+        $provvigioni = $this->safeSum('Quote', $where, [
+            'totaleProvvigioni',
+        ]);
 
         return [
             'count' => $count,
-            'provvigioniMeta' => $this->formatProvvigioniMeta($provvigioniAmount),
+            'meta' => $this->formatPaymentMeta($amount, $provvigioni),
         ];
     }
 
     /**
-     * @param string[] $opportunityIds
+     * @param array<string, mixed> $where
+     * @param string[] $attributes
      */
-    private function sumProvvigioniForOpportunities(array $opportunityIds): float
+    private function safeSum(string $entityType, array $where, array $attributes): float
     {
-        if ($opportunityIds === []) {
-            return 0.0;
-        }
-
-        foreach (['importoConsolidato', 'importoPrevisto'] as $attribute) {
+        foreach ($attributes as $attribute) {
             try {
                 $sum = $this->entityManager
-                    ->getRDBRepository('Provvigione')
-                    ->where([
-                        'opportunitaId' => $opportunityIds,
-                        'statoProvvigione!=' => 'Stornata',
-                    ])
+                    ->getRDBRepository($entityType)
+                    ->where($where)
                     ->sum($attribute);
 
-                if ($sum !== null) {
+                if ($sum !== null && (float) $sum !== 0.0) {
                     return (float) $sum;
                 }
             } catch (\Throwable) {
@@ -248,13 +244,14 @@ class Alerts
         return 0.0;
     }
 
-    private function formatProvvigioniMeta(float $amount): string
+    private function formatPaymentMeta(float $amount, float $provvigioni): string
     {
-        if ($amount <= 0.0) {
-            return '0 € provvigioni';
-        }
+        return $this->formatCurrency($amount) . ' importo · ' . $this->formatCurrency($provvigioni) . ' provvigioni';
+    }
 
-        return number_format(round($amount, 0), 0, ',', '.') . ' € provvigioni';
+    private function formatCurrency(float $amount): string
+    {
+        return number_format(round($amount, 0), 0, ',', '.') . ' €';
     }
 
     /**
