@@ -3,10 +3,12 @@
 define('custom:views/appuntamento/popup-notification', [
     'crm:views/meeting/popup-notification',
     'custom:views/opportunity/helpers/appuntamento-sync',
-], function (MeetingPopupModule, AppuntamentoSyncModule) {
+    'custom:helpers/call-esito-popup-defaults',
+], function (MeetingPopupModule, AppuntamentoSyncModule, CallEsitoDefaultsModule) {
 
     const Parent = MeetingPopupModule.default || MeetingPopupModule;
     const AppuntamentoSync = AppuntamentoSyncModule.default || AppuntamentoSyncModule;
+    const CallEsitoDefaults = CallEsitoDefaultsModule.default || CallEsitoDefaultsModule;
 
     const ESITO_POPUP_SCOPES = {
         Appuntamento: {
@@ -169,6 +171,12 @@ define('custom:views/appuntamento/popup-notification', [
                                 isWide: true,
                             }, view => {
                                 view.render();
+
+                                if (entityType === 'Call') {
+                                    CallEsitoDefaults.applyDefaults(model, this.notificationData.name);
+                                    CallEsitoDefaults.applyWithRetry(view, this.notificationData.name);
+                                }
+
                                 this.setupActionButtonListeners(view);
                                 this.updateActionButtons();
                                 resolve();
@@ -210,7 +218,7 @@ define('custom:views/appuntamento/popup-notification', [
             }
 
             const fieldNames = model.entityType === 'Call' ?
-                ['status'] :
+                ['status', 'direction', 'tipologia', 'whatsApp', 'testo'] :
                 ['status', 'direction', 'sottostato', 'esito', 'noteEsito', 'tipologia', 'canaleContatto', 'description', 'daRichiamare', 'dataRichiamo', 'richiamo'];
 
             fieldNames.forEach(fieldName => {
@@ -458,9 +466,10 @@ define('custom:views/appuntamento/popup-notification', [
             let saveAttributes = null;
 
             if (entityType === 'Call') {
-                saveAttributes = {
-                    status: model.get('status'),
-                };
+                saveAttributes = CallEsitoDefaults.getSaveAttributes(
+                    model,
+                    this.notificationData.name
+                );
             }
 
             Espo.Ui.notify(' ...');

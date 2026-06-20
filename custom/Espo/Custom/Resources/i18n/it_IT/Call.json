@@ -1,6 +1,7 @@
 {
     "fields": {
         "nota": "Nota",
+        "direction": "Direzione",
         "whatsApp": "WhatsApp",
         "parent": "Relazionato a",
         "telefono": "Telefono",
