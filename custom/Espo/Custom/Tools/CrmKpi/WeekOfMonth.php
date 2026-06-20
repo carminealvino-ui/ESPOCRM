@@ -79,6 +79,13 @@ class WeekOfMonth
     {
         $rows = [];
         $max = 1;
+        $total = 0;
+
+        foreach ($counts as $value) {
+            $total += (int) $value;
+        }
+
+        $totalBase = max($total, 1);
 
         foreach ($weeks as $index => $week) {
             $value = isset($counts[$index]) ? (int) $counts[$index] : 0;
@@ -102,6 +109,7 @@ class WeekOfMonth
                 'label' => $row['label'],
                 'value' => $row['value'],
                 'widthPercent' => round(($row['value'] / $max) * 100, 1),
+                'percentOfTotal' => round(($row['value'] / $totalBase) * 100, 1),
             ];
         }
 

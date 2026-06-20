@@ -358,6 +358,8 @@ class CrmKpiService
         }
 
         $max = max($counts) ?: 1;
+        $total = array_sum($counts);
+        $totalBase = max($total, 1);
         $result = [];
 
         foreach ([1, 2, 3, 4, 5, 6, 7] as $day) {
@@ -366,6 +368,7 @@ class CrmKpiService
                 'label' => self::WEEKDAY_LABELS[$day],
                 'value' => $counts[$day],
                 'widthPercent' => round(($counts[$day] / $max) * 100, 1),
+                'percentOfTotal' => round(($counts[$day] / $totalBase) * 100, 1),
             ];
         }
 

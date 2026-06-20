@@ -77,7 +77,7 @@
                                 <div class="crm-kpi-weekday-bar-wrap">
                                     <div class="crm-kpi-weekday-bar" style="width: {{widthPercent}}%;"></div>
                                 </div>
-                                <div class="crm-kpi-weekday-value">{{value}}</div>
+                                <div class="crm-kpi-weekday-value">{{value}} <span class="text-muted">({{percentOfTotal}}%)</span></div>
                             </div>
                         {{/each}}
                     </div>
@@ -92,7 +92,7 @@
                                 <div class="crm-kpi-weekday-bar-wrap">
                                     <div class="crm-kpi-weekday-bar" style="width: {{widthPercent}}%;"></div>
                                 </div>
-                                <div class="crm-kpi-weekday-value">{{value}}</div>
+                                <div class="crm-kpi-weekday-value">{{value}} <span class="text-muted">({{percentOfTotal}}%)</span></div>
                             </div>
                         {{/each}}
                     </div>

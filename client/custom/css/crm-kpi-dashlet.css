@@ -61,7 +61,7 @@
 
 .crm-kpi-weekday {
     display: grid;
-    grid-template-columns: 160px 1fr 56px;
+    grid-template-columns: 160px 1fr 72px;
     gap: 8px;
     align-items: center;
     margin-bottom: 6px;
