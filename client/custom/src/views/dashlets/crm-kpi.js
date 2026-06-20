@@ -49,7 +49,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
 
             const period = this.getOption('period') || 'currentMonth';
 
-            return Espo.Ajax.getRequest('CrmKpi/action/summary', {period: period})
+            return Espo.Ajax.getRequest('Appuntamento/action/crmKpiSummary', {period: period})
                 .then(response => {
                     this.summary = response;
                     this.loadError = null;

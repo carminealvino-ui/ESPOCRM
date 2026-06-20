@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Hotfix KPI API + popup Call + controller CrmKpi
+# Hotfix KPI dashlet: endpoint Appuntamento + popup Call
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-dashlet-9999/tools/deploy-crm-kpi-hotfix.sh?t=$(date +%s)" | bash
@@ -15,16 +15,17 @@ BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 STAMP=$(date +%Y%m%d-%H%M%S)
 LOCAL_BACKUP="${CRM_ROOT}/backup/crm-kpi-hotfix/server-${STAMP}"
 
-echo "=== Hotfix KPI API in ${CRM_ROOT} ==="
+echo "=== Hotfix KPI dashlet in ${CRM_ROOT} ==="
 mkdir -p "${LOCAL_BACKUP}"
 
 FILES=(
+  "custom/Espo/Custom/Controllers/Appuntamento.php"
   "custom/Espo/Custom/Controllers/CrmKpi.php"
   "custom/Espo/Custom/Resources/routes.json"
   "custom/Espo/Custom/Resources/metadata/scopes/CrmKpi.json"
-  "custom/Espo/Custom/Tools/CrmKpi/Api/GetSummary.php"
   "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
   "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
+  "client/custom/src/views/dashlets/crm-kpi.js"
   "tools/diagnose-crm-kpi-api.php"
 )
 
@@ -45,5 +46,7 @@ for rel in "${FILES[@]}"; do
 done
 
 echo ""
+echo "IMPORTANTE: include anche client/custom/src/views/dashlets/crm-kpi.js"
 echo "Poi: cd ${CRM_ROOT} && php clear_cache.php && php rebuild.php"
 echo "Test: php tools/diagnose-crm-kpi-api.php --user=carmine_alvino"
+echo "Browser: Ctrl+Shift+R sulla dashboard"

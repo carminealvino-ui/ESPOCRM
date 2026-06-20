@@ -33,6 +33,7 @@ FILES=(
   "client/custom/css/crm-kpi-dashlet.css"
   "client/custom/res/templates/dashlets/crm-kpi.tpl"
   "client/custom/src/views/dashlets/crm-kpi.js"
+  "custom/Espo/Custom/Controllers/Appuntamento.php"
   "custom/Espo/Custom/Controllers/CrmKpi.php"
   "custom/Espo/Custom/Resources/routes.json"
   "custom/Espo/Custom/Resources/metadata/scopes/CrmKpi.json"
