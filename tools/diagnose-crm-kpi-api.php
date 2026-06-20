@@ -129,6 +129,7 @@ try {
         $summary = $service->getSummary($user, $period);
         echo "[OK] getSummary({$period})\n";
         echo "     appuntamentiSvolti: " . ($summary->tiles->appuntamentiSvolti->value ?? '?') . "\n";
+        echo "     contratti settimana mese: " . count($summary->contractsByWeekOfMonth ?? []) . " righe\n";
     }
 } catch (Throwable $e) {
     $failed++;

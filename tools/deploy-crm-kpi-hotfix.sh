@@ -45,6 +45,7 @@ FILES=(
   "client/custom/src/init/popup-notifications-ordered.js"
   "custom/Espo/Custom/Resources/metadata/app/client.json"
   "client/custom/src/views/dashlets/crm-kpi.js"
+  "client/custom/src/views/dashlets/records.js"
   "client/custom/css/crm-kpi-dashlet.css"
   "tools/diagnose-crm-kpi-api.php"
   "tools/verify-crm-kpi-deploy.php"

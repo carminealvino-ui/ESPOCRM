@@ -54,7 +54,12 @@ class WeekOfMonth
             return null;
         }
 
-        $parsed = new \DateTimeImmutable(substr((string) $date, 0, 10));
+        try {
+            $parsed = new \DateTimeImmutable(substr((string) $date, 0, 10));
+        } catch (\Throwable $e) {
+            return null;
+        }
+
         $weeks = self::validWeeksInMonth(
             (int) $parsed->format('Y'),
             (int) $parsed->format('n')
@@ -72,11 +77,19 @@ class WeekOfMonth
     }
 
     /**
+     * @param array<int, int> $counts
      * @param array<int, array{index: int, start: string, end: string, label: string}> $weeks
-     * @return array<int, array{index: int, label: string, value: int, widthPercent: float}>
+     * @return object[]
      */
-    public static function buildChartRows(array $counts, array $weeks)
+    public static function buildChartRows($counts, $weeks)
     {
+        if (!is_array($counts)) {
+            $counts = [];
+        }
+
+        if (!is_array($weeks) || $weeks === []) {
+            $weeks = self::defaultWeekLabels();
+        }
         $rows = [];
         $max = 1;
         $total = 0;
@@ -183,8 +196,12 @@ class WeekOfMonth
         return $weeks;
     }
 
-    private static function mondayOnOrBefore(\DateTimeImmutable $date)
+    private static function mondayOnOrBefore($date)
     {
+        if (!$date instanceof \DateTimeImmutable) {
+            return new \DateTimeImmutable('today');
+        }
+
         $weekday = (int) $date->format('N');
 
         if ($weekday === 1) {
@@ -197,12 +214,15 @@ class WeekOfMonth
     /**
      * @return array{start: string, end: string, days: int}|null
      */
-    private static function intersectRange(
-        \DateTimeImmutable $rangeStart,
-        \DateTimeImmutable $rangeEnd,
-        \DateTimeImmutable $boundStart,
-        \DateTimeImmutable $boundEnd
-    ) {
+    private static function intersectRange($rangeStart, $rangeEnd, $boundStart, $boundEnd)
+    {
+        if (!$rangeStart instanceof \DateTimeImmutable
+            || !$rangeEnd instanceof \DateTimeImmutable
+            || !$boundStart instanceof \DateTimeImmutable
+            || !$boundEnd instanceof \DateTimeImmutable) {
+            return null;
+        }
+
         $start = $rangeStart > $boundStart ? $rangeStart : $boundStart;
         $end = $rangeEnd < $boundEnd ? $rangeEnd : $boundEnd;
 

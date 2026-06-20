@@ -381,9 +381,26 @@ class CrmKpiService
     private function getContractsByWeekOfMonthSafe(?string $from, ?string $to): array
     {
         try {
+            $this->ensureWeekOfMonthLoaded();
+
             return $this->getContractsByWeekOfMonth($from, $to);
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            error_log('CrmKpi contractsByWeekOfMonth: ' . $e->getMessage());
+
             return [];
+        }
+    }
+
+    private function ensureWeekOfMonthLoaded(): void
+    {
+        if (class_exists(WeekOfMonth::class)) {
+            return;
+        }
+
+        $path = dirname(__DIR__) . '/Tools/CrmKpi/WeekOfMonth.php';
+
+        if (is_file($path)) {
+            require_once $path;
         }
     }
 
@@ -425,10 +442,14 @@ class CrmKpiService
     private function resolveWeekOfMonthLabels(?string $from, ?string $to): array
     {
         if ($from && $to && substr($from, 0, 7) === substr($to, 0, 7)) {
-            return WeekOfMonth::validWeeksInMonth(
+            $weeks = WeekOfMonth::validWeeksInMonth(
                 (int) substr($from, 0, 4),
                 (int) substr($from, 5, 2)
             );
+
+            if ($weeks !== []) {
+                return $weeks;
+            }
         }
 
         return WeekOfMonth::validWeeksForRange($from, $to);

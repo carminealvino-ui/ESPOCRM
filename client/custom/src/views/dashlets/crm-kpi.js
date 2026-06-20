@@ -108,10 +108,32 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                     percentOfTotal: step.percentOfHeld,
                     percentOfPrevious: step.percentOfPrevious,
                 })),
-                contractsByWeekday: summary.contractsByWeekday || [],
-                contractsByWeekOfMonth: summary.contractsByWeekOfMonth || [],
+                contractsByWeekday: this.mapContractChartRows(summary.contractsByWeekday),
+                contractsByWeekOfMonth: this.mapContractChartRows(summary.contractsByWeekOfMonth),
                 alerts: summary.alerts || [],
             };
+        },
+
+        mapContractChartRows: function (rows) {
+            const list = rows || [];
+            const total = list.reduce(function (sum, row) {
+                return sum + Number(row.value || 0);
+            }, 0);
+            const totalBase = total > 0 ? total : 1;
+
+            return list.map(function (row) {
+                const value = Number(row.value || 0);
+                const percentOfTotal = row.percentOfTotal !== undefined && row.percentOfTotal !== null
+                    ? Number(row.percentOfTotal)
+                    : Math.round((value / totalBase) * 1000) / 10;
+
+                return {
+                    label: row.label,
+                    value: value,
+                    widthPercent: row.widthPercent !== undefined ? row.widthPercent : 0,
+                    percentOfTotal: percentOfTotal,
+                };
+            });
         },
 
         getPeriodLabel: function () {

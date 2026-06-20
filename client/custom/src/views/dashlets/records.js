@@ -8,7 +8,7 @@ define('custom:views/dashlets/records', [
     return Dep.extend({
 
         init: function () {
-            if (this.getOption('entityType') === 'Call') {
+            if (this.options && this.options.entityType === 'Call') {
                 CallDashletDefaults.applyToDashletOptions(this.options);
             }
 
@@ -16,7 +16,7 @@ define('custom:views/dashlets/records', [
         },
 
         getSearchData: function () {
-            if (this.getOption('entityType') === 'Call') {
+            if (this.options && this.options.entityType === 'Call') {
                 return CallDashletDefaults.getSearchData();
             }
 
