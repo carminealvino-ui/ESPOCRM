@@ -10,6 +10,7 @@ use Espo\Core\Exceptions\Forbidden;
 use Espo\Core\ApplicationUser;
 use Espo\Core\InjectableFactory;
 use Espo\Custom\Services\CrmKpi\CrmKpiService;
+use Espo\Custom\Tools\CrmKpi\Period;
 
 class GetSummary implements Action
 {
@@ -26,11 +27,7 @@ class GetSummary implements Action
             throw new Forbidden();
         }
 
-        $period = $request->getQueryParam('period') ?? 'currentMonth';
-
-        if (!in_array($period, ['currentMonth', 'previousMonth'], true)) {
-            $period = 'currentMonth';
-        }
+        $period = Period::normalize($request->getQueryParam('period') ?? Period::CURRENT_MONTH);
 
         $service = $this->injectableFactory->create(CrmKpiService::class);
         $summary = $service->getSummary($user, $period);

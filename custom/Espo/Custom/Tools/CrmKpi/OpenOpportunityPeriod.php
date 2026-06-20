@@ -13,13 +13,21 @@ class OpenOpportunityPeriod
     {
         [$from, $to] = MonthRange::bounds($period);
 
+        $conditions = [
+            ['stage!=' => 'Closed Won'],
+            ['stage!=' => 'Closed Lost'],
+        ];
+
+        if ($from !== null) {
+            $conditions[] = ['dataOpportunit>=' => $from];
+        }
+
+        if ($to !== null) {
+            $conditions[] = ['dataOpportunit<=' => $to];
+        }
+
         return [
-            'AND' => [
-                ['stage!=' => 'Closed Won'],
-                ['stage!=' => 'Closed Lost'],
-                ['dataOpportunit>=' => $from],
-                ['dataOpportunit<=' => $to],
-            ],
+            'AND' => $conditions,
         ];
     }
 }

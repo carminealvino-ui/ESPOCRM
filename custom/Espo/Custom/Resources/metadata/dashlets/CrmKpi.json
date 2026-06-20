@@ -2,6 +2,7 @@
     "view": "custom:views/dashlets/crm-kpi",
     "aclScope": "Appuntamento",
     "options": {
+        "translation": "CrmKpi",
         "fields": {
             "title": {
                 "type": "varchar",
@@ -9,7 +10,16 @@
             },
             "period": {
                 "type": "enum",
-                "options": ["currentMonth", "previousMonth"]
+                "options": [
+                    "totals",
+                    "currentYear",
+                    "previousYear",
+                    "currentQuarter",
+                    "previousQuarter",
+                    "currentMonth",
+                    "previousMonth"
+                ],
+                "translation": "CrmKpi.options.period"
             },
             "autorefreshInterval": {
                 "type": "enumFloat",

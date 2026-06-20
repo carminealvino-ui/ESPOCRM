@@ -76,8 +76,11 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
             return {
                 loadError: this.loadError,
                 periodLabel: this.getPeriodLabel(),
+                comparisonLabel: this.getComparisonLabel(),
+                showComparison: this.hasComparisonPeriod(),
                 from: summary.from,
                 to: summary.to,
+                showDateRange: summary.from && summary.to,
                 tiles: {
                     appuntamentiSvolti: {
                         value: this.formatNumber(appuntamenti.value),
@@ -112,8 +115,39 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
 
         getPeriodLabel: function () {
             const period = this.getOption('period') || 'currentMonth';
+            const labels = {
+                totals: 'Totali',
+                currentYear: 'Totali Anno in Corso',
+                previousYear: 'Totali Anno Precedente',
+                currentQuarter: 'Totali Trimestre in Corso',
+                previousQuarter: 'Totali Trimestre Precedente',
+                currentMonth: 'Totali Mese in Corso',
+                previousMonth: 'Totali Mese Precedente',
+            };
 
-            return period === 'previousMonth' ? 'Mese precedente' : 'Mese corrente';
+            return labels[period] || labels.currentMonth;
+        },
+
+        getComparisonLabel: function () {
+            const period = this.getOption('period') || 'currentMonth';
+
+            if (period === 'totals') {
+                return null;
+            }
+
+            if (period === 'currentYear' || period === 'previousYear') {
+                return 'vs anno prec.';
+            }
+
+            if (period === 'currentQuarter' || period === 'previousQuarter') {
+                return 'vs trim. prec.';
+            }
+
+            return 'vs mese prec.';
+        },
+
+        hasComparisonPeriod: function () {
+            return (this.getOption('period') || 'currentMonth') !== 'totals';
         },
 
         formatNumber: function (value) {

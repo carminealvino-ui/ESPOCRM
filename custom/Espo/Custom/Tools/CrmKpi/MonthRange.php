@@ -5,7 +5,7 @@ namespace Espo\Custom\Tools\CrmKpi;
 class MonthRange
 {
     /**
-     * @return array{0: string, 1: string}
+     * @return array{0: ?string, 1: ?string}
      */
     public static function bounds(string $period = 'currentMonth'): array
     {

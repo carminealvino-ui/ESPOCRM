@@ -28,18 +28,25 @@ class CrmKpiService
     public function getSummary(User $user, string $period = 'currentMonth'): object
     {
         [$from, $to, $prevFrom, $prevTo] = DateRange::resolve($period);
+        $hasPreviousPeriod = $prevFrom !== null && $prevTo !== null;
 
         $heldCurrent = $this->countAppuntamentiHeld($from, $to);
-        $heldPrevious = $this->countAppuntamentiHeld($prevFrom, $prevTo);
+        $heldPrevious = $hasPreviousPeriod
+            ? $this->countAppuntamentiHeld($prevFrom, $prevTo)
+            : null;
 
         $oppCurrent = $this->countOpenOpportunities($period);
         $oppAmount = $this->sumOpenOpportunityAmount($period);
 
         $contractsCurrent = $this->countContracts($from, $to);
-        $contractsPrevious = $this->countContracts($prevFrom, $prevTo);
+        $contractsPrevious = $hasPreviousPeriod
+            ? $this->countContracts($prevFrom, $prevTo)
+            : null;
 
         $amountCurrent = $this->sumContractAmount($from, $to);
-        $amountPrevious = $this->sumContractAmount($prevFrom, $prevTo);
+        $amountPrevious = $hasPreviousPeriod
+            ? $this->sumContractAmount($prevFrom, $prevTo)
+            : null;
 
         return (object) [
             'period' => $period,
@@ -49,7 +56,9 @@ class CrmKpiService
                 'appuntamentiSvolti' => (object) [
                     'value' => $heldCurrent,
                     'previous' => $heldPrevious,
-                    'changePercent' => $this->percentChange($heldCurrent, $heldPrevious),
+                    'changePercent' => $heldPrevious !== null
+                        ? $this->percentChange($heldCurrent, $heldPrevious)
+                        : null,
                 ],
                 'opportunitaAperte' => (object) [
                     'count' => $oppCurrent,
@@ -58,12 +67,16 @@ class CrmKpiService
                 'contrattiFirmati' => (object) [
                     'value' => $contractsCurrent,
                     'previous' => $contractsPrevious,
-                    'changePercent' => $this->percentChange($contractsCurrent, $contractsPrevious),
+                    'changePercent' => $contractsPrevious !== null
+                        ? $this->percentChange($contractsCurrent, $contractsPrevious)
+                        : null,
                 ],
                 'valoreContratti' => (object) [
                     'value' => round($amountCurrent, 2),
-                    'previous' => round($amountPrevious, 2),
-                    'changePercent' => $this->percentChange($amountCurrent, $amountPrevious),
+                    'previous' => $amountPrevious !== null ? round($amountPrevious, 2) : null,
+                    'changePercent' => $amountPrevious !== null
+                        ? $this->percentChange($amountCurrent, $amountPrevious)
+                        : null,
                 ],
             ],
             'funnel' => $this->getFunnelSafe($from, $to),
@@ -73,19 +86,34 @@ class CrmKpiService
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    private function dateWhere(string $field, ?string $from, ?string $to): array
+    {
+        $where = [];
+
+        if ($from !== null) {
+            $where[$field . '>='] = $from;
+        }
+
+        if ($to !== null) {
+            $where[$field . '<='] = $to;
+        }
+
+        return $where;
+    }
+
+    /**
      * @return string[]
      */
-    private function getAppuntamentoIdsInPeriod(string $from, string $to): array
+    private function getAppuntamentoIdsInPeriod(?string $from, ?string $to): array
     {
         $ids = [];
 
         $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->select(['id'])
-            ->where([
-                'dataAppuntamento>=' => $from,
-                'dataAppuntamento<=' => $to,
-            ])
+            ->where($this->dateWhere('dataAppuntamento', $from, $to))
             ->find();
 
         foreach ($collection as $appuntamento) {
@@ -95,7 +123,7 @@ class CrmKpiService
         return $ids;
     }
 
-    private function countAppuntamentiWithOpportunity(string $from, string $to): int
+    private function countAppuntamentiWithOpportunity(?string $from, ?string $to): int
     {
         $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to);
 
@@ -128,7 +156,7 @@ class CrmKpiService
         return count($withOpportunity);
     }
 
-    private function countOpportunitiesFromAppointmentsInPeriod(string $from, string $to): int
+    private function countOpportunitiesFromAppointmentsInPeriod(?string $from, ?string $to): int
     {
         $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to);
 
@@ -144,26 +172,22 @@ class CrmKpiService
             ->count();
     }
 
-    private function countAppuntamenti(string $from, string $to): int
+    private function countAppuntamenti(?string $from, ?string $to): int
     {
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where([
-                'dataAppuntamento>=' => $from,
-                'dataAppuntamento<=' => $to,
-            ])
+            ->where($this->dateWhere('dataAppuntamento', $from, $to))
             ->count();
     }
 
-    private function countAppuntamentiHeld(string $from, string $to): int
+    private function countAppuntamentiHeld(?string $from, ?string $to): int
     {
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where([
-                'status' => 'Held',
-                'dataAppuntamento>=' => $from,
-                'dataAppuntamento<=' => $to,
-            ])
+            ->where(array_merge(
+                ['status' => 'Held'],
+                $this->dateWhere('dataAppuntamento', $from, $to)
+            ))
             ->count();
     }
 
@@ -183,25 +207,17 @@ class CrmKpiService
         ]);
     }
 
-    private function countContracts(string $from, string $to): int
+    private function countContracts(?string $from, ?string $to): int
     {
         return (int) $this->entityManager
             ->getRDBRepository('Quote')
-            ->where([
-                'dateQuoted>=' => $from,
-                'dateQuoted<=' => $to,
-            ])
+            ->where($this->dateWhere('dateQuoted', $from, $to))
             ->count();
     }
 
-    private function sumContractAmount(string $from, string $to): float
+    private function sumContractAmount(?string $from, ?string $to): float
     {
-        $where = [
-            'dateQuoted>=' => $from,
-            'dateQuoted<=' => $to,
-        ];
-
-        return $this->safeSum('Quote', $where, [
+        return $this->safeSum('Quote', $this->dateWhere('dateQuoted', $from, $to), [
             'importoContratto',
             'amount',
             'grandTotalAmount',
@@ -235,7 +251,7 @@ class CrmKpiService
     /**
      * @return object[]
      */
-    private function getFunnelSafe(string $from, string $to): array
+    private function getFunnelSafe(?string $from, ?string $to): array
     {
         try {
             return $this->getFunnel($from, $to);
@@ -247,7 +263,7 @@ class CrmKpiService
     /**
      * @return object[]
      */
-    private function getContractsByWeekdaySafe(string $from, string $to): array
+    private function getContractsByWeekdaySafe(?string $from, ?string $to): array
     {
         try {
             return $this->getContractsByWeekday($from, $to);
@@ -259,7 +275,7 @@ class CrmKpiService
     /**
      * @return object[]
      */
-    private function getFunnel(string $from, string $to): array
+    private function getFunnel(?string $from, ?string $to): array
     {
         $appuntamenti = $this->countAppuntamenti($from, $to);
         $appuntamentiSvolti = $this->countAppuntamentiWithOpportunity($from, $to);
@@ -303,17 +319,14 @@ class CrmKpiService
     /**
      * @return object[]
      */
-    private function getContractsByWeekday(string $from, string $to): array
+    private function getContractsByWeekday(?string $from, ?string $to): array
     {
         $counts = array_fill(1, 7, 0);
 
         $collection = $this->entityManager
             ->getRDBRepository('Quote')
             ->select(['id', 'dateQuoted'])
-            ->where([
-                'dateQuoted>=' => $from,
-                'dateQuoted<=' => $to,
-            ])
+            ->where($this->dateWhere('dateQuoted', $from, $to))
             ->find();
 
         foreach ($collection as $quote) {

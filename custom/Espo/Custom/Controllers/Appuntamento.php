@@ -7,6 +7,7 @@ use Espo\Core\Api\Response;
 use Espo\Core\InjectableFactory;
 use Espo\Core\Templates\Controllers\Base;
 use Espo\Custom\Services\CrmKpi\CrmKpiService;
+use Espo\Custom\Tools\CrmKpi\Period;
 
 /**
  * KPI dashlet — endpoint su scope Appuntamento (ACL già attivo).
@@ -28,11 +29,7 @@ class Appuntamento extends Base
 
     private function buildSummary(Request $request): object
     {
-        $period = $request->getQueryParam('period') ?? 'currentMonth';
-
-        if (!in_array($period, ['currentMonth', 'previousMonth'], true)) {
-            $period = 'currentMonth';
-        }
+        $period = Period::normalize($request->getQueryParam('period') ?? Period::CURRENT_MONTH);
 
         /** @var InjectableFactory $injectableFactory */
         $injectableFactory = $this->getContainer()->get('injectableFactory');

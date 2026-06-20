@@ -1,0 +1,18 @@
+{
+    "fields": {
+        "period": "Periodo",
+        "title": "Titolo",
+        "autorefreshInterval": "Intervallo di Aggiornamento Automatico"
+    },
+    "options": {
+        "period": {
+            "totals": "Totali",
+            "currentYear": "Totali Anno in Corso",
+            "previousYear": "Totali Anno Precedente",
+            "currentQuarter": "Totali Trimestre in Corso",
+            "previousQuarter": "Totali Trimestre Precedente",
+            "currentMonth": "Totali Mese in Corso",
+            "previousMonth": "Totali Mese Precedente"
+        }
+    }
+}

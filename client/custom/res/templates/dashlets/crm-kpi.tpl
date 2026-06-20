@@ -3,7 +3,7 @@
         <div class="alert alert-danger">{{loadError}}</div>
     {{else}}
         <div class="crm-kpi-period text-muted small margin-bottom">
-            {{periodLabel}}{{#if from}} · {{from}} → {{to}}{{/if}}
+            {{periodLabel}}{{#if showDateRange}} · {{from}} → {{to}}{{/if}}
             <a role="button" class="pull-right" data-action="refresh" title="Aggiorna">
                 <span class="fas fa-sync-alt"></span>
             </a>
@@ -15,13 +15,13 @@
                     <div class="crm-kpi-tile-label">Appuntamenti svolti</div>
                     <div class="crm-kpi-tile-value">{{tiles.appuntamentiSvolti.value}}</div>
                     <div class="crm-kpi-tile-meta {{tiles.appuntamentiSvolti.changeClass}}">
-                        vs mese prec. {{tiles.appuntamentiSvolti.change}}
+                        {{#if showComparison}}{{comparisonLabel}} {{tiles.appuntamentiSvolti.change}}{{/if}}
                     </div>
                 </div>
             </div>
             <div class="col-sm-6 col-md-3">
                 <div class="crm-kpi-tile" data-action="openOpportunitaAperte">
-                    <div class="crm-kpi-tile-label">Opportunità aperte (mese)</div>
+                    <div class="crm-kpi-tile-label">Opportunità aperte</div>
                     <div class="crm-kpi-tile-value">{{tiles.opportunitaAperte.count}}</div>
                     <div class="crm-kpi-tile-meta">{{tiles.opportunitaAperte.amount}}</div>
                 </div>
@@ -31,7 +31,7 @@
                     <div class="crm-kpi-tile-label">Contratti firmati</div>
                     <div class="crm-kpi-tile-value">{{tiles.contrattiFirmati.value}}</div>
                     <div class="crm-kpi-tile-meta {{tiles.contrattiFirmati.changeClass}}">
-                        vs mese prec. {{tiles.contrattiFirmati.change}}
+                        {{#if showComparison}}{{comparisonLabel}} {{tiles.contrattiFirmati.change}}{{/if}}
                     </div>
                 </div>
             </div>
@@ -40,14 +40,14 @@
                     <div class="crm-kpi-tile-label">Valore contratti</div>
                     <div class="crm-kpi-tile-value">{{tiles.valoreContratti.value}}</div>
                     <div class="crm-kpi-tile-meta {{tiles.valoreContratti.changeClass}}">
-                        vs mese prec. {{tiles.valoreContratti.change}}
+                        {{#if showComparison}}{{comparisonLabel}} {{tiles.valoreContratti.change}}{{/if}}
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="crm-kpi-section">
-            <div class="crm-kpi-section-title">Funnel mese</div>
+            <div class="crm-kpi-section-title">Funnel · {{periodLabel}}</div>
             <div class="crm-kpi-funnel">
                 {{#each funnel}}
                     <div class="crm-kpi-funnel-step">
