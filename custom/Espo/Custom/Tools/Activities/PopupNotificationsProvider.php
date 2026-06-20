@@ -93,7 +93,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         usort($items, function (Item $a, Item $b): int {
-            return $this->getItemSortDate($a) <=> $this->getItemSortDate($b);
+            return $this->compareItems($a, $b);
         });
 
         return $items;
@@ -262,7 +262,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
         $seenEntityKeys[$entityKey] = true;
 
-        return new Item(null, $this->buildActivityData($entity));
+        return new Item($entityKey, $this->buildActivityData($entity));
     }
 
     private function buildActivityData(Entity $entity): object
@@ -344,6 +344,32 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         return $attributes->{$dateField} ?? $attributes->dateStart ?? '';
+    }
+
+    private function compareItems(Item $a, Item $b): int
+    {
+        $dateCompare = $this->getItemSortTimestamp($a) <=> $this->getItemSortTimestamp($b);
+
+        if ($dateCompare !== 0) {
+            return $dateCompare;
+        }
+
+        return ($this->getItemEntityKey($a) ?? '') <=> ($this->getItemEntityKey($b) ?? '');
+    }
+
+    private function getItemSortTimestamp(Item $item): int
+    {
+        $date = $this->getItemSortDate($item);
+
+        if ($date === '') {
+            return PHP_INT_MAX;
+        }
+
+        try {
+            return (new DateTime($date))->getTimestamp();
+        } catch (\Throwable) {
+            return PHP_INT_MAX;
+        }
     }
 
     /**

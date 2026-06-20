@@ -37,6 +37,7 @@ FILES=(
   "client/custom/src/helpers/call-esito-popup-defaults.js"
   "client/custom/src/helpers/call-appuntamento-sync.js"
   "client/custom/src/init/auth-token-redirect.js"
+  "client/custom/src/init/popup-notifications-ordered.js"
   "client/custom/res/templates/appuntamento/popup-notification.tpl"
   "client/custom/res/templates/fields/call-canale-contatto/edit.tpl"
   "client/custom/res/css/esito-popup-notification.css"
