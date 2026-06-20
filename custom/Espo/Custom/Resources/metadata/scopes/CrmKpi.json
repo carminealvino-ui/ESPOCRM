@@ -1,6 +1,6 @@
 {
     "entity": false,
     "tab": false,
-    "acl": false,
+    "acl": "boolean",
     "module": "Custom"
 }

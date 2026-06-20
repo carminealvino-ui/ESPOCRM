@@ -9,12 +9,24 @@ use Espo\Core\Templates\Controllers\Base;
 use Espo\Custom\Services\CrmKpi\CrmKpiService;
 
 /**
- * Endpoint KPI dashlet: GET api/v1/Appuntamento/action/crmKpiSummary
- * Usa scope Appuntamento (ACL già configurato) invece del controller virtuale CrmKpi.
+ * KPI dashlet — endpoint su scope Appuntamento (ACL già attivo).
+ *
+ * GET api/v1/Appuntamento/action/getSummary
+ * GET api/v1/Appuntamento/action/crmKpiSummary  (alias)
  */
 class Appuntamento extends Base
 {
+    public function getActionGetSummary(Request $request, Response $response): object
+    {
+        return $this->buildSummary($request);
+    }
+
     public function getActionCrmKpiSummary(Request $request, Response $response): object
+    {
+        return $this->buildSummary($request);
+    }
+
+    private function buildSummary(Request $request): object
     {
         $period = $request->getQueryParam('period') ?? 'currentMonth';
 

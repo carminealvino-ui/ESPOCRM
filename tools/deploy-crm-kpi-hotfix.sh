@@ -27,6 +27,7 @@ FILES=(
   "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
   "client/custom/src/views/dashlets/crm-kpi.js"
   "tools/diagnose-crm-kpi-api.php"
+  "tools/verify-crm-kpi-deploy.php"
 )
 
 for rel in "${FILES[@]}"; do
@@ -48,5 +49,5 @@ done
 echo ""
 echo "IMPORTANTE: include anche client/custom/src/views/dashlets/crm-kpi.js"
 echo "Poi: cd ${CRM_ROOT} && php clear_cache.php && php rebuild.php"
-echo "Test: php tools/diagnose-crm-kpi-api.php --user=carmine_alvino"
+echo "Test: php tools/verify-crm-kpi-deploy.php && php tools/diagnose-crm-kpi-api.php --user=carmine_alvino"
 echo "Browser: Ctrl+Shift+R sulla dashboard"

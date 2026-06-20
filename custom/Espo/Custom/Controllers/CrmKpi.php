@@ -10,8 +10,8 @@ use Espo\Core\InjectableFactory;
 use Espo\Custom\Services\CrmKpi\CrmKpiService;
 
 /**
- * Controller API virtuale (non estende Record: CrmKpi non è un'entità).
- * Endpoint: GET api/v1/CrmKpi/action/summary
+ * Alias retrocompatibilità se il browser ha ancora JS in cache (CrmKpi/action/getSummary).
+ * Preferire Appuntamento/action/getSummary.
  */
 class CrmKpi
 {
@@ -20,7 +20,22 @@ class CrmKpi
         private ApplicationUser $applicationUser,
     ) {}
 
+    public function getActionGetSummary(Request $request, Response $response): object
+    {
+        return $this->buildSummary($request);
+    }
+
     public function getActionSummary(Request $request, Response $response): object
+    {
+        return $this->buildSummary($request);
+    }
+
+    public function getActionCrmKpiSummary(Request $request, Response $response): object
+    {
+        return $this->buildSummary($request);
+    }
+
+    private function buildSummary(Request $request): object
     {
         $user = $this->applicationUser->getUser();
 

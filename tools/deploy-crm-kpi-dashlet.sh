@@ -65,7 +65,7 @@ FILES=(
   "tools/backup-dashboard-utente.sh"
   "tools/riapplica-variazioni-post-restore.sh"
   "tools/diagnose-crm-kpi-api.php"
-  "tools/deploy-crm-kpi-hotfix.sh"
+  "tools/verify-crm-kpi-deploy.php"
 )
 
 for rel in "${FILES[@]}"; do
