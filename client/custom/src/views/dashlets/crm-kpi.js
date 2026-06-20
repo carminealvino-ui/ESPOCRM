@@ -102,7 +102,8 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                 funnel: (summary.funnel || []).map(step => ({
                     label: step.label,
                     value: step.value,
-                    percentOfHeld: step.percentOfHeld,
+                    percentOfTotal: step.percentOfHeld,
+                    percentOfPrevious: step.percentOfPrevious,
                 })),
                 contractsByWeekday: summary.contractsByWeekday || [],
                 alerts: summary.alerts || [],

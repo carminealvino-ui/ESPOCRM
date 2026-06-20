@@ -275,14 +275,26 @@ class CrmKpiService
 
         $result = [];
         $base = max($appuntamenti, 1);
+        $previousValue = null;
 
         foreach ($steps as $step) {
+            $value = $step['value'];
+            $percentOfTotal = round(($value / $base) * 100, 1);
+            $percentOfPrevious = null;
+
+            if ($previousValue !== null) {
+                $percentOfPrevious = round(($value / max($previousValue, 1)) * 100, 1);
+            }
+
             $result[] = (object) [
                 'key' => $step['key'],
                 'label' => $step['label'],
-                'value' => $step['value'],
-                'percentOfHeld' => round(($step['value'] / $base) * 100, 1),
+                'value' => $value,
+                'percentOfHeld' => $percentOfTotal,
+                'percentOfPrevious' => $percentOfPrevious,
             ];
+
+            $previousValue = $value;
         }
 
         return $result;

@@ -53,9 +53,14 @@
                     <div class="crm-kpi-funnel-step">
                         <div class="crm-kpi-funnel-label">{{label}}</div>
                         <div class="crm-kpi-funnel-bar-wrap">
-                            <div class="crm-kpi-funnel-bar" style="width: {{percentOfHeld}}%;"></div>
+                            <div class="crm-kpi-funnel-bar" style="width: {{percentOfTotal}}%;"></div>
                         </div>
-                        <div class="crm-kpi-funnel-value">{{value}} <span class="text-muted">({{percentOfHeld}}%)</span></div>
+                        <div class="crm-kpi-funnel-value">
+                            {{value}}
+                            <span class="text-muted">
+                                ({{percentOfTotal}}% tot{{#if percentOfPrevious}} · {{percentOfPrevious}}% prec{{/if}})
+                            </span>
+                        </div>
                     </div>
                 {{/each}}
             </div>

@@ -50,7 +50,7 @@
 .crm-kpi-funnel-step,
 .crm-kpi-weekday {
     display: grid;
-    grid-template-columns: 120px 1fr 72px;
+    grid-template-columns: 120px 1fr 140px;
     gap: 8px;
     align-items: center;
     margin-bottom: 6px;
