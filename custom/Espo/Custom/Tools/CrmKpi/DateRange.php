@@ -6,28 +6,72 @@ use Espo\Custom\Tools\DateTime\BusinessDateTime;
 
 class DateRange
 {
+    public const TOTALS = 'totals';
+    public const CURRENT_YEAR = 'currentYear';
+    public const PREVIOUS_YEAR = 'previousYear';
+    public const CURRENT_QUARTER = 'currentQuarter';
+    public const PREVIOUS_QUARTER = 'previousQuarter';
+    public const CURRENT_MONTH = 'currentMonth';
+    public const PREVIOUS_MONTH = 'previousMonth';
+
+    public const ALL = [
+        self::TOTALS,
+        self::CURRENT_YEAR,
+        self::PREVIOUS_YEAR,
+        self::CURRENT_QUARTER,
+        self::PREVIOUS_QUARTER,
+        self::CURRENT_MONTH,
+        self::PREVIOUS_MONTH,
+    ];
+
+    public static function isValid(string $period): bool
+    {
+        return in_array($period, self::ALL, true);
+    }
+
+    public static function normalizePeriod(string $period): string
+    {
+        return self::isValid($period) ? $period : self::CURRENT_MONTH;
+    }
+
     /**
      * @return array{0: ?string, 1: ?string, 2: ?string, 3: ?string}
      */
     public static function resolve(string $period): array
     {
-        $period = Period::normalize($period);
+        $period = self::normalizePeriod($period);
         $tz = new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE);
         $now = new \DateTimeImmutable('now', $tz);
 
-        if ($period === Period::TOTALS) {
+        if ($period === self::TOTALS) {
             return [null, null, null, null];
         }
 
-        return match ($period) {
-            Period::CURRENT_MONTH => self::monthPair($now, 0),
-            Period::PREVIOUS_MONTH => self::monthPair($now, -1),
-            Period::CURRENT_QUARTER => self::quarterPair($now, 0),
-            Period::PREVIOUS_QUARTER => self::quarterPair($now, -1),
-            Period::CURRENT_YEAR => self::yearPair($now, 0),
-            Period::PREVIOUS_YEAR => self::yearPair($now, -1),
-            default => self::monthPair($now, 0),
-        };
+        if ($period === self::CURRENT_MONTH) {
+            return self::monthPair($now, 0);
+        }
+
+        if ($period === self::PREVIOUS_MONTH) {
+            return self::monthPair($now, -1);
+        }
+
+        if ($period === self::CURRENT_QUARTER) {
+            return self::quarterPair($now, 0);
+        }
+
+        if ($period === self::PREVIOUS_QUARTER) {
+            return self::quarterPair($now, -1);
+        }
+
+        if ($period === self::CURRENT_YEAR) {
+            return self::yearPair($now, 0);
+        }
+
+        if ($period === self::PREVIOUS_YEAR) {
+            return self::yearPair($now, -1);
+        }
+
+        return self::monthPair($now, 0);
     }
 
     /**
@@ -35,7 +79,12 @@ class DateRange
      */
     private static function monthPair(\DateTimeImmutable $now, int $offset): array
     {
-        $monthStart = $now->modify('first day of this month')->modify($offset . ' months');
+        $monthStart = $now->modify('first day of this month');
+
+        if ($offset !== 0) {
+            $monthStart = $monthStart->modify($offset . ' months');
+        }
+
         $monthEnd = $monthStart->modify('last day of this month');
         $prevStart = $monthStart->modify('-1 month')->modify('first day of this month');
         $prevEnd = $prevStart->modify('last day of this month');

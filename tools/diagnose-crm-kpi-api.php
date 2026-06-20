@@ -118,17 +118,30 @@ echo "\n=== Test servizio completo ===\n";
 
 try {
     $service = $injectableFactory->create(CrmKpiService::class);
-    $summary = $service->getSummary($user, 'currentMonth');
 
-    echo "[OK] getSummary()\n";
-    echo "     appuntamentiSvolti: " . ($summary->tiles->appuntamentiSvolti->value ?? '?') . "\n";
-    echo "     opportunitaAperte: " . ($summary->tiles->opportunitaAperte->count ?? '?') . "\n";
-    echo "     contrattiFirmati: " . ($summary->tiles->contrattiFirmati->value ?? '?') . "\n";
+    foreach ([
+        'currentMonth',
+        'previousMonth',
+        'currentQuarter',
+        'currentYear',
+        'totals',
+    ] as $period) {
+        $summary = $service->getSummary($user, $period);
+        echo "[OK] getSummary({$period})\n";
+        echo "     appuntamentiSvolti: " . ($summary->tiles->appuntamentiSvolti->value ?? '?') . "\n";
+    }
 } catch (Throwable $e) {
     $failed++;
     echo "[ERR] getSummary()\n";
     echo "      " . $e->getMessage() . "\n";
     echo "      " . $e->getFile() . ':' . $e->getLine() . "\n";
+
+    $previous = $e->getPrevious();
+
+    if ($previous) {
+        echo "      causa: " . $previous->getMessage() . "\n";
+        echo "      " . $previous->getFile() . ':' . $previous->getLine() . "\n";
+    }
 }
 
 echo $failed === 0 ? "\nTutti i controlli OK.\n" : "\nControlli falliti: {$failed}\n";

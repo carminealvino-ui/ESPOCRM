@@ -4,10 +4,11 @@ namespace Espo\Custom\Controllers;
 
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
+use Espo\Core\Exceptions\Forbidden;
 use Espo\Core\InjectableFactory;
 use Espo\Core\Templates\Controllers\Base;
 use Espo\Custom\Services\CrmKpi\CrmKpiService;
-use Espo\Custom\Tools\CrmKpi\Period;
+use Espo\Custom\Tools\CrmKpi\DateRange;
 
 /**
  * KPI dashlet — endpoint su scope Appuntamento (ACL già attivo).
@@ -29,12 +30,17 @@ class Appuntamento extends Base
 
     private function buildSummary(Request $request): object
     {
-        $period = Period::normalize($request->getQueryParam('period') ?? Period::CURRENT_MONTH);
+        $period = DateRange::normalizePeriod($request->getQueryParam('period') ?? DateRange::CURRENT_MONTH);
 
         /** @var InjectableFactory $injectableFactory */
         $injectableFactory = $this->getContainer()->get('injectableFactory');
         $service = $injectableFactory->create(CrmKpiService::class);
+        $user = $this->getUser();
 
-        return $service->getSummary($this->getUser(), $period);
+        if (!$user) {
+            throw new Forbidden();
+        }
+
+        return $service->getSummary($user, $period);
     }
 }

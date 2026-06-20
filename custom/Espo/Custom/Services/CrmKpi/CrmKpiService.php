@@ -27,6 +27,20 @@ class CrmKpiService
 
     public function getSummary(User $user, string $period = 'currentMonth'): object
     {
+        try {
+            return $this->buildSummary($user, $period);
+        } catch (\Throwable $e) {
+            throw new \RuntimeException(
+                'CrmKpi getSummary [' . $period . ']: ' . $e->getMessage(),
+                0,
+                $e
+            );
+        }
+    }
+
+    private function buildSummary(User $user, string $period): object
+    {
+        $period = DateRange::normalizePeriod($period);
         [$from, $to, $prevFrom, $prevTo] = DateRange::resolve($period);
         $hasPreviousPeriod = $prevFrom !== null && $prevTo !== null;
 

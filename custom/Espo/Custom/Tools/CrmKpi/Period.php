@@ -2,33 +2,27 @@
 
 namespace Espo\Custom\Tools\CrmKpi;
 
+/**
+ * Alias retrocompatibilità — la logica vive in DateRange.
+ */
 class Period
 {
-    public const TOTALS = 'totals';
-    public const CURRENT_YEAR = 'currentYear';
-    public const PREVIOUS_YEAR = 'previousYear';
-    public const CURRENT_QUARTER = 'currentQuarter';
-    public const PREVIOUS_QUARTER = 'previousQuarter';
-    public const CURRENT_MONTH = 'currentMonth';
-    public const PREVIOUS_MONTH = 'previousMonth';
-
-    public const ALL = [
-        self::TOTALS,
-        self::CURRENT_YEAR,
-        self::PREVIOUS_YEAR,
-        self::CURRENT_QUARTER,
-        self::PREVIOUS_QUARTER,
-        self::CURRENT_MONTH,
-        self::PREVIOUS_MONTH,
-    ];
+    public const TOTALS = DateRange::TOTALS;
+    public const CURRENT_YEAR = DateRange::CURRENT_YEAR;
+    public const PREVIOUS_YEAR = DateRange::PREVIOUS_YEAR;
+    public const CURRENT_QUARTER = DateRange::CURRENT_QUARTER;
+    public const PREVIOUS_QUARTER = DateRange::PREVIOUS_QUARTER;
+    public const CURRENT_MONTH = DateRange::CURRENT_MONTH;
+    public const PREVIOUS_MONTH = DateRange::PREVIOUS_MONTH;
+    public const ALL = DateRange::ALL;
 
     public static function isValid(string $period): bool
     {
-        return in_array($period, self::ALL, true);
+        return DateRange::isValid($period);
     }
 
     public static function normalize(string $period): string
     {
-        return self::isValid($period) ? $period : self::CURRENT_MONTH;
+        return DateRange::normalizePeriod($period);
     }
 }

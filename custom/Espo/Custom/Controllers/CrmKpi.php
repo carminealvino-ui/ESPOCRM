@@ -8,7 +8,7 @@ use Espo\Core\ApplicationUser;
 use Espo\Core\Exceptions\Forbidden;
 use Espo\Core\InjectableFactory;
 use Espo\Custom\Services\CrmKpi\CrmKpiService;
-use Espo\Custom\Tools\CrmKpi\Period;
+use Espo\Custom\Tools\CrmKpi\DateRange;
 
 /**
  * Alias retrocompatibilità se il browser ha ancora JS in cache (CrmKpi/action/getSummary).
@@ -44,7 +44,7 @@ class CrmKpi
             throw new Forbidden();
         }
 
-        $period = Period::normalize($request->getQueryParam('period') ?? Period::CURRENT_MONTH);
+        $period = DateRange::normalizePeriod($request->getQueryParam('period') ?? DateRange::CURRENT_MONTH);
 
         $service = $this->injectableFactory->create(CrmKpiService::class);
 

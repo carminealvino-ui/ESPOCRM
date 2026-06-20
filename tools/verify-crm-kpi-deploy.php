@@ -14,7 +14,11 @@ $checks = [
     'client/custom/src/views/dashlets/crm-kpi.js' => 'Appuntamento/action/getSummary',
     'custom/Espo/Custom/Controllers/Appuntamento.php' => 'getActionGetSummary',
     'custom/Espo/Custom/Controllers/CrmKpi.php' => 'getActionGetSummary',
+    'custom/Espo/Custom/Tools/CrmKpi/DateRange.php' => 'normalizePeriod',
+    'custom/Espo/Custom/Tools/CrmKpi/Period.php' => 'DateRange::normalizePeriod',
     'custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php' => 'getPastPlannedSelectFields',
+    'custom/Espo/Custom/Resources/metadata/dashlets/CrmKpi.json' => 'currentQuarter',
+    'custom/Espo/Custom/Resources/i18n/it_IT/CrmKpi.json' => 'Totali Mese in Corso',
 ];
 
 $failed = 0;
