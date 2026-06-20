@@ -262,7 +262,15 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
         $seenEntityKeys[$entityKey] = true;
 
-        return new Item($entityKey, $this->buildActivityData($entity));
+        return new Item(
+            $this->buildPastPlannedItemId($entity->getEntityType(), $entity->getId()),
+            $this->buildActivityData($entity)
+        );
+    }
+
+    private function buildPastPlannedItemId(string $entityType, string $entityId): string
+    {
+        return 'past-' . $entityType . '-' . $entityId;
     }
 
     private function buildActivityData(Entity $entity): object

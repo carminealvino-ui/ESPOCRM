@@ -486,8 +486,8 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
-            // Attività scadute senza reminder Espo (id sintetico EntityType:entityId).
-            if (String(this.notificationId).includes(':')) {
+            // Attività scadute senza reminder Espo (id sintetico past-EntityType-entityId).
+            if (String(this.notificationId).startsWith('past-')) {
                 return;
             }
 

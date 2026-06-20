@@ -72,6 +72,36 @@ class CrmKpiService
         ];
     }
 
+    private function countOpportunitiesFromHeldAppointments(string $from, string $to): int
+    {
+        $heldAppuntamentoIds = [];
+
+        $heldCollection = $this->entityManager
+            ->getRDBRepository('Appuntamento')
+            ->select(['id'])
+            ->where([
+                'status' => 'Held',
+                'dataAppuntamento>=' => $from,
+                'dataAppuntamento<=' => $to,
+            ])
+            ->find();
+
+        foreach ($heldCollection as $appuntamento) {
+            $heldAppuntamentoIds[] = $appuntamento->getId();
+        }
+
+        if ($heldAppuntamentoIds === []) {
+            return 0;
+        }
+
+        return (int) $this->entityManager
+            ->getRDBRepository('Opportunity')
+            ->where([
+                'appuntamentoId' => $heldAppuntamentoIds,
+            ])
+            ->count();
+    }
+
     private function countAppuntamentiHeld(string $from, string $to): int
     {
         return (int) $this->entityManager
@@ -180,17 +210,7 @@ class CrmKpiService
     {
         $held = $this->countAppuntamentiHeld($from, $to);
 
-        $withOpportunity = (int) $this->entityManager
-            ->getRDBRepository('Opportunity')
-            ->where([
-                'AND' => [
-                    ['appuntamentoId!=' => ''],
-                    ['appuntamentoId!=' => null],
-                ],
-                'createdAt>=' => $from . ' 00:00:00',
-                'createdAt<=' => $to . ' 23:59:59',
-            ])
-            ->count();
+        $withOpportunity = $this->countOpportunitiesFromHeldAppointments($from, $to);
 
         $closedWon = (int) $this->entityManager
             ->getRDBRepository('Opportunity')
