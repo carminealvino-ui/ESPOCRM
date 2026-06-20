@@ -1,4 +1,10 @@
 {
+    "scopeNames": {
+        "Quote": "Contratto"
+    },
+    "scopeNamesPlural": {
+        "Quote": "Contratti"
+    },
     "dashlets": {
         "CrmKpi": "KPI CRM"
     },
