@@ -17,7 +17,9 @@ Riferimento regole: [`09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md`](09-NO-CODICE-
 | **D — Report Vendite** | 4 report Advanced Pack | `crea-report-vendite-mese.php --reports-only` | No | Tabella `report` |
 | **E — Calendario esito** | Click calendario → pannello esito | `deploy-appuntamento-calendario-esito.sh` (branch separato) | No | No |
 
-Branch consigliato per A+B: **`cursor/crm-kpi-dashlet-9999`** (include Call esito + KPI).
+Branch consigliato per A+B: **`cursor/crm-kpi-dashlet-9999`** (include Call esito + KPI + avvisi).
+
+Allineamento completo repo → server: [`12-ALLINEA-SERVER-DA-REPO.md`](12-ALLINEA-SERVER-DA-REPO.md) e `tools/allinea-server-da-repo.sh`.
 
 ---
 
