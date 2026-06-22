@@ -166,12 +166,12 @@
         "PaymentChannelSepaCreditTransfer": "Canali di pagamento Bonifico SEPA",
         "PaymentChannelSepaDirectDebit": "Canali di pagamento Addebito diretto SEPA",
         "PaymentChannelWireTransfer": "Canali di pagamento Bonifico bancario",
-        "PaymentInstallment": "Pagamento - Rate",
-        "PaymentMandate": "Pagamento - Mandati di addebito diretto",
-        "PaymentMethod": "Pagamento - Metodi",
-        "PaymentRequest": "Pagamento - Richieste",
-        "PaymentTermsProfile": "Pagamento - Profili Termini",
-        "PaymentTermsProfileItem": "Pagamento - Profili Termini - Voce",
+        "PaymentInstallment": "Pagamenti - Rate",
+        "PaymentMandate": "Pagamenti - Mandati di addebito diretto",
+        "PaymentMethod": "Pagamenti - Metodi",
+        "PaymentRequest": "Pagamenti - Richieste",
+        "PaymentTermsProfile": "Pagamenti - Profili Termini",
+        "PaymentTermsProfileItem": "Pagamenti - Profili Termini - Voce",
         "PriceRule": "Listino Prezzi - Regole",
         "ProductAttribute": "Prodotto - Attributi",
         "ProductAttributeOption": "Prodotto - Attributi Opzione",
@@ -212,7 +212,11 @@
         "WorkflowLogRecord": "Workflow - Log",
         "WorkflowRoundRobin": "Workflow - Round Robin",
         "PriceRuleCondition": "Listino Prezzi - Regola Condizioni",
-        "WorkingTimeCalendar": "Disponibilità Ricorrenti"
+        "WorkingTimeCalendar": "Disponibilità Ricorrenti",
+        "OutlookCalendar": "Outlook Calendar",
+        "PaymentMeansItem": "Pagamenti - Mandati",
+        "StreamSubscription": "Messaggistica - Sottoscrizione",
+        "UserReaction": "Reazione"
     },
     "scopeNames": {
         "Meeting": "Impegno",
@@ -340,7 +344,11 @@
         "TransferOrderItem": "Bolla di Consegna - Voce",
         "WorkflowCategory": "Processo - Categoria Flusso",
         "CampaignLogRecord": "Campagna - Registro",
-        "WorkingTimeCalendar": "Disponibilità Ricorrente"
+        "WorkingTimeCalendar": "Disponibilità Ricorrente",
+        "CrmKpi": "KPI CRM",
+        "OutlookCalendar": "Outlook Caledar",
+        "OutlookContacts": "Outlook Contacts",
+        "PaymentMeansItem": "Pagamento - Mandato di addebito - Voce"
     },
     "dashlets": {
         "OpportunitiesByStage": "Opportunità per Stato",

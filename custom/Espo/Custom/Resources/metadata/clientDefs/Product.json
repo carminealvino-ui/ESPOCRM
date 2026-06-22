@@ -8,5 +8,8 @@
             "createDisabled": true,
             "unlinkDisabled": true
         }
-    }
+    },
+    "kanbanViewMode": false,
+    "color": null,
+    "iconClass": "fas fa-cube"
 }

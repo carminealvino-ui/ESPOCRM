@@ -75,11 +75,6 @@ class GoogleCalendar
             );
         }
         else if ($entity->isAttributeChanged('assignedUserId')) {
-            // Appuntamento: gestito da AppuntamentoGoogleSync (evita dummy "SENZA PROSPECT").
-            if ($entity->getEntityType() === 'Appuntamento') {
-                return;
-            }
-
             $newEntity = $this->entityManager->getNewEntity($entity->getEntityType());
 
             $copyFields = [

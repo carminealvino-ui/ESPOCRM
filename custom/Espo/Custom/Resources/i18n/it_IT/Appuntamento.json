@@ -58,7 +58,8 @@
     },
     "labels": {
         "Create Appuntamento": "Crea Appuntamento",
-        "Appuntamenti": "Appuntamenti"
+        "Appuntamenti": "Appuntamenti",
+        "Esito": "Esito"
     },
     "options": {
         "status": {

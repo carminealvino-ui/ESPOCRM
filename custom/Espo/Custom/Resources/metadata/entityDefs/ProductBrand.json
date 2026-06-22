@@ -14,6 +14,12 @@
         "name": {
             "options": []
         },
+        "color": {
+            "type": "varchar",
+            "trim": true,
+            "maxLength": 7,
+            "isCustom": true
+        },
         "priceBook": {
             "type": "link",
             "isCustom": true

@@ -8,6 +8,9 @@
             ],
             [
                 {
+                    "name": "data"
+                },
+                {
                     "name": "telefono"
                 },
                 {
@@ -67,13 +70,19 @@
                 }
             ]
         ],
-        "dynamicLogicVisible": null,
         "style": "default",
-        "hidden": false,
         "customLabel": "WhatsApp"
     },
     {
         "rows": [
+            [
+                {
+                    "name": "dataRiscontro"
+                },
+                {
+                    "name": "esito"
+                }
+            ],
             [
                 {
                     "name": "description"
@@ -94,9 +103,7 @@
                 false
             ]
         ],
-        "dynamicLogicVisible": null,
         "style": "default",
-        "hidden": false,
         "customLabel": "Esito Chiamata"
     }
 ]

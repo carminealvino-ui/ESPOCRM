@@ -148,7 +148,7 @@
                 "ARIEL": null,
                 "PROGETTO": null
             },
-            "default": "",
+            "default": null,
             "isCustom": true
         },
         "dateStartDate": {

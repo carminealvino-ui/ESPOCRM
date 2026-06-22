@@ -16,7 +16,8 @@
         "color": "Color",
         "orarioInizio": "Orario Inizio",
         "orarioFine": "Orario Fine",
-        "fornitorePartner": "Fornitore/Partner"
+        "fornitorePartner": "Fornitore/Partner",
+        "azienda": "Azienda"
     },
     "links": {
         "parent": "Relazionato a",

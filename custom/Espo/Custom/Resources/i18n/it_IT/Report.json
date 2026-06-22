@@ -1,1 +1,12 @@
-{}
+{
+    "options": {
+        "chartType": {
+            "BarGroupedVertical": "Barre Raggruppate · Verticalmente",
+            "Radar": "Radar"
+        }
+    },
+    "presetFilters": {
+        "list": "Elenco",
+        "listContacts": "Elenco (contatti)"
+    }
+}

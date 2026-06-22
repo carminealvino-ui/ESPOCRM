@@ -2,6 +2,28 @@
     "kanbanViewMode": false,
     "color": null,
     "iconClass": "fas fa-phone",
+    "recordViews": {
+        "edit": "custom:views/call/record/edit"
+    },
+    "filterList": [
+        {
+            "name": "planned"
+        },
+        {
+            "name": "daRiscontrare",
+            "label": "Da riscontrare"
+        },
+        {
+            "name": "held",
+            "style": "success"
+        },
+        {
+            "name": "todays"
+        }
+    ],
+    "boolFilterList": [
+        "onlyMy"
+    ],
     "relationshipPanels": {
         "parent": {
             "layout": null,

@@ -587,12 +587,22 @@ class BrandCalendarColorBackfill
                 ]);
             }
 
+            $colorResolver = new AppuntamentoCalendarColor($this->entityManager);
+            $targetColor = $colorResolver->resolveDisponibilitaColor($entity);
+
+            if ($targetColor === null || $targetColor === '') {
+                $skipped++;
+                continue;
+            }
+
             if ($dryRun) {
                 $updated++;
                 continue;
             }
 
+            $entity->set('color', $targetColor);
             $this->entityManager->saveEntity($entity, [
+                'skipHooks' => true,
                 'silent' => true,
             ]);
             $updated++;
@@ -616,6 +626,13 @@ class BrandCalendarColorBackfill
             return false;
         }
 
+        $colorResolver = new AppuntamentoCalendarColor($this->entityManager);
+        $targetColor = $colorResolver->resolveDisponibilitaColor($entity);
+
+        if ($targetColor === null || $targetColor === '') {
+            return false;
+        }
+
         if (!$entity->get('productBrandId')) {
             return true;
         }
@@ -624,15 +641,9 @@ class BrandCalendarColorBackfill
             return true;
         }
 
-        $brandColor = trim((string) ($brand->get('color') ?: ''));
-
-        if ($brandColor === '') {
-            return false;
-        }
-
         $currentColor = trim((string) ($entity->get('color') ?: ''));
 
-        return $currentColor === '';
+        return $currentColor === '' || $currentColor !== $targetColor;
     }
 
     private function resolveDisponibilitaLabel(Entity $entity): ?string

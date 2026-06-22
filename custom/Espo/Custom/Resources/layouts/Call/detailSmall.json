@@ -8,16 +8,18 @@
             ],
             [
                 {
-                    "name": "tipologia"
+                    "name": "data"
                 },
-                false
-            ],
-            [
                 {
                     "name": "telefono"
                 },
                 {
                     "name": "whatsAppNumero"
+                }
+            ],
+            [
+                {
+                    "name": "tipologia"
                 }
             ],
             [
@@ -73,13 +75,27 @@
                 }
             ]
         ],
-        "style": "default",
         "dynamicLogicVisible": null,
+        "style": "default",
         "hidden": false,
         "customLabel": "WhatsApp "
     },
     {
         "rows": [
+            [
+                {
+                    "name": "dataRiscontro"
+                },
+                {
+                    "name": "esito"
+                }
+            ],
+            [
+                {
+                    "name": "richiamo"
+                },
+                false
+            ],
             [
                 {
                     "name": "description"
@@ -92,16 +108,10 @@
                 {
                     "name": "dataRichiamo"
                 }
-            ],
-            [
-                {
-                    "name": "richiamo"
-                },
-                false
             ]
         ],
-        "style": "default",
         "dynamicLogicVisible": null,
+        "style": "default",
         "hidden": false,
         "customLabel": "Esito Chiamata"
     }

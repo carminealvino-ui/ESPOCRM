@@ -20,9 +20,9 @@
         "name": "Prodotto",
         "contratti": "Contratti",
         "brand": "Brand",
-        "listPrice": "Prezzo di Listino",
-        "listPriceConverted": "Prezzo di Listino (convertito)",
-        "listPriceCurrency": "Prezzo di Listino (valuta)"
+        "listPrice": "Listino Prezzi",
+        "listPriceConverted": "Listino Prezzi (convertito)",
+        "listPriceCurrency": "Listino Prezzi (valuta)"
     },
     "tooltips": {
         "prezzoListinoIvaInclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dall'aliquota IVA indicata.",

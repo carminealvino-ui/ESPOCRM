@@ -3,11 +3,6 @@
         "rows": [
             [
                 {
-                    "name": "name"
-                }
-            ],
-            [
-                {
                     "name": "tipo"
                 },
                 {

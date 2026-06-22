@@ -1,5 +1,9 @@
 {
     "beforeSave": [
-        "Espo\\Custom\\Hooks\\WorkingTimeCalendar\\SetName"
+        "Espo\\Custom\\Hooks\\WorkingTimeCalendar\\SetName",
+        "Espo\\Custom\\Hooks\\WorkingTimeCalendar\\AutoGeneraDisponibilita"
+    ],
+    "afterSave": [
+        "Espo\\Custom\\Hooks\\WorkingTimeCalendar\\AutoGeneraDisponibilita"
     ]
 }

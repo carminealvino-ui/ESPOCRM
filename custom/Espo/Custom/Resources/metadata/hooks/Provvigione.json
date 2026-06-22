@@ -1,0 +1,14 @@
+{
+    "afterSave": {
+        "syncQuoteTotaleProvvigioni": {
+            "className": "Espo\\Custom\\Hooks\\Provvigione\\SyncQuoteTotaleProvvigioni",
+            "order": 20
+        }
+    },
+    "afterRemove": {
+        "syncQuoteTotaleProvvigioni": {
+            "className": "Espo\\Custom\\Hooks\\Provvigione\\SyncQuoteTotaleProvvigioni",
+            "order": 20
+        }
+    }
+}

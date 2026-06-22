@@ -1,7 +1,1 @@
-[
-    {
-        "route": "Quote/getItemCatalogPrices",
-        "method": "post",
-        "actionClassName": "Espo\\Custom\\Tools\\Quote\\Api\\PostGetItemCatalogPrices"
-    }
-]
+[]

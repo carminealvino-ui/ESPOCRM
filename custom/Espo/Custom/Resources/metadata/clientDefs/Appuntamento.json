@@ -34,5 +34,8 @@
             "label": "Ingestibile",
             "style": "warning"
         }
-    ]
+    ],
+    "kanbanViewMode": false,
+    "color": null,
+    "iconClass": "far fa-calendar"
 }

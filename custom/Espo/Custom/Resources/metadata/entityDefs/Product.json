@@ -16,9 +16,11 @@
             "type": "link"
         },
         "dataInizioValidita": {
+            "notNull": false,
             "type": "date",
             "isCustom": true,
-            "audited": true
+            "audited": true,
+            "useNumericFormat": true
         },
         "aliquotaIva": {
             "type": "float",
@@ -66,6 +68,10 @@
                 "Markup over Cost": null,
                 "Profit Margin": null
             }
+        },
+        "modifiedAt": {
+            "useNumericFormat": true,
+            "minuteStep": 30
         }
     },
     "links": {
@@ -86,7 +92,7 @@
         }
     },
     "collection": {
-        "orderBy": "elencoCatalogo",
+        "orderBy": "name",
         "order": "asc",
         "textFilterFields": [
             "name"

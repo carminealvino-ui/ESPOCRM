@@ -1,0 +1,39 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "sottostato"
+                }
+            ],
+            [
+                {
+                    "name": "noteConsulente",
+                    "fullWidth": true
+                }
+            ]
+        ],
+        "style": "default",
+        "customLabel": "Esito"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "esito"
+                }
+            ],
+            [
+                {
+                    "name": "noteEsito",
+                    "fullWidth": true
+                }
+            ]
+        ],
+        "style": "default",
+        "customLabel": "CRM Aziendale"
+    }
+]

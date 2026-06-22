@@ -36,7 +36,7 @@
             "type": "foreign",
             "link": "prospect",
             "field": "whatsApp",
-            "view": "custom:views/fields/foreign-whatsapp-create-call",
+            "view": "views/fields/foreign-url",
             "isCustom": true
         },
         "whatsApp39": {
@@ -44,7 +44,7 @@
             "type": "foreign",
             "link": "prospect",
             "field": "whatsApp39",
-            "view": "custom:views/fields/foreign-whatsapp-create-call",
+            "view": "views/fields/foreign-url",
             "isCustom": true
         },
         "appuntamento": {
@@ -82,7 +82,6 @@
         "source": {
             "options": [
                 "",
-                "Generazione Lead",
                 "Call Center",
                 "Call",
                 "Vodafone Assegnazione CB",
@@ -98,7 +97,6 @@
             ],
             "style": {
                 "": null,
-                "Generazione Lead": null,
                 "Call Center": null,
                 "Call": null,
                 "Vodafone Assegnazione CB": null,
@@ -247,14 +245,16 @@
                 "In Gestione",
                 "Richiesta Assegnazione",
                 "Trattativa Aperta",
-                "Trattativa Chiusa"
+                "Trattativa Chiusa",
+                "Sospeso"
             ],
             "style": {
                 "": null,
                 "In Gestione": null,
                 "Richiesta Assegnazione": null,
                 "Trattativa Aperta": null,
-                "Trattativa Chiusa": null
+                "Trattativa Chiusa": null,
+                "Sospeso": "warning"
             },
             "maxLength": 100,
             "isCustom": true
