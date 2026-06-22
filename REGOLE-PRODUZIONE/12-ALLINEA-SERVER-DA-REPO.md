@@ -1,7 +1,11 @@
-# Allineare il server al repository (repo → server)
+# Allineare il server al repository (repo → server) — SOLO DEPLOY
 
-**Direzione:** il codice su **GitHub** viene applicato in **produzione** con deploy mirati.  
-**Non** si usa `apply-delta` sul server (sarebbe pericoloso: sovrascriverebbe tutto `custom/`).
+> **ATTENZIONE — direzione opposta:** se hai modificato il CRM **dall’interfaccia in produzione** e vuoi aggiornare **GitHub**, NON usare questo documento.  
+> Usa invece **[`05-SYNC-REPO-DAL-SERVER.md`](05-SYNC-REPO-DAL-SERVER.md)** e **[`08-AVVIO-SYNC-CPANEL.md`](08-AVVIO-SYNC-CPANEL.md)** (`export-delta` sul server → apply → push).
+
+**Direzione di questo file:** codice su **GitHub** → deploy mirato in **produzione** (dopo che il repo è già allineato al server).
+
+**Non** si usa `apply-delta` in produzione (sarebbe pericoloso: sovrascriverebbe tutto `custom/` live).
 
 Per il verso opposto (prod → GitHub) vedi [`05-SYNC-REPO-DAL-SERVER.md`](05-SYNC-REPO-DAL-SERVER.md).
 

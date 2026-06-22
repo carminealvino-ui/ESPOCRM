@@ -86,8 +86,9 @@ Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
 | `tools/LAYOUT-NON-SOVRASCRIVERE.md` | Deploy che non toccano layout Contratto |
 | `backup_dev/README.md` | Struttura backup per entità |
 | `docs/PRODUZIONE-SYNC-LAYOUT-20260601.md` | Sync repo ↔ server (panoramica) |
-| `05-SYNC-REPO-DAL-SERVER.md` | Prod → GitHub: **export-delta sempre per primo**, poi ZIP → PC → apply → push |
-| `08-AVVIO-SYNC-CPANEL.md` | **Checklist cPanel** (token.txt, export → apply → push script) |
+| `05-SYNC-REPO-DAL-SERVER.md` | **Server → GitHub** (modifiche UI in prod): **export-delta sempre per primo** |
+| `08-AVVIO-SYNC-CPANEL.md` | Checklist cPanel: export → apply su `~/ESPOCRM-git` → push |
+| `12-ALLINEA-SERVER-DA-REPO.md` | **Solo deploy** GitHub → server (dopo sync); non per modifiche fatte in UI |
 | `06-PUSH-GITHUB-DAL-SERVER.md` | Push delta su GitHub dal server (PAT) |
 | `07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md` | Verifica allineamento: `status --branch=main` |
 | `09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md` | **Backup obbligatorio**, dashboard, Softaculous, **hookVersion** |
