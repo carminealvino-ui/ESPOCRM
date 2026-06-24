@@ -27,15 +27,15 @@ class Alerts
     /**
      * @return object[]
      */
-    public function build(?string $from, ?string $to): array
+    public function build(?string $from, ?string $to, ?string $productBrandId = null): array
     {
-        $contractsInPayment = $this->countContractsInPayment($from, $to);
+        $contractsInPayment = $this->countContractsInPayment($from, $to, $productBrandId);
 
         return [
             $this->alert(
                 'opportunityWithoutPhoneFollowUp',
                 'Opportunità senza riscontro telefonico',
-                $this->countOpportunitiesWithoutPhoneFollowUp($from, $to),
+                $this->countOpportunitiesWithoutPhoneFollowUp($from, $to, $productBrandId),
                 '#Opportunity/filter/senzaRiscontroPeriodo'
             ),
             $this->alert(
@@ -90,14 +90,20 @@ class Alerts
     /**
      * @return string[]
      */
-    private function getAppuntamentoIdsInPeriod(?string $from, ?string $to): array
+    private function getAppuntamentoIdsInPeriod(?string $from, ?string $to, ?string $productBrandId = null): array
     {
         $ids = [];
+
+        $where = $this->dateWhere('dataAppuntamento', $from, $to);
+
+        if ($productBrandId) {
+            $where['productBrandId'] = $productBrandId;
+        }
 
         $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->select(['id'])
-            ->where($this->dateWhere('dataAppuntamento', $from, $to))
+            ->where($where)
             ->find();
 
         foreach ($collection as $appuntamento) {
@@ -107,9 +113,12 @@ class Alerts
         return $ids;
     }
 
-    private function countOpportunitiesWithoutPhoneFollowUp(?string $from, ?string $to): int
-    {
-        $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to);
+    private function countOpportunitiesWithoutPhoneFollowUp(
+        ?string $from,
+        ?string $to,
+        ?string $productBrandId = null
+    ): int {
+        $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to, $productBrandId);
 
         if ($appuntamentoIds === []) {
             return 0;
@@ -117,16 +126,22 @@ class Alerts
 
         $count = 0;
 
+        $where = [
+            'AND' => [
+                ['stage!=' => 'Closed Won'],
+                ['stage!=' => 'Closed Lost'],
+                ['appuntamentoId' => $appuntamentoIds],
+            ],
+        ];
+
+        if ($productBrandId) {
+            $where['productBrandId'] = $productBrandId;
+        }
+
         $collection = $this->entityManager
             ->getRDBRepository('Opportunity')
             ->select(['id', 'leadId', 'prospectId', 'appuntamentoId'])
-            ->where([
-                'AND' => [
-                    ['stage!=' => 'Closed Won'],
-                    ['stage!=' => 'Closed Lost'],
-                    ['appuntamentoId' => $appuntamentoIds],
-                ],
-            ])
+            ->where($where)
             ->find();
 
         foreach ($collection as $opportunity) {
@@ -225,8 +240,11 @@ class Alerts
     /**
      * @return array{count: int, meta: string}
      */
-    private function countContractsInPayment(?string $from, ?string $to): array
-    {
+    private function countContractsInPayment(
+        ?string $from,
+        ?string $to,
+        ?string $productBrandId = null
+    ): array {
         $where = array_merge(
             [
                 'AND' => [
@@ -236,6 +254,10 @@ class Alerts
             ],
             $this->dateWhere('dataInstallazione', $from, $to)
         );
+
+        if ($productBrandId) {
+            $where['productBrandId'] = $productBrandId;
+        }
 
         $count = (int) $this->entityManager
             ->getRDBRepository('Quote')

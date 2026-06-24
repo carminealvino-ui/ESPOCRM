@@ -32,6 +32,8 @@ class Appuntamento extends Base
     {
         $period = DateRange::normalizePeriod($request->getQueryParam('period') ?? DateRange::CURRENT_MONTH);
 
+        $productBrandId = $this->normalizeBrandId($request->getQueryParam('productBrandId'));
+
         /** @var InjectableFactory $injectableFactory */
         $injectableFactory = $this->getContainer()->get('injectableFactory');
         $service = $injectableFactory->create(CrmKpiService::class);
@@ -41,6 +43,13 @@ class Appuntamento extends Base
             throw new Forbidden();
         }
 
-        return $service->getSummary($user, $period);
+        return $service->getSummary($user, $period, $productBrandId);
+    }
+
+    private function normalizeBrandId(?string $productBrandId): ?string
+    {
+        $productBrandId = trim((string) $productBrandId);
+
+        return $productBrandId !== '' ? $productBrandId : null;
     }
 }
