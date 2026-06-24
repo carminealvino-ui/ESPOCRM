@@ -11,8 +11,8 @@ use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Appuntamento Held + sottostato Pending → Call pianificata +12 ore dall'appuntamento,
- * con promemoria popup alla scadenza.
+ * Appuntamento Held + sottostato Pending → Call pianificata +2 giorni alle 9:30
+ * (weekend slittato al lunedì), con promemoria popup alla scadenza.
  */
 class AutoCreatePendingCall implements AfterSave
 {

@@ -6,13 +6,16 @@ use Espo\Custom\Tools\DateTime\BusinessDateTime;
 
 /**
  * Calcola data/ora richiamo Call per Appuntamento Pending:
- * +12 ore dalla data/ora appuntamento (Europe/Rome).
+ * +2 giorni dalla data appuntamento, ore 9:30 (Europe/Rome).
+ * Se il risultato cade sabato o domenica, slitta al lunedì successivo.
  */
 class PendingCallDateTime
 {
     public const POPUP_DELAY_HOURS = 12;
 
-    private const HOURS_OFFSET = 12;
+    private const CALL_HOUR = 9;
+    private const CALL_MINUTE = 30;
+    private const DAYS_OFFSET = 2;
 
     /** Appuntamenti con dateStart precedente non generano Call automatiche. */
     public const MIN_APPOINTMENT_DATE = '2026-01-01';
@@ -60,13 +63,23 @@ class PendingCallDateTime
 
         $appointment = $appointmentBusiness->setTimezone($timezone);
 
-        $instant = $appointment->modify('+' . self::HOURS_OFFSET . ' hours');
+        $date = $appointment
+            ->setTime(0, 0, 0)
+            ->modify('+' . self::DAYS_OFFSET . ' days');
 
-        if ($notBefore !== null && $instant < $notBefore) {
-            $instant = $notBefore;
+        $date = self::adjustWeekendToMonday($date);
+
+        if ($notBefore !== null) {
+            $minDate = $notBefore
+                ->setTimezone($timezone)
+                ->setTime(0, 0, 0);
+
+            if ($date < $minDate) {
+                $date = self::adjustWeekendToMonday($minDate);
+            }
         }
 
-        return $instant;
+        return $date->setTime(self::CALL_HOUR, self::CALL_MINUTE, 0);
     }
 
     public static function formatBusinessDateTime(
@@ -83,5 +96,20 @@ class PendingCallDateTime
         return (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
             ->modify('-' . self::POPUP_DELAY_HOURS . ' hours')
             ->format('Y-m-d H:i:s');
+    }
+
+    private static function adjustWeekendToMonday(\DateTimeImmutable $date): \DateTimeImmutable
+    {
+        $weekday = (int) $date->format('w');
+
+        if ($weekday === 6) {
+            return $date->modify('+2 days');
+        }
+
+        if ($weekday === 0) {
+            return $date->modify('+1 day');
+        }
+
+        return $date;
     }
 }
