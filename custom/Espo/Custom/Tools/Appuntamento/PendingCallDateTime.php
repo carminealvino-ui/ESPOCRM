@@ -11,6 +11,8 @@ use Espo\Custom\Tools\DateTime\BusinessDateTime;
  */
 class PendingCallDateTime
 {
+    public const POPUP_DELAY_HOURS = 12;
+
     private const CALL_HOUR = 9;
     private const CALL_MINUTE = 30;
     private const DAYS_OFFSET = 2;
@@ -87,6 +89,13 @@ class PendingCallDateTime
         return $instant
             ->setTimezone(new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE))
             ->format($format);
+    }
+
+    public static function popupEligibilityCutoff(): string
+    {
+        return (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
+            ->modify('-' . self::POPUP_DELAY_HOURS . ' hours')
+            ->format('Y-m-d H:i:s');
     }
 
     private static function adjustWeekendToMonday(\DateTimeImmutable $date): \DateTimeImmutable

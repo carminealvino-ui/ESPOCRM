@@ -39,6 +39,8 @@ FILES=(
   "custom/Espo/Custom/Tools/CrmKpi/KpiContext.php"
   "custom/Espo/Custom/Resources/metadata/dashlets/CrmKpi.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/CrmKpi.json"
+  "custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php"
+  "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
   "tools/verify-crm-kpi-deploy.php"
 )
 
