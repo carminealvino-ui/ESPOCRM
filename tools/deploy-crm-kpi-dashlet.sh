@@ -2,7 +2,7 @@
 # Deploy completo KPI CRM: API, dashlet, avvisi, filtri, popup Call collegati.
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-dashlet-9999/tools/deploy-crm-kpi-dashlet.sh?t=$(date +%s)" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-dashlet-v2-9999/tools/deploy-crm-kpi-dashlet.sh?t=$(date +%s)" | bash
 #   php clear_cache.php && php rebuild.php
 #   php tools/verify-crm-kpi-deploy.php
 #   php tools/diagnose-crm-kpi-api.php --user=carmine_alvino
@@ -10,7 +10,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="${2:-cursor/crm-kpi-dashlet-9999}"
+BRANCH="${2:-cursor/crm-kpi-dashlet-v2-9999}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 STAMP=$(date +%Y%m%d-%H%M%S)
@@ -42,6 +42,8 @@ FILES=(
   "custom/Espo/Custom/Resources/routes.json"
   "custom/Espo/Custom/Resources/metadata/scopes/CrmKpi.json"
   "custom/Espo/Custom/Tools/CrmKpi/Api/GetSummary.php"
+  "custom/Espo/Custom/Tools/CrmKpi/FunnelBuilder.php"
+  "custom/Espo/Custom/Tools/CrmKpi/KpiContext.php"
   "custom/Espo/Custom/Tools/CrmKpi/WeekOfMonth.php"
   "custom/Espo/Custom/Tools/CrmKpi/Alerts.php"
   "custom/Espo/Custom/Tools/CrmKpi/DateRange.php"
