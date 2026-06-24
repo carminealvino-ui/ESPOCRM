@@ -11,7 +11,7 @@ declare(strict_types=1);
 $root = getenv('CRM_ROOT') ?: getcwd();
 
 $checks = [
-    'client/custom/src/views/dashlets/crm-kpi.js' => 'Appuntamento/action/getSummary',
+    'client/custom/src/views/dashlets/crm-kpi.js' => 'Valore produzione',
     'custom/Espo/Custom/Controllers/Appuntamento.php' => 'getActionGetSummary',
     'custom/Espo/Custom/Controllers/CrmKpi.php' => 'getActionGetSummary',
     'custom/Espo/Custom/Tools/CrmKpi/DateRange.php' => 'normalizePeriod',
@@ -26,7 +26,7 @@ $checks = [
     'custom/Espo/Custom/Classes/Select/Call/PrimaryFilters/ContattiDaFare.php' => 'ContattiDaFare',
     'client/custom/src/views/dashlets/records.js' => 'this.options && this.options.entityType',
     'custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php' => 'getPastPlannedSelectFields',
-    'custom/Espo/Custom/Resources/metadata/dashlets/CrmKpi.json' => 'currentQuarter',
+    'custom/Espo/Custom/Resources/metadata/dashlets/CrmKpi.json' => 'productBrand',
     'custom/Espo/Custom/Resources/i18n/it_IT/CrmKpi.json' => 'Totali Mese in Corso',
 ];
 
