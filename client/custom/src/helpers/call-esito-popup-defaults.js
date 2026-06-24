@@ -247,7 +247,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             return false;
         }
 
-        model.set('testo', TESTO_STANDARD);
+        model.set('testo', getStandardTesto());
 
         return true;
     };
