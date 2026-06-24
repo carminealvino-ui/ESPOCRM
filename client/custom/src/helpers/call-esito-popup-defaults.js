@@ -8,6 +8,8 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         + 'poi cosa ha deciso rispetto alla proposta che le ho fatto, Grazie';
     const AUTO_PENDING_DESCRIPTION_PREFIX = 'Richiamo automatico per appuntamento Pending del';
 
+    let cachedStandardTesto = null;
+
     const CANALE_LABELS = {
         call: 'Chiamata',
         whatsapp: 'WhatsApp',
@@ -85,6 +87,28 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         }
 
         return changed;
+    };
+
+    const getStandardTesto = function () {
+        return cachedStandardTesto || TESTO_STANDARD;
+    };
+
+    const loadStandardTesto = function () {
+        if (cachedStandardTesto) {
+            return Promise.resolve(cachedStandardTesto);
+        }
+
+        return Espo.Ajax.getRequest('CallStandardTesto/action/read')
+            .then(response => {
+                cachedStandardTesto = normalize(response.testo) || TESTO_STANDARD;
+
+                return cachedStandardTesto;
+            })
+            .catch(() => {
+                cachedStandardTesto = TESTO_STANDARD;
+
+                return cachedStandardTesto;
+            });
     };
 
     const buildWhatsAppUrl = function (telefono) {
@@ -170,7 +194,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         });
     };
 
-    const getDefaultAttributes = function (model, notificationName) {
+    const getDefaultAttributes = function (model, notificationName, standardTesto) {
         if (!isAutoPendingCall(model, notificationName)) {
             return null;
         }
@@ -187,17 +211,19 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             attributes.tipologia = TIPOLOGIA_RICHIAMO_OPPORTUNITA;
         }
 
+        const message = normalize(standardTesto) || getStandardTesto();
+
         if (!normalize(model.get('testo'))) {
-            attributes.testo = TESTO_STANDARD;
+            attributes.testo = message;
         }
 
         return attributes;
     };
 
-    const applyDefaults = function (model, notificationName) {
+    const applyDefaults = function (model, notificationName, standardTesto) {
         normalizeMisplacedFields(model);
 
-        const attributes = getDefaultAttributes(model, notificationName);
+        const attributes = getDefaultAttributes(model, notificationName, standardTesto);
 
         if (!attributes) {
             return false;
@@ -255,14 +281,14 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         }
     };
 
-    const applyWithRetry = function (recordView, notificationName) {
+    const applyWithRetry = function (recordView, notificationName, standardTesto) {
         const model = recordView.model;
 
         if (!model) {
             return false;
         }
 
-        const applied = applyDefaults(model, notificationName);
+        const applied = applyDefaults(model, notificationName, standardTesto);
 
         if (!applied) {
             return false;
@@ -327,6 +353,8 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
 
     return {
         applyDefaults: applyDefaults,
+        loadStandardTesto: loadStandardTesto,
+        getStandardTesto: getStandardTesto,
         ensureContactFields: ensureContactFields,
         ensureContactFieldsFromProspect: ensureContactFieldsFromProspect,
         applyWhatsAppTesto: applyWhatsAppTesto,

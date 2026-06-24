@@ -42,6 +42,16 @@ define('custom:views/appuntamento/popup-notification', [
                     missing.push('Esito');
                 }
 
+                if (model.get('daRichiamare')) {
+                    if (!model.get('richiamo')) {
+                        missing.push('Tipo richiamo');
+                    }
+
+                    if (!model.get('dataRichiamo')) {
+                        missing.push('Data richiamo');
+                    }
+                }
+
                 return missing;
             },
         },
@@ -157,10 +167,11 @@ define('custom:views/appuntamento/popup-notification', [
                         this.esitoEntityType = entityType;
 
                         const afterContactReady = entityType === 'Call' ?
-                            CallEsitoDefaults.ensureContactFieldsFromProspect(model) :
-                            Promise.resolve();
+                            CallEsitoDefaults.ensureContactFieldsFromProspect(model)
+                                .then(() => CallEsitoDefaults.loadStandardTesto()) :
+                            Promise.resolve(null);
 
-                        return afterContactReady.then(() => new Promise(resolve => {
+                        return afterContactReady.then(standardTesto => new Promise(resolve => {
                             this.createView('esitoRecord', 'views/record/edit', {
                                 scope: entityType,
                                 model: model,
@@ -177,8 +188,16 @@ define('custom:views/appuntamento/popup-notification', [
                                 view.render();
 
                                 if (entityType === 'Call') {
-                                    CallEsitoDefaults.applyDefaults(model, this.notificationData.name);
-                                    CallEsitoDefaults.applyWithRetry(view, this.notificationData.name);
+                                    CallEsitoDefaults.applyDefaults(
+                                        model,
+                                        this.notificationData.name,
+                                        standardTesto
+                                    );
+                                    CallEsitoDefaults.applyWithRetry(
+                                        view,
+                                        this.notificationData.name,
+                                        standardTesto
+                                    );
                                     CallEsitoDefaults.refreshRecordFields(
                                         view,
                                         ['telefono', 'whatsAppNumero']
