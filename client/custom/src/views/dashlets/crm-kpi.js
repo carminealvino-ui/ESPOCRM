@@ -77,12 +77,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                 showDateRange: summary.from && summary.to,
                 tiles: {
                     appuntamenti: this.mapAppuntamentiTile(tiles.appuntamenti),
-                    opportunita: this.mapMetricTile(tiles.opportunita, [
-                        {key: 'totali', label: 'Opportunità totali'},
-                        {key: 'concluse', label: 'Concluse positivamente'},
-                        {key: 'pending', label: 'Opportunità Pending'},
-                        {key: 'perse', label: 'Opportunità perse'},
-                    ]),
+                    opportunita: this.mapOpportunitaTile(tiles.opportunita),
                     contratti: this.mapMetricTile(tiles.contratti, [
                         {key: 'totali', label: 'Contratti totali'},
                         {key: 'nettiFinKo', label: 'Contratti netti (finanziamento KO)'},
@@ -123,6 +118,26 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                         {key: 'ingestibili', label: 'Appuntamenti ingestibili'},
                         {key: 'netti', label: 'Appuntamenti netti'},
                     ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+
+                return {
+                    label: def.label,
+                    value: this.formatNumber(raw) + ' · ' + percent + '%',
+                };
+            });
+        },
+
+        mapOpportunitaTile: function (tile) {
+            const source = tile || {};
+            const base = Number(source.totali || 0);
+
+            return [
+                {key: 'totali', label: 'Opportunità totali'},
+                {key: 'perse', label: 'Opportunità perse'},
+                {key: 'pending', label: 'Opportunità pending'},
+                {key: 'concluse', label: 'Opportunità concluse positivamente'},
+            ].map(def => {
                 const raw = Number(source[def.key] || 0);
                 const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
 

@@ -67,5 +67,22 @@
             </div>
         </div>
 
+        <div class="crm-kpi-panel crm-kpi-panel-alerts">
+            <div class="crm-kpi-panel-title">Avvisi</div>
+            <div class="crm-kpi-alerts">
+                {{#each alerts}}
+                    <div class="crm-kpi-alert{{#if value}} crm-kpi-alert-warn{{/if}}" data-action="openAlert" data-key="{{key}}">
+                        <span class="crm-kpi-alert-value">{{value}}</span>
+                        <span class="crm-kpi-alert-body">
+                            <span class="crm-kpi-alert-label">{{label}}</span>
+                            {{#if meta}}
+                                <span class="crm-kpi-alert-meta">{{meta}}</span>
+                            {{/if}}
+                        </span>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+
     {{/if}}
 </div>
