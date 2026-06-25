@@ -1,0 +1,76 @@
+{
+    "fields": {
+        "nota": "Nota",
+        "whatsApp": "WhatsApp",
+        "parent": "Relazionato a",
+        "telefono": "Telefono",
+        "testo": "Testo",
+        "tipologia": "Tipologia",
+        "vocale": "Vocale",
+        "canaleContatto": "Canale",
+        "esito": "Esito",
+        "whatsAppNumero": "WhatsApp Numero",
+        "data": "Data Riscontro",
+        "dataRichiamo": "Data Richiamo",
+        "richiamo": "Richiamo",
+        "daRichiamare": "Da richiamare",
+        "name": "Contatto Telefonico",
+        "prospect": "Prospect"
+    },
+    "links": {
+        "parent": "Relazionato a",
+        "prospect": "Prospect"
+    },
+    "options": {
+        "tipologia": {
+            "": "",
+            "Primo Contatto": "Primo Contatto",
+            "Contatto dopo Prima Visita": "Contatto dopo Prima Visita",
+            "Richiamo su Opportunità Generata": "Richiamo su Opportunità Generata",
+            "Richiamo per Nuovo Appuntamento": "Richiamo per Nuovo Appuntamento",
+            "Conferma Appuntamento": "Conferma Appuntamento",
+            "Informazioni aggiuntive": "Informazioni aggiuntive",
+            "WhatsApp (Primo Contatto)": "WhatsApp (Primo Contatto)",
+            "WhatsApp (Last Minute)": "WhatsApp (Last Minute)",
+            "WhatsApp per Richiesta Appuntamento": "WhatsApp per Richiesta Appuntamento",
+            "WhatsApp su Opportunità Generata": "WhatsApp su Opportunità Generata",
+            "WhatsApp (Risposta)": "WhatsApp (Risposta)",
+            "WhatsApp (Appuntamento non Svolto)": "WhatsApp (Appuntamento non Svolto)"
+        },
+        "status": {
+            "Planned": "Pianificato",
+            "Held": "Svolto",
+            "Not Held": "Non Svolto"
+        },
+        "canaleContatto": {
+            "call": "Chiamata",
+            "whatsapp": "WhatsApp"
+        },
+        "esito": {
+            "": "",
+            "Non interessato": "Non interessato",
+            "In Trattativa": "In Trattativa",
+            "Opportunità Accettata": "Opportunità Accettata"
+        },
+        "richiamo": {
+            "": "",
+            "Richiamo su Opportunità Generata": "Richiamo su Opportunità Generata",
+            "Richiamo per Nuovo Appuntamento": "Richiamo per Nuovo Appuntamento",
+            "Richiamo per Informazioni Aggiuntive": "Richiamo per Informazioni Aggiuntive"
+        }
+    },
+    "labels": {
+        "Set Held": "Svolto",
+        "Set Not Held": "Non Svolto",
+        "Create Call": "Creare Contatto Telefonico"
+    },
+    "massActions": {
+        "setHeld": "Svolto",
+        "setNotHeld": "Non Svolto"
+    },
+    "presetFilters": {
+        "held": "Svolto",
+        "todays": "Odierni",
+        "daRiscontrare": "Da riscontrare"
+    }
+}
