@@ -150,30 +150,34 @@ class CrmKpiService
     private function getValoreProduzioneTile(KpiContext $ctx): object
     {
         $totali = $this->sumQuoteAmount($ctx);
-        $netti = $this->sumQuoteAmount($ctx, excludeFinancingKo: true, excludeRecesso: true);
-        $koFin = $this->sumQuoteAmount($ctx, onlyFinancingKo: true);
+        $finanziamentiRifiutati = $this->sumQuoteAmount($ctx, onlyFinancingKo: true);
+        $lordi = $this->sumQuoteAmount($ctx, excludeRecesso: true);
         $recessi = $this->sumQuoteAmount($ctx, onlyRecesso: true);
+        $netti = $this->sumQuoteAmount($ctx, excludeFinancingKo: true, excludeRecesso: true);
 
         return (object) [
             'totali' => round($totali, 2),
-            'netti' => round($netti, 2),
-            'koFinanziamenti' => round($koFin, 2),
+            'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
+            'lordi' => round($lordi, 2),
             'recessi' => round($recessi, 2),
+            'netti' => round($netti, 2),
         ];
     }
 
     private function getProvvigioniTile(KpiContext $ctx): object
     {
         $totali = $this->sumQuoteProvvigioni($ctx);
-        $netti = $this->sumQuoteProvvigioni($ctx, excludeFinancingKo: true, excludeRecesso: true);
-        $koFin = $this->sumQuoteProvvigioni($ctx, onlyFinancingKo: true);
+        $finanziamentiRifiutati = $this->sumQuoteProvvigioni($ctx, onlyFinancingKo: true);
+        $lordi = $this->sumQuoteProvvigioni($ctx, excludeRecesso: true);
         $recessi = $this->sumQuoteProvvigioni($ctx, onlyRecesso: true);
+        $netti = $this->sumQuoteProvvigioni($ctx, excludeFinancingKo: true, excludeRecesso: true);
 
         return (object) [
             'totali' => round($totali, 2),
-            'nette' => round($netti, 2),
-            'koFinanziamenti' => round($koFin, 2),
-            'koRecessi' => round($recessi, 2),
+            'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
+            'lordi' => round($lordi, 2),
+            'recessi' => round($recessi, 2),
+            'netti' => round($netti, 2),
         ];
     }
 

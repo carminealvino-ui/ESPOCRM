@@ -79,18 +79,8 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                     appuntamenti: this.mapAppuntamentiTile(tiles.appuntamenti),
                     opportunita: this.mapOpportunitaTile(tiles.opportunita),
                     contratti: this.mapContrattiTile(tiles.contratti),
-                    valoreProduzione: this.mapMetricTile(tiles.valoreProduzione, [
-                        {key: 'totali', label: 'Valore totale lordo', currency: true},
-                        {key: 'netti', label: 'Valore totale netto', currency: true},
-                        {key: 'koFinanziamenti', label: 'Valore fin. KO', currency: true},
-                        {key: 'recessi', label: 'Valore recessi', currency: true},
-                    ], true),
-                    provvigioni: this.mapMetricTile(tiles.provvigioni, [
-                        {key: 'totali', label: 'Provvigioni totali', currency: true},
-                        {key: 'nette', label: 'Provvigioni nette', currency: true},
-                        {key: 'koFinanziamenti', label: 'Provvigioni fin. KO', currency: true},
-                        {key: 'koRecessi', label: 'Provvigioni recessi', currency: true},
-                    ], true),
+                    valoreProduzione: this.mapValoreProduzioneTile(tiles.valoreProduzione),
+                    provvigioni: this.mapProvvigioniTile(tiles.provvigioni),
                 },
                 alerts: (summary.alerts || []).map(function (alert) {
                     return {
@@ -165,18 +155,44 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
             });
         },
 
-        mapMetricTile: function (tile, definitions, currencyDefault) {
+        mapValoreProduzioneTile: function (tile) {
             const source = tile || {};
+            const base = Number(source.totali || 0);
 
-            return definitions.map(def => {
-                const raw = source[def.key];
-                const value = currencyDefault || def.currency
-                    ? this.formatCurrency(raw)
-                    : this.formatNumber(raw);
+            return [
+                {key: 'totali', label: 'Valore produzione totale'},
+                {key: 'finanziamentiRifiutati', label: 'Valore con finanziamenti rifiutati'},
+                {key: 'lordi', label: 'Valore produzione lordo'},
+                {key: 'recessi', label: 'Valore con recessi'},
+                {key: 'netti', label: 'Valore produzione netto'},
+            ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
 
                 return {
                     label: def.label,
-                    value: value,
+                    value: this.formatCurrency(raw) + ' · ' + percent + '%',
+                };
+            });
+        },
+
+        mapProvvigioniTile: function (tile) {
+            const source = tile || {};
+            const base = Number(source.totali || 0);
+
+            return [
+                {key: 'totali', label: 'Provvigioni totali'},
+                {key: 'finanziamentiRifiutati', label: 'Provvigioni con finanziamenti rifiutati'},
+                {key: 'lordi', label: 'Provvigioni lordi'},
+                {key: 'recessi', label: 'Provvigioni con recessi'},
+                {key: 'netti', label: 'Provvigioni nette'},
+            ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+
+                return {
+                    label: def.label,
+                    value: this.formatCurrency(raw) + ' · ' + percent + '%',
                 };
             });
         },
