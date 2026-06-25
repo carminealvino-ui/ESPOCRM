@@ -1,0 +1,30 @@
+{
+    "skipRecordList" : {
+        "type": [
+            "system",
+            "super-admin"
+        ]
+    },
+    "fields": {
+        "password": {
+            "placeholderAction": "User\\Password"
+        },
+        "isActive": {
+            "placeholderAction": "User\\Active"
+        }
+    },
+    "foreignAttributes": {
+        "Subscription": [
+            "userId"
+        ],
+        "StarSubscription": [
+            "userId"
+        ],
+        "StreamSubscription": [
+            "userId"
+        ],
+        "Note": [
+            "data"
+        ]
+    }
+}

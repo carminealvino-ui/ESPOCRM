@@ -1,0 +1,75 @@
+{
+    "labels": {
+        "Create Quote": "Izveidot citātu",
+        "Taxes": "Nodokļi",
+        "Shipping Providers": "Piegādes pakalpojumu sniedzēji",
+        "Add Item": "Pievienot objektu",
+        "Templates": "Šabloni",
+        "Items": "Preces",
+        "Quote Items": "Citāšu elementi"
+    },
+    "fields": {
+        "status": "Statuss",
+        "number": "Citāts numurs",
+        "numberA": "Citāta numurs (automātiski papildināts)",
+        "invoiceNumber": "Rēķina numurs",
+        "account": "Konts",
+        "opportunity": "Iespēja",
+        "billingAddress": "Norēķinu adrese",
+        "shippingAddress": "Piegādes adrese",
+        "billingContact": "Norēķinu kontakts",
+        "shippingContact": "Piegāde Kontaktpersona",
+        "tax": "Nodokļi",
+        "taxRate": "Nodokļa likme",
+        "shippingCost": "Piegādes izmaksas",
+        "shippingProvider": "Piegādes pakalpojumu sniedzējs",
+        "taxAmount": "Nodokļa summa",
+        "discountAmount": "Atlaides summa",
+        "amount": "Summa",
+        "preDiscountedAmount": "Summa pirms atlaides",
+        "grandTotalAmount": "Lielā kopējā summa",
+        "itemList": "Vienumu saraksts",
+        "dateQuoted": "Minētais datums",
+        "dateOrdered": "Pasūtīšanas datums",
+        "dateInvoiced": "Rēķina izrakstīšanas datums",
+        "weight": "Svars",
+        "amountConverted": "Summa (konvertēta)",
+        "taxAmountConverted": "Nodokļa summa (konvertēta)",
+        "shippingCostConverted": "Piegādes izmaksas (konvertētas)",
+        "preDiscountedAmountConverted": "Summa pirms atlaides (konvertēta)",
+        "discountAmountConverted": "Diskonta summa (konvertēta)",
+        "grandTotalAmountConverted": "Kopsumma (konvertēta)",
+        "shippingCostCurrency": "Piegādes izmaksas Valūta",
+        "taxAmountCurrency": "Nodokļa summa Valūta",
+        "discountAmountCurrency": "Atlaides summa Valūta",
+        "amountCurrency": "Summa Valūta",
+        "preDiscountedAmountCurrency": "Summa pirms atlaides Valūta",
+        "grandTotalAmountCurrency": "Lielā kopējā summa Valūta",
+        "currency": "Valūta"
+    },
+    "links": {
+        "items": "Preces",
+        "billingContact": "Norēķinu kontakts",
+        "shippingContact": "Piegāde Kontaktpersona",
+        "shippingProvider": "Piegādes pakalpojumu sniedzējs",
+        "opportunity": "Iespēja",
+        "account": "Konts",
+        "tax": "Nodokļi",
+        "salesOrders": "Pārdošanas pasūtījumi",
+        "invoices": "Rēķini"
+    },
+    "options": {
+        "status": {
+            "Draft": "Projekts",
+            "In Review": "Pārskatā",
+            "Presented": "Iesniegts",
+            "Approved": "Apstiprināts",
+            "Rejected": "Noraidīts",
+            "Canceled": "Atcelts"
+        }
+    },
+    "presetFilters": {
+        "actual": "Faktiskais",
+        "approved": "Apstiprināts"
+    }
+}

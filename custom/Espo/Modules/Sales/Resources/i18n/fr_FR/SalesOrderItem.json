@@ -1,0 +1,33 @@
+{
+  "fields": {
+    "name": "Nom",
+    "qty": "Qté",
+    "quantity": "Quantité",
+    "listPrice": "Prix catalogue",
+    "unitPrice": "Prix unitaire",
+    "amount": "Montant",
+    "taxRate": "Taux de taxe",
+    "product": "Produit",
+    "order": "Numéro de ligne",
+    "salesOrder": "Commande",
+    "weight": "Poids",
+    "unitWeight": "Poids unitaire",
+    "discount": "Remise (%)",
+    "amountConverted": "Montant (converti)",
+    "unitPriceConverted": "Prix unitaire (converti)",
+    "listPriceConverted": "Prix catalogue (converti)",
+    "account": "Compte",
+    "listPriceCurrency": "Devise du prix catalogue",
+    "unitPriceCurrency": "Devise du prix unitaire",
+    "amountCurrency": "Devise du montant",
+    "salesOrderStatus": "Statut de la commande client"
+  },
+  "links": {
+    "salesOrder": "Commande",
+    "product": "Produit",
+    "account": "Compte"
+  },
+  "labels": {
+    "Sales Orders": "Commandes"
+  }
+}

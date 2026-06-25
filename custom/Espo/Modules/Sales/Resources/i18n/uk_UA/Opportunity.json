@@ -1,0 +1,16 @@
+{
+  "labels": {
+    "Items": "Пункти",
+    "Select Product": "Виберіть продукт",
+    "Add Item": "Додати пункт"
+  },
+  "links": {
+    "quotes": "Пропозиції",
+    "salesOrders": "Замовлення",
+    "invoices": "Рахунки-фактури",
+    "items": "Пункти"
+  },
+  "fields": {
+    "itemList": "Список пунктів"
+  }
+}

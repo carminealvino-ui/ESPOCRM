@@ -1,0 +1,8 @@
+{
+    "accountLink": "account",
+    "contactLink": "billingContact",
+    "linkCheckerClassNameMap": {
+        "account": "Espo\\Modules\\Sales\\Classes\\Acl\\CreditNote\\LinkCheckers\\AccountChecker",
+        "tax": "Espo\\Modules\\Sales\\Classes\\Acl\\CreditNote\\LinkCheckers\\TaxChecker"
+    }
+}

@@ -1,0 +1,21 @@
+[
+    {
+        "name": "target",
+        "notSortable": true
+    },
+    {
+        "name": "timeline",
+        "width": 25
+    },
+    {
+        "name": "minQuantity",
+        "width": 14,
+        "label": "minQty"
+    },
+    {
+        "name": "price",
+        "width": 17,
+        "align": "right",
+        "notSortable": true
+    }
+]

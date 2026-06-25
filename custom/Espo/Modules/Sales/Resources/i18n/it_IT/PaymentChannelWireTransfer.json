@@ -1,0 +1,9 @@
+{
+  "fields": {
+    "accountHolder": "Titolare del conto",
+    "accountNumber": "Numero di conto",
+    "bankName": "Nome della banca",
+    "bankCode": "Codice bancario",
+    "bankAddress": "Indirizzo banca"
+  }
+}

@@ -1,0 +1,22 @@
+{
+    "entity": true,
+    "object": true,
+    "tab": true,
+    "acl": true,
+    "aclPortal": false,
+    "aclActionList": ["create", "read"],
+    "aclLevelList": ["all", "no"],
+    "module": "Sales",
+    "exportFormatList": ["csv"],
+    "importable": true,
+    "notifications": false,
+    "customizable": true,
+    "layouts": true,
+    "entityManager": {
+        "layouts": true,
+        "edit": false,
+        "formula": false,
+        "fields": false,
+        "relationships": false
+    }
+}

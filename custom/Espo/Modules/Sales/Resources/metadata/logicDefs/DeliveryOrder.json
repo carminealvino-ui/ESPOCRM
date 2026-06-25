@@ -1,0 +1,113 @@
+{
+    "fields": {
+        "isLocked": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isNotActual"
+                    }
+                ]
+            }
+        },
+        "isHardLocked": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isHardLocked"
+                    }
+                ]
+            }
+        },
+        "status": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isLocked"
+                    }
+                ]
+            }
+        },
+        "account": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "salesOrderId",
+                                "data": {
+                                    "field": "salesOrder"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "salesOrder": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "itemList": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isLocked"
+                            },
+                            {
+                                "type": "and",
+                                "value": [
+                                    {
+                                        "type": "in",
+                                        "attribute": "status",
+                                        "value": [
+                                            "Completed"
+                                        ]
+                                    },
+                                    {
+                                        "type": "isTrue",
+                                        "attribute": "isDone"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "number": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "inventoryStatus": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "inventoryStatus"
+                    }
+                ]
+            }
+        }
+    }
+}

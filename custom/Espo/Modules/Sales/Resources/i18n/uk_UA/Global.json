@@ -1,0 +1,32 @@
+{
+  "scopeNames": {
+    "Product": "Продукт",
+    "ProductCategory": "Категорія продукту",
+    "ProductBrand": "Бренд продукту",
+    "ReportCategory": "Категорія звітів",
+    "Quote": "Пропозиція",
+    "QuoteItem": "Пункт пропозиції",
+    "SalesOrder": "Замовлення",
+    "SalesOrderItem": "Пункт замовлення",
+    "Invoice": "Рахунок-фактура",
+    "InvoiceItem": "Пункт рахунку-фактури",
+    "Tax": "Податок",
+    "ShippingProvider": "Служба доставки",
+    "OpportunityItem": "Пункт угоди"
+  },
+  "scopeNamesPlural": {
+    "Product": "Продукти",
+    "ProductCategory": "Категорії продуктів",
+    "ReportCategory": "Категорії звітів",
+    "Quote": "Пропозиції",
+    "QuoteItem": "Пункти пропозицій",
+    "SalesOrder": "Замовлення",
+    "SalesOrderItem": "Пункти замовлення",
+    "Invoice": "Рахунки-фактури",
+    "InvoiceItem": "Пункти рахунку-фактури",
+    "Tax": "Податки",
+    "ShippingProvider": "Служби доставок",
+    "OpportunityItem": "Пункти угод",
+    "ProductBrand": "Бренди продуктів"
+  }
+}

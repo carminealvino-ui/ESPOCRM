@@ -14,13 +14,9 @@
                 {
                     "name": "productBrand"
                 },
-                false
-            ],
-            [
                 {
                     "name": "productCategory"
-                },
-                false
+                }
             ],
             [
                 {

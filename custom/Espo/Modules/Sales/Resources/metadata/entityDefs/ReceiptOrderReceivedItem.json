@@ -1,0 +1,94 @@
+{
+    "fields": {
+        "receiptOrder": {
+            "type": "link",
+            "readOnly": true,
+            "required": true
+        },
+        "product": {
+            "type": "link",
+            "readOnly": true,
+            "required": true
+        },
+        "inventoryNumber": {
+            "type": "link",
+            "readOnly": true,
+            "required": true
+        },
+        "quantity": {
+            "type": "float",
+            "default": 0.0,
+            "required": true,
+            "readOnly": true,
+            "min": 0.0
+        },
+        "inventoryNumberType": {
+            "type": "foreign",
+            "link": "product",
+            "field": "inventoryNumberType",
+            "view": "views/fields/foreign-enum",
+            "readOnly": true
+        },
+        "receiptOrderStatus": {
+            "type": "foreign",
+            "link": "receiptOrder",
+            "field": "status",
+            "readOnly": true,
+            "view": "views/fields/foreign-enum",
+            "fieldManagerParamList": [
+                "link",
+                "field",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "order": {
+            "type": "int",
+            "default": 1,
+            "readOnly": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "product": {
+            "type": "belongsTo",
+            "entity": "Product"
+        },
+        "receiptOrder": {
+            "type": "belongsTo",
+            "entity": "ReceiptOrder",
+            "foreign": "receivedItems"
+        },
+        "inventoryNumber": {
+            "type": "belongsTo",
+            "entity": "InventoryNumber"
+        }
+    },
+    "collection": {
+        "sortBy": "createdAt",
+        "asc": false
+    }
+}

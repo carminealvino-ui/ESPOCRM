@@ -1,0 +1,14 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "account",
+        "width": 35
+    },
+    {
+        "name": "status",
+        "width": 20
+    }
+]

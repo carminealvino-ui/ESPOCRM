@@ -1,0 +1,19 @@
+{
+    "links": {
+        "quotesBilling": "Quotes (Billing)",
+        "quotesShipping": "Quotes (Shipping)",
+        "salesOrdersBilling": "Sales Orders (Billing)",
+        "salesOrdersShipping": "Sales Orders (Shipping)",
+        "invoicesBilling": "Invoices (Billing)",
+        "invoicesShipping": "Invoices (Shipping)",
+        "purchaseOrdersBilling": "Purchase Orders (Billing)",
+        "purchaseOrdersShipping": "Purchase Orders (Shipping)",
+        "deliveryOrdersShipping": "Delivery Orders (Shipping)",
+        "returnOrdersBilling": "Return Orders (Billing)",
+        "returnOrdersShipping": "Return Orders (Shipping)",
+        "receiptOrdersShipping": "Receipt Orders (Shipping)",
+        "creditNotesBilling": "Credit Notes (Billing)",
+        "subscriptionsBilling": "Subscriptions (Billing)",
+        "supplierBillsBilling": "Bills (Billing)"
+    }
+}

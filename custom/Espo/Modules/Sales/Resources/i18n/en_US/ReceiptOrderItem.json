@@ -1,0 +1,26 @@
+{
+    "fields": {
+        "name": "Name",
+        "qty": "Qty",
+        "qtyReceived": "Qty Rcv",
+        "quantity": "Quantity",
+        "quantityInt": "Quantity (Int)",
+        "quantityReceived": "Quantity Received",
+        "quantityReceivedInt": "Quantity Received (Int)",
+        "product": "Product",
+        "order": "Line Number",
+        "receiptOrder": "Receipt Order",
+        "weight": "Weight",
+        "unitWeight": "Unit Weight",
+        "description": "Description",
+        "account": "Account",
+        "receiptOrderStatus": "Receipt Order Status",
+        "inventoryNumberType": "Inventory Number Type",
+        "isInventory": "Is Inventory"
+    },
+    "links": {
+        "receiptOrder": "Receipt Order",
+        "product": "Product",
+        "account": "Account"
+    }
+}

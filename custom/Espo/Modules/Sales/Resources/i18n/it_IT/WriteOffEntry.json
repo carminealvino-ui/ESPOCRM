@@ -1,0 +1,32 @@
+{
+  "labels": {
+    "Create WriteOffEntry": "Crea stralcio"
+  },
+  "fields": {
+    "number": "Numero",
+    "numberA": "Numero (incremento automatico)",
+    "account": "Azienda",
+    "status": "Stato",
+    "date": "Data",
+    "amount": "Importo",
+    "amountConverted": "Importo (convertito)",
+    "amountCurrency": "Valuta importo",
+    "allocations": "Allocazioni",
+    "unallocatedAmount": "Importo non allocato"
+  },
+  "links": {
+    "account": "Azienda",
+    "allocations": "Allocazioni"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Applied": "Applicato",
+      "Canceled": "Annullato"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperta",
+    "completed": "Completato"
+  }
+}

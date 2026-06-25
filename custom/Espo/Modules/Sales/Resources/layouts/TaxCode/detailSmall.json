@@ -1,0 +1,85 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "code"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "isSelectable"
+                },
+                {
+                    "name": "isForSales"
+                },
+                {
+                    "name": "isForPurchases"
+                }
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "type"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "rate"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "amount"
+                },
+                false
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "base"
+                },
+                {
+                    "name": "applyToProportionalShipping"
+                }
+            ],
+            [
+                {
+                    "name": "includedInPrice"
+                },
+                {
+                    "name": "roundingLevel"
+                }
+            ],
+            [
+                false,
+                {
+                    "name": "roundingFactor"
+                }
+            ],
+            [
+                {
+                    "name": "items"
+                },
+                false
+            ]
+        ]
+    }
+]

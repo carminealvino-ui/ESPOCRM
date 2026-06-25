@@ -1,0 +1,44 @@
+[
+    {
+        "name": "taxCode"
+    },
+    {
+        "name": "source",
+        "width": 18,
+        "hidden": true
+    },
+    {
+        "name": "component",
+        "width": 12
+    },
+    {
+        "name": "product",
+        "width": 15
+    },
+    {
+        "name": "paymentEntry",
+        "width": 18
+    },
+    {
+        "name": "baseAmount",
+        "align": "right",
+        "width": 14,
+        "hidden": true
+    },
+    {
+        "name": "amount",
+        "align": "right",
+        "width": 14,
+        "hidden": true
+    },
+    {
+        "name": "baseAmountLocal",
+        "align": "right",
+        "width": 14
+    },
+    {
+        "name": "amountLocal",
+        "align": "right",
+        "width": 14
+    }
+]

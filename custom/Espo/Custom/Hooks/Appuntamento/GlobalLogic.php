@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// VERSIONE: 1.7.3
+// VERSIONE: 1.7.4
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
@@ -49,7 +49,7 @@
 // ✔ NON sovrascrive dati manuali gia' presenti
 //
 // ROLLBACK:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-appuntamento-globallogic-1.6.0-prospect-lead-stabile.php
 //
 // 1.6.2
@@ -66,7 +66,7 @@
 // - altri sottostati Held -> In Process
 //
 // ROLLBACK:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-appuntamento-globallogic-1.6.1-held-lead-stabile.php
 //
 // 1.6.3
@@ -77,7 +77,7 @@
 // ✔ Campo UI: Descrizione Attività
 //
 // ROLLBACK:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-appuntamento-globallogic-1.6.2-description-prospect-stabile.php
 //
 // 1.6.4
@@ -90,7 +90,7 @@
 // ✔ NON sovrascrive dati manuali gia' presenti sul Lead
 //
 // ROLLBACK:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-appuntamento-globallogic-1.6.3-brand-partner-sync-stabile.php
 //
 // 1.6.5
@@ -101,7 +101,7 @@
 // ✔ Compila anche fornitorePartner dal brand
 //
 // ROLLBACK:
-// backup/hooks_cleanup/
+// backup_dev/
 // backup-appuntamento-globallogic-1.6.4-brand-fallback-stabile.php
 //
 // 1.7.1
@@ -117,6 +117,11 @@
 // ----------------------------------------
 // ✔ Nuovo appuntamento: dateEnd = dateStart + 1h30 (5400 sec)
 //    (calendario / dettaglio piccolo; backup server-side)
+//
+// 1.7.4 (01-06-2026)
+// ----------------------------------------
+// ✔ FIX: in aggiornamento non sovrascrivere fornitore/brand/categoria
+//    gia impostati su Appuntamento (sync da Lead/Prospect solo se vuoti)
 //
 // 1.7.0 (25-05-2026)
 // -----------------------------------------------------
@@ -173,7 +178,7 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.7.3'
+                '1.7.4'
             );
 
             $this->applyDefaultDurationOnCreate($entity);
@@ -625,29 +630,28 @@ class GlobalLogic
             }
 
             // ========================================
-            // FIX ASSEGNAZIONE ADMIN
+            // SYNC assignedUserId ← assignedUsers (Google Calendar richiede assignedUserId)
             // ========================================
 
-            if (
+            if ($status !== 'Not Held') {
+                $assignedUsersIds = $entity->get('assignedUsersIds') ?: [];
 
-                $status === 'Not Held' ||
-                $status === 'Ingestibile'
+                if ($assignedUsersIds !== []) {
+                    $entity->set('assignedUserId', $assignedUsersIds[0]);
+                }
+            }
 
-            ) {
+            // ========================================
+            // FIX ASSEGNAZIONE ADMIN (solo Non Svolto / annullati)
+            // Ingestibile resta sul consulente (visita effettuata, infattibile).
+            // ========================================
 
-                // ========================================
-                // RESET UTENTI ASSEGNATI
-                // ========================================
+            if ($status === 'Not Held') {
 
                 $entity->set(
                     'assignedUsersIds',
                     []
                 );
-
-                // ========================================
-                // ASSEGNA SOLO ADMIN
-                // USER ID = 1
-                // ========================================
 
                 $entity->set(
                     'assignedUsersIds',
@@ -702,11 +706,34 @@ class GlobalLogic
                 continue;
             }
 
-            $entity->set(
+            $this->setEntityFieldIfEmpty(
+                $entity,
                 $field,
                 $source->get($field)
             );
         }
+    }
+
+    private function setEntityFieldIfEmpty(
+        Entity $entity,
+        string $field,
+        mixed $value
+    ): void {
+        if ($value === null || $value === '') {
+            return;
+        }
+
+        if (!$entity->hasAttribute($field)) {
+            return;
+        }
+
+        $current = $entity->get($field);
+
+        if ($current !== null && $current !== '') {
+            return;
+        }
+
+        $entity->set($field, $value);
     }
 
     // ========================================

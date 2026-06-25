@@ -1,0 +1,10 @@
+[
+    "account",
+    "receiptOrder",
+    "product",
+    "receiptOrderStatus",
+    "quantity",
+    "quantityReceived",
+    "createdBy",
+    "createdAt"
+]

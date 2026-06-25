@@ -1,0 +1,216 @@
+{
+    "fields": {
+        "isLocked": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isNotActual"
+                    }
+                ]
+            }
+        },
+        "isHardLocked": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isHardLocked"
+                    }
+                ]
+            }
+        },
+        "account": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "purchaseOrderId",
+                                "data": {
+                                    "field": "purchaseOrder"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "returnOrder": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "id"
+                            },
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "purchaseOrderId",
+                                "data": {
+                                    "field": "purchaseOrder"
+                                }
+                            },
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "supplierId",
+                                "data": {
+                                    "field": "supplier"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "and",
+                        "value": [
+                            {
+                                "type": "isEmpty",
+                                "attribute": "purchaseOrderId",
+                                "data": {
+                                    "field": "purchaseOrder"
+                                }
+                            },
+                            {
+                                "type": "isEmpty",
+                                "attribute": "supplierId",
+                                "data": {
+                                    "field": "supplier"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "supplier": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "purchaseOrderId",
+                                "data": {
+                                    "field": "purchaseOrder"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "returnOrderId",
+                        "data": {
+                            "field": "returnOrder"
+                        }
+                    }
+                ]
+            }
+        },
+        "purchaseOrder": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            },
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "returnOrderId",
+                        "data": {
+                            "field": "returnOrder"
+                        }
+                    }
+                ]
+            }
+        },
+        "itemList": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isLocked"
+                            },
+                            {
+                                "type": "and",
+                                "value": [
+                                    {
+                                        "type": "in",
+                                        "attribute": "status",
+                                        "value": [
+                                            "Completed"
+                                        ]
+                                    },
+                                    {
+                                        "type": "isTrue",
+                                        "attribute": "isDone"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "receivedItemList": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isLocked"
+                            },
+                            {
+                                "type": "and",
+                                "value": [
+                                    {
+                                        "type": "in",
+                                        "attribute": "status",
+                                        "value": [
+                                            "Completed"
+                                        ]
+                                    },
+                                    {
+                                        "type": "isTrue",
+                                        "attribute": "isDone"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "number": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        }
+    }
+}

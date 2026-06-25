@@ -1,0 +1,9 @@
+{
+  "messages": {
+    "calendarConnectionProblem": "Не удалось подключиться к Календарю Outlook",
+    "fieldLabelIsRequired": "Только один объект может быть без идентификационной метки",
+    "emptyNotDefaultEnitityLabel": "Идентификационная метка объекта не по умолчанию не может быть пустой",
+    "defaultEntityIsRequiredInList": "Объект по умолчанию обязателен в списке синхронизированных объектов",
+    "notUniqueIdentificationLabel": "Идентификационные метки должны быть уникальными"
+  }
+}

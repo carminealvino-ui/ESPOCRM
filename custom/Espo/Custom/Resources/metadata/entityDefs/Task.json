@@ -1,0 +1,92 @@
+{
+    "fields": {
+        "parent": {
+            "entityList": [
+                "Appuntamento",
+                "Prospect",
+                "Lead",
+                "Opportunity",
+                "FornitorePartner",
+                "Provvigione"
+            ]
+        },
+        "opportunita": {
+            "type": "link"
+        },
+        "privato": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "dateEnd": {
+            "useNumericFormat": true,
+            "minuteStep": 30,
+            "after": null
+        },
+        "dateCompleted": {
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "createdAt": {
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "dateStart": {
+            "useNumericFormat": true,
+            "minuteStep": 30,
+            "before": null
+        },
+        "modifiedAt": {
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "reminders": {
+            "name": "reminders",
+            "type": "jsonArray",
+            "notStorable": true,
+            "view": "crm:views/meeting/fields/reminders",
+            "dynamicLogicVisible": null,
+            "dynamicLogicReadOnly": null,
+            "inlineEditDisabled": false,
+            "tooltip": false
+        },
+        "tipologia": {
+            "type": "enum",
+            "options": [
+                "",
+                "Telefonata",
+                "Email",
+                "Preparazione Documento",
+                "Sollecito"
+            ],
+            "style": {
+                "": null,
+                "Telefonata": null,
+                "Email": null,
+                "Preparazione Documento": null,
+                "Sollecito": null
+            },
+            "default": "",
+            "isCustom": true
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [
+            "name"
+        ],
+        "fullTextSearch": false,
+        "countDisabled": false
+    },
+    "links": {
+        "opportunita": {
+            "type": "belongsTo",
+            "foreign": "toDo",
+            "entity": "Opportunity",
+            "audited": false,
+            "isCustom": true
+        }
+    },
+    "optimisticConcurrencyControl": true
+}

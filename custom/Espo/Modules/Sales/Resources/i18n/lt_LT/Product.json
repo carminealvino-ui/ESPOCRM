@@ -1,0 +1,44 @@
+{
+    "labels": {
+        "Create Product": "Sukurti produktą",
+        "Price": "Kaina",
+        "Brands": "Prekės ženklai",
+        "Categories": "Kategorijos"
+    },
+    "fields": {
+        "status": "Statusas",
+        "brand": "Prekės ženklas",
+        "partNumber": "Dalies numeris",
+        "category": "Kategorija",
+        "pricingType": "Kainodaros tipas",
+        "pricingFactor": "Kainodaros veiksnys",
+        "costPrice": "Kaina",
+        "listPrice": "Sąrašo kaina",
+        "unitPrice": "Vieneto kaina",
+        "costPriceCurrency": "Kaina Kaina Valiuta",
+        "listPriceCurrency": "Sąrašo kaina Valiuta",
+        "unitPriceCurrency": "Vieneto kaina Valiuta",
+        "costPriceConverted": "Savikaina (perskaičiuota)",
+        "listPriceConverted": "Sąrašo kaina (perskaičiuota)",
+        "unitPriceConverted": "Vieneto kaina (perskaičiuota)",
+        "url": "URL",
+        "isTaxFree": "Neapmokestinama",
+        "weight": "Svoris"
+    },
+    "links": {
+        "brand": "Prekės ženklas",
+        "category": "Kategorija"
+    },
+    "options": {
+        "pricingType": {
+            "Same as List": "Tas pats kaip ir Sąrašas",
+            "Fixed": "Fiksuota",
+            "Discount from List": "Nuolaida nuo sąrašo",
+            "Markup over Cost": "Antkainis, palyginti su sąnaudomis",
+            "Profit Margin": "Pelno marža"
+        }
+    },
+    "presetFilters": {
+        "available": "Galima rasti"
+    }
+}

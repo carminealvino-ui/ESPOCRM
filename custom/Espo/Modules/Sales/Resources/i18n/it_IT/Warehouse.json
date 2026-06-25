@@ -1,0 +1,34 @@
+{
+  "labels": {
+    "Create Warehouse": "Crea magazzino"
+  },
+  "fields": {
+    "status": "Stato",
+    "isAvailableForStock": "Disponibile per Stock",
+    "isStock": "Magazzino",
+    "order": "Ordine"
+  },
+  "links": {
+    "deliveryOrders": "Consegne",
+    "receiptOrders": "Ricezioni",
+    "inventoryTransactions": "Transazioni di magazzino",
+    "products": "Prodotti",
+    "inventoryNumbers": "Numeri di inventario",
+    "outboundTransferOrders": "Trasferimenti in uscita",
+    "inboundTransferOrders": "Trasferimenti in entrata"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  },
+  "presetFilters": {
+    "active": "Attivo",
+    "stocked": "Stoccato"
+  },
+  "tabs": {
+    "inventory": "Magazzino",
+    "orders": "Ordini"
+  }
+}

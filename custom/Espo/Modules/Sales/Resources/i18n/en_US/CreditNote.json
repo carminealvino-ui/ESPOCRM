@@ -1,0 +1,76 @@
+{
+    "labels": {
+        "Create CreditNote": "Create Credit Note",
+        "Taxes": "Taxes",
+        "Add Item": "Add Item",
+        "Templates": "Templates",
+        "Items": "Items",
+        "E-Credit Note": "E-Credit Note"
+    },
+    "fields": {
+        "status": "Status",
+        "number": "Number",
+        "numberA": "Number (auto-incremented)",
+        "account": "Account",
+        "invoice": "Preceding Invoice",
+        "tax": "Tax Profile",
+        "taxRate": "Tax Rate",
+        "taxAmount": "Tax",
+        "amount": "Net Total",
+        "itemList": "Item List",
+        "dateIssued": "Date Issued",
+        "dateDue": "Due Date",
+        "amountConverted": "Net Total (converted)",
+        "taxAmountConverted": "Tax (converted)",
+        "taxAmountCurrency": "Tax Currency",
+        "amountCurrency": "Amount Currency",
+        "currency": "Currency",
+        "buyerReference": "Buyer Reference",
+        "purchaseOrderReference": "Purchase Order Reference",
+        "note": "Note",
+        "amountDue": "Amount Due",
+        "amountDueCurrency": "Amount Due Currency",
+        "grandTotalAmountConverted": "Grand Total (converted)",
+        "grandTotalAmount": "Grand Total",
+        "grandTotalAmountCurrency": "Grand Total Currency",
+        "discountAmountCurrency": "Discount Currency",
+        "billingContact": "Billing Contact",
+        "allocations": "Allocations",
+        "unallocatedAmount": "Unallocated Amount",
+        "roundingProfile": "Rounding Profile"
+    },
+    "links": {
+        "items": "Items",
+        "account": "Account",
+        "tax": "Tax Profile",
+        "invoice": "Preceding Invoice",
+        "priceBook": "Price Book",
+        "billingContact": "Billing Contact",
+        "allocations": "Allocations",
+        "subscriptionUpdates": "Subscription Updates",
+        "roundingProfile": "Rounding Profile"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Issued": "Issued",
+            "Resolved": "Resolved",
+            "Canceled": "Canceled"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "resolved": "Resolved",
+        "openIssued": "Open Issued"
+    },
+    "messages": {
+        "amountDueMustNotBeLessThanZero": "Amount due cannot be less than zero. The allocated amount exceeds the transaction amount.",
+        "cannotApplyToDoneInvoice": "Cannot apply to a paid invoice.",
+        "creditNoteDifferentCurrency": "Credit note currency cannot differ from the invoice currency.",
+        "cannotCompleteWithAmountDue": "Cannot resolve as the amount due is not cleared. Allocate the credit note to an invoice first. Or create an outbound payment and allocate it to this credit note.",
+        "cannotCancelWithAmountDue": "Cannot cancel an issued credit note – as amount due is not cleared. Allocate the credit note to an invoice or debit note first. If needed, create a corresponding debit note for the outstanding amount. Then, set the credit note as resolved."
+    },
+    "panels": {
+        "allocation": "Invoice Allocation"
+    }
+}

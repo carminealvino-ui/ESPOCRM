@@ -1,0 +1,27 @@
+{
+    "primaryFilterClassNameMap": {
+        "actual": "Espo\\Modules\\Sales\\Classes\\Select\\WriteOffEntry\\PrimaryFilters\\Actual",
+        "applied": "Espo\\Modules\\Sales\\Classes\\Select\\WriteOffEntry\\PrimaryFilters\\Applied",
+        "issued": "Espo\\Modules\\Sales\\Classes\\Select\\General\\PrimaryFilters\\Issued"
+    },
+    "additionalApplierClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Select\\PaymentEntry\\AdditionalAppliers\\UnallocatedAmount"
+    ],
+    "selectAttributesDependencyMap": {
+        "unallocatedAmount": [
+            "amount",
+            "amountCurrency"
+        ]
+    },
+    "whereItemConverterClassNameMap": {
+        "unallocatedAmount_greaterThan": "Espo\\Modules\\Sales\\Classes\\Select\\WriteOffEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_greaterThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\WriteOffEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_lessThan": "Espo\\Modules\\Sales\\Classes\\Select\\WriteOffEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_lessThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\WriteOffEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_equals": "Espo\\Modules\\Sales\\Classes\\Select\\WriteOffEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_notEquals": "Espo\\Modules\\Sales\\Classes\\Select\\WriteOffEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_isNull": "Espo\\Modules\\Sales\\Classes\\Select\\WriteOffEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_isNotNull": "Espo\\Modules\\Sales\\Classes\\Select\\WriteOffEntry\\WhereItemConverters\\UnallocatedAmount",
+        "unallocatedAmount_between": "Espo\\Modules\\Sales\\Classes\\Select\\WriteOffEntry\\WhereItemConverters\\UnallocatedAmount"
+    }
+}

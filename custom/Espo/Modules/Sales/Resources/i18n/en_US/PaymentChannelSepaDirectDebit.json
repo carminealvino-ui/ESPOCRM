@@ -1,0 +1,7 @@
+{
+    "fields": {
+        "accountHolder": "Account Holder",
+        "iban": "IBAN",
+        "creditorIdentifier": "Bank assigned creditor identifier"
+    }
+}

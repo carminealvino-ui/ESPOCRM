@@ -1,0 +1,17 @@
+[
+    {
+        "name": "tipo",
+        "width": 65,
+        "align": "left"
+    },
+    {
+        "name": "tassoProvvigioni",
+        "width": 15,
+        "align": "right"
+    },
+    {
+        "name": "importo",
+        "width": 20,
+        "align": "right"
+    }
+]

@@ -1,0 +1,116 @@
+{
+  "internalReports": {
+    "Sales:LedgerSummary": "Riepilogo contabile",
+    "Sales:SalesRevenue": "Ricavi di vendita",
+    "Sales:SalesByCustomer": "Vendite per cliente",
+    "Sales:SalesByProduct": "Vendite per prodotto",
+    "Sales:SalesByProductCategory": "Vendite per categoria prodotto",
+    "Sales:CustomerBalances": "Saldi clienti",
+    "Sales:CustomerAging": "Scadenzario clienti",
+    "Sales:SalesTaxSummary": "Riepilogo imposte vendite",
+    "Sales:PurchaseTaxSummary": "Riepilogo imposte acquisti",
+    "Sales:TaxSalesList": "Elenco vendite per codice imposta",
+    "Sales:SupplierBalances": "Saldi fornitori",
+    "Sales:PurchaseExpenditure": "Spese di acquisto",
+    "Sales:PurchasesByProduct": "Acquisti per prodotto"
+  },
+  "salesReportParams": {
+    "includeShipping": "Includi spedizione",
+    "includeZero": "Includi zero",
+    "maxSize": "Numero massimo di record",
+    "basis": "Base",
+    "taxBasis": "Base",
+    "salesTaxCodes": "Codici imposta vendite",
+    "purchaseTaxCodes": "Codici imposta acquisti",
+    "inboundPaymentMethods": "Metodi di pagamento in entrata",
+    "outboundPaymentMethods": "Metodi di pagamento in uscita",
+    "accountNumberFunds": "Numero conto fondi",
+    "accountNumberAr": "Numero conto crediti verso clienti",
+    "accountNumberAp": "Numero conto debiti verso fornitori",
+    "accountNumberRevenueSales": "Numero conto ricavi vendite",
+    "accountNumberRevenueRounding": "Numero conto ricavi arrotondamenti",
+    "accountNumberRevenueRealizedFxGainLoss": "Numero conto ricavi utili/perdite cambio realizzati",
+    "accountNumberExpensesPurchase": "Numero conto costi acquisti",
+    "accountNumberExpensesWriteOffs": "Numero conto costi stralci",
+    "accountNumberTaxSales": "Numero conto imposte vendite",
+    "accountNumberTaxPurchase": "Numero conto imposte acquisti"
+  },
+  "salesReportFields": {
+    "asOfDate": "Alla data",
+    "date": "Data"
+  },
+  "salesReportOptions": {
+    "taxBasis": {
+      "Accrual": "Competenza",
+      "Cash": "Cassa"
+    },
+    "basis": {
+      "dateDue": "Data scadenza",
+      "installmentDateDue": "Data scadenza rata",
+      "dateInvoiced": "Data fatturazione"
+    },
+    "groupBy": {
+      "Month": "Mese",
+      "Quarter": "Trimestre",
+      "Year": "Anno",
+      "Fiscal Quarter": "Trimestre fiscale",
+      "Fiscal Year": "Anno fiscale",
+      "Week": "Settimana"
+    },
+    "orderByField": {
+      "amount": "Importo",
+      "productCategory": "Categoria prodotto",
+      "account": "Azienda",
+      "supplier": "Fornitore"
+    }
+  },
+  "salesReportColumns": {
+    "amountOpening": "Saldo iniziale",
+    "amountClosing": "Saldo finale",
+    "bucket": "Fascia",
+    "amount": "Importo",
+    "debits": "Addebiti",
+    "credits": "Accrediti",
+    "debit": "Addebito",
+    "credit": "Accredito",
+    "entryLine": "Riga prima nota",
+    "accountNumber": "Numero conto"
+  },
+  "salesLedgerLabels": {
+    "Funds_Inbound": "Fondi · Entrata",
+    "Funds_Outbound": "Fondi · Uscita",
+    "AR_Invoices": "CC · Fatture",
+    "AR_Credits": "CC · Crediti",
+    "AR_WriteOffs": "CC · Stralci",
+    "AR_Payments_Inbound": "CC · Pagamenti · Entrata",
+    "AR_Payments_Outbound": "CC · Pagamenti · Uscita",
+    "AR_FX_Adjustments": "CC · Rettifiche cambio",
+    "Tax_Purchase_Bills": "Imposte acquisti · Fatture fornitore",
+    "Tax_Purchase_Credits": "Imposte acquisti · Note di credito fornitore",
+    "Revenue_Invoices": "Ricavi · Fatture",
+    "Revenue_Credits": "Ricavi · Crediti",
+    "Revenue_Shipping_Invoices": "Ricavi · Spedizione · Fatture",
+    "Revenue_Shipping_Credits": "Ricavi · Spedizione · Crediti",
+    "Revenue_Rounding": "Ricavi · Arrotondamento",
+    "Revenue_Realized_FX_Gain_Loss": "Ricavi · Utile/perdita cambio realizzati",
+    "AP_Bills": "DF · Fatture fornitore",
+    "AP_Credits": "DF · Crediti",
+    "AP_Payments_Inbound": "DF · Pagamenti · Entrata",
+    "AP_Payments_Outbound": "DF · Pagamenti · Uscita",
+    "AP_FX_Adjustments": "DF · Rettifiche cambio",
+    "Tax_Sales_Invoices": "Imposte vendite · Fatture",
+    "Tax_Sales_Credits": "Imposte vendite · Crediti",
+    "Expenses_Bills": "Costi · Fatture fornitore",
+    "Expenses_Credits": "Costi · Crediti",
+    "Expenses_Shipping_Bills": "Costi · Spedizione · Fatture fornitore",
+    "Expenses_Shipping_Credits": "Costi · Spedizione · Crediti",
+    "Expenses_WriteOffs": "Costi · Stralci"
+  },
+  "tooltips": {
+    "salesReportPaymentMethods": "I metodi di pagamento selezionati saranno estratti in righe separate di prima nota. Specifica un numero conto per ciascuno.",
+    "salesReportSalesTaxCodes": "I codici imposta vendita selezionati saranno estratti in righe separate di prima nota. Specifica un numero conto per ciascuno. Di solito confluiscono in un conto di imposte differite passive.",
+    "salesReportPurchaseTaxCodes": "I codici imposta vendita selezionati saranno estratti in righe separate di prima nota. Specifica un numero conto per ciascuno. Di solito confluiscono in un conto di imposte differite attive o costi.",
+    "salesReportAccountNumberTaxSales": "I codici imposta vendita non selezionati saranno registrati su questo conto. Di solito si usa un conto di imposte differite passive.",
+    "salesReportAccountNumberTaxPurchase": "I codici imposta acquisto non selezionati saranno registrati su questo conto. Di solito si usa un conto di imposte differite attive o costi."
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "fields": {
+    "paymentEntry": "Pagamento",
+    "writeOffEntry": "Stralcio",
+    "creditNote": "Nota di credito",
+    "supplierCredit": "Nota di credito fornitore",
+    "target": "Destinazione",
+    "amount": "Importo",
+    "datePaid": "Data Pagato",
+    "dateIssued": "Data di emissione",
+    "sourceDate": "Data",
+    "source": "Origine",
+    "amountLocal": "Importo in valuta locale",
+    "fxGainLoss": "Utile/perdita su cambio",
+    "date": "Data allocazione"
+  },
+  "links": {
+    "creditNote": "Nota di credito",
+    "paymentEntry": "Pagamento",
+    "writeOffEntry": "Stralcio",
+    "supplierCredit": "Nota di credito fornitore",
+    "target": "Destinazione"
+  },
+  "messages": {
+    "cannotBeZero": "L'importo deve essere maggiore di 0."
+  }
+}

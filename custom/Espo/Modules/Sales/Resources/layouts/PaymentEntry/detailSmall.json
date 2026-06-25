@@ -1,0 +1,82 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "number"
+                },
+                {
+                    "name": "partyType"
+                }
+            ],
+            [
+                false,
+                {
+                    "name": "account"
+                }
+            ],
+            [
+                false,
+                {
+                    "name": "supplier"
+                }
+            ],
+            [
+                {
+                    "name": "type"
+                },
+                {
+                    "name": "request"
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "method"
+                }
+            ],
+            [
+                {
+                    "name": "amount"
+                },
+                {
+                    "name": "datePaid"
+                }
+            ],
+            [
+                {
+                    "name": "currencyRate"
+                },
+                false
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+
+                {
+                    "name": "allocations"
+                }
+            ],
+            [
+                {
+                    "name": "unallocatedAmount"
+                },
+                false
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+
+                {
+                    "name": "description"
+                }
+            ]
+        ]
+    }
+]

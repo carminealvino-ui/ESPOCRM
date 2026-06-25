@@ -1,0 +1,29 @@
+{
+  "fields": {
+    "order": "Indice riga",
+    "component": "Componente",
+    "item": "Riga",
+    "source": "Origine",
+    "product": "Prodotto",
+    "taxCode": "Codice imposta",
+    "rate": "Tasso",
+    "amount": "Imposta",
+    "amountLocal": "Imposta in valuta locale",
+    "baseAmountLocal": "Base in valuta locale",
+    "amountPrecise": "Imposta (precisa)",
+    "amountLocalPrecise": "Imposta in valuta locale (precisa)",
+    "baseAmountLocalPrecise": "Base in valuta locale (precisa)"
+  },
+  "links": {
+    "product": "Prodotto",
+    "taxCode": "Codice imposta",
+    "item": "Voce",
+    "source": "Origine"
+  },
+  "options": {
+    "component": {
+      "Item": "Riga",
+      "Shipping": "Spedizione"
+    }
+  }
+}

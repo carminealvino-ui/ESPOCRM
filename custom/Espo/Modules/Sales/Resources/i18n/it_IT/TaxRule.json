@@ -1,0 +1,27 @@
+{
+  "labels": {
+    "Create TaxRule": "Crea regola fiscale"
+  },
+  "fields": {
+    "logic": "Condizioni",
+    "tax": "Profilo fiscale",
+    "status": "Stato",
+    "order": "Ordine"
+  },
+  "links": {
+    "tax": "Profilo fiscale"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  },
+  "presetFilters": {
+    "active": "Attivo"
+  },
+  "tooltips": {
+    "tax": "Tasse applicate da questa regola.",
+    "logic": "Condizioni che devono essere soddisfatte affinché questa regola si applichi."
+  }
+}

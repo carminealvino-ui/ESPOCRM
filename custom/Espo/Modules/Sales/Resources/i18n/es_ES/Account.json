@@ -1,0 +1,10 @@
+{
+  "links": {
+    "quotes": "Presupuestos",
+    "quoteItems": "Artículos de presupuesto",
+    "salesOrders": "Órdenes de venta",
+    "salesOrderItems": "Artículos de orden de venta",
+    "invoices": "Facturas",
+    "invoiceItems": "Artículos de la factura"
+  }
+}

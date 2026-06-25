@@ -1,0 +1,88 @@
+{
+  "labels": {
+    "Create SalesOrder": "Kundenauftrag erstellen",
+    "Taxes": "Steuern",
+    "Shipping Providers": "Versender",
+    "Add Item": "Artikel hinzufügen",
+    "Templates": "Vorlagen",
+    "Items": "Artikel",
+    "Sales Order Items": "Kundenauftragspositionen",
+    "Create Delivery": "Lieferung erstellen",
+    "Add Delivery": "Lieferung hinzufügen",
+    "Not Created": "Nicht erstellt"
+  },
+  "fields": {
+    "number": "Nummer",
+    "numberA": "Nummer (auto-inkrement)",
+    "account": "Firma",
+    "opportunity": "Verkaufschance",
+    "quote": "Angebot",
+    "billingAddress": "Rechnungsadresse",
+    "shippingAddress": "Lieferadresse",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "shippingContact": "Kontakt f. Lieferadresse",
+    "tax": "Steuerprofil",
+    "taxRate": "Steuersatz",
+    "shippingProvider": "Versender",
+    "taxAmount": "Steuerbetrag",
+    "discountAmount": "Rabattbetrag",
+    "amount": "Betrag",
+    "preDiscountedAmount": "Betrag vor Rabatt",
+    "grandTotalAmount": "Gesamtbetrag",
+    "itemList": "Artikelliste",
+    "dateOrdered": "Bestelldatum",
+    "dateInvoiced": "Rechnungsdatum",
+    "weight": "Gewicht",
+    "amountConverted": "Betrag (konvertiert)",
+    "taxAmountConverted": "Steuerbetrag (konvertiert)",
+    "preDiscountedAmountConverted": "Betrag vor Rabatt (konvertiert)",
+    "discountAmountConverted": "Rabattbetrag (konvertiert)",
+    "grandTotalAmountConverted": "Gesamtbetrag (konvertiert)",
+    "taxAmountCurrency": "Steuerbetrag Währung",
+    "discountAmountCurrency": "Rabattbetrag Währung",
+    "amountCurrency": "Betragswährung",
+    "preDiscountedAmountCurrency": "Betrag vor Rabatt Währung",
+    "grandTotalAmountCurrency": "Gesamtbetrag Währung",
+    "currency": "Währung",
+    "priceBook": "Preisbuch",
+    "inventoryData": "Inventar Daten",
+    "inventoryStatus": "Inventarstatus",
+    "isDeliveryCreated": "Lieferung erstellt",
+    "hasInventoryItems": "Hat Inventarartikel",
+    "isDone": "Erledigt",
+    "isDeliverable": "Ist Lieferbar"
+  },
+  "links": {
+    "items": "Artikel",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "shippingContact": "Kontakt f. Lieferadresse",
+    "shippingProvider": "Versender",
+    "opportunity": "Verkaufschance",
+    "account": "Firma",
+    "tax": "Steuerprofil",
+    "quote": "Angebot",
+    "invoices": "Rechnungen",
+    "deliveryOrders": "Lieferaufträge",
+    "returnOrders": "Rücksendungen",
+    "priceBook": "Preisbuch",
+    "inventoryTransactions": "Inventartransaktionen"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Ready": "Bereit",
+      "Active": "Aktiv",
+      "Approved": "Genehmigt",
+      "Completed": "Abgeschlossen",
+      "Rejected": "Abgelehnt",
+      "Canceled": "Storniert"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "completed": "Abgeschlossen"
+  },
+  "messages": {
+    "cannotCreateDeliveryInEditMode": "Im Bearbeitungsmodus können keine Lieferaufträge erstellt werden."
+  }
+}

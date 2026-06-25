@@ -1,0 +1,23 @@
+[
+    {
+        "name": "number",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 16
+    },
+    {
+        "name": "account",
+        "width": 20
+    },
+    {
+        "name": "method",
+        "width": 15
+    },
+    {
+        "name": "amount",
+        "width": 15,
+        "align": "right"
+    }
+]

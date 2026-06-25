@@ -1,0 +1,24 @@
+{
+    "fields": {
+        "periodStartDate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "productIsSubscribable"
+                    }
+                ]
+            }
+        },
+        "periodEndDate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "productIsSubscribable"
+                    }
+                ]
+            }
+        }
+    }
+}

@@ -1,0 +1,60 @@
+{
+    "controller": "controllers/record",
+    "modelDefaultsPreparator": "modules/sales/handlers/tax/model-defaults-preparator",
+    "viewSetupHandlers": {
+        "record/detail": [
+            "modules/sales/handlers/tax/setup-record-detail"
+        ],
+        "record/edit": [
+            "modules/sales/handlers/tax/setup-record-detail"
+        ]
+    },
+    "filterList": [
+        "active"
+    ],
+    "selectDefaultFilters": {
+        "filter": "active"
+    },
+    "relationshipPanels": {
+        "itemRules": {
+            "createAttributeMap": {
+                "basis": "basis"
+            },
+            "filterList": [
+                "all",
+                "active"
+            ],
+            "viewDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "rowActionList": [
+                "moveToTop",
+                "moveUp",
+                "moveDown",
+                "moveToBottom"
+            ]
+        }
+    },
+    "mergeDisabled": true,
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.TaxCode",
+                    "link": "#TaxCode",
+                    "aclScope": "TaxCode"
+                },
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.TaxRule",
+                    "link": "#TaxRule",
+                    "aclScope": "TaxRule"
+                },
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.TaxPurchaseRule",
+                    "link": "#TaxPurchaseRule",
+                    "aclScope": "TaxPurchaseRule"
+                }
+            ]
+        }
+    }
+}

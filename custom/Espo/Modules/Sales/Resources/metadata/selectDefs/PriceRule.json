@@ -1,0 +1,35 @@
+{
+    "selectAttributesDependencyMap": {
+        "priceBookId": [
+            "status"
+        ],
+        "target": [
+            "productCategoryId",
+            "productCategoryName",
+            "conditionId",
+            "conditionName"
+        ],
+        "price": [
+            "discount",
+            "surcharge",
+            "roundingFactor",
+            "roundingMethod",
+            "basedOn"
+        ],
+        "id": [
+            "dateStart",
+            "dateEnd"
+        ]
+    },
+    "primaryFilterClassNameMap": {
+        "active": "Espo\\Modules\\Sales\\Classes\\Select\\PriceRule\\PrimaryFilters\\Active"
+    },
+    "accessControlFilterClassNameMap": {
+        "onlyOwn": "Espo\\Modules\\Sales\\Classes\\Select\\PriceRule\\AccessControlFilters\\OnlyOwn",
+        "onlyTeam": "Espo\\Modules\\Sales\\Classes\\Select\\PriceRule\\AccessControlFilters\\OnlyTeam",
+        "portalOnlyAccount": "Espo\\Modules\\Sales\\Classes\\Select\\PriceRule\\AccessControlFilters\\PortalOnlyAccount"
+    },
+    "ordererClassNameMap": {
+        "timeline": "Espo\\Modules\\Sales\\Select\\ProductPrice\\Order\\Timeline"
+    }
+}

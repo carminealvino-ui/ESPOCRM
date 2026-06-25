@@ -1,0 +1,10 @@
+{
+  "links": {
+    "quotesBilling": "Пропозиції (Юридичні)",
+    "quotesShipping": "Пропозиції (Доставка)",
+    "salesOrdersBilling": "Замовлення (Юридичні)",
+    "salesOrdersShipping": "Замовлення (Доставка)",
+    "invoicesBilling": "Рахунки-фактури (Юридичні)",
+    "invoicesShipping": "Рахунки-фактури (Доставка)"
+  }
+}

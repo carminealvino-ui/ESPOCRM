@@ -1,0 +1,31 @@
+{
+  "fields": {
+    "name": "Nome",
+    "qty": "Qtà",
+    "quantity": "Quantità",
+    "quantityInt": "Quantità (int)",
+    "unitPrice": "Prezzo unitario",
+    "amount": "Importo",
+    "taxRate": "Aliquota imposta",
+    "product": "Prodotto",
+    "order": "Numero riga",
+    "supplierBill": "Fattura fornitore",
+    "weight": "Peso",
+    "unitWeight": "Peso unitario",
+    "description": "Descrizione",
+    "amountConverted": "Importo (convertito)",
+    "unitPriceConverted": "Prezzo unitario (convertito)",
+    "unitPriceCurrency": "Valuta prezzo unitario",
+    "amountCurrency": "Valuta importo",
+    "supplierBillStatus": "Stato fattura fornitore",
+    "taxCode": "Codice imposta",
+    "taxes": "Imposta",
+    "amountLocal": "Importo in valuta locale",
+    "dateInvoiced": "Data fatturazione"
+  },
+  "links": {
+    "supplierBill": "Fattura fornitore",
+    "product": "Prodotto",
+    "taxCode": "Codice imposta"
+  }
+}

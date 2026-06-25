@@ -1,0 +1,32 @@
+[
+    {
+        "name": "name",
+        "width": 15,
+        "link": true,
+        "align": "left"
+    },
+    {
+        "name": "description"
+    },
+    {
+        "name": "status"
+    },
+    {
+        "name": "dateStart"
+    },
+    {
+        "name": "duration",
+        "width": 16
+    },
+    {
+        "name": "privato",
+        "width": 5,
+        "align": "left"
+    },
+    {
+        "name": "parent"
+    },
+    {
+        "name": "assignedUser"
+    }
+]

@@ -1,0 +1,34 @@
+{
+  "labels": {
+    "Create SupplierProductPrice": "Lieferantenpreis erstellen"
+  },
+  "fields": {
+    "supplier": "Lieferant",
+    "product": "Produkt",
+    "minQuantity": "Mindestmenge",
+    "price": "Preis",
+    "priceCurrency": "Preiswährung",
+    "dateStart": "Startdatum",
+    "dateEnd": "Enddatum",
+    "minQty": "Min. Mng",
+    "partNumber": "Teilenummer",
+    "priceConverted": "Preis umgerechnet",
+    "timeline": "Gültigkeitsdaten"
+  },
+  "links": {
+    "supplier": "Lieferant",
+    "product": "Produkt"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  },
+  "massActions": {
+    "updatePrice": "Preis aktualisieren"
+  }
+}

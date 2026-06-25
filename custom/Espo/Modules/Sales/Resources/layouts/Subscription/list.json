@@ -1,0 +1,32 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 13
+    },
+    {
+        "name": "primaryProduct",
+        "width": 20
+    },
+    {
+        "name": "account",
+        "width": 20
+    },
+    {
+        "name": "billingPlan",
+        "width": 14
+    },
+    {
+        "name": "amount",
+        "width": 14,
+        "hidden": true,
+        "align": "right"
+    },
+    {
+        "name": "billingState",
+        "width": 13
+    }
+]

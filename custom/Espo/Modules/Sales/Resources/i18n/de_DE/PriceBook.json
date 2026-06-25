@@ -1,0 +1,27 @@
+{
+  "labels": {
+    "Create PriceBook": "Preisbuch erstellen"
+  },
+  "fields": {
+    "parentPriceBook": "Übergeordnetes Preisbuch",
+    "isDefault": "Standard",
+    "isTaxInclusive": "Steuer inklusive"
+  },
+  "links": {
+    "products": "Produkte",
+    "parentPriceBook": "Übergeordnetes Preisbuch",
+    "accounts": "Firmen",
+    "prices": "Preise",
+    "rules": "Regeln",
+    "childPriceBooks": "Untergeordnete Preisbücher"
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  }
+}

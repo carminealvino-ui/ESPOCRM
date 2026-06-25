@@ -1,0 +1,155 @@
+{
+    "toolClassNameMap": {
+        "Export": "Espo\\Modules\\ExportImport\\Tools\\Export",
+        "Import": "Espo\\Modules\\ExportImport\\Tools\\Import",
+        "Erase": "Espo\\Modules\\ExportImport\\Tools\\Erase",
+        "Compare": "Espo\\Modules\\ExportImport\\Tools\\Compare"
+    },
+
+    "formatList": [
+        "json"
+    ],
+
+    "formatDefs": {
+        "json": {
+            "fileExtension": "json"
+        }
+    },
+
+    "exportDataProcessorClassNameMap": {
+        "json": "Espo\\Modules\\ExportImport\\Tools\\Export\\DataProcessors\\Json"
+    },
+
+    "exportCollectionClassNameMap": {
+        "Preferences": "Espo\\Modules\\ExportImport\\Tools\\Export\\Collections\\Preferences"
+    },
+
+    "exportProcessHookClassNameMap": {
+        "User": "Espo\\Modules\\ExportImport\\Tools\\Export\\ProcessHooks\\User",
+        "Attachment": "Espo\\Modules\\ExportImport\\Tools\\Export\\ProcessHooks\\Attachment"
+    },
+
+    "importDataProcessorClassNameMap": {
+        "json": "Espo\\Modules\\ExportImport\\Tools\\Import\\DataProcessors\\Json"
+    },
+
+    "importProcessHookClassNameMap": {
+        "User": "Espo\\Modules\\ExportImport\\Tools\\Import\\ProcessHooks\\User",
+        "Attachment": "Espo\\Modules\\ExportImport\\Tools\\Import\\ProcessHooks\\Attachment",
+        "Workflow": "Espo\\Modules\\ExportImport\\Tools\\Import\\ProcessHooks\\Workflow"
+    },
+
+    "importProcessAttributeClassNameMap": {
+        "id": "Espo\\Modules\\ExportImport\\Tools\\Import\\Processor\\Attributes\\Id",
+        "float": "Espo\\Modules\\ExportImport\\Tools\\Import\\Processor\\Attributes\\FloatObj",
+        "password": "Espo\\Modules\\ExportImport\\Tools\\Import\\Processor\\Attributes\\Password",
+        "datetime": "Espo\\Modules\\ExportImport\\Tools\\Import\\Processor\\Attributes\\Datetime",
+        "foreignId": "Espo\\Modules\\ExportImport\\Tools\\Import\\Processor\\Attributes\\ForeignId",
+        "jsonArray": "Espo\\Modules\\ExportImport\\Tools\\Import\\Processor\\Attributes\\JsonArray",
+        "jsonObject": "Espo\\Modules\\ExportImport\\Tools\\Import\\Processor\\Attributes\\JsonObject"
+    },
+
+    "placeholderActionClassNameMap": {
+        "Config\\Get": "Espo\\Modules\\ExportImport\\Tools\\Import\\Placeholder\\Actions\\Config\\Get",
+        "Config\\ObjectData": "Espo\\Modules\\ExportImport\\Tools\\Import\\Placeholder\\Actions\\Config\\ObjectData",
+        "DateTime\\CurrentMonth": "Espo\\Modules\\ExportImport\\Tools\\Import\\Placeholder\\Actions\\DateTime\\CurrentMonth",
+        "DateTime\\CurrentYear": "Espo\\Modules\\ExportImport\\Tools\\Import\\Placeholder\\Actions\\DateTime\\CurrentYear",
+        "DateTime\\ExportDifference": "Espo\\Modules\\ExportImport\\Tools\\Import\\Placeholder\\Actions\\DateTime\\ExportDifference",
+        "DateTime\\ExportDifferenceField": "Espo\\Modules\\ExportImport\\Tools\\Import\\Placeholder\\Actions\\DateTime\\ExportDifferenceField",
+        "User\\Active": "Espo\\Modules\\ExportImport\\Tools\\Import\\Placeholder\\Actions\\User\\Active",
+        "User\\Password": "Espo\\Modules\\ExportImport\\Tools\\Import\\Placeholder\\Actions\\User\\Password"
+    },
+
+    "eraseDataProcessorClassNameMap": {
+        "json": "Espo\\Modules\\ExportImport\\Tools\\Erase\\DataProcessors\\Json"
+    },
+
+    "eraseProcessHookClassNameMap": {
+        "User": "Espo\\Modules\\ExportImport\\Tools\\Erase\\ProcessHooks\\User",
+        "Preferences": "Espo\\Modules\\ExportImport\\Tools\\Erase\\ProcessHooks\\Preferences"
+    },
+
+    "eraseProcessAttributeClassNameMap": {
+        "id": "Espo\\Modules\\ExportImport\\Tools\\Erase\\Processor\\Attributes\\Id",
+        "foreignId": "Espo\\Modules\\ExportImport\\Tools\\Erase\\Processor\\Attributes\\ForeignId"
+    },
+
+    "compareDataProcessorClassNameMap": {
+        "json": "Espo\\Modules\\ExportImport\\Tools\\Compare\\DataProcessors\\Json"
+    },
+
+    "compareProcessHookClassNameMap": {
+        "User": "Espo\\Modules\\ExportImport\\Tools\\Compare\\ProcessHooks\\User"
+    },
+
+    "compareProcessAttributeClassNameMap": {
+        "id": "Espo\\Modules\\ExportImport\\Tools\\Compare\\Processor\\Attributes\\Id",
+        "foreignId": "Espo\\Modules\\ExportImport\\Tools\\Compare\\Processor\\Attributes\\ForeignId"
+    },
+
+    "idMappingDataProcessorClassNameMap": {
+        "json": "Espo\\Modules\\ExportImport\\Tools\\IdMapping\\DataProcessors\\Json"
+    },
+
+    "idMappingCollectionClassNameMap": {
+        "User": "Espo\\Modules\\ExportImport\\Tools\\IdMapping\\Processor\\Collections\\User",
+        "Preferences": "Espo\\Modules\\ExportImport\\Tools\\IdMapping\\Processor\\Collections\\Preferences"
+    },
+
+    "configIgnoreList": [
+        "crud",
+        "version",
+        "useCache",
+        "useCacheInDeveloperMode",
+        "isDeveloperMode",
+        "microtime",
+        "appTimestamp",
+        "cacheTimestamp",
+        "systemUserAttributes",
+        "database",
+        "logger",
+        "isInstalled",
+        "instanceId",
+        "microtimeInternal",
+        "defaultPermissions",
+        "actualDatabaseType",
+        "actualDatabaseVersion",
+        "latestVersion",
+        "siteUrl",
+        "systemItems",
+        "adminItems",
+        "superAdminItems",
+        "globalItems",
+        "userItems",
+        "requiredPhpVersion",
+        "requiredPhpLibs",
+        "recommendedPhpLibs",
+        "recommendedPhpParams",
+        "requiredMysqlVersion",
+        "recommendedMysqlParams",
+        "requiredMariadbVersion",
+        "requiredPostgresqlVersion",
+        "recommendedMariadbParams"
+    ],
+
+    "defsSource": "exportImportDefs",
+
+    "path": "./data/export-import",
+    "resultPath": "./data/export-import-result",
+    "manifestFile": "manifest.json",
+
+    "format": "json",
+    "prettyPrint": false,
+    "importType": "createAndUpdate",
+
+    "updateCurrency": false,
+    "updateCreatedAt": false,
+    "skipPassword": false,
+
+    "skipData": false,
+    "skipConfig": false,
+    "skipCustomization": false,
+    "skipInternalConfig": false,
+    "skipRelatedEntities": false,
+    "allCustomization": false
+}

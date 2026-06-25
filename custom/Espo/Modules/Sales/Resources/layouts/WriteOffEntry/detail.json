@@ -1,0 +1,54 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "number"
+                },
+                {
+                    "name": "account"
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "amount"
+                },
+                {
+                    "name": "date"
+                }
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+
+                {
+                    "name": "allocations"
+                }
+            ],
+            [
+                {
+                    "name": "unallocatedAmount"
+                },
+                false
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+
+                {
+                    "name": "description"
+                }
+            ]
+        ]
+    }
+]

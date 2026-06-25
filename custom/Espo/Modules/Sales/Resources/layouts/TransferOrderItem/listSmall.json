@@ -1,0 +1,6 @@
+[
+    {"name": "name", "link": true},
+    {"name": "transferOrder", "width": 27},
+    {"name": "quantity", "width": 6},
+    {"name": "quantityReceived", "width": 6}
+]

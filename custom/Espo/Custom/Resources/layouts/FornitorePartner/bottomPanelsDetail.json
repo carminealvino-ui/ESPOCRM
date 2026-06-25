@@ -1,0 +1,17 @@
+{
+    "activities": {
+        "disabled": true
+    },
+    "history": {
+        "disabled": true
+    },
+    "_delimiter_": {
+        "disabled": true
+    },
+    "productBrands": {
+        "index": 0
+    },
+    "quotes": {
+        "index": 1
+    }
+}

@@ -1,0 +1,36 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "product"
+                },
+                {
+                    "name": "inventoryAdjustment"
+                }
+            ],
+            [
+                {
+                    "name": "inventoryNumber"
+                },
+                {
+                    "name": "warehouse"
+                }
+            ],
+            [
+                {
+                    "name": "quantity"
+                },
+                {
+                    "name": "newQuantityOnHand"
+                }
+            ],
+            [
+                {
+                    "name": "description",
+                    "fullWidth": true
+                }
+            ]
+        ]
+    }
+]

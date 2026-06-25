@@ -1,0 +1,17 @@
+[
+    {
+        "name": "taxCode"
+    },
+    {
+        "name": "taxClass",
+        "width": 25
+    },
+    {
+        "name": "categoryCode",
+        "width": 25
+    },
+    {
+        "name": "exemptionCode",
+        "width": 25
+    }
+]

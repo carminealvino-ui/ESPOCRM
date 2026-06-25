@@ -1,0 +1,20 @@
+{
+    "items": {
+        "index": 0
+    },
+    "paymentAllocations": {
+        "index": 1
+    },
+    "installments": {
+        "index": 2
+    },
+    "creditNotes": {
+        "index": 3
+    },
+    "debitNotes": {
+        "index": 4
+    },
+    "paymentRequests": {
+        "index": 5
+    }
+}

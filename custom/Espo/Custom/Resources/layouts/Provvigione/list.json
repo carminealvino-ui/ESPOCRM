@@ -1,0 +1,14 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "tipo",
+        "width": 16
+    },
+    {
+        "name": "importo",
+        "width": 16
+    }
+]

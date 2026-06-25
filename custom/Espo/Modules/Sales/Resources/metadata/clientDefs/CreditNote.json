@@ -1,0 +1,224 @@
+{
+    "controller": "controllers/record",
+    "modelDefaultsPreparator": "modules/sales/handlers/credit-note/model-defaults-preparator",
+    "convertCurrencyDisabled": true,
+    "mergeDisabled": true,
+    "boolFilterList": ["onlyMy"],
+    "filterList": [
+        "actual",
+        {
+            "name": "resolved",
+            "style": "success"
+        }
+    ],
+    "recordViews": {
+        "detail": "sales:views/invoice/record/detail",
+        "edit": "sales:views/quote/record/edit",
+        "detailSmall": "sales:views/quote/record/detail-small",
+        "editSmall": "sales:views/quote/record/edit-small"
+    },
+    "viewSetupHandlers": {
+        "record/detail": [
+            "sales:handlers/quote/setup-record-detail",
+            "sales:handlers/credit-note/setup-record-detail",
+            "modules/sales/handlers/general/issuance-locking-setup-record-detail"
+        ],
+        "record/edit": [
+            "sales:handlers/quote/setup-record-detail",
+            "sales:handlers/credit-note/setup-record-detail",
+            "modules/sales/handlers/general/issuance-locking-setup-record-detail"
+        ]
+    },
+    "massActionDefs": {
+        "lock": {
+            "aclScope": "CreditNote",
+            "acl": "edit",
+            "handler": "sales:handlers/quote/lock-mass-action",
+            "actionFunction": "actionLock",
+            "initFunction": "initLock"
+        },
+        "unlock": {
+            "aclScope": "CreditNote",
+            "acl": "edit",
+            "handler": "sales:handlers/quote/lock-mass-action",
+            "actionFunction": "actionUnlock",
+            "initFunction": "initUnlock"
+        }
+    },
+    "massActionList": [
+        "lock",
+        "unlock"
+    ],
+    "checkAllResultMassActionList": [
+        "lock",
+        "unlock"
+    ],
+    "detailActionList": [
+        {
+            "name": "lock",
+            "acl": "edit",
+            "label": "Lock",
+            "handler": "sales:handlers/quote/lock-action",
+            "data": {
+                "handler": "sales:handlers/quote/lock-action"
+            },
+            "checkVisibilityFunction": "canBeLocked",
+            "actionFunction": "actionLock"
+        },
+        {
+            "name": "unlock",
+            "acl": "edit",
+            "label": "Unlock",
+            "handler": "sales:handlers/quote/lock-action",
+            "data": {
+                "handler": "sales:handlers/quote/lock-action"
+            },
+            "checkVisibilityFunction": "canBeUnlocked",
+            "actionFunction": "actionUnlock"
+        },
+        {
+            "name": "eInvoice",
+            "label": "E-Credit Note",
+            "handler": "modules/sales/handlers/invoice/e-invoice",
+            "checkVisibilityFunction": "isAvailable",
+            "actionFunction": "action",
+            "groupIndex": 6
+        },
+        {
+            "name": "viewTaxes",
+            "label": "View Tax Details",
+            "handler": "modules/sales/handlers/tax-code/view-taxes-action",
+            "actionFunction": "action",
+            "checkVisibilityFunction": "isVisible",
+            "groupIndex": 7
+        },
+        {
+            "name": "viewLocalAmounts",
+            "label": "View in Local Currency",
+            "handler": "modules/sales/handlers/invoice/view-local-amounts",
+            "actionFunction": "action",
+            "checkVisibilityFunction": "isVisible",
+            "groupIndex": 7
+        }
+    ],
+    "bottomPanels": {
+        "detail": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "sales:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            },
+            {
+                "name": "paymentAllocations",
+                "view": "modules/sales/views/invoice/record/panels/payment-allocations"
+            }
+        ],
+        "edit": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "sales:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "detailSmall": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "editSmall": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ]
+    },
+    "relationshipPanels": {
+        "account": {
+            "selectMandatoryAttributeList": [
+                "priceBookIsTaxInclusive"
+            ],
+            "selectFieldHandler": "modules/sales/handlers/credit-note/select-account-field"
+        },
+        "tax": {
+            "selectMandatoryAttributeList": [
+                "rate",
+                "basis",
+                "taxCodeId",
+                "taxCodeName",
+                "shippingMode"
+            ],
+            "selectFieldHandler": "modules/sales/handlers/quote/select-tax-field"
+        }
+    },
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.CreditNoteItem",
+                    "link": "#CreditNoteItem",
+                    "acl": "read",
+                    "aclScope": "CreditNoteItem"
+                },
+                false,
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.Template",
+                    "link": "#Template",
+                    "acl": "read",
+                    "aclScope": "Template"
+                }
+            ]
+        },
+        "detail": {
+            "buttons": [
+                {
+                    "name": "createPayment",
+                    "labelTranslation": "PaymentEntry.labels.Create PaymentEntry",
+                    "acl": "edit",
+                    "accessDataList": [
+                        {
+                            "scope": "PaymentEntry",
+                            "action": "create"
+                        }
+                    ],
+                    "handler": "modules/sales/handlers/invoice/create-payment-button",
+                    "checkVisibilityFunction": "isAvailable",
+                    "actionFunction": "action",
+                    "iconClass": "fas fa-circle-dollar-to-slot fa-sm"
+                }
+            ]
+        }
+    },
+    "additionalLayouts": {
+        "detailBottomTotal": {
+            "type": "list",
+            "dataAttributeList": ["name", "view", "customLabel"]
+        },
+        "listForAccount": {
+            "type": "list"
+        },
+        "listForAllocationSelect": {
+            "type": "list"
+        }
+    },
+    "calculationHandler": "sales:quote-calculation-handler",
+    "iconClass": "fas fa-file-circle-minus"
+}

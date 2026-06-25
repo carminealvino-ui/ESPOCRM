@@ -1,0 +1,179 @@
+{
+    "fields": {
+        "rate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "type",
+                        "value": "Percentage"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "type",
+                        "value": "Percentage"
+                    }
+                ]
+            }
+        },
+        "amount": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "type",
+                        "value": "Fixed"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "type",
+                        "value": "Fixed"
+                    }
+                ]
+            }
+        },
+        "items": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "type",
+                        "value": "Composite"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "type",
+                        "value": "Composite"
+                    }
+                ]
+            }
+        },
+        "applyToProportionalShipping": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "type",
+                        "value": "Percentage"
+                    }
+                ]
+            }
+        },
+        "includedInPrice": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "type",
+                        "value": [
+                            "Percentage",
+                            "Fixed"
+                        ]
+                    }
+                ]
+            }
+        },
+        "base": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "type",
+                        "value": [
+                            "Percentage"
+                        ]
+                    }
+                ]
+            }
+        },
+        "roundingLevel": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "type",
+                        "value": [
+                            "Percentage"
+                        ]
+                    }
+                ]
+            }
+        },
+        "roundingFactor": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "roundingLevel",
+                        "value": [
+                            "Total"
+                        ]
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "type",
+                        "value": [
+                            "Percentage"
+                        ]
+                    }
+                ]
+            }
+        },
+        "country": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "type",
+                        "value": [
+                            "Percentage",
+                            "Fixed"
+                        ]
+                    }
+                ]
+            }
+        },
+        "label": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "type",
+                        "value": [
+                            "Percentage",
+                            "Fixed"
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "panels": {
+        "nonComposite": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "type",
+                        "value": [
+                            "Percentage",
+                            "Fixed"
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

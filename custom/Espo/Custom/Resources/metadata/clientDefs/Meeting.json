@@ -1,0 +1,15 @@
+{
+    "kanbanViewMode": false,
+    "color": "#5ab1c4",
+    "iconClass": "fas fa-calendar-check",
+    "relationshipPanels": {
+        "appuntamenti": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        },
+        "appuntamento": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        }
+    }
+}

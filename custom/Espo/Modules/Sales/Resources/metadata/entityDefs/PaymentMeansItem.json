@@ -1,0 +1,52 @@
+{
+    "fields": {
+        "order": {
+            "type": "int",
+            "readOnly": true
+        },
+        "source": {
+            "type": "linkParent",
+            "entityList": [
+                "Invoice"
+            ],
+            "required": true,
+            "readOnly": true
+        },
+        "channel": {
+            "type": "link",
+            "required": true,
+            "readOnly": true
+        },
+        "mandate": {
+            "type": "link",
+            "readOnly": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true,
+            "index": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "source": {
+            "type": "belongsToParent"
+        },
+        "channel": {
+            "type": "belongsTo",
+            "entity": "PaymentChannel"
+        },
+        "mandate": {
+            "type": "belongsTo",
+            "entity": "PaymentMandate",
+            "foreignName": "referenceId"
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc"
+    }
+}

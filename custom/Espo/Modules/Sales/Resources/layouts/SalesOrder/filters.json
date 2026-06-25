@@ -1,0 +1,22 @@
+[
+    "status",
+    "account",
+    "opportunity",
+    "quote",
+    "assignedUser",
+    "teams",
+    "createdAt",
+    "createdBy",
+    "dateOrdered",
+    "number",
+    "amountConverted",
+    "grandTotalAmountConverted",
+    "priceBook",
+    "isTaxInclusive",
+    "isDeliveryCreated",
+    "products",
+    "shippingProvider",
+    "tax",
+    "isLocked",
+    "isHardLocked"
+]

@@ -1,0 +1,32 @@
+{
+    "scopeNames": {
+        "Product": "Produkts",
+        "ProductCategory": "Produktu kategorija",
+        "ProductBrand": "Produkta zīmols",
+        "ReportCategory": "Ziņojuma kategorija",
+        "Quote": "Citēt",
+        "QuoteItem": "Citāts postenis",
+        "SalesOrder": "Pārdošanas pasūtījums",
+        "SalesOrderItem": "Pārdošanas pasūtījuma vienība",
+        "Invoice": "Rēķins",
+        "InvoiceItem": "Rēķina postenis",
+        "Tax": "Nodokļi",
+        "ShippingProvider": "Piegādes pakalpojumu sniedzējs",
+        "OpportunityItem": "Iespēju postenis"
+    },
+    "scopeNamesPlural": {
+        "Product": "Produkti",
+        "ProductCategory": "Produktu kategorijas",
+        "ReportCategory": "Pārskatu kategorijas",
+        "Quote": "Citāti",
+        "QuoteItem": "Citāšu elementi",
+        "SalesOrder": "Pārdošanas pasūtījumi",
+        "SalesOrderItem": "Pārdošanas pasūtījuma posteņi",
+        "Invoice": "Rēķini",
+        "InvoiceItem": "Rēķina posteņi",
+        "Tax": "Nodokļi",
+        "ShippingProvider": "Piegādes pakalpojumu sniedzēji",
+        "OpportunityItem": "Iespēju priekšmeti",
+        "ProductBrand": "Produktu zīmoli"
+    }
+}

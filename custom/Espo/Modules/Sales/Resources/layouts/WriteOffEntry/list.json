@@ -1,0 +1,29 @@
+[
+    {
+        "name": "number",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 12
+    },
+    {
+        "name": "account",
+        "width": 22
+    },
+    {
+        "name": "date",
+        "width": 14
+    },
+    {
+        "name": "unallocatedAmount",
+        "width": 14,
+        "align": "right",
+        "hidden": true
+    },
+    {
+        "name": "amount",
+        "width": 14,
+        "align": "right"
+    }
+]

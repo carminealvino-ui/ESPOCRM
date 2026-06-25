@@ -1,0 +1,446 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "utility": true,
+            "select": {
+                "select": "number"
+            }
+        },
+        "number": {
+            "type": "varchar",
+            "maxLength": 100,
+            "index": true,
+            "readOnly": true,
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "useAutoincrement",
+                    "type": "bool"
+                }
+            ],
+            "fieldManagerParamList": [
+                "useAutoincrement",
+                "required",
+                "readOnly",
+                "readOnlyAfterCreate",
+                "audited",
+                "pattern",
+                "copyToClipboard",
+                "inlineEditDisabled"
+            ],
+            "dynamicLogicDisabled": true,
+            "useAutoincrement": true,
+            "duplicateIgnore": true
+        },
+        "numberA": {
+            "type": "number",
+            "prefix": "PT-",
+            "padLength": 5,
+            "layoutAvailabilityList": [],
+            "textFilterDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true,
+            "suppressHook": true
+        },
+        "numberDraftA": {
+            "type": "number",
+            "prefix": "PRE-PT-",
+            "padLength": 5,
+            "layoutAvailabilityList": [],
+            "textFilterDisabled": true,
+            "directAccessDisabled": true,
+            "fieldManagerParamList": [
+                "prefix",
+                "nextNumber",
+                "padLength"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true,
+            "suppressHook": true
+        },
+        "transactionId": {
+            "type": "varchar",
+            "maxLength": 64,
+            "index": true,
+            "audited": true,
+            "duplicateIgnore": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Draft",
+                "In Progress",
+                "Paid",
+                "Completed",
+                "Canceled"
+            ],
+            "style": {
+                "In Progress": "warning",
+                "Paid": "primary",
+                "Completed": "success",
+                "Canceled": "info"
+            },
+            "default": "Draft",
+            "displayAsLabel": true,
+            "labelType": "state",
+            "index": true,
+            "maxLength": 11,
+            "fieldManagerParamList": [
+                "default",
+                "readOnly",
+                "readOnlyAfterCreate",
+                "audited",
+                "inlineEditDisabled"
+            ],
+            "audited": true,
+            "duplicateIgnore": true,
+            "view": "modules/sales/views/general/fields/status"
+        },
+        "type": {
+            "type": "enum",
+            "options": [
+                "Inbound",
+                "Outbound"
+            ],
+            "default": "Inbound",
+            "maxLength": 8,
+            "readOnlyAfterCreate": true,
+            "fieldManagerParamList": [
+                "default"
+            ]
+        },
+        "partyType": {
+            "type": "enum",
+            "options": [
+                "Customer",
+                "Supplier"
+            ],
+            "default": "Customer",
+            "maxLength": 8,
+            "readOnlyAfterCreate": true,
+            "fieldManagerParamList": [
+                "tooltipText",
+                "default"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "account": {
+            "type": "link",
+            "audited": true,
+            "dynamicLogicDisabled": true
+        },
+        "supplier": {
+            "type": "link",
+            "audited": true,
+            "dynamicLogicDisabled": true
+        },
+        "datePaid": {
+            "type": "date",
+            "audited": true,
+            "forceValidation": true,
+            "default": "javascript: return this.dateTime.getToday();",
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PaymentEntry\\DatePaid\\RequiredIfPaid"
+            ]
+        },
+        "postingDate": {
+            "type": "date",
+            "after": "datePaid",
+            "afterOrEqual": true,
+            "duplicateIgnore": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "method": {
+            "type": "link",
+            "required": true,
+            "autocompleteOnEmpty": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "default",
+                "tooltipText",
+                "autocompleteOnEmpty"
+            ],
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PaymentEntry\\Method\\ActiveAndAppropriate"
+            ],
+            "dynamicLogicVisibleDisabled": true,
+            "dynamicLogicRequiredDisabled": true
+        },
+        "amount": {
+            "type": "currency",
+            "min": 0,
+            "decimal": true,
+            "required": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText",
+                "inlineEditDisabled"
+            ]
+        },
+        "amountLocal": {
+            "type": "currency",
+            "decimal": true,
+            "readOnly": true,
+            "conversionDisabled": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "currencyRate": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "audited": true,
+            "min": 0.0001,
+            "precision": 20,
+            "scale": 8,
+            "decimalPlaces": 6,
+            "validationList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\General\\Decimal\\Valid",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\General\\Decimal\\Range"
+            ],
+            "layoutAvailabilityList": [
+                "list",
+                "detail"
+            ],
+            "view": "modules/sales/views/fields/currency-rate",
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "amountCurrency": {
+            "type": "enum",
+            "customizationDisabled": true
+        },
+        "amountLocalCurrency": {
+            "type": "enum",
+            "customizationDisabled": true
+        },
+        "isLocked": {
+            "type": "bool",
+            "readOnly": true,
+            "audited": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "view": "modules/sales/views/quote/fields/is-locked"
+        },
+        "isDone": {
+            "type": "bool",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true
+        },
+        "isNotActual": {
+            "type": "bool",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true
+        },
+        "isIssued": {
+            "type": "bool",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "audited",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true,
+            "view": "modules/sales/views/quote/fields/is-issued"
+        },
+        "wasIssued": {
+            "type": "bool",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "directUpdateDisabled": true,
+            "dynamicLogicDisabled": true,
+            "duplicateIgnore": true
+        },
+        "issuedBy": {
+            "type": "link",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "duplicateIgnore": true
+        },
+        "issuedAt": {
+            "type": "datetime",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "duplicateIgnore": true
+        },
+        "unallocatedAmount": {
+            "type": "currency",
+            "notStorable": true,
+            "readOnly": true,
+            "importDisabled": true,
+            "orderDisabled": true,
+            "directAccessDisabled": true,
+            "dynamicLogicDisabled": true,
+            "directUpdateDisabled": true,
+            "foreignAccessDisabled": true,
+            "customizationReadOnlyDisabled": true,
+            "conversionDisabled": true,
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentEntry\\UnallocatedAmount",
+            "fieldManagerParamList": [],
+            "duplicateIgnore": true,
+            "filtersEnabled": true,
+            "listColumnEnabled": true
+        },
+        "unallocatedAmountConverted": {
+            "type": "currencyConverted",
+            "readOnly": true,
+            "customizationDisabled": true,
+            "utility": true
+        },
+        "unallocatedAmountCurrency": {
+            "type": "enum",
+            "readOnly": true,
+            "customizationDisabled": true,
+            "utility": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "allocations": {
+            "type": "jsonArray",
+            "view": "modules/sales/views/payment-entry/fields/allocations",
+            "notStorable": true,
+            "massUpdateDisabled": true,
+            "forceValidation": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PaymentEntry\\Allocations\\Valid",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PaymentEntry\\Allocations\\SameCurrencyAsAmount",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\PaymentEntry\\Allocations\\OnlyIfPaid"
+            ],
+            "loaderClassName": "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\PaymentEntry\\Allocations",
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "audited",
+                    "type": "bool"
+                }
+            ],
+            "audited": true,
+            "duplicateIgnore": true
+        },
+        "request": {
+            "type": "link",
+            "audited": true
+        },
+        "teams": {
+            "type": "linkMultiple",
+            "audited": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "method": {
+            "type": "belongsTo",
+            "entity": "PaymentMethod",
+            "foreign": "paymentEntries"
+        },
+        "account": {
+            "type": "belongsTo",
+            "entity": "Account",
+            "foreign": "paymentEntries"
+        },
+        "supplier": {
+            "type": "belongsTo",
+            "entity": "Supplier",
+            "foreign": "paymentEntries"
+        },
+        "allocations": {
+            "type": "hasMany",
+            "entity": "PaymentAllocation",
+            "foreign": "paymentEntry",
+            "readOnly": true,
+            "customizationDisabled": true,
+            "layoutRelationshipsDisabled": true,
+            "orderBy": "number",
+            "order": "asc"
+        },
+        "request": {
+            "type": "belongsTo",
+            "entity": "PaymentRequest",
+            "foreign": "paymentEntries",
+            "foreignName": "number"
+        },
+        "teams": {
+            "type": "hasMany",
+            "entity": "Team",
+            "relationName": "entityTeam",
+            "layoutRelationshipsDisabled": true
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "issuedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc",
+        "textFilterFields": [
+            "number",
+            "transactionId"
+        ]
+    },
+    "indexes": {
+        "createdAt": {
+            "columns": [
+                "createdAt"
+            ]
+        }
+    },
+    "optimisticConcurrencyControl": true
+}

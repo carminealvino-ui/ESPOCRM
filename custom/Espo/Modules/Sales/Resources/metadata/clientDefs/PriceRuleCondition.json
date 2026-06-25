@@ -1,0 +1,5 @@
+{
+    "controller": "controllers/record",
+    "searchPanelDisabled": true,
+    "mergeDisabled": true
+}

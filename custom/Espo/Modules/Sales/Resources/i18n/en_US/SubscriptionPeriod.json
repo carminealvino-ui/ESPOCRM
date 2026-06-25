@@ -1,0 +1,50 @@
+{
+    "labels": {
+        "Create SubscriptionPeriod": "Create Period"
+    },
+    "fields": {
+        "startDate": "Start Date",
+        "endDate": "End Date",
+        "type": "Type",
+        "subscription": "Subscription",
+        "status": "Status",
+        "billingStatus": "Billing Status",
+        "invoiceAutomatically": "Invoice Automatically",
+        "holdUntilBillingComplete": "Activate only if Paid",
+        "timeline": "Date Range"
+    },
+    "links": {
+        "subscription": "Subscription",
+        "invoices": "Invoices"
+    },
+    "options": {
+        "status": {
+            "Scheduled": "Scheduled",
+            "Active": "Active",
+            "Ended": "Ended",
+            "Canceled": "Canceled"
+        },
+        "type": {
+            "Regular": "Regular",
+            "Trial": "Trial",
+            "Pause": "Pause"
+        },
+        "billingStatus": {
+            "Invoiced": "Invoiced",
+            "Paid": "Paid",
+            "Canceled": "Canceled"
+        }
+    },
+    "tooltips": {
+        "endDate": "An exclusive date. The next period starts on this date.",
+        "holdUntilBillingComplete": "If unchecked, the subscription always switches to Active at the start of the period.\n\nIf checked, switching to Active also requires Billing Status to be Completed."
+    },
+    "actions": {
+        "processBilling": "Process Billing"
+    },
+    "otherFields": {
+        "createPaymentRequest": "Create Payment Request",
+        "sendPaymentRequest": "Send Payment Request",
+        "sendInvoice": "Send Invoice"
+    }
+}

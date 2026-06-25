@@ -1,0 +1,7 @@
+{
+    "ownershipCheckerClassName": "Espo\\Modules\\Sales\\Classes\\Acl\\SubscriptionUpdate\\OwnershipChecker",
+    "portalOwnershipCheckerClassName": "Espo\\Modules\\Sales\\Classes\\AclPortal\\SubscriptionUpdate\\OwnershipChecker",
+    "accessCheckerClassName": "Espo\\Modules\\Sales\\Classes\\Acl\\SubscriptionUpdate\\AccessChecker",
+    "portalAccessCheckerClassName": "Espo\\Modules\\Sales\\Classes\\AclPortal\\SubscriptionUpdate\\AccessChecker",
+    "link": "subscription"
+}

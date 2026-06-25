@@ -1,0 +1,9 @@
+{
+  "fields": {
+    "outlookCalendar": "Календарь",
+    "outlookContacts": "Контакты"
+  },
+  "help": {
+    "Outlook": "Получите OAuth credentials в [Azure Active Directory admin center](https://aad.portal.azure.com)."
+  }
+}

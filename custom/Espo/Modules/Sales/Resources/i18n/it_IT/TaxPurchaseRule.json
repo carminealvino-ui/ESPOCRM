@@ -1,0 +1,23 @@
+{
+  "labels": {
+    "Create TaxPurchaseRule": "Crea regola di tassazione per acquisti"
+  },
+  "fields": {
+    "logic": "Condizioni",
+    "tax": "Profilo fiscale",
+    "status": "Stato",
+    "order": "Ordine"
+  },
+  "links": {
+    "tax": "Profilo fiscale"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  },
+  "presetFilters": {
+    "active": "Attivo"
+  }
+}

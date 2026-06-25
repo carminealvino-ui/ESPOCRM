@@ -1,0 +1,39 @@
+{
+  "labels": {
+    "Create Product": "Vytvořit produkt",
+    "Price": "Cena",
+    "Brands": "Značky",
+    "Categories": "Kategorie"
+  },
+  "fields": {
+    "status": "Status",
+    "brand": "Značka",
+    "partNumber": "Číslo dílu",
+    "category": "Kategorie",
+    "pricingType": "Typ cenění",
+    "pricingFactor": "Faktor cenění",
+    "costPrice": "Výrobní cena",
+    "listPrice": "Katalogová cena",
+    "unitPrice": "Jednotková cena",
+    "costPriceConverted": "Výrobní cena (převedená)",
+    "listPriceConverted": "Katalogová cena (převedená)",
+    "unitPriceConverted": "Jednotková cena (převedená)",
+    "url": "URL"
+  },
+  "links": {
+    "brand": "Značka",
+    "category": "Kategorie"
+  },
+  "options": {
+    "pricingType": {
+      "Same as List": "Totožný s ceníkem",
+      "Fixed": "Stálý",
+      "Discount from List": "Sleva z ceníku",
+      "Markup over Cost": "Nákladová přirážka",
+      "Profit Margin": "Marže"
+    }
+  },
+  "presetFilters": {
+    "available": "K dispozici"
+  }
+}

@@ -1,0 +1,35 @@
+{
+    "fields": {
+        "name": "Nosaukums",
+        "qty": "Daudzums",
+        "quantity": "Daudzums",
+        "quantityInt": "Daudzums (Int)",
+        "listPrice": "Saraksta cena",
+        "unitPrice": "Vienības cena",
+        "amount": "Summa",
+        "taxRate": "Nodokļa likme",
+        "product": "Produkts",
+        "order": "Līnijas numurs",
+        "invoice": "Rēķins",
+        "weight": "Svars",
+        "unitWeight": "Vienības svars",
+        "description": "Apraksts",
+        "discount": "Atlaide (%)",
+        "amountConverted": "Summa (konvertētā)",
+        "unitPriceConverted": "Vienības cena (konvertēta)",
+        "listPriceConverted": "Saraksta cena (konvertēta)",
+        "account": "Konts",
+        "listPriceCurrency": "Saraksta cena Valūta",
+        "unitPriceCurrency": "Vienības cena Valūta",
+        "amountCurrency": "Summa Valūta",
+        "invoiceStatus": "Rēķina statuss"
+    },
+    "links": {
+        "invoice": "Rēķins",
+        "product": "Produkts",
+        "account": "Konts"
+    },
+    "labels": {
+        "Invoices": "Rēķini"
+    }
+}

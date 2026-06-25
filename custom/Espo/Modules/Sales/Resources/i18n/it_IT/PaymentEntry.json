@@ -1,0 +1,77 @@
+{
+  "labels": {
+    "Create PaymentEntry": "Creare pagamento",
+    "View Cash Basis Taxes": "Visualizza imposte per cassa",
+    "Cash Basis Taxes": "Imposte per cassa"
+  },
+  "fields": {
+    "number": "Numero",
+    "numberA": "Numero (incrementato automaticamente)",
+    "account": "Cliente",
+    "supplier": "Fornitore",
+    "status": "Stato",
+    "type": "Tipo",
+    "partyType": "Tipo soggetto",
+    "transactionId": "ID transazione",
+    "datePaid": "Data Pagato",
+    "method": "Metodo",
+    "amount": "Importo",
+    "amountConverted": "Importo (convertito)",
+    "amountCurrency": "Importo Valuta",
+    "allocations": "Assegnazioni",
+    "unallocatedAmount": "Importo non assegnato",
+    "request": "Richiesta",
+    "amountLocal": "Importo in valuta locale",
+    "amountLocalCurrency": "Importo in valuta locale",
+    "amountLocalConverted": "Importo in valuta locale (convertito)"
+  },
+  "links": {
+    "method": "Metodo",
+    "account": "Cliente",
+    "supplier": "Fornitore",
+    "allocations": "Assegnazioni",
+    "request": "Richiesta"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "In Progress": "In Corso",
+      "Paid": "Pagato",
+      "Completed": "Completato",
+      "Canceled": "Annullato"
+    },
+    "type": {
+      "Inbound": "In entrata",
+      "Outbound": "In uscita"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperto",
+    "completed": "Completato"
+  },
+  "otherFields": {
+    "allocatedAmount": "Importo assegnato",
+    "target": "Destinazione"
+  },
+  "messages": {
+    "allocationsOnlyIfPaid": "Impossibile cambiare stato: prima occorre rimuovere le allocazioni.",
+    "unallocatedAmountMustBeZero": "Impossibile completare: l'importo della transazione deve essere interamente allocato.",
+    "unallocatedAmountMustNotBeLessThanZero": "L'importo allocato non può superare l'importo della transazione.",
+    "cannotAllocateMoreThanOnce": "Non è possibile allocare più di una volta alla stessa entità.",
+    "draftCannotHaveAllocations": "La bozza non può avere allocazioni.",
+    "requestIsLocked": "La richiesta di pagamento è bloccata.",
+    "allocationTargetAccountMismatch": "La destinazione dell'allocazione è collegata a un'azienda diversa.",
+    "allocationTargetSupplierMismatch": "La destinazione dell'allocazione è collegata a un fornitore diverso.",
+    "allocationTargetCurrencyMismatch": "La valuta della destinazione non corrisponde.",
+    "allocationTargetLocalCurrencyMismatch": "La destinazione dell'allocazione ha una valuta locale diversa.",
+    "allocationTargetIsNotOpen": "La valuta della destinazione non corrisponde.",
+    "allocationTargetIsLocked": "La destinazione dell’assegnazione è bloccata.",
+    "noEditAccessToAllocationTarget": "Nessun accesso in modifica alla destinazione dell’assegnazione.",
+    "allocationTargetNotAllowed": "La destinazione dell’assegnazione non è consentita",
+    "allocationTargetNotFound": "Destinazione dell’assegnazione non trovata.",
+    "removedAllocationTargetIsNotOpen": "Non è possibile rimuovere l'allocazione da una destinazione non aperta.",
+    "removedAllocationTargetIsLocked": "Non è possibile rimuovere l'allocazione da una destinazione bloccata.",
+    "cannotConvertWithAllocations": "Impossibile convertire la valuta se il pagamento ha assegnazioni.",
+    "cannotAllocateToNonIssuedTarget": "Non è possibile allocare a un documento non emesso."
+  }
+}

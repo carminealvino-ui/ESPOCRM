@@ -1,0 +1,32 @@
+{
+  "options": {
+    "calendarDirection": {
+      "EspoToOutlook": "Unidirectionnel : EspoCRM vers le calendrier Outlook",
+      "OutlookToEspo": "Unidirectionnel : calendrier Outlook vers EspoCRM",
+      "Both": "Bidirectionnel"
+    }
+  },
+  "messages": {
+    "disconnectConfirmation": "Voulez-vous vraiment vous déconnecter ?",
+    "noOutlookPanels": "Aucun service Outlook disponible."
+  },
+  "fields": {
+    "calendarStartDate": "Synchroniser depuis",
+    "calendarEntityTypes": "Synchroniser les entités et les étiquettes d'identification",
+    "calendarMonitoredCalendars": "Autres calendriers",
+    "calendarMainCalendar": "Calendrier principal",
+    "calendarDefaultEntity": "Entité par défaut",
+    "contactsGroups": "Ajouter des contacts à des groupes",
+    "dontSyncEventAttendees": "Ne pas synchroniser les participants à l'événement",
+    "removeOutlookCalendarEventIfRemovedInEspo": "Supprimer l'événement Outlook lors de la suppression dans EspoCRM",
+    "contactFolder": "Dossier de contacts",
+    "calendarCreateContacts": "Créer des contacts pour les participants dans EspoCRM",
+    "calendarSkipPrivate": "Ne pas synchroniser les événements privés",
+    "calendarDontPushPastEvents": "Ne pas transmettre d'anciens événements à Outlook"
+  },
+  "tooltips": {
+    "calendarEntityTypes": "Pour le type, la reconnaissance du nom de l'événement doit commencer par l'étiquette d'identification. L'étiquette de l'entité par défaut peut être vide. Recommandation : ne modifiez pas les étiquettes d'identification après avoir enregistré le paramètre de synchronisation",
+    "calendarDefaultEntity": "L'événement non reconnu sera chargé en tant qu'entité sélectionnée.",
+    "calendarDontPushPastEvents": "Si cette case est cochée, seuls les événements récemment créés seront transférés vers Outlook."
+  }
+}

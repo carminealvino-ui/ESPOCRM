@@ -1,0 +1,4 @@
+{
+    "accessCheckerClassName": "Espo\\Modules\\Sales\\Classes\\Acl\\RoundingProfile\\AccessChecker",
+    "portalAccessCheckerClassName": "Espo\\Modules\\Sales\\Classes\\AclPortal\\RoundingProfile\\AccessChecker"
+}

@@ -1,0 +1,10 @@
+{
+  "links": {
+    "quotes": "Предложения",
+    "quoteItems": "Пункты предложения",
+    "salesOrders": "Заказы",
+    "salesOrderItems": "Пункты заказа",
+    "invoices": "Счёт-фактуры",
+    "invoiceItems": "Пункты счёт-фактуры"
+  }
+}

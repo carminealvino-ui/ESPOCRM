@@ -1,0 +1,21 @@
+{
+    "entity": true,
+    "tab": true,
+    "acl": true,
+    "aclPortal": false,
+    "aclLevelList": ["all", "team", "own", "no"],
+    "module": "Sales",
+    "customizable": true,
+    "layouts": true,
+    "importable": true,
+    "notifications": false,
+    "object": true,
+    "preserveAuditLog": true,
+    "lockableFieldList": [
+        "status",
+        "itemList",
+        "warehouse",
+        "date",
+        "reason"
+    ]
+}

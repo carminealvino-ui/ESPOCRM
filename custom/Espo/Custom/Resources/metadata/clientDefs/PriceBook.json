@@ -1,0 +1,7 @@
+{
+    "relationshipPanels": {
+        "taxCode": {
+            "selectPrimaryFilterName": "salesNonComposite"
+        }
+    }
+}

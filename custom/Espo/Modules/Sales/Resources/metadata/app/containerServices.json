@@ -1,0 +1,5 @@
+{
+    "salesBeforeSaveProcessor": {
+        "className": "Espo\\Modules\\Sales\\Tools\\Quote\\BeforeSaveProcessor"
+    }
+}

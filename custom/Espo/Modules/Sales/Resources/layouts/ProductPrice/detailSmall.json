@@ -1,0 +1,48 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "product"
+                }
+            ],
+            [
+                {
+                    "name": "priceBook"
+                }
+            ],
+            [
+                {
+                    "name": "interval"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "price"
+                },
+                {
+                    "name": "status"
+                }
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "minQuantity"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "dateStart"
+                },
+                {
+                    "name": "dateEnd"
+                }
+            ]
+        ]
+    }
+]

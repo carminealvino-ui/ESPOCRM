@@ -1,0 +1,154 @@
+{
+    "controller": "controllers/record",
+    "filterList": [
+        "actual",
+        {
+            "name": "paid",
+            "style": "success"
+        }
+    ],
+    "nameAttribute": "number",
+    "mergeDisabled": true,
+    "convertCurrencyDisabled": true,
+    "viewSetupHandlers": {
+        "list": ["sales:handlers/info"],
+        "record/detail": ["modules/sales/handlers/payment-request/setup-record-detail"],
+        "record/edit": ["modules/sales/handlers/payment-request/setup-record-detail"]
+    },
+    "relationshipPanels": {
+        "account": {
+            "selectMandatoryAttributeList": [
+                "paymentMethodsIds",
+                "paymentMethodsNames",
+                "paymentMethodsColumns",
+                "paymentMethodId",
+                "paymentMethodName"
+            ],
+            "selectFieldHandler": "modules/sales/handlers/payment-request/select-account-field"
+        },
+        "paymentEntries": {
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "createAttributeMap": {
+                "methodId": "methodId",
+                "methodName": "methodName",
+                "accountId": "accountId",
+                "accountName": "accountName"
+            },
+            "layout": "listForRequest"
+        },
+        "invoices": {
+            "selectPrimaryFilterName": "actual",
+            "selectHandler": "modules/sales/handlers/select-same-account",
+            "selectMandatoryAttributeList": [
+                "amountDue",
+                "amountDueCurrency"
+            ]
+        },
+        "method": {
+            "selectPrimaryFilterName": "activeInbound"
+        }
+    },
+    "detailActionList": [
+        {
+            "name": "composeEmail",
+            "label": "Send in Email",
+            "handler": "modules/sales/handlers/payment-request/record-actions",
+            "actionFunction": "composeEmail",
+            "checkVisibilityFunction": "hasComposeEmail",
+            "acl": "edit",
+            "groupIndex": 6
+        },
+        {
+            "name": "lock",
+            "acl": "edit",
+            "label": "Lock",
+            "handler": "sales:handlers/quote/lock-action",
+            "data": {
+                "handler": "sales:handlers/quote/lock-action"
+            },
+            "checkVisibilityFunction": "canBeLocked",
+            "actionFunction": "actionLock",
+            "groupIndex": 10
+        },
+        {
+            "name": "unlock",
+            "acl": "edit",
+            "label": "Unlock",
+            "handler": "sales:handlers/quote/lock-action",
+            "data": {
+                "handler": "sales:handlers/quote/lock-action"
+            },
+            "checkVisibilityFunction": "canBeUnlocked",
+            "actionFunction": "actionUnlock",
+            "groupIndex": 10
+        },
+        {
+            "name": "generateNewReferenceId",
+            "label": "Generate new reference ID",
+            "handler": "modules/sales/handlers/payment-request/record-actions",
+            "actionFunction": "generateNewReferenceId",
+            "checkVisibilityFunction": "hasGenerateNewReferenceId",
+            "acl": "edit",
+            "groupIndex": 11
+        }
+    ],
+    "massActionDefs": {
+        "lock": {
+            "aclScope": "PaymentRequest",
+            "acl": "edit",
+            "handler": "sales:handlers/quote/lock-mass-action",
+            "actionFunction": "actionLock",
+            "initFunction": "initLock"
+        },
+        "unlock": {
+            "aclScope": "PaymentRequest",
+            "acl": "edit",
+            "handler": "sales:handlers/quote/lock-mass-action",
+            "actionFunction": "actionUnlock",
+            "initFunction": "initUnlock"
+        }
+    },
+    "massActionList": [
+        "lock",
+        "unlock"
+    ],
+    "checkAllResultMassActionList": [
+        "lock",
+        "unlock"
+    ],
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "link": "#PaymentEntry",
+                    "labelTranslation": "Global.scopeNamesPlural.PaymentEntry",
+                    "aclScope": "PaymentEntry"
+                },
+                false,
+                {
+                    "link": "#PaymentMethod",
+                    "labelTranslation": "Global.scopeNamesPlural.PaymentMethod",
+                    "aclScope": "PaymentMethod"
+                },
+                {
+                    "link": "#PaymentChannel",
+                    "labelTranslation": "Global.scopeNamesPlural.PaymentChannel",
+                    "aclScope": "PaymentChannel"
+                }
+            ]
+        },
+        "detail": {
+            "buttons": [
+                {
+                    "name": "generateSepaXml",
+                    "labelTranslation": "PaymentRequest.strings.generateSepaXml",
+                    "handler": "modules/sales/handlers/payment-request/generate-sepa-xml",
+                    "actionFunction": "generate",
+                    "checkVisibilityFunction": "has"
+                }
+            ]
+        }
+    },
+    "iconClass": "fas fa-money-check-dollar"
+}

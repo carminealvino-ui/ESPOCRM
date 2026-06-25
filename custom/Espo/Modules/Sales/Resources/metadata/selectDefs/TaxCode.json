@@ -1,0 +1,22 @@
+{
+    "primaryFilterClassNameMap": {
+        "active": "Espo\\Modules\\Sales\\Classes\\Select\\TaxCode\\PrimaryFilters\\Active",
+        "selectableSales": "Espo\\Modules\\Sales\\Classes\\Select\\TaxCode\\PrimaryFilters\\SelectableSales",
+        "selectablePurchases": "Espo\\Modules\\Sales\\Classes\\Select\\TaxCode\\PrimaryFilters\\SelectablePurchases",
+        "groupable": "Espo\\Modules\\Sales\\Classes\\Select\\TaxCode\\PrimaryFilters\\Groupable",
+        "salesNonComposite": "Espo\\Modules\\Sales\\Classes\\Select\\TaxCode\\PrimaryFilters\\SalesNonComposite",
+        "purchaseNonComposite": "Espo\\Modules\\Sales\\Classes\\Select\\TaxCode\\PrimaryFilters\\PurchaseNonComposite"
+    },
+    "selectAttributesDependencyMap": {
+        "id": [
+            "code"
+        ],
+        "taxDisplay": [
+            "rate",
+            "taxCodeId",
+            "taxCodeName"
+        ]
+    },
+    "accessControlFilterResolverClassName": "Espo\\Modules\\Sales\\Classes\\Select\\TaxCode\\FilterResolver",
+    "portalAccessControlFilterResolverClassName": "Espo\\Modules\\Sales\\Classes\\Select\\TaxCode\\PortalFilterResolver"
+}

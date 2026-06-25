@@ -1,0 +1,24 @@
+{
+    "massActionList": ["__APPEND__", "pushToOutlook"],
+    "checkAllResultMassActionList": ["__APPEND__", "pushToOutlook"],
+    "massActionDefs": {
+        "pushToOutlook": {
+            "confirmationMessage": "confirmationOutlookContactsPush",
+            "successMessage": "successOutlookContactsPush",
+            "url": "OutlookContacts/action/push",
+            "aclScope": "OutlookContacts",
+            "configCheck": "integrations.Outlook"
+        }
+    },
+    "detailActionList": [
+        "__APPEND__",
+        {
+            "name": "pushToOutlook",
+            "data": {
+                "handler": "outlook:outlook-contacts-action-handler"
+            },
+            "aclScope": "OutlookContacts",
+            "configCheck": "integrations.Outlook"
+        }
+    ]
+}

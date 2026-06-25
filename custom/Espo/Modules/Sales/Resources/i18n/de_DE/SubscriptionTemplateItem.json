@@ -1,0 +1,17 @@
+{
+  "fields": {
+    "qty": "Mng",
+    "quantity": "Menge",
+    "quantityInt": "Menge (Int)",
+    "product": "Produkt",
+    "order": "Positionsnummer",
+    "subscriptionTemplate": "Abonnementvorlage",
+    "subscriptionTemplateStatus": "Abonnementvorlage Status",
+    "fixedQuantity": "Feste Menge",
+    "description": "Beschreibung",
+    "fixedQty": "Feste Mng"
+  },
+  "links": {
+    "subscriptionTemplate": "Abonnementvorlage"
+  }
+}

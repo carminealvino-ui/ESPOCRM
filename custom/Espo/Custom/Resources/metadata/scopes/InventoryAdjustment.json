@@ -1,0 +1,17 @@
+{
+    "stream": false,
+    "disabled": true,
+    "statusField": null,
+    "kanbanStatusIgnoreList": null,
+    "stars": false,
+    "preserveAuditLog": true,
+    "collaborators": false,
+    "assignedUsers": false,
+    "lockableFieldList": [
+        "status",
+        "itemList",
+        "warehouse",
+        "date",
+        "reason"
+    ]
+}

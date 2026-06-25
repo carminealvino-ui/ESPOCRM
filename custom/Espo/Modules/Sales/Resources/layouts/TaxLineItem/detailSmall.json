@@ -1,0 +1,50 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "taxCode"
+                },
+                {
+                    "name": "order"
+                }
+            ],
+            [
+                {
+                    "name": "component"
+                },
+                {
+                    "name": "item"
+                }
+            ],
+            [
+                {
+                    "name": "source"
+                },
+                {
+                    "name": "product"
+                }
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "amount"
+                },
+                {
+                    "name": "baseAmount"
+                }
+            ],
+            [
+                {
+                    "name": "amountLocal"
+                },
+                {
+                    "name": "baseAmountLocal"
+                }
+            ]
+        ]
+    }
+]

@@ -1,0 +1,30 @@
+{
+    "controller": "controllers/record",
+    "acl": "modules/sales/acl/tax-item-rule",
+    "filterList": [
+        "active"
+    ],
+    "mergeDisabled": true,
+    "rowActionDefs": {
+        "moveToTop": {
+            "labelTranslation": "ProductAttribute.labels.Move to Top",
+            "handler": "modules/sales/handlers/tax-item-rule/move",
+            "acl": "edit"
+        },
+        "moveUp": {
+            "labelTranslation": "ProductAttribute.labels.Move Up",
+            "handler": "modules/sales/handlers/tax-item-rule/move",
+            "acl": "edit"
+        },
+        "moveDown": {
+            "labelTranslation": "ProductAttribute.labels.Move Down",
+            "handler": "modules/sales/handlers/tax-item-rule/move",
+            "acl": "edit"
+        },
+        "moveToBottom": {
+            "labelTranslation": "ProductAttribute.labels.Move to Bottom",
+            "handler": "modules/sales/handlers/tax-item-rule/move",
+            "acl": "edit"
+        }
+    }
+}

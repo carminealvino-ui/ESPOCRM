@@ -1,0 +1,63 @@
+{
+  "labels": {
+    "Create TransferOrder": "Crea ordine di trasferimento",
+    "Add Item": "Aggiungi Articolo",
+    "Items": "Articoli",
+    "Valid": "Valido",
+    "Invalid": "Non valido",
+    "Show Availability": "Mostra disponibilità",
+    "Availability": "Disponibilità",
+    "Total": "Totale"
+  },
+  "fields": {
+    "status": "Stato",
+    "number": "Numero",
+    "numberA": "Numero (incrementato automaticamente)",
+    "fromWarehouse": "Dal magazzino",
+    "toWarehouse": "Al magazzino",
+    "fromAddress": "Spedisci da Indirizzo",
+    "toAddress": "Spedisci a Indirizzo",
+    "amount": "Importo",
+    "amountCurrency": "Importo Valuta",
+    "shippingProvider": "Corriere per la spedizione",
+    "itemList": "Elenco",
+    "dateOrdered": "Data Ordine",
+    "shippingDate": "Data di spedizione",
+    "deliveryDate": "Data Consegna",
+    "weight": "Peso",
+    "currency": "Valuta",
+    "inventoryData": "Dati di inventario",
+    "inventoryStatus": "Stato Giacenza",
+    "isDone": "Fatto"
+  },
+  "links": {
+    "items": "Articoli",
+    "shippingContact": "Contatto di spedizione",
+    "shippingProvider": "Corriere per la spedizione",
+    "inventoryTransactions": "Transazioni di magazzino",
+    "fromWarehouse": "Dal magazzino",
+    "toWarehouse": "Al magazzino"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Ready": "Pronto",
+      "In Progress": "In Corso",
+      "Completed": "Completato",
+      "Canceled": "Annullato",
+      "Failed": "Fallito"
+    },
+    "inventoryStatus": {
+      "Available": "Disponibile",
+      "On Hand": "A Disposizione",
+      "Not Available": "Non disponibile"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperto",
+    "completed": "Completato"
+  },
+  "messages": {
+    "warehousesAreSame": "I magazzini devono essere diversi"
+  }
+}

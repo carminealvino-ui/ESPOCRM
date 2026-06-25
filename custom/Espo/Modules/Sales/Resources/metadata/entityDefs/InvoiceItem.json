@@ -1,0 +1,416 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "readOnly": true,
+            "itemNotReadOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "invoice": {
+            "type": "link",
+            "readOnly": true,
+            "customizationDisabled": true
+        },
+        "account": {
+            "type": "link",
+            "readOnly": true,
+            "customizationDisabled": true
+        },
+        "invoiceStatus": {
+            "type": "foreign",
+            "link": "invoice",
+            "field": "status",
+            "readOnly": true,
+            "view": "views/fields/foreign-enum",
+            "fieldManagerParamList": [
+                "link",
+                "field",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "dateInvoiced": {
+            "type": "foreign",
+            "link": "invoice",
+            "field": "dateInvoiced",
+            "readOnly": true,
+            "view": "views/fields/date",
+            "fieldManagerParamList": [
+                "link",
+                "field",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "postingDate": {
+            "type": "foreign",
+            "link": "invoice",
+            "field": "postingDate",
+            "readOnly": true,
+            "view": "views/fields/date",
+            "fieldManagerParamList": [
+                "link",
+                "field",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "product": {
+            "type": "link",
+            "readOnly": true,
+            "itemNotReadOnly": true,
+            "fieldManagerAdditionalParamList": [
+                {
+                    "name": "copyFieldList",
+                    "type": "multiEnum",
+                    "view": "sales:views/admin/field-manager/quote-item/fields/product-copy-field-list",
+                    "isSorted": true
+                }
+            ],
+            "fieldManagerParamList": [
+                "required",
+                "tooltipText",
+                "copyFieldList"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "allowFractionalQuantity": {
+            "type": "foreign",
+            "link": "product",
+            "field": "allowFractionalQuantity",
+            "view": "views/fields/foreign-bool",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "link",
+                "field",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "productType": {
+            "type": "foreign",
+            "link": "product",
+            "field": "type",
+            "view": "views/fields/foreign-enum",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "link",
+                "field",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "productIsSubscribable": {
+            "type": "foreign",
+            "link": "product",
+            "field": "isSubscribable",
+            "view": "views/fields/foreign-bool",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "link",
+                "field",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "quantity": {
+            "type": "float",
+            "default": 1.0,
+            "required": true,
+            "readOnly": true,
+            "itemNotReadOnly": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\QuoteItem\\Quantity\\NotFractional"
+            ],
+            "view": "sales:views/quote-item/fields/quantity",
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "quantityInt": {
+            "type": "int",
+            "notStorable": true,
+            "select": {
+                "select": "FLOOR:(quantity)"
+            },
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "listPrice": {
+            "type": "currency",
+            "readOnly": true,
+            "itemNotReadOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "unitPrice": {
+            "type": "currency",
+            "required": true,
+            "readOnly": true,
+            "itemNotReadOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "discount": {
+            "type": "float",
+            "readOnly": true,
+            "view": "sales:views/quote-item/fields/discount-rate",
+            "itemNotReadOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "amount": {
+            "type": "currency",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "unitWeight": {
+            "type": "float",
+            "min": 0,
+            "decimalPlaces": 2,
+            "audited": true
+        },
+        "weight": {
+            "type": "float",
+            "min": 0,
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "view": "modules/sales/views/fields/weight"
+        },
+        "taxRate": {
+            "type": "float",
+            "min": 0,
+            "max": 100,
+            "readOnly": true,
+            "view": "modules/sales/views/quote-item/fields/tax-rate",
+            "itemNotReadOnly": true,
+            "fieldManagerParamList": [
+                "decimalPlaces",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "layoutAvailabilityList": [
+                "detail",
+                "filters"
+            ]
+        },
+        "taxCode": {
+            "type": "link",
+            "readOnly": true,
+            "itemNotReadOnly": true,
+            "autocompleteOnEmpty": true,
+            "fieldManagerParamList": [
+                "tooltipText",
+                "autocompleteOnEmpty"
+            ],
+            "dynamicLogicDisabled": true,
+            "layoutAvailabilityList": [
+                "detail",
+                "filters"
+            ],
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\QuoteItem\\TaxCode\\Required",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\QuoteItem\\TaxCode\\Appropriate"
+            ]
+        },
+        "taxes": {
+            "type": "base",
+            "notStorable": true,
+            "directUpdateDisabled": true,
+            "directAccessDisabled": true,
+            "readOnly": true,
+            "itemNotReadOnly": true,
+            "view": "modules/sales/views/quote-item/fields/taxes",
+            "fieldManagerParamList": [],
+            "dynamicLogicDisabled": true,
+            "layoutAvailabilityList": [
+                "list"
+            ],
+            "fullNameAdditionalAttributeList": [
+                "taxCodeId",
+                "taxRate"
+            ]
+        },
+        "unitPriceNet": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "readOnly": true,
+            "precision": 13,
+            "scale": 4,
+            "layoutAvailabilityList": [
+                "list",
+                "detail"
+            ],
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "view": "modules/sales/views/quote-item/fields/unit-price-net",
+            "dynamicLogicDisabled": true
+        },
+        "amountLocal": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "readOnly": true,
+            "precision": 13,
+            "scale": 4,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "view": "modules/sales/views/fields/decimal"
+        },
+        "taxAmount": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "readOnly": true,
+            "precision": 13,
+            "scale": 4,
+            "layoutAvailabilityList": [],
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true,
+            "view": "modules/sales/views/fields/decimal"
+        },
+        "order": {
+            "type": "int",
+            "default": 1,
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "unitPriceCurrency": {
+            "customizationDisabled": true
+        },
+        "listPriceCurrency": {
+            "customizationDisabled": true
+        },
+        "amountCurrency": {
+            "customizationDisabled": true
+        },
+        "description": {
+            "type": "text"
+        },
+        "periodStartDate": {
+            "type": "date",
+            "layoutAvailabilityList": [
+                "detail",
+                "list",
+                "filters"
+            ],
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\InvoiceItem\\PeriodStartDate\\RequiredWithEndDate"
+            ],
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "periodEndDate": {
+            "type": "date",
+            "afterOrEqual": true,
+            "after": "periodStartDate",
+            "layoutAvailabilityList": [
+                "detail",
+                "list",
+                "filters"
+            ],
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\InvoiceItem\\PeriodEndDate\\RequiredWithStartDate"
+            ],
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "useNumericFormat",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "useNumericFormat",
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true,
+            "fieldManagerParamList": [
+                "tooltipText"
+            ],
+            "dynamicLogicDisabled": true
+        }
+    },
+    "links": {
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "product": {
+            "type": "belongsTo",
+            "entity": "Product"
+        },
+        "invoice": {
+            "type": "belongsTo",
+            "entity": "Invoice",
+            "foreign": "items"
+        },
+        "account": {
+            "type": "belongsTo",
+            "entity": "Account",
+            "foreign": "invoiceItems"
+        },
+        "taxCode": {
+            "type": "belongsTo",
+            "entity": "TaxCode",
+            "foreignName": "code"
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc"
+    }
+}

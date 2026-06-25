@@ -1,0 +1,29 @@
+{
+    "fields": {
+        "cAP": "CAP",
+        "prodotti": "Prodotti",
+        "provvigioni": "Provvigioni",
+        "prezzoCodice": "Prezzo Codice",
+        "prezzoCodiceCurrency": "Prezzo Codice (Valuta)",
+        "prezzoCodiceConverted": "Prezzo Codice (Convertito)",
+        "importoContratto": "Importo Contratto",
+        "importoContrattoCurrency": "Importo Contratto (Valuta)",
+        "importoContrattoConverted": "Importo Contratto (Convertito)",
+        "minusPlus": "Minus/Plus",
+        "minusPlusCurrency": "Minus/Plus (Valuta)",
+        "minusPlusConverted": "Minus/Plus (Convertito)",
+        "aliquotaIVA": "Aliquota IVA",
+        "totalPrezzoCodice": "Prezzo Codice Totale",
+        "totalPrezzoCodiceCurrency": "Prezzo Codice Totale (Valuta)",
+        "totalPrezzoCodiceConverted": "Prezzo Codice Totale (Convertito)",
+        "totaleProvvigioni": "Provvigioni Totali",
+        "totaleProvvigioniCurrency": "Provvigioni Totali (Valuta)",
+        "totaleProvvigioniConverted": "Provvigioni Totali (Convertito)",
+        "hookVersion": "HookVersion"
+    },
+    "links": {
+        "cAP": "CAP",
+        "prodotti": "Prodotti",
+        "provvigioni": "Provvigioni"
+    }
+}

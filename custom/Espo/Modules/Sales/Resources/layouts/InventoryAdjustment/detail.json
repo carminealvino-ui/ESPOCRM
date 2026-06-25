@@ -1,0 +1,17 @@
+[
+    {
+        "label": "Overview",
+        "rows": [
+            [{"name": "number"}, false],
+            [{"name": "status"}, {"name": "reason"}],
+            [{"name": "date"}, false]
+        ]
+    },
+    {
+        "label": "Details",
+        "rows": [
+            [{"name": "warehouse"}, false],
+            [{"name": "description"}]
+        ]
+    }
+]
