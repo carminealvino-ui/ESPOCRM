@@ -1,0 +1,62 @@
+{
+    "fields": {
+        "parent": "Parent",
+        "dateStart": "Date Start",
+        "dateEnd": "Date End",
+        "duration": "Duration",
+        "status": "Status",
+        "reminders": "Reminders",
+        "dateStartDate": "Date Start (all day)",
+        "dateEndDate": "Date End (all day)",
+        "isAllDay": "Is All-Day",
+        "azienda": "Azienda",
+        "area": "Area",
+        "datadisponibilita": "Data Disponibilità",
+        "color": "Color",
+        "orarioInizio": "Orario Inizio",
+        "orarioFine": "Orario Fine",
+        "fornitorePartner": "Fornitore/Partner"
+    },
+    "links": {
+        "parent": "Parent",
+        "fornitorePartner": "Fornitore/Partner"
+    },
+    "options": {
+        "status": {
+            "Planned": "Planned",
+            "Held": "Held",
+            "Not Held": "Not Held"
+        },
+        "azienda": {
+            "": "",
+            "ARQUATI": "ARQUATI",
+            "ARIEL": "ARIEL",
+            "PROGETTO": "PROGETTO"
+        },
+        "area": {
+            "ROMA SUD": "ROMA SUD",
+            "ROMA EST": "ROMA EST",
+            "ROMA NORD": "ROMA NORD",
+            "PESCARA": "PESCARA",
+            "CHIETI": "CHIETI",
+            "LATINA": "LATINA",
+            "FROSINONE": "FROSINONE"
+        }
+    },
+    "labels": {
+        "Create Disponibilita": "Create Disponibilita",
+        "Schedule Disponibilita": "Schedule Disponibilita",
+        "Log Disponibilita": "Log Disponibilita",
+        "Set Held": "Set Held",
+        "Set Not Held": "Set Not Held"
+    },
+    "massActions": {
+        "setHeld": "Set Held",
+        "setNotHeld": "Set Not Held"
+    },
+    "presetFilters": {
+        "planned": "Planned",
+        "held": "Held",
+        "todays": "Today's"
+    }
+}

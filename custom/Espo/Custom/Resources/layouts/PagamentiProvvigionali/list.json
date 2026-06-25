@@ -1,0 +1,27 @@
+[
+    {
+        "name": "name",
+        "link": true,
+        "align": "left"
+    },
+    {
+        "name": "opportunita",
+        "link": true,
+        "align": "left"
+    },
+    {
+        "name": "dataFattura",
+        "width": 12,
+        "align": "right"
+    },
+    {
+        "name": "importo",
+        "width": 12,
+        "align": "right"
+    },
+    {
+        "name": "dataPagamento",
+        "width": 12,
+        "align": "right"
+    }
+]

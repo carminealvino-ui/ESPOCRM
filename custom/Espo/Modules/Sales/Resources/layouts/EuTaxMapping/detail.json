@@ -1,0 +1,28 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "taxCode"
+                },
+                {
+                    "name": "taxClass"
+                }
+            ],
+            [
+                {
+                    "name": "categoryCode"
+                },
+                {
+                    "name": "exemptionCode"
+                }
+            ],
+            [
+                {
+                    "name": "exemptionReason"
+                },
+                false
+            ]
+        ]
+    }
+]

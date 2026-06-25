@@ -1,0 +1,23 @@
+[
+    {
+        "name": "grandTotalAmount"
+    },
+    {
+        "name": "totalPrezzoCodice"
+    },
+    {
+        "name": "aliquotaIVA"
+    },
+    {
+        "name": "amount"
+    },
+    {
+        "name": "prezzoCodiceIvaEsclusa"
+    },
+    {
+        "name": "minusPlus"
+    },
+    {
+        "name": "totaleProvvigioni"
+    }
+]

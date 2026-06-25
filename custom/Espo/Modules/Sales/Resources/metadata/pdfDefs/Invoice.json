@@ -1,0 +1,8 @@
+{
+    "dataLoaderClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Pdf\\Quote\\ItemListDataLoader",
+        "Espo\\Modules\\Sales\\Classes\\Pdf\\Quote\\TaxTotalItemsLoader",
+        "Espo\\Modules\\Sales\\Classes\\Pdf\\Invoice\\InstallmentsDataLoader",
+        "Espo\\Modules\\Sales\\Classes\\Pdf\\Invoice\\PaymentMeansItemsLoader"
+    ]
+}

@@ -1,0 +1,32 @@
+{
+  "scopeNames": {
+    "Product": "Продукт",
+    "ProductCategory": "Категория продуктов",
+    "ProductBrand": "Бренд продукта",
+    "ReportCategory": "Категории отчетов",
+    "Quote": "Предложение",
+    "QuoteItem": "Пункт предложения",
+    "SalesOrder": "Заказ",
+    "SalesOrderItem": "Пункт заказа",
+    "Invoice": "Счёт-фактура",
+    "InvoiceItem": "Пункт счёт-фактуры",
+    "Tax": "Налог",
+    "ShippingProvider": "Служба доставки",
+    "OpportunityItem": "Пункт сделки"
+  },
+  "scopeNamesPlural": {
+    "Product": "Продукты",
+    "ProductCategory": "Категории продуктов",
+    "ReportCategory": "Категории отчетов",
+    "Quote": "Предложения",
+    "QuoteItem": "Пункты предложения",
+    "SalesOrder": "Заказы",
+    "SalesOrderItem": "Пункты заказа",
+    "Invoice": "Счёт-фактуры",
+    "InvoiceItem": "Пункты счёт-фактуры",
+    "Tax": "Налоги",
+    "ShippingProvider": "Службы доставок",
+    "OpportunityItem": "Пункты сделок",
+    "ProductBrand": "Бренды продуктов"
+  }
+}

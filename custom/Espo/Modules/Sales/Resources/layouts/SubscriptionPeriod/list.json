@@ -1,0 +1,22 @@
+[
+    {
+        "name": "type",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "billingStatus",
+        "width": 15
+    },
+    {
+        "name": "subscription",
+        "width": 20
+    },
+    {
+        "name": "timeline",
+        "width": 20
+    }
+]

@@ -1,0 +1,12 @@
+[
+    "account",
+    "quote",
+    "product",
+    "quoteStatus",
+    "quantity",
+    "listPriceConverted",
+    "unitPriceConverted",
+    "amountConverted",
+    "createdBy",
+    "createdAt"
+]

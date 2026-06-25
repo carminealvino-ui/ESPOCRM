@@ -1,0 +1,19 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 19
+    },
+    {
+        "name": "dateQuoted",
+        "width": 19
+    },
+    {
+        "name": "amount",
+        "width": 19,
+        "align": "right"
+    }
+]

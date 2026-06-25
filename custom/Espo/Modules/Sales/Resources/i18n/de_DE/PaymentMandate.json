@@ -1,0 +1,30 @@
+{
+  "labels": {
+    "Create PaymentMandate": "Mandat erstellen",
+    "Parameters": "Parameter"
+  },
+  "fields": {
+    "account": "Firma",
+    "accountHolder": "Kontoinhaber",
+    "referenceId": "Referenz ID",
+    "type": "Typ",
+    "dateSigned": "Unterzeichnungsdatum",
+    "expirationDate": "Verfallsdatum",
+    "data": "Daten",
+    "record": "Datensatz"
+  },
+  "links": {
+    "account": "Firma",
+    "record": "Datensatz"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Active": "Aktiv",
+      "Canceled": "Storniert"
+    }
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  }
+}

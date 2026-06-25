@@ -1,0 +1,79 @@
+{
+    "fieldTypes": {
+        "floatExtended": "Erweitertes Fließkomma"
+    },
+    "fields": {
+        "unit": "Einheit",
+        "RenderOn": "Anzeige in",
+        "isBold": "Fettgedruckt",
+        "isItalic": "Kursiv",
+        "useColorLabel": "Label-Farbe verwenden",
+        "labelThresholdLowValue": "Label Schwellenwert niedrig",
+        "labelThresholdLowClass": "Label Farbklasse niedrig",
+        "labelThresholdHighValue": "Label Schwellenwert hoch",
+        "labelThresholdHighClass": "Label Farbklasse hoch",
+        "labelThresholdDefaultClass": "Label Farbklasse Standard",
+        "useColorText": "Textfarbe verwenden",
+        "textThresholdLowValue": "Text Schwellenwert niedrig",
+        "textThresholdLowClass": "Text Farbklasse niedrig",
+        "textThresholdHighValue": "Text Schwellenwert hoch",
+        "textThresholdHighClass": "Text Farbklasse hoch",
+        "textThresholdDefaultClass": "Text Farbklasse Standard"        
+    },
+    "options": {
+        "labelThresholdLowClass": {
+          "label-default": "Abgeschwächt (Grau)",
+          "label-primary": "Primär (Dunkelblau)",
+          "label-success": "Erfolgreich (Grün)",
+          "label-warning": "Warnung (Orange)",
+          "label-danger": "Fehler (Rot)",
+          "label-info": "Info (Hellblau)",
+          "label-dark": "Dunkel (Schwarz)"
+        },
+        "labelThresholdHighClass": {
+          "label-default": "Abgeschwächt (Grau)",
+          "label-primary": "Primär (Dunkelblau)",
+          "label-success": "Erfolgreich (Grün)",
+          "label-warning": "Warnung (Orange)",
+          "label-danger": "Fehler (Rot)",
+          "label-info": "Info (Hellblau)",
+          "label-dark": "Dunkel (Schwarz)"
+        },
+        "labelThresholdDefaultClass": {
+          "label-default": "Abgeschwächt (Grau)",
+          "label-primary": "Primär (Dunkelblau)",
+          "label-success": "Erfolgreich (Grün)",
+          "label-warning": "Warnung (Orange)",
+          "label-danger": "Fehler (Rot)",
+          "label-info": "Info (Hellblau)",
+          "label-dark": "Dunkel (Schwarz)"
+        },
+        "textThresholdLowClass": {
+          "text-muted": "Abgeschwächt (Grau)",
+          "text-primary": "Primär (Blau)",
+          "text-success": "Erfolgreich (Grün)",
+          "text-info": "Info (Hellblau)",
+          "text-warning": "Warnung (Orange)",
+          "text-danger": "Fehler (Rot)",
+          "text-dark": "Dunkel (Schwarz)"
+        },
+        "textThresholdHighClass": {
+          "text-muted": "Abgeschwächt (Grau)",
+          "text-primary": "Primär (Blau)",
+          "text-success": "Erfolgreich (Grün)",
+          "text-info": "Info (Hellblau)",
+          "text-warning": "Warnung (Orange)",
+          "text-danger": "Fehler (Rot)",
+          "text-dark": "Dunkel (Schwarz)"
+        },
+        "textThresholdDefaultClass": {
+          "text-muted": "Abgeschwächt (Grau)",
+          "text-primary": "Primär (Blau)",
+          "text-success": "Erfolgreich (Grün)",
+          "text-info": "Info (Hellblau)",
+          "text-warning": "Warnung (Orange)",
+          "text-danger": "Fehler (Rot)",
+          "text-dark": "Dunkel (Schwarz)"
+        }
+    }
+}

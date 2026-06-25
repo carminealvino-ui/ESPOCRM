@@ -1,0 +1,89 @@
+{
+    "labels": {
+        "Create SalesOrder": "Create Sales Order",
+        "Taxes": "Taxes",
+        "Shipping Providers": "Shipping Providers",
+        "Add Item": "Add Item",
+        "Templates": "Templates",
+        "Items": "Items",
+        "Sales Order Items": "Sales Order Items",
+        "Create Delivery": "Create Delivery",
+        "Add Delivery": "Add Delivery",
+        "Not Created": "Not Created"
+    },
+    "fields": {
+        "status": "Status",
+        "number": "Number",
+        "numberA": "Number (auto-incremented)",
+        "account": "Account",
+        "opportunity": "Opportunity",
+        "quote": "Quote",
+        "billingAddress": "Billing Address",
+        "shippingAddress": "Shipping Address",
+        "billingContact": "Billing Contact",
+        "shippingContact": "Shipping Contact",
+        "tax": "Tax Profile",
+        "taxRate": "Tax Rate",
+        "shippingProvider": "Shipping Provider",
+        "taxAmount": "Tax",
+        "discountAmount": "Discount",
+        "amount": "Net Total",
+        "preDiscountedAmount": "Subtotal",
+        "grandTotalAmount": "Grand Total",
+        "itemList": "Item List",
+        "dateOrdered": "Date Ordered",
+        "dateInvoiced": "Date Invoiced",
+        "weight": "Weight",
+        "amountConverted": "Net Total (converted)",
+        "taxAmountConverted": "Tax (converted)",
+        "preDiscountedAmountConverted": "Subtotal (converted)",
+        "discountAmountConverted": "Discount (converted)",
+        "grandTotalAmountConverted": "Grand Total (converted)",
+        "taxAmountCurrency": "Tax Currency",
+        "discountAmountCurrency": "Discount Currency",
+        "amountCurrency": "Amount Currency",
+        "preDiscountedAmountCurrency": "Subtotal Currency",
+        "grandTotalAmountCurrency": "Grand Total Currency",
+        "currency": "Currency",
+        "priceBook": "Price Book",
+        "inventoryData": "Inventory Data",
+        "inventoryStatus": "Inventory Status",
+        "isDeliveryCreated": "Delivery Created",
+        "hasInventoryItems": "Has Inventory Items",
+        "isDone": "Is Done",
+        "isDeliverable": "Is Deliverable"
+    },
+    "links": {
+        "items": "Items",
+        "billingContact": "Billing Contact",
+        "shippingContact": "Shipping Contact",
+        "shippingProvider": "Shipping Provider",
+        "opportunity": "Opportunity",
+        "account": "Account",
+        "tax": "Tax Profile",
+        "quote": "Quote",
+        "invoices": "Invoices",
+        "deliveryOrders": "Delivery Orders",
+        "returnOrders": "Return Orders",
+        "priceBook": "Price Book",
+        "inventoryTransactions": "Inventory Transactions"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Ready": "Ready",
+            "Active": "Active",
+            "Approved": "Approved",
+            "Completed": "Completed",
+            "Rejected": "Rejected",
+            "Canceled": "Canceled"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "completed": "Completed"
+    },
+    "messages": {
+        "cannotCreateDeliveryInEditMode": "Cannot create delivery orders while in edit mode."
+    }
+}

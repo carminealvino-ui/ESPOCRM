@@ -1,0 +1,25 @@
+[
+    {
+        "label": "",
+        "rows": [
+            [
+                {
+                    "name": "name",
+                    "fullWidth": true
+                }
+            ],
+            [
+                {
+                    "name": "order",
+                    "fullWidth": true
+                }
+            ],
+            [
+                {
+                    "name": "parent",
+                    "fullWidth": true
+                }
+            ]
+        ]
+    }
+]

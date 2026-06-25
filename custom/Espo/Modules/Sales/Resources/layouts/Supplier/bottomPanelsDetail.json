@@ -1,0 +1,27 @@
+{
+    "_tabBreak_0": {
+        "index": 0,
+        "tabBreak": true,
+        "tabLabel": "$prices"
+    },
+    "prices": {
+        "index": 1
+    },
+    "_tabBreak_1": {
+        "index": 2,
+        "tabBreak": true,
+        "tabLabel": "$transactions"
+    },
+    "purchaseOrders": {
+        "index": 3
+    },
+    "supplierBills": {
+        "index": 4
+    },
+    "supplierCredits": {
+        "index": 5
+    },
+    "paymentEntries": {
+        "index": 6
+    }
+}

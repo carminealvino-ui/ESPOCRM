@@ -1,0 +1,27 @@
+{
+    "links": {
+        "appuntamentoChildren": "Appuntamento Relazionato",
+        "googleContacts": "Google Contatti",
+        "opportunitiesPrimary": "Opportunità (Primary)",
+        "opportunities": "Opportunità",
+        "quotesBilling": "Offerta (Fatturazione)",
+        "quotesShipping": "Offerta (Spedizione)",
+        "account": "Cliente (Primario)",
+        "accounts": "Clienti",
+        "calls": "Contatto Telefonico",
+        "fornitorePartner": "Fornitore/Partner"
+    },
+    "fields": {
+        "name": "Referente",
+        "accountId": "Cliente Id",
+        "opportunityRole": "Opportunità Ruolo",
+        "account": "Cliente",
+        "accountIsInactive": "Cliente inattivo",
+        "accounts": "Clienti",
+        "accountType": "Tipo di Clienti",
+        "fornitorePartner": "Fornitore/Partner"
+    },
+    "labels": {
+        "Create Contact": "Crea Referente"
+    }
+}

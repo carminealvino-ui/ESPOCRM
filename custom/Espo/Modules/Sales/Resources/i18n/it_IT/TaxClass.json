@@ -1,0 +1,12 @@
+{
+  "labels": {
+    "Create TaxClass": "Crea classe fiscale"
+  },
+  "links": {
+    "products": "Prodotti"
+  },
+  "messages": {
+    "cannotRemoveReferencedInProduct": "Impossibile rimuovere la classe fiscale perché vi fanno riferimento uno o più prodotti.",
+    "cannotRemoveReferencedInItemRule": "Impossibile rimuovere la classe fiscale perché vi fanno riferimento una o più regole per le voci fiscali."
+  }
+}

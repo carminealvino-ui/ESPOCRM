@@ -1,0 +1,30 @@
+{
+    "labels": {
+        "Create PaymentChannel": "Create Payment Channel",
+        "Provider Settings": "Provider Settings"
+    },
+    "fields": {
+        "status": "Status",
+        "provider": "Provider",
+        "data": "Data",
+        "record": "Record"
+    },
+    "links": {
+        "paymentEntries": "Payments",
+        "methods": "Payment Methods"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        },
+        "provider": {
+            "WireTransfer": "Wire Transfer",
+            "SepaCreditTransfer": "SEPA Credit Transfer",
+            "SepaDirectDebit": "SEPA Direct Debit"
+        }
+    },
+    "presetFilters": {
+        "active": "Active"
+    }
+}

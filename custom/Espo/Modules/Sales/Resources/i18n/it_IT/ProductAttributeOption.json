@@ -1,0 +1,16 @@
+{
+  "labels": {
+    "Create ProductAttributeOption": "Crea opzione"
+  },
+  "fields": {
+    "order": "Ordine",
+    "attribute": "Attributo",
+    "color": "Colore",
+    "attributeOrder": "Ordine degli attributi"
+  },
+  "links": {
+    "attribute": "Attributo",
+    "products": "Prodotti",
+    "productVariants": "Varianti del prodotto"
+  }
+}

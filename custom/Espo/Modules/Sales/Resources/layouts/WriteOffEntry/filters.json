@@ -1,0 +1,12 @@
+[
+    "account",
+    "status",
+    "date",
+    "postingDate",
+    "amount",
+    "unallocatedAmount",
+    "number",
+    "teams",
+    "description",
+    "isIssued"
+]

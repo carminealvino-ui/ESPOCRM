@@ -1,0 +1,28 @@
+{
+    "labels": {
+        "Create PriceBook": "Create Price Book"
+    },
+    "fields": {
+        "parentPriceBook": "Parent Price Book",
+        "status": "Status",
+        "isDefault": "Default",
+        "isTaxInclusive": "Tax Inclusive"
+    },
+    "links": {
+        "products": "Products",
+        "parentPriceBook": "Parent Price Book",
+        "accounts": "Accounts",
+        "prices": "Prices",
+        "rules": "Rules",
+        "childPriceBooks": "Child Price Books"
+    },
+    "presetFilters": {
+        "active": "Active"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    }
+}

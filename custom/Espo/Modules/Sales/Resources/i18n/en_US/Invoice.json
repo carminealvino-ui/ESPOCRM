@@ -1,0 +1,133 @@
+{
+    "labels": {
+        "Create Invoice": "Create Invoice",
+        "Taxes": "Taxes",
+        "Shipping Providers": "Shipping Providers",
+        "Add Item": "Add Item",
+        "Templates": "Templates",
+        "Items": "Items",
+        "Invoice Items": "Invoice Items",
+        "E-Invoice": "E-Invoice",
+        "Validate": "Validate",
+        "Payments": "Payments",
+        "Create Debit Note": "Create Debit Note"
+    },
+    "fields": {
+        "status": "Status",
+        "number": "Number",
+        "numberA": "Number (auto-incremented)",
+        "numberDebitNoteA": "Number for Debit Notes (auto-incremented)",
+        "type": "Type",
+        "account": "Account",
+        "opportunity": "Opportunity",
+        "quote": "Quote",
+        "salesOrder": "Sales Order",
+        "precedingInvoice": "Preceding Invoice",
+        "billingAddress": "Billing Address",
+        "shippingAddress": "Shipping Address",
+        "billingContact": "Billing Contact",
+        "shippingContact": "Shipping Contact",
+        "tax": "Tax Profile",
+        "taxRate": "Tax Rate",
+        "shippingProvider": "Shipping Provider",
+        "taxAmount": "Tax",
+        "discountAmount": "Discount",
+        "amount": "Net Total",
+        "preDiscountedAmount": "Subtotal",
+        "itemList": "Item List",
+        "dateInvoiced": "Date Invoiced",
+        "dateDue": "Due Date",
+        "weight": "Weight",
+        "amountConverted": "Net Total (converted)",
+        "preDiscountedAmountConverted": "Subtotal (converted)",
+        "discountAmountConverted": "Discount (converted)",
+
+        "grandTotalAmountConverted": "Grand Total (converted)",
+        "grandTotalAmount": "Grand Total",
+        "grandTotalAmountCurrency": "Grand Total Currency",
+        "taxAmountCurrency": "Tax Currency",
+        "taxAmountConverted": "Tax (converted)",
+        "discountAmountCurrency": "Discount Currency",
+
+        "amountCurrency": "Amount Currency",
+        "preDiscountedAmountCurrency": "Subtotal Currency",
+        "currency": "Currency",
+        "priceBook": "Price Book",
+        "buyerReference": "Buyer Reference",
+        "purchaseOrderReference": "Purchase Order Reference",
+        "note": "Note",
+        "amountDue": "Amount Due",
+        "amountDueCurrency": "Amount Due Currency",
+        "paymentMethods": "Payment Methods",
+        "paymentMethod": "Primary Payment Method",
+        "roundingProfile": "Rounding Profile",
+        "paymentTermsProfile": "Payment Terms Profile",
+        "installments": "Payment Installments",
+        "paymentTermsNote": "Payment Terms Note",
+        "overdueDays": "Overdue Days"
+    },
+    "links": {
+        "items": "Items",
+        "billingContact": "Billing Contact",
+        "shippingContact": "Shipping Contact",
+        "shippingProvider": "Shipping Provider",
+        "opportunity": "Opportunity",
+        "account": "Account",
+        "tax": "Tax Profile",
+        "quote": "Quote",
+        "salesOrder": "Sales Order",
+        "precedingInvoice": "Preceding Invoice",
+        "debitNotes": "Debit Notes",
+        "priceBook": "Price Book",
+        "creditNotes": "Credit Notes",
+        "paymentRequests": "Payment Requests",
+        "paymentMethods": "Payment Methods",
+        "subscriptionPeriods": "Subscription Periods",
+        "subscriptionUpdates": "Subscription Updates",
+        "roundingProfile": "Rounding Profile",
+        "paymentTermsProfile": "Payment Terms Profile",
+        "installments": "Installments"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Issued": "Issued",
+            "Paid": "Paid",
+            "Canceled": "Canceled"
+        },
+        "type": {
+            "Invoice": "Invoice",
+            "Debit Note": "Debit Note"
+        },
+        "eInvoiceFormats": {
+            "CiusRo": "CIUS-RO e-Factura",
+            "CiusIt": "CIUS-IT",
+            "CiusAtGov": "CIUS-AT-GOV",
+            "CiusAtNat": "CIUS-AT-NAT",
+            "Peppol": "PEPPOL BIS Billing 3.0",
+            "CiusEsFace": "CIUS-ES-FACE",
+            "Nlcius": "NLCIUS",
+            "XRechnung": "XRechnung"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "paid": "Paid",
+        "openIssued": "Open Issued"
+    },
+    "messages": {
+        "cannotRemoveIfAllocations": "Cannot remove an invoice if there are payment allocations.",
+        "cannotChangeCurrencyIfAllocations": "Cannot change currency if an invoice has payment allocations.",
+        "cannotConvertWithPaymentAllocations": "Cannot convert currency if invoice has payment allocations.",
+        "invoiceIsValid": "Invoice is valid",
+        "ublRuleValidationFailure": "Invalid invoice.\n\nFailed rule ID: `{ruleId}`\n\n{message}"
+    },
+    "eInvoiceFields": {
+        "eInvoiceFormat": "E-Invoice Format",
+        "format": "Format"
+    },
+    "reportValues": {
+        "current": "Current",
+        "days": "days"
+    }
+}

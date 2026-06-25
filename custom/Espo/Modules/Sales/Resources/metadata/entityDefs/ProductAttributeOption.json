@@ -1,0 +1,57 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "maxLength": 64
+        },
+        "order": {
+            "type": "int",
+            "readOnly": true
+        },
+        "color": {
+            "type": "varchar",
+            "maxLength": 7,
+            "view": "views/fields/colorpicker"
+        },
+        "attribute": {
+            "type": "link",
+            "readOnlyAfterCreate": true
+        },
+        "attributeOrder": {
+            "type": "foreign",
+            "link": "attribute",
+            "field": "order"
+        }
+    },
+    "links": {
+        "attribute": {
+            "type": "belongsTo",
+            "foreign": "options",
+            "entity": "ProductAttribute"
+        },
+        "products": {
+            "type": "hasMany",
+            "foreign": "attributeOptions",
+            "entity": "Product"
+        },
+        "productVariants": {
+            "type": "hasMany",
+            "foreign": "variantAttributeOptions",
+            "entity": "Product",
+            "relationName": "ProductVariantProductAttributeOption"
+        }
+    },
+    "collection": {
+        "orderBy": "name",
+        "order": "asc"
+    },
+    "indexes": {
+        "attributeIdOrder": {
+            "columns": [
+                "attributeId",
+                "order"
+            ]
+        }
+    }
+}

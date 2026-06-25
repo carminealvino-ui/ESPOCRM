@@ -10,6 +10,9 @@
             "layoutListDisabled": true,
             "noLoad": true,
             "isCustom": true
+        },
+        "name": {
+            "options": []
         }
     },
     "links": {

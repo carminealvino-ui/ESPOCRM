@@ -1,0 +1,10 @@
+{
+  "links": {
+    "quotesBilling": "Presupuestos (facturación)",
+    "quotesShipping": "Presupuestos (Envío)",
+    "salesOrdersBilling": "Órdenes de venta (facturación)",
+    "salesOrdersShipping": "Órdenes de venta (envío)",
+    "invoicesBilling": "Facturas (facturación)",
+    "invoicesShipping": "Facturas (envío)"
+  }
+}

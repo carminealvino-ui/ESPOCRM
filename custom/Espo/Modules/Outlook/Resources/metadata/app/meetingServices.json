@@ -1,0 +1,6 @@
+{
+    "Microsoft": {
+        "enabled": true,
+        "availabilityCheckerClassName": "Espo\\Modules\\Outlook\\Tools\\MeetingExternalService\\AvailabilityChecker"
+    }
+}

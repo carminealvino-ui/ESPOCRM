@@ -1,0 +1,23 @@
+[
+    {
+        "rows": [
+            [{"name": "name"}, {"name": "product"}],
+            [{"name": "type"}, false]
+        ]
+    },
+    {
+        "label": "Quantity",
+        "name": "quantity",
+        "rows": [
+            [{"name": "quantityOnHand"}, {"name": "quantityReserved"}],
+            [{"name": "quantityInTransit"}, false]
+        ]
+    },
+    {
+        "label": "Details",
+        "rows": [
+            [{"name": "incomingDate"}, {"name": "expirationDate"}],
+            [{"name": "productionDate"}, false]
+        ]
+    }
+]

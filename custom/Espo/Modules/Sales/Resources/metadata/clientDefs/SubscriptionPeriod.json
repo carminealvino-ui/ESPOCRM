@@ -1,0 +1,39 @@
+{
+    "controller": "controllers/record",
+    "acl": "modules/sales/acl/subscription-period",
+    "filterList": [
+        "actual",
+        "active"
+    ],
+    "mergeDisabled": true,
+    "duplicateDisabled": true,
+    "viewSetupHandlers": {
+        "list": ["modules/sales/handlers/info"]
+    },
+    "rowActionDefs": {
+        "processBilling": {
+            "labelTranslation": "SubscriptionPeriod.actions.processBilling",
+            "acl": "edit",
+            "handler": "modules/sales/handlers/subscription-period/process-billing-row-action"
+        }
+    },
+    "relationshipPanels": {
+        "invoices": {
+            "createHandler": "modules/sales/handlers/subscription-period/create-invoice"
+        }
+    },
+    "menu": {
+        "detail": {
+            "buttons": [
+                {
+                    "name": "processBilling",
+                    "labelTranslation": "SubscriptionPeriod.actions.processBilling",
+                    "acl": "edit",
+                    "handler": "modules/sales/handlers/subscription-period/process-billing-action",
+                    "actionFunction": "process",
+                    "checkVisibilityFunction": "isAvailable"
+                }
+            ]
+        }
+    }
+}

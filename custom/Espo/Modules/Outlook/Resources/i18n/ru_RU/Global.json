@@ -1,0 +1,10 @@
+{
+  "scopeNames": {
+    "OutlookCalendar": "Календарь Outlook",
+    "OutlookContacts": "Контакты Outlook"
+  },
+  "scopeNamesPlural": {
+    "OutlookCalendar": "Календарь Outlook",
+    "OutlookContacts": "Контакты Outlook"
+  }
+}

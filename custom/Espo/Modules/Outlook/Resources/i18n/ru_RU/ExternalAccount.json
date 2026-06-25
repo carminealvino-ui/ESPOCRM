@@ -1,0 +1,33 @@
+{
+  "options": {
+    "calendarDirection": {
+      "EspoToOutlook": "Одностороннее: из EspoCRM в Outlook Календарь",
+      "OutlookToEspo": "Одностороннее: из Outlook Календаря в EspoCRM",
+      "Both": "Двустороннее"
+    }
+  },
+  "messages": {
+    "disconnectConfirmation": "Вы действительно хотите отключиться?",
+    "noOutlookPanels": "Нет доступных сервисов Outlook."
+  },
+  "fields": {
+    "calendarStartDate": "Синхронизировать от",
+    "calendarEntityTypes": "Синхронизированные объекты и их идентификационные метки",
+    "calendarDirection": "Направление",
+    "calendarMonitoredCalendars": "Другие календари",
+    "calendarMainCalendar": "Главный календарь",
+    "calendarDefaultEntity": "Объект по умолчанию",
+    "contactsGroups": "Добавить контакты в группы",
+    "dontSyncEventAttendees": "Не синхронизировать участников события",
+    "removeOutlookCalendarEventIfRemovedInEspo": "Удалить событие Календаря Outlook при удалении в EspoCRM",
+    "contactFolder": "Папки контактов",
+    "calendarCreateContacts": "Создать контакты для участников в EspoCRM",
+    "calendarSkipPrivate": "Не синхронизировать личные события",
+    "calendarDontPushPastEvents": "Не отправлять старые события в Outlook"
+  },
+  "tooltips": {
+    "calendarEntityTypes": "Для распознавания типа название события должно начинаться с идентификационной метки. Метка для объекта по умолчанию может быть пустой. Рекомендация: не меняйте идентификационные метки после сохранения настроек синхронизации",
+    "calendarDefaultEntity": "Нераспознанное событие будет загружено как выбранный объект.",
+    "calendarDontPushPastEvents": "Если отмечено, только недавно созданные события будут отправлены в Outlook."
+  }
+}

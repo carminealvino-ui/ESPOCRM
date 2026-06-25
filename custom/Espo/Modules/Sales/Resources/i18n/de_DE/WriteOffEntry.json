@@ -1,0 +1,31 @@
+{
+  "labels": {
+    "Create WriteOffEntry": "Ausbuchung erstellen"
+  },
+  "fields": {
+    "number": "Nummer",
+    "numberA": "Nummer (auto-inkrement)",
+    "account": "Firma",
+    "date": "Datum",
+    "amount": "Betrag",
+    "amountConverted": "Betrag (konvertiert)",
+    "amountCurrency": "Betragswährung",
+    "allocations": "Zuordnungen",
+    "unallocatedAmount": "Nicht zugeordneter Betrag"
+  },
+  "links": {
+    "account": "Firma",
+    "allocations": "Zuordnungen"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Applied": "Angewendet",
+      "Canceled": "Storniert"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "completed": "Abgeschlossen"
+  }
+}

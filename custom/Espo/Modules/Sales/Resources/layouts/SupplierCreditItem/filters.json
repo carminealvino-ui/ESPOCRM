@@ -1,0 +1,12 @@
+[
+    "supplier",
+    "supplierCredit",
+    "product",
+    "supplierCreditStatus",
+    "quantity",
+    "taxCode",
+    "unitPriceConverted",
+    "amountConverted",
+    "createdBy",
+    "createdAt"
+]

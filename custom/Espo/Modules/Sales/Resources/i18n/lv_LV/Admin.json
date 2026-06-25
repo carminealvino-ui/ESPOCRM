@@ -1,0 +1,13 @@
+{
+    "layouts": {
+        "listItem": "Saraksts (vienums)",
+        "detailBottomTotal": "Apakšējā summa"
+    },
+    "fields": {
+        "useAutoincrement": "Automātiska palielināšana",
+        "copyFieldList": "Kopējamie lauki"
+    },
+    "templates": {
+        "salesEmailPdf": "E-pasts PDF (pārdošana)"
+    }
+}

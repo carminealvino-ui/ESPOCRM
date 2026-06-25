@@ -1,0 +1,73 @@
+{
+  "labels": {
+    "Create Invoice": "Crear factura",
+    "Taxes": "Impuestos",
+    "Shipping Providers": "Proveedores de envío",
+    "Add Item": "Añadir artículo",
+    "Templates": "Plantillas",
+    "Items": "Artículos",
+    "Invoice Items": "Artículos de la factura"
+  },
+  "fields": {
+    "status": "Estado",
+    "number": "Número",
+    "numberA": "Número (auto-incrementado)",
+    "account": "Cuenta",
+    "opportunity": "Oferta",
+    "quote": "Presupuesto",
+    "salesOrder": "Orden de venta",
+    "billingAddress": "Dirección de facturación",
+    "shippingAddress": "Dirección de envío",
+    "billingContact": "Contacto de facturación",
+    "shippingContact": "Contacto de envío",
+    "tax": "Impuesto",
+    "taxRate": "Tasa de impuesto",
+    "shippingCost": "Gastos de envío",
+    "shippingProvider": "Proveedor de envío",
+    "taxAmount": "Importe del impuesto",
+    "discountAmount": "Importe de descuento",
+    "amount": "Cantidad",
+    "preDiscountedAmount": "Importe antes del descuento",
+    "grandTotalAmount": "Importe total final",
+    "itemList": "Lista de articulos",
+    "dateInvoiced": "Fecha de facturación",
+    "weight": "Peso",
+    "amountConverted": "Cantidad (convertida)",
+    "taxAmountConverted": "Importe de impuesto (convertido)",
+    "shippingCostConverted": "Gastos de envío (convertido)",
+    "preDiscountedAmountConverted": "Importe antes del descuento (convertido)",
+    "discountAmountConverted": "Importe de descuento (convertido)",
+    "grandTotalAmountConverted": "Importe total final (convertido)",
+    "taxAmountCurrency": "Moneda del importe del impuesto",
+    "discountAmountCurrency": "Moneda del importe de descuento",
+    "amountCurrency": "Moneda del importe",
+    "preDiscountedAmountCurrency": "Moneda del importe antes del descuento",
+    "grandTotalAmountCurrency": "Moneda del importe total final",
+    "currency": "Moneda"
+  },
+  "links": {
+    "items": "Artículos",
+    "billingContact": "Contacto de facturación",
+    "shippingContact": "Contacto de envío",
+    "shippingProvider": "Proveedor de envío",
+    "opportunity": "Oferta",
+    "account": "Cuenta",
+    "tax": "Impuesto",
+    "quote": "Presupuesto",
+    "salesOrder": "Orden de venta"
+  },
+  "options": {
+    "status": {
+      "Draft": "Borrador",
+      "In Review": "En revisión",
+      "Confirmed": "Confirmado",
+      "Paid": "Pagado",
+      "Rejected": "Rechazado",
+      "Canceled": "Cancelado"
+    }
+  },
+  "presetFilters": {
+    "actual": "Real",
+    "paid": "Pagado"
+  }
+}

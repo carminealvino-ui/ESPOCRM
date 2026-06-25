@@ -1,0 +1,31 @@
+{
+  "labels": {
+    "Create EuTaxMapping": "Mapping-Eintrag erstellen"
+  },
+  "fields": {
+    "order": "Reihenfolge",
+    "taxCode": "Steuercode",
+    "taxClass": "Steuerklasse",
+    "categoryCode": "Kategoriecode",
+    "exemptionCode": "Befreiungscode",
+    "exemptionReason": "Befreiungsgrund"
+  },
+  "links": {
+    "taxCode": "Steuercode",
+    "taxClass": "Steuerklasse"
+  },
+  "options": {
+    "categoryCode": {
+      "AE": "AE – Steuerschuldnerschaft des Leistungsempfängers",
+      "E": "E – Steuerbefreit",
+      "Z": "Z – Nullsteuersatz",
+      "G": "G – Steuerfreie Ausfuhr",
+      "O": "O – Services, die nicht der Steuer unterliegen",
+      "K": "K – Steuerfreie EEA innergemeinschaftliche Lieferung"
+    }
+  },
+  "tooltips": {
+    "exemptionCode": "VATEX-Code.",
+    "categoryCode": "[UNCL5305](https://docs.peppol.eu/poacc/billing/3.0/codelist/UNCL5305/) Code. Wird in E-Rechnungen verwendet. Ist kein Code angegeben, wird *S* für Steuern mit einem Steuersatz über Null und *Z* für Steuern mit einem Steuersatz von Null verwendet."
+  }
+}

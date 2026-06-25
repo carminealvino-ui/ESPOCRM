@@ -1,0 +1,23 @@
+{
+    "stream": {
+        "disabled": true
+    },
+    "history": {
+        "disabled": true
+    },
+    "_delimiter_": {
+        "disabled": true
+    },
+    "meetings": {
+        "index": 0
+    },
+    "activities": {
+        "index": 1
+    },
+    "cases": {
+        "index": 2
+    },
+    "tasks": {
+        "index": 3
+    }
+}

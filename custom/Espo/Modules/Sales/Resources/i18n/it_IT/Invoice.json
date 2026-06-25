@@ -1,0 +1,124 @@
+{
+  "labels": {
+    "Create Invoice": "Crea Fattura",
+    "Taxes": "Tasse",
+    "Shipping Providers": "Fornitori di spedizioni",
+    "Add Item": "Aggiungi Articolo",
+    "Templates": "Modelli",
+    "Items": "Articoli",
+    "Invoice Items": "Descrizione Fattura",
+    "E-Invoice": "Fattura elettronica",
+    "Validate": "Convalida",
+    "Payments": "Pagamenti",
+    "Create Debit Note": "Crea nota di debito"
+  },
+  "fields": {
+    "status": "Stato",
+    "number": "Numero",
+    "numberA": "Numero (incrementato automaticamente)",
+    "numberDebitNoteA": "Numero per note di debito (incremento automatico)",
+    "type": "Tipo",
+    "account": "Cliente",
+    "opportunity": "Opportunità",
+    "quote": "Preventivo",
+    "salesOrder": "Ordine di Vendita",
+    "precedingInvoice": "Fattura precedente",
+    "billingAddress": "Indirizzo di fatturazione",
+    "shippingAddress": "Indirizzo di spedizione",
+    "billingContact": "Contatto di fatturazione",
+    "shippingContact": "Contatto di spedizione",
+    "tax": "Profilo fiscale",
+    "taxRate": "Aliquota Fiscale",
+    "shippingProvider": "Corriere per la spedizione",
+    "taxAmount": "Ammontare dell’imposta",
+    "discountAmount": "Totale Sconto",
+    "amount": "Importo",
+    "preDiscountedAmount": "Importo pre-sconto",
+    "itemList": "Lista articoli",
+    "dateInvoiced": "Data di fatturazione",
+    "dateDue": "Data Scadenza",
+    "weight": "Peso",
+    "amountConverted": "Importo (convertito)",
+    "preDiscountedAmountConverted": "Importo pre-sconto (convertito)",
+    "discountAmountConverted": "Importo sconto (convertito)",
+    "grandTotalAmountConverted": "Totale generale (convertito)",
+    "grandTotalAmount": "Totale Complessivo",
+    "grandTotalAmountCurrency": "Valuta totale generale",
+    "taxAmountCurrency": "Importo imposta Valuta",
+    "taxAmountConverted": "Importo dell'imposta (convertito)",
+    "discountAmountCurrency": "Importo sconto Valuta",
+    "amountCurrency": "Importo Valuta",
+    "preDiscountedAmountCurrency": "Valuta dell'importo pre-sconto",
+    "currency": "Valuta",
+    "priceBook": "Listino Prezzi",
+    "buyerReference": "Riferimento dell'acquirente",
+    "purchaseOrderReference": "Riferimento ordine di acquisto",
+    "note": "Nota",
+    "amountDue": "Importo Dovuto",
+    "amountDueCurrency": "Importo dovuto Valuta",
+    "paymentMethods": "Metodi di pagamento",
+    "paymentMethod": "Metodo di pagamento principale",
+    "roundingProfile": "Profilo di arrotondamento",
+    "paymentTermsProfile": "Profilo termini di pagamento",
+    "installments": "Rate di pagamento",
+    "paymentTermsNote": "Nota termini di pagamento",
+    "overdueDays": "Giorni di ritardo"
+  },
+  "links": {
+    "items": "Articoli",
+    "billingContact": "Contatto di fatturazione",
+    "shippingContact": "Contatto di spedizione",
+    "shippingProvider": "Corriere per la spedizione",
+    "opportunity": "Opportunità",
+    "account": "Cliente",
+    "tax": "Profilo fiscale",
+    "quote": "Preventivo",
+    "salesOrder": "Ordine di Vendita",
+    "precedingInvoice": "Fattura precedente",
+    "debitNotes": "Note di debito",
+    "priceBook": "Listino Prezzi",
+    "creditNotes": "Note di credito",
+    "paymentRequests": "Richieste di Pagamento",
+    "paymentMethods": "Metodi di pagamento",
+    "subscriptionPeriods": "Periodi di abbonamento",
+    "subscriptionUpdates": "Aggiornamenti abbonamento",
+    "roundingProfile": "Profilo di arrotondamento",
+    "paymentTermsProfile": "Profilo termini di pagamento",
+    "installments": "Rate"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Issued": "Emessa",
+      "Paid": "Pagato",
+      "Canceled": "Annullato"
+    },
+    "type": {
+      "Invoice": "Fattura",
+      "Debit Note": "Nota di debito"
+    },
+    "eInvoiceFormats": {
+      "Peppol": "Fatturazione PEPPOL BIS 3.0"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperto",
+    "paid": "Pagato",
+    "openIssued": "Emessa, aperta"
+  },
+  "messages": {
+    "cannotRemoveIfAllocations": "Non è possibile eliminare la fattura perché sono presenti pagamenti assegnati.",
+    "cannotChangeCurrencyIfAllocations": "Non è possibile modificare la valuta perché sono presenti pagamenti assegnati alla fattura.",
+    "cannotConvertWithPaymentAllocations": "Impossibile convertire la valuta: la fattura ha pagamenti assegnati.",
+    "invoiceIsValid": "La fattura è valida",
+    "ublRuleValidationFailure": "Fattura non valida.\n\nID regola non riuscita: '{ruleId}'\n\n{message}"
+  },
+  "eInvoiceFields": {
+    "eInvoiceFormat": "Formato fattura elettronica",
+    "format": "Formato"
+  },
+  "reportValues": {
+    "current": "Corrente",
+    "days": "giorni"
+  }
+}

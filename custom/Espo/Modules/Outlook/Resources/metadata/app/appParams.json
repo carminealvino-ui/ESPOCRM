@@ -1,0 +1,5 @@
+{
+    "outlookParams": {
+        "className": "\\Espo\\Modules\\Outlook\\Core\\AppParams\\OutlookParams"
+    }
+}

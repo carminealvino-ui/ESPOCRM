@@ -1,7 +1,10 @@
 {
     "scanRoots": [
         "custom/Espo/Custom",
-        "client/custom"
+        "client/custom",
+        "custom/Espo/Modules/Sales/Resources",
+        "custom/Espo/Modules/Sales/Hooks",
+        "custom/Espo/Modules/Sales/Classes"
     ],
     "prodToRepoPathAliases": [
         {
@@ -24,13 +27,14 @@
     "excludePathContains": [
         "/.git/",
         "/node_modules/",
-        "/custom/Espo/Custom/client/custom-views/cache"
+        "/custom/Espo/Custom/client/custom-views/cache",
+        "/Modules/Sales/vendor/"
     ],
     "excludePathRegex": [
         "#/i18n/(?!it_IT/)#"
     ],
     "github": {
         "repository": "carminealvino-ui/ESPOCRM",
-        "branch": "cursor/opportunity-globallogic-9999"
+        "branch": "main"
     }
 }

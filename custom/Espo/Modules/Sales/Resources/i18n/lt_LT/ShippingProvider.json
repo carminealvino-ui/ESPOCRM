@@ -1,0 +1,8 @@
+{
+    "labels": {
+        "Create ShippingProvider": "Sukurti pristatymo teikėją"
+    },
+    "fields": {
+        "website": "Interneto svetainė"
+    }
+}

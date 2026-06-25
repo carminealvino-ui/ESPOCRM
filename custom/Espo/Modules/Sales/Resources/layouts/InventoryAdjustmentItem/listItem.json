@@ -1,0 +1,6 @@
+[
+    {"name": "name"},
+    {"name": "inventoryNumber", "width": 28},
+    {"name": "newQuantityOnHand", "width": 15},
+    {"name": "quantity", "width": 12}
+]

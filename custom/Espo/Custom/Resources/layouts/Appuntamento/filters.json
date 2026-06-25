@@ -1,0 +1,21 @@
+[
+    "parent",
+    "dataAppuntamento",
+    "indirizzo",
+    "cAP",
+    "cAPCodice",
+    "cAPDescrizione",
+    "callCenter",
+    "azienda",
+    "fornitorePartner",
+    "productBrand",
+    "lineaProdotto",
+    "tipo",
+    "status",
+    "sottostato",
+    "esito",
+    "syncConGoogle",
+    "color",
+    "assignedUsers",
+    "teams"
+]

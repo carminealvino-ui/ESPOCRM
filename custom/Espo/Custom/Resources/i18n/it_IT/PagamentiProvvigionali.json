@@ -1,0 +1,21 @@
+{
+    "labels": {
+        "Create PagamentiProvvigionali": "Creare Pagamento Provvigionale"
+    },
+    "fields": {
+        "opportunita": "Opportunità",
+        "name": "Pagamento",
+        "dataPagamento": "Data Pagamento",
+        "importo": "Importo",
+        "importoCurrency": "Importo (Valuta)",
+        "importoConverted": "Importo (Convertito)",
+        "cliente": "Cliente",
+        "lead": "Lead",
+        "dataFattura": "Data Fattura"
+    },
+    "links": {
+        "opportunita": "Opportunità",
+        "cliente": "Cliente",
+        "lead": "Lead"
+    }
+}

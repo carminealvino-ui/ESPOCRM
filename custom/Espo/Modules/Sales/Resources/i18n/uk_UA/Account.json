@@ -1,0 +1,10 @@
+{
+  "links": {
+    "quotes": "Пропозиції",
+    "quoteItems": "Пункти пропозицій",
+    "salesOrders": "Замовлення",
+    "salesOrderItems": "Пункти замовлення",
+    "invoices": "Рахунки-фактури",
+    "invoiceItems": "Пункти рахунку-фактури"
+  }
+}

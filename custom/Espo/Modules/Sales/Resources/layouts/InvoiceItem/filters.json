@@ -1,0 +1,13 @@
+[
+    "account",
+    "invoice",
+    "product",
+    "invoiceStatus",
+    "quantity",
+    "taxCode",
+    "listPriceConverted",
+    "unitPriceConverted",
+    "amountConverted",
+    "createdBy",
+    "createdAt"
+]

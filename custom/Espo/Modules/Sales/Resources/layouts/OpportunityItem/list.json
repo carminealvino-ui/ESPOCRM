@@ -1,0 +1,7 @@
+[
+    {"name":"name", "link": true},
+    {"name":"opportunity", "width": 27},
+    {"name":"quantity", "width": 6},
+    {"name":"unitPrice", "align": "right", "width": 18},
+    {"name":"amount", "align": "right", "width": 18}
+]

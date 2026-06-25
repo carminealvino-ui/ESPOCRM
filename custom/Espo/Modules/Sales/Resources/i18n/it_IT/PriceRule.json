@@ -1,0 +1,71 @@
+{
+  "labels": {
+    "Create PriceRule": "Crea Regola"
+  },
+  "fields": {
+    "priceBook": "Listino Prezzi",
+    "status": "Stato",
+    "productCategory": "Categoria Prodotto",
+    "minQuantity": "Quantità min",
+    "price": "Prezzo",
+    "dateStart": "Data di Inizio",
+    "dateEnd": "Data Fine",
+    "minQty": "Qtà minima",
+    "percentage": "Percentuale",
+    "discount": "Sconto",
+    "target": "Destinazione",
+    "condition": "Condizione",
+    "conditionSelect": "Selezione della Condizione",
+    "roundingMethod": "Metodo Arrotondamento",
+    "roundingFactor": "Fattore di arrotondamento",
+    "surcharge": "Supplemento",
+    "currency": "Valuta",
+    "basedOn": "Basato su",
+    "supplier": "Fornitore",
+    "timeline": "Date di validità"
+  },
+  "links": {
+    "supplier": "Fornitore",
+    "productCategory": "Categoria Prodotto",
+    "condition": "Condizione",
+    "priceBook": "Listino Prezzi",
+    "product": "Prodotto"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    },
+    "basedOn": {
+      "Unit": "Unità",
+      "Price Book": "Listino Prezzi",
+      "Supplier": "Fornitore",
+      "Cost": "Costo"
+    },
+    "target": {
+      "All": "Tutti",
+      "Product Category": "Categoria Prodotto",
+      "Conditional": "Condizionale"
+    },
+    "percentageType": {
+      "Discount": "Sconto",
+      "Markup": "Ricarico"
+    },
+    "roundingFactor": {
+      "Half Up": "Metà Su",
+      "Up": "Su",
+      "Down": "Giù"
+    }
+  },
+  "tooltips": {
+    "minQuantity": "La regola verrà applicata solo se la quantità di articoli venduti supera il valore specificato.",
+    "currency": "L'importo verrà convertito nella valuta specificata prima dell'arrotondamento. Definisce anche la valuta del supplemento.",
+    "basedOn": "Cosa usare come prezzo base.\n\n* Unità – il prezzo unitario definito nel Listino prezzi o definito nel record del Prodotto; Non vengono applicate le regole del listino prezzi;\n* Listino prezzi – si ottiene dallo stesso Listino prezzi; vengono applicate le regole;\n* Fornitore – il prezzo del Fornitore;\n* Costo: il costo specificato nel record del prodotto.",
+    "surcharge": "Un importo da aggiungere dopo l'applicazione della percentuale e dell'arrotondamento. Usa un numero negativo per sottrarre.",
+    "roundingFactor": "L'importo verrà arrotondato al multiplo del valore specificato.",
+    "percentage": "Una percentuale del prezzo standard da detrarre o aggiungere."
+  },
+  "presetFilters": {
+    "active": "Attivo"
+  }
+}

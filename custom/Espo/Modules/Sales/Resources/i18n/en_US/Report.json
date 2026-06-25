@@ -1,0 +1,116 @@
+{
+    "internalReports": {
+        "Sales:LedgerSummary": "Ledger Summary",
+        "Sales:SalesRevenue": "Sales Revenue",
+        "Sales:SalesByCustomer": "Sales by Customer",
+        "Sales:SalesByProduct": "Sales by Product",
+        "Sales:SalesByProductCategory": "Sales by Product Category",
+        "Sales:CustomerBalances": "Customer Balances",
+        "Sales:CustomerAging": "Customer Aging",
+        "Sales:SalesTaxSummary": "Sales Tax Summary",
+        "Sales:PurchaseTaxSummary": "Purchase Tax Summary",
+        "Sales:TaxSalesList": "Sales List by Tax Code",
+        "Sales:SupplierBalances": "Supplier Balances",
+        "Sales:PurchaseExpenditure": "Purchase Expenditure",
+        "Sales:PurchasesByProduct": "Purchases by Product"
+    },
+    "salesReportParams": {
+        "includeShipping": "Include Shipping",
+        "includeZero": "Include Zero",
+        "maxSize": "Max number of records",
+        "basis": "Basis",
+        "taxBasis": "Basis",
+        "salesTaxCodes": "Sales Tax Codes",
+        "purchaseTaxCodes": "Purchase Tax Codes",
+        "inboundPaymentMethods": "Inbound Payment Methods",
+        "outboundPaymentMethods": "Outbound Payment Methods",
+        "accountNumberFunds": "Funds Account Number",
+        "accountNumberAr": "Account Receivable Account Number",
+        "accountNumberAp": "Account Payable Number",
+        "accountNumberRevenueSales": "Revenue Sales Account Number",
+        "accountNumberRevenueRounding": "Revenue Rounding Account Number",
+        "accountNumberRevenueRealizedFxGainLoss": "Revenue Realized FX Gain/Loss Account Number",
+        "accountNumberExpensesPurchase": "Expenses Purchase Account Number",
+        "accountNumberExpensesWriteOffs": "Expenses Write-Offs Account Number",
+        "accountNumberTaxSales": "Tax Sales Account Number",
+        "accountNumberTaxPurchase": "Tax Purchase Account Number"
+    },
+    "salesReportFields": {
+        "asOfDate": "As of Date",
+        "date": "Date"
+    },
+    "salesReportOptions": {
+        "taxBasis": {
+            "Accrual": "Accrual",
+            "Cash": "Cash"
+        },
+        "basis": {
+            "dateDue": "Date Due",
+            "installmentDateDue": "Installment Date Due",
+            "dateInvoiced": "Date Invoiced"
+        },
+        "groupBy": {
+            "Month": "Month",
+            "Quarter": "Quarter",
+            "Year": "Year",
+            "Fiscal Quarter": "Fiscal Quarter",
+            "Fiscal Year": "Fiscal Year",
+            "Week": "Week"
+        },
+        "orderByField": {
+            "amount": "Amount",
+            "productCategory": "Product Category",
+            "account": "Account",
+            "supplier": "Supplier"
+        }
+    },
+    "salesReportColumns": {
+        "amountOpening": "Opening Balance",
+        "amountClosing": "Closing Balance",
+        "bucket": "Bucket",
+        "amount": "Amount",
+        "debits": "Debits",
+        "credits": "Credits",
+        "debit": "Debit",
+        "credit": "Credit",
+        "entryLine": "Journal Entry Line",
+        "accountNumber": "Account Number"
+    },
+    "salesLedgerLabels": {
+        "Funds_Inbound": "Funds · In",
+        "Funds_Outbound": "Funds · Out",
+        "AR_Invoices": "AR · Invoices",
+        "AR_Credits": "AR · Credits",
+        "AR_WriteOffs": "AR · Write-offs",
+        "AR_Payments_Inbound": "AR · Payments · In",
+        "AR_Payments_Outbound": "AR · Payments · Out",
+        "AR_FX_Adjustments": "AR · FX Adjustments",
+        "Tax_Purchase_Bills": "Tax Purchase · Bills",
+        "Tax_Purchase_Credits": "Tax Purchase · Credits",
+        "Revenue_Invoices": "Revenue · Invoices",
+        "Revenue_Credits": "Revenue · Credits",
+        "Revenue_Shipping_Invoices": "Revenue · Shipping · Invoices",
+        "Revenue_Shipping_Credits": "Revenue · Shipping · Credits",
+        "Revenue_Rounding": "Revenue · Rounding",
+        "Revenue_Realized_FX_Gain_Loss": "Revenue · Realized FX Gain/Loss",
+        "AP_Bills": "AP · Bills",
+        "AP_Credits": "AP · Credits",
+        "AP_Payments_Inbound": "AP · Payments · In",
+        "AP_Payments_Outbound": "AP · Payments · Out",
+        "AP_FX_Adjustments": "AP · FX Adjustments",
+        "Tax_Sales_Invoices": "Tax Sales · Invoices",
+        "Tax_Sales_Credits": "Tax Sales · Credits",
+        "Expenses_Bills": "Expenses · Bills",
+        "Expenses_Credits": "Expenses · Credits",
+        "Expenses_Shipping_Bills": "Expenses · Shipping · Bills",
+        "Expenses_Shipping_Credits": "Expenses · Shipping · Credits",
+        "Expenses_WriteOffs": "Expenses · Write-offs"
+    },
+    "tooltips": {
+        "salesReportPaymentMethods": "Selected payment methods will be extracted into separate journal entry lines. Specify an account number for each.",
+        "salesReportSalesTaxCodes": "Selected sales tax codes will be extracted into separate journal entry lines. Specify an account number for each. Usually, they go to a deferred tax liabilities account.",
+        "salesReportPurchaseTaxCodes": "Selected sales tax codes will be extracted into separate journal entry lines. Specify an account number for each. Usually, they go to a deferred tax assets or expenses account.",
+        "salesReportAccountNumberTaxSales": "Not selected sales tax codes will be posted to this account. Usually, it goes to a deferred tax liabilities account.",
+        "salesReportAccountNumberTaxPurchase": "Not selected purchase tax codes will be posted to this account. Usually, it goes to a deferred tax assets or expenses account."
+    }
+}

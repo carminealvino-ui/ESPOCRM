@@ -1,0 +1,132 @@
+{
+  "labels": {
+    "Create Product": "Neues Produkt",
+    "Price": "Preis",
+    "Brands": "Marken",
+    "Categories": "Kategorien",
+    "Price Books": "Preisbücher",
+    "Quantity": "Menge",
+    "Warehouses": "Lager",
+    "Generate": "Generieren",
+    "Orders": "Aufträge",
+    "Select Variant": "Variante auswählen",
+    "Select Variants": "Varianten auswählen",
+    "Select Template": "Vorlage auswählen",
+    "View Price": "Preis anzeigen"
+  },
+  "fields": {
+    "brand": "Marke",
+    "partNumber": "Teilenummer",
+    "category": "Kategorie",
+    "pricingType": "Preistyp",
+    "pricingFactor": "Preisfaktor",
+    "costPrice": "Einstandspreis",
+    "listPrice": "Listpreis",
+    "unitPrice": "Einzelpreis",
+    "costPriceCurrency": "Einstandpreis Währung",
+    "listPriceCurrency": "Listpreis Währung",
+    "unitPriceCurrency": "Einzelpreis Währung",
+    "costPriceConverted": "Einstandspreis (konvertiert)",
+    "listPriceConverted": "Listpreis (konvertiert)",
+    "unitPriceConverted": "Einzelpreis (konvertiert)",
+    "isTaxFree": "Steuerfrei",
+    "weight": "Gewicht",
+    "suppliers": "Lieferanten",
+    "unitPriceSelect": "Einzelpreis (Auswählen)",
+    "unitPriceSelectCurrency": "Einzelpreis (Auswählen) (Währung)",
+    "allowFractionalQuantity": "Gebrochene Stückzahlen zulassen",
+    "quantity": "Verfügbar",
+    "quantityReserved": "Reserviert",
+    "quantitySoftReserved": "Weich Reserviert",
+    "quantityOnHand": "Zum Lagerbestand",
+    "quantityInTransit": "im Transit",
+    "quantityOnOrder": "Auf Bestellung",
+    "quantityWarehouse": "Im Lager verfügbar",
+    "quantityWarehouseOnHand": "Im Lager verfügbar",
+    "quantityWarehouseReserved": "Im Lager reserviert",
+    "qty": "Mng",
+    "isInventory": "Ist Inventar",
+    "inventoryNumberType": "Inventarnummertyp",
+    "warehousesOnHand": "Lager (vorhanden)",
+    "type": "Typ",
+    "template": "Vorlage",
+    "attributes": "Attribute",
+    "variantAttributeOptions": "Attributwerte",
+    "variantOrder": "Variantenreihenfolge",
+    "expirationDays": "Verfalltage",
+    "removalStrategy": "Entfernungsstrategie",
+    "taxClasses": "Steuerklassen",
+    "isSubscribable": "Abonnierbar",
+    "isSellable": "Verkaufbar",
+    "isPurchasable": "Kaufbar",
+    "itemType": "Artikeltyp"
+  },
+  "links": {
+    "brand": "Marke",
+    "category": "Kategorie",
+    "prices": "Preise",
+    "supplierPrices": "Lieferantenpreise",
+    "inventoryNumbers": "Inventarnummern",
+    "inventoryTransactions": "Inventartransaktionen",
+    "attributes": "Attribute",
+    "attributeOptions": "Attributoptionen",
+    "variantAttributeOptions": "Variante Attributoptionen",
+    "template": "Vorlage",
+    "variants": "Varianten",
+    "variantInventoryNumbers": "Varianteninventarnummern",
+    "inventoryAdjustmentItems": "Anpassungen",
+    "taxClasses": "Steuerklassen"
+  },
+  "options": {
+    "status": {
+      "Available": "Aktiv",
+      "Unavailable": "Inaktiv"
+    },
+    "itemType": {
+      "Goods": "Waren"
+    },
+    "pricingType": {
+      "Same as List": "Gleich wie Liste",
+      "Fixed": "Fest",
+      "Discount from List": "Rabatt vom Listenpreis",
+      "Markup over Cost": "Gewinnaufschlag",
+      "Profit Margin": "Gewinnspanne"
+    },
+    "inventoryNumberType": {
+      "Batch": "Charge",
+      "Serial": "Serien"
+    },
+    "type": {
+      "Regular": "Regulär",
+      "Template": "Vorlage",
+      "Variant": "Variante"
+    }
+  },
+  "presetFilters": {
+    "available": "Verfügbar",
+    "inventory": "Inventar",
+    "allVariants": "Alle Varianten",
+    "availableVariants": "Verfügbare Varianten",
+    "subscribable": "Abonnierbar",
+    "availableGoods": "Aktive Waren",
+    "sellable": "Verkaufbar",
+    "invoiceable": "Fakturierbar",
+    "purchasable": "Kaufbar"
+  },
+  "tabs": {
+    "inventory": "Inventar",
+    "prices": "Preise",
+    "variants": "Varianten",
+    "template": "Vorlage",
+    "orders": "Aufträge"
+  },
+  "messages": {
+    "generateVariantsConfirmation": "Alle möglichen Variantenkombinationen generieren?",
+    "variantsGenerated": "Erledigt. {count} Varianten generiert.",
+    "attributesRequired": "Mindestens ein Attribut ist erforderlich",
+    "optionsRequired": "Optionen sind erforderlich"
+  },
+  "massActions": {
+    "updatePrice": "Preis aktualisieren"
+  }
+}

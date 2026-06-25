@@ -1,0 +1,14 @@
+{
+    "_delimiter_": {
+        "disabled": true
+    },
+    "prices": {
+        "index": 0
+    },
+    "rules": {
+        "index": 1
+    },
+    "childPriceBooks": {
+        "index": 2
+    }
+}

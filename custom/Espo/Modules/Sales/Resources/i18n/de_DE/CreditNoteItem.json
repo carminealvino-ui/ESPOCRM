@@ -1,0 +1,33 @@
+{
+  "fields": {
+    "qty": "Mng",
+    "quantity": "Menge",
+    "quantityInt": "Menge (Int)",
+    "unitPrice": "Einzelpreis",
+    "amount": "Betrag",
+    "taxRate": "Steuersatz",
+    "product": "Produkt",
+    "order": "Positionsnummer",
+    "creditNote": "Gutschrift",
+    "creditNoteStatus": "Gutschrift Status",
+    "description": "Beschreibung",
+    "amountConverted": "Betrag (konvertiert)",
+    "unitPriceConverted": "Einzelpreis (konvertiert)",
+    "account": "Firma",
+    "unitPriceCurrency": "Einzelpreis Währung",
+    "amountCurrency": "Betragswährung",
+    "productIsSubscribable": "Produkt ist abonnierbar",
+    "periodStartDate": "Zeitraum Startdatum",
+    "periodEndDate": "Zeitraum Enddatum",
+    "taxCode": "Steuercode",
+    "taxes": "Steuerbetrag",
+    "amountLocal": "Lokaler Betrag",
+    "dateIssued": "Ausstellungsdatum"
+  },
+  "links": {
+    "creditNote": "Gutschrift",
+    "product": "Produkt",
+    "account": "Firma",
+    "taxCode": "Steuercode"
+  }
+}

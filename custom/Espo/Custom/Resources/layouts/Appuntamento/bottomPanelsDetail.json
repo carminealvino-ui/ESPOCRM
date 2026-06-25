@@ -1,0 +1,14 @@
+{
+    "scheduler": {
+        "disabled": true
+    },
+    "_delimiter_": {
+        "disabled": true
+    },
+    "chiamate": {
+        "index": 0
+    },
+    "opportunita": {
+        "index": 1
+    }
+}

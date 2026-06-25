@@ -1,0 +1,24 @@
+{
+  "fields": {
+    "qty": "Mng",
+    "quantity": "Menge",
+    "quantityInt": "Menge (Int)",
+    "product": "Produkt",
+    "order": "Positionsnummer",
+    "deliveryOrder": "Lieferauftrag",
+    "weight": "Gewicht",
+    "unitWeight": "Einzelgewicht",
+    "description": "Beschreibung",
+    "account": "Firma",
+    "deliveryOrderStatus": "Lieferauftragsstatus",
+    "inventoryNumber": "Inventarnummer",
+    "inventoryNumberType": "Inventarnummertyp",
+    "isInventory": "Ist Inventar"
+  },
+  "links": {
+    "deliveryOrder": "Lieferauftrag",
+    "product": "Produkt",
+    "account": "Firma",
+    "inventoryNumber": "Inventarnummer"
+  }
+}

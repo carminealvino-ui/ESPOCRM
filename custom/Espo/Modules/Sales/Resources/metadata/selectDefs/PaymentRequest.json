@@ -1,0 +1,11 @@
+{
+    "primaryFilterClassNameMap": {
+        "actual": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentRequest\\PrimaryFilters\\Actual",
+        "paid": "Espo\\Modules\\Sales\\Classes\\Select\\PaymentRequest\\PrimaryFilters\\Paid"
+    },
+    "selectAttributesDependencyMap": {
+        "paymentUrl": [
+            "referenceId"
+        ]
+    }
+}

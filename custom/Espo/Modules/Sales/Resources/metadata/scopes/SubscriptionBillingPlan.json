@@ -1,0 +1,14 @@
+{
+    "entity": true,
+    "object": false,
+    "tab": true,
+    "acl": true,
+    "aclLevelList": [
+        "all",
+        "team",
+        "no"
+    ],
+    "module": "Sales",
+    "importable": true,
+    "preserveAuditLog": true
+}

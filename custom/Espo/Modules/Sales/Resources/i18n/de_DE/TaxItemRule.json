@@ -1,0 +1,26 @@
+{
+  "labels": {
+    "Create TaxItemRule": "Steuerprofil-Positionsregel erstellen"
+  },
+  "fields": {
+    "tax": "Steuerprofil",
+    "class": "Klasse",
+    "rate": "Satz",
+    "taxCode": "Steuercode",
+    "taxDisplay": "Steuerbetrag"
+  },
+  "links": {
+    "tax": "Steuerprofil",
+    "class": "Klasse",
+    "taxCode": "Steuercode"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "presetFilters": {
+    "active": "Aktiv"
+  }
+}

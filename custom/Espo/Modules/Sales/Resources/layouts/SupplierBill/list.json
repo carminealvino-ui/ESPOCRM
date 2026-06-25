@@ -1,0 +1,45 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "supplier",
+        "width": 25
+    },
+    {
+        "name": "reference",
+        "width": 10,
+        "hidden": true
+    },
+    {
+        "name": "dateInvoiced",
+        "width": 10
+    },
+    {
+        "name": "dateDue",
+        "width": 10,
+        "hidden": true
+    },
+    {
+        "name": "amountDue",
+        "width": 12,
+        "align": "right",
+        "hidden": true
+    },
+    {
+        "name": "amount",
+        "width": 12,
+        "align": "right",
+        "hidden": true
+    },
+    {
+        "name": "grandTotalAmount",
+        "width": 12,
+        "align": "right"
+    }
+]

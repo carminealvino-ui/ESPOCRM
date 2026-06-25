@@ -1,0 +1,35 @@
+{
+  "labels": {
+    "Create PaymentMethod": "Crea Metodo"
+  },
+  "fields": {
+    "status": "Stato",
+    "channel": "Canale",
+    "instructions": "Istruzioni",
+    "accounts": "Conti",
+    "isInbound": "Entrata",
+    "isOutbound": "Uscita"
+  },
+  "links": {
+    "paymentEntries": "Pagamenti",
+    "requests": "Richieste di Pagamento",
+    "channel": "Canale",
+    "invoices": "Fatture",
+    "accounts": "Conti",
+    "subscriptions": "Abbonamenti"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  },
+  "presetFilters": {
+    "active": "Attivo",
+    "activeInbound": "Entrata attiva",
+    "activeOutbound": "Uscita attiva"
+  },
+  "tooltips": {
+    "instructions": "Testo da mostrare al cliente nella pagina di pagamento.\n\nSegnaposto disponibili:\n* '{number}' – numero della richiesta di pagamento\n* '{invoiceNumbers}' – numeri di fattura"
+  }
+}

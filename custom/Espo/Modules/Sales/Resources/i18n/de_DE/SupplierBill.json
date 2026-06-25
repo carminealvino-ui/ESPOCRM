@@ -1,0 +1,64 @@
+{
+  "labels": {
+    "Create SupplierBill": "Eingangsrechnung erstellen",
+    "Items": "Artikel"
+  },
+  "fields": {
+    "reference": "Referenz",
+    "number": "Nummer",
+    "numberA": "Nummer (auto-inkrement)",
+    "account": "Firma",
+    "supplier": "Lieferant",
+    "purchaseOrder": "Bestellungen",
+    "billingAddress": "Rechnungsadresse",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "supplierAddress": "Lieferantenadresse",
+    "supplierAddressStreet": "Straße (Lieferant)",
+    "supplierAddressCity": "Stadt (Lieferant)",
+    "supplierAddressState": "Bundesland (Lieferant)",
+    "supplierAddressCountry": "Land (Lieferant)",
+    "supplierAddressPostalCode": "PLZ (Lieferant)",
+    "tax": "Steuerprofil",
+    "taxRate": "Steuersatz",
+    "shippingProvider": "Versender",
+    "taxAmount": "Steuerbetrag",
+    "amount": "Betrag",
+    "grandTotalAmount": "Gesamtbetrag",
+    "itemList": "Artikelliste",
+    "dateInvoiced": "Rechnungsdatum",
+    "dateDue": "Fälligkeitsdatum",
+    "amountConverted": "Betrag (konvertiert)",
+    "taxAmountConverted": "Steuerbetrag (konvertiert)",
+    "grandTotalAmountConverted": "Gesamtbetrag (konvertiert)",
+    "taxAmountCurrency": "Steuerbetrag Währung",
+    "amountCurrency": "Betragswährung",
+    "currency": "Währung",
+    "isDone": "Erledigt",
+    "amountDue": "Fälliger Betrag",
+    "amountDueCurrency": "Fälliger Betrag Währung",
+    "document": "Originaldokument"
+  },
+  "links": {
+    "items": "Artikel",
+    "purchaseOrder": "Bestellungen",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "shippingProvider": "Versender",
+    "tax": "Steuerprofil",
+    "account": "Firma",
+    "supplier": "Lieferant",
+    "supplierCredits": "Eingangsgutschriften"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Issued": "Ausgestellt",
+      "Paid": "Bezahlt",
+      "Canceled": "Storniert"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "paid": "Bezahlt",
+    "openIssued": "Offen Ausgestellt"
+  }
+}

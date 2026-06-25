@@ -1,0 +1,17 @@
+{
+  "labels": {
+    "Create ProductAttribute": "Crea attributo",
+    "Move to Top": "Metti in cima",
+    "Move Up": "Sposta Su",
+    "Move Down": "Sposta giù",
+    "Move to Bottom": "Sposta in basso"
+  },
+  "fields": {
+    "order": "Ordine",
+    "options": "Opzioni"
+  },
+  "links": {
+    "options": "Opzioni",
+    "products": "Prodotti"
+  }
+}

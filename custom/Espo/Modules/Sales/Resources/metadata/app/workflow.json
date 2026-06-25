@@ -1,0 +1,42 @@
+{
+    "serviceActions": {
+        "Quote": {
+            "addQuoteItemList": {
+                "className": "Espo\\Modules\\Sales\\Classes\\ServiceActions\\Quote\\AddItemList"
+            },
+            "convertCurrency": {
+                "className": "Espo\\Modules\\Sales\\Classes\\ServiceActions\\Quote\\ConvertCurrency"
+            },
+            "sendInEmail": {
+                "className": "Espo\\Modules\\Sales\\Classes\\ServiceActions\\Quote\\SendInEmail"
+            }
+        },
+        "Invoice": {
+            "addInvoiceItemList": {
+                "className": "Espo\\Modules\\Sales\\Classes\\ServiceActions\\Quote\\AddItemList"
+            },
+            "convertCurrency": {
+                "className": "Espo\\Modules\\Sales\\Classes\\ServiceActions\\Quote\\ConvertCurrency"
+            },
+            "sendInEmail": {
+                "className": "Espo\\Modules\\Sales\\Classes\\ServiceActions\\Quote\\SendInEmail"
+            }
+        },
+        "SalesOrder": {
+            "addSalesOrderItemList": {
+                "className": "Espo\\Modules\\Sales\\Classes\\ServiceActions\\Quote\\AddItemList"
+            },
+            "convertCurrency": {
+                "className": "Espo\\Modules\\Sales\\Classes\\ServiceActions\\Quote\\ConvertCurrency"
+            },
+            "sendInEmail": {
+                "className": "Espo\\Modules\\Sales\\Classes\\ServiceActions\\Quote\\SendInEmail"
+            }
+        },
+        "Opportunity": {
+            "convertCurrency": {
+                "className": "Espo\\Modules\\Sales\\Classes\\ServiceActions\\Quote\\ConvertCurrency"
+            }
+        }
+    }
+}

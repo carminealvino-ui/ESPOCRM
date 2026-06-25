@@ -1,0 +1,7 @@
+{
+    "fields": {
+        "outlookSkipPush": {
+            "forbidden": true
+        }
+    }
+}

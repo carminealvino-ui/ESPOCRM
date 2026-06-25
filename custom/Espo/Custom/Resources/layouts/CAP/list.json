@@ -1,0 +1,21 @@
+[
+    {
+        "name": "codiceCAP"
+    },
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "description"
+    },
+    {
+        "name": "macroArea"
+    },
+    {
+        "name": "area"
+    },
+    {
+        "name": "zona"
+    }
+]

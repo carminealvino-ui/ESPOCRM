@@ -1,0 +1,29 @@
+[
+    {
+        "name": "taxCode"
+    },
+    {
+        "name": "source",
+        "width": 18
+    },
+    {
+        "name": "baseAmount",
+        "align": "right",
+        "width": 15
+    },
+    {
+        "name": "amount",
+        "align": "right",
+        "width": 15
+    },
+    {
+        "name": "baseAmountLocal",
+        "align": "right",
+        "width": 15
+    },
+    {
+        "name": "amountLocal",
+        "align": "right",
+        "width": 15
+    }
+]

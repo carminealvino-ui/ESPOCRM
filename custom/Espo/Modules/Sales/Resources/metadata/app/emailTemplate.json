@@ -1,0 +1,42 @@
+{
+    "entityLinkMapping": {
+        "Quote": {
+            "Account": "account",
+            "Contact": "billingContact",
+            "Opportunity": "opportunity"
+        },
+        "SalesOrder": {
+            "Account": "account",
+            "Contact": "billingContact",
+            "Opportunity": "opportunity",
+            "Quote": "quote"
+        },
+        "Invoice": {
+            "Account": "account",
+            "Contact": "billingContact",
+            "Opportunity": "opportunity",
+            "Quote": "quote",
+            "SalesOrder": "salesOrder"
+        },
+        "ReturnOrder": {
+            "Account": "account",
+            "Contact": "billingContact",
+            "SalesOrder": "salesOrder"
+        },
+        "CreditNote": {
+            "Account": "account",
+            "Contact": "billingContact",
+            "Invoice": "invoice"
+        },
+        "PurchaseOrder": {
+            "Account": "account",
+            "Contact": "billingContact"
+        },
+        "ReceiptOrder": {
+            "Account": "account",
+            "PurchaseOrder": "purchaseOrder",
+            "ReturnOrder": "returnOrder",
+            "Contact": "shippingContact"
+        }
+    }
+}

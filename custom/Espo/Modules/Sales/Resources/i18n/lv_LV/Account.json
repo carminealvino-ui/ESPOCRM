@@ -1,0 +1,10 @@
+{
+    "links": {
+        "quotes": "Citāti",
+        "quoteItems": "Citāšu elementi",
+        "salesOrders": "Pārdošanas pasūtījumi",
+        "salesOrderItems": "Pārdošanas pasūtījuma posteņi",
+        "invoices": "Rēķini",
+        "invoiceItems": "Rēķina posteņi"
+    }
+}

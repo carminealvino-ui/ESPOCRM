@@ -1,0 +1,12 @@
+[
+    "account",
+    "salesOrder",
+    "product",
+    "salesOrderStatus",
+    "quantity",
+    "listPriceConverted",
+    "unitPriceConverted",
+    "amountConverted",
+    "createdBy",
+    "createdAt"
+]

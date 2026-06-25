@@ -1,0 +1,24 @@
+{
+    "labels": {
+        "Group Email Accounts": "Account Email di gruppo",
+        "Action History": "Cronologia Autenticazioni",
+        "Webhooks": "Webhooks",
+        "Lead Capture": "Generazione Lead"
+    },
+    "descriptions": {
+        "actionHistory": "Registro delle Autenticazioni Utente.",
+        "authLog": "Cronologia Autenticazioni"
+    },
+    "layouts": {
+        "list": "Elenco",
+        "listForAccount": "Elenco(per Account)",
+        "listForContact": "Elenco (per Contatto)",
+        "listItem": "Elenco(elemento)",
+        "listPortal": "Elenco(Portale)",
+        "listSmall": "Elenco(Ridotto)",
+        "listSmallPortal": "Elenco(Ridotto, Portale)"
+    },
+    "templates": {
+        "reportSendingList": "Report Elenco"
+    }
+}

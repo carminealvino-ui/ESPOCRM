@@ -1,0 +1,15 @@
+{
+    "kanbanViewMode": false,
+    "color": null,
+    "iconClass": "fas fa-building",
+    "relationshipPanels": {
+        "prospect": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        },
+        "provvigioni": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        }
+    }
+}

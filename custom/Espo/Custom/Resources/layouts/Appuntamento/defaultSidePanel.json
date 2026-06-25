@@ -1,0 +1,41 @@
+[
+    {
+        "name": "hookVersion"
+    },
+    {
+        "name": "zTL"
+    },
+    {
+        "name": "videoCallTelefonico"
+    },
+    {
+        "name": "location"
+    },
+    {
+        "name": "cAP"
+    },
+    {
+        "name": "cAPDescrizione"
+    },
+    {
+        "name": "cAPCodice"
+    },
+    {
+        "name": "prospect"
+    },
+    {
+        "name": "telefono"
+    },
+    {
+        "name": "syncConGoogle"
+    },
+    {
+        "name": "color"
+    },
+    {
+        "name": ":assignedUser"
+    },
+    {
+        "name": "teams"
+    }
+]

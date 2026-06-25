@@ -1,0 +1,178 @@
+{
+    "type": "floatExtended",
+    "view": "custom:views/fields/float-extended",
+    "params": [
+        {
+            "name": "required",
+            "type": "bool",
+            "default": false
+        },
+        {
+            "name": "default",
+            "type": "float"
+        },
+        {
+            "name": "min",
+            "type": "float"
+        },
+        {
+            "name": "max",
+            "type": "float"
+        },
+        {
+            "name": "decimalPlaces",
+            "type": "int",
+            "default": 2
+        },
+        {
+            "name": "audited",
+            "type": "bool"
+        },
+        {
+            "name": "readOnly",
+            "type": "bool"
+        },
+        {
+            "name": "readOnlyAfterCreate",
+            "type": "bool"
+        },
+        {
+            "name": "unit",
+            "type": "varchar"
+        },
+        {
+            "name": "RenderOn",
+            "type": "multiEnum",
+            "options": ["list", "detail", "kanban", "preview"],
+            "default": ["list", "detail", "kanban", "preview"]
+        },
+        {
+            "name": "isBold",
+            "type": "bool"
+        },
+        {
+            "name": "isItalic",
+            "type": "bool"
+        },
+        {
+            "name": "useColorLabel",
+            "type": "bool"
+        },
+        {
+            "name": "labelThresholdLowValue",
+            "type": "float"
+        },
+        {
+            "name": "labelThresholdLowClass",
+            "type": "enum",
+            "options": [
+                "label-default",
+                "label-primary",
+                "label-success",
+                "label-warning",
+                "label-danger",
+                "label-info",
+                "label-dark"
+            ],
+            "translated": true
+        },
+        {
+            "name": "labelThresholdHighValue",
+            "type": "float"
+        },
+        {
+            "name": "labelThresholdHighClass",
+            "type": "enum",
+            "options": [
+                "label-default",
+                "label-primary",
+                "label-success",
+                "label-warning",
+                "label-danger",
+                "label-info",
+                "label-dark"
+            ],
+            "translated": true
+        },
+        {
+            "name": "labelThresholdDefaultClass",
+            "type": "enum",
+            "options": [
+                "label-default",
+                "label-primary",
+                "label-success",
+                "label-warning",
+                "label-danger",
+                "label-info",
+                "label-dark"
+            ],
+            "translated": true
+        },
+        {
+            "name": "useColorText",
+            "type": "bool"
+        },
+        {
+            "name": "textThresholdLowValue",
+            "type": "float"
+        },
+        {
+            "name": "textThresholdLowClass",
+            "type": "enum",
+            "options": [
+                "text-muted",
+                "text-primary",
+                "text-success",
+                "text-info",
+                "text-warning",
+                "text-danger",
+                "text-dark"
+            ],
+            "translated": true
+        },
+        {
+            "name": "textThresholdHighValue",
+            "type": "float"
+        },
+        {
+            "name": "textThresholdHighClass",
+            "type": "enum",
+            "options": [
+                "text-muted",
+                "text-primary",
+                "text-success",
+                "text-info",
+                "text-warning",
+                "text-danger",
+                "text-dark"
+            ],
+            "translated": true
+        },
+        {
+            "name": "textThresholdDefaultClass",
+            "type": "enum",
+            "options": [
+                "text-muted",
+                "text-primary",
+                "text-success",
+                "text-info",
+                "text-warning",
+                "text-danger",
+                "text-dark"
+            ],
+            "translated": true
+        }
+    ],
+    "validationList": [
+        "required",
+        "min",
+        "max"
+    ],
+    "mandatoryValidationList": [
+        "valid"
+    ],
+    "filter": true,
+    "fieldDefs": {
+        "notNull": false
+    }
+}

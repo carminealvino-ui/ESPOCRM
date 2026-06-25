@@ -1,0 +1,45 @@
+[
+    {
+        "name": "product"
+    },
+    {
+        "name": "priceBook",
+        "width": 16
+    },
+    {
+        "name": "status",
+        "width": 8
+    },
+    {
+        "name": "dateStart",
+        "width": 10
+    },
+    {
+        "name": "dateEnd",
+        "width": 10
+    },
+    {
+        "name": "prezzoListinoIvaEsclusa",
+        "width": 11,
+        "align": "right",
+        "label": "Prezzo Listino IVA Esclusa"
+    },
+    {
+        "name": "prezzoListinoIvaInclusa",
+        "width": 11,
+        "align": "right",
+        "label": "Prezzo Listino IVA Inclusa"
+    },
+    {
+        "name": "prezzoCodice",
+        "width": 11,
+        "align": "right",
+        "label": "Prezzo Codice IVA Esclusa"
+    },
+    {
+        "name": "prezzoCodiceIvaInclusa",
+        "width": 11,
+        "align": "right",
+        "label": "Prezzo Codice IVA Inclusa"
+    }
+]

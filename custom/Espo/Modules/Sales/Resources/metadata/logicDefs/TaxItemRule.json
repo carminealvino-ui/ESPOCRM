@@ -1,0 +1,44 @@
+{
+    "fields": {
+        "taxCode": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "basis",
+                        "value": "Tax Code"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "basis",
+                        "value": "Tax Code"
+                    }
+                ]
+            }
+        },
+        "rate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "basis",
+                        "value": "Rate"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "basis",
+                        "value": "Rate"
+                    }
+                ]
+            }
+        }
+    }
+}

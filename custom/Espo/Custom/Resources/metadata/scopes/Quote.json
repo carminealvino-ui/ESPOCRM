@@ -1,0 +1,34 @@
+{
+    "stream": false,
+    "disabled": false,
+    "statusField": "status",
+    "kanbanStatusIgnoreList": null,
+    "stars": false,
+    "preserveAuditLog": true,
+    "collaborators": false,
+    "assignedUsers": false,
+    "doneStatusList": [
+        "Approved"
+    ],
+    "canceledStatusList": [
+        "Canceled"
+    ],
+    "lockableFieldList": [
+        "status",
+        "itemList",
+        "shippingCost",
+        "amount",
+        "dateQuoted",
+        "account",
+        "opportunity",
+        "number",
+        "priceBook",
+        "billingAddress",
+        "shippingAddress",
+        "tax",
+        "taxRate",
+        "shippingProvider",
+        "billingContact",
+        "shippingContact"
+    ]
+}

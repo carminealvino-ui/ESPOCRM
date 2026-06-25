@@ -1,0 +1,8 @@
+[
+    {"name": "name"},
+    {"name": "quantity", "width": 9},
+    {"name": "taxes", "width": 12},
+    {"name": "listPrice", "width": 13, "align": "right"},
+    {"name": "unitPrice", "width": 14, "align": "right"},
+    {"name": "amount", "width": 14, "align": "right"}
+]

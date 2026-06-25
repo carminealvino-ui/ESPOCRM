@@ -1,0 +1,22 @@
+[
+    "status",
+    "supplier",
+    "assignedUser",
+    "teams",
+    "createdAt",
+    "createdBy",
+    "dateIssued",
+    "dateDue",
+    "postingDate",
+    "number",
+    "reference",
+    "amountConverted",
+    "grandTotalAmountConverted",
+    "amountDue",
+    "products",
+    "shippingProvider",
+    "tax",
+    "file",
+    "isIssued",
+    "isLocked"
+]

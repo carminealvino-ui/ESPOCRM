@@ -1,0 +1,22 @@
+{
+  "labels": {
+    "Items": "Articoli",
+    "Select Product": "Seleziona Prodotto",
+    "Add Item": "Aggiungi Articolo",
+    "Add Products": "Aggiungi prodotti"
+  },
+  "fields": {
+    "itemList": "Lista articolo",
+    "priceBook": "Listino Prezzi"
+  },
+  "links": {
+    "quotes": "Preventivi",
+    "salesOrders": "Ordini di vendita",
+    "invoices": "Fatture",
+    "items": "Articoli",
+    "priceBook": "Listino Prezzi"
+  },
+  "panels": {
+    "items": "Articoli"
+  }
+}

@@ -1,0 +1,14 @@
+{
+    "fields": {
+        "parent": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isFalse",
+                        "attribute": "privato"
+                    }
+                ]
+            }
+        }
+    }
+}

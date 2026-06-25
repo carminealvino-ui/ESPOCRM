@@ -1,0 +1,28 @@
+[
+    {
+        "label": "Overview",
+        "rows": [
+            [{"name": "number"}, {"name":"account"}],
+            [{"name": "status"}, {"name": "opportunity"}],
+            [{"name": "amount"}, {"name": "dateQuoted"}]
+        ]
+    },
+    {
+        "label": "Details",
+        "rows": [
+            [{"name": "billingAddress"}, {"name": "shippingAddress"}],
+            [{"name": "billingContact"}, {"name": "shippingContact"}]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "tax"}, {"name": "shippingProvider"}],
+            [{"name": "priceBook"}, {"name": "isTaxInclusive"}]
+        ]
+    },
+    {
+        "rows": [
+            [{"name": "description"}]
+        ]
+    }
+]

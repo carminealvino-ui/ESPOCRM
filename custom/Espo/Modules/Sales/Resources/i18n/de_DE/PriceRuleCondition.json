@@ -1,0 +1,11 @@
+{
+  "labels": {
+    "Create PriceRuleCondition": "Bedingung erstellen"
+  },
+  "fields": {
+    "condition": "Bedingung"
+  },
+  "tooltips": {
+    "condition": "Ein Formelausdruck. Sollte wahr oder falsch zurückgeben."
+  }
+}

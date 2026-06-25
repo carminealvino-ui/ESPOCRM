@@ -1,0 +1,90 @@
+{
+    "fields": {
+        "order": {
+            "type": "int",
+            "readOnly": true
+        },
+        "source": {
+            "type": "linkParent",
+            "entityList": [
+                "Invoice"
+            ],
+            "required": true,
+            "readOnly": true
+        },
+        "date": {
+            "type": "date",
+            "readOnly": true
+        },
+        "amount": {
+            "type": "currency",
+            "decimal": true,
+            "scale": 3,
+            "readOnly": true
+        },
+        "amountLocal": {
+            "type": "currency",
+            "decimal": true,
+            "scale": 3,
+            "readOnly": true
+        },
+        "percentage": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "min": 0,
+            "max": 100,
+            "decimalPlaces": 2,
+            "precision": 6,
+            "scale": 2,
+            "view": "modules/sales/views/fields/decimal",
+            "readOnly": true
+        },
+        "status": {
+            "type": "enum",
+            "options": [
+                "Unsettled",
+                "Partially Settled",
+                "Settled"
+            ],
+            "default": "Unsettled",
+            "maxLength": 17,
+            "readOnly": true
+        },
+        "state": {
+            "type": "enum",
+            "notStorable": true,
+            "options": [
+                "Due",
+                "Partially Settled",
+                "Settled",
+                "Canceled"
+            ],
+            "readOnly": true
+        },
+        "amountDue": {
+            "type": "currency",
+            "notStorable": true,
+            "decimal": true,
+            "scale": 3,
+            "readOnly": true
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true,
+            "index": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "source": {
+            "type": "belongsToParent"
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc"
+    }
+}

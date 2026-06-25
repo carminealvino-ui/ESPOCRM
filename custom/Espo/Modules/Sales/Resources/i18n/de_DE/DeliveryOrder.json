@@ -1,0 +1,67 @@
+{
+  "labels": {
+    "Create DeliveryOrder": "Lieferauftrag erstellen",
+    "Add Item": "Artikel hinzufügen",
+    "Items": "Artikel",
+    "Valid": "Gültig",
+    "Invalid": "Ungültig",
+    "Show Availability": "Verfügbarkeit anzeigen",
+    "Availability": "Verfügbarkeit",
+    "Total": "Gesamt"
+  },
+  "fields": {
+    "number": "Nummer",
+    "numberA": "Nummer (auto-inkrement)",
+    "account": "Firma",
+    "salesOrder": "Kundenauftrag",
+    "shippingAddress": "Lieferadresse",
+    "shippingContact": "Kontakt f. Lieferadresse",
+    "amount": "Betrag",
+    "amountCurrency": "Betragswährung",
+    "shippingProvider": "Versender",
+    "taxAmount": "Steuerbetrag",
+    "itemList": "Artikelliste",
+    "dateOrdered": "Bestelldatum",
+    "shippingDate": "Versanddatum",
+    "deliveryDate": "Lieferdatum",
+    "weight": "Gewicht",
+    "currency": "Währung",
+    "inventoryData": "Inventar Daten",
+    "inventoryStatus": "Inventarstatus",
+    "warehouse": "Lager",
+    "isDone": "Erledigt"
+  },
+  "links": {
+    "items": "Artikel",
+    "shippingContact": "Kontakt f. Lieferadresse",
+    "shippingProvider": "Versender",
+    "salesOrder": "Kundenauftrag",
+    "account": "Firma",
+    "tax": "Steuerprofil",
+    "inventoryTransactions": "Inventartransaktionen",
+    "warehouse": "Lager"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Ready": "Bereit",
+      "In Progress": "In Bearbeitung",
+      "Completed": "Abgeschlossen",
+      "Canceled": "Storniert",
+      "Failed": "Fehlgeschlagen"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "completed": "Abgeschlossen"
+  },
+  "messages": {
+    "inventoryIsInAdjustment": "Das Speichern ist nicht möglich, da sich das Inventar derzeit in einer begonnenen Anpassung befindet.",
+    "notAvailableInventory": "Es ist nicht genügend Inventar verfügbar.",
+    "notAvailableInventoryStatusChanged": "Es ist nicht genügend Inventar verfügbar. Der Status kann nicht geändert werden."
+  },
+  "texts": {
+    "itemTooMany": "{number} extra muss gelöscht werden",
+    "itemTooFew": "Noch {number} müssen hinzugefügt werden"
+  }
+}

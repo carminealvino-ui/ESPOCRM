@@ -1,0 +1,27 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "account",
+        "width": 25
+    },
+    {
+        "name": "salesOrder",
+        "width": 20
+    },
+    {
+        "name": "dateOrdered",
+        "width": 11
+    },
+    {
+        "name": "shippingDate",
+        "width": 11,
+        "hidden": true
+    }
+]

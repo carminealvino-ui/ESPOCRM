@@ -1,0 +1,87 @@
+{
+    "fields": {
+        "prospect": "Prospect",
+        "b2B": "B2B",
+        "telefono": "Telefono",
+        "cAP": "CAP",
+        "cAPCodice": "CAP Codice",
+        "whatsApp": "WhatsApp",
+        "whatsApp39": "WhatsApp +39",
+        "appuntamento": "Appuntamento",
+        "opportunita": "Opportunità",
+        "insegna": "Insegna",
+        "partitaIVA": "Partita IVA",
+        "referenteAziendale": "Referente Aziendale",
+        "meseImportazioneCB": "Mese Importazione CB",
+        "cluster": "Cluster",
+        "codiceCliente": "Codice Cliente",
+        "codicePOS": "Codice POS",
+        "consistenze": "Consistenze",
+        "segmento": "Segmento",
+        "pagamentiProvvigionali": "Pagamenti Provvigionali",
+        "importoFattura": "Importo Fattura",
+        "importoFatturaCurrency": "Importo Fattura (Valuta)",
+        "importoFatturaConverted": "Importo Fattura (Convertito)",
+        "statoGestione": "Stato Gestione",
+        "azienda": "Azienda",
+        "descrizioneOpportunitGenerata": "Descrizione Opportunità Generata",
+        "fornitorePartner": "Fornitore/Partner",
+        "productBrand": "Brand",
+        "productCategory": "Prodotto - Categoria"
+    },
+    "links": {
+        "prospect": "Prospect",
+        "appuntamentoChildren": "Appuntamenti",
+        "cAP": "CAP",
+        "appuntamento": "Appuntamento",
+        "opportunita": "Opportunità",
+        "pagamentiProvvigionali": "Pagamenti Provvigionali",
+        "fornitorePartner": "Fornitore/Partner",
+        "productBrand": "Brand"
+    },
+    "options": {
+        "cluster": {
+            "": "",
+            "Micro": "Micro",
+            "Small": "Small",
+            "Medium": "Medium",
+            "Enterprise": "Enterprise"
+        },
+        "consistenze": {
+            "VDF Voce": "VDF Voce",
+            "VDF Dati": "VDF Dati",
+            "VDF M2M": "VDF M2M",
+            "VDF DSL": "VDF DSL",
+            "VDF ONU": "VDF ONU",
+            "VDF ONA": "VDF ONA",
+            "VDF DEAL": "VDF DEAL",
+            "VDF Digital": "VDF Digital"
+        },
+        "segmento": {
+            "": "",
+            "B2C Appartamento": "B2C Appartamento",
+            "B2C Villa Multifamiliare": "B2C Villa Multifamiliare",
+            "B2C Villa": "B2C Villa",
+            "B2B SOHO": "B2B SOHO",
+            "B2B SME": "B2B SME"
+        },
+        "statoGestione": {
+            "": "",
+            "Assegnato": "Assegnato",
+            "Perso": "Perso",
+            "Trattativa": "Trattativa",
+            "In Gestione": "In Gestione",
+            "Richiesta Assegnazione": "Richiesta Assegnazione",
+            "Trattativa Aperta": "Trattativa Aperta",
+            "Trattativa Chiusa": "Trattativa Chiusa"
+        },
+        "azienda": {
+            "": "",
+            "ARQUATI": "ARQUATI",
+            "GFB": "GFB",
+            "ARIEL": "ARIEL",
+            "ARTEL": "ARTEL",
+            "PROGETTO": "PROGETTO"
+        }
+    }
+}

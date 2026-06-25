@@ -1,0 +1,30 @@
+{
+    "controller": "controllers/record",
+    "filterList": [
+        "active"
+    ],
+    "textFilterDisabled": true,
+    "mergeDisabled": true,
+    "massActionList": [
+        "__APPEND__",
+        "updatePrice"
+    ],
+    "checkAllResultMassActionList": [
+        "__APPEND__",
+        "updatePrice"
+    ],
+    "massActionDefs": {
+        "updatePrice": {
+            "handler": "sales:handlers/product-price/mass-update-price",
+            "initFunction": "init",
+            "actionFunction": "process",
+            "acl": "edit",
+            "aclScope": "Supplier"
+        }
+    },
+    "relationshipPanels": {
+        "product": {
+            "selectPrimaryFilterName": "purchasable"
+        }
+    }
+}

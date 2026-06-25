@@ -1,0 +1,3 @@
+{
+    "beforeSaveCustomScript": "//Nome\nname = string\\upperCase(string\\concatenate(dataPagamento,' - ', opportunita.leadName, \" - €.\", importo,' - ',dataPagamento));"
+}

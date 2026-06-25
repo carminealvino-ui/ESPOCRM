@@ -1,0 +1,41 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "account"
+                }
+            ],
+            [
+                {
+                    "name": "type"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "referenceId"
+                },
+                {
+                    "name": "dateSigned"
+                }
+            ],
+            [
+                {
+                    "name": "accountHolder"
+                },
+                {
+                    "name": "iban"
+                }
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ]
+    }
+]

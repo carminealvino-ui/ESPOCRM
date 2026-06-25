@@ -1,0 +1,76 @@
+{
+    "selectAttributesDependencyMap": {
+        "id": [
+            "isInventory",
+            "isSellable",
+            "isPurchasable",
+            "isSubscribable",
+            "type"
+        ]
+    },
+    "additionalApplierClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Select\\Product\\AdditionalAppliers\\Quantity",
+        "Espo\\Modules\\Sales\\Classes\\Select\\Product\\AdditionalAppliers\\NotVariant"
+    ],
+    "primaryFilterClassNameMap": {
+        "available": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\PrimaryFilters\\Available",
+        "inventory": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\PrimaryFilters\\Inventory",
+        "subscribable": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\PrimaryFilters\\Subscribable",
+        "sellable": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\PrimaryFilters\\Sellable",
+        "purchasable": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\PrimaryFilters\\Purchasable",
+        "invoiceable": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\PrimaryFilters\\Invoiceable",
+        "allVariants": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\PrimaryFilters\\AllVariants",
+        "availableVariants": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\PrimaryFilters\\AvailableVariants",
+        "availableGoods": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\PrimaryFilters\\AvailableGoods"
+    },
+    "whereItemConverterClassNameMap": {
+        "warehousesOnHandIds_arrayAnyOf": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\WarehousesOnHand",
+        "warehousesOnHandIds_arrayAllOf": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\WarehousesOnHand",
+        "warehousesOnHandIds_arrayNoneOf": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\WarehousesOnHand",
+        "id_supplierLinkedWith": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\SuppliersLinkedWith",
+        "id_supplierIsNotLinked": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\SuppliersIsNotLinked",
+        "id_supplierIsLinked": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\SuppliersIsLinked",
+        "quantity_greaterThan": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantity_greaterThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantity_lessThan": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantity_lessThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantity_equals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantity_notEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantity_isNull": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantity_isNotNull": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantity_between": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityReserved_greaterThan": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityReserved_greaterThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityReserved_lessThan": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityReserved_lessThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityReserved_equals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityReserved_notEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityReserved_isNull": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityReserved_isNotNull": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityReserved_between": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantitySoftReserved_greaterThan": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantitySoftReserved_greaterThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantitySoftReserved_lessThan": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantitySoftReserved_lessThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantitySoftReserved_equals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantitySoftReserved_notEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantitySoftReserved_isNull": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantitySoftReserved_isNotNull": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantitySoftReserved_between": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityOnHand_greaterThan": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityOnHand_greaterThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityOnHand_lessThan": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityOnHand_lessThanOrEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityOnHand_equals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityOnHand_notEquals": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityOnHand_isNull": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityOnHand_isNotNull": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity",
+        "quantityOnHand_between": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\WhereItemConverters\\Quantity"
+    },
+    "ordererClassNameMap": {
+        "quantity": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\Order\\Quantity",
+        "quantityReserved": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\Order\\Quantity",
+        "quantitySoftReserved": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\Order\\Quantity",
+        "quantityOnHand": "Espo\\Modules\\Sales\\Classes\\Select\\Product\\Order\\Quantity"
+    }
+}
