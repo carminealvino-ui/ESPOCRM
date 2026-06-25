@@ -78,11 +78,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                 tiles: {
                     appuntamenti: this.mapAppuntamentiTile(tiles.appuntamenti),
                     opportunita: this.mapOpportunitaTile(tiles.opportunita),
-                    contratti: this.mapMetricTile(tiles.contratti, [
-                        {key: 'totali', label: 'Contratti totali'},
-                        {key: 'nettiFinKo', label: 'Contratti netti (finanziamento KO)'},
-                        {key: 'nettiRecessi', label: 'Contratti netti (recessi)'},
-                    ]),
+                    contratti: this.mapContrattiTile(tiles.contratti),
                     valoreProduzione: this.mapMetricTile(tiles.valoreProduzione, [
                         {key: 'totali', label: 'Valore totale lordo', currency: true},
                         {key: 'netti', label: 'Valore totale netto', currency: true},
@@ -137,6 +133,27 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                 {key: 'perse', label: 'Opportunità perse'},
                 {key: 'pending', label: 'Opportunità pending'},
                 {key: 'concluse', label: 'Opportunità concluse positivamente'},
+            ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+
+                return {
+                    label: def.label,
+                    value: this.formatNumber(raw) + ' · ' + percent + '%',
+                };
+            });
+        },
+
+        mapContrattiTile: function (tile) {
+            const source = tile || {};
+            const base = Number(source.totali || 0);
+
+            return [
+                {key: 'totali', label: 'Contratti totali'},
+                {key: 'finanziamentiRifiutati', label: 'Contratti con finanziamenti rifiutati'},
+                {key: 'lordi', label: 'Contratti lordi'},
+                {key: 'recessi', label: 'Contratti con recessi'},
+                {key: 'netti', label: 'Contratti netti'},
             ].map(def => {
                 const raw = Number(source[def.key] || 0);
                 const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';

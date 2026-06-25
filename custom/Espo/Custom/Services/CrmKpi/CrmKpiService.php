@@ -133,13 +133,17 @@ class CrmKpiService
     private function getContrattiTile(KpiContext $ctx): object
     {
         $totali = $this->countQuotes($ctx);
-        $nettiFinKo = $this->countQuotes($ctx, excludeFinancingKo: true);
-        $nettiRecessi = $this->countQuotes($ctx, excludeRecesso: true);
+        $finanziamentiRifiutati = $this->countQuotes($ctx, onlyFinancingKo: true);
+        $lordi = $this->countQuotes($ctx, excludeRecesso: true);
+        $recessi = $this->countQuotes($ctx, onlyRecesso: true);
+        $netti = $this->countQuotes($ctx, excludeFinancingKo: true, excludeRecesso: true);
 
         return (object) [
             'totali' => $totali,
-            'nettiFinKo' => $nettiFinKo,
-            'nettiRecessi' => $nettiRecessi,
+            'finanziamentiRifiutati' => $finanziamentiRifiutati,
+            'lordi' => $lordi,
+            'recessi' => $recessi,
+            'netti' => $netti,
         ];
     }
 
