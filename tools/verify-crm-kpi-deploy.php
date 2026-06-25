@@ -12,7 +12,7 @@ $root = getenv('CRM_ROOT') ?: getcwd();
 
 $checks = [
     'client/custom/src/views/dashlets/crm-kpi.js' => 'mapMetricTile',
-    'client/custom/src/views/dashlets/options/crm-kpi.js' => 'applyCrmKpiLabels',
+    'client/custom/src/views/dashlets/options/crm-kpi.js' => 'applyCrmKpiFieldLabels',
     'client/custom/res/templates/dashlets/crm-kpi.tpl' => 'Valore produzione',
     'custom/Espo/Custom/Controllers/Appuntamento.php' => 'getActionGetSummary',
     'custom/Espo/Custom/Controllers/CrmKpi.php' => 'getActionGetSummary',

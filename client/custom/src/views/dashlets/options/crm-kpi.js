@@ -10,7 +10,6 @@ define('custom:views/dashlets/options/crm-kpi', ['views/dashlets/options/base'],
         setup: function () {
             Dep.prototype.setup.call(this);
             this.applyCrmKpiHeader();
-            this.patchFieldLabelsAfterRender();
         },
 
         applyCrmKpiFieldLabels: function () {
@@ -29,26 +28,26 @@ define('custom:views/dashlets/options/crm-kpi', ['views/dashlets/options/base'],
             });
         },
 
-        patchFieldLabelsAfterRender: function () {
-            this.listenToOnce(this, 'after:render', () => {
-                const fieldViews = this.getFieldViews(true) || {};
+        afterRender: function () {
+            Dep.prototype.afterRender.call(this);
 
-                Object.keys(fieldViews).forEach(name => {
-                    const view = fieldViews[name];
-                    const label = this.translate(name, 'fields', 'CrmKpi');
+            const fieldViews = this.getFieldViews(true) || {};
 
-                    if (!view || !label || label === name) {
-                        return;
-                    }
+            Object.keys(fieldViews).forEach(name => {
+                const view = fieldViews[name];
+                const label = this.translate(name, 'fields', 'CrmKpi');
 
-                    view.labelText = label;
+                if (!view || !label || label === name) {
+                    return;
+                }
 
-                    const $label = view.getLabelElement && view.getLabelElement();
+                view.labelText = label;
 
-                    if ($label && $label.length) {
-                        $label.find('.label-text').text(label);
-                    }
-                });
+                const $label = view.getLabelElement && view.getLabelElement();
+
+                if ($label && $label.length) {
+                    $label.find('.label-text').text(label);
+                }
             });
         },
 
