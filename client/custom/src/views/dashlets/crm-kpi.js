@@ -1,9 +1,12 @@
-define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], function (Dep) {
+define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!espo-funnel-chart'], function (Dep) {
 
     return Dep.extend({
 
         name: 'CrmKpi',
         template: 'custom:dashlets/crm-kpi',
+
+        pipelineColors: ['#63a7c2', '#ccc058', '#c96947', '#b770e0', '#5cb85c'],
+        successColor: '#5cb85c',
 
         events: {
             'click [data-action="refresh"]': function () {
@@ -18,6 +21,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
         setup: function () {
             this.summary = null;
             this.loadError = null;
+            this.pipelineChart = null;
 
             Dep.prototype.setup.call(this);
 
@@ -68,6 +72,9 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
         data: function () {
             const summary = this.summary || {};
             const tiles = summary.tiles || {};
+            const pipeline = summary.salesPipeline || [];
+            const hasPipeline = pipeline.some(step => Number(step.value || 0) > 0);
+
             return {
                 loadError: this.loadError,
                 periodLabel: this.getPeriodLabel(),
@@ -75,6 +82,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                 from: summary.from,
                 to: summary.to,
                 showDateRange: summary.from && summary.to,
+                hasPipeline: hasPipeline,
                 tiles: {
                     appuntamenti: this.mapAppuntamentiTile(tiles.appuntamenti),
                     opportunita: this.mapOpportunitaTile(tiles.opportunita),
@@ -91,6 +99,136 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                     };
                 }),
             };
+        },
+
+        afterRender: function () {
+            if (this.loadError || !this.summary) {
+                return;
+            }
+
+            this.drawSalesPipeline();
+        },
+
+        getPipelineSteps: function () {
+            return (this.summary && this.summary.salesPipeline) || [];
+        },
+
+        getPipelineColor: function (index, total) {
+            const colors = this.pipelineColors;
+
+            if (index + 1 === total) {
+                return this.successColor;
+            }
+
+            return colors[index % colors.length];
+        },
+
+        drawSalesPipeline: function () {
+            const steps = this.getPipelineSteps();
+            const $container = this.$el.find('[data-name="pipeline-chart"]');
+            const $legend = this.$el.find('.crm-kpi-pipeline-legend');
+
+            if (!$container.length || !steps.length) {
+                return;
+            }
+
+            $container.empty();
+            $legend.empty();
+
+            const hasValues = steps.some(step => Number(step.value || 0) > 0);
+
+            if (!hasValues) {
+                return;
+            }
+
+            const chartData = steps.map((step, index) => ({
+                stageTranslated: step.label,
+                value: Number(step.value || 0),
+                stage: step.key,
+                color: this.getPipelineColor(index, steps.length),
+                percentOfTotal: step.percentOfTotal,
+                percentOfPrevious: step.percentOfPrevious,
+            }));
+
+            if (typeof EspoFunnel !== 'undefined' && EspoFunnel.Funnel) {
+                this.pipelineChart = new EspoFunnel.Funnel($container.get(0), {
+                    colors: chartData.map(item => item.color),
+                    outlineColor: '#444',
+                    gapWidth: 0.015,
+                    callbacks: {
+                        tooltipHtml: index => this.getPipelineTooltip(chartData[index]),
+                    },
+                    tooltipClassName: 'crm-kpi-pipeline-tooltip',
+                    tooltipStyleString:
+                        'opacity:0.9;background-color:#000;color:#fff;position:absolute;' +
+                        'padding:4px 10px;border-radius:4px;white-space:nowrap;z-index:1000;',
+                }, chartData);
+            } else {
+                this.drawPipelineFallback($container, chartData);
+            }
+
+            this.drawPipelineLegend($legend, chartData);
+        },
+
+        getPipelineTooltip: function (item) {
+            if (!item) {
+                return '';
+            }
+
+            let text = item.stageTranslated + ' ' + this.formatNumber(item.value);
+
+            if (item.percentOfTotal != null) {
+                text += ' (' + item.percentOfTotal + '% tot';
+            }
+
+            if (item.percentOfPrevious != null) {
+                text += ' · ' + item.percentOfPrevious + '% prec';
+            }
+
+            if (item.percentOfTotal != null) {
+                text += ')';
+            }
+
+            return text;
+        },
+
+        drawPipelineFallback: function ($container, chartData) {
+            const max = Math.max.apply(null, chartData.map(item => item.value).concat([1]));
+            let html = '<div class="crm-kpi-pipeline-fallback">';
+
+            chartData.forEach(item => {
+                const width = Math.max((item.value / max) * 100, 12);
+
+                html += '<div class="crm-kpi-pipeline-fallback-step" style="' +
+                    'width:' + width + '%;' +
+                    'background-color:' + item.color + ';">' +
+                    this.getHelper().escapeString(item.stageTranslated) +
+                    ' · ' + this.formatNumber(item.value) +
+                    '</div>';
+            });
+
+            html += '</div>';
+            $container.html(html);
+        },
+
+        drawPipelineLegend: function ($container, chartData) {
+            let html = '<div class="row"><div class="col-sm-12">';
+
+            chartData.forEach(item => {
+                const meta = item.percentOfTotal + '% tot' +
+                    (item.percentOfPrevious != null ? ' · ' + item.percentOfPrevious + '% prec' : '');
+
+                html += '<div class="legend-item">' +
+                    '<span class="legend-box" style="background-color:' + item.color + ';"></span>' +
+                    '<span>' +
+                    '<span class="legend-label">' + this.getHelper().escapeString(item.stageTranslated) + '</span>' +
+                    '<span class="legend-meta">' + this.formatNumber(item.value) + ' · ' + meta + '</span>' +
+                    '</span>' +
+                    '</div>';
+            });
+
+            html += '</div></div>';
+            $container.html(html);
         },
 
         mapAppuntamentiTile: function (tile) {

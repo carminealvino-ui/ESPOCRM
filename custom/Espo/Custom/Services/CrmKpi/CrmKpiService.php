@@ -4,6 +4,7 @@ namespace Espo\Custom\Services\CrmKpi;
 
 use Espo\Custom\Tools\CrmKpi\Alerts;
 use Espo\Custom\Tools\CrmKpi\DateRange;
+use Espo\Custom\Tools\CrmKpi\FunnelBuilder;
 use Espo\Custom\Tools\CrmKpi\KpiContext;
 use Espo\Entities\User;
 use Espo\ORM\EntityManager;
@@ -76,6 +77,13 @@ class CrmKpiService
                 'valoreProduzione' => $valore,
                 'provvigioni' => $provvigioni,
             ],
+            'salesPipeline' => FunnelBuilder::build([
+                ['key' => 'appuntamentiLordi', 'label' => 'Appuntamenti lordi', 'value' => $appuntamenti->lordi],
+                ['key' => 'appuntamentiNetti', 'label' => 'Appuntamenti netti', 'value' => $appuntamenti->netti],
+                ['key' => 'opportunita', 'label' => 'Opportunità', 'value' => $opportunita->totali],
+                ['key' => 'contratti', 'label' => 'Contratti', 'value' => $contratti->totali],
+                ['key' => 'contrattiNetti', 'label' => 'Contratti netti', 'value' => $contratti->netti],
+            ]),
             'alerts' => $this->getAlertsSafe($from, $to, $ctx->productBrandId),
         ];
     }

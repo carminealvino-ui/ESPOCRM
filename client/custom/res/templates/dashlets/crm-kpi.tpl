@@ -67,6 +67,18 @@
             </div>
         </div>
 
+        <div class="crm-kpi-panel crm-kpi-panel-pipeline">
+            <div class="crm-kpi-panel-title">Pipeline di vendita</div>
+            {{#if hasPipeline}}
+                <div class="crm-kpi-pipeline">
+                    <div class="crm-kpi-pipeline-chart" data-name="pipeline-chart"></div>
+                    <div class="crm-kpi-pipeline-legend legend-container"></div>
+                </div>
+            {{else}}
+                <div class="text-muted small">Nessun dato nel periodo selezionato.</div>
+            {{/if}}
+        </div>
+
         <div class="crm-kpi-panel crm-kpi-panel-alerts">
             <div class="crm-kpi-panel-title">Avvisi</div>
             <div class="crm-kpi-alerts">
