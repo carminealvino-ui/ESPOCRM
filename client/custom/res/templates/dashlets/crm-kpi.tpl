@@ -9,8 +9,8 @@
             </a>
         </div>
 
-        <div class="row crm-kpi-tiles">
-            <div class="col-sm-6 col-lg-4 col-xl crm-kpi-tile-col">
+        <div class="crm-kpi-tiles">
+            <div class="crm-kpi-tile-col">
                 <div class="crm-kpi-tile">
                     <div class="crm-kpi-tile-title">Appuntamenti</div>
                     {{#each tiles.appuntamenti}}
@@ -21,7 +21,7 @@
                     {{/each}}
                 </div>
             </div>
-            <div class="col-sm-6 col-lg-4 col-xl crm-kpi-tile-col">
+            <div class="crm-kpi-tile-col">
                 <div class="crm-kpi-tile">
                     <div class="crm-kpi-tile-title">Opportunità</div>
                     {{#each tiles.opportunita}}
@@ -32,7 +32,7 @@
                     {{/each}}
                 </div>
             </div>
-            <div class="col-sm-6 col-lg-4 col-xl crm-kpi-tile-col">
+            <div class="crm-kpi-tile-col">
                 <div class="crm-kpi-tile">
                     <div class="crm-kpi-tile-title">Contratti</div>
                     {{#each tiles.contratti}}
@@ -43,7 +43,7 @@
                     {{/each}}
                 </div>
             </div>
-            <div class="col-sm-6 col-lg-6 col-xl crm-kpi-tile-col">
+            <div class="crm-kpi-tile-col">
                 <div class="crm-kpi-tile">
                     <div class="crm-kpi-tile-title">Valore produzione</div>
                     {{#each tiles.valoreProduzione}}
@@ -54,7 +54,7 @@
                     {{/each}}
                 </div>
             </div>
-            <div class="col-sm-6 col-lg-6 col-xl crm-kpi-tile-col">
+            <div class="crm-kpi-tile-col">
                 <div class="crm-kpi-tile">
                     <div class="crm-kpi-tile-title">Provvigioni</div>
                     {{#each tiles.provvigioni}}
@@ -67,90 +67,81 @@
             </div>
         </div>
 
-        <div class="row crm-kpi-bottom">
-            <div class="col-md-8 crm-kpi-funnels-col">
-                <div class="row">
-                    <div class="col-sm-4">
-                        <div class="crm-kpi-panel">
-                            <div class="crm-kpi-panel-title">Funnel appuntamenti</div>
-                            <div class="crm-kpi-funnel-vertical">
-                                {{#each funnels.appuntamenti}}
-                                    <div class="crm-kpi-funnel-vstep">
-                                        <div class="crm-kpi-funnel-vbar-wrap">
-                                            <div class="crm-kpi-funnel-vbar" style="height: {{heightPercent}}%;"></div>
-                                        </div>
-                                        <div class="crm-kpi-funnel-vmeta">
-                                            <div class="crm-kpi-funnel-vlabel">{{label}}</div>
-                                            <div class="crm-kpi-funnel-vvalue">{{value}}</div>
-                                            <div class="crm-kpi-funnel-vperc text-muted">
-                                                {{percentOfTotal}}% tot{{#if percentOfPrevious}} · {{percentOfPrevious}}% prec{{/if}}
-                                            </div>
-                                        </div>
-                                    </div>
-                                {{/each}}
+        <div class="crm-kpi-bottom">
+            <div class="crm-kpi-panel">
+                <div class="crm-kpi-panel-title">Funnel appuntamenti</div>
+                <div class="crm-kpi-funnel-vertical">
+                    {{#each funnels.appuntamenti}}
+                        <div class="crm-kpi-funnel-vstep">
+                            <div class="crm-kpi-funnel-vbar-wrap">
+                                <div class="crm-kpi-funnel-vbar" style="height: {{heightPercent}}%;"></div>
+                            </div>
+                            <div class="crm-kpi-funnel-vmeta">
+                                <div class="crm-kpi-funnel-vlabel">{{label}}</div>
+                                <div class="crm-kpi-funnel-vvalue">{{value}}</div>
+                                <div class="crm-kpi-funnel-vperc text-muted">
+                                    {{percentOfTotal}}% tot{{#if percentOfPrevious}} · {{percentOfPrevious}}% prec{{/if}}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="crm-kpi-panel">
-                            <div class="crm-kpi-panel-title">Funnel opportunità</div>
-                            <div class="crm-kpi-funnel-vertical">
-                                {{#each funnels.opportunita}}
-                                    <div class="crm-kpi-funnel-vstep">
-                                        <div class="crm-kpi-funnel-vbar-wrap">
-                                            <div class="crm-kpi-funnel-vbar" style="height: {{heightPercent}}%;"></div>
-                                        </div>
-                                        <div class="crm-kpi-funnel-vmeta">
-                                            <div class="crm-kpi-funnel-vlabel">{{label}}</div>
-                                            <div class="crm-kpi-funnel-vvalue">{{value}}</div>
-                                            <div class="crm-kpi-funnel-vperc text-muted">
-                                                {{percentOfTotal}}% tot{{#if percentOfPrevious}} · {{percentOfPrevious}}% prec{{/if}}
-                                            </div>
-                                        </div>
-                                    </div>
-                                {{/each}}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="crm-kpi-panel">
-                            <div class="crm-kpi-panel-title">Funnel contratti</div>
-                            <div class="crm-kpi-funnel-vertical">
-                                {{#each funnels.contratti}}
-                                    <div class="crm-kpi-funnel-vstep">
-                                        <div class="crm-kpi-funnel-vbar-wrap">
-                                            <div class="crm-kpi-funnel-vbar" style="height: {{heightPercent}}%;"></div>
-                                        </div>
-                                        <div class="crm-kpi-funnel-vmeta">
-                                            <div class="crm-kpi-funnel-vlabel">{{label}}</div>
-                                            <div class="crm-kpi-funnel-vvalue">{{value}}</div>
-                                            <div class="crm-kpi-funnel-vperc text-muted">
-                                                {{percentOfTotal}}% tot{{#if percentOfPrevious}} · {{percentOfPrevious}}% prec{{/if}}
-                                            </div>
-                                        </div>
-                                    </div>
-                                {{/each}}
-                            </div>
-                        </div>
-                    </div>
+                    {{/each}}
                 </div>
             </div>
-            <div class="col-md-4 crm-kpi-alerts-col">
-                <div class="crm-kpi-panel crm-kpi-panel-alerts">
-                    <div class="crm-kpi-panel-title">Avvisi</div>
-                    <div class="crm-kpi-alerts">
-                        {{#each alerts}}
-                            <div class="crm-kpi-alert{{#if value}} crm-kpi-alert-warn{{/if}}" data-action="openAlert" data-key="{{key}}">
-                                <span class="crm-kpi-alert-value">{{value}}</span>
-                                <span class="crm-kpi-alert-body">
-                                    <span class="crm-kpi-alert-label">{{label}}</span>
-                                    {{#if meta}}
-                                        <span class="crm-kpi-alert-meta">{{meta}}</span>
-                                    {{/if}}
-                                </span>
+
+            <div class="crm-kpi-panel">
+                <div class="crm-kpi-panel-title">Funnel opportunità</div>
+                <div class="crm-kpi-funnel-vertical">
+                    {{#each funnels.opportunita}}
+                        <div class="crm-kpi-funnel-vstep">
+                            <div class="crm-kpi-funnel-vbar-wrap">
+                                <div class="crm-kpi-funnel-vbar" style="height: {{heightPercent}}%;"></div>
                             </div>
-                        {{/each}}
-                    </div>
+                            <div class="crm-kpi-funnel-vmeta">
+                                <div class="crm-kpi-funnel-vlabel">{{label}}</div>
+                                <div class="crm-kpi-funnel-vvalue">{{value}}</div>
+                                <div class="crm-kpi-funnel-vperc text-muted">
+                                    {{percentOfTotal}}% tot{{#if percentOfPrevious}} · {{percentOfPrevious}}% prec{{/if}}
+                                </div>
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+
+            <div class="crm-kpi-panel">
+                <div class="crm-kpi-panel-title">Funnel contratti</div>
+                <div class="crm-kpi-funnel-vertical">
+                    {{#each funnels.contratti}}
+                        <div class="crm-kpi-funnel-vstep">
+                            <div class="crm-kpi-funnel-vbar-wrap">
+                                <div class="crm-kpi-funnel-vbar" style="height: {{heightPercent}}%;"></div>
+                            </div>
+                            <div class="crm-kpi-funnel-vmeta">
+                                <div class="crm-kpi-funnel-vlabel">{{label}}</div>
+                                <div class="crm-kpi-funnel-vvalue">{{value}}</div>
+                                <div class="crm-kpi-funnel-vperc text-muted">
+                                    {{percentOfTotal}}% tot{{#if percentOfPrevious}} · {{percentOfPrevious}}% prec{{/if}}
+                                </div>
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+
+            <div class="crm-kpi-panel crm-kpi-panel-alerts">
+                <div class="crm-kpi-panel-title">Avvisi</div>
+                <div class="crm-kpi-alerts">
+                    {{#each alerts}}
+                        <div class="crm-kpi-alert{{#if value}} crm-kpi-alert-warn{{/if}}" data-action="openAlert" data-key="{{key}}">
+                            <span class="crm-kpi-alert-value">{{value}}</span>
+                            <span class="crm-kpi-alert-body">
+                                <span class="crm-kpi-alert-label">{{label}}</span>
+                                {{#if meta}}
+                                    <span class="crm-kpi-alert-meta">{{meta}}</span>
+                                {{/if}}
+                            </span>
+                        </div>
+                    {{/each}}
                 </div>
             </div>
         </div>
