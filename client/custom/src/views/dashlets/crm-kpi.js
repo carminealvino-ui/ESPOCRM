@@ -68,8 +68,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
         data: function () {
             const summary = this.summary || {};
             const tiles = summary.tiles || {};
-            const funnels = summary.funnels || {};
-
             return {
                 loadError: this.loadError,
                 periodLabel: this.getPeriodLabel(),
@@ -78,11 +76,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                 to: summary.to,
                 showDateRange: summary.from && summary.to,
                 tiles: {
-                    appuntamenti: this.mapMetricTile(tiles.appuntamenti, [
-                        {key: 'totali', label: 'Appuntamenti totali'},
-                        {key: 'lordi', label: 'Appuntamenti lordi'},
-                        {key: 'netti', label: 'Appuntamenti netti'},
-                    ]),
+                    appuntamenti: this.mapAppuntamentiTile(tiles.appuntamenti),
                     opportunita: this.mapMetricTile(tiles.opportunita, [
                         {key: 'totali', label: 'Opportunità totali'},
                         {key: 'concluse', label: 'Concluse positivamente'},
@@ -107,11 +101,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                         {key: 'koRecessi', label: 'Provvigioni recessi', currency: true},
                     ], true),
                 },
-                funnels: {
-                    appuntamenti: this.mapFunnel(funnels.appuntamenti),
-                    opportunita: this.mapFunnel(funnels.opportunita),
-                    contratti: this.mapFunnel(funnels.contratti),
-                },
                 alerts: (summary.alerts || []).map(function (alert) {
                     return {
                         key: alert.key,
@@ -121,6 +110,27 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                     };
                 }),
             };
+        },
+
+        mapAppuntamentiTile: function (tile) {
+            const source = tile || {};
+            const base = Number(source.lordi || 0);
+
+            return [
+                        {key: 'lordi', label: 'Appuntamenti lordi'},
+                        {key: 'annullati', label: 'Appuntamenti annullati'},
+                        {key: 'totali', label: 'Appuntamenti totali'},
+                        {key: 'ingestibili', label: 'Appuntamenti ingestibili'},
+                        {key: 'netti', label: 'Appuntamenti netti'},
+                    ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+
+                return {
+                    label: def.label,
+                    value: this.formatNumber(raw) + ' · ' + percent + '%',
+                };
+            });
         },
 
         mapMetricTile: function (tile, definitions, currencyDefault) {
@@ -137,16 +147,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                     value: value,
                 };
             });
-        },
-
-        mapFunnel: function (steps) {
-            return (steps || []).map(step => ({
-                label: step.label,
-                value: this.formatNumber(step.value),
-                heightPercent: step.heightPercent || 0,
-                percentOfTotal: step.percentOfTotal,
-                percentOfPrevious: step.percentOfPrevious,
-            }));
         },
 
         getPeriodLabel: function () {

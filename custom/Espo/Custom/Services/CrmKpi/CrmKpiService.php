@@ -4,7 +4,6 @@ namespace Espo\Custom\Services\CrmKpi;
 
 use Espo\Custom\Tools\CrmKpi\Alerts;
 use Espo\Custom\Tools\CrmKpi\DateRange;
-use Espo\Custom\Tools\CrmKpi\FunnelBuilder;
 use Espo\Custom\Tools\CrmKpi\KpiContext;
 use Espo\Entities\User;
 use Espo\ORM\EntityManager;
@@ -77,24 +76,6 @@ class CrmKpiService
                 'valoreProduzione' => $valore,
                 'provvigioni' => $provvigioni,
             ],
-            'funnels' => (object) [
-                'appuntamenti' => FunnelBuilder::build([
-                    ['key' => 'totali', 'label' => 'Totali', 'value' => $appuntamenti->totali],
-                    ['key' => 'lordi', 'label' => 'Lordi', 'value' => $appuntamenti->lordi],
-                    ['key' => 'netti', 'label' => 'Netti', 'value' => $appuntamenti->netti],
-                ]),
-                'opportunita' => FunnelBuilder::build([
-                    ['key' => 'totali', 'label' => 'Totali', 'value' => $opportunita->totali],
-                    ['key' => 'concluse', 'label' => 'Concluse positivamente', 'value' => $opportunita->concluse],
-                    ['key' => 'pending', 'label' => 'Pending', 'value' => $opportunita->pending],
-                    ['key' => 'perse', 'label' => 'Perse', 'value' => $opportunita->perse],
-                ]),
-                'contratti' => FunnelBuilder::build([
-                    ['key' => 'totali', 'label' => 'Totali', 'value' => $contratti->totali],
-                    ['key' => 'nettiFinKo', 'label' => 'Netti (no fin. KO)', 'value' => $contratti->nettiFinKo],
-                    ['key' => 'nettiRecessi', 'label' => 'Netti (no recessi)', 'value' => $contratti->nettiRecessi],
-                ]),
-            ],
             'alerts' => $this->getAlertsSafe($from, $to, $ctx->productBrandId),
         ];
     }
@@ -119,13 +100,17 @@ class CrmKpiService
 
     private function getAppuntamentiTile(KpiContext $ctx): object
     {
-        $totali = $this->countAppuntamentiTotali($ctx);
         $lordi = $this->countAppuntamentiLordi($ctx);
+        $totali = $this->countAppuntamentiTotali($ctx);
+        $annullati = max($lordi - $totali, 0);
+        $ingestibili = $this->countAppuntamentiIngestibili($ctx);
         $netti = $this->countAppuntamentiNetti($ctx);
 
         return (object) [
-            'totali' => $totali,
             'lordi' => $lordi,
+            'annullati' => $annullati,
+            'totali' => $totali,
+            'ingestibili' => $ingestibili,
             'netti' => $netti,
         ];
     }
@@ -203,10 +188,18 @@ class CrmKpiService
     {
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
+            ->where($ctx->appuntamentoWhere())
+            ->count();
+    }
+
+    private function countAppuntamentiIngestibili(KpiContext $ctx): int
+    {
+        return (int) $this->entityManager
+            ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
                 $this->notAnnullatoWhere(),
-                ['status!=' => 'Ingestibile']
+                ['status' => 'Ingestibile']
             ))
             ->count();
     }
