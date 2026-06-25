@@ -42,10 +42,10 @@
                 "rows": [
                     [
                         {"name": "title"},
-                        {"name": "period"}
+                        {"name": "period", "labelText": "Periodo"}
                     ],
                     [
-                        {"name": "productBrand"},
+                        {"name": "productBrand", "labelText": "Brand"},
                         {"name": "autorefreshInterval"}
                     ]
                 ]

@@ -30,6 +30,7 @@ $checks = [
     'custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php' => 'getPastPlannedSelectFields',
     'custom/Espo/Custom/Resources/metadata/dashlets/CrmKpi.json' => 'productBrand',
     'custom/Espo/Custom/Resources/i18n/it_IT/CrmKpi.json' => 'Totali Mese in Corso',
+    'custom/Espo/Custom/Resources/i18n/it_IT/DashletOptions.json' => '"period": "Periodo"',
 ];
 
 $failed = 0;

@@ -2,13 +2,18 @@ define('custom:views/dashlets/options/crm-kpi', ['views/dashlets/options/base'],
 
     return Dep.extend({
 
-        setup: function () {
-            this.applyCrmKpiLabels();
-            Dep.prototype.setup.call(this);
-            this.applyCrmKpiHeader();
+        init: function () {
+            Dep.prototype.init.call(this);
+            this.applyCrmKpiFieldLabels();
         },
 
-        applyCrmKpiLabels: function () {
+        setup: function () {
+            Dep.prototype.setup.call(this);
+            this.applyCrmKpiHeader();
+            this.patchFieldLabelsAfterRender();
+        },
+
+        applyCrmKpiFieldLabels: function () {
             const fieldNames = ['title', 'period', 'productBrand', 'autorefreshInterval'];
 
             fieldNames.forEach(name => {
@@ -19,8 +24,31 @@ define('custom:views/dashlets/options/crm-kpi', ['views/dashlets/options/base'],
                 const label = this.translate(name, 'fields', 'CrmKpi');
 
                 if (label && label !== name) {
-                    this.fields[name].label = label;
+                    this.fields[name].labelText = label;
                 }
+            });
+        },
+
+        patchFieldLabelsAfterRender: function () {
+            this.listenToOnce(this, 'after:render', () => {
+                const fieldViews = this.getFieldViews(true) || {};
+
+                Object.keys(fieldViews).forEach(name => {
+                    const view = fieldViews[name];
+                    const label = this.translate(name, 'fields', 'CrmKpi');
+
+                    if (!view || !label || label === name) {
+                        return;
+                    }
+
+                    view.labelText = label;
+
+                    const $label = view.getLabelElement && view.getLabelElement();
+
+                    if ($label && $label.length) {
+                        $label.find('.label-text').text(label);
+                    }
+                });
             });
         },
 

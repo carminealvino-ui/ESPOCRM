@@ -46,6 +46,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Call/PersistStandardTesto.php"
   "custom/Espo/Custom/Resources/metadata/dashlets/CrmKpi.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/CrmKpi.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/DashletOptions.json"
   "tools/verify-crm-kpi-deploy.php"
 )
 
