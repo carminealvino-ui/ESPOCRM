@@ -1,0 +1,24 @@
+{
+    "fields": {
+        "dataRichiamo": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "daRichiamare"
+                    }
+                ]
+            }
+        },
+        "richiamo": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "daRichiamare"
+                    }
+                ]
+            }
+        }
+    }
+}
