@@ -3,5 +3,18 @@
         "productCategory": "Categoria prodotto",
         "fornitorePartner": "Fornitore / Partner",
         "productBrand": "Brand"
+    },
+    "presetFilters": {
+        "meseCorrente": "Mese corrente",
+        "aperte": "Aperte",
+        "aperteMeseCorrente": "Aperte mese corrente",
+        "aperteMesePrecedente": "Aperte mese precedente",
+        "senzaRiscontroTelefonico": "Senza riscontro telefonico",
+        "senzaRiscontroPeriodo": "Senza riscontro (appuntamenti periodo)",
+        "senzaRiscontroMesePrecedente": "Senza riscontro mese precedente",
+        "contrattiBacklog": "Contratti in backlog",
+        "contrattiInLavorazione": "Contratti in lavorazione",
+        "installatoPeriodo": "Installato nel periodo",
+        "installatoMesePrecedente": "Installato mese precedente"
     }
 }

@@ -1,0 +1,21 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "dateEnd",
+                    "readOnly": true
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "dateCompleted"
+                }
+            ]
+        ],
+        "label": ""
+    }
+]

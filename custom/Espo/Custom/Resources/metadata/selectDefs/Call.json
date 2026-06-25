@@ -1,0 +1,6 @@
+{
+    "primaryFilterClassNameMap": {
+        "daRiscontrare": "Espo\\Custom\\Classes\\Select\\Call\\PrimaryFilters\\DaRiscontrare",
+        "contattiDaFare": "Espo\\Custom\\Classes\\Select\\Call\\PrimaryFilters\\ContattiDaFare"
+    }
+}
