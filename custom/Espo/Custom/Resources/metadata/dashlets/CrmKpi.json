@@ -2,6 +2,7 @@
     "view": "custom:views/dashlets/crm-kpi",
     "aclScope": "Appuntamento",
     "options": {
+        "view": "custom:views/dashlets/options/crm-kpi",
         "translation": "CrmKpi",
         "fields": {
             "title": {
@@ -41,20 +42,11 @@
                 "rows": [
                     [
                         {"name": "title"},
-                        {
-                            "name": "period",
-                            "labelTranslation": "CrmKpi.fields.period"
-                        }
+                        {"name": "period"}
                     ],
                     [
-                        {
-                            "name": "productBrand",
-                            "labelTranslation": "CrmKpi.fields.productBrand"
-                        },
-                        {
-                            "name": "autorefreshInterval",
-                            "labelTranslation": "CrmKpi.fields.autorefreshInterval"
-                        }
+                        {"name": "productBrand"},
+                        {"name": "autorefreshInterval"}
                     ]
                 ]
             }
