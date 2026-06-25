@@ -41,11 +41,20 @@
                 "rows": [
                     [
                         {"name": "title"},
-                        {"name": "period"}
+                        {
+                            "name": "period",
+                            "labelTranslation": "CrmKpi.fields.period"
+                        }
                     ],
                     [
-                        {"name": "productBrand"},
-                        {"name": "autorefreshInterval"}
+                        {
+                            "name": "productBrand",
+                            "labelTranslation": "CrmKpi.fields.productBrand"
+                        },
+                        {
+                            "name": "autorefreshInterval",
+                            "labelTranslation": "CrmKpi.fields.autorefreshInterval"
+                        }
                     ]
                 ]
             }
