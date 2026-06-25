@@ -67,32 +67,37 @@
             </div>
         </div>
 
-        <div class="crm-kpi-panel crm-kpi-panel-pipeline">
-            <div class="crm-kpi-panel-title">Pipeline di vendita</div>
-            {{#if hasPipeline}}
-                <div class="crm-kpi-pipeline">
-                    <div class="crm-kpi-pipeline-chart" data-name="pipeline-chart"></div>
-                    <div class="crm-kpi-pipeline-legend legend-container"></div>
+        <div class="crm-kpi-bottom">
+            <div class="crm-kpi-bottom-col crm-kpi-bottom-pipeline">
+                <div class="crm-kpi-panel crm-kpi-panel-pipeline">
+                    <div class="crm-kpi-panel-title">Pipeline di vendita</div>
+                    {{#if hasPipeline}}
+                        <div class="crm-kpi-pipeline">
+                            <div class="crm-kpi-pipeline-chart" data-name="pipeline-chart"></div>
+                            <div class="crm-kpi-pipeline-legend legend-container"></div>
+                        </div>
+                    {{else}}
+                        <div class="text-muted small">Nessun dato nel periodo selezionato.</div>
+                    {{/if}}
                 </div>
-            {{else}}
-                <div class="text-muted small">Nessun dato nel periodo selezionato.</div>
-            {{/if}}
-        </div>
-
-        <div class="crm-kpi-panel crm-kpi-panel-alerts">
-            <div class="crm-kpi-panel-title">Avvisi</div>
-            <div class="crm-kpi-alerts">
-                {{#each alerts}}
-                    <div class="crm-kpi-alert{{#if value}} crm-kpi-alert-warn{{/if}}" data-action="openAlert" data-key="{{key}}">
-                        <span class="crm-kpi-alert-value">{{value}}</span>
-                        <span class="crm-kpi-alert-body">
-                            <span class="crm-kpi-alert-label">{{label}}</span>
-                            {{#if meta}}
-                                <span class="crm-kpi-alert-meta">{{meta}}</span>
-                            {{/if}}
-                        </span>
+            </div>
+            <div class="crm-kpi-bottom-col crm-kpi-bottom-alerts">
+                <div class="crm-kpi-panel crm-kpi-panel-alerts">
+                    <div class="crm-kpi-panel-title">Avvisi</div>
+                    <div class="crm-kpi-alerts">
+                        {{#each alerts}}
+                            <div class="crm-kpi-alert{{#if value}} crm-kpi-alert-warn{{/if}}" data-action="openAlert" data-key="{{key}}">
+                                <span class="crm-kpi-alert-value">{{value}}</span>
+                                <span class="crm-kpi-alert-body">
+                                    <span class="crm-kpi-alert-label">{{label}}</span>
+                                    {{#if meta}}
+                                        <span class="crm-kpi-alert-meta">{{meta}}</span>
+                                    {{/if}}
+                                </span>
+                            </div>
+                        {{/each}}
                     </div>
-                {{/each}}
+                </div>
             </div>
         </div>
 
