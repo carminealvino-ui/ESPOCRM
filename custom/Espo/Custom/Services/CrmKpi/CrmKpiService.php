@@ -77,13 +77,13 @@ class CrmKpiService
                 'valoreProduzione' => $valore,
                 'provvigioni' => $provvigioni,
             ],
-            'salesPipeline' => FunnelBuilder::build([
-                ['key' => 'appuntamentiLordi', 'label' => 'Appuntamenti lordi', 'value' => $appuntamenti->lordi],
-                ['key' => 'appuntamentiNetti', 'label' => 'Appuntamenti netti', 'value' => $appuntamenti->netti],
-                ['key' => 'opportunita', 'label' => 'Opportunità', 'value' => $opportunita->totali],
-                ['key' => 'contratti', 'label' => 'Contratti', 'value' => $contratti->totali],
-                ['key' => 'contrattiNetti', 'label' => 'Contratti netti', 'value' => $contratti->netti],
-            ]),
+            'salesPipeline' => FunnelBuilder::buildSalesPipeline(
+                (float) $appuntamenti->lordi,
+                (float) $appuntamenti->netti,
+                (float) $opportunita->totali,
+                (float) $contratti->totali,
+                (float) $contratti->netti
+            ),
             'alerts' => $this->getAlertsSafe($from, $to, $ctx->productBrandId),
         ];
     }

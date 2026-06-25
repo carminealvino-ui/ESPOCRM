@@ -146,7 +146,8 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 value: Number(step.value || 0),
                 stage: step.key,
                 color: this.getPipelineColor(index, steps.length),
-                percentOfTotal: step.percentOfTotal,
+                percentOfNetti: step.percentOfNetti,
+                percentOfOpportunita: step.percentOfOpportunita,
                 percentOfPrevious: step.percentOfPrevious,
             }));
 
@@ -170,23 +171,42 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             this.drawPipelineLegend($legend, chartData);
         },
 
+        getPipelinePercentMeta: function (item) {
+            if (!item) {
+                return '';
+            }
+
+            const parts = [];
+
+            if (item.stage === 'appuntamentiNetti' && item.percentOfPrevious != null) {
+                parts.push(item.percentOfPrevious + '% su lordi');
+            }
+
+            if (item.percentOfNetti != null) {
+                parts.push(item.percentOfNetti + '% su app. netti');
+            }
+
+            if (item.percentOfOpportunita != null) {
+                parts.push(item.percentOfOpportunita + '% su opp.');
+            }
+
+            if (item.stage === 'contrattiNetti' && item.percentOfPrevious != null) {
+                parts.push(item.percentOfPrevious + '% prec');
+            }
+
+            return parts.join(' · ');
+        },
+
         getPipelineTooltip: function (item) {
             if (!item) {
                 return '';
             }
 
+            const meta = this.getPipelinePercentMeta(item);
             let text = item.stageTranslated + ' ' + this.formatNumber(item.value);
 
-            if (item.percentOfTotal != null) {
-                text += ' (' + item.percentOfTotal + '% tot';
-            }
-
-            if (item.percentOfPrevious != null) {
-                text += ' · ' + item.percentOfPrevious + '% prec';
-            }
-
-            if (item.percentOfTotal != null) {
-                text += ')';
+            if (meta) {
+                text += ' (' + meta + ')';
             }
 
             return text;
@@ -215,14 +235,14 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             let html = '<div class="row"><div class="col-sm-12">';
 
             chartData.forEach(item => {
-                const meta = item.percentOfTotal + '% tot' +
-                    (item.percentOfPrevious != null ? ' · ' + item.percentOfPrevious + '% prec' : '');
+                const meta = this.getPipelinePercentMeta(item);
+                const valueLine = this.formatNumber(item.value) + (meta ? ' · ' + meta : '');
 
                 html += '<div class="legend-item">' +
                     '<span class="legend-box" style="background-color:' + item.color + ';"></span>' +
                     '<span>' +
                     '<span class="legend-label">' + this.getHelper().escapeString(item.stageTranslated) + '</span>' +
-                    '<span class="legend-meta">' + this.formatNumber(item.value) + ' · ' + meta + '</span>' +
+                    '<span class="legend-meta">' + valueLine + '</span>' +
                     '</span>' +
                     '</div>';
             });
