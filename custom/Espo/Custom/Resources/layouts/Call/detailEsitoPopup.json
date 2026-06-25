@@ -1,0 +1,40 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "dateStart",
+                    "readOnly": true
+                }
+            ],
+            [
+                {
+                    "name": "direction"
+                },
+                {
+                    "name": "tipologia"
+                }
+            ],
+            [
+                {
+                    "name": "whatsApp"
+                }
+            ],
+            [
+                {
+                    "name": "testo",
+                    "fullWidth": true,
+                    "params": {
+                        "rows": 4
+                    }
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                }
+            ]
+        ],
+        "label": ""
+    }
+]

@@ -1,0 +1,24 @@
+[
+    {
+        "name": "name",
+        "width": 40,
+        "link": true,
+        "align": "left"
+    },
+    {
+        "name": "data",
+        "width": 12
+    },
+    {
+        "name": "status",
+        "width": 10
+    },
+    {
+        "name": "dateStart",
+        "width": 14
+    },
+    {
+        "name": "assignedUser",
+        "width": 14
+    }
+]
