@@ -1,0 +1,10 @@
+custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json
+custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
+custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json
+client/custom/src/views/appuntamento/record/edit.js
+client/custom/src/views/appuntamento/record/edit-small.js
+client/custom/src/views/calendar/calendar.js
+client/custom/src/views/calendar/modals/edit.js
+client/custom/src/views/fields/appuntamento-parent.js
+client/custom/src/views/fields/fornitore-partner-cascade.js
+client/custom/src/views/fields/product-brand-by-partner.js
