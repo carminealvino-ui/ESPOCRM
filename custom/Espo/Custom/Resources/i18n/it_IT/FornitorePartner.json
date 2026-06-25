@@ -1,0 +1,31 @@
+{
+    "fields": {
+        "billingAddress": "Sede Legale",
+        "shippingAddress": "Sede Operativa",
+        "website": "Sito web",
+        "name": "Fornitore / Partner",
+        "referente": "Referente",
+        "color": "Color",
+        "disponibilita": "Disponibilità",
+        "appuntamenti": "Appuntamenti",
+        "opportunita": "Opportunità",
+        "productBrands": "Brand",
+        "prospects": "Prospects",
+        "quotes": "Contratti"
+    },
+    "links": {
+        "meetings": "Riunioni",
+        "calls": "Chiamate",
+        "tasks": "Compiti",
+        "referente": "Referente",
+        "disponibilita": "Disponibilita",
+        "appuntamenti": "Appuntamenti",
+        "opportunita": "Opportunità",
+        "productBrands": "Brand",
+        "prospects": "Prospects",
+        "quotes": "Contratti"
+    },
+    "labels": {
+        "Create FornitorePartner": "Crea Fornitore - Partner"
+    }
+}

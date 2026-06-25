@@ -1,0 +1,17 @@
+{
+    "entity": true,
+    "tab": true,
+    "acl": true,
+    "aclLevelList": ["all", "no"],
+    "module": "Sales",
+    "importable": true,
+    "customizable": true,
+    "entityManager": {
+        "relationships": false,
+        "formula": false,
+        "layouts": false,
+        "fields": false,
+        "addField": false,
+        "edit": true
+    }
+}

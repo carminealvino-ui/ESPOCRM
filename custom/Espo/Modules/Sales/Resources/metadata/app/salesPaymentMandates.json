@@ -1,0 +1,25 @@
+{
+    "Sepa": {
+        "entityType": "PaymentMandateSepa",
+        "record": {
+            "view": null,
+            "layout": [
+                {
+                    "rows": [
+                        [
+                            {
+                                "name": "scheme"
+                            },
+                            false
+                        ]
+                    ]
+                }
+            ],
+            "fields": {
+                "scheme": {
+                    "lockable": true
+                }
+            }
+        }
+    }
+}

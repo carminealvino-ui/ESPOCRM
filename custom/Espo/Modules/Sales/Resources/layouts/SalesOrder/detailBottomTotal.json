@@ -1,0 +1,8 @@
+[
+    {"name": "preDiscountedAmount"},
+    {"name": "discountAmount"},
+    {"name": "amount"},
+    {"name": "shippingAmount"},
+    {"name": "taxAmount"},
+    {"name": "grandTotalAmount"}
+]

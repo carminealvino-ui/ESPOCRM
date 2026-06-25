@@ -1,0 +1,12 @@
+[
+    "account",
+    "creditNote",
+    "product",
+    "creditNoteStatus",
+    "quantity",
+    "taxCode",
+    "unitPriceConverted",
+    "amountConverted",
+    "createdBy",
+    "createdAt"
+]

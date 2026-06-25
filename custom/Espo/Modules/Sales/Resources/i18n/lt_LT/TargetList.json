@@ -1,0 +1,17 @@
+{
+    "labels": {
+        "Sync with Reports": "Sinchronizavimas su ataskaitomis"
+    },
+    "fields": {
+        "syncWithReports": "Ataskaitos",
+        "syncWithReportsEnabled": "Įjungta",
+        "syncWithReportsUnlink": "Atsieti"
+    },
+    "links": {
+        "syncWithReports": "Sinchronizavimas su ataskaitomis"
+    },
+    "tooltips": {
+        "syncWithReportsUnlink": "Įrašai, kurių nėra ataskaitos rezultatuose, bus pašalinti iš tikslinio sąrašo.",
+        "syncWithReports": "Tikslinis sąrašas bus sinchronizuojamas su pasirinktų ataskaitų rezultatais."
+    }
+}

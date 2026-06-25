@@ -1,0 +1,16 @@
+{
+    "labels": {
+        "Items": "Preces",
+        "Select Product": "Izvēlēties produktu",
+        "Add Item": "Pievienot objektu"
+    },
+    "links": {
+        "quotes": "Citāti",
+        "salesOrders": "Pārdošanas pasūtījumi",
+        "invoices": "Rēķini",
+        "items": "Preces"
+    },
+    "fields": {
+        "itemList": "Vienumu saraksts"
+    }
+}

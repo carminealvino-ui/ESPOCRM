@@ -1,0 +1,11 @@
+[
+    {
+        "rows": [
+            [{"name": "number"}, false],
+            [{"name": "status"}, {"name": "dateOrdered"}],
+            [{"name": "supplier"}, {"name": "deliveryDate"}],
+            [{"name": "grandTotalAmount"}, false],
+            [{"name": "warehouse"}, false]
+        ]
+    }
+]

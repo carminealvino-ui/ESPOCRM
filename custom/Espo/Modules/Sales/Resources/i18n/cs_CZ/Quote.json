@@ -1,0 +1,54 @@
+{
+  "labels": {
+    "Create Quote": "Vytvořit nabídku",
+    "Taxes": "Daně",
+    "Shipping Providers": "Dopravci",
+    "Add Item": "Přidat položku",
+    "Templates": "Šablony"
+  },
+  "fields": {
+    "status": "Status",
+    "number": "Číslo nabídky",
+    "invoiceNumber": "Číslo faktury",
+    "account": "Účet",
+    "opportunity": "Možnost",
+    "billingAddress": "Fakturační adresa",
+    "shippingAddress": "Dodací adresa",
+    "billingContact": "Fakturační kontakt",
+    "shippingContact": "dodací kontakt",
+    "tax": "Daň",
+    "taxRate": "Daňová sazba",
+    "shippingCost": "Přepravní sazba",
+    "shippingProvider": "Dopravce",
+    "taxAmount": "Výše daní",
+    "discountAmount": "Výše slev",
+    "amount": "Částka",
+    "preDiscountedAmount": "Částka před slevou",
+    "grandTotalAmount": "Výsledná částka",
+    "itemList": "Seznam položek",
+    "dateQuoted": "Datum nabídky",
+    "dateInvoiced": "Datum fakturace"
+  },
+  "links": {
+    "items": "Položky",
+    "billingContact": "Fakturační kontakt",
+    "shippingContact": "Dodací kontakt",
+    "opportunity": "Možnost",
+    "account": "Účet",
+    "tax": "Daň"
+  },
+  "options": {
+    "status": {
+      "Draft": "Návrh",
+      "In Review": "V posudku",
+      "Presented": "Uvedený",
+      "Approved": "Schválený",
+      "Rejected": "Zamítnutý",
+      "Canceled": "Zrušený"
+    }
+  },
+  "presetFilters": {
+    "actual": "Současný",
+    "approved": "Schválený"
+  }
+}

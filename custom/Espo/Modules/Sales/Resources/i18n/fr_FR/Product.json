@@ -1,0 +1,43 @@
+{
+  "labels": {
+    "Create Product": "Créer un produit",
+    "Price": "Prix",
+    "Brands": "Marques",
+    "Categories": "Catégories"
+  },
+  "fields": {
+    "status": "État",
+    "brand": "Marque",
+    "partNumber": "Numéro de pièce",
+    "category": "Catégorie",
+    "pricingType": "Type de prix",
+    "pricingFactor": "Facteur de prix",
+    "costPrice": "Prix de revient",
+    "listPrice": "Prix catalogue",
+    "unitPrice": "Prix unitaire",
+    "costPriceCurrency": "Devise du prix de revient",
+    "listPriceCurrency": "Devise du prix catalogue",
+    "unitPriceCurrency": "Devise du prix unitaire",
+    "costPriceConverted": "Prix de revient (converti)",
+    "listPriceConverted": "Prix catalogue (converti)",
+    "unitPriceConverted": "Prix unitaire (converti)",
+    "isTaxFree": "Hors taxe",
+    "weight": "Poids"
+  },
+  "links": {
+    "brand": "Marque",
+    "category": "Catégorie"
+  },
+  "options": {
+    "pricingType": {
+      "Same as List": "Identique à la liste",
+      "Fixed": "Fixe",
+      "Discount from List": "Remise de la liste",
+      "Markup over Cost": "Majoration sur le coût",
+      "Profit Margin": "Marge de bénéfice"
+    }
+  },
+  "presetFilters": {
+    "available": "Disponible"
+  }
+}

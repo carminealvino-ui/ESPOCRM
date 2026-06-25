@@ -1,0 +1,7 @@
+{
+    "entity": true,
+    "object": false,
+    "module": "Sales",
+    "currencyConversionAccessRequiredFieldList": [],
+    "customizable": false
+}

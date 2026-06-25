@@ -1,0 +1,11 @@
+{
+    "labels": {
+        "Create ProductBrand": "Sukurti prekės ženklą"
+    },
+    "fields": {
+        "website": "Svetainė"
+    },
+    "links": {
+        "products": "Produktai"
+    }
+}

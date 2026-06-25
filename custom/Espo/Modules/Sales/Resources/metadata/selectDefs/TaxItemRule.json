@@ -1,0 +1,13 @@
+{
+    "primaryFilterClassNameMap": {
+        "active": "Espo\\Modules\\Sales\\Classes\\Select\\TaxItemRule\\PrimaryFilters\\Active"
+    },
+    "selectAttributesDependencyMap": {
+        "taxDisplay": [
+            "rate",
+            "taxCodeId",
+            "taxCodeName",
+            "basis"
+        ]
+    }
+}

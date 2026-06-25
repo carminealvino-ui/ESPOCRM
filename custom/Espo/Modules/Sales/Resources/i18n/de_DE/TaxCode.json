@@ -1,0 +1,68 @@
+{
+  "labels": {
+    "Create TaxCode": "Steuercode erstellen"
+  },
+  "fields": {
+    "type": "Typ",
+    "label": "Bezeichnung",
+    "rate": "Satz",
+    "amount": "Betrag",
+    "applyToProportionalShipping": "Auf proportionalen Versand anwenden",
+    "includedInPrice": "Im Preis inbegriffen",
+    "roundingLevel": "Rundungsstufe",
+    "roundingFactor": "Rundungsfaktor",
+    "items": "Artikel",
+    "order": "Auftrag",
+    "isSelectable": "Auswählbar",
+    "isForSales": "Für den Verkauf",
+    "isForPurchases": "Für den Einkauf",
+    "base": "Basis",
+    "country": "Land"
+  },
+  "links": {
+    "taxes": "Steuern",
+    "taxItemRules": "Steuerpositionsregeln",
+    "parentItems": "Übergeordnete Positionen",
+    "items": "Artikel"
+  },
+  "options": {
+    "type": {
+      "Percentage": "Prozentsatz",
+      "Fixed": "Fest",
+      "Composite": "Zusammengesetzt"
+    },
+    "base": {
+      "Net Amount": "Nettobetrag",
+      "Cumulative Total": "Gesamtbetrag",
+      "Previous Tax": "Vorherige Steuerbetrag"
+    },
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    },
+    "roundingLevel": {
+      "Line": "Position",
+      "Total": "Gesamt"
+    }
+  },
+  "presetFilters": {
+    "active": "Aktiv",
+    "selectableSales": "Für den Verkauf",
+    "selectablePurchases": "Für den Einkauf",
+    "groupable": "Gruppierbar",
+    "salesNonComposite": "Umsatz (nicht zusammengesetzt)",
+    "purchaseNonComposite": "Einkauf (nicht zusammengesetzt)"
+  },
+  "tooltips": {
+    "includedInPrice": "Ob die Steuer im Einzelpreis enthalten ist.\n\nDiese Einstellung muss möglicherweise für Steuern wie die Verbrauchssteuer aktiviert werden. Für Steuern wie VAT oder GST sollte diese Einstellung in der Regel deaktiviert sein.",
+    "roundingLevel": "Legt fest, wie Steuerbeträge gerundet werden.\n\n- Position –  Beträge werden für jede Position einzeln gerundet.\n\n- Gesamtsumme – Die genauen Beträge aller Positionen werden summiert und anschließend gerundet.",
+    "base": "Legt fest, welcher Wert als Basis für die Steuerberechnung dient:\n\n- Nettobetrag – Der Betrag ohne Steuern.\n\n- Gesamtbetrag – Der Nettobetrag zuzüglich aller bereits angewendeten Steuern.\n\nDer Gesamtbetrag ist nur relevant, wenn der Steuercode in einer zusammengesetzten Steuer verwendet wird.",
+    "applyToProportionalShipping": "Ist diese Option aktiviert, wird dieser Steuercode in die Berechnung der proportionalen Versandkosten einbezogen. Für bestimmte Steuercodes, die in einer zusammengesetzte Steuer verwendet werden, müssen Sie diesen Parameter möglicherweise deaktivieren.\n\nWird die proportionale Berechnung nicht angewendet, hat dieser Parameter keine Auswirkung.",
+    "roundingFactor": "Falls nicht anders angegeben, rundet das System auf die kleinste Einheit der Währung.\n\nBeispiele:\n- 1 – auf eine ganze Zahl\n- 0,5 – auf 50 Cent\n- 0.01 – auf 1 Cent",
+    "label": "Optionale Bezeichnung für Kunden."
+  },
+  "messages": {
+    "cannotRemoveUsedInComposite": "Kann nicht entfernt werden, da es in einem zusammengesetzten Steuercode verwendet wird. Sie können es stattdessen als nicht auswählbar festlegen.",
+    "cannotRemoveUsedInIssuedDocument": "Kann nicht entfernt werden, da es in einem ausgestellten Dokument verwendet wird. Sie können den Status stattdessen auf inaktiv ändern."
+  }
+}

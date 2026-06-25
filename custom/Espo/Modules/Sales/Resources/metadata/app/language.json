@@ -1,0 +1,270 @@
+{
+    "aclDependencies": {
+        "TaxCode": {
+            "anyScopeList": [
+                "Tax",
+                "Product",
+                "Quote",
+                "SalesOrder",
+                "Invoice",
+                "PurchaseOrder",
+                "ReturnOrder",
+                "CreditNote",
+                "SupplierBill",
+                "SupplierCredit"
+            ]
+        },
+        "TaxLineItem": {
+            "anyScopeList": [
+                "Product",
+                "PaymentEntry",
+                "Quote",
+                "SalesOrder",
+                "Invoice",
+                "PurchaseOrder",
+                "ReturnOrder",
+                "CreditNote",
+                "SupplierBill",
+                "SupplierCredit"
+            ]
+        },
+        "TaxTotalItem": {
+            "anyScopeList": [
+                "Product",
+                "PaymentEntry",
+                "Quote",
+                "SalesOrder",
+                "Invoice",
+                "PurchaseOrder",
+                "ReturnOrder",
+                "CreditNote",
+                "SupplierBill",
+                "SupplierCredit"
+            ]
+        },
+        "PaymentMeansItem": {
+            "anyScopeList": [
+                "Invoice"
+            ]
+        },
+        "TaxAllocationItem": {
+            "anyScopeList": [
+                "PaymentEntry",
+                "TaxTotalItem"
+            ]
+        },
+        "RoundingProfile": {
+            "anyScopeList": [
+                "Tax",
+                "Product",
+                "Invoice",
+                "CreditNote"
+            ]
+        },
+        "Opportunity": {
+            "anyScopeList": [
+                "__APPEND__",
+                "Quote",
+                "SalesOrder",
+                "Invoice",
+                "PurchaseOrder",
+                "DeliveryOrder",
+                "ReceiptOrder",
+                "TransferOrder",
+                "ReturnOrder",
+                "CreditNote"
+            ]
+        },
+        "Quote": {
+            "anyScopeList": [
+                "SalesOrder",
+                "Invoice",
+                "Opportunity",
+                "PurchaseOrder",
+                "DeliveryOrder",
+                "ReceiptOrder",
+                "TransferOrder",
+                "ReturnOrder",
+                "CreditNote",
+                "InventoryAdjustment",
+                "Product",
+                "PaymentEntry",
+                "WriteOffEntry",
+                "PaymentRequest",
+                "Subscription",
+                "SubscriptionTemplate",
+                "SupplierBill",
+                "SupplierCredit"
+            ]
+        },
+        "QuoteItem": {
+            "anyScopeList": [
+                "Product",
+                "SalesOrder",
+                "Invoice",
+                "Opportunity",
+                "PurchaseOrder",
+                "DeliveryOrder",
+                "ReceiptOrder",
+                "TransferOrder",
+                "ReturnOrder",
+                "CreditNote",
+                "InventoryAdjustment",
+                "Subscription",
+                "SubscriptionTemplate",
+                "SupplierBill",
+                "SupplierCredit"
+            ]
+        },
+        "SalesOrder": {
+            "anyScopeList": ["Quote", "Invoice"]
+        },
+        "CreditNote": {
+            "anyScopeList": [
+                "PaymentEntry",
+                "Invoice",
+                "SupplierCredit"
+            ]
+        },
+        "Invoice": {
+            "anyScopeList": [
+                "Quote",
+                "SalesOrder",
+                "CreditNote",
+                "Subscription",
+                "WriteOffEntry",
+                "PaymentEntry"
+            ]
+        },
+        "PurchaseOrder": {
+            "anyScopeList": ["Quote", "Invoice", "SalesOrder", "ReturnOrder"]
+        },
+        "ReturnOrder": {
+            "anyScopeList": ["Quote", "SalesOrder"]
+        },
+        "DeliveryOrder": {
+            "anyScopeList": ["Quote", "SalesOrder", "TransferOrder"]
+        },
+        "DeliveryOrderItem": {
+            "anyScopeList": ["ReceiptOrder"]
+        },
+        "ReceiptOrder": {
+            "anyScopeList": ["Quote", "PurchaseOrder"]
+        },
+        "Account": {
+            "anyScopeList": [
+                "__APPEND__",
+                "Quote",
+                "SalesOrder",
+                "Invoice"
+            ]
+        },
+        "Warehouse": {
+            "anyScopeList": [
+                "SalesOrder",
+                "DeliveryOrder",
+                "ReceiptOrder",
+                "PurchaseOrder",
+                "TransferOrder",
+                "InventoryAdjustment",
+                "InventoryTransaction"
+            ]
+        },
+        "Product": {
+            "anyScopeList": [
+                "Quote",
+                "Invoice",
+                "PurchaseOrder",
+                "SalesOrder",
+                "DeliveryOrder",
+                "ReceiptOrder",
+                "TransferOrder",
+                "CreditNote",
+                "InventoryTransaction",
+                "InventoryAdjustment",
+                "ReturnOrder",
+                "Warehouse",
+                "PriceBook",
+                "Supplier",
+                "PaymentEntry",
+                "PaymentRequest",
+                "Subscription",
+                "SubscriptionTemplate",
+                "SupplierBill",
+                "SupplierCredit"
+            ]
+        },
+        "ProductAttribute": {
+            "anyScopeList": [
+                "Tax",
+                "TaxCode",
+                "RoundingProfile",
+                "PaymentTermsProfile"
+            ]
+        },
+        "PriceRule": {
+            "anyScopeList": [
+                "Product",
+                "ProductPrice",
+                "SupplierProductPrice"
+            ]
+        },
+        "PaymentEntry": {
+            "anyScopeList": [
+                "PaymentEntry",
+                "Invoice",
+                "CreditNote",
+                "PaymentRequest",
+                "WriteOffEntry",
+                "SupplierBill",
+                "SupplierCredit"
+            ]
+        },
+        "WriteOffEntry": {
+            "anyScopeList": [
+                "PaymentEntry",
+                "Invoice"
+            ]
+        },
+        "PaymentAllocation": {
+            "anyScopeList": [
+                "PaymentEntry",
+                "WriteOffEntry",
+                "Invoice",
+                "CreditNote",
+                "PaymentRequest",
+                "SupplierBill",
+                "SupplierCredit"
+            ]
+        },
+        "PaymentMandateSepa": {
+            "anyScopeList": [
+                "PaymentMandate"
+            ]
+        },
+        "Subscription": {
+            "anyScopeList": [
+                "SubscriptionBillingPlan",
+                "SubscriptionTemplate"
+            ]
+        },
+        "SubscriptionBillingPlan": {
+            "anyScopeList": [
+                "Product",
+                "PriceBook",
+                "Subscription"
+            ]
+        },
+        "PaymentInstallment": {
+            "anyScopeList": [
+                "Invoice",
+                "PaymentTermsProfile"
+            ]
+        },
+        "PaymentTermsProfile": {
+            "anyScopeList": [
+                "Invoice"
+            ]
+        }
+    }
+}

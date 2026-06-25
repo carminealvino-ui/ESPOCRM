@@ -1,0 +1,160 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "readOnly": true,
+            "notStorable": true
+        },
+        "type": {
+            "type": "enum",
+            "options": [
+                "Transfer",
+                "Reserve",
+                "Soft Reserve"
+            ],
+            "readOnlyAfterCreate": true,
+            "default": "Transfer",
+            "maxLength": 12,
+            "index": true
+        },
+        "number": {
+            "type": "autoincrement",
+            "dbType": "bigint"
+        },
+        "parent": {
+            "type": "linkParent",
+            "readOnly": true
+        },
+        "quantity": {
+            "type": "float",
+            "dbType": "decimal",
+            "precision": 13,
+            "scale": 4,
+            "required": true,
+            "customizationRequiredDisabled": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\InventoryTransaction\\Quantity\\Valid",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\InventoryTransaction\\Quantity\\NotFractional"
+            ],
+            "view": "sales:views/fields/quantity-with-plus"
+        },
+        "product": {
+            "type": "link",
+            "required": true,
+            "readOnlyAfterCreate": true,
+            "customizationRequiredDisabled": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\InventoryTransaction\\Product\\IsInventory"
+            ],
+            "view": "sales:views/fields/product-variant"
+        },
+        "warehouse": {
+            "type": "link",
+            "readOnlyAfterCreate": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\InventoryTransaction\\Warehouse\\Required"
+            ],
+            "autocompleteOnEmpty": true
+        },
+        "inventoryNumber": {
+            "type": "link",
+            "readOnlyAfterCreate": true,
+            "validatorClassNameList": [
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\InventoryTransaction\\InventoryNumber\\Required",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\InventoryTransaction\\InventoryNumber\\ShouldBeEmpty",
+                "Espo\\Modules\\Sales\\Classes\\FieldValidators\\InventoryTransaction\\InventoryNumber\\RelatedToProduct"
+            ]
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true,
+            "hasSeconds": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "createdBy": {
+            "type": "link",
+            "readOnly": true
+        },
+        "modifiedBy": {
+            "type": "link",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "parent": {
+            "type": "belongsToParent",
+            "entityList": [
+                "DeliveryOrder",
+                "ReceiptOrder",
+                "TransferOrder",
+                "SalesOrder",
+                "InventoryAdjustment"
+            ]
+        },
+        "product": {
+            "type": "belongsTo",
+            "entity": "Product",
+            "foreign": "inventoryTransactions"
+        },
+        "warehouse": {
+            "type": "belongsTo",
+            "entity": "Warehouse",
+            "foreign": "inventoryTransactions"
+        },
+        "inventoryNumber": {
+            "type": "belongsTo",
+            "entity": "InventoryNumber",
+            "foreign": "inventoryTransactions"
+        },
+        "createdBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        },
+        "modifiedBy": {
+            "type": "belongsTo",
+            "entity": "User"
+        }
+    },
+    "collection": {
+        "orderBy": "number",
+        "order": "desc",
+        "textFilterFields": [
+            "number"
+        ]
+    },
+    "indexes": {
+        "productIdType": {
+            "columns": [
+                "productId",
+                "type"
+            ]
+        },
+        "productIdParentId": {
+            "columns": [
+                "productId",
+                "parentId"
+            ]
+        },
+        "productIdWarehouseId": {
+            "columns": [
+                "productId",
+                "warehouseId"
+            ]
+        },
+        "productIdInventoryNumberId": {
+            "columns": [
+                "productId",
+                "inventoryNumberId"
+            ]
+        },
+        "inventoryNumberIdType": {
+            "columns": [
+                "inventoryNumberId",
+                "type"
+            ]
+        }
+    }
+}

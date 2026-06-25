@@ -1,0 +1,75 @@
+[
+    {
+        "label": "",
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "product"
+                }
+            ],
+            [
+                {
+                    "name": "periodStartDate"
+                },
+                {
+                    "name": "periodEndDate"
+                }
+            ],
+            [
+                {
+                    "name": "invoice"
+                },
+                {
+                    "name": "account"
+                }
+            ],
+            [
+                {
+                    "name": "quantity"
+                },
+                {
+                    "name": "invoiceStatus"
+                }
+            ],
+            [
+                {
+                    "name": "listPrice"
+                },
+                {
+                    "name": "taxCode"
+                }
+            ],
+            [
+                {
+                    "name": "unitPrice"
+                },
+                {
+                    "name": "discount"
+                }
+            ],
+            [
+                {
+                    "name": "amount"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "unitWeight"
+                },
+                {
+                    "name": "weight"
+                }
+            ],
+            [
+                {
+                    "name": "description",
+                    "fullWidth": true
+                }
+            ]
+        ]
+    }
+]

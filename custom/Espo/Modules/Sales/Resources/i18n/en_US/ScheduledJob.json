@@ -1,0 +1,11 @@
+{
+    "options": {
+        "job": {
+            "InventoryCompress": "Inventory Transaction Compress",
+            "NotActualOrderLocking": "Lock Not Actual Orders",
+            "InventoryDetach": "Inventory Transaction Detaching",
+            "ControlPaymentRequests": "Control Payment Requests",
+            "ControlSubscriptions": "Control Subscriptions"
+        }
+    }
+}

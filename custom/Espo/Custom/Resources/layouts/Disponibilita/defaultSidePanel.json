@@ -1,0 +1,17 @@
+[
+    {
+        "name": "area"
+    },
+    {
+        "name": "color"
+    },
+    {
+        "name": "assignedUsers"
+    },
+    {
+        "name": "collaborators"
+    },
+    {
+        "name": "teams"
+    }
+]

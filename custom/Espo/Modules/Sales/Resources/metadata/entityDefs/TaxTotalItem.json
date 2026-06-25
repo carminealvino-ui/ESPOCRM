@@ -1,0 +1,102 @@
+{
+    "fields": {
+        "order": {
+            "type": "int",
+            "readOnly": true
+        },
+        "source": {
+            "type": "linkParent",
+            "entityList": [
+                "Quote",
+                "SalesOrder",
+                "Invoice",
+                "CreditNote",
+                "ReturnOrder",
+                "PurchaseOrder",
+                "SupplierBill",
+                "SupplierCredit"
+            ],
+            "required": true,
+            "readOnly": true
+        },
+        "taxCode": {
+            "type": "link",
+            "required": true,
+            "readOnly": true
+        },
+        "taxCodeLabel": {
+            "type": "foreign",
+            "link": "taxCode",
+            "field": "label"
+        },
+        "rate": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "decimalPlaces": 3,
+            "precision": 8,
+            "scale": 3,
+            "min": 0,
+            "max": 100,
+            "readOnly": true
+        },
+        "amount": {
+            "type": "currency",
+            "decimal": true,
+            "precision": 13,
+            "scale": 3,
+            "required": true,
+            "readOnly": true,
+            "conversionDisabled": true
+        },
+        "baseAmount": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "decimalPlaces": 3,
+            "precision": 13,
+            "scale": 3,
+            "required": true,
+            "readOnly": true,
+            "view": "modules/sales/views/tax-line-item/fields/base-amount"
+        },
+        "amountLocal": {
+            "type": "currency",
+            "decimal": true,
+            "precision": 13,
+            "scale": 3,
+            "readOnly": true,
+            "conversionDisabled": true
+        },
+        "baseAmountLocal": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "decimalPlaces": 3,
+            "precision": 13,
+            "scale": 3,
+            "readOnly": true,
+            "view": "modules/sales/views/tax-line-item/fields/base-amount-local"
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true,
+            "index": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "taxCode": {
+            "type": "belongsTo",
+            "entity": "TaxCode",
+            "foreignName": "code"
+        },
+        "source": {
+            "type": "belongsToParent"
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc"
+    }
+}

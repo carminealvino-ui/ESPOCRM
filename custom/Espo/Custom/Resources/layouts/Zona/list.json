@@ -1,0 +1,15 @@
+[
+    {
+        "name": "codiceZona"
+    },
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "description"
+    },
+    {
+        "name": "area"
+    }
+]

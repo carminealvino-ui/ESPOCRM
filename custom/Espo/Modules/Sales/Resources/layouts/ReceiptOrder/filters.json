@@ -1,0 +1,20 @@
+[
+    "status",
+    "supplier",
+    "purchaseOrder",
+    "returnOrder",
+    "account",
+    "assignedUser",
+    "teams",
+    "dateOrdered",
+    "dateReceived",
+    "warehouse",
+    "createdAt",
+    "createdBy",
+    "number",
+    "shippingProvider",
+    "products",
+    "inventoryNumbers",
+    "isLocked",
+    "isHardLocked"
+]

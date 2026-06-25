@@ -1,3 +1,3 @@
 {
-    "beforeSaveCustomScript": "// Nome = BRAND - CATEGORIA - DENOMINAZIONE\nif (denominazione != null && denominazione != '') {\n  name = string\\trim(string\\concatenate(brandName, ' - ', categoryName, ' - ', denominazione), ' -');\n}"
+    "beforeSaveCustomScript": "// Aggiorna dopo il salvataggio\nname = string\\upperCase(string\\concatenate(denominazione));"
 }

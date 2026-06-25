@@ -1,0 +1,11 @@
+{
+  "options": {
+    "job": {
+      "InventoryCompress": "Compressione delle transazioni di magazzino",
+      "NotActualOrderLocking": "Blocca gli ordini non validi",
+      "InventoryDetach": "Rimozione del collegamento con il magazzino",
+      "ControlPaymentRequests": "Controllo delle richieste di pagamento",
+      "ControlSubscriptions": "Gestisci abbonamenti"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+[
+    {
+        "name": "taxCode",
+        "notSortable": true
+    },
+    {
+        "name": "source",
+        "width": 16
+    },
+    {
+        "name": "item",
+        "width": 18
+    },
+    {
+        "name": "allocation",
+        "width": 14
+    },
+    {
+        "name": "baseAmountLocal",
+        "align": "right",
+        "width": 18
+    },
+    {
+        "name": "amountLocal",
+        "align": "right",
+        "width": 18
+    }
+]

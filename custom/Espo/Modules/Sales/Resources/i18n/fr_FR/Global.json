@@ -1,0 +1,31 @@
+{
+  "scopeNames": {
+    "Product": "Produit",
+    "ProductCategory": "Catégorie de produit",
+    "ProductBrand": "Marque du produit",
+    "ReportCategory": "Catégorie de rapport",
+    "Quote": "Devis",
+    "QuoteItem": "Élément de devis",
+    "SalesOrder": "Commande",
+    "SalesOrderItem": "Élément de commande de vente",
+    "Invoice": "Facture",
+    "InvoiceItem": "Élément de facture",
+    "Tax": "Taxe",
+    "ShippingProvider": "Fournisseur d'expédition",
+    "OpportunityItem": "Élément d'opportunité"
+  },
+  "scopeNamesPlural": {
+    "Product": "Produits",
+    "ProductCategory": "Catégories de produit",
+    "ReportCategory": "Catégories de rapport",
+    "Quote": "Devis",
+    "QuoteItem": "Éléments de devis",
+    "SalesOrder": "Commandes",
+    "SalesOrderItem": "Éléments de commande de vente",
+    "Invoice": "Factures",
+    "InvoiceItem": "Éléments de facture",
+    "ShippingProvider": "Fournisseurs d'expédition",
+    "OpportunityItem": "Éléments d'opportunité",
+    "ProductBrand": "Marques des produits"
+  }
+}

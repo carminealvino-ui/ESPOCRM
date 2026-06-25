@@ -1,0 +1,35 @@
+{
+    "labels": {
+        "Create PaymentMandate": "Create Mandate",
+        "Parameters": "Parameters"
+    },
+    "fields": {
+        "status": "Status",
+        "account": "Account",
+        "accountHolder": "Account Holder",
+        "iban": "IBAN",
+        "referenceId": "Reference ID",
+        "type": "Type",
+        "dateSigned": "Date Signed",
+        "expirationDate": "Expiration Date",
+        "data": "Data",
+        "record": "Record"
+    },
+    "links": {
+        "account": "Account",
+        "record": "Record"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Active": "Active",
+            "Canceled": "Canceled"
+        },
+        "type": {
+            "Sepa": "SEPA"
+        }
+    },
+    "presetFilters": {
+        "active": "Active"
+    }
+}

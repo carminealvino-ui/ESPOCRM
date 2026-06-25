@@ -1,0 +1,182 @@
+{
+    "fields": {
+        "isLocked": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isNotActual"
+                    }
+                ]
+            }
+        },
+        "number": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "paymentUrl": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "referenceId": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        },
+        "method": {
+            "readOnlySaved": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isNotActual"
+                            },
+                            {
+                                "type": "in",
+                                "attribute": "status",
+                                "value": [
+                                    "In Progress"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "account": {
+            "readOnlySaved": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isNotActual"
+                            },
+                            {
+                                "type": "in",
+                                "attribute": "status",
+                                "value": [
+                                    "In Progress"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "invoices": {
+            "readOnlySaved": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isNotActual"
+                            },
+                            {
+                                "type": "in",
+                                "attribute": "status",
+                                "value": [
+                                    "In Progress"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "amount": {
+            "readOnlySaved": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isNotActual"
+                            },
+                            {
+                                "type": "in",
+                                "attribute": "status",
+                                "value": [
+                                    "In Progress"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "expirationDate": {
+            "readOnlySaved": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isNotActual"
+                            },
+                            {
+                                "type": "in",
+                                "attribute": "status",
+                                "value": [
+                                    "In Progress"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "options": {
+        "status": [
+            {
+                "optionList": [
+                    "Draft",
+                    "Pending",
+                    "In Progress",
+                    "Paid",
+                    "Canceled"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isFalse",
+                                "attribute": "isNotActual"
+                            },
+                            {
+                                "type": "isTrue",
+                                "attribute": "isDone"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

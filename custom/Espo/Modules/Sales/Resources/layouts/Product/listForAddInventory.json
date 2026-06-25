@@ -1,0 +1,18 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "quantity",
+        "label": "qty",
+        "width": 13
+    },
+    {
+        "name": "unitPriceSelect",
+        "align": "right",
+        "label": "unitPrice",
+        "width": 22,
+        "notSortable": true
+    }
+]

@@ -1,0 +1,68 @@
+{
+    "controller": "controllers/record",
+    "mergeDisabled": true,
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.SupplierProductPrice",
+                    "link": "#SupplierProductPrice",
+                    "acl": "read",
+                    "aclScope": "SupplierProductPrice"
+                }
+            ]
+        }
+    },
+    "relationshipPanels": {
+        "purchaseOrders": {
+            "layout": "listForAccount",
+            "unlinkDisabled": true,
+            "selectDisabled": true,
+            "filterList": [
+                "all",
+                "completed"
+            ]
+        },
+        "supplierBills": {
+            "layout": "listForAccount",
+            "unlinkDisabled": true,
+            "filterList": [
+                "all",
+                "issued"
+            ]
+        },
+        "supplierCredits": {
+            "layout": "listForAccount",
+            "unlinkDisabled": true,
+            "filterList": [
+                "all",
+                "issued"
+            ]
+        },
+        "paymentEntries": {
+            "layout": "listForAccount",
+            "unlinkDisabled": true,
+            "createHandler": "modules/sales/handlers/supplier/create-payment-entry",
+            "filterList": [
+                "all",
+                "issued"
+            ]
+        },
+        "prices": {
+            "layout": "listForSupplier",
+            "unlinkDisabled": true,
+            "selectDisabled": true,
+            "filterList": [
+                "all",
+                "active"
+            ]
+        }
+    },
+    "filterList": [
+        "active"
+    ],
+    "selectDefaultFilters": {
+        "filter": "active"
+    },
+    "iconClass": "fas fa-truck-front"
+}

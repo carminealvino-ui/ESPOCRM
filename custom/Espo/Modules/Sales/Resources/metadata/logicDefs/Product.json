@@ -1,0 +1,312 @@
+{
+    "fields": {
+        "pricingFactor": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "pricingType",
+                        "value": [
+                            "Discount from List",
+                            "Markup over Cost",
+                            "Profit Margin"
+                        ]
+                    }
+                ]
+            }
+        },
+        "unitPrice": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "notEquals",
+                        "attribute": "pricingType",
+                        "value": "Fixed"
+                    }
+                ]
+            }
+        },
+        "isInventory": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "itemType",
+                        "value": [
+                            "Goods"
+                        ]
+                    }
+                ]
+            }
+        },
+        "inventoryNumberType": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "itemType",
+                        "value": [
+                            "Goods"
+                        ]
+                    },
+                    {
+                        "type": "isTrue",
+                        "attribute": "isInventory"
+                    }
+                ]
+            }
+        },
+        "expirationDays": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "and",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isInventory"
+                            },
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "inventoryNumberType"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "itemType",
+                        "value": [
+                            "Goods"
+                        ]
+                    }
+                ]
+            }
+        },
+        "removalStrategy": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "and",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isInventory"
+                            },
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "inventoryNumberType"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "in",
+                        "attribute": "itemType",
+                        "value": [
+                            "Goods"
+                        ]
+                    }
+                ]
+            }
+        },
+        "weight": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "itemType",
+                        "value": [
+                            "Goods"
+                        ]
+                    }
+                ]
+            },
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "notIn",
+                        "attribute": "itemType",
+                        "value": [
+                            "Goods"
+                        ]
+                    }
+                ]
+            }
+        },
+        "partNumber": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "itemType",
+                        "value": [
+                            "Goods"
+                        ]
+                    }
+                ]
+            },
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "notIn",
+                        "attribute": "itemType",
+                        "value": [
+                            "Goods"
+                        ]
+                    }
+                ]
+            }
+        },
+        "quantity": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isInventory"
+                    }
+                ]
+            }
+        },
+        "quantityReserved": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isInventory"
+                    }
+                ]
+            }
+        },
+        "quantityOnHand": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isInventory"
+                    }
+                ]
+            }
+        },
+        "quantitySoftReserved": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isInventory"
+                    }
+                ]
+            }
+        },
+        "quantityInTransit": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isInventory"
+                    }
+                ]
+            }
+        },
+        "quantityOnOrder": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isInventory"
+                    }
+                ]
+            }
+        },
+        "type": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        }
+    },
+    "panels": {
+        "inventoryNumbers": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "inventoryNumberType"
+                    }
+                ]
+            }
+        },
+        "quantity": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isInventory"
+                    }
+                ]
+            }
+        },
+        "inventoryAdjustmentItems": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isInventory"
+                    },
+                    {
+                        "type": "notIn",
+                        "attribute": "type",
+                        "value": ["Template"]
+                    }
+                ]
+            }
+        },
+        "prices": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isSellable"
+                            },
+                            {
+                                "type": "isTrue",
+                                "attribute": "isSubscribable"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "supplierPrices": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isPurchasable"
+                    }
+                ]
+            }
+        }
+    },
+    "options": {
+        "type": [
+            {
+                "optionList": [
+                    "Regular",
+                    "Template"
+                ],
+                "conditionGroup": [
+                    {
+                        "type": "isEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        ]
+    }
+}

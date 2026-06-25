@@ -1,0 +1,31 @@
+[
+    {
+        "name": "name",
+        "width": 35,
+        "link": true
+    },
+    {
+        "name": "category",
+        "width": 16
+    },
+    {
+        "name": "brand",
+        "width": 16
+    },
+    {
+        "name": "pricingType",
+        "width": 16
+    },
+    {
+        "name": "unitPrice",
+        "width": 16
+    },
+    {
+        "name": "prezzoCodice",
+        "width": 16
+    },
+    {
+        "name": "listPrice",
+        "width": 16
+    }
+]

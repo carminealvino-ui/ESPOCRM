@@ -1,0 +1,35 @@
+{
+    "labels": {
+        "Create SupplierProductPrice": "Create Supplier Price"
+    },
+    "fields": {
+        "supplier": "Supplier",
+        "status": "Status",
+        "product": "Product",
+        "minQuantity": "Min. Quantity",
+        "price": "Price",
+        "priceCurrency": "Price Currency",
+        "dateStart": "Date Start",
+        "dateEnd": "Date End",
+        "minQty": "Min. Qty",
+        "partNumber": "Part Number",
+        "priceConverted": "Price Converted",
+        "timeline": "Effective Dates"
+    },
+    "links": {
+        "supplier": "Supplier",
+        "product": "Product"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    },
+    "presetFilters": {
+        "active": "Active"
+    },
+    "massActions": {
+        "updatePrice": "Update Price"
+    }
+}

@@ -1,0 +1,108 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "parent"
+                }
+            ],
+            [
+                {
+                    "name": "tipologia"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "telefono"
+                },
+                {
+                    "name": "whatsAppNumero"
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "direction"
+                }
+            ],
+            [
+                {
+                    "name": "dateStart"
+                }
+            ],
+            [
+                {
+                    "name": "duration"
+                }
+            ],
+            [
+                {
+                    "name": "dateEnd"
+                }
+            ],
+            [
+                {
+                    "name": "nota"
+                }
+            ],
+            [
+                {
+                    "name": "reminders"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": ""
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "whatsApp"
+                },
+                {
+                    "name": "vocale"
+                }
+            ],
+            [
+                {
+                    "name": "testo"
+                }
+            ]
+        ],
+        "style": "default",
+        "dynamicLogicVisible": null,
+        "hidden": false,
+        "customLabel": "WhatsApp "
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "description"
+                }
+            ],
+            [
+                {
+                    "name": "daRichiamare"
+                },
+                {
+                    "name": "dataRichiamo"
+                }
+            ],
+            [
+                {
+                    "name": "richiamo"
+                },
+                false
+            ]
+        ],
+        "style": "default",
+        "dynamicLogicVisible": null,
+        "hidden": false,
+        "customLabel": "Esito Chiamata"
+    }
+]

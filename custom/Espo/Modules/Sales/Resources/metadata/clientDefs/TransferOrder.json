@@ -1,0 +1,174 @@
+{
+    "controller": "controllers/record",
+    "mergeDisabled": true,
+    "boolFilterList": ["onlyMy"],
+    "filterList": [
+        "actual",
+        {
+            "name": "completed",
+            "style": "success"
+        }
+    ],
+    "recordViews": {
+        "detail": "sales:views/quote/record/detail",
+        "edit": "sales:views/quote/record/edit",
+        "detailSmall": "sales:views/quote/record/detail-small",
+        "editSmall": "sales:views/quote/record/edit-small"
+    },
+    "viewSetupHandlers": {
+        "list": ["sales:handlers/info"],
+        "record/detail": ["sales:handlers/quote/setup-record-detail"],
+        "record/edit": ["sales:handlers/quote/setup-record-detail"]
+    },
+    "massActionDefs": {
+        "lock": {
+            "aclScope": "TransferOrder",
+            "acl": "edit",
+            "handler": "sales:handlers/quote/lock-mass-action",
+            "actionFunction": "actionLock",
+            "initFunction": "initLock"
+        },
+        "unlock": {
+            "aclScope": "TransferOrder",
+            "acl": "edit",
+            "handler": "sales:handlers/quote/lock-mass-action",
+            "actionFunction": "actionUnlock",
+            "initFunction": "initUnlock"
+        }
+    },
+    "massActionList": [
+        "lock",
+        "unlock"
+    ],
+    "checkAllResultMassActionList": [
+        "lock",
+        "unlock"
+    ],
+    "detailActionList": [
+        {
+            "name": "lock",
+            "acl": "edit",
+            "label": "Lock",
+            "handler": "sales:handlers/quote/lock-action",
+            "data": {
+                "handler": "sales:handlers/quote/lock-action"
+            },
+            "checkVisibilityFunction": "canBeLocked",
+            "actionFunction": "actionLock"
+        },
+        {
+            "name": "unlock",
+            "acl": "edit",
+            "label": "Unlock",
+            "handler": "sales:handlers/quote/lock-action",
+            "data": {
+                "handler": "sales:handlers/quote/lock-action"
+            },
+            "checkVisibilityFunction": "canBeUnlocked",
+            "actionFunction": "actionUnlock"
+        }
+    ],
+    "bottomPanels": {
+        "detail": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "sales:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "edit": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "sales:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "detailSmall": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "editSmall": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ]
+    },
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "labelTranslation": "Quote.labels.Templates",
+                    "link": "#Template",
+                    "acl": "read",
+                    "aclScope": "Template"
+                },
+                false,
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.ShippingProvider",
+                    "link": "#ShippingProvider",
+                    "acl": "read",
+                    "aclScope": "ShippingProvider"
+                },
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.Warehouse",
+                    "link": "#Warehouse",
+                    "acl": "read",
+                    "aclScope": "Warehouse",
+                    "configCheck": "warehousesEnabled"
+                },
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.TransferOrderItem",
+                    "link": "#TransferOrderItem",
+                    "acl": "read",
+                    "aclScope": "TransferOrderItem"
+                }
+            ]
+        }
+    },
+    "relationshipPanels": {
+        "inventoryTransactions": {
+            "createDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "layout": "listForOrder"
+        }
+    },
+    "additionalLayouts": {
+        "detailBottomTotal": {
+            "type": "list",
+            "dataAttributeList": ["name", "view", "customLabel"]
+        },
+        "listForAccount": {
+            "type": "list"
+        },
+        "listForWarehouseInbound": {
+            "type": "list"
+        },
+        "listForWarehouseOutbound": {
+            "type": "list"
+        }
+    },
+    "calculationHandler": "sales:quote-calculation-handler",
+    "iconClass": "fas fa-dolly fa-flip-horizontal"
+}

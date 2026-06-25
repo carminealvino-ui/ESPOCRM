@@ -1,0 +1,21 @@
+{
+  "fields": {
+    "percentage": "Prozentsatz",
+    "days": "Tage",
+    "state": "Verlauf",
+    "amountDue": "Fällig"
+  },
+  "options": {
+    "status": {
+      "Unsettled": "Offen",
+      "Partially Settled": "Teilweise ausgeglichen",
+      "Settled": "Ausgeglichen"
+    },
+    "state": {
+      "Due": "Fällig",
+      "Partially Settled": "Teilweise ausgeglichen",
+      "Settled": "Ausgeglichen",
+      "Canceled": "Storniert"
+    }
+  }
+}

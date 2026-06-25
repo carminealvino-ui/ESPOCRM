@@ -1,0 +1,15 @@
+{
+    "entity": true,
+    "object": false,
+    "layouts": false,
+    "tab": true,
+    "acl": false,
+    "aclPortal": false,
+    "module": "Sales",
+    "customizable": false,
+    "importable": true,
+    "preserveAuditLog": true,
+    "duplicateCheckFieldList": [
+        "name"
+    ]
+}

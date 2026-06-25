@@ -1,0 +1,44 @@
+{
+  "labels": {
+    "Create ProductPrice": "Crea prezzo"
+  },
+  "fields": {
+    "priceBook": "Listino Prezzi",
+    "status": "Stato",
+    "product": "Prodotto",
+    "minQuantity": "Quantità min",
+    "price": "Prezzo",
+    "priceCurrency": "Prezzo Valuta",
+    "dateStart": "Data di Inizio",
+    "dateEnd": "Data Fine",
+    "minQty": "Qtà minima",
+    "partNumber": "Codice articolo",
+    "priceConverted": "Prezzo convertito",
+    "interval": "Periodo",
+    "productIsSubscribable": "Prodotto sottoscrivibile",
+    "productIsSellable": "Prodotto vendibile",
+    "timeline": "Date di validità"
+  },
+  "links": {
+    "priceBook": "Listino Prezzi",
+    "product": "Prodotto"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  },
+  "presetFilters": {
+    "active": "Attivo"
+  },
+  "tooltips": {
+    "minQuantity": "Il prezzo verrà utilizzato solo quando la quantità di articoli venduti supera il valore specificato."
+  },
+  "messages": {
+    "priceMassUpdated": "Prezzi aggiornati, conteggio: {count}"
+  },
+  "massActions": {
+    "updatePrice": "Aggiorna il prezzo"
+  }
+}

@@ -45,9 +45,7 @@
                 "Confronto con Marito-Moglie/Socio",
                 "Tempistica Decisione",
                 "Modalità di Pagamento",
-                "Detrazione non Possibile",
-                "Infattibilità Tecnica",
-                "Permessi"
+                "Detrazione non Possibile"
             ],
             "style": {
                 "": null,
@@ -62,11 +60,9 @@
                 "Confronto con Marito-Moglie/Socio": null,
                 "Tempistica Decisione": null,
                 "Modalità di Pagamento": null,
-                "Detrazione non Possibile": null,
-                "Infattibilità Tecnica": null,
-                "Permessi": null
+                "Detrazione non Possibile": null
             },
-            "default": "",
+            "default": null,
             "isCustom": true
         },
         "name": {
@@ -281,11 +277,6 @@
             "isCustom": true,
             "conversionDisabled": true
         },
-        "ordineIncompletoAriel": {
-            "type": "bool",
-            "default": false,
-            "isCustom": true
-        },
         "azienda": {
             "type": "enum",
             "options": [
@@ -344,11 +335,6 @@
         "productCategory": {
             "type": "link",
             "view": "custom:views/fields/product-category-by-brand",
-            "isCustom": true
-        },
-        "dataAttivazione": {
-            "type": "date",
-            "useNumericFormat": true,
             "isCustom": true
         }
     },

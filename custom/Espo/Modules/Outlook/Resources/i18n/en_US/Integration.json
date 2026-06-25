@@ -1,0 +1,20 @@
+{
+    "fields": {
+        "outlookCalendar": "Calendar",
+        "outlookContacts": "Contacts",
+        "tenant": "Tenant",
+        "authorizationPrompt": "Authorization Prompt",
+        "graphApiSendEmail": "Send emails via Graph API",
+        "microsoftTeamsMeetings": "Microsoft Teams meetings",
+        "domainName": "Domain Name"
+    },
+    "help": {
+        "Outlook": "Obtain OAuth credentials from the [Azure Active Directory admin center](https://aad.portal.azure.com)."
+    },
+    "tooltips": {
+        "domainName": "The domain used for corporate email addresses. Specifying it helps the system select the appropriate user email address when syncing event attendees. Example: `mycompany.com`.",
+        "microsoftTeamsMeetings": "If enabled, users will be able to create online meetings when creating a meeting in Espo. The *Outlook Calendar* scope must be allowed in the user's roles.",
+        "graphApiSendEmail": "If enabled, you need to use separate Espo email accounts for sending and receiving.",
+        "outlookTenant": "Controls who can sign into the application.\n\n* *common* – Allows users with both personal Microsoft accounts and work/school accounts from Azure AD to sign into the application.\n* *organizations* – Allows only users with work/school accounts from Azure AD to sign into the application.\n* *consumers* – Allows only users with personal Microsoft accounts (MSA) to sign into the application.\n\nNote: If your Azure application is not set as multi-tenant, *common* value will cause an authentication error. You need to use an appropriate value."
+    }
+}

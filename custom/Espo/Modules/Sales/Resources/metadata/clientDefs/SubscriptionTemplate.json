@@ -1,0 +1,90 @@
+{
+    "controller": "controllers/record",
+    "mergeDisabled": true,
+    "boolFilterList": [],
+    "filterList": [
+        "active"
+    ],
+    "selectDefaultFilters": {
+        "filter": "active"
+    },
+    "recordViews": {
+        "detail": "sales:views/quote/record/detail",
+        "edit": "sales:views/quote/record/edit",
+        "detailSmall": "sales:views/quote/record/detail-small",
+        "editSmall": "sales:views/quote/record/edit-small"
+    },
+    "viewSetupHandlers": {
+        "list": ["sales:handlers/info"],
+        "record/detail": ["sales:handlers/quote/setup-record-detail"],
+        "record/edit": ["sales:handlers/quote/setup-record-detail"]
+    },
+    "bottomPanels": {
+        "detail": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "sales:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "edit": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "sales:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "detailSmall": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ],
+        "editSmall": [
+            "__APPEND__",
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "modules/sales/views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true
+            }
+        ]
+    },
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.Subscription",
+                    "link": "#Subscription",
+                    "acl": "read",
+                    "aclScope": "Subscription"
+                },
+                false,
+                {
+                    "labelTranslation": "Global.scopeNamesPlural.SubscriptionTemplateItem",
+                    "link": "#SubscriptionTemplateItem",
+                    "acl": "read",
+                    "aclScope": "SubscriptionTemplateItem"
+                }
+            ]
+        }
+    },
+    "relationshipPanels": {},
+    "additionalLayouts": {},
+    "calculationHandler": "sales:quote-calculation-handler"
+}

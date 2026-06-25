@@ -1,0 +1,58 @@
+{
+    "labels": {
+        "Price Rule Conditions": "Price Rule Conditions",
+        "Tax Profiles": "Tax Profiles",
+        "Tax Rules": "Tax Rules",
+        "Tax Codes": "Tax Codes",
+        "Tax Purchase Rules": "Tax Purchase Rules",
+        "Tax Classes": "Tax Classes",
+        "Payment Channels": "Payment Channels",
+        "Payment Methods": "Payment Methods",
+        "Subscription Periods": "Subscription Periods",
+        "Rounding Profiles": "Rounding Profiles",
+        "EN 16931 Tax Mapping": "EN 16931 Tax Mapping",
+        "Payment Terms Profiles": "Payment Terms Profiles"
+    },
+    "layouts": {
+        "listItem": "List (Item)",
+        "detailBottomTotal": "Bottom Total",
+        "listForAdd": "List (Select for Item)",
+        "listForAddInventory": "List (Select Inventory)",
+        "detailCreateFromSalesOrder": "Create from Sales Order",
+        "detailCreateFromPurchaseOrder": "Create from Purchase Order",
+        "listForProduct": "List for Product",
+        "listForTemplateProduct": "List for Template Product",
+        "listForWarehouse": "List for Warehouse",
+        "listVariant": "List Variants",
+        "listForAllocationSelect": "List for allocation",
+        "listForWarehouseInbound": "List for Warehouse (Inbound)",
+        "listForWarehouseOutbound": "List for Warehouse (Outbound)"
+    },
+    "fields": {
+        "useAutoincrement": "Auto-Increment",
+        "copyFieldList": "Fields to Copy",
+        "isCompactForm": "Compact Form",
+        "syncWithNumber": "Sync with Number"
+    },
+    "templates": {
+        "salesEmailPdf": "Email PDF (Sales)"
+    },
+    "keywords": {
+        "salesPack": "price,price book,price books,tax"
+    },
+    "descriptions": {
+        "euTaxMapping": "Tax category and exemption code mapping used in E-Invoices.",
+        "salesPackSettings": "Parameters for sales & purchase functionality.",
+        "priceRuleConditions": "Formula conditions for price rules.",
+        "taxCodes": "Configure taxes that can be applied to line items.",
+        "taxProfiles": "Create profiles for specific tax regimes.",
+        "taxRules": "Rules that determine the applicable Tax Profile for a given Account.",
+        "taxPurchaseRules": "Rules that determine the applicable Tax Profile for a given Account for purchases.",
+        "taxClasses": "Tax classes allow products to be associated with specific tax rates.",
+        "paymentChannels": "Payment providers and settings.",
+        "paymentMethods": "Available payment methods your customers can use.",
+        "subscriptionIntervals": "Billing periods available for subscribable products.",
+        "roundingProfiles": "Configure invoice rounding methods.",
+        "paymentTermsProfiles": "Configure payment terms for invoices."
+    }
+}

@@ -1,0 +1,33 @@
+{
+  "options": {
+    "calendarDirection": {
+      "EspoToOutlook": "Односторонній: з EspoCRM до Календаря Outlook",
+      "OutlookToEspo": "Односторонній: з Календаря Outlook до EspoCRM",
+      "Both": "Двосторонній"
+    }
+  },
+  "messages": {
+    "disconnectConfirmation": "Ви дійсно хочете від'єднатися?",
+    "noOutlookPanels": "Немає доступних сервісів Outlook."
+  },
+  "fields": {
+    "calendarStartDate": "Синхронізувати від",
+    "calendarEntityTypes": "Синхронізовані сутності та їхні розпізнавальні мітки",
+    "calendarDirection": "Напрямок",
+    "calendarMonitoredCalendars": "Інші календарі",
+    "calendarMainCalendar": "Основний календар",
+    "calendarDefaultEntity": "Сутність за замовчуванням",
+    "contactsGroups": "Додати контакти до груп",
+    "dontSyncEventAttendees": "Не синхронізувати учасників подій",
+    "removeOutlookCalendarEventIfRemovedInEspo": "Видалити запис Календаря Outlook при видаленні в EspoCRM",
+    "contactFolder": "Папки контактів",
+    "calendarCreateContacts": "Створити контакти для учасників в EspoCRM",
+    "calendarSkipPrivate": "Не синхронізувати приватні події",
+    "calendarDontPushPastEvents": "Не надсилати старі події в Outlook"
+  },
+  "tooltips": {
+    "calendarEntityTypes": "Для розпізнавання типу назва події повинна починатися з розпізнавальної мітки. Мітка для сутності за замовчуванням може бути порожньою. Рекомендація: Не змінюйте розпізнавальні мітки після збереження налаштувань синхронізації",
+    "calendarDefaultEntity": "Нерозпізнана подія буде завантажена як обрана сутність.",
+    "calendarDontPushPastEvents": "Якщо позначено цей пункт, тільки недавно створені події будуть надіслані в Outlook."
+  }
+}

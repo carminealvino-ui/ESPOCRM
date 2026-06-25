@@ -1,0 +1,17 @@
+{
+  "labels": {
+    "Create RoundingProfile": "Rundungsprofil erstellen"
+  },
+  "fields": {
+    "roundingFactor": "Rundungsfaktor"
+  },
+  "options": {
+    "status": {
+      "Active": "Aktiv",
+      "Inactive": "Inaktiv"
+    }
+  },
+  "tooltips": {
+    "roundingFactor": "\n\nBeispiele:\n- 1 – auf eine ganze Zahl gerundet\n- 0,5 – auf 50 Cent gerundet\n- 0,01 – auf 1 Cent gerundet"
+  }
+}

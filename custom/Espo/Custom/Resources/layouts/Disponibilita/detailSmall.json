@@ -1,0 +1,48 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "azienda"
+                }
+            ],
+            [
+                {
+                    "name": "datadisponibilita"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "dateStart"
+                },
+                {
+                    "name": "dateEnd"
+                }
+            ],
+            [
+                {
+                    "name": "orarioInizio"
+                },
+                {
+                    "name": "orarioFine"
+                }
+            ],
+            [
+                {
+                    "name": "duration"
+                }
+            ],
+            [
+                {
+                    "name": "area"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": ""
+    }
+]

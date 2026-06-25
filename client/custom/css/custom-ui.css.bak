@@ -1,0 +1,219 @@
+/***********************************************************************
+ * ESPOCRM UI FIX 1.0.4 DEFINITIVA
+ * Data: 10/05/2026
+ *
+ * OBIETTIVO:
+ * - calendario compatto e leggibile
+ * - dashboard compatta stile browser 80%
+ * - grafici leggibili con legende visibili
+ * - elenchi/tabelle più compatti
+ * - nessuna regressione grafica
+ *
+ * STATO:
+ * ✅ Dashboard OK
+ * ✅ Grafici OK
+ * ✅ Elenchi OK
+ * ✅ Calendario corretto
+ *
+ * NOTE:
+ * NON forzare più altezza fissa righe calendario.
+ ***********************************************************************/
+
+
+
+/***********************************************************************
+ * FONT GLOBALE STANDARD
+ ***********************************************************************/
+
+body,
+html {
+    font-size: 14px !important;
+}
+
+
+
+/***********************************************************************
+ * LAYOUT FULL WIDTH
+ ***********************************************************************/
+
+.container,
+.container-fluid,
+.page-content,
+#content,
+.main-content {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+
+
+/***********************************************************************
+ * MENU SUPERIORE
+ ***********************************************************************/
+
+.tabs,
+.navbar,
+.nav-tabs {
+    font-size: 12px !important;
+}
+
+
+
+/***********************************************************************
+ * SIDEBAR
+ ***********************************************************************/
+
+.sidebar,
+.sidebar a,
+.navbar-nav,
+.sticked-bar {
+    font-size: 12px !important;
+}
+
+
+
+/***********************************************************************
+ * DASHBOARD
+ ***********************************************************************/
+
+.dashboard {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.dashboard .panel {
+    margin-bottom: 14px;
+}
+
+
+
+/***********************************************************************
+ * FONT DASHBOARD
+ ***********************************************************************/
+
+.dashboard,
+.dashboard * {
+    font-size: 12px !important;
+}
+
+
+
+/***********************************************************************
+ * TITOLI GRAFICI
+ ***********************************************************************/
+
+.dashboard .panel-heading,
+.dashboard .panel-title,
+.dashboard h3,
+.dashboard h4 {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+}
+
+
+
+/***********************************************************************
+ * KPI NUMERICI
+ ***********************************************************************/
+
+.dashboard .panel .record-count,
+.dashboard .panel .count,
+.dashboard .panel .total {
+    font-size: 12px !important;
+}
+
+
+
+/***********************************************************************
+ * GRAFICI E LEGGENDE
+ ***********************************************************************/
+
+.dashboard .jqplot-table-legend,
+.dashboard .jqplot-table-legend td,
+.dashboard .jqplot-target,
+.dashboard .jqplot-axis,
+.dashboard .jqplot-point-label,
+.dashboard .flotr-legend,
+.dashboard .chart-legend {
+    font-size: 11px !important;
+}
+
+
+
+/***********************************************************************
+ * PIE CHART
+ ***********************************************************************/
+
+.dashboard .jqplot-series-shadowCanvas,
+.dashboard canvas {
+    max-width: 100% !important;
+}
+
+
+
+/***********************************************************************
+ * ELENCHI E TABELLE
+ ***********************************************************************/
+
+.list,
+.list *,
+.table,
+.table *,
+.list-row,
+.list-cell {
+    font-size: 12px !important;
+}
+
+
+
+/***********************************************************************
+ * RIGHE TABELLE PIU' COMPATTE
+ ***********************************************************************/
+
+.table > tbody > tr > td,
+.table > thead > tr > th {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+
+
+
+/***********************************************************************
+ * FORM E BOTTONI
+ ***********************************************************************/
+
+.form-control,
+select,
+input,
+textarea,
+.btn {
+    font-size: 12px !important;
+}
+
+
+
+/***********************************************************************
+ * CALENDARIO
+ * BLOCCO STABILE DEFINITIVO
+ ***********************************************************************/
+
+.fc-event,
+.fc-title,
+.fc-time,
+.fc-content {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+}
+
+
+
+/***********************************************************************
+ * ALTEZZA AUTOMATICA RIGHE CALENDARIO
+ ***********************************************************************/
+
+.fc-timegrid-slot,
+.fc-slats td {
+    height: auto !important;
+    min-height: 24px !important;
+}
+

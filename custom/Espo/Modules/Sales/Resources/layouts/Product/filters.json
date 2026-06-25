@@ -1,0 +1,20 @@
+[
+    "brand",
+    "type",
+    "itemType",
+    "isSellable",
+    "isPurchasable",
+    "isSubscribable",
+    "suppliers",
+    "quantity",
+    "quantityOnHand",
+    "warehousesOnHand",
+    "partNumber",
+    "isInventory",
+    "inventoryNumberType",
+    "removalStrategy",
+    "expirationDays",
+    "taxClasses",
+    "teams",
+    "createdAt"
+]

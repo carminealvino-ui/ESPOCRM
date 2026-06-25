@@ -1,0 +1,516 @@
+{
+    "Product": {
+        "variantSyncFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/product-variant-sync-field-list",
+                "tooltip": "productVariantSyncFieldList"
+            }
+        }
+    },
+    "SalesOrder": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "softReserveStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/sales-order-status-list",
+                "tooltip": "salesOrderSoftReserveStatusList"
+            }
+        },
+        "doneStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/sales-order-status-list",
+                "tooltip": "salesOrderDoneStatusList"
+            }
+        },
+        "canceledStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/sales-order-status-list",
+                "tooltip": "salesOrderCanceledStatusList"
+            }
+        },
+        "deliveryRequiredStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/sales-order-status-list",
+                "tooltip": "deliveryRequiredStatusList"
+            }
+        },
+        "lockableFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "tooltip": "lockableFieldList",
+                "view": "sales:views/admin/entity-manager/fields/lockable-field-list"
+            }
+        }
+    },
+    "DeliveryOrder": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "softReserveStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/delivery-order-status-list",
+                "tooltip": "deliveryOrderSoftReserveStatusList"
+            }
+        },
+        "reserveStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/delivery-order-status-list",
+                "tooltip": "deliveryOrderReserveStatusList"
+            }
+        },
+        "canceledStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/delivery-order-status-list",
+                "tooltip": "deliveryOrderCanceledStatusList"
+            }
+        },
+        "doneStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/delivery-order-status-list",
+                "tooltip": "deliveryOrderDoneStatusList"
+            }
+        },
+        "failedStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/delivery-order-status-list",
+                "tooltip": "deliveryOrderFailedStatusList"
+            }
+        },
+        "lockableFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "tooltip": "lockableFieldList",
+                "view": "sales:views/admin/entity-manager/fields/lockable-field-list"
+            }
+        }
+    },
+    "TransferOrder": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "softReserveStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/transfer-order-status-list",
+                "tooltip": "transferOrderSoftReserveStatusList"
+            }
+        },
+        "reserveStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/transfer-order-status-list",
+                "tooltip": "transferOrderReserveStatusList"
+            }
+        },
+        "canceledStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/transfer-order-status-list",
+                "tooltip": "transferOrderCanceledStatusList"
+            }
+        },
+        "doneStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/transfer-order-status-list",
+                "tooltip": "transferOrderDoneStatusList"
+            }
+        },
+        "failedStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/transfer-order-status-list",
+                "tooltip": "transferOrderFailedStatusList"
+            }
+        },
+        "lockableFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "tooltip": "lockableFieldList",
+                "view": "sales:views/admin/entity-manager/fields/lockable-field-list"
+            }
+        }
+    },
+    "PurchaseOrder": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "doneStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/purchase-order-status-list",
+                "tooltip": "purchaseOrderDoneStatusList"
+            }
+        },
+        "canceledStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/purchase-order-status-list",
+                "tooltip": "purchaseOrderCanceledStatusList"
+            }
+        },
+        "lockableFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "tooltip": "lockableFieldList",
+                "view": "sales:views/admin/entity-manager/fields/lockable-field-list"
+            }
+        }
+    },
+    "ReceiptOrder": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "doneStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/receipt-order-status-list",
+                "tooltip": "receiptOrderDoneStatusList"
+            }
+        },
+        "canceledStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/receipt-order-status-list",
+                "tooltip": "receiptOrderCanceledStatusList"
+            }
+        },
+        "lockableFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "tooltip": "lockableFieldList",
+                "view": "sales:views/admin/entity-manager/fields/lockable-field-list"
+            }
+        }
+    },
+    "Quote": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "doneStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/quote-status-list",
+                "tooltip": "quoteDoneStatusList"
+            }
+        },
+        "canceledStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/quote-status-list",
+                "tooltip": "quoteCanceledStatusList"
+            }
+        },
+        "lockableFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "tooltip": "lockableFieldList",
+                "view": "sales:views/admin/entity-manager/fields/lockable-field-list"
+            }
+        }
+    },
+    "Invoice": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "doneStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/invoice-status-list",
+                "tooltip": "invoiceDoneStatusList"
+            }
+        },
+        "canceledStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/invoice-status-list",
+                "tooltip": "invoiceCanceledStatusList"
+            }
+        },
+        "preIssueStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/invoice-status-list",
+                "tooltip": "invoicePreIssueStatusList"
+            }
+        },
+        "lockableFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "tooltip": "lockableFieldList",
+                "view": "sales:views/admin/entity-manager/fields/lockable-field-list"
+            }
+        }
+    },
+    "CreditNote": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "lockableFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "tooltip": "lockableFieldList",
+                "view": "sales:views/admin/entity-manager/fields/lockable-field-list"
+            }
+        }
+    },
+    "ReturnOrder": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "doneStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/return-order-status-list",
+                "tooltip": "returnOrderDoneStatusList"
+            }
+        },
+        "canceledStatusList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "view": "sales:views/admin/entity-manager/fields/return-order-status-list",
+                "tooltip": "returnOrderCanceledStatusList"
+            }
+        },
+        "lockableFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "tooltip": "lockableFieldList",
+                "view": "sales:views/admin/entity-manager/fields/lockable-field-list"
+            }
+        }
+    },
+    "InventoryAdjustment": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "lockableFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "tooltip": "lockableFieldList",
+                "view": "sales:views/admin/entity-manager/fields/lockable-field-list"
+            }
+        }
+    },
+    "Subscription": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        }
+    },
+    "SupplierBill": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "lockableFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "tooltip": "lockableFieldList",
+                "view": "modules/sales/views/admin/entity-manager/fields/lockable-field-list"
+            }
+        }
+    },
+    "SupplierCredit": {
+        "collaborators": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "assignedUsers": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "bool",
+                "tooltip": true
+            }
+        },
+        "lockableFieldList": {
+            "location": "scopes",
+            "fieldDefs": {
+                "type": "multiEnum",
+                "tooltip": "lockableFieldList",
+                "view": "modules/sales/views/admin/entity-manager/fields/lockable-field-list"
+            }
+        }
+    }
+}

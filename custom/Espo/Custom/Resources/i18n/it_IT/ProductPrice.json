@@ -1,0 +1,30 @@
+{
+    "fields": {
+        "price": "Prezzo di Listino (legacy Sales)",
+        "name": "Listino Prezzi - Aggiornamento",
+        "priceConverted": "Prezzo di Listino (convertito)",
+        "priceCurrency": "Prezzo di Listino (valuta)",
+        "prezzoListinoIvaEsclusa": "Prezzo Listino IVA Esclusa",
+        "prezzoListinoIvaInclusa": "Prezzo Listino IVA Inclusa",
+        "prezzoCodice": "Prezzo Codice IVA Esclusa",
+        "prezzoCodiceIvaInclusa": "Prezzo Codice IVA Inclusa",
+        "aliquotaIva": "Aliquota IVA %",
+        "taxCodeListino": "Imposta - Codice (dal listino)",
+        "dateStart": "Data inizio validità",
+        "dateEnd": "Data fine validità",
+        "prezzoCodiceConverted": "Prezzo Codice IVA Esclusa (convertito)",
+        "prezzoCodiceCurrency": "Prezzo Codice IVA Esclusa (valuta)",
+        "prezzoCodiceIvaInclusaConverted": "Prezzo Codice IVA Inclusa (convertito)",
+        "prezzoCodiceIvaInclusaCurrency": "Prezzo Codice IVA Inclusa (valuta)",
+        "prezzoListinoIvaEsclusaConverted": "Prezzo Listino IVA Esclusa (convertito)",
+        "prezzoListinoIvaEsclusaCurrency": "Prezzo Listino IVA Esclusa (valuta)",
+        "prezzoListinoIvaInclusaConverted": "Prezzo Listino IVA Inclusa (convertito)",
+        "prezzoListinoIvaInclusaCurrency": "Prezzo Listino IVA Inclusa (valuta)",
+        "priceBook": "Prezzo di Listino"
+    },
+    "tooltips": {
+        "aliquotaIva": "Derivata dal codice IVA impostato sul listino prezzi (es. IVA10 → 10%, IVA22 → 22%).",
+        "prezzoListinoIvaInclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dal codice IVA del listino.",
+        "prezzoListinoIvaEsclusa": "Modifica uno tra IVA inclusa o esclusa: l'altro si calcola dal codice IVA del listino."
+    }
+}

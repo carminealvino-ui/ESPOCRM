@@ -1,0 +1,18 @@
+{
+  "labels": {
+    "Create RoundingProfile": "Crea profilo di arrotondamento"
+  },
+  "fields": {
+    "roundingFactor": "Fattore di arrotondamento",
+    "status": "Stato"
+  },
+  "options": {
+    "status": {
+      "Active": "Attivo",
+      "Inactive": "Inattivo"
+    }
+  },
+  "tooltips": {
+    "roundingFactor": "\n\nEsempi:\n- 1 – al numero intero\n- 0.5 – a 50 centesimi\n- 0.01 – a 1 centesimo"
+  }
+}

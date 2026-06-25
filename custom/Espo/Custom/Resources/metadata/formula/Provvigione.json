@@ -1,0 +1,3 @@
+{
+    "beforeSaveCustomScript": "name = string\\upperCase(string\\concatenate(contratto.billingContactName,' - ', tipo,\" - €. \",importo, ));\n//provvigione=number\\format(((importo/contratto.grandTotalAmount)*100),2);"
+}

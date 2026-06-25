@@ -1,0 +1,9 @@
+{
+  "messages": {
+    "calendarConnectionProblem": "Не вдалося підключитися до календаря Outlook",
+    "fieldLabelIsRequired": "Лише одна сутність може бути без розпізнавальної мітки",
+    "emptyNotDefaultEnitityLabel": "Розпізнавальна мітка сутності не за замовчуванням не може бути порожньою",
+    "defaultEntityIsRequiredInList": "Сутність за замовчуванням обов'язкова в списку синхронізованих сутностей",
+    "notUniqueIdentificationLabel": "Розпізнавальні мітки повинні бути унікальними"
+  }
+}

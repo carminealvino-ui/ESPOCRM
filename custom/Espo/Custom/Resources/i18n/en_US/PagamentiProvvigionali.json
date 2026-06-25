@@ -1,0 +1,20 @@
+{
+    "fields": {
+        "opportunita": "Opportunità",
+        "dataPagamento": "Data Pagamento",
+        "importo": "Importo",
+        "importoCurrency": "Importo (Valuta)",
+        "importoConverted": "Importo (Convertito)",
+        "cliente": "Cliente",
+        "lead": "Lead",
+        "dataFattura": "Data Fattura"
+    },
+    "links": {
+        "opportunita": "Opportunità",
+        "cliente": "Cliente",
+        "lead": "Lead"
+    },
+    "labels": {
+        "Create PagamentiProvvigionali": "Create Pagamenti Provvigionali"
+    }
+}

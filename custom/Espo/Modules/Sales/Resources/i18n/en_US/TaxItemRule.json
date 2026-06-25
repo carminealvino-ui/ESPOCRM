@@ -1,0 +1,28 @@
+{
+    "labels": {
+        "Create TaxItemRule": "Create Tax Profile Item Rule"
+    },
+    "fields": {
+        "tax": "Tax Profile",
+        "class": "Class",
+        "rate": "Rate",
+        "status": "Status",
+        "taxCode": "Tax Code",
+        "basis": "Basis",
+        "taxDisplay": "Tax"
+    },
+    "links": {
+        "tax": "Tax Profile",
+        "class": "Class",
+        "taxCode": "Tax Code"
+    },
+    "options": {
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
+    },
+    "presetFilters": {
+        "active": "Active"
+    }
+}

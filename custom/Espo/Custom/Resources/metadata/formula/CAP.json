@@ -1,0 +1,3 @@
+{
+    "beforeSaveCustomScript": "codiceCAP=string\\upperCase(string\\concatenate(macroArea.codiceMacroArea,'/', area.codiceArea,zona.codiceZona));"
+}

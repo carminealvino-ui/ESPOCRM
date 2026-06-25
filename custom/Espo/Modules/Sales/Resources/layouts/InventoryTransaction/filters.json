@@ -1,0 +1,10 @@
+[
+    "number",
+    "product",
+    "warehouse",
+    "parent",
+    "quantity",
+    "type",
+    "inventoryNumber",
+    "createdAt"
+]

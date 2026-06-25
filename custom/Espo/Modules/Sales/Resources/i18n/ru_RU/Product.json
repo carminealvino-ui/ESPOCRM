@@ -1,0 +1,43 @@
+{
+  "labels": {
+    "Create Product": "Создать продукт",
+    "Price": "Цена",
+    "Brands": "Бренды",
+    "Categories": "Категории"
+  },
+  "fields": {
+    "status": "Статус",
+    "brand": "Бренд",
+    "partNumber": "Номер части",
+    "category": "Категория",
+    "pricingType": "Ценовой тип",
+    "pricingFactor": "Ценовой фактор",
+    "costPrice": "Себестоемость",
+    "listPrice": "Цена",
+    "unitPrice": "Цена за единицу",
+    "costPriceCurrency": "Валюта себестоимости",
+    "listPriceCurrency": "Валюта цены",
+    "unitPriceCurrency": "Валюта цены за ед.",
+    "costPriceConverted": "Себестоемость (сконвертированная)",
+    "listPriceConverted": "Цена (сконвертированная)",
+    "unitPriceConverted": "Цена за ед. (сконвертированная)",
+    "isTaxFree": "Без налога",
+    "weight": "Вес"
+  },
+  "links": {
+    "brand": "Бренд",
+    "category": "Категория"
+  },
+  "options": {
+    "pricingType": {
+      "Same as List": "Соответствует цене",
+      "Fixed": "Фиксированный",
+      "Discount from List": "Скидка от цены",
+      "Markup over Cost": "Наценка на стоимость",
+      "Profit Margin": "Рентабельность"
+    }
+  },
+  "presetFilters": {
+    "available": "Доступно"
+  }
+}

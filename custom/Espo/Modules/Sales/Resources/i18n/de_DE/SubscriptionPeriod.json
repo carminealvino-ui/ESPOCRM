@@ -1,0 +1,49 @@
+{
+  "labels": {
+    "Create SubscriptionPeriod": "Zeitraum erstellen"
+  },
+  "fields": {
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "type": "Typ",
+    "subscription": "Abonnement",
+    "billingStatus": "Abrechnungs Status",
+    "invoiceAutomatically": "Automatische Rechnungsstellung",
+    "holdUntilBillingComplete": "Nur aktivieren, wenn bezahlt.",
+    "timeline": "Datumsbereich"
+  },
+  "links": {
+    "subscription": "Abonnement",
+    "invoices": "Rechnungen"
+  },
+  "options": {
+    "status": {
+      "Scheduled": "Geplant",
+      "Active": "Aktiv",
+      "Ended": "Beendet",
+      "Canceled": "Storniert"
+    },
+    "type": {
+      "Regular": "Regulär",
+      "Trial": "Probe",
+      "Pause": "Pausieren"
+    },
+    "billingStatus": {
+      "Invoiced": "In Rechnung gestellt",
+      "Paid": "Bezahlt",
+      "Canceled": "Storniert"
+    }
+  },
+  "tooltips": {
+    "endDate": "Ein exklusiver Termin. Die nächste Periode beginnt an diesem Datum.",
+    "holdUntilBillingComplete": "Wenn diese Option deaktiviert ist, wird das Abonnement zu Beginn des Abrechnungszeitraums automatisch auf Aktiv umgeschaltet.\n\nWenn diese Option aktiviert ist, muss der Abrechnungsstatus Abgeschlossen sein, damit das Abonnement auf Aktiv umgeschaltet werden kann."
+  },
+  "actions": {
+    "processBilling": "Abrechnung verarbeiten"
+  },
+  "otherFields": {
+    "createPaymentRequest": "Zahlungsaufforderung erstellen",
+    "sendPaymentRequest": "Zahlungsaufforderung senden",
+    "sendInvoice": "Rechnung senden"
+  }
+}

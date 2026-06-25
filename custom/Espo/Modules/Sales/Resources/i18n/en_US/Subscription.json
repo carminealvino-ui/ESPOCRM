@@ -1,0 +1,76 @@
+{
+    "labels": {
+        "Create Subscription": "Create Subscription",
+        "Add Item": "Add Item",
+        "Items": "Items",
+        "Create with Template": "Create with Template",
+        "Templates": "Templates",
+        "Billing Plans": "Billing Plans"
+    },
+    "fields": {
+        "status": "Status",
+        "billingState": "Billing State",
+        "endDate": "End Date",
+        "amount": "Amount",
+        "amountConverted": "Amount (converted)",
+        "number": "Number",
+        "account": "Account",
+        "billingContact": "Billing Contact",
+        "priceBook": "Price Book",
+        "itemList": "Item List",
+        "currency": "Currency",
+        "billingPlan": "Billing Plan",
+        "primaryProduct": "Primary Product",
+        "tax": "Tax Profile",
+        "anchorDay": "Anchor Day",
+        "paymentMethod": "Payment Method",
+        "template": "Template",
+        "startDate": "Start Date",
+        "hasTrial": "Trial Period",
+        "intervalUnit": "Interval Unit",
+        "alignmentType": "Alignment",
+        "createPaymentRequests": "Create Payment Requests",
+        "sendPaymentRequests": "Send Payment Requests",
+        "sendInvoices": "Send Invoices",
+        "interval": "Charge Period",
+        "buyerReference": "Buyer Reference",
+        "purchaseOrderReference": "Purchase Order Reference"
+    },
+    "links": {
+        "items": "Items",
+        "account": "Account",
+        "billingContact": "Billing Contact",
+        "priceBook": "Price Book",
+        "invoices": "Invoices",
+        "creditNotes": "Credit Notes",
+        "billingPlan": "Billing Plan",
+        "periods": "Periods",
+        "primaryProduct": "Primary Product",
+        "tax": "Tax Profile",
+        "paymentMethod": "Payment Method",
+        "updates": "Updates"
+    },
+    "options": {
+        "status": {
+            "Draft": "Draft",
+            "Trial": "Trial",
+            "Active": "Active",
+            "Paused": "Paused",
+            "Stopped": "Stopped"
+        },
+        "billingState": {
+            "Clear": "Clear",
+            "Due": "Due",
+            "Past Due": "Past Due"
+        }
+    },
+    "presetFilters": {
+        "actual": "Open",
+        "active": "Active"
+    },
+    "messages": {
+        "periodActiveForPast": "Period with the status Active cannot have an end date in the past.",
+        "periodScheduledForPast": "Period with the status Scheduled cannot have a start date in the past.",
+        "periodOverlap": "Period range overlaps with an existing period."
+    }
+}

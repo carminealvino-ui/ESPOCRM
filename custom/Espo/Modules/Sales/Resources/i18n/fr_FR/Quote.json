@@ -1,0 +1,74 @@
+{
+  "labels": {
+    "Create Quote": "Créer un devis",
+    "Shipping Providers": "Fournisseurs d'expédition",
+    "Add Item": "Ajouter un article",
+    "Templates": "Modèles",
+    "Items": "Articles",
+    "Send in Email": "Envoyer par e-mail",
+    "Quote Items": "Éléments de devis"
+  },
+  "fields": {
+    "status": "État",
+    "number": "Numéro de devis",
+    "numberA": "Numéro de devis (incrémenté automatiquement)",
+    "invoiceNumber": "Numéro de facture",
+    "account": "Compte",
+    "opportunity": "Opportunité",
+    "billingAddress": "Adresse de facturation",
+    "shippingAddress": "Adresse de livraison",
+    "billingContact": "Contact de facturation",
+    "shippingContact": "Contact d'expédition",
+    "tax": "Taxe",
+    "taxRate": "Taux de taxe",
+    "shippingCost": "Frais de port",
+    "shippingProvider": "Fournisseur d'expédition",
+    "taxAmount": "Montant des taxes",
+    "discountAmount": "Montant de la remise",
+    "amount": "Montant",
+    "preDiscountedAmount": "Montant avant la remise",
+    "grandTotalAmount": "Montant final",
+    "itemList": "Liste des articles",
+    "dateQuoted": "Date du devis",
+    "dateOrdered": "Date de commande",
+    "dateInvoiced": "Date de facturation",
+    "weight": "Poids",
+    "amountConverted": "Montant (converti)",
+    "taxAmountConverted": "Montant des taxes (converti)",
+    "shippingCostConverted": "Coût d'expédition (converti)",
+    "preDiscountedAmountConverted": "Montant avant la remise (converti)",
+    "discountAmountConverted": "Montant de la remise (converti)",
+    "grandTotalAmountConverted": "Montant final (converti)",
+    "taxAmountCurrency": "Devise du montant des taxes",
+    "discountAmountCurrency": "Devise du montant de la remise",
+    "amountCurrency": "Devise du montant",
+    "preDiscountedAmountCurrency": "Devise du montant avant la remise",
+    "grandTotalAmountCurrency": "Devise du montant final",
+    "currency": "Devise"
+  },
+  "links": {
+    "items": "Articles",
+    "billingContact": "Contact de facturation",
+    "shippingContact": "Contact d'expédition",
+    "shippingProvider": "Fournisseur d'expédition",
+    "opportunity": "Opportunité",
+    "account": "Compte",
+    "tax": "Taxe",
+    "salesOrders": "Commandes",
+    "invoices": "Factures"
+  },
+  "options": {
+    "status": {
+      "Draft": "Brouillon",
+      "In Review": "En révision",
+      "Presented": "Présenté",
+      "Approved": "Approuvé",
+      "Rejected": "Rejeté",
+      "Canceled": "Annulé"
+    }
+  },
+  "presetFilters": {
+    "actual": "Réel",
+    "approved": "Approuvé"
+  }
+}

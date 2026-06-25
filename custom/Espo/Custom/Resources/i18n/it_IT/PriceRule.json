@@ -1,0 +1,13 @@
+{
+    "fields": {
+        "productCategory": "Prodotto - Categoria"
+    },
+    "links": {
+        "productCategory": "Prodotto - Categoria"
+    },
+    "options": {
+        "target": {
+            "Product Category": "Prodotto - Categoria"
+        }
+    }
+}

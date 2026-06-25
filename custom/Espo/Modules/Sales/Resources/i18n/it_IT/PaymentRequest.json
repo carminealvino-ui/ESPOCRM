@@ -1,0 +1,63 @@
+{
+  "labels": {
+    "Create PaymentRequest": "Crea richiesta di pagamento",
+    "Generate new reference ID": "Genera un nuovo ID di riferimento",
+    "Send in Email": "Invia tramite email"
+  },
+  "fields": {
+    "amount": "Importo",
+    "amountCurrency": "Importo Valuta",
+    "amountConverted": "Importo convertito",
+    "referenceId": "ID riferimento",
+    "number": "Numero",
+    "account": "Conto",
+    "status": "Stato",
+    "expirationDate": "Data di scadenza",
+    "method": "Metodo",
+    "invoices": "Fatture",
+    "invoiceAmounts": "Totali Fattura",
+    "paymentUrl": "URL di pagamento"
+  },
+  "links": {
+    "account": "Conto",
+    "paymentEntries": "Pagamenti",
+    "method": "Metodo",
+    "invoices": "Fatture"
+  },
+  "options": {
+    "status": {
+      "Draft": "Bozza",
+      "Pending": "In attesa",
+      "In Progress": "In Corso",
+      "Paid": "Pagato",
+      "Canceled": "Annullato",
+      "Expired": "Scaduto"
+    }
+  },
+  "presetFilters": {
+    "actual": "Aperto",
+    "paid": "Pagato"
+  },
+  "messages": {
+    "currencyNotAllowedForChannel": "La valuta non è consentita per il metodo.",
+    "methodIsNotActive": "Il metodo non è attivo.",
+    "checkoutSuccessInProcess": "Checkout completato. Il pagamento è ora in fase di elaborazione.",
+    "checkoutSuccessPaid": "Il pagamento è completato.",
+    "cannotChangeMethod": "Impossibile modificare il metodo. Solo un utente amministratore può apportare modifiche.",
+    "cannotChangeAmountAutomatedChannel": "Non è possibile modificare l'importo poiché il metodo di pagamento è automatizzato.",
+    "cannotChangeExpirationDateAutomatedChannel": "Non è possibile modificare la data di scadenza poiché il metodo di pagamento è automatizzato.",
+    "cannotChangeStatusForAutomatedChannel": "Impossibile modificare lo stato poiché il metodo di pagamento è automatizzato. Solo un utente amministratore può modificare manualmente lo stato.",
+    "cannotSetExpired": "Lo stato non può essere impostato manualmente su Scaduto.",
+    "draftMessage": "La richiesta di pagamento è in stato Bozza. Per procedere, è necessario impostare l'opzione In sospeso.",
+    "generateNewReferenceIdConfirmation": "Sei sicuro di voler generare un nuovo ID di riferimento? L'URL di pagamento verrà modificato.",
+    "accountMismatch": "Il conto non corrisponde al cliente della fattura.",
+    "invoicesCurrencyCodeMismatch": "Non è possibile selezionare fatture con valute diverse.",
+    "currencyCodeMismatch": "La valuta dell'importo non corrisponde alla valuta della fattura.",
+    "invoiceNotActual": "La fattura selezionata non è aperta."
+  },
+  "strings": {
+    "generateSepaXml": "Genera XML SEPA",
+    "paymentLink": "Link di pagamento",
+    "proceed": "Procedi con il pagamento"
+  }
+}

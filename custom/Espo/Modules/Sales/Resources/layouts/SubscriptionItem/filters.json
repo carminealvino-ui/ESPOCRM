@@ -1,0 +1,11 @@
+[
+    "account",
+    "subscription",
+    "product",
+    "subscriptionStatus",
+    "quantity",
+    "unitPriceConverted",
+    "amountConverted",
+    "createdBy",
+    "createdAt"
+]

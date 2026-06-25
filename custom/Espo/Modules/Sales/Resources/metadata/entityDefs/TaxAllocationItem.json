@@ -1,0 +1,156 @@
+{
+    "fields": {
+        "order": {
+            "type": "int",
+            "readOnly": true
+        },
+        "component": {
+            "type": "enum",
+            "options": [
+                "Item",
+                "Shipping"
+            ],
+            "maxLength": 8,
+            "required": true,
+            "readOnly": true,
+            "translation": "TaxLineItem.options.component"
+        },
+        "item": {
+            "type": "linkParent",
+            "entityList": [
+                "InvoiceItem",
+                "CreditNoteItem",
+                "SupplierBillItem",
+                "SupplierCreditItem"
+            ],
+            "readOnly": true
+        },
+        "source": {
+            "type": "linkParent",
+            "entityList": [
+                "Invoice",
+                "CreditNote",
+                "SupplierBill",
+                "SupplierCredit"
+            ],
+            "required": true,
+            "readOnly": true
+        },
+        "product": {
+            "type": "link",
+            "readOnly": true
+        },
+        "allocation": {
+            "type": "link",
+            "required": true,
+            "readOnly": true
+        },
+        "paymentEntry": {
+            "type": "link",
+            "required": true,
+            "readOnly": true
+        },
+        "taxCode": {
+            "type": "link",
+            "required": true,
+            "readOnly": true
+        },
+        "percentage": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "decimalPlaces": 3,
+            "precision": 8,
+            "scale": 4,
+            "min": 0,
+            "max": 100,
+            "readOnly": true,
+            "view": "modules/sales/views/payment-installment/fields/percentage"
+        },
+        "rate": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "decimalPlaces": 3,
+            "precision": 8,
+            "scale": 3,
+            "min": 0,
+            "max": 100,
+            "readOnly": true
+        },
+        "amount": {
+            "type": "currency",
+            "decimal": true,
+            "precision": 13,
+            "scale": 3,
+            "required": true,
+            "readOnly": true,
+            "conversionDisabled": true
+        },
+        "baseAmount": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "decimalPlaces": 3,
+            "precision": 13,
+            "scale": 3,
+            "required": true,
+            "readOnly": true,
+            "view": "modules/sales/views/tax-line-item/fields/base-amount"
+        },
+        "amountLocal": {
+            "type": "currency",
+            "decimal": true,
+            "precision": 13,
+            "scale": 3,
+            "readOnly": true,
+            "conversionDisabled": true
+        },
+        "baseAmountLocal": {
+            "type": "varchar",
+            "dbType": "decimal",
+            "decimalPlaces": 3,
+            "precision": 13,
+            "scale": 3,
+            "readOnly": true,
+            "view": "modules/sales/views/tax-line-item/fields/base-amount-local"
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true,
+            "index": true
+        },
+        "modifiedAt": {
+            "type": "datetime",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "product": {
+            "type": "belongsTo",
+            "entity": "Product"
+        },
+        "item": {
+            "type": "belongsToParent"
+        },
+        "paymentEntry": {
+            "type": "belongsTo",
+            "entity": "PaymentEntry",
+            "foreignName": "number"
+        },
+        "allocation": {
+            "type": "belongsTo",
+            "entity": "PaymentAllocation",
+            "foreignName": "number"
+        },
+        "taxCode": {
+            "type": "belongsTo",
+            "entity": "TaxCode",
+            "foreignName": "code"
+        },
+        "source": {
+            "type": "belongsToParent"
+        }
+    },
+    "collection": {
+        "orderBy": "createdAt",
+        "order": "desc"
+    }
+}

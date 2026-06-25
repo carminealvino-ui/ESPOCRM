@@ -1,0 +1,48 @@
+{
+    "readLoaderClassNameList": [
+        "__APPEND__",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\ItemListLoader",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\InventoryDataLoader",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\InventoryStatusLoader"
+    ],
+    "listLoaderClassNameList": [
+        "__APPEND__",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Quote\\ListItemListLoader"
+    ],
+    "earlyBeforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Quote\\EarlyBeforeSavePrepare"
+    ],
+    "earlyBeforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Quote\\EarlyBeforeSavePrepare"
+    ],
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Quote\\BeforeCreateValidation"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Quote\\BeforeUpdateValidation"
+    ],
+    "beforeDeleteHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Quote\\BeforeDeleteCheckLocked"
+    ],
+    "createInputFilterClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Order\\InputFilter"
+    ],
+    "updateInputFilterClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Order\\InputFilter"
+    ],
+    "loadAdditionalFieldsAfterUpdate": true,
+    "actions": {
+        "merge": {
+            "disabled": true
+        }
+    },
+    "massActions": {
+        "lock": {
+            "implementationClassName": "Espo\\Modules\\Sales\\Classes\\MassActions\\Lock"
+        },
+        "unlock": {
+            "implementationClassName": "Espo\\Modules\\Sales\\Classes\\MassActions\\Unlock"
+        }
+    },
+    "deletedRestorerClassName": "Espo\\Modules\\Sales\\Classes\\Record\\Quote\\DeletedRestorer"
+}

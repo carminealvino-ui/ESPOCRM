@@ -1,0 +1,115 @@
+{
+    "fields": {
+        "parent": {
+            "entityList": [
+                "Prospect",
+                "Lead",
+                "Account",
+                "Contact",
+                "Opportunity",
+                "Case",
+                "FornitorePartner",
+                "Provvigione"
+            ]
+        },
+        "name": {
+            "options": []
+        },
+        "status": {
+            "style": {
+                "Planned": null,
+                "Held": "success",
+                "Not Held": null
+            }
+        },
+        "privato": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "acceptanceStatus": {
+            "style": {
+                "None": null,
+                "Accepted": "success",
+                "Tentative": "warning",
+                "Declined": "danger"
+            },
+            "default": "None"
+        },
+        "createdAt": {
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "dateEnd": {
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "dateStartDate": {
+            "useNumericFormat": true
+        },
+        "modifiedAt": {
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "dateStart": {
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "videoCall": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "sorgente": {
+            "type": "enum",
+            "options": [
+                "Outlook",
+                "Google",
+                "Manuale"
+            ],
+            "style": {
+                "Outlook": null,
+                "Google": null,
+                "Manuale": null
+            },
+            "default": "Outlook",
+            "maxLength": 100,
+            "isCustom": true
+        },
+        "appuntamento": {
+            "type": "link"
+        },
+        "appuntamentoRef": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        }
+    },
+    "collection": {
+        "orderBy": "dateStart",
+        "order": "desc",
+        "textFilterFields": [
+            "name"
+        ],
+        "fullTextSearch": true,
+        "countDisabled": false
+    },
+    "optimisticConcurrencyControl": false,
+    "links": {
+        "appuntamenti": {
+            "type": "hasMany",
+            "foreign": "impegno",
+            "entity": "Appuntamento",
+            "audited": false,
+            "isCustom": true
+        },
+        "appuntamento": {
+            "type": "belongsTo",
+            "foreign": "impegni",
+            "entity": "Appuntamento",
+            "audited": false,
+            "isCustom": true
+        }
+    }
+}

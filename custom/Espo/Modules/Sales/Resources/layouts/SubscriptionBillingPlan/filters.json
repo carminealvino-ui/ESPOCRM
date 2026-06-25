@@ -1,0 +1,9 @@
+[
+    "status",
+    "interval",
+    "billingCycleLength",
+    "startDate",
+    "endDate",
+    "invoiceAutomatically",
+    "holdUntilBillingComplete"
+]

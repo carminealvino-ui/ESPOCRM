@@ -1,0 +1,9 @@
+[
+    {
+        "rows": [
+            [{"name": "number"}, false],
+            [{"name": "status"}, {"name": "date"}],
+            [{"name": "warehouse"}, {"name": "reason"}]
+        ]
+    }
+]

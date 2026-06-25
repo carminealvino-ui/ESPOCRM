@@ -1,0 +1,130 @@
+{
+    "fields": {
+        "isLocked": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isNotActual"
+                    }
+                ]
+            }
+        },
+        "isIssued": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "isIssued"
+                    }
+                ]
+            }
+        },
+        "postingDate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "postingDate"
+                    }
+                ]
+            }
+        },
+        "allocations": {
+            "readOnly": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isTrue",
+                                "attribute": "isLocked"
+                            },
+                            {
+                                "type": "and",
+                                "value": [
+                                    {
+                                        "type": "in",
+                                        "attribute": "status",
+                                        "value": [
+                                            "Applied"
+                                        ]
+                                    },
+                                    {
+                                        "type": "isTrue",
+                                        "attribute": "isDone"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "allocations"
+                            },
+                            {
+                                "type": "in",
+                                "attribute": "status",
+                                "value": [
+                                    "Applied"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "unallocatedAmount": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "or",
+                        "value": [
+                            {
+                                "type": "isNotEmpty",
+                                "attribute": "allocations"
+                            },
+                            {
+                                "type": "in",
+                                "attribute": "status",
+                                "value": [
+                                    "Applied"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "date": {
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "in",
+                        "attribute": "status",
+                        "value": [
+                            "Applied"
+                        ]
+                    }
+                ]
+            }
+        },
+        "number": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isNotEmpty",
+                        "attribute": "id"
+                    }
+                ]
+            }
+        }
+    }
+}

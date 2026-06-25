@@ -1,0 +1,17 @@
+[
+    "account",
+    "supplier",
+    "type",
+    "partyType",
+    "status",
+    "datePaid",
+    "postingDate",
+    "amount",
+    "unallocatedAmount",
+    "method",
+    "request",
+    "number",
+    "teams",
+    "description",
+    "isIssued"
+]

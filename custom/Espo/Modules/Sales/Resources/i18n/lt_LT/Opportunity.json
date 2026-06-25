@@ -1,0 +1,16 @@
+{
+    "labels": {
+        "Items": "Prekės",
+        "Select Product": "Pasirinkite produktą",
+        "Add Item": "Pridėti elementą"
+    },
+    "links": {
+        "quotes": "Citatos",
+        "salesOrders": "Pardavimo užsakymai",
+        "invoices": "Sąskaitos faktūros",
+        "items": "Prekės"
+    },
+    "fields": {
+        "itemList": "Elementų sąrašas"
+    }
+}

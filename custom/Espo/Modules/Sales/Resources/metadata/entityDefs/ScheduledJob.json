@@ -1,0 +1,9 @@
+{
+    "jobSchedulingMap": {
+        "InventoryCompress": "10 0 * * 6",
+        "NotActualOrderLocking": "10 1 * * 6",
+        "InventoryDetach": "10 2 * * 6",
+        "ControlPaymentRequests": "10 1 * * *",
+        "ControlSubscriptions": "20 0 * * *"
+    }
+}

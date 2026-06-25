@@ -1,0 +1,178 @@
+{
+    "controller": "modules/advanced/controllers/report",
+    "boolFilterList": ["onlyMy"],
+    "boolFilters": ["onlyMy"],
+    "recordViews": {
+        "list": "modules/advanced/views/report/record/list",
+        "detail": "modules/advanced/views/report/record/detail",
+        "edit": "modules/advanced/views/report/record/edit"
+    },
+    "views": {
+        "list": "modules/advanced/views/report/list",
+        "result": "modules/advanced/views/report/result",
+        "detail": "modules/advanced/views/report/detail"
+    },
+    "modalViews": {
+        "select": "modules/advanced/views/report/modals/select-records"
+    },
+    "defaultSidePanelFieldLists": {
+        "detail": [
+            ":assignedUser",
+            "teams",
+            "portals"
+        ],
+        "edit": [
+            ":assignedUser",
+            "teams",
+            "portals"
+        ]
+    },
+    "forceListViewSettings": true,
+    "createDisabled": false,
+    "menu": {
+        "list": {
+            "dropdown": [
+                {
+                    "name": "createJointGridReport",
+                    "label": "Create Joint Grid Report",
+                    "acl": "create",
+                    "handler": "modules/advanced/handlers/report/create-joint-grid-report-action",
+                    "actionFunction": "process"
+                },
+                {
+                    "name": "createInternalReport",
+                    "label": "Create Internal Report",
+                    "accessDataList": [
+                        {
+                            "isAdminOnly": true
+                        }
+                    ],
+                    "handler": "modules/advanced/handlers/report/create-internal-report-action",
+                    "actionFunction": "process"
+                },
+                false,
+                {
+                    "label": "Manage Categories",
+                    "link": "#ReportCategory",
+                    "acl": "edit",
+                    "aclScope": "ReportCategory"
+                }
+            ]
+        }
+    },
+    "bottomPanels": {
+        "detail": [
+            {
+                "name": "report",
+                "label": "Report",
+                "view": "modules/advanced/views/report/record/panels/report"
+            }
+        ],
+        "edit": [
+            {
+                "name": "internalParams",
+                "label": "Parameters",
+                "view": "modules/advanced/views/report/record/panels/internal-params"
+            }
+        ]
+    },
+    "filterList": [
+        "grid",
+        "list"
+    ],
+    "sidePanels":{
+        "detail":[
+            {
+                "name": "emailSending",
+                "label": "EmailSending",
+                "view": "modules/advanced/views/report/record/panels/email-sending",
+                "options": {
+                    "fieldList":[
+                        "emailSendingInterval",
+                        "emailSendingSettingWeekdays",
+                        "emailSendingSettingDay",
+                        "emailSendingSettingMonth",
+                        "emailSendingTime",
+                        "emailSendingUsers",
+                        "emailSendingDoNotSendEmptyReport"
+                    ],
+                    "inlineEditDisabled": true,
+                    "mode": "detail"
+                },
+                "isForm": true
+            }
+        ],
+        "edit":[
+            {
+                "name":"emailSending",
+                "label":"EmailSending",
+                "view":"views/record/panels/side",
+                "options":{
+                    "fieldList":[
+                        {
+                            "name": "emailSendingInterval",
+                            "labelTranslation": "Report.otherFields.interval"
+                        },
+                        "emailSendingSettingWeekdays",
+                        "emailSendingSettingDay",
+                        "emailSendingSettingMonth",
+                        "emailSendingTime",
+                        "emailSendingUsers",
+                        "emailSendingDoNotSendEmptyReport"
+                    ],
+                    "mode":"edit"
+                },
+                "isForm": true
+            }
+        ]
+    },
+    "dynamicLogic": {
+        "fields": {
+            "applyAcl": {
+                "visible": {
+                    "conditionGroup": [
+                        {
+                            "type": "equals",
+                            "attribute": "type",
+                            "value": "Grid"
+                        }
+                    ]
+                }
+            },
+            "joinedReports": {
+                "visible": {
+                    "conditionGroup": [
+                        {
+                            "type": "equals",
+                            "attribute": "type",
+                            "value": "JointGrid"
+                        }
+                    ]
+                }
+            },
+            "internalClassName": {
+                "visible": {
+                    "conditionGroup": [
+                        {
+                            "type": "isTrue",
+                            "attribute": "isInternal"
+                        }
+                    ]
+                }
+            }
+        },
+        "panels": {
+            "internalParams": {
+                "visible": {
+                    "conditionGroup": [
+                        {
+                            "type": "isTrue",
+                            "attribute": "isInternal"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "iconClass": "fas fa-chart-bar"
+}

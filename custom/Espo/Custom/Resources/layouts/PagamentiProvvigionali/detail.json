@@ -1,0 +1,32 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "opportunita"
+                }
+            ],
+            [
+                {
+                    "name": "dataFattura"
+                },
+                {
+                    "name": "importo"
+                }
+            ],
+            [
+                {
+                    "name": "dataPagamento"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "description"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": "Overview"
+    }
+]

@@ -1,0 +1,119 @@
+{
+  "labels": {
+    "Create Invoice": "Rechnung erstellen",
+    "Taxes": "Steuern",
+    "Shipping Providers": "Versender",
+    "Add Item": "Artikel hinzufügen",
+    "Templates": "Vorlagen",
+    "Items": "Artikel",
+    "Invoice Items": "Rechnungspositionen",
+    "E-Invoice": "E-Rechnung",
+    "Validate": "Bestätigen",
+    "Payments": "Zahlungen",
+    "Create Debit Note": "Lastschrift erstellen"
+  },
+  "fields": {
+    "number": "Nummer",
+    "numberA": "Nummer (auto-inkrement)",
+    "numberDebitNoteA": "Nummer für Lastschriften (auto-inkrementiert)",
+    "type": "Typ",
+    "account": "Firma",
+    "opportunity": "Verkaufschance",
+    "quote": "Angebot",
+    "salesOrder": "Kundenauftrag",
+    "precedingInvoice": "Vorherige Rechnung",
+    "billingAddress": "Rechnungsadresse",
+    "shippingAddress": "Lieferadresse",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "shippingContact": "Kontakt f. Lieferadresse",
+    "tax": "Steuerprofil",
+    "taxRate": "Steuersatz",
+    "shippingProvider": "Versender",
+    "taxAmount": "Steuerbetrag",
+    "discountAmount": "Rabattbetrag",
+    "amount": "Betrag",
+    "preDiscountedAmount": "Betrag vor Rabatt",
+    "itemList": "Artikelliste",
+    "dateInvoiced": "Rechnungsdatum",
+    "dateDue": "Fälligkeitsdatum",
+    "weight": "Gewicht",
+    "amountConverted": "Betrag (konvertiert)",
+    "preDiscountedAmountConverted": "Betrag vor Rabatt (konvertiert)",
+    "discountAmountConverted": "Rabattbetrag (konvertiert)",
+    "grandTotalAmountConverted": "Gesamtbetrag (konvertiert)",
+    "grandTotalAmount": "Gesamtbetrag",
+    "grandTotalAmountCurrency": "Gesamtbetrag Währung",
+    "taxAmountCurrency": "Steuerbetrag Währung",
+    "taxAmountConverted": "Steuerbetrag (konvertiert)",
+    "discountAmountCurrency": "Rabattbetrag Währung",
+    "amountCurrency": "Betragswährung",
+    "preDiscountedAmountCurrency": "Betrag vor Rabatt Währung",
+    "currency": "Währung",
+    "priceBook": "Preisbuch",
+    "buyerReference": "Käuferreferenz",
+    "purchaseOrderReference": "Bestellreferenz",
+    "note": "Notiz",
+    "amountDue": "Fälliger Betrag",
+    "amountDueCurrency": "Fälliger Betrag Währung",
+    "paymentMethods": "Zahlungsarten",
+    "paymentMethod": "Primäre Zahlungsart",
+    "roundingProfile": "Rundungsprofil",
+    "paymentTermsProfile": "Zahlungsbedingungen Profil",
+    "installments": "Ratenzahlungen",
+    "paymentTermsNote": "Zahlungshinweis",
+    "overdueDays": "Überfällige Tage"
+  },
+  "links": {
+    "items": "Artikel",
+    "billingContact": "Kontakt f. Rechnungsadresse",
+    "shippingContact": "Kontakt f. Lieferadresse",
+    "shippingProvider": "Versender",
+    "opportunity": "Verkaufschance",
+    "account": "Firma",
+    "tax": "Steuerprofil",
+    "quote": "Angebot",
+    "salesOrder": "Kundenauftrag",
+    "precedingInvoice": "Vorherige Rechnung",
+    "debitNotes": "Lastschriften",
+    "priceBook": "Preisbuch",
+    "creditNotes": "Gutschriften",
+    "paymentRequests": "Zahlungsaufforderungen",
+    "paymentMethods": "Zahlungsarten",
+    "subscriptionPeriods": "Abonnementzeiträume",
+    "subscriptionUpdates": "Abonnement-Updates",
+    "roundingProfile": "Rundungsprofil",
+    "paymentTermsProfile": "Zahlungsbedingungen Profil",
+    "installments": "Ratenzahlungen"
+  },
+  "options": {
+    "status": {
+      "Draft": "Entwurf",
+      "Issued": "Ausgestellt",
+      "Paid": "Bezahlt",
+      "Canceled": "Storniert"
+    },
+    "type": {
+      "Invoice": "Rechnung",
+      "Debit Note": "Lastschrift"
+    }
+  },
+  "presetFilters": {
+    "actual": "Offen",
+    "paid": "Bezahlt",
+    "openIssued": "Offen Ausgestellt"
+  },
+  "messages": {
+    "cannotRemoveIfAllocations": "Die Rechnung kann nicht gelöscht werden, da Zahlungszuordnungen vorhanden sind.",
+    "cannotChangeCurrencyIfAllocations": "Die Währung kann nicht geändert werden, wenn eine Rechnung Zahlungszuordnungen enthält.",
+    "cannotConvertWithPaymentAllocations": "Währungsumrechnung ist nicht möglich, wenn die Rechnung Zahlungszuordnungen enthält.",
+    "invoiceIsValid": "Rechnung ist gültig",
+    "ublRuleValidationFailure": "Ungültige Rechnung.\n\nFehlgeschlagene Regel-ID: `{ruleId}`\n\n{message}"
+  },
+  "eInvoiceFields": {
+    "eInvoiceFormat": "E-Rechnungsformat"
+  },
+  "reportValues": {
+    "current": "Aktuell",
+    "days": "Tage"
+  }
+}

@@ -1,0 +1,19 @@
+[
+    {
+        "name": "number",
+        "link": true
+    },
+    {
+        "name": "status",
+        "width": 15
+    },
+    {
+        "name": "datePaid",
+        "width": 18
+    },
+    {
+        "name": "amount",
+        "width": 20,
+        "align": "right"
+    }
+]

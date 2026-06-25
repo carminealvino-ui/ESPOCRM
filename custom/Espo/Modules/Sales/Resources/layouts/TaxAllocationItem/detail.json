@@ -1,0 +1,64 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "taxCode"
+                },
+                {
+                    "name": "order"
+                }
+            ],
+            [
+                {
+                    "name": "component"
+                },
+                {
+                    "name": "item"
+                }
+            ],
+            [
+                false,
+                {
+                    "name": "product"
+                }
+            ],
+            [
+                {
+                    "name": "paymentEntry"
+                },
+                {
+                    "name": "source"
+                }
+            ],
+            [
+                {
+                    "name": "allocation"
+                },
+                {
+                    "name": "percentage"
+                }
+            ]
+        ]
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "amount"
+                },
+                {
+                    "name": "baseAmount"
+                }
+            ],
+            [
+                {
+                    "name": "amountLocal"
+                },
+                {
+                    "name": "baseAmountLocal"
+                }
+            ]
+        ]
+    }
+]

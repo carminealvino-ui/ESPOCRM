@@ -1,0 +1,42 @@
+{
+    "listLoaderClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Product\\UnitPriceSelect",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Product\\QuantityInTransit",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Product\\QuantityOnOrder"
+    ],
+    "readLoaderClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Product\\QuantityInTransit",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Product\\QuantityOnOrder",
+        "Espo\\Modules\\Sales\\Classes\\FieldLoaders\\Product\\AttributesLoader"
+    ],
+    "saverClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\FieldSavers\\Product\\AttributesSaver"
+    ],
+    "beforeCreateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Product\\BeforeCreate"
+    ],
+    "beforeUpdateHookClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Hooks\\Product\\BeforeUpdate"
+    ],
+    "createInputFilterClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Product\\InputFilter"
+    ],
+    "updateInputFilterClassNameList": [
+        "Espo\\Modules\\Sales\\Classes\\Record\\Product\\InputFilter"
+    ],
+    "duplicateWhereBuilderClassName": "Espo\\Modules\\Sales\\Classes\\Record\\Product\\DuplicateWhereBuilder",
+    "massActions": {
+        "updatePrice": {
+            "allowed": true,
+            "implementationClassName": "Espo\\Modules\\Sales\\Tools\\Price\\MassUpdate\\UpdateProduct"
+        },
+        "merge": {
+            "disabled": true
+        }
+    },
+    "actions": {
+        "merge": {
+            "disabled": true
+        }
+    }
+}
