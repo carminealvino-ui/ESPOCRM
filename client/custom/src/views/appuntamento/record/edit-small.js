@@ -6,15 +6,21 @@
  *
  * Applica durata 1h30 solo se diversa da quella attuale (evita loop UI).
  */
-define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record/edit-small'], function (MeetingEditSmallModule) {
+define('custom:views/appuntamento/record/edit-small', [
+    'crm:views/meeting/record/edit-small',
+    'custom:views/appuntamento/helpers/rifissato',
+], function (MeetingEditSmallModule, RifissatoModule) {
 
     const Parent = MeetingEditSmallModule.default || MeetingEditSmallModule;
+    const Rifissato = RifissatoModule.default || RifissatoModule;
     const DEFAULT_DURATION_SECONDS = 5400;
 
     return class AppuntamentoEditSmallView extends Parent {
 
         setup() {
             super.setup();
+
+            Rifissato.setupRecordHandling(this);
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
