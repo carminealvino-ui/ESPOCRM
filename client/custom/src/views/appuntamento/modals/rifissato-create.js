@@ -1,44 +1,101 @@
-/* global define */
+/* global define, Espo */
 
-define('custom:views/appuntamento/modals/rifissato-create', [
-    'views/modals/edit',
-    'custom:views/appuntamento/helpers/rifissato',
-], function (EditModalModule, RifissatoModule) {
+define('custom:views/appuntamento/modals/rifissato-create', ['views/modal'], function (ModalDep) {
 
-    const Parent = EditModalModule.default || EditModalModule;
-    const Rifissato = RifissatoModule.default || RifissatoModule;
+    const Parent = ModalDep.default || ModalDep;
 
     return class AppuntamentoRifissatoCreateModal extends Parent {
 
+        className = 'dialog dialog-record';
+
+        templateContent = `
+            <div class="record no-side-margin">
+                <div class="cell form-group" data-name="dateStart"></div>
+            </div>
+        `;
+
         setup() {
-            this.scope = 'Appuntamento';
-            this.layoutName = 'rifissatoCreate';
+            this.headerText = 'Nuovo appuntamento rifissato';
+            this.sourceId = this.options.sourceId;
 
-            if (!this.options.model) {
-                throw new Error('Rifissato create modal requires a new model instance.');
-            }
+            this.buttonList = [
+                {
+                    name: 'save',
+                    label: 'Salva',
+                    style: 'primary',
+                    onClick: () => this.actionSave(),
+                },
+                {
+                    name: 'cancel',
+                    label: 'Annulla',
+                    onClick: () => this.close(),
+                },
+            ];
 
-            this.model = this.options.model;
+            this.wait(true);
 
-            Parent.prototype.setup.call(this);
+            return this.getModelFactory().create('Appuntamento')
+                .then(model => {
+                    this.model = model;
+                    this.model.set({status: 'Planned'});
+                    this.wait(false);
 
-            this.listenTo(this.model, 'change:dateStart', () => {
-                Rifissato.applyDefaultDuration(this.model, this.getDateTime());
-            });
+                    Parent.prototype.setup.call(this);
+                });
+        }
 
-            this.once('after:render', () => {
-                Rifissato.applyDefaultDuration(this.model, this.getDateTime());
+        afterRender() {
+            Parent.prototype.afterRender.call(this);
+
+            this.createView('dateStart', 'crm:views/meeting/fields/date-start', {
+                model: this.model,
+                mode: 'edit',
+                el: this.getSelector() + ' [data-name="dateStart"]',
+                defs: {
+                    name: 'dateStart',
+                    required: true,
+                },
+            }, view => {
+                view.render();
             });
         }
 
         actionSave() {
-            if (!this.model.isNew()) {
-                Espo.Ui.error('Il nuovo appuntamento deve essere creato come record separato.');
+            const fieldView = this.getView('dateStart');
 
-                return Promise.reject();
+            if (fieldView && typeof fieldView.fetch === 'function') {
+                fieldView.fetch();
             }
 
-            return Parent.prototype.actionSave.call(this);
+            const dateStart = this.model.get('dateStart');
+
+            if (!dateStart) {
+                Espo.Ui.warning('Inserire la data del nuovo appuntamento.');
+
+                return;
+            }
+
+            if (!this.sourceId) {
+                Espo.Ui.error('Appuntamento origine non valido.');
+
+                return;
+            }
+
+            Espo.Ui.notify(' ...');
+
+            Espo.Ajax.postRequest('Appuntamento/action/createRifissato', {
+                sourceId: this.sourceId,
+                dateStart: dateStart,
+            })
+                .then(response => {
+                    Espo.Ui.notify(false);
+                    Espo.Ui.success('Nuovo appuntamento creato.');
+                    this.trigger('after:save', response);
+                    this.close();
+                })
+                .catch(() => {
+                    Espo.Ui.notify(false);
+                });
         }
     };
 });
