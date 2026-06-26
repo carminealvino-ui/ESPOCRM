@@ -5,13 +5,13 @@
         "detail": "custom:views/appuntamento/detail"
     },
     "recordViews": {
-        "list": "crm:views/meeting/record/list",
+        "list": "views/record/list",
         "detail": "custom:views/appuntamento/record/detail",
         "edit": "custom:views/appuntamento/record/edit",
         "editSmall": "custom:views/appuntamento/record/edit-small"
     },
     "modalViews": {
-        "detail": "crm:views/meeting/modals/detail"
+        "detail": "views/modals/detail"
     },
     "filterList": [
         {

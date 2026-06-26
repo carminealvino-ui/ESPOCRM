@@ -7,11 +7,11 @@
  * Applica durata 1h30 solo se diversa da quella attuale (evita loop UI).
  */
 define('custom:views/appuntamento/record/edit-small', [
-    'crm:views/meeting/record/edit-small',
+    'views/record/edit',
     'custom:views/appuntamento/helpers/rifissato',
-], function (MeetingEditSmallModule, RifissatoModule) {
+], function (EditModule, RifissatoModule) {
 
-    const Parent = MeetingEditSmallModule.default || MeetingEditSmallModule;
+    const Parent = EditModule.default || EditModule;
     const Rifissato = RifissatoModule.default || RifissatoModule;
     const DEFAULT_DURATION_SECONDS = 5400;
 

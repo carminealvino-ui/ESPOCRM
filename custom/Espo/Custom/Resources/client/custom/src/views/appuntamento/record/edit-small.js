@@ -1,8 +1,8 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record/edit-small'], function (MeetingEditSmallModule) {
+define('custom:views/appuntamento/record/edit-small', ['views/record/edit'], function (EditModule) {
 
-    const Parent = MeetingEditSmallModule.default || MeetingEditSmallModule;
+    const Parent = EditModule.default || EditModule;
     const DEFAULT_DURATION_SECONDS = 5400;
 
     return class AppuntamentoEditSmallView extends Parent {

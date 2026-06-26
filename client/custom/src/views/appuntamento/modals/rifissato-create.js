@@ -47,7 +47,7 @@ define('custom:views/appuntamento/modals/rifissato-create', ['views/modal'], fun
         afterRender() {
             Parent.prototype.afterRender.call(this);
 
-            this.createView('dateStart', 'crm:views/meeting/fields/date-start', {
+            this.createView('dateStart', 'views/fields/datetime-optional', {
                 model: this.model,
                 mode: 'edit',
                 el: this.getSelector() + ' [data-name="dateStart"]',

@@ -1,11 +1,11 @@
 /* global define */
 
 define('custom:views/appuntamento/detail', [
-    'crm:views/meeting/detail',
+    'views/detail',
     'custom:views/appuntamento/helpers/rifissato',
-], function (MeetingDetailModule, RifissatoModule) {
+], function (DetailModule, RifissatoModule) {
 
-    const Parent = MeetingDetailModule.default || MeetingDetailModule;
+    const Parent = DetailModule.default || DetailModule;
     const Rifissato = RifissatoModule.default || RifissatoModule;
 
     return class AppuntamentoDetailView extends Parent {

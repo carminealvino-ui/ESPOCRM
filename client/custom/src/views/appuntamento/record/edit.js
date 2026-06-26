@@ -1,11 +1,11 @@
 /* global define */
 
 define('custom:views/appuntamento/record/edit', [
-    'crm:views/meeting/record/edit',
+    'views/record/edit',
     'custom:views/appuntamento/helpers/rifissato',
-], function (MeetingEditModule, RifissatoModule) {
+], function (EditModule, RifissatoModule) {
 
-    const Parent = MeetingEditModule.default || MeetingEditModule;
+    const Parent = EditModule.default || EditModule;
     const Rifissato = RifissatoModule.default || RifissatoModule;
     const DEFAULT_DURATION_SECONDS = 5400;
 

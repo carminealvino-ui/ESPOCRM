@@ -1,13 +1,13 @@
 /* global define, Espo */
 
 define('custom:views/appuntamento/popup-notification', [
-    'crm:views/meeting/popup-notification',
+    'views/popup-notification',
     'custom:views/opportunity/helpers/appuntamento-sync',
     'custom:helpers/call-esito-popup-defaults',
     'custom:views/appuntamento/helpers/rifissato',
-], function (MeetingPopupModule, AppuntamentoSyncModule, CallEsitoDefaultsModule, RifissatoModule) {
+], function (PopupModule, AppuntamentoSyncModule, CallEsitoDefaultsModule, RifissatoModule) {
 
-    const Parent = MeetingPopupModule.default || MeetingPopupModule;
+    const Parent = PopupModule.default || PopupModule;
     const AppuntamentoSync = AppuntamentoSyncModule.default || AppuntamentoSyncModule;
     const CallEsitoDefaults = CallEsitoDefaultsModule.default || CallEsitoDefaultsModule;
     const Rifissato = RifissatoModule.default || RifissatoModule;
@@ -612,7 +612,9 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
-            super.onCancel();
+            Espo.Ajax.postRequest('Activities/action/removePopupNotification', {
+                id: this.notificationId,
+            });
         }
     };
 });
