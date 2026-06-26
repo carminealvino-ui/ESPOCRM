@@ -36,6 +36,13 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
         'location',
     ];
 
+    const CLEAR_OUTCOME_ATTRIBUTES = {
+        status: 'Planned',
+        sottostato: null,
+        esito: null,
+        noteEsito: null,
+    };
+
     const isRifissatoState = function (status, sottostato) {
         return sottostato === 'Rifissato' && status && status !== 'Planned';
     };
@@ -45,6 +52,10 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
     };
 
     const isBecomingRifissato = function (model, attributes) {
+        if (attributes && Object.prototype.hasOwnProperty.call(attributes, 'dateStart')) {
+            return false;
+        }
+
         const previousSottostato = model.get('sottostato');
         const previousStatus = model.get('status');
         const nextSottostato = attributes && Object.prototype.hasOwnProperty.call(attributes, 'sottostato')
@@ -60,6 +71,10 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
     };
 
     const shouldTriggerAfterSave = function (model, attributes) {
+        if (attributes && Object.prototype.hasOwnProperty.call(attributes, 'dateStart')) {
+            return false;
+        }
+
         if (attributes && Object.keys(attributes).length) {
             return isBecomingRifissato(model, attributes);
         }
@@ -87,10 +102,9 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
     };
 
     const buildNewAppuntamentoAttributes = function (sourceModel, dateTimeUtil, originalDateStart) {
-        const attributes = {
-            status: 'Planned',
+        const attributes = Object.assign({}, CLEAR_OUTCOME_ATTRIBUTES, {
             description: buildDescription(sourceModel, dateTimeUtil, originalDateStart),
-        };
+        });
 
         COPY_ATTRIBUTES.forEach(fieldName => {
             const value = sourceModel.get(fieldName);
@@ -124,12 +138,6 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
         model.set('dateEnd', dateEnd);
     };
 
-    const preserveOriginalDateStart = function (model, originalDateStart) {
-        if (originalDateStart && !model.get('dateStart')) {
-            model.set('dateStart', originalDateStart, {silent: true});
-        }
-    };
-
     const openCreateModal = function (view, sourceModel, originalDateStart) {
         const snapshotDateStart = originalDateStart || sourceModel.get('dateStart');
         const attributes = buildNewAppuntamentoAttributes(
@@ -138,20 +146,16 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
             snapshotDateStart
         );
 
-        view.createView('rifissatoAppuntamentoDialog', 'views/modals/edit', {
-            scope: 'Appuntamento',
-            attributes: attributes,
-            layoutName: 'rifissatoCreate',
-        }, modalView => {
-            modalView.render();
+        view.getModelFactory().create('Appuntamento')
+            .then(newModel => {
+                newModel.set(attributes);
 
-            const model = modalView.model;
-
-            const syncDuration = () => applyDefaultDuration(model, modalView.getDateTime());
-
-            modalView.listenTo(model, 'change:dateStart', syncDuration);
-            modalView.once('after:render', syncDuration);
-        });
+                view.createView('rifissatoAppuntamentoDialog', 'custom:views/appuntamento/modals/rifissato-create', {
+                    model: newModel,
+                }, modalView => {
+                    modalView.render();
+                });
+            });
     };
 
     const setupModelHandling = function (model, view) {
@@ -164,13 +168,17 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
         const originalSave = model.save.bind(model);
 
         model.save = function (attributes, options) {
+            options = options || {};
+
+            if (options.rifissatoCreate) {
+                return originalSave(attributes, options);
+            }
+
             const triggerRifissato = shouldTriggerAfterSave(model, attributes);
-            const originalDateStart = model.get('dateStart');
 
             return originalSave(attributes, options).then(result => {
                 if (triggerRifissato) {
-                    preserveOriginalDateStart(model, originalDateStart);
-                    openCreateModal(view, model, originalDateStart);
+                    openCreateModal(view, model, model.get('dateStart'));
                 }
 
                 return result;
@@ -189,6 +197,7 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
         buildNewAppuntamentoAttributes: buildNewAppuntamentoAttributes,
         buildDescription: buildDescription,
         openCreateModal: openCreateModal,
+        applyDefaultDuration: applyDefaultDuration,
         setupModelHandling: setupModelHandling,
         setupRecordHandling: setupRecordHandling,
     };
