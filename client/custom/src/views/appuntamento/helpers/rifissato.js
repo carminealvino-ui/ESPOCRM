@@ -37,7 +37,7 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
     ];
 
     const isRifissatoState = function (status, sottostato) {
-        return status === 'Held' && sottostato === 'Rifissato';
+        return sottostato === 'Rifissato' && status && status !== 'Planned';
     };
 
     const isRifissato = function (model) {
@@ -45,17 +45,18 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
     };
 
     const isBecomingRifissato = function (model, attributes) {
-        const previousStatus = model.get('status');
         const previousSottostato = model.get('sottostato');
-        const nextStatus = attributes && Object.prototype.hasOwnProperty.call(attributes, 'status')
-            ? attributes.status
-            : previousStatus;
+        const previousStatus = model.get('status');
         const nextSottostato = attributes && Object.prototype.hasOwnProperty.call(attributes, 'sottostato')
             ? attributes.sottostato
             : previousSottostato;
+        const nextStatus = attributes && Object.prototype.hasOwnProperty.call(attributes, 'status')
+            ? attributes.status
+            : previousStatus;
 
-        return isRifissatoState(nextStatus, nextSottostato)
-            && !isRifissatoState(previousStatus, previousSottostato);
+        return nextSottostato === 'Rifissato'
+            && previousSottostato !== 'Rifissato'
+            && nextStatus !== 'Planned';
     };
 
     const shouldTriggerAfterSave = function (model, attributes) {
@@ -63,8 +64,9 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
             return isBecomingRifissato(model, attributes);
         }
 
-        return isRifissato(model)
-            && (model.hasChanged('status') || model.hasChanged('sottostato'));
+        return model.get('sottostato') === 'Rifissato'
+            && model.hasChanged('sottostato')
+            && model.get('status') !== 'Planned';
     };
 
     const formatOriginalDateTime = function (dateTime, dateTimeUtil) {
@@ -77,16 +79,17 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
         return moment.format('DD/MM/YYYY') + ' ore ' + moment.format('HH:mm');
     };
 
-    const buildDescription = function (sourceModel, dateTimeUtil) {
-        const formatted = formatOriginalDateTime(sourceModel.get('dateStart'), dateTimeUtil);
+    const buildDescription = function (sourceModel, dateTimeUtil, originalDateStart) {
+        const dateStart = originalDateStart || sourceModel.get('dateStart');
+        const formatted = formatOriginalDateTime(dateStart, dateTimeUtil);
 
         return 'appuntamento rifissato del ' + formatted;
     };
 
-    const buildNewAppuntamentoAttributes = function (sourceModel, dateTimeUtil) {
+    const buildNewAppuntamentoAttributes = function (sourceModel, dateTimeUtil, originalDateStart) {
         const attributes = {
             status: 'Planned',
-            description: buildDescription(sourceModel, dateTimeUtil),
+            description: buildDescription(sourceModel, dateTimeUtil, originalDateStart),
         };
 
         COPY_ATTRIBUTES.forEach(fieldName => {
@@ -127,8 +130,13 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
         }
     };
 
-    const openCreateModal = function (view, sourceModel) {
-        const attributes = buildNewAppuntamentoAttributes(sourceModel, view.getDateTime());
+    const openCreateModal = function (view, sourceModel, originalDateStart) {
+        const snapshotDateStart = originalDateStart || sourceModel.get('dateStart');
+        const attributes = buildNewAppuntamentoAttributes(
+            sourceModel,
+            view.getDateTime(),
+            snapshotDateStart
+        );
 
         view.createView('rifissatoAppuntamentoDialog', 'views/modals/edit', {
             scope: 'Appuntamento',
@@ -162,7 +170,7 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
             return originalSave(attributes, options).then(result => {
                 if (triggerRifissato) {
                     preserveOriginalDateStart(model, originalDateStart);
-                    openCreateModal(view, model);
+                    openCreateModal(view, model, originalDateStart);
                 }
 
                 return result;

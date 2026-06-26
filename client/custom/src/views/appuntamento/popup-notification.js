@@ -435,7 +435,11 @@ define('custom:views/appuntamento/popup-notification', [
                 return false;
             }
 
-            return this.getCurrentStatus() === 'Held' && this.getCurrentSottostato() === 'Rifissato';
+            const status = this.getCurrentStatus();
+
+            return this.getCurrentSottostato() === 'Rifissato'
+                && !!status
+                && status !== 'Planned';
         }
 
         updateActionButtons() {
@@ -551,7 +555,7 @@ define('custom:views/appuntamento/popup-notification', [
                         model.set('dateStart', originalDateStart, {silent: true});
                     }
 
-                    Rifissato.openCreateModal(this, model);
+                    Rifissato.openCreateModal(this, model, originalDateStart);
                     super.resolveCancel();
                 });
         }
