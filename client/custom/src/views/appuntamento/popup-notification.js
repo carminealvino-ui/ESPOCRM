@@ -574,6 +574,12 @@ define('custom:views/appuntamento/popup-notification', [
                 );
             }
 
+            if (entityType === 'Appuntamento' && this.shouldShowRifissato()) {
+                this.actionRifissatoAppuntamento();
+
+                return;
+            }
+
             Espo.Ui.notify(' ...');
 
             model.save(saveAttributes)

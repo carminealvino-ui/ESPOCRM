@@ -2,7 +2,7 @@
     "controller": "controllers/record",
     "acl": "crm:acl/meeting",
     "views": {
-        "detail": "crm:views/meeting/detail"
+        "detail": "custom:views/appuntamento/detail"
     },
     "recordViews": {
         "list": "crm:views/meeting/record/list",

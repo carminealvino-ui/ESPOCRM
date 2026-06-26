@@ -1,19 +1,19 @@
 /* global define */
 
-define('custom:views/appuntamento/record/detail', [
-    'crm:views/meeting/record/detail',
+define('custom:views/appuntamento/detail', [
+    'crm:views/meeting/detail',
     'custom:views/appuntamento/helpers/rifissato',
 ], function (MeetingDetailModule, RifissatoModule) {
 
     const Parent = MeetingDetailModule.default || MeetingDetailModule;
     const Rifissato = RifissatoModule.default || RifissatoModule;
 
-    return class AppuntamentoDetailRecordView extends Parent {
+    return class AppuntamentoDetailView extends Parent {
 
         setup() {
             super.setup();
 
-            Rifissato.setupRecordHandling(this);
+            Rifissato.setupModelHandling(this.model, this);
         }
     };
 });

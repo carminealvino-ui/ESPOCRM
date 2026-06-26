@@ -36,16 +36,35 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
         'location',
     ];
 
-    const isRifissato = function (model) {
-        return model.get('status') === 'Held' && model.get('sottostato') === 'Rifissato';
+    const isRifissatoState = function (status, sottostato) {
+        return status === 'Held' && sottostato === 'Rifissato';
     };
 
-    const shouldOpenAfterSave = function (model) {
-        if (!isRifissato(model)) {
-            return false;
+    const isRifissato = function (model) {
+        return isRifissatoState(model.get('status'), model.get('sottostato'));
+    };
+
+    const isBecomingRifissato = function (model, attributes) {
+        const previousStatus = model.get('status');
+        const previousSottostato = model.get('sottostato');
+        const nextStatus = attributes && Object.prototype.hasOwnProperty.call(attributes, 'status')
+            ? attributes.status
+            : previousStatus;
+        const nextSottostato = attributes && Object.prototype.hasOwnProperty.call(attributes, 'sottostato')
+            ? attributes.sottostato
+            : previousSottostato;
+
+        return isRifissatoState(nextStatus, nextSottostato)
+            && !isRifissatoState(previousStatus, previousSottostato);
+    };
+
+    const shouldTriggerAfterSave = function (model, attributes) {
+        if (attributes && Object.keys(attributes).length) {
+            return isBecomingRifissato(model, attributes);
         }
 
-        return model.hasChanged('sottostato') || model.hasChanged('status');
+        return isRifissato(model)
+            && (model.hasChanged('status') || model.hasChanged('sottostato'));
     };
 
     const formatOriginalDateTime = function (dateTime, dateTimeUtil) {
@@ -102,6 +121,12 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
         model.set('dateEnd', dateEnd);
     };
 
+    const preserveOriginalDateStart = function (model, originalDateStart) {
+        if (originalDateStart && !model.get('dateStart')) {
+            model.set('dateStart', originalDateStart, {silent: true});
+        }
+    };
+
     const openCreateModal = function (view, sourceModel) {
         const attributes = buildNewAppuntamentoAttributes(sourceModel, view.getDateTime());
 
@@ -121,21 +146,23 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
         });
     };
 
-    const setupRecordHandling = function (view) {
-        if (view._rifissatoSaveWrapped) {
+    const setupModelHandling = function (model, view) {
+        if (!model || model._rifissatoSaveWrapped) {
             return;
         }
 
-        view._rifissatoSaveWrapped = true;
+        model._rifissatoSaveWrapped = true;
 
-        const originalSave = view.model.save.bind(view.model);
+        const originalSave = model.save.bind(model);
 
-        view.model.save = function (attributes, options) {
-            const pendingRifissato = shouldOpenAfterSave(view.model);
+        model.save = function (attributes, options) {
+            const triggerRifissato = shouldTriggerAfterSave(model, attributes);
+            const originalDateStart = model.get('dateStart');
 
             return originalSave(attributes, options).then(result => {
-                if (pendingRifissato) {
-                    openCreateModal(view, view.model);
+                if (triggerRifissato) {
+                    preserveOriginalDateStart(model, originalDateStart);
+                    openCreateModal(view, model);
                 }
 
                 return result;
@@ -143,12 +170,18 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
         };
     };
 
+    const setupRecordHandling = function (view) {
+        setupModelHandling(view.model, view);
+    };
+
     return {
         isRifissato: isRifissato,
-        shouldOpenAfterSave: shouldOpenAfterSave,
+        isBecomingRifissato: isBecomingRifissato,
+        shouldTriggerAfterSave: shouldTriggerAfterSave,
         buildNewAppuntamentoAttributes: buildNewAppuntamentoAttributes,
         buildDescription: buildDescription,
         openCreateModal: openCreateModal,
+        setupModelHandling: setupModelHandling,
         setupRecordHandling: setupRecordHandling,
     };
 });
