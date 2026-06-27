@@ -134,6 +134,117 @@
             "type": "bool",
             "default": false,
             "isCustom": true
+        },
+        "codiceContratto": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
+        "numeroContratto": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
+        "venditaAbbinataAdAltroProdotto": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "scontoVenditaAbbinata": {
+            "notNull": false,
+            "type": "float",
+            "isCustom": true
+        },
+        "finanziamento": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "statoFinanziamento": {
+            "type": "enum",
+            "options": [
+                "",
+                "In attesa di OTP",
+                "In valutazione",
+                "In attesa documentazione",
+                "Approvato",
+                "Respinto"
+            ],
+            "style": {
+                "": null,
+                "In attesa di OTP": "info",
+                "In valutazione": "primary",
+                "In attesa documentazione": "warning",
+                "Approvato": "success",
+                "Respinto": "danger"
+            },
+            "default": null,
+            "isCustom": true
+        },
+        "importoCaparra": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoFinanziato": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "nrRate": {
+            "type": "int",
+            "isCustom": true
+        },
+        "tassoZero": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "rataPrestito": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoSaldo": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "statoContratto": {
+            "type": "enum",
+            "options": [
+                "",
+                "Inserito",
+                "Chiuso",
+                "Sospeso",
+                "Recesso",
+                "Annullato"
+            ],
+            "style": {
+                "": null,
+                "Inserito": "info",
+                "Chiuso": "success",
+                "Sospeso": "warning",
+                "Recesso": "default",
+                "Annullato": "danger"
+            },
+            "default": "Inserito",
+            "isCustom": true
+        },
+        "status": {
+            "options": [
+                "Bozza",
+                "In lavorazione",
+                "Appuntamento fissato",
+                "Installato",
+                "Invalido"
+            ],
+            "style": {
+                "Bozza": "default",
+                "In lavorazione": "primary",
+                "Appuntamento fissato": "info",
+                "Installato": "success",
+                "Invalido": "danger"
+            },
+            "default": "Bozza"
         }
     },
     "links": {
