@@ -40,6 +40,8 @@ class CrmKpiService
         'Chiuso Negativamente',
     ];
 
+    private const FINANCING_REJECTED = 'Respinto';
+
     public function __construct(
         private EntityManager $entityManager,
     ) {}
@@ -386,6 +388,10 @@ class CrmKpiService
         bool $onlyFinancingKo = false,
         bool $onlyRecesso = false
     ): int {
+        if ($onlyFinancingKo || $excludeFinancingKo) {
+            return $this->countQuotesResolved($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso);
+        }
+
         return (int) $this->entityManager
             ->getRDBRepository('Quote')
             ->where($this->quoteFilterWhere($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso))
@@ -399,6 +405,17 @@ class CrmKpiService
         bool $onlyFinancingKo = false,
         bool $onlyRecesso = false
     ): float {
+        if ($onlyFinancingKo || $excludeFinancingKo) {
+            return $this->sumQuoteFieldResolved(
+                $ctx,
+                ['importoContratto', 'amount', 'grandTotalAmount'],
+                $excludeFinancingKo,
+                $excludeRecesso,
+                $onlyFinancingKo,
+                $onlyRecesso
+            );
+        }
+
         return $this->safeSum(
             'Quote',
             $this->quoteFilterWhere($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso),
@@ -413,11 +430,137 @@ class CrmKpiService
         bool $onlyFinancingKo = false,
         bool $onlyRecesso = false
     ): float {
+        if ($onlyFinancingKo || $excludeFinancingKo) {
+            return $this->sumQuoteFieldResolved(
+                $ctx,
+                ['totaleProvvigioni'],
+                $excludeFinancingKo,
+                $excludeRecesso,
+                $onlyFinancingKo,
+                $onlyRecesso
+            );
+        }
+
         return $this->safeSum(
             'Quote',
             $this->quoteFilterWhere($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso),
             ['totaleProvvigioni']
         );
+    }
+
+    private function countQuotesResolved(
+        KpiContext $ctx,
+        bool $excludeFinancingKo = false,
+        bool $excludeRecesso = false,
+        bool $onlyFinancingKo = false,
+        bool $onlyRecesso = false
+    ): int {
+        return count($this->filterQuotesForTile($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso));
+    }
+
+    /**
+     * @param string[] $attributes
+     */
+    private function sumQuoteFieldResolved(
+        KpiContext $ctx,
+        array $attributes,
+        bool $excludeFinancingKo = false,
+        bool $excludeRecesso = false,
+        bool $onlyFinancingKo = false,
+        bool $onlyRecesso = false
+    ): float {
+        $quotes = $this->filterQuotesForTile($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso);
+        $sum = 0.0;
+
+        foreach ($quotes as $quote) {
+            foreach ($attributes as $attribute) {
+                $value = $quote->get($attribute);
+
+                if ($value !== null && $value !== '' && (float) $value !== 0.0) {
+                    $sum += (float) $value;
+                    break;
+                }
+            }
+        }
+
+        return $sum;
+    }
+
+    /**
+     * @return Entity[]
+     */
+    private function filterQuotesForTile(
+        KpiContext $ctx,
+        bool $excludeFinancingKo = false,
+        bool $excludeRecesso = false,
+        bool $onlyFinancingKo = false,
+        bool $onlyRecesso = false
+    ): array {
+        $collection = $this->entityManager
+            ->getRDBRepository('Quote')
+            ->where($ctx->quoteWhere())
+            ->find();
+
+        $opportunityIds = [];
+
+        foreach ($collection as $quote) {
+            $opportunityId = $quote->get('opportunitaId');
+
+            if ($opportunityId) {
+                $opportunityIds[] = $opportunityId;
+            }
+        }
+
+        $opportunityRejectedMap = $this->loadOpportunityFinancingRejectedMap($opportunityIds);
+        $matched = [];
+
+        foreach ($collection as $quote) {
+            if ($this->quoteMatchesTileFilter(
+                $quote,
+                $opportunityRejectedMap,
+                $excludeFinancingKo,
+                $excludeRecesso,
+                $onlyFinancingKo,
+                $onlyRecesso
+            )) {
+                $matched[] = $quote;
+            }
+        }
+
+        return $matched;
+    }
+
+    /**
+     * @param array<string, bool> $opportunityRejectedMap
+     */
+    private function quoteMatchesTileFilter(
+        Entity $quote,
+        array $opportunityRejectedMap,
+        bool $excludeFinancingKo,
+        bool $excludeRecesso,
+        bool $onlyFinancingKo,
+        bool $onlyRecesso,
+    ): bool {
+        $isRecesso = $quote->get('statoContratto') === 'Recesso';
+        $isFinancingRejected = $this->isQuoteFinancingRejected($quote, $opportunityRejectedMap);
+
+        if ($onlyRecesso) {
+            return $isRecesso;
+        }
+
+        if ($onlyFinancingKo) {
+            return $isFinancingRejected;
+        }
+
+        if ($excludeRecesso && $isRecesso) {
+            return false;
+        }
+
+        if ($excludeFinancingKo && $isFinancingRejected) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -437,10 +580,7 @@ class CrmKpiService
         }
 
         if ($onlyFinancingKo) {
-            return array_merge($where, [
-                'finanziamento' => true,
-                'statoFinanziamento' => 'Respinto',
-            ]);
+            return array_merge($where, $this->financingRejectedWhere());
         }
 
         if ($excludeRecesso) {
@@ -448,18 +588,120 @@ class CrmKpiService
         }
 
         if ($excludeFinancingKo) {
-            $where[] = [
-                'OR' => [
-                    ['finanziamento' => false],
-                    ['finanziamento' => null],
-                    ['statoFinanziamento!=' => 'Respinto'],
-                    ['statoFinanziamento' => null],
-                    ['statoFinanziamento' => ''],
-                ],
-            ];
+            $where[] = $this->excludeFinancingRejectedWhere();
         }
 
         return $where;
+    }
+
+    /**
+     * Finanziamento respinto su Quote o su Opportunità collegata.
+     *
+     * @return array<string, mixed>
+     */
+    private function financingRejectedWhere(): array
+    {
+        return [
+            'OR' => [
+                [
+                    'AND' => [
+                        ['finanziamento' => true],
+                        ['statoFinanziamento' => self::FINANCING_REJECTED],
+                    ],
+                ],
+                [
+                    'AND' => [
+                        ['opportunita.finanziamento' => true],
+                        ['opportunita.statoFinanziamento' => self::FINANCING_REJECTED],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function excludeFinancingRejectedWhere(): array
+    {
+        return [
+            'AND' => [
+                [
+                    'OR' => [
+                        ['finanziamento' => false],
+                        ['finanziamento' => null],
+                        ['statoFinanziamento!=' => self::FINANCING_REJECTED],
+                        ['statoFinanziamento' => null],
+                        ['statoFinanziamento' => ''],
+                    ],
+                ],
+                [
+                    'OR' => [
+                        ['opportunitaId' => null],
+                        ['opportunitaId' => ''],
+                        ['opportunita.finanziamento' => false],
+                        ['opportunita.finanziamento' => null],
+                        ['opportunita.statoFinanziamento!=' => self::FINANCING_REJECTED],
+                        ['opportunita.statoFinanziamento' => null],
+                        ['opportunita.statoFinanziamento' => ''],
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @param array<string, bool>|null $opportunityRejectedMap
+     */
+    private function isQuoteFinancingRejected(Entity $quote, ?array $opportunityRejectedMap = null): bool
+    {
+        if ($quote->get('finanziamento') && $quote->get('statoFinanziamento') === self::FINANCING_REJECTED) {
+            return true;
+        }
+
+        $opportunityId = $quote->get('opportunitaId');
+
+        if (!$opportunityId) {
+            return false;
+        }
+
+        if ($opportunityRejectedMap !== null) {
+            return $opportunityRejectedMap[$opportunityId] ?? false;
+        }
+
+        $opportunity = $this->entityManager->getEntityById('Opportunity', $opportunityId);
+
+        return $opportunity
+            && $opportunity->get('finanziamento')
+            && $opportunity->get('statoFinanziamento') === self::FINANCING_REJECTED;
+    }
+
+    /**
+     * @param string[] $opportunityIds
+     * @return array<string, bool>
+     */
+    private function loadOpportunityFinancingRejectedMap(array $opportunityIds): array
+    {
+        $opportunityIds = array_values(array_unique(array_filter($opportunityIds)));
+
+        if ($opportunityIds === []) {
+            return [];
+        }
+
+        $map = [];
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Opportunity')
+            ->select(['id', 'finanziamento', 'statoFinanziamento'])
+            ->where(['id' => $opportunityIds])
+            ->find();
+
+        foreach ($collection as $opportunity) {
+            $map[$opportunity->getId()] = $opportunity->get('finanziamento')
+                && $opportunity->get('statoFinanziamento') === self::FINANCING_REJECTED;
+        }
+
+        return $map;
     }
 
     /**
@@ -693,6 +935,18 @@ class CrmKpiService
             ->where($ctx->quoteWhere())
             ->find();
 
+        $opportunityIds = [];
+
+        foreach ($collection as $quote) {
+            $opportunityId = $quote->get('opportunitaId');
+
+            if ($opportunityId) {
+                $opportunityIds[] = $opportunityId;
+            }
+        }
+
+        $opportunityRejectedMap = $this->loadOpportunityFinancingRejectedMap($opportunityIds);
+
         foreach ($collection as $quote) {
             $date = $quote->get('dateQuoted');
 
@@ -706,14 +960,14 @@ class CrmKpiService
 
             $weekdayBuckets[$weekday]['contratti']++;
 
-            if ($this->isQuoteNetto($quote)) {
+            if ($this->isQuoteNetto($quote, $opportunityRejectedMap)) {
                 $weekdayBuckets[$weekday]['contrattiNetti']++;
             }
 
             if ($weekIndex !== null && isset($weekBuckets[$weekIndex])) {
                 $weekBuckets[$weekIndex]['contratti']++;
 
-                if ($this->isQuoteNetto($quote)) {
+                if ($this->isQuoteNetto($quote, $opportunityRejectedMap)) {
                     $weekBuckets[$weekIndex]['contrattiNetti']++;
                 }
             }
@@ -746,13 +1000,16 @@ class CrmKpiService
         return $dates;
     }
 
-    private function isQuoteNetto(Entity $quote): bool
+    /**
+     * @param array<string, bool>|null $opportunityRejectedMap
+     */
+    private function isQuoteNetto(Entity $quote, ?array $opportunityRejectedMap = null): bool
     {
         if ($quote->get('statoContratto') === 'Recesso') {
             return false;
         }
 
-        if ($quote->get('finanziamento') && $quote->get('statoFinanziamento') === 'Respinto') {
+        if ($this->isQuoteFinancingRejected($quote, $opportunityRejectedMap)) {
             return false;
         }
 
