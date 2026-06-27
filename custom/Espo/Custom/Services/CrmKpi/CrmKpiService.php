@@ -14,6 +14,11 @@ use Espo\ORM\EntityManager;
 
 class CrmKpiService
 {
+    private const ID_CHUNK_SIZE = 500;
+
+    /** @var array<string, mixed>|null */
+    private ?array $periodPipelineCache = null;
+
   /** @var string[] */
     private const ESITI_ANNULLATI = [
         'Annullato dal Potenziale',
@@ -57,6 +62,8 @@ class CrmKpiService
 
     private function buildSummary(User $user, string $period, ?string $productBrandId): object
     {
+        $this->periodPipelineCache = null;
+
         $period = DateRange::normalizePeriod($period);
         [$from, $to] = DateRange::resolve($period);
         $ctx = new KpiContext($from, $to, $this->normalizeBrandId($productBrandId));
@@ -87,8 +94,8 @@ class CrmKpiService
                 (float) $contratti->totali,
                 (float) $contratti->netti
             ),
-            'yieldsByWeekday' => $this->getYieldsByWeekdaySafe($ctx),
-            'yieldsByWeek' => $this->getYieldsByWeekSafe($ctx),
+            'yieldsByWeekday' => $this->buildYieldsByWeekday($ctx),
+            'yieldsByWeek' => $this->buildYieldsByWeek($ctx),
             'alerts' => $this->getAlertsSafe($from, $to, $ctx->productBrandId),
         ];
     }
@@ -481,13 +488,15 @@ class CrmKpiService
     /**
      * @return object[]
      */
-    private function getYieldsByWeekdaySafe(KpiContext $ctx): array
+    private function buildYieldsByWeekday(KpiContext $ctx): array
     {
         try {
-            $aggregated = $this->aggregatePeriodPipelines($ctx);
+            $aggregated = $this->getPeriodPipelines($ctx);
 
             return YieldBuilder::buildWeekdayRows($aggregated['weekday']);
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            $this->logYieldError('weekday', $e);
+
             return YieldBuilder::emptyWeekdayRows();
         }
     }
@@ -495,18 +504,43 @@ class CrmKpiService
     /**
      * @return object[]
      */
-    private function getYieldsByWeekSafe(KpiContext $ctx): array
+    private function buildYieldsByWeek(KpiContext $ctx): array
     {
         try {
-            $aggregated = $this->aggregatePeriodPipelines($ctx);
+            $aggregated = $this->getPeriodPipelines($ctx);
 
             return YieldBuilder::buildWeekRows(
                 $aggregated['week'],
                 $aggregated['weeks']
             );
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            $this->logYieldError('week', $e);
+
             return YieldBuilder::emptyWeekRows();
         }
+    }
+
+    /**
+     * @return array{
+     *   weekday: array<int, array<string, int>>,
+     *   week: array<int, array<string, int>>,
+     *   weeks: array<int, array<string, mixed>>
+     * }
+     */
+    private function getPeriodPipelines(KpiContext $ctx): array
+    {
+        if ($this->periodPipelineCache !== null) {
+            return $this->periodPipelineCache;
+        }
+
+        $this->periodPipelineCache = $this->aggregatePeriodPipelines($ctx);
+
+        return $this->periodPipelineCache;
+    }
+
+    private function logYieldError(string $scope, \Throwable $e): void
+    {
+        error_log('CrmKpi yieldsBy' . $scope . ': ' . $e->getMessage());
     }
 
     /**
@@ -530,7 +564,6 @@ class CrmKpiService
 
         $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->select(['status', 'sottostato', 'esito', 'dataAppuntamento', 'dateStart'])
             ->where($ctx->appuntamentoWhere())
             ->find();
 
@@ -561,15 +594,23 @@ class CrmKpiService
         }
 
         if ($appuntamentoIds !== []) {
-            $this->aggregateOpportunitiesByAppuntamento(
-                $ctx,
-                $appuntamentoIds,
-                $weekdayBuckets,
-                $weekBuckets
-            );
+            try {
+                $this->aggregateOpportunitiesByAppuntamento(
+                    $ctx,
+                    $appuntamentoIds,
+                    $weekdayBuckets,
+                    $weekBuckets
+                );
+            } catch (\Throwable $e) {
+                $this->logYieldError('opportunities', $e);
+            }
         }
 
-        $this->aggregateQuotesByDate($ctx, $weekdayBuckets, $weekBuckets);
+        try {
+            $this->aggregateQuotesByDate($ctx, $weekdayBuckets, $weekBuckets);
+        } catch (\Throwable $e) {
+            $this->logYieldError('quotes', $e);
+        }
 
         return [
             'weekday' => $weekdayBuckets,
@@ -603,35 +644,36 @@ class CrmKpiService
         array &$weekdayBuckets,
         array &$weekBuckets,
     ): void {
-        $appuntamentoDates = $this->loadAppuntamentoDates($appuntamentoIds);
+        foreach (array_chunk($appuntamentoIds, self::ID_CHUNK_SIZE) as $idChunk) {
+            $appuntamentoDates = $this->loadAppuntamentoDates($idChunk);
 
-        $where = ['appuntamentoId' => $appuntamentoIds];
+            $where = ['appuntamentoId' => $idChunk];
 
-        if ($ctx->productBrandId) {
-            $where['productBrandId'] = $ctx->productBrandId;
-        }
-
-        $collection = $this->entityManager
-            ->getRDBRepository('Opportunity')
-            ->select(['id', 'appuntamentoId'])
-            ->where($where)
-            ->find();
-
-        foreach ($collection as $opportunity) {
-            $appuntamentoId = $opportunity->get('appuntamentoId');
-            $date = $appuntamentoDates[$appuntamentoId] ?? null;
-
-            if (!$date) {
-                continue;
+            if ($ctx->productBrandId) {
+                $where['productBrandId'] = $ctx->productBrandId;
             }
 
-            $weekday = (int) (new \DateTimeImmutable($date))->format('N');
-            $weekIndex = WeekOfMonth::resolveIndexForDate($date);
+            $collection = $this->entityManager
+                ->getRDBRepository('Opportunity')
+                ->where($where)
+                ->find();
 
-            $weekdayBuckets[$weekday]['opportunita']++;
+            foreach ($collection as $opportunity) {
+                $appuntamentoId = $opportunity->get('appuntamentoId');
+                $date = $appuntamentoDates[$appuntamentoId] ?? null;
 
-            if ($weekIndex !== null && isset($weekBuckets[$weekIndex])) {
-                $weekBuckets[$weekIndex]['opportunita']++;
+                if (!$date) {
+                    continue;
+                }
+
+                $weekday = (int) (new \DateTimeImmutable($date))->format('N');
+                $weekIndex = WeekOfMonth::resolveIndexForDate($date);
+
+                $weekdayBuckets[$weekday]['opportunita']++;
+
+                if ($weekIndex !== null && isset($weekBuckets[$weekIndex])) {
+                    $weekBuckets[$weekIndex]['opportunita']++;
+                }
             }
         }
     }
@@ -647,7 +689,6 @@ class CrmKpiService
     ): void {
         $collection = $this->entityManager
             ->getRDBRepository('Quote')
-            ->select(['dateQuoted', 'statoContratto', 'finanziamento', 'statoFinanziamento'])
             ->where($ctx->quoteWhere())
             ->find();
 
@@ -686,17 +727,18 @@ class CrmKpiService
     {
         $dates = [];
 
-        $collection = $this->entityManager
-            ->getRDBRepository('Appuntamento')
-            ->select(['id', 'dataAppuntamento', 'dateStart'])
-            ->where(['id' => $appuntamentoIds])
-            ->find();
+        foreach (array_chunk($appuntamentoIds, self::ID_CHUNK_SIZE) as $idChunk) {
+            $collection = $this->entityManager
+                ->getRDBRepository('Appuntamento')
+                ->where(['id' => $idChunk])
+                ->find();
 
-        foreach ($collection as $appuntamento) {
-            $date = $this->resolveAppuntamentoDate($appuntamento);
+            foreach ($collection as $appuntamento) {
+                $date = $this->resolveAppuntamentoDate($appuntamento);
 
-            if ($date) {
-                $dates[$appuntamento->getId()] = $date;
+                if ($date) {
+                    $dates[$appuntamento->getId()] = $date;
+                }
             }
         }
 

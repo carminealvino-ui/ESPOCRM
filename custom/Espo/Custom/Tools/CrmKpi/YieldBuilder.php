@@ -133,15 +133,39 @@ class YieldBuilder
 
         foreach ($steps as $step) {
             $segment = (string) (int) $step->value;
+            $meta = self::formatStepMetaCompact($step);
 
-            if ($step->meta !== '') {
-                $segment .= ' · ' . $step->meta;
+            if ($meta !== '') {
+                $segment .= ' · ' . $meta;
             }
 
             $segments[] = $segment;
         }
 
         return implode(' · ', $segments);
+    }
+
+    private static function formatStepMetaCompact(object $step): string
+    {
+        $parts = [];
+
+        if ($step->key === 'appuntamentiNetti' && $step->percentOfPrevious !== null) {
+            $parts[] = $step->percentOfPrevious . '%';
+        }
+
+        if ($step->percentOfNetti !== null) {
+            $parts[] = $step->percentOfNetti . '%';
+        }
+
+        if ($step->percentOfOpportunita !== null) {
+            $parts[] = $step->percentOfOpportunita . '%';
+        }
+
+        if ($step->key === 'contrattiNetti' && $step->percentOfPrevious !== null) {
+            $parts[] = $step->percentOfPrevious . '%';
+        }
+
+        return implode(' · ', $parts);
     }
 
     private static function formatStepMeta(object $step): string
