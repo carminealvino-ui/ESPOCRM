@@ -175,10 +175,10 @@ class YieldBuilder
 
     /**
      * Efficienza periodo (le righe sommano a 100%):
-     *   R_app = appuntamenti giorno / totale appuntamenti
-     *   R_contr = contratti giorno / totale contratti
+     *   R_app = appuntamenti lordi giorno / totale lordi periodo
+     *   R_contr = contratti netti giorno / totale contratti netti periodo
      *   score = R_contr / R_app
-     *   eff%  = score / Σ score × 100
+     *   eff%  = score / Σ score × 100 (solo se contratti netti > 0)
      *
      * @param object[] $rows
      * @return object[]
@@ -190,15 +190,15 @@ class YieldBuilder
         }
 
         $totalLordi = 0;
-        $totalContratti = 0;
+        $totalContrattiNetti = 0;
 
         foreach ($rows as $row) {
             $metrics = self::metricsFromCells($row->cells);
             $totalLordi += $metrics['appuntamentiLordi'];
-            $totalContratti += $metrics['contratti'];
+            $totalContrattiNetti += $metrics['contrattiNetti'];
         }
 
-        if ($totalLordi <= 0 || $totalContratti <= 0) {
+        if ($totalLordi <= 0 || $totalContrattiNetti <= 0) {
             return $rows;
         }
 
@@ -207,15 +207,15 @@ class YieldBuilder
         foreach ($rows as $index => $row) {
             $metrics = self::metricsFromCells($row->cells);
             $lordi = $metrics['appuntamentiLordi'];
-            $contratti = $metrics['contratti'];
+            $contrattiNetti = $metrics['contrattiNetti'];
 
-            if ($lordi <= 0 || $contratti <= 0) {
+            if ($lordi <= 0 || $contrattiNetti <= 0) {
                 $scores[$index] = 0.0;
                 continue;
             }
 
             $appointmentRatio = $lordi / $totalLordi;
-            $contractRatio = $contratti / $totalContratti;
+            $contractRatio = $contrattiNetti / $totalContrattiNetti;
             $scores[$index] = $contractRatio / $appointmentRatio;
         }
 
@@ -234,7 +234,7 @@ class YieldBuilder
 
             $cell = $row->cells[4] ?? null;
 
-            if (!$cell) {
+            if (!$cell || (int) ($cell->value ?? 0) <= 0) {
                 continue;
             }
 
