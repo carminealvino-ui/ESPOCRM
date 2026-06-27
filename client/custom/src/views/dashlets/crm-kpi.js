@@ -90,14 +90,8 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     valoreProduzione: this.mapValoreProduzioneTile(tiles.valoreProduzione),
                     provvigioni: this.mapProvvigioniTile(tiles.provvigioni),
                 },
-                alerts: (summary.alerts || []).map(function (alert) {
-                    return {
-                        key: alert.key,
-                        label: alert.label,
-                        value: alert.value,
-                        meta: alert.meta || null,
-                    };
-                }),
+                alertsAvvisi: this.mapAlerts(summary.alerts, 'avvisi'),
+                alertsCriticita: this.mapAlerts(summary.alerts, 'criticita'),
                 yieldsByWeekday: this.mapYieldRows(summary.yieldsByWeekday),
                 yieldsByWeek: this.mapYieldRows(summary.yieldsByWeek),
                 yieldColumns: summary.yieldColumns || this.getDefaultYieldColumns(),
@@ -112,6 +106,21 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 {key: 'contratti', label: 'Contr.'},
                 {key: 'contrattiNetti', label: 'C. netti'},
             ];
+        },
+
+        mapAlerts: function (alerts, group) {
+            return (alerts || [])
+                .filter(function (alert) {
+                    return (alert.group || 'avvisi') === group;
+                })
+                .map(function (alert) {
+                    return {
+                        key: alert.key,
+                        label: alert.label,
+                        value: alert.value,
+                        meta: alert.meta || null,
+                    };
+                });
         },
 
         mapYieldRows: function (rows) {

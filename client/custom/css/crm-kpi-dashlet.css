@@ -213,10 +213,22 @@
     border-bottom: 0;
 }
 
+.crm-kpi-alerts-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+}
+
 .crm-kpi-panel-alerts {
     margin-top: 0;
     display: flex;
     flex-direction: column;
+    min-height: 0;
+}
+
+.crm-kpi-panel-alerts .crm-kpi-panel-title {
+    font-size: 0.92rem;
+    margin-bottom: 6px;
 }
 
 .crm-kpi-panel-pipeline {
@@ -354,6 +366,10 @@
     }
 
     .crm-kpi-yields-row {
+        grid-template-columns: 1fr;
+    }
+
+    .crm-kpi-alerts-row {
         grid-template-columns: 1fr;
     }
 

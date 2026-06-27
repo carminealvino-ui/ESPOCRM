@@ -41,43 +41,57 @@ class Alerts
                 'appuntamentiSenzaOpportunita',
                 'Appuntamenti senza opportunità',
                 $this->countAppuntamentiSenzaOpportunita($from, $to, $productBrandId),
-                '#Appuntamento/filter/appuntamentiSenzaOpportunita'
+                '#Appuntamento/filter/appuntamentiSenzaOpportunita',
+                null,
+                'avvisi'
             ),
             $this->alert(
                 'appuntamentiConPiuOpportunita',
                 'Appuntamenti con più opportunità',
                 $this->countAppuntamentiConPiuOpportunita($from, $to, $productBrandId),
-                '#Appuntamento/filter/appuntamentiConPiuOpportunita'
+                '#Appuntamento/filter/appuntamentiConPiuOpportunita',
+                null,
+                'avvisi'
             ),
             $this->alert(
                 'opportunityWithoutWhatsapp',
                 'Opportunità senza invio WhatsApp',
                 $this->countOpportunitiesWithoutWhatsapp($from, $to, $productBrandId),
-                '#Opportunity/filter/senzaInvioWhatsapp'
+                '#Opportunity/filter/senzaInvioWhatsapp',
+                null,
+                'avvisi'
             ),
             $this->alert(
                 'opportunityWithoutPhoneFollowUp',
                 'Opportunità senza Riscontro',
                 $this->countOpportunitiesWithoutPhoneFollowUp($from, $to, $productBrandId),
-                '#Opportunity/filter/senzaRiscontroPeriodo'
+                '#Opportunity/filter/senzaRiscontroPeriodo',
+                null,
+                'avvisi'
             ),
             $this->alert(
                 'richiamiPianificati',
                 'Richiami Pianificati',
                 $this->countRichiamiPianificati(),
-                '#Call/filter/richiamiPianificati'
+                '#Call/filter/richiamiPianificati',
+                null,
+                'avvisi'
             ),
             $this->alert(
                 'contractsSuspendedFinancing',
                 'Contratti Sospesi Finanziamento',
                 $this->countContractsSuspendedFinancing($productBrandId),
-                '#Quote/filter/contrattiSospesiFinanziamento'
+                '#Quote/filter/contrattiSospesiFinanziamento',
+                null,
+                'criticita'
             ),
             $this->alert(
                 'contractsSuspendedOrders',
                 'Contratti Sospesi Ordini',
                 $this->countContractsSuspendedOrders($productBrandId),
-                '#Quote/filter/contrattiInLavorazione'
+                '#Quote/filter/contrattiInLavorazione',
+                null,
+                'criticita'
             ),
         ];
     }
@@ -87,13 +101,15 @@ class Alerts
         string $label,
         int $value,
         string $link,
-        ?string $meta = null
+        ?string $meta = null,
+        string $group = 'avvisi'
     ): object {
         $item = (object) [
             'key' => $key,
             'label' => $label,
             'value' => $value,
             'link' => $link,
+            'group' => $group,
         ];
 
         if ($meta !== null && $meta !== '') {
