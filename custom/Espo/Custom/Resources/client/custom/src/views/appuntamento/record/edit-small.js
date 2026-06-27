@@ -1,49 +1,77 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record/edit-small'], function (MeetingEditSmallModule) {
+define('custom:views/appuntamento/record/edit-small', [
+    'views/record/edit',
+    'custom:helpers/appuntamento-prospect-sync',
+], function (Dep, ProspectSync) {
 
-    const Parent = MeetingEditSmallModule.default || MeetingEditSmallModule;
-    const DEFAULT_DURATION_SECONDS = 5400;
+    return Dep.extend({
 
-    return class AppuntamentoEditSmallView extends Parent {
+        setup: function () {
+            Dep.prototype.setup.call(this);
 
-        setup() {
-            super.setup();
+            ProspectSync.setupProspectSync(this);
+            ProspectSync.setupDefaultDuration(this);
+        },
 
-            if (!this.model.isNew() || this.model.get('isAllDay')) {
+        getModalEditView: function () {
+            let parent = this.getParentView();
+
+            while (parent) {
+                if (
+                    parent.dialog &&
+                    typeof parent.actionSave === 'function' &&
+                    typeof parent.getRecordView === 'function'
+                ) {
+                    return parent;
+                }
+
+                parent = parent.getParentView ? parent.getParentView() : null;
+            }
+
+            return null;
+        },
+
+        closeModalEditView: function (modalView) {
+            if (!modalView || !modalView.dialog) {
                 return;
             }
 
-            this.listenTo(this.model, 'change:dateStart', () => {
-                this.applyDefaultDuration();
+            if (modalView.dialog.$el && !modalView.dialog.$el.is(':visible')) {
+                return;
+            }
+
+            modalView.id = modalView.id || this.model.id;
+            modalView.dialog.close();
+        },
+
+        afterNotModified: function () {
+            const modalView = this.getModalEditView();
+
+            if (modalView && this.model.id) {
+                this.closeModalEditView(modalView);
+
+                return;
+            }
+
+            Dep.prototype.afterNotModified.call(this);
+        },
+
+        save: function (options) {
+            options = options || {};
+
+            const modalView = this.getModalEditView();
+            const view = this;
+
+            return Dep.prototype.save.call(this, options).then(function () {
+                if (!modalView) {
+                    return;
+                }
+
+                window.setTimeout(function () {
+                    view.closeModalEditView(modalView);
+                }, 0);
             });
-
-            this.once('after:render', () => {
-                this.applyDefaultDuration();
-                setTimeout(() => this.applyDefaultDuration(), 0);
-                setTimeout(() => this.applyDefaultDuration(), 150);
-            });
-        }
-
-        applyDefaultDuration() {
-            if (!this.model.isNew() || this.model.get('isAllDay')) {
-                return;
-            }
-
-            const dateStart = this.model.get('dateStart');
-
-            if (!dateStart) {
-                return;
-            }
-
-            const dateEnd = this.getDateTime()
-                .toMoment(dateStart)
-                .add(DEFAULT_DURATION_SECONDS, 'seconds')
-                .format(this.getDateTime().internalDateTimeFormat);
-
-            this.model.set({
-                dateEnd: dateEnd,
-            }, {updatedByDuration: true});
-        }
-    };
+        },
+    });
 });
