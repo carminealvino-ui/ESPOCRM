@@ -55,7 +55,11 @@ for rel in "${FILES[@]}"; do
   dest="${CRM_ROOT}/${rel}"
   mkdir -p "$(dirname "${dest}")"
   curl -fsSL "${BASE}/${rel}?t=${STAMP}" -o "${dest}"
-  echo "OK ${rel}"
+    echo "OK ${rel}"
+    if [[ "${rel}" == *.json ]]; then
+        php -r "json_decode(file_get_contents('${dest}')); if (json_last_error()) { fwrite(STDERR, json_last_error_msg()); exit(1); }"
+        echo "JSON OK ${rel}"
+    fi
 done
 
 echo ""

@@ -63,6 +63,15 @@ foreach ($files as $rel => $needles) {
 
         echo "[OK] {$rel} ({$needle})\n";
     }
+
+    if (str_ends_with($rel, '.json')) {
+        json_decode($content, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $failed++;
+            echo "[ERR] {$rel} — JSON: " . json_last_error_msg() . "\n";
+        }
+    }
 }
 
 if ($failed === 0) {
