@@ -60,7 +60,7 @@
 
 .crm-kpi-bottom {
     display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-columns: minmax(0, 30%) minmax(0, 70%);
     gap: 8px;
     align-items: stretch;
 }
@@ -90,8 +90,8 @@
 
 .crm-kpi-panel-yields {
     min-height: 0;
-    max-height: 240px;
-    overflow: auto;
+    max-height: none;
+    overflow: visible;
 }
 
 .crm-kpi-panel-yields .crm-kpi-panel-title {
@@ -120,9 +120,9 @@
 
 .crm-kpi-yields-table th,
 .crm-kpi-yields-table td {
-    padding: 3px 4px;
+    padding: 3px 3px;
     text-align: center;
-    vertical-align: top;
+    vertical-align: middle;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
@@ -155,17 +155,31 @@
     max-width: 5.5rem;
 }
 
+.crm-kpi-cell-inner {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 0;
+    max-width: 100%;
+    white-space: nowrap;
+}
+
 .crm-kpi-cell-value {
-    display: block;
     font-weight: 600;
-    font-size: 0.66rem;
+    font-size: 0.64rem;
 }
 
 .crm-kpi-cell-percent {
-    display: block;
     color: var(--text-muted-color, #6c757d);
-    font-size: 0.58rem;
-    line-height: 1.15;
+    font-size: 0.56rem;
+    margin-left: 2px;
+}
+
+.crm-kpi-cell-percent::before {
+    content: '·';
+    margin-right: 2px;
+    opacity: 0.45;
 }
 
 .crm-kpi-yields-table tbody tr:last-child th,
@@ -181,18 +195,24 @@
 
 .crm-kpi-panel-pipeline {
     margin-bottom: 0;
+    padding: 8px 10px;
+}
+
+.crm-kpi-panel-pipeline .crm-kpi-panel-title {
+    font-size: 0.88rem;
+    margin-bottom: 6px;
 }
 
 .crm-kpi-pipeline {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    gap: 10px;
-    align-items: center;
-    min-height: 240px;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    align-items: stretch;
+    min-height: 0;
 }
 
 .crm-kpi-pipeline-chart {
-    height: 240px;
+    height: 170px;
     width: 100%;
 }
 
@@ -203,23 +223,23 @@
 .crm-kpi-pipeline-legend .legend-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    font-size: 0.82rem;
+    gap: 6px;
+    margin-bottom: 5px;
+    font-size: 0.68rem;
 }
 
 .crm-kpi-pipeline-legend .legend-box {
-    width: 14px;
-    height: 14px;
+    width: 10px;
+    height: 10px;
     border-radius: 2px;
     flex-shrink: 0;
 }
 
 .crm-kpi-pipeline-legend .legend-meta {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.62rem;
     color: var(--text-muted-color, #6c757d);
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
 .crm-kpi-pipeline-fallback {

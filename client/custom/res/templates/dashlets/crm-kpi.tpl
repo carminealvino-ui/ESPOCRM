@@ -102,10 +102,9 @@
                                             <th class="crm-kpi-yields-row-label" title="{{label}}">{{label}}</th>
                                             {{#each cells}}
                                                 <td>
-                                                    <span class="crm-kpi-cell-value">{{value}}</span>
-                                                    {{#each percents}}
-                                                        <span class="crm-kpi-cell-percent">{{this}}%</span>
-                                                    {{/each}}
+                                                    <div class="crm-kpi-cell-inner">
+                                                        <span class="crm-kpi-cell-value">{{value}}</span>{{#each percents}}<span class="crm-kpi-cell-percent">{{this}}%</span>{{/each}}
+                                                    </div>
                                                 </td>
                                             {{/each}}
                                         </tr>
@@ -133,10 +132,9 @@
                                             <th class="crm-kpi-yields-row-label" title="{{label}}">{{label}}</th>
                                             {{#each cells}}
                                                 <td>
-                                                    <span class="crm-kpi-cell-value">{{value}}</span>
-                                                    {{#each percents}}
-                                                        <span class="crm-kpi-cell-percent">{{this}}%</span>
-                                                    {{/each}}
+                                                    <div class="crm-kpi-cell-inner">
+                                                        <span class="crm-kpi-cell-value">{{value}}</span>{{#each percents}}<span class="crm-kpi-cell-percent">{{this}}%</span>{{/each}}
+                                                    </div>
                                                 </td>
                                             {{/each}}
                                         </tr>
