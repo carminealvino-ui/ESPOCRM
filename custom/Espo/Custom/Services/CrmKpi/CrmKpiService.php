@@ -96,6 +96,7 @@ class CrmKpiService
             ),
             'yieldsByWeekday' => $this->buildYieldsByWeekday($ctx),
             'yieldsByWeek' => $this->buildYieldsByWeek($ctx),
+            'yieldColumns' => YieldBuilder::pipelineColumns(),
             'alerts' => $this->getAlertsSafe($from, $to, $ctx->productBrandId),
         ];
     }

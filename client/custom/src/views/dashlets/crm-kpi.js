@@ -98,9 +98,34 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                         meta: alert.meta || null,
                     };
                 }),
-                yieldsByWeekday: summary.yieldsByWeekday || [],
-                yieldsByWeek: summary.yieldsByWeek || [],
+                yieldsByWeekday: this.mapYieldRows(summary.yieldsByWeekday),
+                yieldsByWeek: this.mapYieldRows(summary.yieldsByWeek),
+                yieldColumns: summary.yieldColumns || this.getDefaultYieldColumns(),
             };
+        },
+
+        getDefaultYieldColumns: function () {
+            return [
+                {key: 'appuntamentiLordi', label: 'Lordi'},
+                {key: 'appuntamentiNetti', label: 'Netti'},
+                {key: 'opportunita', label: 'Opp.'},
+                {key: 'contratti', label: 'Contr.'},
+                {key: 'contrattiNetti', label: 'C. netti'},
+            ];
+        },
+
+        mapYieldRows: function (rows) {
+            return (rows || []).map(row => {
+                const cells = (row.cells || []).map(cell => ({
+                    value: Number(cell.value || 0),
+                    percents: (cell.percents || []).map(percent => Number(percent)),
+                }));
+
+                return {
+                    label: row.label,
+                    cells: cells,
+                };
+            });
         },
 
         afterRender: function () {

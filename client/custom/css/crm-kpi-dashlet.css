@@ -105,39 +105,72 @@
     font-size: 0.66rem;
 }
 
-.crm-kpi-period-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+.crm-kpi-yields-table-wrap {
+    overflow-x: auto;
+    margin: 0 -2px;
 }
 
-.crm-kpi-period-row {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
+.crm-kpi-yields-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
     font-size: 0.64rem;
-    line-height: 1.25;
-    padding: 2px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    line-height: 1.2;
 }
 
-.crm-kpi-period-row:last-child {
-    border-bottom: 0;
+.crm-kpi-yields-table th,
+.crm-kpi-yields-table td {
+    padding: 3px 4px;
+    text-align: center;
+    vertical-align: top;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.crm-kpi-period-label {
-    font-weight: 700;
-    font-size: 0.68rem;
-    flex-shrink: 0;
-    min-width: 2.1rem;
-}
-
-.crm-kpi-period-summary {
-    min-width: 0;
+.crm-kpi-yields-table thead th {
+    font-weight: 600;
     color: var(--text-muted-color, #6c757d);
-    word-break: break-word;
-    font-size: 0.62rem;
-    letter-spacing: -0.01em;
+    font-size: 0.6rem;
+    white-space: nowrap;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding-bottom: 4px;
+}
+
+.crm-kpi-yields-corner {
+    width: 2.4rem;
+    min-width: 2.4rem;
+}
+
+.crm-kpi-yields-row-label {
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.66rem;
+    white-space: nowrap;
+    color: inherit;
+    max-width: 4.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.crm-kpi-panel-yields .crm-kpi-yields-table-wrap .crm-kpi-yields-row-label {
+    max-width: 5.5rem;
+}
+
+.crm-kpi-cell-value {
+    display: block;
+    font-weight: 600;
+    font-size: 0.66rem;
+}
+
+.crm-kpi-cell-percent {
+    display: block;
+    color: var(--text-muted-color, #6c757d);
+    font-size: 0.58rem;
+    line-height: 1.15;
+}
+
+.crm-kpi-yields-table tbody tr:last-child th,
+.crm-kpi-yields-table tbody tr:last-child td {
+    border-bottom: 0;
 }
 
 .crm-kpi-panel-alerts {

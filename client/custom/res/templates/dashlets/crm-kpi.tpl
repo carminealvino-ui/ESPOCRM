@@ -86,25 +86,63 @@
                     <div class="crm-kpi-panel crm-kpi-panel-yields">
                         <div class="crm-kpi-panel-title">Rese per giorno</div>
                         <div class="crm-kpi-panel-note text-muted small">Pipeline per giorno settimana</div>
-                        <div class="crm-kpi-period-list">
-                            {{#each yieldsByWeekday}}
-                                <div class="crm-kpi-period-row">
-                                    <span class="crm-kpi-period-label">{{label}}</span>
-                                    <span class="crm-kpi-period-summary">{{summaryLine}}</span>
-                                </div>
-                            {{/each}}
+                        <div class="crm-kpi-yields-table-wrap">
+                            <table class="crm-kpi-yields-table">
+                                <thead>
+                                    <tr>
+                                        <th class="crm-kpi-yields-corner"></th>
+                                        {{#each yieldColumns}}
+                                            <th>{{label}}</th>
+                                        {{/each}}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{#each yieldsByWeekday}}
+                                        <tr>
+                                            <th class="crm-kpi-yields-row-label" title="{{label}}">{{label}}</th>
+                                            {{#each cells}}
+                                                <td>
+                                                    <span class="crm-kpi-cell-value">{{value}}</span>
+                                                    {{#each percents}}
+                                                        <span class="crm-kpi-cell-percent">{{this}}%</span>
+                                                    {{/each}}
+                                                </td>
+                                            {{/each}}
+                                        </tr>
+                                    {{/each}}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                     <div class="crm-kpi-panel crm-kpi-panel-yields">
                         <div class="crm-kpi-panel-title">Rese per settimana</div>
                         <div class="crm-kpi-panel-note text-muted small">Settimane con almeno 4 giorni nel periodo</div>
-                        <div class="crm-kpi-period-list">
-                            {{#each yieldsByWeek}}
-                                <div class="crm-kpi-period-row">
-                                    <span class="crm-kpi-period-label">{{label}}</span>
-                                    <span class="crm-kpi-period-summary">{{summaryLine}}</span>
-                                </div>
-                            {{/each}}
+                        <div class="crm-kpi-yields-table-wrap">
+                            <table class="crm-kpi-yields-table">
+                                <thead>
+                                    <tr>
+                                        <th class="crm-kpi-yields-corner"></th>
+                                        {{#each yieldColumns}}
+                                            <th>{{label}}</th>
+                                        {{/each}}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{#each yieldsByWeek}}
+                                        <tr>
+                                            <th class="crm-kpi-yields-row-label" title="{{label}}">{{label}}</th>
+                                            {{#each cells}}
+                                                <td>
+                                                    <span class="crm-kpi-cell-value">{{value}}</span>
+                                                    {{#each percents}}
+                                                        <span class="crm-kpi-cell-percent">{{this}}%</span>
+                                                    {{/each}}
+                                                </td>
+                                            {{/each}}
+                                        </tr>
+                                    {{/each}}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
