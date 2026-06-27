@@ -42,8 +42,9 @@ class CrmKpiService
 
     private const FINANCING_REJECTED_STATES = [
         'Respinto',
-        'Annullato',
     ];
+
+    private const CONTRACT_RECESSO = 'Recesso';
 
     public function __construct(
         private EntityManager $entityManager,
@@ -544,7 +545,7 @@ class CrmKpiService
         bool $onlyFinancingKo,
         bool $onlyRecesso,
     ): bool {
-        $isRecesso = $quote->get('statoContratto') === 'Recesso';
+        $isRecesso = $quote->get('statoContratto') === self::CONTRACT_RECESSO;
         $isFinancingRejected = $this->isQuoteFinancingRejected($quote, $opportunityRejectedMap);
 
         if ($onlyRecesso) {
@@ -579,7 +580,7 @@ class CrmKpiService
         $where = $ctx->quoteWhere();
 
         if ($onlyRecesso) {
-            return array_merge($where, ['statoContratto' => 'Recesso']);
+            return array_merge($where, ['statoContratto' => self::CONTRACT_RECESSO]);
         }
 
         if ($onlyFinancingKo) {
@@ -587,7 +588,7 @@ class CrmKpiService
         }
 
         if ($excludeRecesso) {
-            $where['statoContratto!='] = 'Recesso';
+            $where['statoContratto!='] = self::CONTRACT_RECESSO;
         }
 
         if ($excludeFinancingKo) {
@@ -598,16 +599,22 @@ class CrmKpiService
     }
 
     /**
-     * Finanziamento respinto su Quote o su Opportunità collegata.
+     * Finanziamento respinto: solo Respinto e mai su contratti in recesso
+     * (il recesso annulla il finanziamento senza richiesta/rifiuto bancario).
      *
      * @return array<string, mixed>
      */
     private function financingRejectedWhere(): array
     {
         return [
-            'OR' => [
-                ['statoFinanziamento' => self::FINANCING_REJECTED_STATES],
-                ['opportunita.statoFinanziamento' => self::FINANCING_REJECTED_STATES],
+            'AND' => [
+                ['statoContratto!=' => self::CONTRACT_RECESSO],
+                [
+                    'OR' => [
+                        ['statoFinanziamento' => self::FINANCING_REJECTED_STATES],
+                        ['opportunita.statoFinanziamento' => self::FINANCING_REJECTED_STATES],
+                    ],
+                ],
             ],
         ];
     }
@@ -629,11 +636,37 @@ class CrmKpiService
             && in_array($state, self::FINANCING_REJECTED_STATES, true);
     }
 
+    private function isQuoteRecesso(Entity $quote, ?Entity $opportunity = null): bool
+    {
+        if ($quote->get('statoContratto') === self::CONTRACT_RECESSO) {
+            return true;
+        }
+
+        if ($opportunity !== null) {
+            return $opportunity->get('statoContratto') === self::CONTRACT_RECESSO;
+        }
+
+        $opportunityId = $quote->get('opportunitaId');
+
+        if (!$opportunityId) {
+            return false;
+        }
+
+        $linkedOpportunity = $this->entityManager->getEntityById('Opportunity', $opportunityId);
+
+        return $linkedOpportunity
+            && $linkedOpportunity->get('statoContratto') === self::CONTRACT_RECESSO;
+    }
+
     /**
      * @param array<string, bool>|null $opportunityRejectedMap
      */
     private function isQuoteFinancingRejected(Entity $quote, ?array $opportunityRejectedMap = null): bool
     {
+        if ($this->isQuoteRecesso($quote)) {
+            return false;
+        }
+
         if ($this->isFinancingRejectedState($quote->get('statoFinanziamento'))) {
             return true;
         }
@@ -650,8 +683,11 @@ class CrmKpiService
 
         $opportunity = $this->entityManager->getEntityById('Opportunity', $opportunityId);
 
-        return $opportunity
-            && $this->isFinancingRejectedState($opportunity->get('statoFinanziamento'));
+        if (!$opportunity || $this->isQuoteRecesso($quote, $opportunity)) {
+            return false;
+        }
+
+        return $this->isFinancingRejectedState($opportunity->get('statoFinanziamento'));
     }
 
     /**
@@ -670,14 +706,13 @@ class CrmKpiService
 
         $collection = $this->entityManager
             ->getRDBRepository('Opportunity')
-            ->select(['id', 'finanziamento', 'statoFinanziamento'])
+            ->select(['id', 'statoContratto', 'statoFinanziamento'])
             ->where(['id' => $opportunityIds])
             ->find();
 
         foreach ($collection as $opportunity) {
-            $map[$opportunity->getId()] = $this->isFinancingRejectedState(
-                $opportunity->get('statoFinanziamento')
-            );
+            $map[$opportunity->getId()] = $opportunity->get('statoContratto') !== self::CONTRACT_RECESSO
+                && $this->isFinancingRejectedState($opportunity->get('statoFinanziamento'));
         }
 
         return $map;
@@ -984,7 +1019,7 @@ class CrmKpiService
      */
     private function isQuoteNetto(Entity $quote, ?array $opportunityRejectedMap = null): bool
     {
-        if ($quote->get('statoContratto') === 'Recesso') {
+        if ($quote->get('statoContratto') === self::CONTRACT_RECESSO) {
             return false;
         }
 
