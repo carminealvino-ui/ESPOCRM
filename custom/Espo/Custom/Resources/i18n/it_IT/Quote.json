@@ -101,32 +101,27 @@
             "Not Available": "Non Disponibile"
         },
         "statoFinanziamento": {
-            "In lavorazione": "In lavorazione",
+            "In attesa di OTP": "In attesa di OTP",
+            "In valutazione": "In valutazione",
+            "In attesa documentazione": "In attesa documentazione",
             "Approvato": "Approvato",
             "Respinto": "Respinto",
-            "": "",
-            "Annullato": "Annullato",
-            "In Attesa Documentazione": "In Attesa Documentazione",
-            "In rivalutazione": "In rivalutazione"
+            "": ""
         },
         "statoContratto": {
-            "In lavorazione": "In lavorazione",
-            "Installato": "Installato",
-            "Annullato": "Annullato",
-            "": "",
-            "Sospeso": "Sospeso",
             "Inserito": "Inserito",
+            "In lavorazione": "In lavorazione",
+            "Approvato": "Approvato",
+            "Sospeso": "Sospeso",
             "Recesso": "Recesso",
-            "Appuntamento Fissato": "Appuntamento Fissato"
+            "Annullato": "Annullato",
+            "": ""
         },
         "status": {
-            "Draft": "Bozza",
-            "Presented": "Presentato",
-            "Approved": "In Pagamento",
+            "Bozza": "Bozza",
+            "In lavorazione": "In lavorazione",
+            "Appuntamento fissato": "Appuntamento fissato",
             "Installato": "Installato",
-            "Recesso": "Recesso",
-            "Finanziamento Rifiutato": "Finanziamento Rifiutato",
-            "Canceled": "Annullato",
-            "In lavorazione": "In lavorazione"
+            "Invalido": "Invalido"
         }
     }

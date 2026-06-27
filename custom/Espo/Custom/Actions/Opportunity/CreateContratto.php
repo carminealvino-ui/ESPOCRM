@@ -616,7 +616,10 @@ class CreateContratto
                 $opportunity->get('name'),
 
             'status' =>
-                'Draft',
+                'Bozza',
+
+            'statoContratto' =>
+                'Inserito',
 
             'name' =>
                 $contractDisplayName,

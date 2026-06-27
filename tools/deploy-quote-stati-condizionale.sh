@@ -15,10 +15,11 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 
 FILES=(
   "custom/Espo/Custom/Resources/layouts/Quote/detail.json"
-  "custom/Espo/Custom/Resources/layouts/Opportunity/detail.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
   "custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
+  "custom/Espo/Custom/Actions/Opportunity/CreateContratto.php"
+  "database/2026-06-25-quote-stati-semplificati.sql"
 )
 
 echo "=== Deploy stati Contratto/Opportunità (${BRANCH}) ==="
@@ -30,5 +31,8 @@ for rel in "${FILES[@]}"; do
   echo "OK ${rel}"
 done
 
+echo ""
+echo "Se in produzione ci sono contratti con i vecchi valori enum, esegui prima:"
+echo "  mysql ... < ${CRM_ROOT}/database/2026-06-25-quote-stati-semplificati.sql"
 echo ""
 echo "Poi: cd ${CRM_ROOT} && php clear_cache.php && php rebuild.php"

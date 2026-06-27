@@ -166,21 +166,19 @@
             "type": "enum",
             "options": [
                 "",
-                "In lavorazione",
-                "In rivalutazione",
-                "In Attesa Documentazione",
+                "In attesa di OTP",
+                "In valutazione",
+                "In attesa documentazione",
                 "Approvato",
-                "Respinto",
-                "Annullato"
+                "Respinto"
             ],
             "style": {
                 "": null,
-                "In lavorazione": null,
-                "In rivalutazione": null,
-                "In Attesa Documentazione": null,
-                "Approvato": null,
-                "Respinto": null,
-                "Annullato": null
+                "In attesa di OTP": "info",
+                "In valutazione": "primary",
+                "In attesa documentazione": "warning",
+                "Approvato": "success",
+                "Respinto": "danger"
             },
             "default": null,
             "isCustom": true
@@ -216,46 +214,39 @@
                 "",
                 "Inserito",
                 "In lavorazione",
-                "Appuntamento Fissato",
-                "Installato",
+                "Approvato",
                 "Sospeso",
-                "Annullato",
-                "Recesso"
+                "Recesso",
+                "Annullato"
             ],
             "style": {
                 "": null,
-                "Inserito": null,
-                "In lavorazione": null,
-                "Appuntamento Fissato": null,
-                "Installato": null,
-                "Sospeso": null,
-                "Annullato": null,
-                "Recesso": null
+                "Inserito": "info",
+                "In lavorazione": "primary",
+                "Approvato": "success",
+                "Sospeso": "warning",
+                "Recesso": "default",
+                "Annullato": "danger"
             },
             "default": "Inserito",
             "isCustom": true
         },
         "status": {
             "options": [
-                "Draft",
-                "Presented",
+                "Bozza",
                 "In lavorazione",
-                "Approved",
+                "Appuntamento fissato",
                 "Installato",
-                "Recesso",
-                "Finanziamento Rifiutato",
-                "Canceled"
+                "Invalido"
             ],
             "style": {
-                "Draft": null,
-                "Presented": "primary",
+                "Bozza": "default",
                 "In lavorazione": "primary",
-                "Approved": "info",
+                "Appuntamento fissato": "info",
                 "Installato": "success",
-                "Recesso": "danger",
-                "Finanziamento Rifiutato": "warning",
-                "Canceled": "info"
-            }
+                "Invalido": "danger"
+            },
+            "default": "Bozza"
         }
     },
     "links": {
