@@ -6,23 +6,20 @@ define('custom:views/appuntamento/modals/rifissato-create', ['views/modal'], fun
 
     return class AppuntamentoRifissatoCreateModal extends Parent {
 
-        className = 'dialog dialog-record';
+        className = 'dialog dialog-record rifissato-create-dialog';
 
-        templateContent = `
-            <div class="record no-side-margin">
-                <div class="cell form-group" data-name="dateStart"></div>
-            </div>
-        `;
+        template = 'custom:appuntamento/rifissato-create';
 
         setup() {
             this.headerText = 'Nuovo appuntamento rifissato';
             this.sourceId = this.options.sourceId;
             this.assignedUsersIds = this.options.assignedUsersIds || [];
+            this.originalDateStart = this.options.originalDateStart || null;
 
             this.buttonList = [
                 {
                     name: 'save',
-                    label: 'Salva',
+                    label: 'Crea appuntamento',
                     style: 'primary',
                     onClick: () => this.actionSave(),
                 },
@@ -45,33 +42,50 @@ define('custom:views/appuntamento/modals/rifissato-create', ['views/modal'], fun
                 });
         }
 
+        data() {
+            return {
+                originalDateLabel: this.getOriginalDateLabel(),
+            };
+        }
+
+        getOriginalDateLabel() {
+            if (!this.originalDateStart) {
+                return null;
+            }
+
+            return this.getDateTime().toDisplay(this.originalDateStart);
+        }
+
         afterRender() {
             Parent.prototype.afterRender.call(this);
 
-            this.createView('dateStart', 'views/fields/datetime-optional', {
+            this.createView('record', 'views/record/edit', {
+                scope: 'Appuntamento',
                 model: this.model,
-                mode: 'edit',
-                el: this.getSelector() + ' [data-name="dateStart"]',
-                defs: {
-                    name: 'dateStart',
-                    required: true,
-                },
+                type: 'edit',
+                layoutName: 'rifissatoCreate',
+                el: this.getSelector() + ' .rifissato-record',
+                sideDisabled: true,
+                bottomDisabled: true,
+                buttonsDisabled: true,
+                detailDisabled: true,
+                focusForCreate: true,
             }, view => {
                 view.render();
             });
         }
 
         actionSave() {
-            const fieldView = this.getView('dateStart');
+            const recordView = this.getView('record');
 
-            if (fieldView && typeof fieldView.fetch === 'function') {
-                fieldView.fetch();
+            if (recordView && typeof recordView.fetch === 'function') {
+                recordView.fetch();
             }
 
             const dateStart = this.model.get('dateStart');
 
             if (!dateStart) {
-                Espo.Ui.warning('Inserire la data del nuovo appuntamento.');
+                Espo.Ui.warning('Inserire data e ora del nuovo appuntamento.');
 
                 return;
             }

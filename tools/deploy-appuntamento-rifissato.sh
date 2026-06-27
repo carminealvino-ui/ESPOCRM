@@ -19,6 +19,8 @@ FILES=(
   "client/custom/src/views/appuntamento/record/edit-small.js"
   "client/custom/src/views/appuntamento/record/edit.js"
   "client/custom/res/templates/appuntamento/popup-notification.tpl"
+  "client/custom/res/templates/appuntamento/rifissato-create.tpl"
+  "client/custom/css/custom-ui.css"
   "client/custom/src/helpers/call-esito-popup-defaults.js"
   "client/custom/src/views/opportunity/helpers/appuntamento-sync.js"
   "custom/Espo/Custom/Controllers/Appuntamento.php"
