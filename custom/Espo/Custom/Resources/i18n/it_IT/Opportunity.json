@@ -15,6 +15,7 @@
         "contrattiBacklog": "Contratti in backlog",
         "contrattiInLavorazione": "Contratti in lavorazione",
         "installatoPeriodo": "Installato nel periodo",
-        "installatoMesePrecedente": "Installato mese precedente"
+        "installatoMesePrecedente": "Installato mese precedente",
+        "senzaInvioWhatsapp": "Senza invio WhatsApp"
     }
 }

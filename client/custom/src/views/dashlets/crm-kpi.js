@@ -429,6 +429,10 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             });
         },
 
+        buildEntityListUrl: function (entityType, primaryFilter) {
+            return '#' + entityType + '/list/primaryFilter=' + primaryFilter;
+        },
+
         actionOpenAlert: function (data) {
             const key = data && data.key;
             const period = this.getOption('period') || 'currentMonth';
@@ -438,35 +442,10 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     ? 'senzaRiscontroMesePrecedente'
                     : 'senzaRiscontroPeriodo';
 
-                this.getRouter().navigate('#Opportunity/filter/' + filter, {trigger: true});
-
-                return;
-            }
-
-            if (key === 'phoneContactsTodo') {
-                this.getRouter().navigate('#Call/filter/contattiDaFare', {trigger: true});
-
-                return;
-            }
-
-            if (key === 'contractsBacklog') {
-                this.getRouter().navigate('#Quote/filter/contrattiBacklog', {trigger: true});
-
-                return;
-            }
-
-            if (key === 'contractsInProgress') {
-                this.getRouter().navigate('#Quote/filter/contrattiInLavorazione', {trigger: true});
-
-                return;
-            }
-
-            if (key === 'contractsInPayment') {
-                const filter = period === 'previousMonth'
-                    ? 'dataInstallazioneMesePrecedente'
-                    : 'dataInstallazionePeriodo';
-
-                this.getRouter().navigate('#Quote/filter/' + filter, {trigger: true});
+                this.getRouter().navigate(
+                    this.buildEntityListUrl('Opportunity', filter),
+                    {trigger: true}
+                );
 
                 return;
             }

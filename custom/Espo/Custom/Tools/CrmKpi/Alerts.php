@@ -41,7 +41,7 @@ class Alerts
                 'appuntamentiSenzaOpportunita',
                 'Appuntamenti senza opportunità',
                 $this->countAppuntamentiSenzaOpportunita($from, $to, $productBrandId),
-                '#Appuntamento/filter/appuntamentiSenzaOpportunita',
+                '#Appuntamento/list/primaryFilter=appuntamentiSenzaOpportunita',
                 null,
                 'avvisi'
             ),
@@ -49,7 +49,7 @@ class Alerts
                 'appuntamentiConPiuOpportunita',
                 'Appuntamenti con più opportunità',
                 $this->countAppuntamentiConPiuOpportunita($from, $to, $productBrandId),
-                '#Appuntamento/filter/appuntamentiConPiuOpportunita',
+                '#Appuntamento/list/primaryFilter=appuntamentiConPiuOpportunita',
                 null,
                 'avvisi'
             ),
@@ -57,7 +57,7 @@ class Alerts
                 'opportunityWithoutWhatsapp',
                 'Opportunità senza invio WhatsApp',
                 $this->countOpportunitiesWithoutWhatsapp($from, $to, $productBrandId),
-                '#Opportunity/filter/senzaInvioWhatsapp',
+                '#Opportunity/list/primaryFilter=senzaInvioWhatsapp',
                 null,
                 'avvisi'
             ),
@@ -65,7 +65,7 @@ class Alerts
                 'opportunityWithoutPhoneFollowUp',
                 'Opportunità senza Riscontro',
                 $this->countOpportunitiesWithoutPhoneFollowUp($from, $to, $productBrandId),
-                '#Opportunity/filter/senzaRiscontroPeriodo',
+                '#Opportunity/list/primaryFilter=senzaRiscontroPeriodo',
                 null,
                 'avvisi'
             ),
@@ -73,7 +73,7 @@ class Alerts
                 'richiamiPianificati',
                 'Richiami Pianificati',
                 $this->countRichiamiPianificati(),
-                '#Call/filter/richiamiPianificati',
+                '#Call/list/primaryFilter=richiamiPianificati',
                 null,
                 'avvisi'
             ),
@@ -81,7 +81,7 @@ class Alerts
                 'contractsSuspendedFinancing',
                 'Contratti Sospesi Finanziamento',
                 $this->countContractsSuspendedFinancing($productBrandId),
-                '#Quote/filter/contrattiSospesiFinanziamento',
+                '#Quote/list/primaryFilter=contrattiSospesiFinanziamento',
                 null,
                 'criticita'
             ),
@@ -89,7 +89,7 @@ class Alerts
                 'contractsSuspendedOrders',
                 'Contratti Sospesi Ordini',
                 $this->countContractsSuspendedOrders($productBrandId),
-                '#Quote/filter/contrattiInLavorazione',
+                '#Quote/list/primaryFilter=contrattiInLavorazione',
                 null,
                 'criticita'
             ),
