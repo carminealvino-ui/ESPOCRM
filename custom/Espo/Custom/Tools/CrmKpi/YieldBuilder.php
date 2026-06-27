@@ -163,7 +163,7 @@ class YieldBuilder
             $percents[] = $step->percentOfNetti;
         }
 
-        if ($step->percentOfOpportunita !== null) {
+        if ($step->percentOfOpportunita !== null && $step->key !== 'contrattiNetti') {
             $percents[] = $step->percentOfOpportunita;
         }
 
