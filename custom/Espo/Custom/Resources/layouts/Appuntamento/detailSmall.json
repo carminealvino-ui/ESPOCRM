@@ -4,15 +4,17 @@
             [
                 {
                     "name": "parent"
-                },
-                {
-                    "name": "tipo"
                 }
             ],
             [
                 {
-                    "name": "callCenter"
+                    "name": "tipo"
                 },
+                {
+                    "name": "callCenter"
+                }
+            ],
+            [
                 {
                     "name": "fornitorePartner"
                 },
@@ -22,28 +24,21 @@
             ],
             [
                 false,
-                false,
                 {
                     "name": "productCategory"
                 }
             ],
             [
                 {
-                    "name": "indirizzo"
-                }
-            ],
-            [
-                {
-                    "name": "indirizzoMap"
-                }
-            ],
-            [
-                {
                     "name": "dateStart"
-                },
+                }
+            ],
+            [
                 {
                     "name": "dateEnd"
-                },
+                }
+            ],
+            [
                 {
                     "name": "duration"
                 }
@@ -60,7 +55,7 @@
             ]
         ],
         "style": "default",
-        "label": "Overview"
+        "label": ""
     },
     {
         "rows": [
