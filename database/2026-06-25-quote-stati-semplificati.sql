@@ -11,6 +11,7 @@ UPDATE quote SET status = 'Invalido' WHERE status IN ('Recesso', 'Finanziamento 
 
 -- Stato Contratto (stato_contratto)
 UPDATE quote SET stato_contratto = 'Inserito' WHERE stato_contratto IS NULL OR stato_contratto = '';
+UPDATE quote SET stato_contratto = 'Approvato' WHERE stato_contratto = 'In lavorazione';
 UPDATE quote SET stato_contratto = 'Approvato' WHERE stato_contratto IN ('Installato', 'Appuntamento Fissato');
 
 -- Stato Finanziamento (stato_finanziamento)

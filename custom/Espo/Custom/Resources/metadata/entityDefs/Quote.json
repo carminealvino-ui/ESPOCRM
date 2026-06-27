@@ -213,7 +213,6 @@
             "options": [
                 "",
                 "Inserito",
-                "In lavorazione",
                 "Approvato",
                 "Sospeso",
                 "Recesso",
@@ -222,7 +221,6 @@
             "style": {
                 "": null,
                 "Inserito": "info",
-                "In lavorazione": "primary",
                 "Approvato": "success",
                 "Sospeso": "warning",
                 "Recesso": "default",

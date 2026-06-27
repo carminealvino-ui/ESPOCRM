@@ -110,7 +110,6 @@
         },
         "statoContratto": {
             "Inserito": "Inserito",
-            "In lavorazione": "In lavorazione",
             "Approvato": "Approvato",
             "Sospeso": "Sospeso",
             "Recesso": "Recesso",
