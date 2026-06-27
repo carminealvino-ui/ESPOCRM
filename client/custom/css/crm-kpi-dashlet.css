@@ -84,7 +84,7 @@
 
 .crm-kpi-yields-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
     gap: 8px;
 }
 
@@ -180,6 +180,46 @@
     content: '·';
     margin-right: 2px;
     opacity: 0.45;
+}
+
+.crm-kpi-panel-yields-week .crm-kpi-yields-table {
+    table-layout: auto;
+    font-size: 0.76rem;
+}
+
+.crm-kpi-panel-yields-week .crm-kpi-yields-table thead th {
+    font-size: 0.72rem;
+    padding: 4px 5px;
+}
+
+.crm-kpi-panel-yields-week .crm-kpi-yields-table th,
+.crm-kpi-panel-yields-week .crm-kpi-yields-table td {
+    padding: 4px 5px;
+}
+
+.crm-kpi-panel-yields-week .crm-kpi-yields-corner {
+    width: 3.4rem;
+    min-width: 3.4rem;
+}
+
+.crm-kpi-panel-yields-week .crm-kpi-yields-row-label {
+    font-size: 0.78rem;
+    max-width: none;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
+}
+
+.crm-kpi-panel-yields-week .crm-kpi-cell-value {
+    font-size: 0.76rem;
+}
+
+.crm-kpi-panel-yields-week .crm-kpi-cell-percent {
+    font-size: 0.68rem;
+}
+
+.crm-kpi-panel-yields-week .crm-kpi-panel-note {
+    font-size: 0.7rem;
 }
 
 .crm-kpi-yields-table tbody tr:last-child th,

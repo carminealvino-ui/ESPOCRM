@@ -123,6 +123,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
                 return {
                     label: row.label,
+                    labelFull: row.labelFull || null,
                     cells: cells,
                 };
             });

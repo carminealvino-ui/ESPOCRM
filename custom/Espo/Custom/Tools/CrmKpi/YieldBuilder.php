@@ -78,7 +78,8 @@ class YieldBuilder
         foreach ($weeks as $index => $week) {
             $rows[] = self::buildPeriodRow(
                 $week['label'],
-                $buckets[$index] ?? self::emptyMetrics()
+                $buckets[$index] ?? self::emptyMetrics(),
+                'Sett. ' . ($week['index'] ?? $index),
             );
         }
 
@@ -118,7 +119,7 @@ class YieldBuilder
     /**
      * @param array<string, int> $metrics
      */
-    private static function buildPeriodRow(string $label, array $metrics): object
+    private static function buildPeriodRow(string $label, array $metrics, ?string $shortLabel = null): object
     {
         $pipeline = FunnelBuilder::buildSalesPipeline(
             (float) $metrics['appuntamentiLordi'],
@@ -143,7 +144,8 @@ class YieldBuilder
         }
 
         return (object) [
-            'label' => $label,
+            'label' => $shortLabel ?? $label,
+            'labelFull' => $shortLabel !== null ? $label : null,
             'cells' => $cells,
             'steps' => $steps,
         ];

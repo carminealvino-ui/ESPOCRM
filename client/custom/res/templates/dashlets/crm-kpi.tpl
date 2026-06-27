@@ -99,7 +99,7 @@
                                 <tbody>
                                     {{#each yieldsByWeekday}}
                                         <tr>
-                                            <th class="crm-kpi-yields-row-label" title="{{label}}">{{label}}</th>
+                                            <th class="crm-kpi-yields-row-label" title="{{#if labelFull}}{{labelFull}}{{else}}{{label}}{{/if}}">{{label}}</th>
                                             {{#each cells}}
                                                 <td>
                                                     <div class="crm-kpi-cell-inner">
@@ -113,7 +113,7 @@
                             </table>
                         </div>
                     </div>
-                    <div class="crm-kpi-panel crm-kpi-panel-yields">
+                    <div class="crm-kpi-panel crm-kpi-panel-yields crm-kpi-panel-yields-week">
                         <div class="crm-kpi-panel-title">Rese per settimana</div>
                         <div class="crm-kpi-panel-note text-muted small">Settimane con almeno 4 giorni nel periodo</div>
                         <div class="crm-kpi-yields-table-wrap">
@@ -129,7 +129,7 @@
                                 <tbody>
                                     {{#each yieldsByWeek}}
                                         <tr>
-                                            <th class="crm-kpi-yields-row-label" title="{{label}}">{{label}}</th>
+                                            <th class="crm-kpi-yields-row-label" title="{{#if labelFull}}{{labelFull}}{{else}}{{label}}{{/if}}">{{label}}</th>
                                             {{#each cells}}
                                                 <td>
                                                     <div class="crm-kpi-cell-inner">
