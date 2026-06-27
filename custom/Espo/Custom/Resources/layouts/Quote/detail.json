@@ -6,13 +6,14 @@
                     "name": "number"
                 },
                 {
-                    "name": "account"
+                    "name": "opportunity"
                 }
             ],
             [
                 {
-                    "name": "opportunity"
-                }
+                    "name": "account"
+                },
+                false
             ],
             [
                 {
@@ -25,6 +26,7 @@
                 }
             ],
             [
+                false,
                 {
                     "name": "productCategory",
                     "customLabel": "Categoria prodotto"
@@ -32,25 +34,56 @@
             ],
             [
                 {
+                    "name": "numeroContratto"
+                },
+                {
                     "name": "dateQuoted"
                 },
+                {
+                    "name": "importoContratto"
+                },
+                false
+            ],
+            [
                 {
                     "name": "status"
                 },
                 {
-                    "name": "importoContratto"
+                    "name": "statoContratto"
+                },
+                {
+                    "name": "statoFinanziamento"
+                }
+            ],
+            [
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "importoCaparra"
+                },
+                {
+                    "name": "importoSaldo"
+                }
+            ],
+            [
+                {
+                    "name": "tassoZero"
+                },
+                {
+                    "name": "importoFinanziato"
+                },
+                {
+                    "name": "rataPrestito"
+                },
+                {
+                    "name": "nrRate"
                 }
             ],
             [
                 {
                     "name": "description"
                 }
-            ],
-            [
-                {
-                    "name": "name"
-                },
-                false
             ]
         ],
         "style": "default",
@@ -73,6 +106,14 @@
                 {
                     "name": "shippingAddress"
                 }
+            ],
+            [
+                {
+                    "name": "shippingProvider"
+                },
+                {
+                    "name": "dataInstallazione"
+                }
             ]
         ],
         "style": "default",
@@ -82,19 +123,23 @@
         "rows": [
             [
                 {
-                    "name": "tax"
+                    "name": "priceBook"
                 },
                 {
-                    "name": "shippingProvider"
+                    "name": "venditaAbbinataAdAltroProdotto"
+                },
+                {
+                    "name": "scontoVenditaAbbinata"
                 }
             ],
             [
                 {
-                    "name": "priceBook"
+                    "name": "tax"
                 },
                 {
                     "name": "isTaxInclusive"
-                }
+                },
+                false
             ]
         ],
         "style": "default",

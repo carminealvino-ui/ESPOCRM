@@ -54,7 +54,30 @@
         "prezzoCodiceIvaEsclusa": "Prezzo a codice (IVA escl.)",
         "contattoPersonaleArquati": "Contatto personale ARQUATI (+5%)",
         "integrazionePncPercentuale": "Integrazione PNC %",
-        "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)"
+        "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)",
+        "status": "Stato",
+        "dataInstallazione": "Data Installazione",
+        "codiceContratto": "Codice Contratto",
+        "numeroContratto": "Numero Contratto",
+        "venditaAbbinataAdAltroProdotto": "Vendita Abbinata ad Altro Prodotto",
+        "scontoVenditaAbbinata": "% Sconto Vendita Abbinata",
+        "finanziamento": "Finanziamento",
+        "statoFinanziamento": "Stato Finanziamento",
+        "statoContratto": "Stato Contratto",
+        "importoCaparra": "Importo Caparra",
+        "importoCaparraCurrency": "Importo Caparra (Valuta)",
+        "importoCaparraConverted": "Importo Caparra (Convertito)",
+        "importoFinanziato": "Importo Finanziato",
+        "importoFinanziatoCurrency": "Importo Finanziato (Valuta)",
+        "importoFinanziatoConverted": "Importo Finanziato (Convertito)",
+        "nrRate": "Nr. Rate",
+        "tassoZero": "Tasso Zero",
+        "rataPrestito": "Rata Prestito",
+        "rataPrestitoCurrency": "Rata Prestito (Valuta)",
+        "rataPrestitoConverted": "Rata Prestito (Convertito)",
+        "importoSaldo": "Importo Saldo",
+        "importoSaldoCurrency": "Importo Saldo (Valuta)",
+        "importoSaldoConverted": "Importo Saldo (Convertito)"
     },
     "links": {
         "cAP": "CAP",
@@ -76,6 +99,34 @@
         "inventoryStatus": {
             "Available": "Disponibile",
             "Not Available": "Non Disponibile"
+        },
+        "statoFinanziamento": {
+            "In lavorazione": "In lavorazione",
+            "Approvato": "Approvato",
+            "Respinto": "Respinto",
+            "": "",
+            "Annullato": "Annullato",
+            "In Attesa Documentazione": "In Attesa Documentazione",
+            "In rivalutazione": "In rivalutazione"
+        },
+        "statoContratto": {
+            "In lavorazione": "In lavorazione",
+            "Installato": "Installato",
+            "Annullato": "Annullato",
+            "": "",
+            "Sospeso": "Sospeso",
+            "Inserito": "Inserito",
+            "Recesso": "Recesso",
+            "Appuntamento Fissato": "Appuntamento Fissato"
+        },
+        "status": {
+            "Draft": "Bozza",
+            "Presented": "Presentato",
+            "Approved": "In Pagamento",
+            "Installato": "Installato",
+            "Recesso": "Recesso",
+            "Finanziamento Rifiutato": "Finanziamento Rifiutato",
+            "Canceled": "Annullato",
+            "In lavorazione": "In lavorazione"
         }
     }
-}
