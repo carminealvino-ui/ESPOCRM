@@ -173,6 +173,7 @@ class AppuntamentoRifissatoCreator
         }
 
         return $resolved;
+    }
 
     /**
      * @param string[] $preservedAssignedUsersIds
