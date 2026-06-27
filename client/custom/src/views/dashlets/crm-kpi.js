@@ -98,6 +98,8 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                         meta: alert.meta || null,
                     };
                 }),
+                yieldsByWeekday: summary.yieldsByWeekday || [],
+                yieldsByWeek: summary.yieldsByWeek || [],
             };
         },
 

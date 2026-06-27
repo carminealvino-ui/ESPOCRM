@@ -10,7 +10,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="cursor/crm-kpi-dashlet-v2-9999"
+BRANCH="cursor/crm-kpi-rese-periodo-9999"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 STAMP=$(date +%Y%m%d-%H%M%S)
@@ -38,6 +38,8 @@ FILES=(
   "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
   "custom/Espo/Custom/Tools/CrmKpi/Alerts.php"
   "custom/Espo/Custom/Tools/CrmKpi/FunnelBuilder.php"
+  "custom/Espo/Custom/Tools/CrmKpi/WeekOfMonth.php"
+  "custom/Espo/Custom/Tools/CrmKpi/YieldBuilder.php"
   "custom/Espo/Custom/Tools/CrmKpi/KpiContext.php"
   "custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php"
   "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"

@@ -6,7 +6,10 @@ use Espo\Custom\Tools\CrmKpi\Alerts;
 use Espo\Custom\Tools\CrmKpi\DateRange;
 use Espo\Custom\Tools\CrmKpi\FunnelBuilder;
 use Espo\Custom\Tools\CrmKpi\KpiContext;
+use Espo\Custom\Tools\CrmKpi\WeekOfMonth;
+use Espo\Custom\Tools\CrmKpi\YieldBuilder;
 use Espo\Entities\User;
+use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
 class CrmKpiService
@@ -84,6 +87,8 @@ class CrmKpiService
                 (float) $contratti->totali,
                 (float) $contratti->netti
             ),
+            'yieldsByWeekday' => $this->getYieldsByWeekdaySafe($ctx),
+            'yieldsByWeek' => $this->getYieldsByWeekSafe($ctx),
             'alerts' => $this->getAlertsSafe($from, $to, $ctx->productBrandId),
         ];
     }
@@ -471,6 +476,148 @@ class CrmKpiService
         }
 
         return 0.0;
+    }
+
+    /**
+     * @return object[]
+     */
+    private function getYieldsByWeekdaySafe(KpiContext $ctx): array
+    {
+        try {
+            $aggregated = $this->aggregateAppuntamentiYields($ctx);
+
+            return YieldBuilder::buildWeekdayRows(
+                $aggregated['weekday']['lordi'],
+                $aggregated['weekday']['netti']
+            );
+        } catch (\Throwable) {
+            return YieldBuilder::emptyWeekdayRows();
+        }
+    }
+
+    /**
+     * @return object[]
+     */
+    private function getYieldsByWeekSafe(KpiContext $ctx): array
+    {
+        try {
+            $aggregated = $this->aggregateAppuntamentiYields($ctx);
+
+            return YieldBuilder::buildWeekRows(
+                $aggregated['week']['lordi'],
+                $aggregated['week']['netti'],
+                $aggregated['week']['weeks']
+            );
+        } catch (\Throwable) {
+            return YieldBuilder::emptyWeekRows();
+        }
+    }
+
+    /**
+     * @return array{
+     *   weekday: array{lordi: array<int, int>, netti: array<int, int>},
+     *   week: array{lordi: array<int, int>, netti: array<int, int>, weeks: array<int, array<string, mixed>>}
+     * }
+     */
+    private function aggregateAppuntamentiYields(KpiContext $ctx): array
+    {
+        $weekdayLordi = array_fill(1, 7, 0);
+        $weekdayNetti = array_fill(1, 7, 0);
+        $weekLordi = [];
+        $weekNetti = [];
+        $weeks = WeekOfMonth::validWeeksForRange($ctx->from, $ctx->to);
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Appuntamento')
+            ->select(['status', 'sottostato', 'esito', 'dataAppuntamento', 'dateStart'])
+            ->where($ctx->appuntamentoWhere())
+            ->find();
+
+        foreach ($collection as $appuntamento) {
+            $date = $this->resolveAppuntamentoDate($appuntamento);
+
+            if (!$date) {
+                continue;
+            }
+
+            $weekday = (int) (new \DateTimeImmutable($date))->format('N');
+            $weekdayLordi[$weekday]++;
+
+            if ($this->isAppuntamentoNetto($appuntamento)) {
+                $weekdayNetti[$weekday]++;
+            }
+
+            $weekIndex = WeekOfMonth::resolveIndexForDate($date);
+
+            if ($weekIndex === null) {
+                continue;
+            }
+
+            $weekLordi[$weekIndex] = ($weekLordi[$weekIndex] ?? 0) + 1;
+
+            if ($this->isAppuntamentoNetto($appuntamento)) {
+                $weekNetti[$weekIndex] = ($weekNetti[$weekIndex] ?? 0) + 1;
+            }
+        }
+
+        return [
+            'weekday' => [
+                'lordi' => $weekdayLordi,
+                'netti' => $weekdayNetti,
+            ],
+            'week' => [
+                'lordi' => $weekLordi,
+                'netti' => $weekNetti,
+                'weeks' => $weeks,
+            ],
+        ];
+    }
+
+    private function resolveAppuntamentoDate(Entity $appuntamento): ?string
+    {
+        $date = $appuntamento->get('dataAppuntamento');
+
+        if ($date) {
+            return substr((string) $date, 0, 10);
+        }
+
+        $dateStart = $appuntamento->get('dateStart');
+
+        if (!$dateStart) {
+            return null;
+        }
+
+        return substr((string) $dateStart, 0, 10);
+    }
+
+    private function isAppuntamentoNetto(Entity $appuntamento): bool
+    {
+        if (!$this->isAppuntamentoNotAnnullato($appuntamento)) {
+            return false;
+        }
+
+        if ($appuntamento->get('status') === 'Ingestibile') {
+            return false;
+        }
+
+        return $appuntamento->get('status') === 'Held';
+    }
+
+    private function isAppuntamentoNotAnnullato(Entity $appuntamento): bool
+    {
+        $sottostato = $appuntamento->get('sottostato');
+
+        if ($sottostato === 'Annullato') {
+            return false;
+        }
+
+        $esito = $appuntamento->get('esito');
+
+        if ($esito && in_array($esito, self::ESITI_ANNULLATI, true)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
