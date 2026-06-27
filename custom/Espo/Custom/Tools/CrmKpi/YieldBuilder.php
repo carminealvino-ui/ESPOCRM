@@ -119,19 +119,19 @@ class YieldBuilder
 
         return (object) [
             'label' => $label,
-            'summaryLine' => self::formatSummaryLine($steps),
+            'summaryLine' => self::formatSummaryLine($pipeline),
             'steps' => $steps,
         ];
     }
 
     /**
-     * @param object[] $steps
+     * @param object[] $pipelineSteps
      */
-    private static function formatSummaryLine(array $steps): string
+    private static function formatSummaryLine(array $pipelineSteps): string
     {
         $segments = [];
 
-        foreach ($steps as $step) {
+        foreach ($pipelineSteps as $step) {
             $segment = (string) (int) $step->value;
             $meta = self::formatStepMetaCompact($step);
 
