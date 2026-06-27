@@ -172,7 +172,11 @@ class YieldBuilder
     }
 
     /**
-     * Efficienza = contratti / appuntamenti lordi, espressa come % rispetto al periodo migliore.
+     * Efficienza periodo (le righe sommano a 100%):
+     *   R_app = appuntamenti giorno / totale appuntamenti
+     *   R_contr = contratti giorno / totale contratti
+     *   score = R_contr / R_app
+     *   eff%  = score / Σ score × 100
      *
      * @param object[] $rows
      * @return object[]
@@ -183,25 +187,46 @@ class YieldBuilder
             return $rows;
         }
 
-        $efficiencies = [];
+        $totalLordi = 0;
+        $totalContratti = 0;
+
+        foreach ($rows as $row) {
+            $metrics = self::metricsFromCells($row->cells);
+            $totalLordi += $metrics['appuntamentiLordi'];
+            $totalContratti += $metrics['contratti'];
+        }
+
+        if ($totalLordi <= 0 || $totalContratti <= 0) {
+            return $rows;
+        }
+
+        $scores = [];
 
         foreach ($rows as $index => $row) {
             $metrics = self::metricsFromCells($row->cells);
             $lordi = $metrics['appuntamentiLordi'];
             $contratti = $metrics['contratti'];
-            $efficiencies[$index] = $lordi > 0 ? $contratti / $lordi : 0.0;
+
+            if ($lordi <= 0 || $contratti <= 0) {
+                $scores[$index] = 0.0;
+                continue;
+            }
+
+            $appointmentRatio = $lordi / $totalLordi;
+            $contractRatio = $contratti / $totalContratti;
+            $scores[$index] = $contractRatio / $appointmentRatio;
         }
 
-        $maxEfficiency = max($efficiencies);
+        $scoreTotal = array_sum($scores);
 
-        if ($maxEfficiency <= 0) {
+        if ($scoreTotal <= 0) {
             return $rows;
         }
 
         foreach ($rows as $index => $row) {
-            $efficiency = $efficiencies[$index];
+            $score = $scores[$index] ?? 0.0;
 
-            if ($efficiency <= 0) {
+            if ($score <= 0) {
                 continue;
             }
 
@@ -211,7 +236,7 @@ class YieldBuilder
                 continue;
             }
 
-            $cell->percents[] = round(($efficiency / $maxEfficiency) * 100, 1);
+            $cell->percents[] = round(($score / $scoreTotal) * 100, 1);
         }
 
         return $rows;
