@@ -40,7 +40,10 @@ class CrmKpiService
         'Chiuso Negativamente',
     ];
 
-    private const FINANCING_REJECTED = 'Respinto';
+    private const FINANCING_REJECTED_STATES = [
+        'Respinto',
+        'Annullato',
+    ];
 
     public function __construct(
         private EntityManager $entityManager,
@@ -603,18 +606,8 @@ class CrmKpiService
     {
         return [
             'OR' => [
-                [
-                    'AND' => [
-                        ['finanziamento' => true],
-                        ['statoFinanziamento' => self::FINANCING_REJECTED],
-                    ],
-                ],
-                [
-                    'AND' => [
-                        ['opportunita.finanziamento' => true],
-                        ['opportunita.statoFinanziamento' => self::FINANCING_REJECTED],
-                    ],
-                ],
+                ['statoFinanziamento' => self::FINANCING_REJECTED_STATES],
+                ['opportunita.statoFinanziamento' => self::FINANCING_REJECTED_STATES],
             ],
         ];
     }
@@ -625,29 +618,15 @@ class CrmKpiService
     private function excludeFinancingRejectedWhere(): array
     {
         return [
-            'AND' => [
-                [
-                    'OR' => [
-                        ['finanziamento' => false],
-                        ['finanziamento' => null],
-                        ['statoFinanziamento!=' => self::FINANCING_REJECTED],
-                        ['statoFinanziamento' => null],
-                        ['statoFinanziamento' => ''],
-                    ],
-                ],
-                [
-                    'OR' => [
-                        ['opportunitaId' => null],
-                        ['opportunitaId' => ''],
-                        ['opportunita.finanziamento' => false],
-                        ['opportunita.finanziamento' => null],
-                        ['opportunita.statoFinanziamento!=' => self::FINANCING_REJECTED],
-                        ['opportunita.statoFinanziamento' => null],
-                        ['opportunita.statoFinanziamento' => ''],
-                    ],
-                ],
-            ],
+            'NOT' => $this->financingRejectedWhere(),
         ];
+    }
+
+    private function isFinancingRejectedState(?string $state): bool
+    {
+        return $state !== null
+            && $state !== ''
+            && in_array($state, self::FINANCING_REJECTED_STATES, true);
     }
 
     /**
@@ -655,7 +634,7 @@ class CrmKpiService
      */
     private function isQuoteFinancingRejected(Entity $quote, ?array $opportunityRejectedMap = null): bool
     {
-        if ($quote->get('finanziamento') && $quote->get('statoFinanziamento') === self::FINANCING_REJECTED) {
+        if ($this->isFinancingRejectedState($quote->get('statoFinanziamento'))) {
             return true;
         }
 
@@ -672,8 +651,7 @@ class CrmKpiService
         $opportunity = $this->entityManager->getEntityById('Opportunity', $opportunityId);
 
         return $opportunity
-            && $opportunity->get('finanziamento')
-            && $opportunity->get('statoFinanziamento') === self::FINANCING_REJECTED;
+            && $this->isFinancingRejectedState($opportunity->get('statoFinanziamento'));
     }
 
     /**
@@ -697,8 +675,9 @@ class CrmKpiService
             ->find();
 
         foreach ($collection as $opportunity) {
-            $map[$opportunity->getId()] = $opportunity->get('finanziamento')
-                && $opportunity->get('statoFinanziamento') === self::FINANCING_REJECTED;
+            $map[$opportunity->getId()] = $this->isFinancingRejectedState(
+                $opportunity->get('statoFinanziamento')
+            );
         }
 
         return $map;
