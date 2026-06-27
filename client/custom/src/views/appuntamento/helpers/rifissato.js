@@ -2,11 +2,14 @@
 
 define('custom:views/appuntamento/helpers/rifissato', [], function () {
 
-    const isBecomingRifissato = function (model, attributes) {
-        if (attributes && Object.prototype.hasOwnProperty.call(attributes, 'dateStart')) {
-            return false;
-        }
+    const DATE_FIELDS = [
+        'dateStart',
+        'dateEnd',
+        'dateStartDate',
+        'dateEndDate',
+    ];
 
+    const isBecomingRifissato = function (model, attributes) {
         const previousSottostato = model.get('sottostato');
         const previousStatus = model.get('status');
         const nextSottostato = attributes && Object.prototype.hasOwnProperty.call(attributes, 'sottostato')
@@ -22,10 +25,6 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
     };
 
     const shouldTriggerAfterSave = function (model, attributes) {
-        if (attributes && Object.prototype.hasOwnProperty.call(attributes, 'dateStart')) {
-            return false;
-        }
-
         if (attributes && Object.keys(attributes).length) {
             return isBecomingRifissato(model, attributes);
         }
@@ -33,6 +32,40 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
         return model.get('sottostato') === 'Rifissato'
             && model.hasChanged('sottostato')
             && model.get('status') !== 'Planned';
+    };
+
+    const stripDateFields = function (attributes) {
+        if (!attributes || typeof attributes !== 'object') {
+            return attributes;
+        }
+
+        const next = Object.assign({}, attributes);
+
+        DATE_FIELDS.forEach(field => {
+            delete next[field];
+        });
+
+        return next;
+    };
+
+    const revertDateFieldsOnModel = function (model) {
+        const revert = {};
+
+        DATE_FIELDS.forEach(field => {
+            const previousValue = model.previous(field);
+
+            if (previousValue !== undefined) {
+                revert[field] = previousValue;
+            }
+        });
+
+        if (!Object.keys(revert).length) {
+            return model.get('dateStart');
+        }
+
+        model.set(revert, {silent: true});
+
+        return revert.dateStart || model.get('dateStart');
     };
 
     const openCreateModal = function (view, sourceModel, originalDateStart, options) {
@@ -77,10 +110,17 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
             const preservedAssignedUsersIds = triggerRifissato
                 ? (model.get('assignedUsersIds') || []).slice()
                 : null;
+            let originalDateStart = null;
+            let saveAttributes = attributes;
 
-            return originalSave(attributes, options).then(result => {
+            if (triggerRifissato) {
+                originalDateStart = revertDateFieldsOnModel(model);
+                saveAttributes = stripDateFields(attributes);
+            }
+
+            return originalSave(saveAttributes, options).then(result => {
                 if (triggerRifissato) {
-                    openCreateModal(view, model, model.get('dateStart'), {
+                    openCreateModal(view, model, originalDateStart, {
                         assignedUsersIds: preservedAssignedUsersIds,
                     });
                 }
