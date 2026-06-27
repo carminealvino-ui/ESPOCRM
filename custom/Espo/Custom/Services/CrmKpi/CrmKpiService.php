@@ -484,12 +484,9 @@ class CrmKpiService
     private function getYieldsByWeekdaySafe(KpiContext $ctx): array
     {
         try {
-            $aggregated = $this->aggregateAppuntamentiYields($ctx);
+            $aggregated = $this->aggregatePeriodPipelines($ctx);
 
-            return YieldBuilder::buildWeekdayRows(
-                $aggregated['weekday']['lordi'],
-                $aggregated['weekday']['netti']
-            );
+            return YieldBuilder::buildWeekdayRows($aggregated['weekday']);
         } catch (\Throwable) {
             return YieldBuilder::emptyWeekdayRows();
         }
@@ -501,12 +498,11 @@ class CrmKpiService
     private function getYieldsByWeekSafe(KpiContext $ctx): array
     {
         try {
-            $aggregated = $this->aggregateAppuntamentiYields($ctx);
+            $aggregated = $this->aggregatePeriodPipelines($ctx);
 
             return YieldBuilder::buildWeekRows(
-                $aggregated['week']['lordi'],
-                $aggregated['week']['netti'],
-                $aggregated['week']['weeks']
+                $aggregated['week'],
+                $aggregated['weeks']
             );
         } catch (\Throwable) {
             return YieldBuilder::emptyWeekRows();
@@ -515,17 +511,22 @@ class CrmKpiService
 
     /**
      * @return array{
-     *   weekday: array{lordi: array<int, int>, netti: array<int, int>},
-     *   week: array{lordi: array<int, int>, netti: array<int, int>, weeks: array<int, array<string, mixed>>}
+     *   weekday: array<int, array<string, int>>,
+     *   week: array<int, array<string, int>>,
+     *   weeks: array<int, array<string, mixed>>
      * }
      */
-    private function aggregateAppuntamentiYields(KpiContext $ctx): array
+    private function aggregatePeriodPipelines(KpiContext $ctx): array
     {
-        $weekdayLordi = array_fill(1, 7, 0);
-        $weekdayNetti = array_fill(1, 7, 0);
-        $weekLordi = [];
-        $weekNetti = [];
+        $weekdayBuckets = $this->initWeekdayBuckets();
+        $weekBuckets = [];
         $weeks = WeekOfMonth::validWeeksForRange($ctx->from, $ctx->to);
+
+        foreach (array_keys($weeks) as $weekIndex) {
+            $weekBuckets[$weekIndex] = YieldBuilder::emptyMetrics();
+        }
+
+        $appuntamentoIds = [];
 
         $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
@@ -540,37 +541,179 @@ class CrmKpiService
                 continue;
             }
 
+            $appuntamentoIds[] = $appuntamento->getId();
             $weekday = (int) (new \DateTimeImmutable($date))->format('N');
-            $weekdayLordi[$weekday]++;
-
-            if ($this->isAppuntamentoNetto($appuntamento)) {
-                $weekdayNetti[$weekday]++;
-            }
-
             $weekIndex = WeekOfMonth::resolveIndexForDate($date);
 
-            if ($weekIndex === null) {
-                continue;
-            }
-
-            $weekLordi[$weekIndex] = ($weekLordi[$weekIndex] ?? 0) + 1;
+            $weekdayBuckets[$weekday]['appuntamentiLordi']++;
 
             if ($this->isAppuntamentoNetto($appuntamento)) {
-                $weekNetti[$weekIndex] = ($weekNetti[$weekIndex] ?? 0) + 1;
+                $weekdayBuckets[$weekday]['appuntamentiNetti']++;
+            }
+
+            if ($weekIndex !== null && isset($weekBuckets[$weekIndex])) {
+                $weekBuckets[$weekIndex]['appuntamentiLordi']++;
+
+                if ($this->isAppuntamentoNetto($appuntamento)) {
+                    $weekBuckets[$weekIndex]['appuntamentiNetti']++;
+                }
             }
         }
 
+        if ($appuntamentoIds !== []) {
+            $this->aggregateOpportunitiesByAppuntamento(
+                $ctx,
+                $appuntamentoIds,
+                $weekdayBuckets,
+                $weekBuckets
+            );
+        }
+
+        $this->aggregateQuotesByDate($ctx, $weekdayBuckets, $weekBuckets);
+
         return [
-            'weekday' => [
-                'lordi' => $weekdayLordi,
-                'netti' => $weekdayNetti,
-            ],
-            'week' => [
-                'lordi' => $weekLordi,
-                'netti' => $weekNetti,
-                'weeks' => $weeks,
-            ],
+            'weekday' => $weekdayBuckets,
+            'week' => $weekBuckets,
+            'weeks' => $weeks,
         ];
+    }
+
+    /**
+     * @return array<int, array<string, int>>
+     */
+    private function initWeekdayBuckets(): array
+    {
+        $buckets = [];
+
+        for ($day = 1; $day <= 7; $day++) {
+            $buckets[$day] = YieldBuilder::emptyMetrics();
+        }
+
+        return $buckets;
+    }
+
+    /**
+     * @param string[] $appuntamentoIds
+     * @param array<int, array<string, int>> $weekdayBuckets
+     * @param array<int, array<string, int>> $weekBuckets
+     */
+    private function aggregateOpportunitiesByAppuntamento(
+        KpiContext $ctx,
+        array $appuntamentoIds,
+        array &$weekdayBuckets,
+        array &$weekBuckets,
+    ): void {
+        $appuntamentoDates = $this->loadAppuntamentoDates($appuntamentoIds);
+
+        $where = ['appuntamentoId' => $appuntamentoIds];
+
+        if ($ctx->productBrandId) {
+            $where['productBrandId'] = $ctx->productBrandId;
+        }
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Opportunity')
+            ->select(['id', 'appuntamentoId'])
+            ->where($where)
+            ->find();
+
+        foreach ($collection as $opportunity) {
+            $appuntamentoId = $opportunity->get('appuntamentoId');
+            $date = $appuntamentoDates[$appuntamentoId] ?? null;
+
+            if (!$date) {
+                continue;
+            }
+
+            $weekday = (int) (new \DateTimeImmutable($date))->format('N');
+            $weekIndex = WeekOfMonth::resolveIndexForDate($date);
+
+            $weekdayBuckets[$weekday]['opportunita']++;
+
+            if ($weekIndex !== null && isset($weekBuckets[$weekIndex])) {
+                $weekBuckets[$weekIndex]['opportunita']++;
+            }
+        }
+    }
+
+    /**
+     * @param array<int, array<string, int>> $weekdayBuckets
+     * @param array<int, array<string, int>> $weekBuckets
+     */
+    private function aggregateQuotesByDate(
+        KpiContext $ctx,
+        array &$weekdayBuckets,
+        array &$weekBuckets,
+    ): void {
+        $collection = $this->entityManager
+            ->getRDBRepository('Quote')
+            ->select(['dateQuoted', 'statoContratto', 'finanziamento', 'statoFinanziamento'])
+            ->where($ctx->quoteWhere())
+            ->find();
+
+        foreach ($collection as $quote) {
+            $date = $quote->get('dateQuoted');
+
+            if (!$date) {
+                continue;
+            }
+
+            $date = substr((string) $date, 0, 10);
+            $weekday = (int) (new \DateTimeImmutable($date))->format('N');
+            $weekIndex = WeekOfMonth::resolveIndexForDate($date);
+
+            $weekdayBuckets[$weekday]['contratti']++;
+
+            if ($this->isQuoteNetto($quote)) {
+                $weekdayBuckets[$weekday]['contrattiNetti']++;
+            }
+
+            if ($weekIndex !== null && isset($weekBuckets[$weekIndex])) {
+                $weekBuckets[$weekIndex]['contratti']++;
+
+                if ($this->isQuoteNetto($quote)) {
+                    $weekBuckets[$weekIndex]['contrattiNetti']++;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param string[] $appuntamentoIds
+     * @return array<string, string>
+     */
+    private function loadAppuntamentoDates(array $appuntamentoIds): array
+    {
+        $dates = [];
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Appuntamento')
+            ->select(['id', 'dataAppuntamento', 'dateStart'])
+            ->where(['id' => $appuntamentoIds])
+            ->find();
+
+        foreach ($collection as $appuntamento) {
+            $date = $this->resolveAppuntamentoDate($appuntamento);
+
+            if ($date) {
+                $dates[$appuntamento->getId()] = $date;
+            }
+        }
+
+        return $dates;
+    }
+
+    private function isQuoteNetto(Entity $quote): bool
+    {
+        if ($quote->get('statoContratto') === 'Recesso') {
+            return false;
+        }
+
+        if ($quote->get('finanziamento') && $quote->get('statoFinanziamento') === 'Respinto') {
+            return false;
+        }
+
+        return true;
     }
 
     private function resolveAppuntamentoDate(Entity $appuntamento): ?string

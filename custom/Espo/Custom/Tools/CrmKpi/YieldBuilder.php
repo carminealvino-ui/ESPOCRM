@@ -4,7 +4,7 @@ namespace Espo\Custom\Tools\CrmKpi;
 
 class YieldBuilder
 {
-  /** @var array<int, string> */
+  /** @var string[] */
     private const WEEKDAY_LABELS = [
         1 => 'Lun',
         2 => 'Mar',
@@ -15,33 +15,36 @@ class YieldBuilder
         7 => 'Dom',
     ];
 
+  /** @var string[] */
+    private const PIPELINE_COLORS = [
+        '#63a7c2',
+        '#ccc058',
+        '#c96947',
+        '#b770e0',
+        '#5cb85c',
+    ];
+
     /**
-     * @param array<int, int> $lordi
-     * @param array<int, int> $netti
+     * @param array<int, array<string, int>> $buckets
      * @return object[]
      */
-    public static function buildWeekdayRows(array $lordi, array $netti): array
+    public static function buildWeekdayRows(array $buckets): array
     {
         $rows = [];
 
         foreach (self::WEEKDAY_LABELS as $day => $label) {
-            $rows[] = self::buildRow(
-                $label,
-                (int) ($lordi[$day] ?? 0),
-                (int) ($netti[$day] ?? 0)
-            );
+            $rows[] = self::buildPeriodRow($label, $buckets[$day] ?? self::emptyMetrics());
         }
 
-        return self::applyBarWidths($rows);
+        return $rows;
     }
 
     /**
-     * @param array<int, int> $lordi
-     * @param array<int, int> $netti
+     * @param array<int, array<string, int>> $buckets
      * @param array<int, array{index: int, start: string, end: string, label: string}> $weeks
      * @return object[]
      */
-    public static function buildWeekRows(array $lordi, array $netti, array $weeks): array
+    public static function buildWeekRows(array $buckets, array $weeks): array
     {
         if ($weeks === []) {
             $weeks = WeekOfMonth::validWeeksForRange(null, null);
@@ -50,14 +53,13 @@ class YieldBuilder
         $rows = [];
 
         foreach ($weeks as $index => $week) {
-            $rows[] = self::buildRow(
+            $rows[] = self::buildPeriodRow(
                 $week['label'],
-                (int) ($lordi[$index] ?? 0),
-                (int) ($netti[$index] ?? 0)
+                $buckets[$index] ?? self::emptyMetrics()
             );
         }
 
-        return self::applyBarWidths($rows);
+        return $rows;
     }
 
     /**
@@ -65,7 +67,7 @@ class YieldBuilder
      */
     public static function emptyWeekdayRows(): array
     {
-        return self::buildWeekdayRows([], []);
+        return self::buildWeekdayRows([]);
     }
 
     /**
@@ -73,42 +75,74 @@ class YieldBuilder
      */
     public static function emptyWeekRows(): array
     {
-        return self::buildWeekRows([], [], WeekOfMonth::validWeeksForRange(null, null));
+        return self::buildWeekRows([], WeekOfMonth::validWeeksForRange(null, null));
     }
 
-  /**
-     * @return object{label: string, lordi: int, netti: int, yieldPercent: float, widthPercent: float, meta: string}
+    /**
+     * @return array<string, int>
      */
-    private static function buildRow(string $label, int $lordi, int $netti): object
+    public static function emptyMetrics(): array
     {
-        $yieldPercent = $lordi > 0 ? round(($netti / $lordi) * 100, 1) : 0.0;
-
-        return (object) [
-            'label' => $label,
-            'lordi' => $lordi,
-            'netti' => $netti,
-            'yieldPercent' => $yieldPercent,
-            'widthPercent' => 0.0,
-            'meta' => $netti . ' netti / ' . $lordi . ' lordi',
+        return [
+            'appuntamentiLordi' => 0,
+            'appuntamentiNetti' => 0,
+            'opportunita' => 0,
+            'contratti' => 0,
+            'contrattiNetti' => 0,
         ];
     }
 
     /**
-     * @param object[] $rows
-     * @return object[]
+     * @param array<string, int> $metrics
      */
-    private static function applyBarWidths(array $rows): array
+    private static function buildPeriodRow(string $label, array $metrics): object
     {
-        $maxYield = 1.0;
+        $pipeline = FunnelBuilder::buildSalesPipeline(
+            (float) $metrics['appuntamentiLordi'],
+            (float) $metrics['appuntamentiNetti'],
+            (float) $metrics['opportunita'],
+            (float) $metrics['contratti'],
+            (float) $metrics['contrattiNetti'],
+        );
 
-        foreach ($rows as $row) {
-            $maxYield = max($maxYield, (float) $row->yieldPercent);
+        $steps = [];
+
+        foreach ($pipeline as $index => $step) {
+            $steps[] = (object) [
+                'key' => $step->key,
+                'label' => $step->label,
+                'value' => (int) $step->value,
+                'color' => self::PIPELINE_COLORS[$index] ?? self::PIPELINE_COLORS[0],
+                'meta' => self::formatStepMeta($step),
+            ];
         }
 
-        foreach ($rows as $row) {
-            $row->widthPercent = round(((float) $row->yieldPercent / $maxYield) * 100, 1);
+        return (object) [
+            'label' => $label,
+            'steps' => $steps,
+        ];
+    }
+
+    private static function formatStepMeta(object $step): string
+    {
+        $parts = [];
+
+        if ($step->key === 'appuntamentiNetti' && $step->percentOfPrevious !== null) {
+            $parts[] = $step->percentOfPrevious . '% su lordi';
         }
 
-        return $rows;
+        if ($step->percentOfNetti !== null) {
+            $parts[] = $step->percentOfNetti . '% su app. netti';
+        }
+
+        if ($step->percentOfOpportunita !== null) {
+            $parts[] = $step->percentOfOpportunita . '% su opp.';
+        }
+
+        if ($step->key === 'contrattiNetti' && $step->percentOfPrevious !== null) {
+            $parts[] = $step->percentOfPrevious . '% prec';
+        }
+
+        return implode(' · ', $parts);
     }
 }

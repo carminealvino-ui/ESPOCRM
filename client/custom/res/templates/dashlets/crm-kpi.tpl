@@ -67,45 +67,6 @@
             </div>
         </div>
 
-        <div class="crm-kpi-yields-row crm-kpi-yields-row-top">
-            <div class="crm-kpi-panel crm-kpi-panel-yields">
-                <div class="crm-kpi-panel-title">Rese per giorno</div>
-                <div class="crm-kpi-panel-note text-muted small">% netti su lordi per giorno settimana</div>
-                <div class="crm-kpi-yields">
-                    {{#each yieldsByWeekday}}
-                        <div class="crm-kpi-yield-row">
-                            <div class="crm-kpi-yield-label">{{label}}</div>
-                            <div class="crm-kpi-yield-bar-wrap">
-                                <div class="crm-kpi-yield-bar" style="width: {{widthPercent}}%;"></div>
-                            </div>
-                            <div class="crm-kpi-yield-value">
-                                {{yieldPercent}}%
-                                <span class="text-muted">({{meta}})</span>
-                            </div>
-                        </div>
-                    {{/each}}
-                </div>
-            </div>
-            <div class="crm-kpi-panel crm-kpi-panel-yields">
-                <div class="crm-kpi-panel-title">Rese per settimana</div>
-                <div class="crm-kpi-panel-note text-muted small">Settimane con almeno 4 giorni nel periodo</div>
-                <div class="crm-kpi-yields">
-                    {{#each yieldsByWeek}}
-                        <div class="crm-kpi-yield-row">
-                            <div class="crm-kpi-yield-label">{{label}}</div>
-                            <div class="crm-kpi-yield-bar-wrap">
-                                <div class="crm-kpi-yield-bar" style="width: {{widthPercent}}%;"></div>
-                            </div>
-                            <div class="crm-kpi-yield-value">
-                                {{yieldPercent}}%
-                                <span class="text-muted">({{meta}})</span>
-                            </div>
-                        </div>
-                    {{/each}}
-                </div>
-            </div>
-        </div>
-
         <div class="crm-kpi-bottom">
             <div class="crm-kpi-bottom-col crm-kpi-bottom-pipeline">
                 <div class="crm-kpi-panel crm-kpi-panel-pipeline">
@@ -120,7 +81,53 @@
                     {{/if}}
                 </div>
             </div>
-            <div class="crm-kpi-bottom-col crm-kpi-bottom-alerts">
+            <div class="crm-kpi-bottom-col crm-kpi-bottom-side">
+                <div class="crm-kpi-yields-row">
+                    <div class="crm-kpi-panel crm-kpi-panel-yields">
+                        <div class="crm-kpi-panel-title">Rese per giorno</div>
+                        <div class="crm-kpi-panel-note text-muted small">Pipeline per giorno settimana</div>
+                        <div class="crm-kpi-period-list">
+                            {{#each yieldsByWeekday}}
+                                <div class="crm-kpi-period-block">
+                                    <div class="crm-kpi-period-label">{{label}}</div>
+                                    <div class="crm-kpi-period-steps">
+                                        {{#each steps}}
+                                            <div class="crm-kpi-period-step">
+                                                <span class="legend-box" style="background-color:{{color}};"></span>
+                                                <span class="crm-kpi-period-step-body">
+                                                    <span class="legend-label">{{label}}</span>
+                                                    <span class="legend-meta">{{value}}{{#if meta}} · {{meta}}{{/if}}</span>
+                                                </span>
+                                            </div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                    <div class="crm-kpi-panel crm-kpi-panel-yields">
+                        <div class="crm-kpi-panel-title">Rese per settimana</div>
+                        <div class="crm-kpi-panel-note text-muted small">Settimane con almeno 4 giorni nel periodo</div>
+                        <div class="crm-kpi-period-list">
+                            {{#each yieldsByWeek}}
+                                <div class="crm-kpi-period-block">
+                                    <div class="crm-kpi-period-label">{{label}}</div>
+                                    <div class="crm-kpi-period-steps">
+                                        {{#each steps}}
+                                            <div class="crm-kpi-period-step">
+                                                <span class="legend-box" style="background-color:{{color}};"></span>
+                                                <span class="crm-kpi-period-step-body">
+                                                    <span class="legend-label">{{label}}</span>
+                                                    <span class="legend-meta">{{value}}{{#if meta}} · {{meta}}{{/if}}</span>
+                                                </span>
+                                            </div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                            {{/each}}
+                        </div>
+                    </div>
+                </div>
                 <div class="crm-kpi-panel crm-kpi-panel-alerts">
                     <div class="crm-kpi-panel-title">Avvisi</div>
                     <div class="crm-kpi-alerts">
