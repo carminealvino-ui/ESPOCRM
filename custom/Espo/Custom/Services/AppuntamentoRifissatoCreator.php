@@ -131,13 +131,48 @@ class AppuntamentoRifissatoCreator
             return;
         }
 
-        $teamsNames = $source->getLinkMultipleNameMap('teams');
+        $teamsNames = $this->resolveLinkMultipleNames($source, 'teams', $teamsIds);
 
         $new->set([
             'teamsIds' => $teamsIds,
             'teamsNames' => $teamsNames,
         ]);
     }
+
+    /**
+     * @param string[] $ids
+     * @return array<string, string>
+     */
+    private function resolveLinkMultipleNames(Entity $source, string $link, array $ids): array
+    {
+        $namesField = $link . 'Names';
+        $storedNames = $source->get($namesField);
+        $nameMap = [];
+
+        if (is_array($storedNames)) {
+            $nameMap = $storedNames;
+        } elseif (is_object($storedNames)) {
+            $nameMap = (array) $storedNames;
+        }
+
+        $entityType = $link === 'teams' ? 'Team' : 'User';
+        $resolved = [];
+
+        foreach ($this->normalizeIdList($ids) as $id) {
+            if (!empty($nameMap[$id])) {
+                $resolved[$id] = (string) $nameMap[$id];
+
+                continue;
+            }
+
+            $related = $this->entityManager->getEntityById($entityType, $id);
+
+            if ($related) {
+                $resolved[$id] = (string) $related->get('name');
+            }
+        }
+
+        return $resolved;
 
     /**
      * @param string[] $preservedAssignedUsersIds
@@ -157,17 +192,11 @@ class AppuntamentoRifissatoCreator
             return;
         }
 
-        $assignedUsersNames = $source->getLinkMultipleNameMap('assignedUsers');
-
-        foreach ($assignedUsersIds as $assignedUserId) {
-            if (!isset($assignedUsersNames[$assignedUserId])) {
-                $user = $this->entityManager->getEntityById('User', $assignedUserId);
-
-                if ($user) {
-                    $assignedUsersNames[$assignedUserId] = $user->get('name');
-                }
-            }
-        }
+        $assignedUsersNames = $this->resolveLinkMultipleNames(
+            $source,
+            'assignedUsers',
+            $assignedUsersIds
+        );
 
         $new->set([
             'assignedUsersIds' => $assignedUsersIds,
