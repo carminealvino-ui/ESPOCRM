@@ -1,11 +1,13 @@
 /* global define */
 
-define('custom:views/appuntamento/modals/detail', ['crm:views/meeting/modals/detail'], function (Dep) {
+define('custom:views/appuntamento/modals/detail', ['views/modals/detail'], function (Dep) {
 
-    return Dep.extend({
+    const Parent = Dep.default || Dep;
+
+    return Parent.extend({
 
         setup: function () {
-            Dep.prototype.setup.call(this, arguments);
+            Parent.prototype.setup.call(this, arguments);
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;

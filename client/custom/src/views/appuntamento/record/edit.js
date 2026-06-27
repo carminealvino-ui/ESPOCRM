@@ -1,14 +1,20 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit', ['crm:views/meeting/record/edit'], function (MeetingEditModule) {
+define('custom:views/appuntamento/record/edit', [
+    'views/record/edit',
+    'custom:views/appuntamento/helpers/rifissato',
+], function (EditModule, RifissatoModule) {
 
-    const Parent = MeetingEditModule.default || MeetingEditModule;
+    const Parent = EditModule.default || EditModule;
+    const Rifissato = RifissatoModule.default || RifissatoModule;
     const DEFAULT_DURATION_SECONDS = 5400;
 
     return class AppuntamentoEditView extends Parent {
 
         setup() {
             super.setup();
+
+            Rifissato.setupRecordHandling(this);
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;

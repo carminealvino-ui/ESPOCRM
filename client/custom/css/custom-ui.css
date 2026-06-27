@@ -39,3 +39,45 @@ body.content-width-wide .record .record-grid,
 body[data-content-width="wide"] .record .record-grid {
     max-width: min(98vw, 2800px) !important;
 }
+
+/* Modal rifissato appuntamento */
+.rifissato-create-dialog .modal-body {
+    padding-top: 0.75rem;
+}
+
+.rifissato-create-modal {
+    max-width: 34rem;
+}
+
+.rifissato-create-lead {
+    margin: 0 0 1rem;
+    line-height: 1.45;
+    color: var(--text-muted-color, #6c757d);
+}
+
+.rifissato-create-origin {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-bottom: 1rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.35rem;
+    background: var(--default-bg, #f8f9fa);
+    border: 1px solid var(--border-color, #dee2e6);
+}
+
+.rifissato-create-dialog .rifissato-record .panel {
+    margin-bottom: 0;
+}
+
+.rifissato-create-dialog .rifissato-record .panel-heading {
+    font-weight: 600;
+}
+
+.rifissato-create-dialog .rifissato-record .field[data-name="dateStart"] .cell-label {
+    font-weight: 600;
+}
+
+.rifissato-create-dialog .rifissato-record .field[data-name="dateStart"] .form-group {
+    margin-bottom: 0;
+}
