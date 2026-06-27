@@ -77,6 +77,8 @@ class AppuntamentoRifissatoCreator
             }
         }
 
+        $this->copyAssignedUsers($source, $new);
+
         if (!$new->get('parentType') && $new->get('prospectId')) {
             $new->set('parentType', 'Prospect');
             $new->set('parentId', $new->get('prospectId'));
@@ -96,6 +98,37 @@ class AppuntamentoRifissatoCreator
         $this->entityManager->saveEntity($new);
 
         return (string) $new->getId();
+    }
+
+    private function copyAssignedUsers(Entity $source, Entity $new): void
+    {
+        $assignedUsersIds = $source->getLinkMultipleIdList('assignedUsers');
+
+        if (empty($assignedUsersIds)) {
+            $assignedUserId = $source->get('assignedUserId');
+
+            if ($assignedUserId) {
+                $assignedUsersIds = [(string) $assignedUserId];
+            }
+        }
+
+        if (empty($assignedUsersIds)) {
+            return;
+        }
+
+        $assignedUsersNames = $source->getLinkMultipleNameMap('assignedUsers');
+
+        $new->set([
+            'assignedUsersIds' => $assignedUsersIds,
+            'assignedUsersNames' => $assignedUsersNames,
+        ]);
+
+        if (!$new->get('assignedUserId')) {
+            $new->set([
+                'assignedUserId' => $assignedUsersIds[0],
+                'assignedUserName' => $assignedUsersNames[$assignedUsersIds[0]] ?? null,
+            ]);
+        }
     }
 
     private function buildDescription(Entity $source): string
