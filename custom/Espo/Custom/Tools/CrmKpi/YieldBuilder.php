@@ -59,7 +59,7 @@ class YieldBuilder
             $rows[] = self::buildPeriodRow($label, $buckets[$day] ?? self::emptyMetrics());
         }
 
-        return $rows;
+        return self::applyEfficiencyPercents($rows);
     }
 
     /**
@@ -82,7 +82,7 @@ class YieldBuilder
             );
         }
 
-        return $rows;
+        return self::applyEfficiencyPercents($rows);
     }
 
     /**
@@ -165,14 +165,82 @@ class YieldBuilder
             $percents[] = $step->percentOfOpportunita;
         }
 
-        if ($step->key === 'contrattiNetti' && $step->percentOfPrevious !== null) {
-            $percents[] = $step->percentOfPrevious;
-        }
-
         return (object) [
             'value' => (int) $step->value,
             'percents' => $percents,
         ];
+    }
+
+    /**
+     * Efficienza = contratti / appuntamenti lordi, espressa come % rispetto al periodo migliore.
+     *
+     * @param object[] $rows
+     * @return object[]
+     */
+    private static function applyEfficiencyPercents(array $rows): array
+    {
+        if ($rows === []) {
+            return $rows;
+        }
+
+        $efficiencies = [];
+
+        foreach ($rows as $index => $row) {
+            $metrics = self::metricsFromCells($row->cells);
+            $lordi = $metrics['appuntamentiLordi'];
+            $contratti = $metrics['contratti'];
+            $efficiencies[$index] = $lordi > 0 ? $contratti / $lordi : 0.0;
+        }
+
+        $maxEfficiency = max($efficiencies);
+
+        if ($maxEfficiency <= 0) {
+            return $rows;
+        }
+
+        foreach ($rows as $index => $row) {
+            $efficiency = $efficiencies[$index];
+
+            if ($efficiency <= 0) {
+                continue;
+            }
+
+            $cell = $row->cells[4] ?? null;
+
+            if (!$cell) {
+                continue;
+            }
+
+            $cell->percents[] = round(($efficiency / $maxEfficiency) * 100, 1);
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param object[] $cells
+     * @return array<string, int>
+     */
+    private static function metricsFromCells(array $cells): array
+    {
+        $keys = [
+            'appuntamentiLordi',
+            'appuntamentiNetti',
+            'opportunita',
+            'contratti',
+            'contrattiNetti',
+        ];
+        $metrics = self::emptyMetrics();
+
+        foreach ($cells as $index => $cell) {
+            if (!isset($keys[$index])) {
+                continue;
+            }
+
+            $metrics[$keys[$index]] = (int) ($cell->value ?? 0);
+        }
+
+        return $metrics;
     }
 
     private static function formatStepMeta(object $step): string
@@ -189,10 +257,6 @@ class YieldBuilder
 
         if ($step->percentOfOpportunita !== null) {
             $parts[] = $step->percentOfOpportunita . '% su opp.';
-        }
-
-        if ($step->key === 'contrattiNetti' && $step->percentOfPrevious !== null) {
-            $parts[] = $step->percentOfPrevious . '% prec';
         }
 
         return implode(' · ', $parts);

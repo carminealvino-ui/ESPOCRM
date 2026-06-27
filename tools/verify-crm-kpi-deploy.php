@@ -24,6 +24,7 @@ $checks = [
     'custom/Espo/Custom/Tools/CrmKpi/Alerts.php' => 'formatPaymentMeta',
     'custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php' => 'getPeriodPipelines',
     'custom/Espo/Custom/Tools/CrmKpi/FunnelBuilder.php' => 'buildSalesPipeline',
+    'custom/Espo/Custom/Tools/CrmKpi/YieldBuilder.php' => 'applyEfficiencyPercents',
     'custom/Espo/Custom/Tools/CrmKpi/KpiContext.php' => 'productBrandId',
     'custom/Espo/Custom/Classes/Select/Opportunity/PrimaryFilters/SenzaRiscontroTelefonico.php' => 'SenzaRiscontroTelefonico',
     'custom/Espo/Custom/Classes/Select/Call/PrimaryFilters/ContattiDaFare.php' => 'ContattiDaFare',
