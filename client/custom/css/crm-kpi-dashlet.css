@@ -90,7 +90,7 @@
 
 .crm-kpi-panel-yields {
     min-height: 0;
-    max-height: 420px;
+    max-height: 280px;
     overflow: auto;
 }
 
@@ -102,60 +102,34 @@
 .crm-kpi-period-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
 }
 
-.crm-kpi-period-block {
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
-    padding-top: 8px;
+.crm-kpi-period-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 0.74rem;
+    line-height: 1.35;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.crm-kpi-period-block:first-child {
-    border-top: 0;
-    padding-top: 0;
+.crm-kpi-period-row:last-child {
+    border-bottom: 0;
 }
 
 .crm-kpi-period-label {
     font-weight: 700;
-    font-size: 0.82rem;
-    margin-bottom: 4px;
-}
-
-.crm-kpi-period-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.crm-kpi-period-step {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    font-size: 0.76rem;
-}
-
-.crm-kpi-period-step .legend-box {
-    width: 12px;
-    height: 12px;
-    border-radius: 2px;
+    font-size: 0.78rem;
     flex-shrink: 0;
-    margin-top: 2px;
+    min-width: 2.4rem;
 }
 
-.crm-kpi-period-step-body {
+.crm-kpi-period-summary {
     min-width: 0;
-}
-
-.crm-kpi-period-step .legend-label {
-    display: block;
-    font-weight: 600;
-}
-
-.crm-kpi-period-step .legend-meta {
-    display: block;
     color: var(--text-muted-color, #6c757d);
-    font-size: 0.72rem;
-    margin-top: 1px;
+    word-break: break-word;
 }
 
 .crm-kpi-panel-alerts {

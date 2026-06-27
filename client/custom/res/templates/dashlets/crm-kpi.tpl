@@ -88,19 +88,9 @@
                         <div class="crm-kpi-panel-note text-muted small">Pipeline per giorno settimana</div>
                         <div class="crm-kpi-period-list">
                             {{#each yieldsByWeekday}}
-                                <div class="crm-kpi-period-block">
-                                    <div class="crm-kpi-period-label">{{label}}</div>
-                                    <div class="crm-kpi-period-steps">
-                                        {{#each steps}}
-                                            <div class="crm-kpi-period-step">
-                                                <span class="legend-box" style="background-color:{{color}};"></span>
-                                                <span class="crm-kpi-period-step-body">
-                                                    <span class="legend-label">{{label}}</span>
-                                                    <span class="legend-meta">{{value}}{{#if meta}} · {{meta}}{{/if}}</span>
-                                                </span>
-                                            </div>
-                                        {{/each}}
-                                    </div>
+                                <div class="crm-kpi-period-row">
+                                    <span class="crm-kpi-period-label">{{label}}</span>
+                                    <span class="crm-kpi-period-summary">{{summaryLine}}</span>
                                 </div>
                             {{/each}}
                         </div>
@@ -110,19 +100,9 @@
                         <div class="crm-kpi-panel-note text-muted small">Settimane con almeno 4 giorni nel periodo</div>
                         <div class="crm-kpi-period-list">
                             {{#each yieldsByWeek}}
-                                <div class="crm-kpi-period-block">
-                                    <div class="crm-kpi-period-label">{{label}}</div>
-                                    <div class="crm-kpi-period-steps">
-                                        {{#each steps}}
-                                            <div class="crm-kpi-period-step">
-                                                <span class="legend-box" style="background-color:{{color}};"></span>
-                                                <span class="crm-kpi-period-step-body">
-                                                    <span class="legend-label">{{label}}</span>
-                                                    <span class="legend-meta">{{value}}{{#if meta}} · {{meta}}{{/if}}</span>
-                                                </span>
-                                            </div>
-                                        {{/each}}
-                                    </div>
+                                <div class="crm-kpi-period-row">
+                                    <span class="crm-kpi-period-label">{{label}}</span>
+                                    <span class="crm-kpi-period-summary">{{summaryLine}}</span>
                                 </div>
                             {{/each}}
                         </div>

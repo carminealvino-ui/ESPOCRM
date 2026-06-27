@@ -119,8 +119,29 @@ class YieldBuilder
 
         return (object) [
             'label' => $label,
+            'summaryLine' => self::formatSummaryLine($steps),
             'steps' => $steps,
         ];
+    }
+
+    /**
+     * @param object[] $steps
+     */
+    private static function formatSummaryLine(array $steps): string
+    {
+        $segments = [];
+
+        foreach ($steps as $step) {
+            $segment = (string) (int) $step->value;
+
+            if ($step->meta !== '') {
+                $segment .= ' · ' . $step->meta;
+            }
+
+            $segments[] = $segment;
+        }
+
+        return implode(' · ', $segments);
     }
 
     private static function formatStepMeta(object $step): string
