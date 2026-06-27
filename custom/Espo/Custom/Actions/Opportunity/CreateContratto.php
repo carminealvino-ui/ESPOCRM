@@ -518,6 +518,9 @@ class CreateContratto
             }
         }
 
+        $aliquotaIVA = $opportunity->get('iVA') ?? $opportunity->get('iVAListino');
+        $finanziamento = (bool) $opportunity->get('finanziamento');
+
         // =====================================================
         // DESCRIZIONE
         // =====================================================
@@ -580,10 +583,7 @@ class CreateContratto
         // CREAZIONE CONTRATTO
         // =====================================================
 
-        $quote = $this->entityManager
-            ->createEntity(
-                'Quote'
-            );
+        $quote = $this->entityManager->getNewEntity('Quote');
 
         $quote->set([
 
@@ -703,6 +703,22 @@ class CreateContratto
             'taxRate' =>
                 $taxRate,
 
+            'aliquotaIVA' =>
+                $aliquotaIVA !== null && $aliquotaIVA !== ''
+                    ? (float) $aliquotaIVA
+                    : null,
+
+            'finanziamento' =>
+                $finanziamento,
+
+            'statoFinanziamento' =>
+                $finanziamento ? $opportunity->get('statoFinanziamento') : null,
+
+            'importoSaldo' =>
+                !$finanziamento && $amount
+                    ? (float) $amount
+                    : null,
+
             'taxCodeId' =>
                 $taxCodeId,
 
@@ -774,7 +790,9 @@ class CreateContratto
         // SAVE CONTRATTO
         // =====================================================
 
-        $this->entityManager->saveEntity($quote);
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+        ]);
 
         $this->refreshQuoteAfterCreate(
             $quote,

@@ -23,6 +23,7 @@ FILES=(
   "custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
   "custom/Espo/Custom/Actions/Opportunity/CreateContratto.php"
+  "custom/Espo/Custom/Resources/metadata/formula/Quote.json"
   "database/2026-06-25-quote-stati-semplificati.sql"
   "tools/migrate-quote-stati-semplificati.php"
   "tools/verify-quote-stati-deploy.php"
