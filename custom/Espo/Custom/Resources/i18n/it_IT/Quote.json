@@ -110,7 +110,7 @@
         },
         "statoContratto": {
             "Inserito": "Inserito",
-            "Approvato": "Approvato",
+            "Chiuso": "Chiuso",
             "Sospeso": "Sospeso",
             "Recesso": "Recesso",
             "Annullato": "Annullato",

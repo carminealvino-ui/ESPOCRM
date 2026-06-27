@@ -39,13 +39,14 @@ $statusMap = [
 $statoContrattoMap = [
     '' => 'Inserito',
     'Inserito' => 'Inserito',
-    'In lavorazione' => 'Approvato',
-    'Approvato' => 'Approvato',
+    'In lavorazione' => 'Chiuso',
+    'Approvato' => 'Chiuso',
+    'Chiuso' => 'Chiuso',
     'Sospeso' => 'Sospeso',
     'Recesso' => 'Recesso',
     'Annullato' => 'Annullato',
-    'Installato' => 'Approvato',
-    'Appuntamento Fissato' => 'Approvato',
+    'Installato' => 'Chiuso',
+    'Appuntamento Fissato' => 'Chiuso',
 ];
 
 $statoFinanziamentoMap = [

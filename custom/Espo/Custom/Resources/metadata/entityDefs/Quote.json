@@ -213,7 +213,7 @@
             "options": [
                 "",
                 "Inserito",
-                "Approvato",
+                "Chiuso",
                 "Sospeso",
                 "Recesso",
                 "Annullato"
@@ -221,7 +221,7 @@
             "style": {
                 "": null,
                 "Inserito": "info",
-                "Approvato": "success",
+                "Chiuso": "success",
                 "Sospeso": "warning",
                 "Recesso": "default",
                 "Annullato": "danger"

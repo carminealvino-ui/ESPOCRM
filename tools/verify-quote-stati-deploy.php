@@ -15,7 +15,7 @@ $files = [
         '"Bozza"',
         '"Appuntamento fissato"',
         '"In attesa di OTP"',
-        '"Approvato"',
+        '"Chiuso"',
     ],
     'custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json' => [
         'statoFinanziamento',
