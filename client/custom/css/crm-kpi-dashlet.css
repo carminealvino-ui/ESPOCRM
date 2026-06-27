@@ -214,9 +214,18 @@
 }
 
 .crm-kpi-alerts-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
     gap: 8px;
+    width: 100%;
+}
+
+.crm-kpi-alerts-row > .crm-kpi-panel-alerts {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    max-width: none;
 }
 
 .crm-kpi-panel-alerts {
@@ -369,10 +378,6 @@
         grid-template-columns: 1fr;
     }
 
-    .crm-kpi-alerts-row {
-        grid-template-columns: 1fr;
-    }
-
     .crm-kpi-pipeline {
         grid-template-columns: 1fr;
     }
@@ -381,6 +386,10 @@
 @media (max-width: 768px) {
     .crm-kpi-tiles {
         flex-wrap: wrap;
+    }
+
+    .crm-kpi-alerts-row {
+        flex-direction: column;
     }
 
     .crm-kpi-tile-col {
