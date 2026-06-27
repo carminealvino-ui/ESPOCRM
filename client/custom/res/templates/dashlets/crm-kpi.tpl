@@ -83,7 +83,7 @@
             </div>
             <div class="crm-kpi-bottom-col crm-kpi-bottom-side">
                 <div class="crm-kpi-yields-row">
-                    <div class="crm-kpi-panel crm-kpi-panel-yields">
+                    <div class="crm-kpi-panel crm-kpi-panel-yields crm-kpi-panel-yields-day">
                         <div class="crm-kpi-panel-title">Rese per giorno</div>
                         <div class="crm-kpi-panel-note text-muted small">Pipeline per giorno settimana</div>
                         <div class="crm-kpi-yields-table-wrap">
