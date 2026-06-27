@@ -13,7 +13,9 @@ $root = getenv('CRM_ROOT') ?: getcwd();
 $checks = [
     'client/custom/src/views/dashlets/crm-kpi.js' => 'mapValoreProduzioneTile',
     'client/custom/src/views/dashlets/options/crm-kpi.js' => 'applyCrmKpiFieldLabels',
-    'client/custom/res/templates/dashlets/crm-kpi.tpl' => 'Pipeline di vendita',
+    'client/custom/res/templates/dashlets/crm-kpi.tpl' => 'Rese per giorno',
+    'client/custom/src/views/dashlets/crm-kpi.js' => 'yieldsByWeekday',
+    'client/custom/css/crm-kpi-dashlet.css' => 'crm-kpi-yields-row-top',
     'custom/Espo/Custom/Controllers/Appuntamento.php' => 'getActionGetSummary',
     'custom/Espo/Custom/Controllers/CrmKpi.php' => 'getActionGetSummary',
     'custom/Espo/Custom/Tools/CrmKpi/DateRange.php' => 'normalizePeriod',
@@ -21,7 +23,7 @@ $checks = [
     'custom/Espo/Custom/Tools/CrmKpi/WeekOfMonth.php' => 'buildChartRows',
     'custom/Espo/Custom/Classes/Select/Appuntamento/PrimaryFilters/Pianificato.php' => 'status',
     'custom/Espo/Custom/Tools/CrmKpi/Alerts.php' => 'formatPaymentMeta',
-    'custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php' => 'salesPipeline',
+    'custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php' => 'yieldsByWeekday',
     'custom/Espo/Custom/Tools/CrmKpi/FunnelBuilder.php' => 'buildSalesPipeline',
     'custom/Espo/Custom/Tools/CrmKpi/KpiContext.php' => 'productBrandId',
     'custom/Espo/Custom/Classes/Select/Opportunity/PrimaryFilters/SenzaRiscontroTelefonico.php' => 'SenzaRiscontroTelefonico',
@@ -64,6 +66,7 @@ if ($failed === 0) {
         'custom/Espo/Custom/Tools/CrmKpi/DateRange.php',
         'custom/Espo/Custom/Tools/CrmKpi/Period.php',
         'custom/Espo/Custom/Tools/CrmKpi/WeekOfMonth.php',
+        'custom/Espo/Custom/Tools/CrmKpi/YieldBuilder.php',
         'custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php',
     ];
 

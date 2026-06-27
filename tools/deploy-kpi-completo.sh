@@ -2,7 +2,7 @@
 # Deploy completo KPI dashlet v2 — un solo comando, niente patch manuali.
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-dashlet-v2-9999/tools/deploy-kpi-completo.sh?t=$(date +%s)" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-rese-periodo-9999/tools/deploy-kpi-completo.sh?t=$(date +%s)" | bash
 #   php clear_cache.php && php rebuild.php
 #
 # NON sovrascrive Global.json né altri i18n it_IT (regola 11).

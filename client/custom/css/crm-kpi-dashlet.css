@@ -75,21 +75,18 @@
     width: 100%;
 }
 
-.crm-kpi-bottom-side {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 0;
-}
-
 .crm-kpi-yields-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 8px;
 }
 
+.crm-kpi-yields-row-top {
+    margin-bottom: 8px;
+}
+
 .crm-kpi-panel-yields {
-    min-height: 0;
+    min-height: 220px;
 }
 
 .crm-kpi-panel-note {
