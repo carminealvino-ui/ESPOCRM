@@ -10,6 +10,7 @@
         "contrattiBacklog": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\ContrattiBacklog",
         "contrattiInLavorazione": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\ContrattiInLavorazione",
         "installatoPeriodo": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\InstallatoPeriodo",
-        "installatoMesePrecedente": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\InstallatoMesePrecedente"
+        "installatoMesePrecedente": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\InstallatoMesePrecedente",
+        "senzaInvioWhatsapp": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\SenzaInvioWhatsapp"
     }
 }

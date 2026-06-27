@@ -1,0 +1,12 @@
+{
+    "filterList": [
+        {
+            "name": "contrattiSospesiFinanziamento",
+            "label": "Sospesi finanziamento"
+        },
+        {
+            "name": "contrattiInLavorazione",
+            "label": "In lavorazione"
+        }
+    ]
+}

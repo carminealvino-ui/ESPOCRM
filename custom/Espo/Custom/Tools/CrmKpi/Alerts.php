@@ -8,10 +8,17 @@ use Espo\ORM\EntityManager;
 class Alerts
 {
     /** @var string[] */
-    private const FINANCING_BACKLOG_STATES = [
+    private const ESITI_ANNULLATI = [
+        'Annullato dal Potenziale',
+        'Annullato dal Consulente',
+        'Annullato Azienda',
+        'Annullato Call Center',
+    ];
+
+    /** @var string[] */
+    private const FINANCING_SUSPENDED_STATES = [
         'In rivalutazione',
         'In Attesa Documentazione',
-        'Respinto',
     ];
 
     /** @var string[] */
@@ -29,39 +36,48 @@ class Alerts
      */
     public function build(?string $from, ?string $to, ?string $productBrandId = null): array
     {
-        $contractsInPayment = $this->countContractsInPayment($from, $to, $productBrandId);
-
         return [
             $this->alert(
+                'appuntamentiSenzaOpportunita',
+                'Appuntamenti senza opportunità',
+                $this->countAppuntamentiSenzaOpportunita($from, $to, $productBrandId),
+                '#Appuntamento/filter/appuntamentiSenzaOpportunita'
+            ),
+            $this->alert(
+                'appuntamentiConPiuOpportunita',
+                'Appuntamenti con più opportunità',
+                $this->countAppuntamentiConPiuOpportunita($from, $to, $productBrandId),
+                '#Appuntamento/filter/appuntamentiConPiuOpportunita'
+            ),
+            $this->alert(
+                'opportunityWithoutWhatsapp',
+                'Opportunità senza invio WhatsApp',
+                $this->countOpportunitiesWithoutWhatsapp($from, $to, $productBrandId),
+                '#Opportunity/filter/senzaInvioWhatsapp'
+            ),
+            $this->alert(
                 'opportunityWithoutPhoneFollowUp',
-                'Opportunità senza riscontro telefonico',
+                'Opportunità senza Riscontro',
                 $this->countOpportunitiesWithoutPhoneFollowUp($from, $to, $productBrandId),
                 '#Opportunity/filter/senzaRiscontroPeriodo'
             ),
             $this->alert(
-                'phoneContactsTodo',
-                'Contatti telefonici (call + richiami da fare)',
-                $this->countPhoneContactsTodo(),
-                '#Call/filter/contattiDaFare'
+                'richiamiPianificati',
+                'Richiami Pianificati',
+                $this->countRichiamiPianificati(),
+                '#Call/filter/richiamiPianificati'
             ),
             $this->alert(
-                'contractsBacklog',
-                'Contratti in backlog (sospesi/sospesi per finanziamento)',
-                $this->countContractsBacklog(),
-                '#Quote/filter/contrattiBacklog'
+                'contractsSuspendedFinancing',
+                'Contratti Sospesi Finanziamento',
+                $this->countContractsSuspendedFinancing($productBrandId),
+                '#Quote/filter/contrattiSospesiFinanziamento'
             ),
             $this->alert(
-                'contractsInProgress',
-                'Contratti in lavorazione',
-                $this->countContractsInProgress(),
+                'contractsSuspendedOrders',
+                'Contratti Sospesi Ordini',
+                $this->countContractsSuspendedOrders($productBrandId),
                 '#Quote/filter/contrattiInLavorazione'
-            ),
-            $this->alert(
-                'contractsInPayment',
-                'Contratti in pagamento (data installazione nel periodo)',
-                $contractsInPayment['count'],
-                '#Quote/filter/dataInstallazionePeriodo',
-                $contractsInPayment['meta']
             ),
         ];
     }
@@ -87,11 +103,227 @@ class Alerts
         return $item;
     }
 
+    private function countAppuntamentiSenzaOpportunita(
+        ?string $from,
+        ?string $to,
+        ?string $productBrandId = null
+    ): int {
+        $heldIds = $this->getHeldAppuntamentoIdsInPeriod($from, $to, $productBrandId);
+
+        if ($heldIds === []) {
+            return 0;
+        }
+
+        $withOpportunity = $this->mapAppuntamentoOpportunityCounts($heldIds);
+
+        $count = 0;
+
+        foreach ($heldIds as $id) {
+            if (($withOpportunity[$id] ?? 0) === 0) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    private function countAppuntamentiConPiuOpportunita(
+        ?string $from,
+        ?string $to,
+        ?string $productBrandId = null
+    ): int {
+        $heldIds = $this->getHeldAppuntamentoIdsInPeriod($from, $to, $productBrandId);
+
+        if ($heldIds === []) {
+            return 0;
+        }
+
+        $counts = $this->mapAppuntamentoOpportunityCounts($heldIds);
+
+        $count = 0;
+
+        foreach ($counts as $value) {
+            if ($value > 1) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    private function countOpportunitiesWithoutWhatsapp(
+        ?string $from,
+        ?string $to,
+        ?string $productBrandId = null
+    ): int {
+        $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to, $productBrandId);
+
+        if ($appuntamentoIds === []) {
+            return 0;
+        }
+
+        $where = [
+            'AND' => [
+                ['stage!=' => 'Closed Won'],
+                ['stage!=' => 'Closed Lost'],
+                ['appuntamentoId' => $appuntamentoIds],
+            ],
+        ];
+
+        if ($productBrandId) {
+            $where['productBrandId'] = $productBrandId;
+        }
+
+        $count = 0;
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Opportunity')
+            ->select(['id', 'leadId', 'prospectId'])
+            ->where($where)
+            ->find();
+
+        foreach ($collection as $opportunity) {
+            if (!$this->opportunityHasWhatsappCall($opportunity)) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    private function countOpportunitiesWithoutPhoneFollowUp(
+        ?string $from,
+        ?string $to,
+        ?string $productBrandId = null
+    ): int {
+        $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to, $productBrandId);
+
+        if ($appuntamentoIds === []) {
+            return 0;
+        }
+
+        $where = [
+            'AND' => [
+                ['stage!=' => 'Closed Won'],
+                ['stage!=' => 'Closed Lost'],
+                ['appuntamentoId' => $appuntamentoIds],
+            ],
+        ];
+
+        if ($productBrandId) {
+            $where['productBrandId'] = $productBrandId;
+        }
+
+        $count = 0;
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Opportunity')
+            ->select(['id', 'leadId', 'prospectId', 'appuntamentoId'])
+            ->where($where)
+            ->find();
+
+        foreach ($collection as $opportunity) {
+            if (!$this->opportunityHasCompletedCall($opportunity)) {
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
+    private function countRichiamiPianificati(): int
+    {
+        return (int) $this->entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'status' => 'Planned',
+                'AND' => [
+                    ['richiamo!=' => ''],
+                    ['richiamo!=' => null],
+                ],
+            ])
+            ->count();
+    }
+
+    private function countContractsSuspendedFinancing(?string $productBrandId = null): int
+    {
+        $where = [
+            'statoContratto!=' => self::CLOSED_CONTRACT_STATES,
+            'finanziamento' => true,
+            'statoFinanziamento' => self::FINANCING_SUSPENDED_STATES,
+        ];
+
+        if ($productBrandId) {
+            $where['productBrandId'] = $productBrandId;
+        }
+
+        return (int) $this->entityManager
+            ->getRDBRepository('Quote')
+            ->where($where)
+            ->count();
+    }
+
+    private function countContractsSuspendedOrders(?string $productBrandId = null): int
+    {
+        $where = [
+            'statoContratto' => 'In lavorazione',
+        ];
+
+        if ($productBrandId) {
+            $where['productBrandId'] = $productBrandId;
+        }
+
+        return (int) $this->entityManager
+            ->getRDBRepository('Quote')
+            ->where($where)
+            ->count();
+    }
+
     /**
      * @return string[]
      */
-    private function getAppuntamentoIdsInPeriod(?string $from, ?string $to, ?string $productBrandId = null): array
-    {
+    private function getHeldAppuntamentoIdsInPeriod(
+        ?string $from,
+        ?string $to,
+        ?string $productBrandId = null
+    ): array {
+        $ids = [];
+
+        $where = array_merge(
+            [
+                'status' => 'Held',
+                'sottostato!=' => self::ESITI_ANNULLATI,
+            ],
+            $this->dateWhere('dataAppuntamento', $from, $to)
+        );
+
+        if ($productBrandId) {
+            $where['productBrandId'] = $productBrandId;
+        }
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Appuntamento')
+            ->select(['id', 'esito'])
+            ->where($where)
+            ->find();
+
+        foreach ($collection as $appuntamento) {
+            if ($this->isAppuntamentoNotAnnullato($appuntamento)) {
+                $ids[] = $appuntamento->getId();
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function getAppuntamentoIdsInPeriod(
+        ?string $from,
+        ?string $to,
+        ?string $productBrandId = null
+    ): array {
         $ids = [];
 
         $where = $this->dateWhere('dataAppuntamento', $from, $to);
@@ -113,49 +345,74 @@ class Alerts
         return $ids;
     }
 
-    private function countOpportunitiesWithoutPhoneFollowUp(
-        ?string $from,
-        ?string $to,
-        ?string $productBrandId = null
-    ): int {
-        $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to, $productBrandId);
+    /**
+     * @param string[] $appuntamentoIds
+     * @return array<string, int>
+     */
+    private function mapAppuntamentoOpportunityCounts(array $appuntamentoIds): array
+    {
+        $counts = [];
 
-        if ($appuntamentoIds === []) {
-            return 0;
-        }
+        foreach (array_chunk($appuntamentoIds, 500) as $chunk) {
+            $collection = $this->entityManager
+                ->getRDBRepository('Opportunity')
+                ->select(['appuntamentoId'])
+                ->where(['appuntamentoId' => $chunk])
+                ->find();
 
-        $count = 0;
+            foreach ($collection as $opportunity) {
+                $appuntamentoId = $opportunity->get('appuntamentoId');
 
-        $where = [
-            'AND' => [
-                ['stage!=' => 'Closed Won'],
-                ['stage!=' => 'Closed Lost'],
-                ['appuntamentoId' => $appuntamentoIds],
-            ],
-        ];
+                if (!$appuntamentoId) {
+                    continue;
+                }
 
-        if ($productBrandId) {
-            $where['productBrandId'] = $productBrandId;
-        }
-
-        $collection = $this->entityManager
-            ->getRDBRepository('Opportunity')
-            ->select(['id', 'leadId', 'prospectId', 'appuntamentoId'])
-            ->where($where)
-            ->find();
-
-        foreach ($collection as $opportunity) {
-            if (!$this->opportunityHasCompletedCall($opportunity)) {
-                $count++;
+                $counts[$appuntamentoId] = ($counts[$appuntamentoId] ?? 0) + 1;
             }
         }
 
-        return $count;
+        return $counts;
+    }
+
+    private function opportunityHasWhatsappCall(Entity $opportunity): bool
+    {
+        $call = $this->entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'AND' => [
+                    ['OR' => $this->buildOpportunityCallLinkConditions($opportunity)],
+                    [
+                        'OR' => [
+                            ['tipologia*' => 'WhatsApp%'],
+                            ['whatsApp' => true],
+                        ],
+                    ],
+                ],
+            ])
+            ->findOne();
+
+        return $call !== null;
     }
 
     private function opportunityHasCompletedCall(Entity $opportunity): bool
     {
-        $orConditions = [
+        $call = $this->entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'status' => ['Held', 'Not Held'],
+                'OR' => $this->buildOpportunityCallLinkConditions($opportunity),
+            ])
+            ->findOne();
+
+        return $call !== null;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildOpportunityCallLinkConditions(Entity $opportunity): array
+    {
+        $conditions = [
             [
                 'parentType' => 'Opportunity',
                 'parentId' => $opportunity->getId(),
@@ -165,7 +422,7 @@ class Alerts
         $leadId = $opportunity->get('leadId');
 
         if ($leadId) {
-            $orConditions[] = [
+            $conditions[] = [
                 'parentType' => 'Lead',
                 'parentId' => $leadId,
             ];
@@ -174,7 +431,7 @@ class Alerts
         $prospectId = $opportunity->get('prospectId');
 
         if ($prospectId) {
-            $orConditions[] = [
+            $conditions[] = [
                 'prospectId' => $prospectId,
             ];
         }
@@ -182,136 +439,25 @@ class Alerts
         $appuntamentoId = $opportunity->get('appuntamentoId');
 
         if ($appuntamentoId) {
-            $orConditions[] = [
+            $conditions[] = [
                 'nota*' => '%Auto-Pending-Appuntamento: ' . $appuntamentoId . '%',
             ];
         }
 
-        $call = $this->entityManager
-            ->getRDBRepository('Call')
-            ->where([
-                'status' => ['Held', 'Not Held'],
-                'OR' => $orConditions,
-            ])
-            ->findOne();
-
-        return $call !== null;
+        return $conditions;
     }
 
-    private function countPhoneContactsTodo(): int
+    private function isAppuntamentoNotAnnullato(Entity $appuntamento): bool
     {
-        return (int) $this->entityManager
-            ->getRDBRepository('Call')
-            ->where([
-                'status' => 'Planned',
-            ])
-            ->count();
-    }
+        $sottostato = $appuntamento->get('sottostato');
 
-    private function countContractsBacklog(): int
-    {
-        return (int) $this->entityManager
-            ->getRDBRepository('Quote')
-            ->where([
-                'statoContratto!=' => self::CLOSED_CONTRACT_STATES,
-                'OR' => [
-                    ['statoContratto' => 'Sospeso'],
-                    [
-                        'AND' => [
-                            ['finanziamento' => true],
-                            ['statoFinanziamento' => self::FINANCING_BACKLOG_STATES],
-                        ],
-                    ],
-                ],
-            ])
-            ->count();
-    }
-
-    private function countContractsInProgress(): int
-    {
-        return (int) $this->entityManager
-            ->getRDBRepository('Quote')
-            ->where([
-                'statoContratto' => 'In lavorazione',
-            ])
-            ->count();
-    }
-
-    /**
-     * @return array{count: int, meta: string}
-     */
-    private function countContractsInPayment(
-        ?string $from,
-        ?string $to,
-        ?string $productBrandId = null
-    ): array {
-        $where = array_merge(
-            [
-                'AND' => [
-                    ['dataInstallazione!=' => null],
-                    ['dataInstallazione!=' => ''],
-                ],
-            ],
-            $this->dateWhere('dataInstallazione', $from, $to)
-        );
-
-        if ($productBrandId) {
-            $where['productBrandId'] = $productBrandId;
+        if ($sottostato && in_array($sottostato, self::ESITI_ANNULLATI, true)) {
+            return false;
         }
 
-        $count = (int) $this->entityManager
-            ->getRDBRepository('Quote')
-            ->where($where)
-            ->count();
+        $esito = $appuntamento->get('esito');
 
-        $amount = $this->safeSum('Quote', $where, [
-            'importoContratto',
-            'amount',
-            'grandTotalAmount',
-        ]);
-
-        $provvigioni = $this->safeSum('Quote', $where, [
-            'totaleProvvigioni',
-        ]);
-
-        return [
-            'count' => $count,
-            'meta' => $this->formatPaymentMeta($amount, $provvigioni),
-        ];
-    }
-
-    /**
-     * @param array<string, mixed> $where
-     * @param string[] $attributes
-     */
-    private function safeSum(string $entityType, array $where, array $attributes): float
-    {
-        foreach ($attributes as $attribute) {
-            try {
-                $sum = $this->entityManager
-                    ->getRDBRepository($entityType)
-                    ->where($where)
-                    ->sum($attribute);
-
-                if ($sum !== null && (float) $sum !== 0.0) {
-                    return (float) $sum;
-                }
-            } catch (\Throwable) {
-                continue;
-            }
-        }
-
-        return 0.0;
-    }
-
-    private function formatPaymentMeta(float $amount, float $provvigioni): string
-    {
-        return $this->formatCurrency($amount) . ' importo · ' . $this->formatCurrency($provvigioni) . ' provvigioni';
-    }
-
-    private function formatCurrency(float $amount): string
-    {
-        return number_format(round($amount, 0), 0, ',', '.') . ' €';
+        return !($esito && in_array($esito, self::ESITI_ANNULLATI, true));
     }
 
     /**
