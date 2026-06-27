@@ -16,12 +16,21 @@ class Appuntamento extends Record
         $data = $request->getParsedBody();
         $sourceId = is_object($data) ? ($data->sourceId ?? null) : null;
         $dateStart = is_object($data) ? ($data->dateStart ?? null) : null;
+        $assignedUsersIds = is_object($data) ? ($data->assignedUsersIds ?? []) : [];
+
+        if (!is_array($assignedUsersIds)) {
+            $assignedUsersIds = [];
+        }
 
         $creator = new AppuntamentoRifissatoCreator(
             $this->getContainer()->get('entityManager')
         );
 
-        $id = $creator->create((string) $sourceId, (string) $dateStart);
+        $id = $creator->create(
+            (string) $sourceId,
+            (string) $dateStart,
+            $assignedUsersIds,
+        );
 
         return ['id' => $id];
     }

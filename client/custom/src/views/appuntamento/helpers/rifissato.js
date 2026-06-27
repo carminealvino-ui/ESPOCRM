@@ -35,7 +35,7 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
             && model.get('status') !== 'Planned';
     };
 
-    const openCreateModal = function (view, sourceModel, originalDateStart) {
+    const openCreateModal = function (view, sourceModel, originalDateStart, options) {
         if (!sourceModel || !sourceModel.id) {
             return;
         }
@@ -46,10 +46,15 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
 
         view._rifissatoModalOpen = true;
 
-        view.createView('rifissatoAppuntamentoDialog', 'custom:views/appuntamento/modals/rifissato-create', {
+        const modalOptions = {
             sourceId: sourceModel.id,
             originalDateStart: originalDateStart || sourceModel.get('dateStart'),
-        }, modalView => {
+            assignedUsersIds: options && options.assignedUsersIds
+                ? options.assignedUsersIds
+                : (sourceModel.get('assignedUsersIds') || []),
+        };
+
+        view.createView('rifissatoAppuntamentoDialog', 'custom:views/appuntamento/modals/rifissato-create', modalOptions, modalView => {
             modalView.render();
 
             modalView.once('close', () => {
@@ -69,10 +74,15 @@ define('custom:views/appuntamento/helpers/rifissato', [], function () {
 
         model.save = function (attributes, options) {
             const triggerRifissato = shouldTriggerAfterSave(model, attributes);
+            const preservedAssignedUsersIds = triggerRifissato
+                ? (model.get('assignedUsersIds') || []).slice()
+                : null;
 
             return originalSave(attributes, options).then(result => {
                 if (triggerRifissato) {
-                    openCreateModal(view, model, model.get('dateStart'));
+                    openCreateModal(view, model, model.get('dateStart'), {
+                        assignedUsersIds: preservedAssignedUsersIds,
+                    });
                 }
 
                 return result;

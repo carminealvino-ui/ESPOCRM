@@ -544,6 +544,7 @@ define('custom:views/appuntamento/popup-notification', [
 
             const model = this.getEsitoModel();
             const originalDateStart = model.get('dateStart');
+            const preservedAssignedUsersIds = (model.get('assignedUsersIds') || []).slice();
 
             Espo.Ui.notify(' ...');
 
@@ -555,7 +556,9 @@ define('custom:views/appuntamento/popup-notification', [
                         model.set('dateStart', originalDateStart, {silent: true});
                     }
 
-                    Rifissato.openCreateModal(this, model, originalDateStart);
+                    Rifissato.openCreateModal(this, model, originalDateStart, {
+                        assignedUsersIds: preservedAssignedUsersIds,
+                    });
                     super.resolveCancel();
                 });
         }

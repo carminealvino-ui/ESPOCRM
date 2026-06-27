@@ -32,8 +32,6 @@ class AppuntamentoRifissatoCreator
         'cAPName',
         'assignedUserId',
         'assignedUserName',
-        'teamsIds',
-        'teamsNames',
         'tipo',
         'callCenter',
         'indirizzoStreet',
@@ -48,8 +46,14 @@ class AppuntamentoRifissatoCreator
         private EntityManager $entityManager,
     ) {}
 
-    public function create(string $sourceId, string $dateStart): string
-    {
+    /**
+     * @param string[] $assignedUsersIds
+     */
+    public function create(
+        string $sourceId,
+        string $dateStart,
+        array $assignedUsersIds = [],
+    ): string {
         $sourceId = trim($sourceId);
         $dateStart = trim($dateStart);
 
@@ -77,7 +81,9 @@ class AppuntamentoRifissatoCreator
             }
         }
 
-        $this->copyAssignedUsers($source, $new);
+        $this->ensureName($source, $new);
+        $this->copyTeams($source, $new);
+        $this->copyAssignedUsers($source, $new, $assignedUsersIds);
 
         if (!$new->get('parentType') && $new->get('prospectId')) {
             $new->set('parentType', 'Prospect');
@@ -100,16 +106,51 @@ class AppuntamentoRifissatoCreator
         return (string) $new->getId();
     }
 
-    private function copyAssignedUsers(Entity $source, Entity $new): void
+    private function ensureName(Entity $source, Entity $new): void
     {
-        $assignedUsersIds = $source->getLinkMultipleIdList('assignedUsers');
+        if ($new->get('name')) {
+            return;
+        }
+
+        $prospectName = $source->get('prospectName') ?: $new->get('prospectName');
+
+        if ($prospectName) {
+            $new->set('name', $prospectName);
+        }
+    }
+
+    private function copyTeams(Entity $source, Entity $new): void
+    {
+        $teamsIds = $source->getLinkMultipleIdList('teams');
+
+        if (empty($teamsIds)) {
+            $teamsIds = $source->get('teamsIds') ?: [];
+        }
+
+        if (empty($teamsIds)) {
+            return;
+        }
+
+        $teamsNames = $source->getLinkMultipleNameMap('teams');
+
+        $new->set([
+            'teamsIds' => $teamsIds,
+            'teamsNames' => $teamsNames,
+        ]);
+    }
+
+    /**
+     * @param string[] $preservedAssignedUsersIds
+     */
+    private function copyAssignedUsers(
+        Entity $source,
+        Entity $new,
+        array $preservedAssignedUsersIds = [],
+    ): void {
+        $assignedUsersIds = $this->normalizeIdList($preservedAssignedUsersIds);
 
         if (empty($assignedUsersIds)) {
-            $assignedUserId = $source->get('assignedUserId');
-
-            if ($assignedUserId) {
-                $assignedUsersIds = [(string) $assignedUserId];
-            }
+            $assignedUsersIds = $this->loadAssignedUsersIds($source);
         }
 
         if (empty($assignedUsersIds)) {
@@ -117,6 +158,16 @@ class AppuntamentoRifissatoCreator
         }
 
         $assignedUsersNames = $source->getLinkMultipleNameMap('assignedUsers');
+
+        foreach ($assignedUsersIds as $assignedUserId) {
+            if (!isset($assignedUsersNames[$assignedUserId])) {
+                $user = $this->entityManager->getEntityById('User', $assignedUserId);
+
+                if ($user) {
+                    $assignedUsersNames[$assignedUserId] = $user->get('name');
+                }
+            }
+        }
 
         $new->set([
             'assignedUsersIds' => $assignedUsersIds,
@@ -129,6 +180,61 @@ class AppuntamentoRifissatoCreator
                 'assignedUserName' => $assignedUsersNames[$assignedUsersIds[0]] ?? null,
             ]);
         }
+    }
+
+    /**
+     * @return string[]
+     */
+    private function loadAssignedUsersIds(Entity $source): array
+    {
+        $assignedUsersIds = $this->normalizeIdList($source->getLinkMultipleIdList('assignedUsers'));
+
+        if (!empty($assignedUsersIds)) {
+            return $assignedUsersIds;
+        }
+
+        $assignedUsersIds = $this->normalizeIdList(
+            $this->entityManager
+                ->getRDBRepository('Appuntamento')
+                ->getRelation($source, 'assignedUsers')
+                ->find()
+                ->getIdList()
+        );
+
+        if (!empty($assignedUsersIds)) {
+            return $assignedUsersIds;
+        }
+
+        $assignedUserId = $source->get('assignedUserId');
+
+        if ($assignedUserId) {
+            return [(string) $assignedUserId];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param mixed $ids
+     * @return string[]
+     */
+    private function normalizeIdList($ids): array
+    {
+        if (!is_array($ids)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach ($ids as $id) {
+            $id = trim((string) $id);
+
+            if ($id !== '') {
+                $normalized[] = $id;
+            }
+        }
+
+        return array_values(array_unique($normalized));
     }
 
     private function buildDescription(Entity $source): string

@@ -630,8 +630,9 @@ class GlobalLogic
 
             if (
 
-                $status === 'Not Held' ||
-                $status === 'Ingestibile'
+                ($status === 'Not Held' ||
+                $status === 'Ingestibile') &&
+                $sottostato !== 'Rifissato'
 
             ) {
 

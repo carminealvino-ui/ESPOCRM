@@ -23,6 +23,7 @@ FILES=(
   "client/custom/src/views/opportunity/helpers/appuntamento-sync.js"
   "custom/Espo/Custom/Controllers/Appuntamento.php"
   "custom/Espo/Custom/Services/AppuntamentoRifissatoCreator.php"
+  "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
   "custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/modals/detail.js"
   "custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/record/edit-small.js"
   "custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/record/edit.js"

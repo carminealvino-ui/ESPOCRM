@@ -17,6 +17,7 @@ define('custom:views/appuntamento/modals/rifissato-create', ['views/modal'], fun
         setup() {
             this.headerText = 'Nuovo appuntamento rifissato';
             this.sourceId = this.options.sourceId;
+            this.assignedUsersIds = this.options.assignedUsersIds || [];
 
             this.buttonList = [
                 {
@@ -86,6 +87,7 @@ define('custom:views/appuntamento/modals/rifissato-create', ['views/modal'], fun
             Espo.Ajax.postRequest('Appuntamento/action/createRifissato', {
                 sourceId: this.sourceId,
                 dateStart: dateStart,
+                assignedUsersIds: this.assignedUsersIds,
             })
                 .then(response => {
                     Espo.Ui.notify(false);
