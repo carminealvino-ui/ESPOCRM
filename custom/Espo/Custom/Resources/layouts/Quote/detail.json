@@ -6,51 +6,82 @@
                     "name": "number"
                 },
                 {
-                    "name": "account"
-                }
-            ],
-            [
-                {
                     "name": "opportunity"
                 }
             ],
             [
                 {
-                    "name": "fornitorePartner",
-                    "customLabel": "Fornitore / Partner"
+                    "name": "account"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "fornitorePartner"
                 },
                 {
-                    "name": "productBrand",
-                    "customLabel": "Brand"
+                    "name": "productBrand"
+                }
+            ],
+            [
+                false,
+                {
+                    "name": "productCategory"
                 }
             ],
             [
                 {
-                    "name": "productCategory",
-                    "customLabel": "Categoria prodotto"
-                }
-            ],
-            [
+                    "name": "numeroContratto"
+                },
                 {
                     "name": "dateQuoted"
                 },
                 {
+                    "name": "importoContratto"
+                },
+                false
+            ],
+            [
+                {
                     "name": "status"
                 },
                 {
-                    "name": "importoContratto"
+                    "name": "statoContratto"
+                },
+                {
+                    "name": "importoCaparra"
+                },
+                {
+                    "name": "importoSaldo"
+                }
+            ],
+            [
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "statoFinanziamento"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "tassoZero"
+                },
+                {
+                    "name": "importoFinanziato"
+                },
+                {
+                    "name": "rataPrestito"
+                },
+                {
+                    "name": "nrRate"
                 }
             ],
             [
                 {
                     "name": "description"
                 }
-            ],
-            [
-                {
-                    "name": "name"
-                },
-                false
             ]
         ],
         "style": "default",
@@ -73,6 +104,14 @@
                 {
                     "name": "shippingAddress"
                 }
+            ],
+            [
+                {
+                    "name": "shippingProvider"
+                },
+                {
+                    "name": "dataInstallazione"
+                }
             ]
         ],
         "style": "default",
@@ -82,64 +121,30 @@
         "rows": [
             [
                 {
-                    "name": "tax"
+                    "name": "priceBook"
                 },
                 {
-                    "name": "shippingProvider"
+                    "name": "venditaAbbinataAdAltroProdotto"
+                },
+                {
+                    "name": "scontoVenditaAbbinata"
                 }
             ],
             [
                 {
-                    "name": "priceBook"
+                    "name": "tax"
                 },
                 {
                     "name": "isTaxInclusive"
-                }
+                },
+                false
+            ],
+            [
+                false,
+                false
             ]
         ],
         "style": "default",
         "label": ""
-    },
-    {
-        "rows": [
-            [
-                {
-                    "name": "prezzoListinoIvaEsclusa",
-                    "customLabel": "Prezzo listino (IVA escl.)"
-                },
-                {
-                    "name": "prezzoCodiceIvaEsclusa",
-                    "customLabel": "Prezzo a codice (IVA escl.)"
-                }
-            ],
-            [
-                {
-                    "name": "margineSuListino",
-                    "customLabel": "Margine % su listino"
-                },
-                {
-                    "name": "contattoPersonaleArquati",
-                    "customLabel": "Contatto personale ARQUATI (+5%)"
-                }
-            ],
-            [
-                {
-                    "name": "integrazionePncPercentuale",
-                    "customLabel": "Integrazione PNC % (da contratto)"
-                }
-            ],
-            [
-                {
-                    "name": "minusPlus",
-                    "customLabel": "Plusvalenza / Minusvalenza (€)"
-                },
-                {
-                    "name": "ordineIncompletoAriel",
-                    "customLabel": "Ordine incompleto Ariel (−5% provv.)"
-                }
-            ]
-        ],
-        "style": "default",
-        "label": "Provvigioni (calcolo)"
     }
 ]

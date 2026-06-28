@@ -1,0 +1,8 @@
+{
+    "controller": "controllers/record",
+    "relationshipPanels": {
+        "provvigioni": {
+            "disabled": true
+        }
+    }
+}
