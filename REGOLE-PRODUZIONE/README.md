@@ -77,7 +77,19 @@ Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
 | `08-AVVIO-SYNC-CPANEL.md` | **Checklist cPanel** (token.txt, export → apply → push script) |
 | `06-PUSH-GITHUB-DAL-SERVER.md` | Push delta su GitHub dal server (PAT) |
 | `07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md` | Verifica allineamento: `status --branch=main` |
+| `09-PRODUZIONE-FONTE-DI-VERITA.md` | **Regola d’oro:** prod comanda, no deploy metadata senza export |
+| `tools/LAYOUT-NON-SOVRASCRIVERE.md` | File vietati negli hotfix senza conferma |
 
 ---
 
-*Ultimo aggiornamento regole: 2026-06-02*
+*Ultimo aggiornamento regole: 2026-06-28*
+
+---
+
+## Regola 5 — Produzione non deve regredire (regola d’oro)
+
+- **Produzione testata comanda.** Il repo si aggiorna da produzione (`export-delta`), non il contrario senza whitelist.
+- L’agent **non** tocca `entityDefs`, `layouts`, `i18n` se non è scritto esplicitamente nel task.
+- Deploy repo → prod: **solo file elencati**, mai intero branch feature.
+
+Dettaglio: [`09-PRODUZIONE-FONTE-DI-VERITA.md`](09-PRODUZIONE-FONTE-DI-VERITA.md) · [`tools/LAYOUT-NON-SOVRASCRIVERE.md`](../tools/LAYOUT-NON-SOVRASCRIVERE.md)
