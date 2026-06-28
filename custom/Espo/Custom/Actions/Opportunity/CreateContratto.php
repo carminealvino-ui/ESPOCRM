@@ -775,7 +775,9 @@ class CreateContratto
         // SAVE CONTRATTO
         // =====================================================
 
-        $this->entityManager->saveEntity($quote);
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+        ]);
 
         $this->refreshQuoteAfterCreate(
             $quote,
