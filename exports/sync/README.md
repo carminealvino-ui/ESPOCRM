@@ -24,4 +24,4 @@ Generati da `php tools/sync-custom-prod-repo.php export-delta --branch=main`
 
 ## Procedura completa
 
-Vedi [`REGOLE-PRODUZIONE/08-AVVIO-SYNC-CPANEL.md`](../../REGOLE-PRODUZIONE/08-AVVIO-SYNC-CPANEL.md)
+Vedi [`REGOLE-PRODUZIONE/REGOLE.md`](../../REGOLE-PRODUZIONE/REGOLE.md) (sezioni 7–8)

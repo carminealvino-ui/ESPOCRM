@@ -20,14 +20,14 @@ php tools/export-custom-for-github.php --upload-github
 ## `exports/sync/` — allineamento produzione ↔ GitHub
 
 Tool: `tools/sync-custom-prod-repo.php`  
-Procedura completa: [`REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md`](../REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md)
+Procedura completa: [`REGOLE-PRODUZIONE/REGOLE.md`](../REGOLE-PRODUZIONE/REGOLE.md) (sezioni 7–8)
 
 ### Ordine obbligatorio (prod → repo)
 
 1. **`export-delta`** sul server (sempre per primo, ogni sessione).
 2. **`apply-delta`** sul clone Git + **`commit` + `push`**.
 
-**cPanel (server):** procedura completa in [`REGOLE-PRODUZIONE/08-AVVIO-SYNC-CPANEL.md`](../REGOLE-PRODUZIONE/08-AVVIO-SYNC-CPANEL.md) — token in `exports/sync/token.txt` (resta sul server).
+**cPanel (server):** sezione 7.B in [`REGOLE-PRODUZIONE/REGOLE.md`](../REGOLE-PRODUZIONE/REGOLE.md) — token in `exports/sync/token.txt` (resta sul server).
 
 **PC:** scarica `delta-….zip` e `apply-delta` sul clone locale.
 
