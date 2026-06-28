@@ -18,10 +18,11 @@
 6. [Istruzioni complete (template)](#6-istruzioni-complete-template)
 7. [Allineamento produzione → GitHub](#7-allineamento-produzione--github)
 8. [Verifica allineamento](#8-verifica-allineamento)
-9. [Deploy produzione (repo → server)](#9-deploy-produzione-repo--server)
-10. [Agent Cursor — vincoli](#10-agent-cursor--vincoli)
-11. [Hook e file obsoleti — cancellare](#11-hook-e-file-obsoleti--cancellare)
-12. [Installazione regole sul server](#12-installazione-regole-sul-server)
+9. [Analisi e approvazione (prima del deploy)](#9-analisi-e-approvazione-prima-del-deploy)
+10. [Deploy produzione (solo dopo OK)](#10-deploy-produzione-solo-dopo-ok)
+11. [Agent Cursor — vincoli](#11-agent-cursor--vincoli)
+12. [File obsoleti in tutto `custom/`](#12-file-obsoleti-in-tutto-custom)
+13. [Installazione regole sul server](#13-installazione-regole-sul-server)
 
 ---
 
@@ -63,15 +64,18 @@ Produzione (testata)  ──export-delta──►  GitHub (main)
 ```
 1. Leggere REGOLE-PRODUZIONE/REGOLE.md (questo file)
 2. Backup (backup_dev + layout se UI)
-3. UNA istruzione → esecuzione
-4. Screenshot / verifica esito
+3. Analisi scritta (cosa cambia / cosa si rimuove) — §9
+4. Approvazione esplicita («OK deploy»)
+5. UNA istruzione → esecuzione (o script deploy approvato)
+6. Screenshot / verifica esito
    └─ KO → rollback dal backup
    └─ OK → passo successivo
-5. A fine sessione OK: export-delta prod → push su main
+7. A fine sessione OK: export-delta prod → push su main
 ```
 
 **Checklist rapida**
 
+- [ ] Analisi consegnata e approvata (§9) prima di qualsiasi deploy
 - [ ] Backup fatto, percorso annotato
 - [ ] Un solo comando / un solo deploy
 - [ ] Output o screenshot verificato
@@ -277,11 +281,82 @@ Manifest: `exports/sync/status-YYYYMMDD-HHMMSS.json` — screenshot prima di dep
 
 ---
 
-## 9. Deploy produzione (repo → server)
+## 9. Analisi e approvazione (prima del deploy)
 
-Solo **dopo** backup e **solo** file del task.
+**Vietato** creare subito `deploy-*.sh` o dare `curl | bash` al server.
 
-### File ad alto rischio (vietati senza conferma esplicita)
+### Sequenza obbligatoria
+
+```
+1. Analisi (testo per l'operatore)
+2. Approvazione esplicita («OK deploy» / «procedi»)
+3. Solo allora: script deploy + esecuzione sul server
+```
+
+L’agent **non** salta il passo 1–2, anche per «hotfix urgenti».
+
+### Contenuto minimo dell’analisi
+
+Consegnare **prima** del deploy un documento breve (messaggio o commento PR) con:
+
+| Voce | Contenuto |
+|------|-----------|
+| **Problema** | Cosa non funziona o cosa si vuole ottenere |
+| **Causa** | Perché succede (file, hook, layout, repo indietro, …) |
+| **File da modificare** | Elenco completo path (whitelist) |
+| **File da rimuovere** | Hook / PHP / JS obsoleti (con `rm` esplicito) |
+| **Cosa NON si tocca** | layout, entityDefs, i18n, altre entità |
+| **Effetto atteso** | Cosa deve cambiare in CRM dopo il deploy |
+| **Rischi** | Regressioni possibili |
+| **Rollback** | Comando o cartella backup |
+| **Verifica** | Comando grep / screenshot / test manuale |
+
+### Template analisi (copiare)
+
+```markdown
+## Analisi — [titolo breve]
+
+**Problema:** …
+**Causa:** …
+
+### File coinvolti
+- MODIFICA: `path/file1`
+- MODIFICA: `path/file2`
+- RIMUOVI: `path/vecchio.php`
+
+### Non toccare
+- …
+
+### Effetto atteso
+- …
+
+### Rollback
+- …
+
+### Verifica post-deploy
+- …
+
+**In attesa di approvazione prima di produrre lo script deploy.**
+```
+
+### Approvazione
+
+- Deploy sul server **solo** dopo risposta esplicita dell’operatore.
+- Se l’analisi cambia (file in più/meno) → **nuova** analisi o conferma.
+
+### Dopo approvazione
+
+1. Scrivere `tools/deploy-….sh` con array `FILES=(…)` e eventuali `rm` documentati.
+2. Includere nella PR analisi + script nello stesso commit o PR.
+3. Un passo alla volta in produzione (§3).
+
+---
+
+## 10. Deploy produzione (solo dopo OK)
+
+Solo **dopo** analisi approvata (§9), backup (§4) e whitelist file.
+
+### File ad alto rischio (vietati senza conferma esplicita nell’analisi)
 
 ```
 custom/Espo/Custom/Resources/layouts/**
@@ -293,133 +368,147 @@ custom/Espo/Custom/Resources/i18n/**
 
 ### Checklist pre-deploy
 
+- [ ] Analisi §9 approvata per iscritto
 - [ ] `status --branch=main` (screenshot)
 - [ ] Backup `backup_dev`
-- [ ] Aperto lo script deploy: array `FILES=(…)` ⊆ task
-- [ ] Se include layout/entityDefs → **stop**, conferma umana
+- [ ] Script deploy: `FILES=(…)` = whitelist analisi
+- [ ] Elenco `rm` per file obsoleti incluso nello script
 - [ ] Dopo deploy: verifica CRM + **export-delta**
 
 ### Deploy da NON fare «per allineare»
 
-- Intero branch `cursor/opportunity-globallogic-9999` o altri branch feature
-- `curl | bash` su script sconosciuti
+- Intero branch `cursor/*-9999` o feature branch
+- `curl | bash` senza aver letto l’analisi e lo script
 - Deploy stati/layout completi senza export prod prima
 
-### Esempio hotfix corretto (whitelist)
+### Esempio script (solo dopo approvazione)
 
 ```bash
 FILES=(
   "custom/Espo/Custom/Actions/Opportunity/CreateContratto.php"
   "custom/Espo/Custom/Resources/metadata/formula/Quote.json"
 )
-# curl solo quei file, poi clear_cache + rebuild
+# + rm file obsoleti se previsto dall'analisi
+# + clear_cache + rebuild
 ```
 
-### Dopo ogni hotfix OK
+### Dopo ogni deploy OK
 
-1. Verifica CRM  
+1. Verifica CRM (screenshot)  
 2. `export-delta` → push su `main`  
-3. Così il repo non ripresenta regressioni al deploy successivo
+3. Il repo riflette la produzione testata
 
 ---
 
-## 10. Agent Cursor — vincoli
+## 11. Agent Cursor — vincoli
 
-**Default (senza richiesta esplicita nel task): non modificare e non deployare**
+**Default (senza richiesta esplicita): non modificare e non deployare**
 
 - `entityDefs`, `layouts`, `i18n`, `clientDefs`
 - Deploy interi da branch feature
 - Più obiettivi nello stesso commit/deploy
+- **Script `deploy-*.sh` senza analisi approvata (§9)**
 
-**Ogni intervento:** un obiettivo, whitelist file, verifica post-deploy.
+**Ogni intervento:**
 
-**Se un hook/logica viene sostituito:** cancellare il file vecchio nello **stesso** intervento (vedi §11). Non lasciare doppioni in `Hooks/`.
+1. Analisi scritta (§9)  
+2. Attesa approvazione  
+3. Modifica codice + script deploy (whitelist)  
+4. Un obiettivo, verifica post-deploy  
 
-Le regressioni (layout, etichette, campi fantasma, hook che si accavallano) consumano turni agent inutili — la prevenzione è **questo processo**, non altri fix a catena.
+**Se un file viene sostituito:** cancellare il vecchio nello **stesso** intervento (§12).
+
+Le regressioni consumano turni agent inutili — **analisi prima, deploy dopo**.
 
 ---
 
-## 11. Hook e file obsoleti — cancellare
+## 12. File obsoleti in tutto `custom/`
 
-### Perché è critico
+Vale per **tutto** il custom sul server, non solo `Hooks/Quote/`.
 
-EspoCRM **carica automaticamente** ogni file `.php` in:
+### Ambito (audit completo)
 
-```text
-custom/Espo/Custom/Hooks/{Entità}/*.php
-```
+| Area | Percorso tipico |
+|------|-----------------|
+| Hook | `custom/Espo/Custom/Hooks/**` |
+| Actions / Services / Controllers | `custom/Espo/Custom/{Actions,Services,Controllers}/**` |
+| Metadata / layout / i18n | `custom/Espo/Custom/Resources/**` |
+| Front-end | `client/custom/**` |
+| Sales custom | `custom/Espo/Modules/Sales/{Hooks,Classes,Resources}/**` |
 
-Un file **dimenticato sul server** continua a eseguirsi anche se:
-- non è più nel repository Git;
-- il layout non mostra più i campi che gestiva;
-- un altro hook fa la stessa cosa.
+File `.php`, `.json`, `.js`, `.css` **orfani o duplicati** creano conflitti: hook multipli, layout sovrascritti, comandi API imprevedibili.
 
-Risultato: totali sbagliati, campi riscritti al salvataggio, comandi CRM imprevedibili.
+### Perché è critico (hook in particolare)
+
+EspoCRM **carica automaticamente** ogni `.php` in `Hooks/{Entità}/`. Stesso principio per classi autoloadate in `Actions/`, `Services/`, ecc.
+
+Un file **dimenticato** continua a eseguirsi anche se non è in Git o non è più nel layout.
 
 ### Regola
 
-| Quando | Azione obbligatoria |
-|--------|---------------------|
-| Si sostituisce un hook con un altro | **Cancellare** il file vecchio |
-| Si sposta la logica in formula / Action / Service | **Cancellare** l’hook non più usato |
-| Si abbandona una feature (es. provvigioni auto) | **Cancellare** hook + eventuale `metadata/hooks/*.json` |
-| Deploy da repo | Se il repo **non** contiene un file, **non** deve restare in produzione (salvo decisione esplicita) |
+| Quando | Azione |
+|--------|--------|
+| Si sostituisce logica (hook, action, service) | **Cancellare** il file vecchio |
+| Si abbandona una feature | **Cancellare** tutti i file collegati (hook, formula, layout voce, client JS) |
+| Deploy da repo | File in prod **non** nel repo → decidere: export o `rm` (in analisi §9) |
+| Backup `.bak` in cartelle attive | **Non** lasciarli — spostare in `backup_dev/` o eliminare |
 
-**Mai** rinominare in `.bak` dentro `Hooks/` — Espo può ancora caricarli a seconda della versione. **Rimuovere** il file (dopo backup in `backup_dev/`).
-
-### Procedura rimozione (un file alla volta)
+### Inventario completo server
 
 ```bash
 cd ~/public_html/crm/mec-group
+php tools/audit-custom-server.php
+```
 
-# 1. Backup
-bash tools/backup-dev-save.sh Quote rimozione-hook hooks NomeFile.php
+Solo hook:
 
-# 2. Rimozione
-rm custom/Espo/Custom/Hooks/Quote/NomeFile.php
+```bash
+php tools/audit-custom-server.php --hooks-only
+# oppure (alias): php tools/audit-custom-hooks.php
+```
 
-# 3. Rebuild
+Export JSON (per confronto con repo):
+
+```bash
+php tools/audit-custom-server.php --json > exports/audit-custom-$(date +%Y%m%d).json
+```
+
+Confrontare con `php tools/sync-custom-prod-repo.php status --branch=main`.
+
+### Pulizia (un file o una voce analisi alla volta)
+
+```bash
+cd ~/public_html/crm/mec-group
+bash tools/backup-dev-save.sh ENTITA rimozione TIPO NomeFile.php
+rm path/completo/dal/file
 php clear_cache.php && php rebuild.php
 ```
 
-Verifica: salvare un record dell’entità e controllare che il comportamento atteso non sia cambiato (o che sia migliorato come previsto).
+`TIPO` = `hooks` | `layouts` | `metadata` | `client` (come da `backup-dev-save.sh`).
 
-### Inventario hook (audit)
+### Esempio — `Hooks/Quote/` (da rivedere in analisi)
 
-```bash
-cd ~/public_html/crm/mec-group
-php tools/audit-custom-hooks.php
-```
+| File | Ruolo |
+|------|--------|
+| `BeforeSave.php` | Prezzo codice righe |
+| `ProvvigioneConsolidata.php` | Provvigioni auto |
+| `SyncContractPricing.php` | Ricalcolo prezzi |
+| `SyncFinanziamentoFromOpportunity.php` | Finanziamento da opportunità |
+| `SetPresentedWhenNumeroContratto.php` | Stato da numero contratto |
+| `SyncProductContratti.php` | Prodotti ↔ contratto |
 
-Elenca tutti gli hook per entità (path, dimensione, data). Confrontare con ciò che serve **oggi** — non con «forse serviva un giorno».
+Nella **analisi §9**: per ogni file, TENERE o RIMUOVERE con motivo.
 
-### Esempio — cartella `Hooks/Quote/` (produzione)
+### Agent
 
-File tipici da **rivedere** (tenere solo se ancora necessari):
-
-| File | Ruolo | Se non serve più |
-|------|--------|------------------|
-| `BeforeSave.php` | Prezzo codice su righe / totali | Rimuovere se logica spostata altrove |
-| `ProvvigioneConsolidata.php` | Crea provvigioni automatiche | **Rimuovere** se provvigioni non auto |
-| `SyncContractPricing.php` | Ricalcolo prezzi / minus-plus | Rimuovere se duplica formula o crea conflitti |
-| `SyncFinanziamentoFromOpportunity.php` | Copia finanziamento da opportunità | Tenere solo se usi quei campi |
-| `SetPresentedWhenNumeroContratto.php` | Stato Presentato da numero contratto | Tenere solo se schema stati lo prevede |
-| `SyncProductContratti.php` | Relazione prodotti ↔ contratto | Tenere solo se usi subpanel prodotti |
-
-**Principio:** meno hook attivi = meno sorprese al salvataggio.
-
-### Agent — obbligo esplicito
-
-Creando o modificando hook:
-
-1. Cercare hook esistenti sulla stessa entità (`Glob Hooks/{Entità}/*`).
-2. Se il nuovo hook **sostituisce** il vecchio → **delete** del vecchio nel commit + nota in PR.
-3. Non aggiungere un terzo hook «temporaneo» senza rimuovere i precedenti.
-4. Script deploy che rimuovono file devono usare `rm` esplicito (vedi esempio in `deploy-fix-quote-layout-ripristino.sh`).
+1. `audit-custom-server.php` (o `status`) **prima** di proporre modifiche.  
+2. Nell’analisi: elenco **MODIFICA** + **RIMUOVI**.  
+3. Script deploy con `rm` espliciti per ogni rimozione approvata.  
+4. Mai aggiungere file «temporanei» senza piano di rimozione del vecchio.
 
 ---
 
-## 12. Installazione regole sul server
+## 13. Installazione regole sul server
 
 La cartella sul CRM:
 
@@ -444,4 +533,4 @@ test -f ~/public_html/crm/mec-group/REGOLE-PRODUZIONE/REGOLE.md && echo OK
 
 ---
 
-*Ultimo aggiornamento: 2026-06-28 — documento unico; §11 hook obsoleti.*
+*Ultimo aggiornamento: 2026-06-28 — §9 analisi prima deploy; §12 audit tutto custom.*
