@@ -20,7 +20,8 @@
 8. [Verifica allineamento](#8-verifica-allineamento)
 9. [Deploy produzione (repo → server)](#9-deploy-produzione-repo--server)
 10. [Agent Cursor — vincoli](#10-agent-cursor--vincoli)
-11. [Installazione regole sul server](#11-installazione-regole-sul-server)
+11. [Hook e file obsoleti — cancellare](#11-hook-e-file-obsoleti--cancellare)
+12. [Installazione regole sul server](#12-installazione-regole-sul-server)
 
 ---
 
@@ -332,11 +333,93 @@ FILES=(
 
 **Ogni intervento:** un obiettivo, whitelist file, verifica post-deploy.
 
-Le regressioni (layout, etichette, campi fantasma) consumano turni agent inutili — la prevenzione è **questo processo**, non altri fix a catena.
+**Se un hook/logica viene sostituito:** cancellare il file vecchio nello **stesso** intervento (vedi §11). Non lasciare doppioni in `Hooks/`.
+
+Le regressioni (layout, etichette, campi fantasma, hook che si accavallano) consumano turni agent inutili — la prevenzione è **questo processo**, non altri fix a catena.
 
 ---
 
-## 11. Installazione regole sul server
+## 11. Hook e file obsoleti — cancellare
+
+### Perché è critico
+
+EspoCRM **carica automaticamente** ogni file `.php` in:
+
+```text
+custom/Espo/Custom/Hooks/{Entità}/*.php
+```
+
+Un file **dimenticato sul server** continua a eseguirsi anche se:
+- non è più nel repository Git;
+- il layout non mostra più i campi che gestiva;
+- un altro hook fa la stessa cosa.
+
+Risultato: totali sbagliati, campi riscritti al salvataggio, comandi CRM imprevedibili.
+
+### Regola
+
+| Quando | Azione obbligatoria |
+|--------|---------------------|
+| Si sostituisce un hook con un altro | **Cancellare** il file vecchio |
+| Si sposta la logica in formula / Action / Service | **Cancellare** l’hook non più usato |
+| Si abbandona una feature (es. provvigioni auto) | **Cancellare** hook + eventuale `metadata/hooks/*.json` |
+| Deploy da repo | Se il repo **non** contiene un file, **non** deve restare in produzione (salvo decisione esplicita) |
+
+**Mai** rinominare in `.bak` dentro `Hooks/` — Espo può ancora caricarli a seconda della versione. **Rimuovere** il file (dopo backup in `backup_dev/`).
+
+### Procedura rimozione (un file alla volta)
+
+```bash
+cd ~/public_html/crm/mec-group
+
+# 1. Backup
+bash tools/backup-dev-save.sh Quote rimozione-hook hooks NomeFile.php
+
+# 2. Rimozione
+rm custom/Espo/Custom/Hooks/Quote/NomeFile.php
+
+# 3. Rebuild
+php clear_cache.php && php rebuild.php
+```
+
+Verifica: salvare un record dell’entità e controllare che il comportamento atteso non sia cambiato (o che sia migliorato come previsto).
+
+### Inventario hook (audit)
+
+```bash
+cd ~/public_html/crm/mec-group
+php tools/audit-custom-hooks.php
+```
+
+Elenca tutti gli hook per entità (path, dimensione, data). Confrontare con ciò che serve **oggi** — non con «forse serviva un giorno».
+
+### Esempio — cartella `Hooks/Quote/` (produzione)
+
+File tipici da **rivedere** (tenere solo se ancora necessari):
+
+| File | Ruolo | Se non serve più |
+|------|--------|------------------|
+| `BeforeSave.php` | Prezzo codice su righe / totali | Rimuovere se logica spostata altrove |
+| `ProvvigioneConsolidata.php` | Crea provvigioni automatiche | **Rimuovere** se provvigioni non auto |
+| `SyncContractPricing.php` | Ricalcolo prezzi / minus-plus | Rimuovere se duplica formula o crea conflitti |
+| `SyncFinanziamentoFromOpportunity.php` | Copia finanziamento da opportunità | Tenere solo se usi quei campi |
+| `SetPresentedWhenNumeroContratto.php` | Stato Presentato da numero contratto | Tenere solo se schema stati lo prevede |
+| `SyncProductContratti.php` | Relazione prodotti ↔ contratto | Tenere solo se usi subpanel prodotti |
+
+**Principio:** meno hook attivi = meno sorprese al salvataggio.
+
+### Agent — obbligo esplicito
+
+Creando o modificando hook:
+
+1. Cercare hook esistenti sulla stessa entità (`Glob Hooks/{Entità}/*`).
+2. Se il nuovo hook **sostituisce** il vecchio → **delete** del vecchio nel commit + nota in PR.
+3. Non aggiungere un terzo hook «temporaneo» senza rimuovere i precedenti.
+4. Script deploy che rimuovono file devono usare `rm` esplicito (vedi esempio in `deploy-fix-quote-layout-ripristino.sh`).
+
+---
+
+## 12. Installazione regole sul server
 
 La cartella sul CRM:
 
@@ -361,4 +444,4 @@ test -f ~/public_html/crm/mec-group/REGOLE-PRODUZIONE/REGOLE.md && echo OK
 
 ---
 
-*Ultimo aggiornamento: 2026-06-28 — documento unico, sostituisce tutti i file precedenti in `REGOLE-PRODUZIONE/`.*
+*Ultimo aggiornamento: 2026-06-28 — documento unico; §11 hook obsoleti.*
