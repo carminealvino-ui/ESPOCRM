@@ -580,10 +580,7 @@ class CreateContratto
         // CREAZIONE CONTRATTO
         // =====================================================
 
-        $quote = $this->entityManager
-            ->createEntity(
-                'Quote'
-            );
+        $quote = $this->entityManager->getNewEntity('Quote');
 
         $quote->set([
 
@@ -657,27 +654,6 @@ class CreateContratto
 
             'importoContratto' =>
                 $amount,
-
-            'prezzoListinoIvaEsclusa' =>
-                $opportunity->get('prezzoListinoIvaEsclusa'),
-
-            'prezzoCodiceIvaEsclusa' =>
-                $opportunity->get('prezzoCodiceIvaEsclusa'),
-
-            'margineSuListino' =>
-                $this->resolveMargineSuListino($opportunity, $amount),
-
-            'contattoPersonaleArquati' =>
-                (bool) $opportunity->get('contattoPersonaleArquati'),
-
-            'integrazionePncPercentuale' =>
-                $opportunity->get('integrazionePncPercentuale'),
-
-            'ordineIncompletoAriel' =>
-                (bool) $opportunity->get('ordineIncompletoAriel'),
-
-            'minusPlus' =>
-                $this->resolveMinusPlusForQuote($opportunity, $amount),
 
             // =================================================
             // DATA
@@ -771,7 +747,9 @@ class CreateContratto
         // SAVE CONTRATTO
         // =====================================================
 
-        $this->entityManager->saveEntity($quote);
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+        ]);
 
         $this->refreshQuoteAfterCreate(
             $quote,
