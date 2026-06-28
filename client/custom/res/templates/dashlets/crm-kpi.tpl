@@ -3,119 +3,183 @@
         <div class="alert alert-danger">{{loadError}}</div>
     {{else}}
         <div class="crm-kpi-period text-muted small margin-bottom">
-            {{periodLabel}}{{#if showDateRange}} · {{from}} → {{to}}{{/if}}
+            {{periodLabel}}{{#if brandLabel}} · {{brandLabel}}{{/if}}{{#if showDateRange}} · {{from}} → {{to}}{{/if}}
             <a role="button" class="pull-right" data-action="refresh" title="Aggiorna">
                 <span class="fas fa-sync-alt"></span>
             </a>
         </div>
 
-        <div class="row crm-kpi-tiles">
-            <div class="col-sm-6 col-md-3">
-                <div class="crm-kpi-tile" data-action="openAppuntamentiSvolti">
-                    <div class="crm-kpi-tile-label">Appuntamenti svolti</div>
-                    <div class="crm-kpi-tile-value">{{tiles.appuntamentiSvolti.value}}</div>
-                    <div class="crm-kpi-tile-meta {{tiles.appuntamentiSvolti.changeClass}}">
-                        {{#if showComparison}}{{comparisonLabel}} {{tiles.appuntamentiSvolti.change}}{{/if}}
+        <div class="crm-kpi-tiles">
+            <div class="crm-kpi-tile-col">
+                <div class="crm-kpi-tile">
+                    <div class="crm-kpi-tile-title">Appuntamenti</div>
+                    {{#each tiles.appuntamenti}}
+                        <div class="crm-kpi-tile-row">
+                            <span class="crm-kpi-tile-row-label">{{label}}</span>
+                            <span class="crm-kpi-tile-row-value">{{value}}</span>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+            <div class="crm-kpi-tile-col">
+                <div class="crm-kpi-tile">
+                    <div class="crm-kpi-tile-title">Opportunità</div>
+                    {{#each tiles.opportunita}}
+                        <div class="crm-kpi-tile-row">
+                            <span class="crm-kpi-tile-row-label">{{label}}</span>
+                            <span class="crm-kpi-tile-row-value">{{value}}</span>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+            <div class="crm-kpi-tile-col">
+                <div class="crm-kpi-tile">
+                    <div class="crm-kpi-tile-title">Contratti</div>
+                    {{#each tiles.contratti}}
+                        <div class="crm-kpi-tile-row">
+                            <span class="crm-kpi-tile-row-label">{{label}}</span>
+                            <span class="crm-kpi-tile-row-value">{{value}}</span>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+            <div class="crm-kpi-tile-col">
+                <div class="crm-kpi-tile">
+                    <div class="crm-kpi-tile-title">Valore produzione</div>
+                    {{#each tiles.valoreProduzione}}
+                        <div class="crm-kpi-tile-row">
+                            <span class="crm-kpi-tile-row-label">{{label}}</span>
+                            <span class="crm-kpi-tile-row-value">{{value}}</span>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+            <div class="crm-kpi-tile-col">
+                <div class="crm-kpi-tile">
+                    <div class="crm-kpi-tile-title">Provvigioni</div>
+                    {{#each tiles.provvigioni}}
+                        <div class="crm-kpi-tile-row">
+                            <span class="crm-kpi-tile-row-label">{{label}}</span>
+                            <span class="crm-kpi-tile-row-value">{{value}}</span>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+
+        <div class="crm-kpi-bottom">
+            <div class="crm-kpi-bottom-col crm-kpi-bottom-pipeline">
+                <div class="crm-kpi-panel crm-kpi-panel-pipeline">
+                    <div class="crm-kpi-panel-title">Pipeline di vendita</div>
+                    {{#if hasPipeline}}
+                        <div class="crm-kpi-pipeline">
+                            <div class="crm-kpi-pipeline-chart" data-name="pipeline-chart"></div>
+                            <div class="crm-kpi-pipeline-legend legend-container"></div>
+                        </div>
+                    {{else}}
+                        <div class="text-muted small">Nessun dato nel periodo selezionato.</div>
+                    {{/if}}
+                </div>
+            </div>
+            <div class="crm-kpi-bottom-col crm-kpi-bottom-side">
+                <div class="crm-kpi-yields-row">
+                    <div class="crm-kpi-panel crm-kpi-panel-yields crm-kpi-panel-yields-day">
+                        <div class="crm-kpi-panel-title">Rese per giorno</div>
+                        <div class="crm-kpi-panel-note text-muted small">Pipeline per giorno settimana</div>
+                        <div class="crm-kpi-yields-table-wrap">
+                            <table class="crm-kpi-yields-table">
+                                <thead>
+                                    <tr>
+                                        <th class="crm-kpi-yields-corner"></th>
+                                        {{#each yieldColumns}}
+                                            <th>{{label}}</th>
+                                        {{/each}}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{#each yieldsByWeekday}}
+                                        <tr>
+                                            <th class="crm-kpi-yields-row-label" title="{{#if labelFull}}{{labelFull}}{{else}}{{label}}{{/if}}">{{label}}</th>
+                                            {{#each cells}}
+                                                <td>
+                                                    <div class="crm-kpi-cell-inner">
+                                                        <span class="crm-kpi-cell-value">{{value}}</span>{{#each percents}}<span class="crm-kpi-cell-percent">{{this}}%</span>{{/each}}
+                                                    </div>
+                                                </td>
+                                            {{/each}}
+                                        </tr>
+                                    {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="crm-kpi-panel crm-kpi-panel-yields crm-kpi-panel-yields-week">
+                        <div class="crm-kpi-panel-title">Rese per settimana</div>
+                        <div class="crm-kpi-panel-note text-muted small">Settimane con almeno 4 giorni nel periodo</div>
+                        <div class="crm-kpi-yields-table-wrap">
+                            <table class="crm-kpi-yields-table">
+                                <thead>
+                                    <tr>
+                                        <th class="crm-kpi-yields-corner"></th>
+                                        {{#each yieldColumns}}
+                                            <th>{{label}}</th>
+                                        {{/each}}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{#each yieldsByWeek}}
+                                        <tr>
+                                            <th class="crm-kpi-yields-row-label" title="{{#if labelFull}}{{labelFull}}{{else}}{{label}}{{/if}}">{{label}}</th>
+                                            {{#each cells}}
+                                                <td>
+                                                    <div class="crm-kpi-cell-inner">
+                                                        <span class="crm-kpi-cell-value">{{value}}</span>{{#each percents}}<span class="crm-kpi-cell-percent">{{this}}%</span>{{/each}}
+                                                    </div>
+                                                </td>
+                                            {{/each}}
+                                        </tr>
+                                    {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-sm-6 col-md-3">
-                <div class="crm-kpi-tile" data-action="openOpportunitaAperte">
-                    <div class="crm-kpi-tile-label">Opportunità aperte</div>
-                    <div class="crm-kpi-tile-value">{{tiles.opportunitaAperte.count}}</div>
-                    <div class="crm-kpi-tile-meta">{{tiles.opportunitaAperte.amount}}</div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-md-3">
-                <div class="crm-kpi-tile" data-action="openContratti">
-                    <div class="crm-kpi-tile-label">Contratti firmati</div>
-                    <div class="crm-kpi-tile-value">{{tiles.contrattiFirmati.value}}</div>
-                    <div class="crm-kpi-tile-meta {{tiles.contrattiFirmati.changeClass}}">
-                        {{#if showComparison}}{{comparisonLabel}} {{tiles.contrattiFirmati.change}}{{/if}}
+                <div class="crm-kpi-alerts-row">
+                    <div class="crm-kpi-panel crm-kpi-panel-alerts crm-kpi-panel-alerts-avvisi">
+                        <div class="crm-kpi-panel-title">Avvisi</div>
+                        <div class="crm-kpi-alerts">
+                            {{#each alertsAvvisi}}
+                                <div class="crm-kpi-alert{{#if value}} crm-kpi-alert-warn{{/if}}" data-action="openAlert" data-key="{{key}}">
+                                    <span class="crm-kpi-alert-value">{{value}}</span>
+                                    <span class="crm-kpi-alert-body">
+                                        <span class="crm-kpi-alert-label">{{label}}</span>
+                                        {{#if meta}}
+                                            <span class="crm-kpi-alert-meta">{{meta}}</span>
+                                        {{/if}}
+                                    </span>
+                                </div>
+                            {{/each}}
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-md-3">
-                <div class="crm-kpi-tile" data-action="openContratti">
-                    <div class="crm-kpi-tile-label">Valore contratti</div>
-                    <div class="crm-kpi-tile-value">{{tiles.valoreContratti.value}}</div>
-                    <div class="crm-kpi-tile-meta {{tiles.valoreContratti.changeClass}}">
-                        {{#if showComparison}}{{comparisonLabel}} {{tiles.valoreContratti.change}}{{/if}}
+                    <div class="crm-kpi-panel crm-kpi-panel-alerts crm-kpi-panel-alerts-criticita">
+                        <div class="crm-kpi-panel-title">Criticità</div>
+                        <div class="crm-kpi-alerts">
+                            {{#each alertsCriticita}}
+                                <div class="crm-kpi-alert{{#if value}} crm-kpi-alert-warn{{/if}}" data-action="openAlert" data-key="{{key}}">
+                                    <span class="crm-kpi-alert-value">{{value}}</span>
+                                    <span class="crm-kpi-alert-body">
+                                        <span class="crm-kpi-alert-label">{{label}}</span>
+                                        {{#if meta}}
+                                            <span class="crm-kpi-alert-meta">{{meta}}</span>
+                                        {{/if}}
+                                    </span>
+                                </div>
+                            {{/each}}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="crm-kpi-section">
-            <div class="crm-kpi-section-title">Funnel · {{periodLabel}}</div>
-            <div class="crm-kpi-funnel">
-                {{#each funnel}}
-                    <div class="crm-kpi-funnel-step">
-                        <div class="crm-kpi-funnel-label">{{label}}</div>
-                        <div class="crm-kpi-funnel-bar-wrap">
-                            <div class="crm-kpi-funnel-bar" style="width: {{percentOfTotal}}%;"></div>
-                        </div>
-                        <div class="crm-kpi-funnel-value">
-                            {{value}}
-                            <span class="text-muted">
-                                ({{percentOfTotal}}% tot{{#if percentOfPrevious}} · {{percentOfPrevious}}% prec{{/if}})
-                            </span>
-                        </div>
-                    </div>
-                {{/each}}
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-7">
-                <div class="crm-kpi-section">
-                    <div class="crm-kpi-section-title">Contratti per giorno settimana</div>
-                    <div class="crm-kpi-weekdays">
-                        {{#each contractsByWeekday}}
-                            <div class="crm-kpi-weekday">
-                                <div class="crm-kpi-weekday-label">{{label}}</div>
-                                <div class="crm-kpi-weekday-bar-wrap">
-                                    <div class="crm-kpi-weekday-bar" style="width: {{widthPercent}}%;"></div>
-                                </div>
-                                <div class="crm-kpi-weekday-value">{{value}} <span class="text-muted">({{percentOfTotal}}%)</span></div>
-                            </div>
-                        {{/each}}
-                    </div>
-                </div>
-                <div class="crm-kpi-section margin-top">
-                    <div class="crm-kpi-section-title">Contratti per settimana nel mese</div>
-                    <div class="crm-kpi-section-note text-muted small margin-bottom">Solo settimane con almeno 4 giorni nel mese</div>
-                    <div class="crm-kpi-weekdays">
-                        {{#each contractsByWeekOfMonth}}
-                            <div class="crm-kpi-weekday">
-                                <div class="crm-kpi-weekday-label">{{label}}</div>
-                                <div class="crm-kpi-weekday-bar-wrap">
-                                    <div class="crm-kpi-weekday-bar" style="width: {{widthPercent}}%;"></div>
-                                </div>
-                                <div class="crm-kpi-weekday-value">{{value}} <span class="text-muted">({{percentOfTotal}}%)</span></div>
-                            </div>
-                        {{/each}}
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-5">
-                <div class="crm-kpi-section">
-                    <div class="crm-kpi-section-title">Avvisi</div>
-                    <div class="crm-kpi-alerts">
-                        {{#each alerts}}
-                            <div class="crm-kpi-alert{{#if value}} crm-kpi-alert-warn{{/if}}" data-action="openAlert" data-key="{{key}}">
-                                <span class="crm-kpi-alert-value">{{value}}</span>
-                                <span class="crm-kpi-alert-body">
-                                    <span class="crm-kpi-alert-label">{{label}}</span>
-                                    {{#if meta}}
-                                        <span class="crm-kpi-alert-meta">{{meta}}</span>
-                                    {{/if}}
-                                </span>
-                            </div>
-                        {{/each}}
-                    </div>
-                </div>
-            </div>
-        </div>
     {{/if}}
 </div>

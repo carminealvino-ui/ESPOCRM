@@ -6,12 +6,22 @@
                     {
                         "type": "equals",
                         "attribute": "status",
-                        "value": "Approved"
+                        "value": "Installato"
                     }
                 ]
             }
         },
         "statoFinanziamento": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "importoCaparra": {
             "visible": {
                 "conditionGroup": [
                     {

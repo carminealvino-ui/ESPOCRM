@@ -68,5 +68,32 @@
     },
     "kanbanViewMode": false,
     "color": null,
-    "iconClass": "fas fa-file-lines"
+    "iconClass": "fas fa-file-lines",
+    "filterList": [
+        "__APPEND__",
+        {
+            "name": "meseCorrente",
+            "label": "Mese corrente"
+        },
+        {
+            "name": "dataInstallazionePeriodo",
+            "label": "Data installazione nel periodo"
+        },
+        {
+            "name": "dataInstallazioneMesePrecedente",
+            "label": "Data installazione mese precedente"
+        },
+        {
+            "name": "contrattiBacklog",
+            "label": "Contratti in backlog"
+        },
+        {
+            "name": "contrattiSospesiFinanziamento",
+            "label": "Sospesi finanziamento"
+        },
+        {
+            "name": "contrattiInLavorazione",
+            "label": "In lavorazione"
+        }
+    ]
 }

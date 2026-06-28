@@ -9,6 +9,7 @@ use Espo\Core\Utils\Config;
 use Espo\Core\Utils\DateTime as DateTimeUtil;
 use Espo\Core\Utils\Log;
 use Espo\Entities\User;
+use Espo\Custom\Tools\Appuntamento\PendingCallDateTime;
 use Espo\Modules\Crm\Entities\Meeting;
 use Espo\Modules\Crm\Entities\Reminder;
 use Espo\Modules\Crm\Entities\Task;
@@ -45,7 +46,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
      */
     public function get(User $user): array
     {
-        $items = parent::get($user);
+        $items = array_values(array_filter(
+            parent::get($user),
+            fn (Item $item): bool => $this->isItemPopupEligible($item)
+        ));
 
         $seenReminderIds = [];
         $seenEntityKeys = [];
@@ -189,6 +193,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
         $userId = $user->getId();
         $dateField = $entityType === Task::ENTITY_TYPE ? 'dateEnd' : 'dateStart';
+        $popupCutoff = PendingCallDateTime::popupEligibilityCutoff();
         $resultList = [];
 
         $collection = $this->entityManager
@@ -197,7 +202,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             ->where([
                 'status' => $statusList,
                 'assignedUserId' => $userId,
-                $dateField . '<' => $now,
+                $dateField . '<=' => $popupCutoff,
             ])
             ->order($dateField, 'ASC')
             ->limit(0, 50)
@@ -230,6 +235,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             return null;
         }
 
+        if (!$this->isPopupEligible($entity)) {
+            return null;
+        }
+
         if (
             $entity instanceof CoreEntity &&
             $entity->hasLinkMultipleField('users') &&
@@ -257,6 +266,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         if (!$this->isPlannedActivity($entity)) {
+            return null;
+        }
+
+        if (!$this->isPopupEligible($entity)) {
             return null;
         }
 
@@ -300,6 +313,40 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         return in_array($entity->get('status'), $statusList, true);
+    }
+
+    private function isPopupEligible(Entity $entity): bool
+    {
+        $entityType = $entity->getEntityType();
+
+        if ($entityType !== 'Appuntamento') {
+            return true;
+        }
+
+        $dateStart = $entity->get('dateStart');
+
+        if (!$dateStart) {
+            return false;
+        }
+
+        return $dateStart <= PendingCallDateTime::popupEligibilityCutoff();
+    }
+
+    private function isItemPopupEligible(Item $item): bool
+    {
+        $data = $item->getData();
+
+        if (!is_object($data) || ($data->entityType ?? null) !== 'Appuntamento') {
+            return true;
+        }
+
+        $dateStart = $data->attributes->dateStart ?? null;
+
+        if (!$dateStart) {
+            return false;
+        }
+
+        return $dateStart <= PendingCallDateTime::popupEligibilityCutoff();
     }
 
     private function userCanSeeActivity(Entity $entity, string $userId): bool

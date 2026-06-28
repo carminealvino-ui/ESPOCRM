@@ -1,14 +1,16 @@
 /* global define, Espo */
 
 define('custom:views/appuntamento/popup-notification', [
-    'crm:views/meeting/popup-notification',
+    'views/popup-notification',
     'custom:views/opportunity/helpers/appuntamento-sync',
     'custom:helpers/call-esito-popup-defaults',
-], function (MeetingPopupModule, AppuntamentoSyncModule, CallEsitoDefaultsModule) {
+    'custom:views/appuntamento/helpers/rifissato',
+], function (PopupModule, AppuntamentoSyncModule, CallEsitoDefaultsModule, RifissatoModule) {
 
-    const Parent = MeetingPopupModule.default || MeetingPopupModule;
+    const Parent = PopupModule.default || PopupModule;
     const AppuntamentoSync = AppuntamentoSyncModule.default || AppuntamentoSyncModule;
     const CallEsitoDefaults = CallEsitoDefaultsModule.default || CallEsitoDefaultsModule;
+    const Rifissato = RifissatoModule.default || RifissatoModule;
 
     const ESITO_POPUP_SCOPES = {
         Appuntamento: {
@@ -109,6 +111,7 @@ define('custom:views/appuntamento/popup-notification', [
 
             this.addActionHandler('saveEsito', () => this.actionSaveEsito());
             this.addActionHandler('createOpportunity', () => this.actionCreateOpportunity());
+            this.addActionHandler('rifissatoAppuntamento', () => this.actionRifissatoAppuntamento());
         }
 
         data() {
@@ -273,11 +276,19 @@ define('custom:views/appuntamento/popup-notification', [
             const missing = this.getMissingEsitoFields();
 
             if (missing.length) {
-                const actionLabel = this.shouldShowCreateOpportunity() ?
-                    'Crea Opportunità' :
-                    'Salva';
+                let actionLabel = 'Salva';
+
+                if (this.shouldShowRifissato()) {
+                    actionLabel = 'Rifissa appuntamento';
+                } else if (this.shouldShowCreateOpportunity()) {
+                    actionLabel = 'Crea Opportunità';
+                }
 
                 return 'Compilare ' + missing.join(', ') + ', poi cliccare ' + actionLabel + '.';
+            }
+
+            if (this.shouldShowRifissato()) {
+                return 'Compilare Stato, Sottostato ed Esito, poi cliccare Rifissa appuntamento.';
             }
 
             if (this.shouldShowCreateOpportunity()) {
@@ -292,8 +303,9 @@ define('custom:views/appuntamento/popup-notification', [
 
             if (recordModel) {
                 this.listenTo(recordModel, 'change:status', () => this.updateActionButtons());
+                this.listenTo(recordModel, 'change:sottostato', () => this.updateActionButtons());
                 this.listenTo(recordModel, 'change', () => {
-                    if (recordModel.hasChanged('status')) {
+                    if (recordModel.hasChanged('status') || recordModel.hasChanged('sottostato')) {
                         this.updateActionButtons();
                     }
                 });
@@ -318,15 +330,26 @@ define('custom:views/appuntamento/popup-notification', [
             if (!bindField('status')) {
                 this.listenToOnce(recordView, 'after:render', () => {
                     bindField('status');
+                    bindField('sottostato');
                     this.updateActionButtons();
                 });
+            } else {
+                bindField('sottostato');
             }
 
-            this.$el.off('change.esitoStatus input.esitoStatus click.esitoStatus');
+            this.$el.off('change.esitoStatus input.esitoStatus click.esitoStatus change.esitoSottostato input.esitoSottostato click.esitoSottostato');
 
             this.$el.on(
                 'change.esitoStatus input.esitoStatus',
                 '.field[data-name="status"] select, .field[data-name="status"] input',
+                () => {
+                    window.setTimeout(() => this.updateActionButtons(), 0);
+                }
+            );
+
+            this.$el.on(
+                'change.esitoSottostato input.esitoSottostato',
+                '.field[data-name="sottostato"] select, .field[data-name="sottostato"] input',
                 () => {
                     window.setTimeout(() => this.updateActionButtons(), 0);
                 }
@@ -339,6 +362,37 @@ define('custom:views/appuntamento/popup-notification', [
                     window.setTimeout(() => this.updateActionButtons(), 50);
                 }
             );
+
+            this.$el.on(
+                'click.esitoSottostato',
+                '.field[data-name="sottostato"] .selectize-dropdown-content .option',
+                () => {
+                    window.setTimeout(() => this.updateActionButtons(), 50);
+                }
+            );
+        }
+
+        getCurrentSottostato() {
+            const recordView = this.getView('esitoRecord');
+            let sottostato = null;
+
+            if (recordView && recordView.model) {
+                sottostato = recordView.model.get('sottostato');
+            } else if (this.esitoModel) {
+                sottostato = this.esitoModel.get('sottostato');
+            }
+
+            const $select = this.$el.find('.field[data-name="sottostato"] select');
+
+            if ($select.length) {
+                const domValue = $select.val();
+
+                if (domValue) {
+                    sottostato = domValue;
+                }
+            }
+
+            return sottostato;
         }
 
         getCurrentStatus() {
@@ -371,15 +425,31 @@ define('custom:views/appuntamento/popup-notification', [
                 return false;
             }
 
-            return this.getCurrentStatus() === 'Held';
+            return this.getCurrentStatus() === 'Held' && this.getCurrentSottostato() !== 'Rifissato';
+        }
+
+        shouldShowRifissato() {
+            const entityType = this.esitoEntityType || this.notificationData.entityType;
+
+            if (entityType !== 'Appuntamento') {
+                return false;
+            }
+
+            const status = this.getCurrentStatus();
+
+            return this.getCurrentSottostato() === 'Rifissato'
+                && !!status
+                && status !== 'Planned';
         }
 
         updateActionButtons() {
             const entityType = this.esitoEntityType || this.notificationData.entityType;
             const $save = this.$el.find('[data-role="save"]');
             const $createOpportunity = this.$el.find('[data-role="create-opportunity"]');
+            const $rifissato = this.$el.find('[data-role="rifissato"]');
 
             $createOpportunity.addClass('hidden');
+            $rifissato.addClass('hidden');
 
             if (entityType !== 'Appuntamento') {
                 $save.removeClass('hidden');
@@ -387,14 +457,21 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
-            const showCreateOpportunity = this.shouldShowCreateOpportunity();
+            if (this.shouldShowRifissato()) {
+                $save.addClass('hidden');
+                $rifissato.removeClass('hidden');
 
-            if (showCreateOpportunity) {
+                return;
+            }
+
+            if (this.shouldShowCreateOpportunity()) {
                 $save.addClass('hidden');
                 $createOpportunity.removeClass('hidden');
-            } else {
-                $save.removeClass('hidden');
+
+                return;
             }
+
+            $save.removeClass('hidden');
         }
 
         getAppuntamentoSyncPayload(model) {
@@ -454,6 +531,38 @@ define('custom:views/appuntamento/popup-notification', [
                 });
         }
 
+        actionRifissatoAppuntamento() {
+            if (!this.shouldShowRifissato()) {
+                return;
+            }
+
+            if (!this.isEsitoComplete()) {
+                Espo.Ui.warning(this.getIncompleteMessage());
+
+                return;
+            }
+
+            const model = this.getEsitoModel();
+            const originalDateStart = model.get('dateStart');
+            const preservedAssignedUsersIds = (model.get('assignedUsersIds') || []).slice();
+
+            Espo.Ui.notify(' ...');
+
+            model.save()
+                .then(() => {
+                    Espo.Ui.notify();
+
+                    if (originalDateStart && !model.get('dateStart')) {
+                        model.set('dateStart', originalDateStart, {silent: true});
+                    }
+
+                    Rifissato.openCreateModal(this, model, originalDateStart, {
+                        assignedUsersIds: preservedAssignedUsersIds,
+                    });
+                    super.resolveCancel();
+                });
+        }
+
         actionSaveEsito() {
             if (!this.isEsitoComplete()) {
                 Espo.Ui.warning(this.getIncompleteMessage());
@@ -470,6 +579,12 @@ define('custom:views/appuntamento/popup-notification', [
                     model,
                     this.notificationData.name
                 );
+            }
+
+            if (entityType === 'Appuntamento' && this.shouldShowRifissato()) {
+                this.actionRifissatoAppuntamento();
+
+                return;
             }
 
             Espo.Ui.notify(' ...');
@@ -500,7 +615,9 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
-            super.onCancel();
+            Espo.Ajax.postRequest('Activities/action/removePopupNotification', {
+                id: this.notificationId,
+            });
         }
     };
 });

@@ -1,13 +1,14 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'], function (Dep) {
+define('custom:views/appuntamento/record/edit-small', ['views/record/edit'], function (EditModule) {
 
-    const FALLBACK_DURATION_SECONDS = 5400;
+    const Parent = EditModule.default || EditModule;
+    const DEFAULT_DURATION_SECONDS = 5400;
 
-    return Dep.extend({
+    return class AppuntamentoEditSmallView extends Parent {
 
-        setup: function () {
-            Dep.prototype.setup.call(this);
+        setup() {
+            super.setup();
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
@@ -19,29 +20,12 @@ define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'
 
             this.once('after:render', () => {
                 this.applyDefaultDuration();
+                setTimeout(() => this.applyDefaultDuration(), 0);
+                setTimeout(() => this.applyDefaultDuration(), 150);
             });
-        },
+        }
 
-        getDefaultDurationSeconds: function () {
-            const fromField = this.model.getFieldParam('duration', 'default');
-
-            if (fromField !== null && fromField !== undefined && fromField !== '') {
-                return parseInt(fromField, 10);
-            }
-
-            const entityType = this.model.entityType || this.model.name;
-            const fromMeta = this.getMetadata().get(
-                ['entityDefs', entityType, 'fields', 'duration', 'default']
-            );
-
-            if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
-                return parseInt(fromMeta, 10);
-            }
-
-            return FALLBACK_DURATION_SECONDS;
-        },
-
-        applyDefaultDuration: function () {
+        applyDefaultDuration() {
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
             }
@@ -52,16 +36,14 @@ define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'
                 return;
             }
 
-            const seconds = this.getDefaultDurationSeconds();
             const dateEnd = this.getDateTime()
                 .toMoment(dateStart)
-                .add(seconds, 'seconds')
+                .add(DEFAULT_DURATION_SECONDS, 'seconds')
                 .format(this.getDateTime().internalDateTimeFormat);
 
             this.model.set({
                 dateEnd: dateEnd,
-                duration: seconds,
-            }, {ui: true});
-        },
-    });
+            }, {updatedByDuration: true});
+        }
+    };
 });

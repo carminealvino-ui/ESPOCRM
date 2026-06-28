@@ -1,21 +1,22 @@
 {
     "fields": {
         "nota": "Nota",
+        "direction": "Direzione",
         "whatsApp": "WhatsApp",
         "parent": "Relazionato a",
         "telefono": "Telefono",
         "testo": "Testo",
         "tipologia": "Tipologia",
         "vocale": "Vocale",
+        "canaleContatto": "Canale",
+        "esito": "Esito",
         "whatsAppNumero": "WhatsApp Numero",
-        "data": "Data",
+        "data": "Data Riscontro",
         "dataRichiamo": "Data Richiamo",
         "richiamo": "Richiamo",
         "daRichiamare": "Da richiamare",
         "name": "Contatto Telefonico",
-        "prospect": "Prospect",
-        "esito": "Esito",
-        "dataRiscontro": "Data Riscontro"
+        "prospect": "Prospect"
     },
     "links": {
         "parent": "Relazionato a",
@@ -42,17 +43,21 @@
             "Held": "Svolto",
             "Not Held": "Non Svolto"
         },
+        "canaleContatto": {
+            "call": "Chiamata",
+            "whatsapp": "WhatsApp"
+        },
+        "esito": {
+            "": "",
+            "Non interessato": "Non interessato",
+            "In Trattativa": "In Trattativa",
+            "Opportunità Accettata": "Opportunità Accettata"
+        },
         "richiamo": {
             "": "",
             "Richiamo su Opportunità Generata": "Richiamo su Opportunità Generata",
             "Richiamo per Nuovo Appuntamento": "Richiamo per Nuovo Appuntamento",
             "Richiamo per Informazioni Aggiuntive": "Richiamo per Informazioni Aggiuntive"
-        },
-        "esito": {
-            "": "",
-            "Non interessato": "Non Interessato",
-            "In Trattativa": "In Trattativa",
-            "Opportunità Accettata": "Opportunità Accettata"
         }
     },
     "labels": {
@@ -66,6 +71,9 @@
     },
     "presetFilters": {
         "held": "Svolto",
-        "todays": "Odierni"
+        "todays": "Odierni",
+        "daRiscontrare": "Da riscontrare",
+        "contattiDaFare": "Contatti da fare",
+        "richiamiPianificati": "Richiami pianificati"
     }
 }

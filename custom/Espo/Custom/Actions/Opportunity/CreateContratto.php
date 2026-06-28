@@ -756,11 +756,28 @@ class CreateContratto
                 $teamsIds
         ]);
 
+        // IVA esplicita: evita che la formula ricalcoli taxRate con amount/taxAmount incoerenti.
+        if ($amount !== null && $amount !== '' && $taxRate !== null && $taxRate !== '') {
+            $taxRateFloat = (float) $taxRate;
+            $grandTotal = (float) $amount;
+
+            if ($grandTotal > 0 && (1 + $taxRateFloat) != 0.0) {
+                $net = $grandTotal / (1 + $taxRateFloat);
+                $quote->set([
+                    'grandTotalAmount' => round($grandTotal, 2),
+                    'taxAmount' => round($grandTotal - $net, 2),
+                    'aliquotaIVA' => round($taxRateFloat * 100, 2),
+                ]);
+            }
+        }
+
         // =====================================================
         // SAVE CONTRATTO
         // =====================================================
 
-        $this->entityManager->saveEntity($quote);
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+        ]);
 
         $this->refreshQuoteAfterCreate(
             $quote,

@@ -14,6 +14,10 @@
             "label": "Da riscontrare"
         },
         {
+            "name": "richiamiPianificati",
+            "label": "Richiami pianificati"
+        },
+        {
             "name": "held",
             "style": "success"
         },

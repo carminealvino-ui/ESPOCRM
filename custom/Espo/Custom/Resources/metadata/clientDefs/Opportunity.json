@@ -6,7 +6,7 @@
     "recordViews": {
         "detail": "custom:views/opportunity/record/detail",
         "edit": "custom:views/opportunity/record/edit",
-        "editSmall": "custom:views/opportunity/record/edit-small",
+        "editSmall": "crm:views/opportunity/record/edit-small",
         "list": "crm:views/opportunity/record/list",
         "kanban": "crm:views/opportunity/record/kanban"
     },
@@ -18,6 +18,21 @@
             "style": "primary",
             "action": "createContratto",
             "hidden": true
+        }
+    ],
+    "filterList": [
+        "__APPEND__",
+        {
+            "name": "senzaRiscontroPeriodo",
+            "label": "Senza Riscontro"
+        },
+        {
+            "name": "senzaRiscontroMesePrecedente",
+            "label": "Senza Riscontro mese precedente"
+        },
+        {
+            "name": "senzaInvioWhatsapp",
+            "label": "Senza invio WhatsApp"
         }
     ]
 }

@@ -2,7 +2,7 @@
 
 // =====================================================
 // VERSIONE: 2.2.7
-// DATA: 2026-06-10
+// DATA: 2026-06-23
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
 //
@@ -141,6 +141,22 @@
 //
 // - OpportunityPriceBookResolver in beforeSave
 // - Solo se priceBookId vuoto o cambiano data/brand (non se utente cambia listino)
+//
+// FIX 2.2.7
+// -----------------------------------------------------
+// TIMEOUT SECONDA OPPORTUNITA SU STESSO APPUNTAMENTO
+//
+// Problema:
+//
+// afterSave richiamava runOpportunitySync completa (importFromSource=true).
+// syncAccountAndContactFromLead eseguiva saveEntity(silent) senza skipHooks,
+// riattivando beforeSave/afterSave in loop → timeout "Salvataggio...".
+//
+// Fix:
+//
+// - Sync completa solo in beforeSave
+// - afterSave: solo fallback appuntamentoId se ancora vuoto (2.2.3)
+// - Nessun saveEntity annidato su Opportunity; account/contact nel save principale
 //
 // FIX 2.2.5
 // -----------------------------------------------------
@@ -442,11 +458,55 @@ class GlobalLogic
         Entity $entity,
         array $options = []
     ): void {
-        $this->runOpportunitySync(
-            $entity,
-            $options,
-            true
+        if (!empty($options['skipHooks'])) {
+            return;
+        }
+
+        // Sync completa gia eseguita in beforeSave; evita loop su seconda opp. stesso appuntamento.
+        if ($entity->get('appuntamentoId')) {
+            return;
+        }
+
+        $this->linkAppuntamentoAfterSave($entity);
+    }
+
+    private function linkAppuntamentoAfterSave(Entity $entity): void
+    {
+        $appuntamento = null;
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Opportunity')
+            ->getRelation($entity, 'appuntamento')
+            ->find();
+
+        foreach ($collection as $item) {
+            $appuntamento = $item;
+
+            break;
+        }
+
+        if (!$appuntamento) {
+            $appuntamento = $this->resolveAppuntamentoFromLead($entity);
+        }
+
+        if (!$appuntamento) {
+            return;
+        }
+
+        $entity->set(
+            'appuntamentoId',
+            $appuntamento->getId()
         );
+
+        $entity->set(
+            'appuntamentoName',
+            $appuntamento->get('name')
+        );
+
+        $this->entityManager->saveEntity($entity, [
+            'silent' => true,
+            'skipHooks' => true,
+        ]);
     }
 
     private function runOpportunitySync(
@@ -583,8 +643,6 @@ class GlobalLogic
 
             $this->normalizeProductCascade($entity);
         }
-
-        $this->syncLeadSourceFromAppuntamento($entity, $appuntamento);
 
 
         // =====================================================
@@ -916,79 +974,6 @@ class GlobalLogic
         }
     }
 
-    private function syncLeadSourceFromAppuntamento(
-        Entity $entity,
-        Entity $appuntamento
-    ): void {
-
-        if (!$entity->hasAttribute('leadSource')) {
-            return;
-        }
-
-        if ($entity->get('leadSource')) {
-            return;
-        }
-
-        $leadSource = $this->resolveLeadSourceFromAppuntamento($appuntamento);
-
-        if (!$leadSource) {
-            return;
-        }
-
-        $this->setEntityFieldIfEmpty(
-            $entity,
-            'leadSource',
-            $leadSource
-        );
-    }
-
-    private function resolveLeadSourceFromAppuntamento(Entity $appuntamento): ?string
-    {
-        $metadata = $this->entityManager
-            ->getMetadata()
-            ->get(['entityDefs', 'Opportunity', 'fields', 'leadSource', 'options']) ?? [];
-
-        $candidates = [];
-
-        $map = [
-            'TELCALL' => ['Call Center', 'TELCALL', 'Call'],
-            'Appuntamento Call Center' => ['Call Center', 'TELCALL', 'Call'],
-            'Appuntamento da Gestione Lead' => ['Lead', 'Existing Customer'],
-            'Appuntamento da Gestione CB' => ['Partner', 'Existing Customer'],
-            'Referenza Personale' => ['Partner', 'Existing Customer'],
-        ];
-
-        $callCenter = $appuntamento->get('callCenter');
-
-        if ($callCenter && isset($map[$callCenter])) {
-            $candidates = array_merge($candidates, $map[$callCenter]);
-        }
-
-        $tipo = $appuntamento->get('tipo');
-
-        if ($tipo) {
-            $types = is_array($tipo) ? $tipo : [$tipo];
-
-            foreach ($types as $t) {
-                if (isset($map[$t])) {
-                    $candidates = array_merge($candidates, $map[$t]);
-                }
-            }
-        }
-
-        if ($callCenter) {
-            $candidates[] = $callCenter;
-        }
-
-        foreach ($candidates as $candidate) {
-            if (in_array($candidate, $metadata, true)) {
-                return $candidate;
-            }
-        }
-
-        return null;
-    }
-
     private function setEntityFieldIfEmpty(
         Entity $entity,
         string $field,
@@ -1144,10 +1129,6 @@ class GlobalLogic
             $entity->set('contactId', $referente['id']);
             $entity->set('contactName', $referente['name']);
         }
-
-        if ($entity->isAttributeChanged('accountId') || $entity->isAttributeChanged('contactId')) {
-            $this->entityManager->saveEntity($entity, ['silent' => true]);
-        }
     }
 
     // =====================================================
@@ -1225,8 +1206,6 @@ class GlobalLogic
 
         $entity->set('leadId', $lead->getId());
         $entity->set('leadName', $leadName);
-
-        $this->entityManager->saveEntity($entity, ['silent' => true]);
     }
 
     private function syncLeadFieldsFromOpportunity(Entity $opportunity, Entity $lead): void
@@ -1267,7 +1246,10 @@ class GlobalLogic
             }
         }
 
-        $this->entityManager->saveEntity($lead, ['silent' => true]);
+        $this->entityManager->saveEntity($lead, [
+            'silent' => true,
+            'skipHooks' => true,
+        ]);
     }
 
 }

@@ -26,7 +26,6 @@
         "dateStart": {
             "type": "datetimeOptional",
             "notNull": false,
-            "view": "crm:views/meeting/fields/date-start",
             "required": true,
             "default": "javascript: return this.dateTime.getNow(15);",
             "audited": true,
@@ -36,7 +35,6 @@
         "dateEnd": {
             "type": "datetimeOptional",
             "notNull": false,
-            "view": "crm:views/meeting/fields/date-end",
             "required": true,
             "after": "dateStart",
             "useNumericFormat": true,
@@ -54,6 +52,7 @@
         },
         "duration": {
             "type": "duration",
+            "view": "custom:views/appuntamento/fields/duration",
             "start": "dateStart",
             "end": "dateEnd",
             "options": [
@@ -82,7 +81,6 @@
         },
         "parent": {
             "type": "linkParent",
-            "view": "custom:views/fields/appuntamento-parent",
             "entityList": [
                 "Prospect",
                 "Lead",
@@ -98,8 +96,11 @@
         "reminders": {
             "type": "jsonArray",
             "notStorable": true,
-            "view": "crm:views/meeting/fields/reminders",
-            "layoutListDisabled": true
+            "view": "custom:views/fields/reminders-disabled",
+            "layoutListDisabled": true,
+            "layoutDetailDisabled": true,
+            "layoutDetailSmallDisabled": true,
+            "layoutMassUpdateDisabled": true
         },
         "createdAt": {
             "notNull": false,
@@ -451,17 +452,11 @@
         "impegno": {
             "type": "link"
         },
-        "meetingRef": {
-            "type": "varchar",
-            "maxLength": 100,
-            "options": [],
-            "isCustom": true
-        },
         "syncConGoogle": {
             "notNull": true,
             "type": "bool",
             "isCustom": true,
-            "default": false
+            "default": true
         },
         "noteCallCenter": {
             "type": "text",

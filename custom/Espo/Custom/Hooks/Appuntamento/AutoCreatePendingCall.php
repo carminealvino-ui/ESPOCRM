@@ -5,13 +5,14 @@ namespace Espo\Custom\Hooks\Appuntamento;
 use Espo\Core\Hook\Hook\AfterSave;
 use Espo\Core\Utils\Log;
 use Espo\Custom\Services\AppuntamentoPendingCallCreator;
+use Espo\Custom\Services\CallStandardTesto;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
  * Appuntamento Held + sottostato Pending → Call pianificata +2 giorni alle 9:30
- * (weekend slittato al lunedì), con promemoria popup.
+ * (weekend slittato al lunedì), con promemoria popup alla scadenza.
  */
 class AutoCreatePendingCall implements AfterSave
 {
@@ -19,7 +20,8 @@ class AutoCreatePendingCall implements AfterSave
 
     public function __construct(
         private EntityManager $entityManager,
-        private Log $log
+        private Log $log,
+        private CallStandardTesto $standardTesto,
     ) {}
 
     public function afterSave(Entity $entity, SaveOptions $options): void
@@ -37,7 +39,11 @@ class AutoCreatePendingCall implements AfterSave
         }
 
         try {
-            $creator = new AppuntamentoPendingCallCreator($this->entityManager, $this->log);
+            $creator = new AppuntamentoPendingCallCreator(
+                $this->entityManager,
+                $this->log,
+                $this->standardTesto
+            );
 
             $creator->createIfNeeded($entity);
         } catch (\Throwable $e) {

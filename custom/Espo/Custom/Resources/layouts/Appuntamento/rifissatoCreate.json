@@ -1,0 +1,13 @@
+[
+    {
+        "label": "Nuova data appuntamento",
+        "rows": [
+            [
+                {
+                    "name": "dateStart",
+                    "fullWidth": true
+                }
+            ]
+        ]
+    }
+]

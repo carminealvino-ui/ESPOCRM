@@ -1,22 +1,16 @@
-define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], function (Dep) {
+define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!espo-funnel-chart'], function (Dep) {
 
     return Dep.extend({
 
         name: 'CrmKpi',
         template: 'custom:dashlets/crm-kpi',
 
+        pipelineColors: ['#63a7c2', '#ccc058', '#c96947', '#b770e0', '#5cb85c'],
+        successColor: '#5cb85c',
+
         events: {
             'click [data-action="refresh"]': function () {
                 this.actionRefresh();
-            },
-            'click [data-action="openAppuntamentiSvolti"]': function () {
-                this.actionOpenAppuntamentiSvolti();
-            },
-            'click [data-action="openOpportunitaAperte"]': function () {
-                this.actionOpenOpportunitaAperte();
-            },
-            'click [data-action="openContratti"]': function () {
-                this.actionOpenContratti();
             },
             'click [data-action="openAlert"]': function (e) {
                 const key = $(e.currentTarget).data('key');
@@ -27,6 +21,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
         setup: function () {
             this.summary = null;
             this.loadError = null;
+            this.pipelineChart = null;
 
             Dep.prototype.setup.call(this);
 
@@ -47,9 +42,18 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                 this.wait(true);
             }
 
-            const period = this.getOption('period') || 'currentMonth';
+            const params = {
+                period: this.getOption('period') || 'currentMonth',
+            };
 
-            return Espo.Ajax.getRequest('Appuntamento/action/getSummary', {period: period})
+            const productBrandId = this.getOption('productBrandId')
+                || this.getOption('productBrand');
+
+            if (productBrandId) {
+                params.productBrandId = productBrandId;
+            }
+
+            return Espo.Ajax.getRequest('Appuntamento/action/getSummary', params)
                 .then(response => {
                     this.summary = response;
                     this.loadError = null;
@@ -68,83 +72,334 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
         data: function () {
             const summary = this.summary || {};
             const tiles = summary.tiles || {};
-            const appuntamenti = tiles.appuntamentiSvolti || {};
-            const opportunita = tiles.opportunitaAperte || {};
-            const contratti = tiles.contrattiFirmati || {};
-            const valore = tiles.valoreContratti || {};
+            const pipeline = summary.salesPipeline || [];
+            const hasPipeline = pipeline.some(step => Number(step.value || 0) > 0);
 
             return {
                 loadError: this.loadError,
                 periodLabel: this.getPeriodLabel(),
-                comparisonLabel: this.getComparisonLabel(),
-                showComparison: this.hasComparisonPeriod(),
+                brandLabel: summary.productBrandName || null,
                 from: summary.from,
                 to: summary.to,
                 showDateRange: summary.from && summary.to,
+                hasPipeline: hasPipeline,
                 tiles: {
-                    appuntamentiSvolti: {
-                        value: this.formatNumber(appuntamenti.value),
-                        change: this.formatChange(appuntamenti.changePercent),
-                        changeClass: this.changeClass(appuntamenti.changePercent),
-                    },
-                    opportunitaAperte: {
-                        count: this.formatNumber(opportunita.count),
-                        amount: this.formatCurrency(opportunita.amount),
-                    },
-                    contrattiFirmati: {
-                        value: this.formatNumber(contratti.value),
-                        change: this.formatChange(contratti.changePercent),
-                        changeClass: this.changeClass(contratti.changePercent),
-                    },
-                    valoreContratti: {
-                        value: this.formatCurrency(valore.value),
-                        change: this.formatChange(valore.changePercent),
-                        changeClass: this.changeClass(valore.changePercent),
-                    },
+                    appuntamenti: this.mapAppuntamentiTile(tiles.appuntamenti),
+                    opportunita: this.mapOpportunitaTile(tiles.opportunita),
+                    contratti: this.mapContrattiTile(tiles.contratti),
+                    valoreProduzione: this.mapValoreProduzioneTile(tiles.valoreProduzione),
+                    provvigioni: this.mapProvvigioniTile(tiles.provvigioni),
                 },
-                funnel: (summary.funnel || []).map(step => ({
-                    label: step.label,
-                    value: step.value,
-                    percentOfTotal: step.percentOfHeld,
-                    percentOfPrevious: step.percentOfPrevious,
-                })),
-                contractsByWeekday: this.mapContractChartRows(summary.contractsByWeekday),
-                contractsByWeekOfMonth: this.mapContractChartRows(summary.contractsByWeekOfMonth),
-                alerts: (summary.alerts || []).map(function (alert) {
+                alertsAvvisi: this.mapAlerts(summary.alerts, 'avvisi'),
+                alertsCriticita: this.mapAlerts(summary.alerts, 'criticita'),
+                yieldsByWeekday: this.mapYieldRows(summary.yieldsByWeekday),
+                yieldsByWeek: this.mapYieldRows(summary.yieldsByWeek),
+                yieldColumns: summary.yieldColumns || this.getDefaultYieldColumns(),
+            };
+        },
+
+        getDefaultYieldColumns: function () {
+            return [
+                {key: 'appuntamentiLordi', label: 'Lordi'},
+                {key: 'appuntamentiNetti', label: 'Netti'},
+                {key: 'opportunita', label: 'Opp.'},
+                {key: 'contratti', label: 'Contr.'},
+                {key: 'contrattiNetti', label: 'C. netti'},
+            ];
+        },
+
+        mapAlerts: function (alerts, group) {
+            return (alerts || [])
+                .filter(function (alert) {
+                    return (alert.group || 'avvisi') === group;
+                })
+                .map(function (alert) {
                     return {
                         key: alert.key,
                         label: alert.label,
                         value: alert.value,
                         meta: alert.meta || null,
                     };
-                }),
-            };
+                });
         },
 
-        mapContractChartRows: function (rows) {
-            const list = rows || [];
-            const total = list.reduce(function (sum, row) {
-                return sum + Number(row.value || 0);
-            }, 0);
-            const totalBase = total > 0 ? total : 1;
-
-            return list.map(function (row) {
-                const value = Number(row.value || 0);
-                const percentOfTotal = row.percentOfTotal !== undefined && row.percentOfTotal !== null
-                    ? Number(row.percentOfTotal)
-                    : Math.round((value / totalBase) * 1000) / 10;
+        mapYieldRows: function (rows) {
+            return (rows || []).map(row => {
+                const cells = (row.cells || []).map(cell => ({
+                    value: Number(cell.value || 0),
+                    percents: (cell.percents || []).map(percent => Number(percent)),
+                }));
 
                 return {
                     label: row.label,
-                    value: value,
-                    widthPercent: row.widthPercent !== undefined ? row.widthPercent : 0,
-                    percentOfTotal: percentOfTotal,
+                    labelFull: row.labelFull || null,
+                    cells: cells,
+                };
+            });
+        },
+
+        afterRender: function () {
+            if (this.loadError || !this.summary) {
+                return;
+            }
+
+            this.drawSalesPipeline();
+        },
+
+        getPipelineSteps: function () {
+            return (this.summary && this.summary.salesPipeline) || [];
+        },
+
+        getPipelineColor: function (index, total) {
+            const colors = this.pipelineColors;
+
+            if (index + 1 === total) {
+                return this.successColor;
+            }
+
+            return colors[index % colors.length];
+        },
+
+        drawSalesPipeline: function () {
+            const steps = this.getPipelineSteps();
+            const $container = this.$el.find('[data-name="pipeline-chart"]');
+            const $legend = this.$el.find('.crm-kpi-pipeline-legend');
+
+            if (!$container.length || !steps.length) {
+                return;
+            }
+
+            $container.empty();
+            $legend.empty();
+
+            const hasValues = steps.some(step => Number(step.value || 0) > 0);
+
+            if (!hasValues) {
+                return;
+            }
+
+            const chartData = steps.map((step, index) => ({
+                stageTranslated: step.label,
+                value: Number(step.value || 0),
+                stage: step.key,
+                color: this.getPipelineColor(index, steps.length),
+                percentOfNetti: step.percentOfNetti,
+                percentOfOpportunita: step.percentOfOpportunita,
+                percentOfPrevious: step.percentOfPrevious,
+            }));
+
+            if (typeof EspoFunnel !== 'undefined' && EspoFunnel.Funnel) {
+                this.pipelineChart = new EspoFunnel.Funnel($container.get(0), {
+                    colors: chartData.map(item => item.color),
+                    outlineColor: '#444',
+                    gapWidth: 0.015,
+                    callbacks: {
+                        tooltipHtml: index => this.getPipelineTooltip(chartData[index]),
+                    },
+                    tooltipClassName: 'crm-kpi-pipeline-tooltip',
+                    tooltipStyleString:
+                        'opacity:0.9;background-color:#000;color:#fff;position:absolute;' +
+                        'padding:4px 10px;border-radius:4px;white-space:nowrap;z-index:1000;',
+                }, chartData);
+            } else {
+                this.drawPipelineFallback($container, chartData);
+            }
+
+            this.drawPipelineLegend($legend, chartData);
+        },
+
+        getPipelinePercentMeta: function (item) {
+            if (!item) {
+                return '';
+            }
+
+            const parts = [];
+
+            if (item.stage === 'appuntamentiNetti' && item.percentOfPrevious != null) {
+                parts.push(item.percentOfPrevious + '% su lordi');
+            }
+
+            if (item.percentOfNetti != null) {
+                parts.push(item.percentOfNetti + '% su app. netti');
+            }
+
+            if (item.percentOfOpportunita != null) {
+                parts.push(item.percentOfOpportunita + '% su opp.');
+            }
+
+            if (item.stage === 'contrattiNetti' && item.percentOfPrevious != null) {
+                parts.push(item.percentOfPrevious + '% prec');
+            }
+
+            return parts.join(' · ');
+        },
+
+        getPipelineTooltip: function (item) {
+            if (!item) {
+                return '';
+            }
+
+            const meta = this.getPipelinePercentMeta(item);
+            let text = item.stageTranslated + ' ' + this.formatNumber(item.value);
+
+            if (meta) {
+                text += ' (' + meta + ')';
+            }
+
+            return text;
+        },
+
+        drawPipelineFallback: function ($container, chartData) {
+            const max = Math.max.apply(null, chartData.map(item => item.value).concat([1]));
+            let html = '<div class="crm-kpi-pipeline-fallback">';
+
+            chartData.forEach(item => {
+                const width = Math.max((item.value / max) * 100, 12);
+
+                html += '<div class="crm-kpi-pipeline-fallback-step" style="' +
+                    'width:' + width + '%;' +
+                    'background-color:' + item.color + ';">' +
+                    this.getHelper().escapeString(item.stageTranslated) +
+                    ' · ' + this.formatNumber(item.value) +
+                    '</div>';
+            });
+
+            html += '</div>';
+            $container.html(html);
+        },
+
+        drawPipelineLegend: function ($container, chartData) {
+            let html = '<div class="row"><div class="col-sm-12">';
+
+            chartData.forEach(item => {
+                const meta = this.getPipelinePercentMeta(item);
+                const valueLine = this.formatNumber(item.value) + (meta ? ' · ' + meta : '');
+
+                html += '<div class="legend-item">' +
+                    '<span class="legend-box" style="background-color:' + item.color + ';"></span>' +
+                    '<span>' +
+                    '<span class="legend-label">' + this.getHelper().escapeString(item.stageTranslated) + '</span>' +
+                    '<span class="legend-meta">' + valueLine + '</span>' +
+                    '</span>' +
+                    '</div>';
+            });
+
+            html += '</div></div>';
+            $container.html(html);
+        },
+
+        mapAppuntamentiTile: function (tile) {
+            const source = tile || {};
+            const base = Number(source.lordi || 0);
+
+            return [
+                        {key: 'lordi', label: 'Appuntamenti lordi'},
+                        {key: 'annullati', label: 'Appuntamenti annullati'},
+                        {key: 'totali', label: 'Appuntamenti totali'},
+                        {key: 'ingestibili', label: 'Appuntamenti ingestibili'},
+                        {key: 'netti', label: 'Appuntamenti netti'},
+                    ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+
+                return {
+                    label: def.label,
+                    value: this.formatNumber(raw) + ' · ' + percent + '%',
+                };
+            });
+        },
+
+        mapOpportunitaTile: function (tile) {
+            const source = tile || {};
+            const base = Number(source.totali || 0);
+
+            return [
+                {key: 'totali', label: 'Opportunità totali'},
+                {key: 'perse', label: 'Opportunità perse'},
+                {key: 'pending', label: 'Opportunità pending'},
+                {key: 'concluse', label: 'Opportunità concluse positivamente'},
+            ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+
+                return {
+                    label: def.label,
+                    value: this.formatNumber(raw) + ' · ' + percent + '%',
+                };
+            });
+        },
+
+        mapContrattiTile: function (tile) {
+            const source = tile || {};
+            const base = Number(source.totali || 0);
+
+            return [
+                {key: 'totali', label: 'Contratti totali'},
+                {key: 'finanziamentiRifiutati', label: 'Contratti con finanziamenti rifiutati'},
+                {key: 'lordi', label: 'Contratti lordi'},
+                {key: 'recessi', label: 'Contratti con recessi'},
+                {key: 'netti', label: 'Contratti netti'},
+            ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+
+                return {
+                    label: def.label,
+                    value: this.formatNumber(raw) + ' · ' + percent + '%',
+                };
+            });
+        },
+
+        mapValoreProduzioneTile: function (tile) {
+            const source = tile || {};
+            const base = Number(source.totali || 0);
+
+            return [
+                {key: 'totali', label: 'Valore produzione totale'},
+                {key: 'finanziamentiRifiutati', label: 'Valore con finanziamenti rifiutati'},
+                {key: 'lordi', label: 'Valore produzione lordo'},
+                {key: 'recessi', label: 'Valore con recessi'},
+                {key: 'netti', label: 'Valore produzione netto'},
+            ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+
+                return {
+                    label: def.label,
+                    value: this.formatCurrency(raw) + ' · ' + percent + '%',
+                };
+            });
+        },
+
+        mapProvvigioniTile: function (tile) {
+            const source = tile || {};
+            const base = Number(source.totali || 0);
+
+            return [
+                {key: 'totali', label: 'Provvigioni totali'},
+                {key: 'finanziamentiRifiutati', label: 'Provvigioni con finanziamenti rifiutati'},
+                {key: 'lordi', label: 'Provvigioni lordi'},
+                {key: 'recessi', label: 'Provvigioni con recessi'},
+                {key: 'netti', label: 'Provvigioni nette'},
+            ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+
+                return {
+                    label: def.label,
+                    value: this.formatCurrency(raw) + ' · ' + percent + '%',
                 };
             });
         },
 
         getPeriodLabel: function () {
             const period = this.getOption('period') || 'currentMonth';
+            const translated = this.translate(period, 'options', 'CrmKpi', 'period');
+
+            if (translated && translated !== period) {
+                return translated;
+            }
+
             const labels = {
                 totals: 'Totali',
                 currentYear: 'Totali Anno in Corso',
@@ -156,28 +411,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
             };
 
             return labels[period] || labels.currentMonth;
-        },
-
-        getComparisonLabel: function () {
-            const period = this.getOption('period') || 'currentMonth';
-
-            if (period === 'totals') {
-                return null;
-            }
-
-            if (period === 'currentYear' || period === 'previousYear') {
-                return 'vs anno prec.';
-            }
-
-            if (period === 'currentQuarter' || period === 'previousQuarter') {
-                return 'vs trim. prec.';
-            }
-
-            return 'vs mese prec.';
-        },
-
-        hasComparisonPeriod: function () {
-            return (this.getOption('period') || 'currentMonth') !== 'totals';
         },
 
         formatNumber: function (value) {
@@ -196,57 +429,8 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
             });
         },
 
-        formatChange: function (value) {
-            if (value === null || value === undefined) {
-                return 'n.d.';
-            }
-
-            const n = Number(value);
-            const sign = n > 0 ? '+' : '';
-
-            return sign + n.toLocaleString('it-IT', {maximumFractionDigits: 1}) + '%';
-        },
-
-        changeClass: function (value) {
-            const n = Number(value || 0);
-
-            if (n > 0) {
-                return 'text-success';
-            }
-
-            if (n < 0) {
-                return 'text-danger';
-            }
-
-            return 'text-muted';
-        },
-
-        actionOpenAppuntamentiSvolti: function () {
-            const period = this.getOption('period') || 'currentMonth';
-            let filter = 'svolto';
-
-            if (period === 'currentMonth') {
-                filter = 'meseCorrenteSvolto';
-            } else if (period === 'previousMonth') {
-                filter = 'svolto';
-            }
-
-            this.getRouter().navigate('#Appuntamento/filter/' + filter, {trigger: true});
-        },
-
-        actionOpenOpportunitaAperte: function () {
-            const period = this.getOption('period') || 'currentMonth';
-            let filter = 'aperteMeseCorrente';
-
-            if (period === 'previousMonth') {
-                filter = 'aperteMesePrecedente';
-            }
-
-            this.getRouter().navigate('#Opportunity/filter/' + filter, {trigger: true});
-        },
-
-        actionOpenContratti: function () {
-            this.getRouter().navigate('#Quote/filter/meseCorrente', {trigger: true});
+        buildEntityListUrl: function (entityType, primaryFilter) {
+            return '#' + entityType + '/list/primaryFilter=' + primaryFilter;
         },
 
         actionOpenAlert: function (data) {
@@ -258,35 +442,10 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base'], functi
                     ? 'senzaRiscontroMesePrecedente'
                     : 'senzaRiscontroPeriodo';
 
-                this.getRouter().navigate('#Opportunity/filter/' + filter, {trigger: true});
-
-                return;
-            }
-
-            if (key === 'phoneContactsTodo') {
-                this.getRouter().navigate('#Call/filter/contattiDaFare', {trigger: true});
-
-                return;
-            }
-
-            if (key === 'contractsBacklog') {
-                this.getRouter().navigate('#Quote/filter/contrattiBacklog', {trigger: true});
-
-                return;
-            }
-
-            if (key === 'contractsInProgress') {
-                this.getRouter().navigate('#Quote/filter/contrattiInLavorazione', {trigger: true});
-
-                return;
-            }
-
-            if (key === 'contractsInPayment') {
-                const filter = period === 'previousMonth'
-                    ? 'dataInstallazioneMesePrecedente'
-                    : 'dataInstallazionePeriodo';
-
-                this.getRouter().navigate('#Quote/filter/' + filter, {trigger: true});
+                this.getRouter().navigate(
+                    this.buildEntityListUrl('Opportunity', filter),
+                    {trigger: true}
+                );
 
                 return;
             }

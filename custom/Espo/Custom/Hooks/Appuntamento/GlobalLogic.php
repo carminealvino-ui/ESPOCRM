@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// VERSIONE: 1.7.4
+// VERSIONE: 1.7.3
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
@@ -49,7 +49,7 @@
 // ✔ NON sovrascrive dati manuali gia' presenti
 //
 // ROLLBACK:
-// backup_dev/
+// backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.0-prospect-lead-stabile.php
 //
 // 1.6.2
@@ -66,7 +66,7 @@
 // - altri sottostati Held -> In Process
 //
 // ROLLBACK:
-// backup_dev/
+// backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.1-held-lead-stabile.php
 //
 // 1.6.3
@@ -77,7 +77,7 @@
 // ✔ Campo UI: Descrizione Attività
 //
 // ROLLBACK:
-// backup_dev/
+// backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.2-description-prospect-stabile.php
 //
 // 1.6.4
@@ -90,7 +90,7 @@
 // ✔ NON sovrascrive dati manuali gia' presenti sul Lead
 //
 // ROLLBACK:
-// backup_dev/
+// backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.3-brand-partner-sync-stabile.php
 //
 // 1.6.5
@@ -101,7 +101,7 @@
 // ✔ Compila anche fornitorePartner dal brand
 //
 // ROLLBACK:
-// backup_dev/
+// backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.4-brand-fallback-stabile.php
 //
 // 1.7.1
@@ -117,11 +117,6 @@
 // ----------------------------------------
 // ✔ Nuovo appuntamento: dateEnd = dateStart + 1h30 (5400 sec)
 //    (calendario / dettaglio piccolo; backup server-side)
-//
-// 1.7.4 (01-06-2026)
-// ----------------------------------------
-// ✔ FIX: in aggiornamento non sovrascrivere fornitore/brand/categoria
-//    gia impostati su Appuntamento (sync da Lead/Prospect solo se vuoti)
 //
 // 1.7.0 (25-05-2026)
 // -----------------------------------------------------
@@ -148,7 +143,6 @@ namespace Espo\Custom\Hooks\Appuntamento;
 
 use Espo\Core\ORM\EntityManager;
 use Espo\Custom\Services\LeadProspectSync;
-use Espo\Custom\Services\AppuntamentoPendingCallCreator;
 use Espo\Custom\Services\LineaProdottoCategorySync;
 use Espo\ORM\Entity;
 
@@ -179,7 +173,7 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.7.4'
+                '1.7.3'
             );
 
             $this->applyDefaultDurationOnCreate($entity);
@@ -631,44 +625,35 @@ class GlobalLogic
             }
 
             // ========================================
-            // SYNC assignedUserId ← assignedUsers (Google Calendar richiede assignedUserId)
+            // FIX ASSEGNAZIONE ADMIN
             // ========================================
 
-            if ($status !== 'Not Held') {
-                $assignedUsersIds = $entity->get('assignedUsersIds') ?: [];
+            if (
 
-                if ($assignedUsersIds !== []) {
-                    $entity->set('assignedUserId', $assignedUsersIds[0]);
-                }
-            }
+                ($status === 'Not Held' ||
+                $status === 'Ingestibile') &&
+                $sottostato !== 'Rifissato'
 
-            // ========================================
-            // FIX ASSEGNAZIONE ADMIN (solo Non Svolto / annullati)
-            // Ingestibile resta sul consulente (visita effettuata, infattibile).
-            // ========================================
+            ) {
 
-            if ($status === 'Not Held') {
+                // ========================================
+                // RESET UTENTI ASSEGNATI
+                // ========================================
 
                 $entity->set(
                     'assignedUsersIds',
                     []
                 );
 
+                // ========================================
+                // ASSEGNA SOLO ADMIN
+                // USER ID = 1
+                // ========================================
+
                 $entity->set(
                     'assignedUsersIds',
                     ['1']
                 );
-            }
-
-            if ($status === 'Held' && $sottostato === 'Pending') {
-                $appuntamentoId = $entity->getId();
-
-                if ($appuntamentoId && $entity->get('parentType') === 'Lead' && $entity->get('parentId')) {
-                    AppuntamentoPendingCallCreator::rememberLeadId(
-                        $appuntamentoId,
-                        $entity->get('parentId')
-                    );
-                }
             }
 
         } finally {
@@ -718,34 +703,11 @@ class GlobalLogic
                 continue;
             }
 
-            $this->setEntityFieldIfEmpty(
-                $entity,
+            $entity->set(
                 $field,
                 $source->get($field)
             );
         }
-    }
-
-    private function setEntityFieldIfEmpty(
-        Entity $entity,
-        string $field,
-        mixed $value
-    ): void {
-        if ($value === null || $value === '') {
-            return;
-        }
-
-        if (!$entity->hasAttribute($field)) {
-            return;
-        }
-
-        $current = $entity->get($field);
-
-        if ($current !== null && $current !== '') {
-            return;
-        }
-
-        $entity->set($field, $value);
     }
 
     // ========================================

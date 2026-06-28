@@ -11,21 +11,28 @@ declare(strict_types=1);
 $root = getenv('CRM_ROOT') ?: getcwd();
 
 $checks = [
-    'client/custom/src/views/dashlets/crm-kpi.js' => 'Appuntamento/action/getSummary',
+    'client/custom/src/views/dashlets/crm-kpi.js' => 'buildEntityListUrl',
+    'client/custom/src/views/dashlets/options/crm-kpi.js' => 'applyCrmKpiFieldLabels',
+    'client/custom/res/templates/dashlets/crm-kpi.tpl' => 'crm-kpi-yields-table',
+    'client/custom/css/crm-kpi-dashlet.css' => 'crm-kpi-bottom-side',
     'custom/Espo/Custom/Controllers/Appuntamento.php' => 'getActionGetSummary',
     'custom/Espo/Custom/Controllers/CrmKpi.php' => 'getActionGetSummary',
     'custom/Espo/Custom/Tools/CrmKpi/DateRange.php' => 'normalizePeriod',
     'custom/Espo/Custom/Tools/CrmKpi/Period.php' => 'DateRange::normalizePeriod',
     'custom/Espo/Custom/Tools/CrmKpi/WeekOfMonth.php' => 'buildChartRows',
     'custom/Espo/Custom/Classes/Select/Appuntamento/PrimaryFilters/Pianificato.php' => 'status',
-    'custom/Espo/Custom/Tools/CrmKpi/Alerts.php' => 'formatPaymentMeta',
-    'custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php' => 'countOpportunitiesFromAppointmentsInPeriod',
+    'custom/Espo/Custom/Tools/CrmKpi/Alerts.php' => 'countRichiamiPianificati',
+    'custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php' => 'FINANCING_REJECTED_STATES',
+    'custom/Espo/Custom/Tools/CrmKpi/FunnelBuilder.php' => 'buildSalesPipeline',
+    'custom/Espo/Custom/Tools/CrmKpi/YieldBuilder.php' => 'applyEfficiencyPercents',
+    'custom/Espo/Custom/Tools/CrmKpi/KpiContext.php' => 'productBrandId',
     'custom/Espo/Custom/Classes/Select/Opportunity/PrimaryFilters/SenzaRiscontroTelefonico.php' => 'SenzaRiscontroTelefonico',
     'custom/Espo/Custom/Classes/Select/Call/PrimaryFilters/ContattiDaFare.php' => 'ContattiDaFare',
     'client/custom/src/views/dashlets/records.js' => 'this.options && this.options.entityType',
     'custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php' => 'getPastPlannedSelectFields',
-    'custom/Espo/Custom/Resources/metadata/dashlets/CrmKpi.json' => 'currentQuarter',
+    'custom/Espo/Custom/Resources/metadata/dashlets/CrmKpi.json' => 'productBrand',
     'custom/Espo/Custom/Resources/i18n/it_IT/CrmKpi.json' => 'Totali Mese in Corso',
+    'custom/Espo/Custom/Resources/i18n/it_IT/DashletOptions.json' => '"period": "Periodo"',
 ];
 
 $failed = 0;
@@ -59,6 +66,7 @@ if ($failed === 0) {
         'custom/Espo/Custom/Tools/CrmKpi/DateRange.php',
         'custom/Espo/Custom/Tools/CrmKpi/Period.php',
         'custom/Espo/Custom/Tools/CrmKpi/WeekOfMonth.php',
+        'custom/Espo/Custom/Tools/CrmKpi/YieldBuilder.php',
         'custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php',
     ];
 
