@@ -1,5 +1,7 @@
 # Allineare GitHub al server (produzione → repo)
 
+**Regola 0:** vedi [`00-REGOLA-SERVER-REPO.md`](00-REGOLA-SERVER-REPO.md) — nessuna modifica in produzione resta «orfana» senza export e push.
+
 **Direzione:** ciò che è **oggi sul server** diventa base per un commit su `main`.  
 **Non** si fa `apply-delta` in produzione (sarebbe repo → prod).
 
