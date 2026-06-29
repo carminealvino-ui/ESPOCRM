@@ -3,7 +3,19 @@
 #
 #   cd ~/public_html/crm/mec-group
 #   bash backup_dev/_scripts/organizza-file-legacy-root.sh
+#   bash backup_dev/_scripts/organizza-file-legacy-root.sh --dry-run
+#
+# Aggiornare lo script da GitHub (se la root ha ancora file):
+#   curl -fsSL -o backup_dev/_scripts/organizza-file-legacy-root.sh \
+#     'https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/backup_dev/_scripts/organizza-file-legacy-root.sh'
 set -euo pipefail
+
+DRY_RUN=0
+for arg in "$@"; do
+  case "${arg}" in
+    --dry-run|-n) DRY_RUN=1 ;;
+  esac
+done
 
 CRM_ROOT="${CRM_ROOT:-$(pwd)}"
 ROOT="${CRM_ROOT}/backup_dev"
@@ -20,7 +32,7 @@ for e in "${ENTITIES[@]}"; do
   mkdir -p "${e}/hooks" "${e}/layouts" "${e}/metadata/entityDefs" "${e}/metadata/logicDefs" "${e}/metadata/clientDefs"
   mkdir -p "${e}/client/detail" "${e}/client/handlers" "${e}/client/runtime"
 done
-mkdir -p _archives _archives/sql _archives/client client/css client/metadata _flat-legacy _misc
+mkdir -p _archives _archives/sql _archives/client _archives/hooks-legacy client/css client/metadata _flat-legacy _misc
 
 classify_dest() {
   local base="$1"
@@ -39,9 +51,15 @@ classify_dest() {
     return
   fi
 
-  # CSS client globale
-  if [[ "${base}" == *.css ]]; then
+  # CSS / UI client globale
+  if [[ "${base}" == *.css || "${lower}" == *custom-ui* ]]; then
     echo "client/css"
+    return
+  fi
+
+  # GlobalLogic molto vecchio (pre-split entità)
+  if [[ "${lower}" == *globallogic* && "${lower}" == *old* ]]; then
+    echo "_archives/hooks-legacy"
     return
   fi
 
@@ -207,6 +225,11 @@ shopt -s nullglob
 for f in *; do
   [[ -f "${f}" ]] || continue
   dest="$(classify_dest "${f}")"
+  if [[ "${DRY_RUN}" -eq 1 ]]; then
+    printf '  %s → %s/\n' "${f}" "${dest}"
+    moved=$((moved + 1))
+    continue
+  fi
   mkdir -p "${dest}"
   if [[ -e "${dest}/${f}" ]]; then
     dest_file="${dest}/$(basename "${f}" .*)_dup_$(date +%H%M%S).${f##*.}"
@@ -226,7 +249,11 @@ done
 shopt -u nullglob
 
 echo ""
-echo "Spostati: ${moved} file"
+if [[ "${DRY_RUN}" -eq 1 ]]; then
+  echo "Anteprima: ${moved} file da spostare (nessuna modifica)."
+else
+  echo "Spostati: ${moved} file"
+fi
 echo "File rimasti in root:"
 left=$(find . -maxdepth 1 -type f | wc -l)
 echo "${left}"
