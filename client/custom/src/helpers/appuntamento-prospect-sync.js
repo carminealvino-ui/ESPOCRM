@@ -98,73 +98,10 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         return parts.join(', ');
     };
 
-    const resolveBrandFromAzienda = function (azienda, data) {
-        if (data.productBrandId || !azienda) {
-            return Promise.resolve(data);
-        }
-
-        return Espo.Ajax.getRequest('ProductBrand', {
-            where: [{type: 'equals', attribute: 'name', value: azienda}],
-            maxSize: 1,
-            select: ['id', 'name', 'fornitorePartnerId', 'fornitorePartnerName'],
-        }).then(response => {
-            if (!response.list || !response.list.length) {
-                return data;
-            }
-
-            const brand = response.list[0];
-
-            data.productBrandId = brand.id;
-            data.productBrandName = brand.name;
-
-            if (brand.fornitorePartnerId && !data.fornitorePartnerId) {
-                data.fornitorePartnerId = brand.fornitorePartnerId;
-                data.fornitorePartnerName = brand.fornitorePartnerName;
-            }
-
-            return data;
-        });
-    };
-
-    const resolveBrandFromCategory = function (data) {
-        if (data.productBrandId || !data.productCategoryId) {
-            return Promise.resolve(data);
-        }
-
-        return Espo.Ajax.getRequest('ProductCategory/' + data.productCategoryId, {
-            select: ['productBrandId', 'productBrandName'],
-        }).then(response => {
-            if (response.productBrandId) {
-                data.productBrandId = response.productBrandId;
-                data.productBrandName = response.productBrandName;
-            }
-
-            return data;
-        });
-    };
-
-    const resolvePartnerFromBrand = function (data) {
-        if (data.fornitorePartnerId || !data.productBrandId) {
-            return Promise.resolve(data);
-        }
-
-        return Espo.Ajax.getRequest('ProductBrand/' + data.productBrandId, {
-            select: ['fornitorePartnerId', 'fornitorePartnerName'],
-        }).then(response => {
-            if (response.fornitorePartnerId) {
-                data.fornitorePartnerId = response.fornitorePartnerId;
-                data.fornitorePartnerName = response.fornitorePartnerName;
-            }
-
-            return data;
-        });
-    };
-
     const buildProspectPatch = function (view, prospectId, response) {
         const patch = {
             prospectId: response.id || prospectId,
             prospectName: response.name || view.model.get('prospectName'),
-            azienda: response.azienda || null,
             fornitorePartnerId: response.fornitorePartnerId || null,
             fornitorePartnerName: response.fornitorePartnerName || null,
             productBrandId: response.productBrandId || null,
@@ -213,16 +150,10 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         return Espo.Ajax.getRequest('Prospect/' + prospectId, {
             select: PROSPECT_SELECT,
         }).then(response => {
-            let data = buildProspectPatch(view, prospectId, response);
-
-            return resolveBrandFromAzienda(data.azienda, data)
-                .then(resolveBrandFromCategory)
-                .then(resolvePartnerFromBrand)
-                .then(resolved => {
-                    view.model.set(resolved, {ui: true, prospectSync: true});
-                    refreshLinkFields(view);
-                    applyDefaultDuration(view);
-                });
+            const data = buildProspectPatch(view, prospectId, response);
+            view.model.set(data, {ui: true, prospectSync: true});
+            refreshLinkFields(view);
+            applyDefaultDuration(view);
         }).catch(error => {
             console.error('[appuntamento-prospect-sync]', error);
         });
