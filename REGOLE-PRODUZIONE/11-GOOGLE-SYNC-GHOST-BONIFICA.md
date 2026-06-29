@@ -12,7 +12,7 @@
 |----------|-------|-----|
 | `(APPUNTAMENTO SENZA PROSPECT)` in lista | Hook Google legacy creava dummy senza prospect | Deploy fix + `--only-purge-ghosts` |
 | Duplicati su Google (stesso cliente, slot vicini) | Doppio push (hook + job Espo) | `--only-purge-duplicates` |
-| Appuntamenti reali non su Google | `syncConGoogle=false` su record vecchi, link morti, `assignedUserId` errato | Deploy + `--backfill-sync-flag` + `--only-push` |
+| Appuntamenti reali non su Google | `syncConGoogle=false`, link morti, assegnati solo ad admin | Deploy + `--backfill-sync-flag` + `--only-fix-admin-assignment` + `--only-push` |
 | Annullati ancora su Google | Not Held non rimossi | bonifica completa o `--reconcile` |
 
 ---
@@ -55,6 +55,16 @@ php tools/bonifica-appuntamento-google-calendar.php --apply --only-purge-ghosts 
 
 ```bash
 php tools/bonifica-appuntamento-google-calendar.php --apply --backfill-sync-flag --user-id=67c93e694705fde80
+```
+
+Riassegna admin → consulente (se push saltato con "assegnato ad admin"):
+
+```bash
+php tools/bonifica-appuntamento-google-calendar.php --dry-run --only-fix-admin-assignment --push-since-days=60 --user-id=67c93e694705fde80
+```
+
+```bash
+php tools/bonifica-appuntamento-google-calendar.php --apply --only-fix-admin-assignment --push-since-days=60 --user-id=67c93e694705fde80
 ```
 
 ```bash
