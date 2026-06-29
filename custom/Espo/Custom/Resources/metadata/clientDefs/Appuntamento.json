@@ -10,6 +10,9 @@
         "edit": "custom:views/appuntamento/record/edit",
         "editSmall": "custom:views/appuntamento/record/edit-small"
     },
+    "fieldViews": {
+        "parent": "custom:views/fields/appuntamento-parent"
+    },
     "modalViews": {
         "detail": "views/modals/detail"
     },
