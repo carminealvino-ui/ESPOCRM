@@ -4,13 +4,13 @@
 > I vecchi file numerati (`00-…`, `01-…`, `README.md`, ecc.) sono stati **rimossi** per evitare che venga applicata solo una parte delle istruzioni.
 
 **Ambiente:** `~/public_html/crm/mec-group` (EspoCRM produzione)  
-**Repository:** `https://github.com/carminealvino-ui/ESPOCRM` — branch `main` = produzione testata (dopo export-delta)
+**Repository:** `https://github.com/carminealvino-ui/ESPOCRM` — branch `main` = copia ufficiale del custom (allineata alla produzione testata)
 
 ---
 
 ## Indice
 
-1. [Regola d’oro — produzione comanda](#1-regola-doro--produzione-comanda)
+1. [Regola d’oro — repo prima, poi produzione](#1-regola-doro--repo-prima-poi-produzione)
 2. [Ordine di lavoro](#2-ordine-di-lavoro)
 3. [Un’istruzione alla volta](#3-unistruzione-alla-volta)
 4. [Backup e rollback](#4-backup-e-rollback)
@@ -26,11 +26,32 @@
 
 ---
 
-## 1. Regola d’oro — produzione comanda
+## 1. Regola d’oro — repo prima, poi produzione
 
-Ciò che **funziona ed è testato in produzione** non deve essere sovrascritto da file vecchi nel repository.
+### Regola obbligatoria (da giugno 2026)
 
-### Tre livelli (non confonderli)
+**Nessun file va in produzione se non esiste già la stessa versione su GitHub (`main`).**
+
+Flusso standard per ogni modifica:
+
+```
+1. Scrivere il codice nel repository (branch → PR → merge su main, oppure commit diretto su main)
+2. Push su GitHub (commit visibile su main)
+3. Solo allora: deploy in produzione (script whitelist che scarica DA GitHub)
+4. Verifica CRM + status sync (Identici, Solo prod 0)
+```
+
+| Vietato | Perché |
+|---------|--------|
+| Modificare file solo sul server e «sistemare il repo dopo» | Crea drift, regressioni, lavoro doppio |
+| `curl \| bash` verso file non ancora pushati | La produzione non avrebbe copia su repo |
+| Deploy da branch feature senza merge su `main` | Il repo ufficiale resterebbe incompleto |
+
+**Eccezione (solo emergenza):** hotfix fatto direttamente in produzione → subito dopo **export-delta + push** (§7), così `main` torna identico al server.
+
+### Produzione testata non si sovrascrive con repo vecchio
+
+Ciò che **funziona ed è testato in produzione** non deve essere sostituito da file obsoleti nel repository.
 
 | Livello | File | «Eliminato» significa |
 |---------|------|------------------------|
@@ -40,22 +61,24 @@ Ciò che **funziona ed è testato in produzione** non deve essere sovrascritto d
 
 Se in produzione un campo è stato rimosso **dall’entità**, ma nel repo Git è ancora in `entityDefs`, un deploy **repo → prod** lo **ricrea**.
 
-### Direzione del flusso
+### Direzione del flusso (riassunto)
 
 ```
-Produzione (testata)  ──export-delta──►  GitHub (main)
-                              ▲
-                              │
-                    SOLO hotfix mirati (whitelist file)
+                    ┌── commit + push (SEMPRE prima del deploy)
+                    ▼
+Sviluppo / PR ──► GitHub (main) ──deploy whitelist──► Produzione
+                    ▲                                      │
+                    └──────── export-delta (solo se hotfix diretto in prod)
 ```
 
 | Direzione | Quando |
 |-----------|--------|
-| **Prod → GitHub** | Dopo ogni intervento OK in produzione |
-| **GitHub → Prod** | Solo emergenza, **solo file elencati** nel task |
-| **Mai** | «Allineare il server al repo» senza export prima |
+| **Repo → Prod** | **Default:** ogni deploy dopo push su `main` |
+| **Prod → GitHub** | Solo se si è toccato il server a mano; subito dopo verifica OK |
+| **Mai** | Deploy in prod senza copia identica già su `main` |
+| **Mai** | «Allineare tutto il server al repo» senza export prima |
 
-**Branch `cursor/*-9999`:** sperimentazione / PR — **non** deployare l’intero branch in produzione.
+**Branch `cursor/*-9999`:** sperimentazione / PR — merge su `main` **prima** del deploy; **non** deployare l’intero branch in produzione.
 
 ---
 
@@ -66,21 +89,24 @@ Produzione (testata)  ──export-delta──►  GitHub (main)
 2. Backup (backup_dev + layout se UI)
 3. Analisi scritta (cosa cambia / cosa si rimuove) — §9
 4. Approvazione esplicita («OK deploy»)
-5. UNA istruzione → esecuzione (o script deploy approvato)
-6. Screenshot / verifica esito
+5. Commit + push su GitHub (main) — file della whitelist già sul repo
+6. UNA istruzione → deploy in produzione (script che scarica DA GitHub)
+7. Screenshot / verifica esito
    └─ KO → rollback dal backup
    └─ OK → passo successivo
-7. A fine sessione OK: export-delta prod → push su main
+8. status --branch=main (Solo prod 0, Solo repo 0)
+   └─ Se hotfix fatto solo in prod: export-delta → push (§7)
 ```
 
 **Checklist rapida**
 
 - [ ] Analisi consegnata e approvata (§9) prima di qualsiasi deploy
+- [ ] **Codice pushato su `main` prima del deploy in produzione** (§1)
 - [ ] Backup fatto, percorso annotato
 - [ ] Un solo comando / un solo deploy
 - [ ] Output o screenshot verificato
-- [ ] Se deploy in prod: solo file in whitelist
-- [ ] Dopo OK: export-delta (altrimenti il repo resta indietro)
+- [ ] Se deploy in prod: solo file in whitelist, URL GitHub punta a commit già su `main`
+- [ ] Dopo OK: `status` allineato; export-delta solo se il server è stato modificato a mano
 
 ---
 
@@ -173,8 +199,9 @@ Ogni passo deve avere (se applicabile):
 
 ## 7. Allineamento produzione → GitHub
 
-**Direzione:** ciò che è sul server diventa base per `main`.  
-**Non** si esegue `apply-delta` in produzione (sarebbe repo → prod).
+**Uso principale:** recuperare su `main` ciò che è stato modificato **direttamente** in produzione (eccezione §1).  
+**Flusso normale:** repo → deploy → produzione; in quel caso `status` resta già allineato.  
+**Non** si esegue `apply-delta` **in** produzione (sarebbe repo → prod senza deploy controllato).
 
 ### Regola: export sempre per primo
 
@@ -290,10 +317,11 @@ Manifest: `exports/sync/status-YYYYMMDD-HHMMSS.json` — screenshot prima di dep
 ```
 1. Analisi (testo per l'operatore)
 2. Approvazione esplicita («OK deploy» / «procedi»)
-3. Solo allora: script deploy + esecuzione sul server
+3. Commit + push su GitHub (main) — whitelist già sul repo
+4. Solo allora: script deploy + esecuzione sul server (curl da URL GitHub)
 ```
 
-L’agent **non** salta il passo 1–2, anche per «hotfix urgenti».
+L’agent **non** salta i passi 1–3, anche per «hotfix urgenti».
 
 ### Contenuto minimo dell’analisi
 
@@ -346,15 +374,28 @@ Consegnare **prima** del deploy un documento breve (messaggio o commento PR) con
 
 ### Dopo approvazione
 
-1. Scrivere `tools/deploy-….sh` con array `FILES=(…)` e eventuali `rm` documentati.
-2. Includere nella PR analisi + script nello stesso commit o PR.
-3. Un passo alla volta in produzione (§3).
+1. Commit + push su `main` (o merge PR) con i file della whitelist.
+2. Scrivere `tools/deploy-….sh` con array `FILES=(…)` che scarica **solo** da `main` (o branch indicato e già pushato).
+3. Includere nella PR analisi + script nello stesso commit o PR.
+4. Un passo alla volta in produzione (§3).
 
 ---
 
 ## 10. Deploy produzione (solo dopo OK)
 
-Solo **dopo** analisi approvata (§9), backup (§4) e whitelist file.
+Solo **dopo** analisi approvata (§9), backup (§4), **push su `main`** (§1) e whitelist file.
+
+### Prerequisito repo
+
+Prima di `curl | bash` sul server, verificare che ogni path della whitelist esista su GitHub:
+
+```bash
+# Esempio: commit atteso su main
+git log origin/main -1 --oneline
+# oppure aprire il file su raw.githubusercontent.com/.../main/...
+```
+
+Se il file non è su `main` → **stop**: commit/push prima del deploy.
 
 ### File ad alto rischio (vietati senza conferma esplicita nell’analisi)
 
@@ -369,17 +410,20 @@ custom/Espo/Custom/Resources/i18n/**
 ### Checklist pre-deploy
 
 - [ ] Analisi §9 approvata per iscritto
+- [ ] **File della whitelist già committati e pushati su `main`**
 - [ ] `status --branch=main` (screenshot)
 - [ ] Backup `backup_dev`
-- [ ] Script deploy: `FILES=(…)` = whitelist analisi
+- [ ] Script deploy: `FILES=(…)` = whitelist analisi, URL = `raw.githubusercontent.com/.../main/...`
 - [ ] Elenco `rm` per file obsoleti incluso nello script
-- [ ] Dopo deploy: verifica CRM + **export-delta**
+- [ ] Dopo deploy: verifica CRM + `status` (Solo prod 0)
 
 ### Deploy da NON fare «per allineare»
 
-- Intero branch `cursor/*-9999` o feature branch
+- Intero branch `cursor/*-9999` o feature branch **senza merge su `main`**
+- `curl | bash` verso file non ancora su GitHub
 - `curl | bash` senza aver letto l’analisi e lo script
-- Deploy stati/layout completi senza export prod prima
+- Deploy stati/layout completi senza export prod prima (se il server era avanti al repo)
+- Modifiche **solo** in cPanel/File Manager senza passaggio da repo
 
 ### Esempio script (solo dopo approvazione)
 
@@ -395,8 +439,8 @@ FILES=(
 ### Dopo ogni deploy OK
 
 1. Verifica CRM (screenshot)  
-2. `export-delta` → push su `main`  
-3. Il repo riflette la produzione testata
+2. `php tools/sync-custom-prod-repo.php status --branch=main` — atteso **Solo prod 0**, **Solo repo 0**  
+3. Se **Solo prod > 0** (hotfix solo server): `export-delta` → push su `main` (§7)
 
 ---
 
@@ -408,13 +452,15 @@ FILES=(
 - Deploy interi da branch feature
 - Più obiettivi nello stesso commit/deploy
 - **Script `deploy-*.sh` senza analisi approvata (§9)**
+- **Deploy in produzione senza commit + push su `main` prima (§1)**
 
 **Ogni intervento:**
 
 1. Analisi scritta (§9)  
 2. Attesa approvazione  
-3. Modifica codice + script deploy (whitelist)  
-4. Un obiettivo, verifica post-deploy  
+3. Modifica codice nel repo + commit + push su `main` (o PR merge)  
+4. Script deploy (whitelist) che scarica da GitHub  
+5. Un obiettivo, verifica post-deploy + `status`  
 
 **Se un file viene sostituito:** cancellare il vecchio nello **stesso** intervento (§12).
 
