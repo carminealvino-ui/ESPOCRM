@@ -7,7 +7,7 @@
 //
 // Allinea custom produzione <-> repository GitHub (modifiche fatte a mano in prod).
 //
-// ORDINE OBBLIGATORIO prod -> repo (REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md):
+// ORDINE OBBLIGATORIO prod -> repo (REGOLE-PRODUZIONE/REGOLE.md sezione 7):
 //   1. export-delta  SEMPRE per primo (ogni sessione, non riusare delta vecchi)
 //   2. scarica ZIP sul PC
 //   3. apply-delta + git commit + git push sul PC
@@ -75,7 +75,7 @@ function printHelp(): void
     echo <<<TXT
 sync-custom-prod-repo.php — allinea produzione e GitHub
 
-Ordine prod -> repo (vedi REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md):
+Ordine prod -> repo (vedi REGOLE-PRODUZIONE/REGOLE.md):
   1. export-delta   (sempre per primo, sul server)
   2. scarica ZIP sul PC
   3. apply-delta + git push sul PC
@@ -228,7 +228,7 @@ function runStatus(string $crmRoot, array $config, array $options): void
     echo "\nManifest: {$manifestPath}\n";
     echo "\nAllineamento prod -> repo: eseguire SEMPRE export-delta per primo.\n";
     echo "  php tools/sync-custom-prod-repo.php export-delta --branch=main\n";
-    echo "  (status e solo diagnosi; vedi REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md)\n";
+    echo "  (status e solo diagnosi; vedi REGOLE-PRODUZIONE/REGOLE.md)\n";
 }
 
 function runExportDelta(string $crmRoot, array $config, array $options): void
@@ -319,7 +319,7 @@ function runExportDelta(string $crmRoot, array $config, array $options): void
     echo "  git add custom client/custom\n";
     echo "  git commit -m \"sync: allineamento da produzione\"\n";
     echo "  git push origin main\n";
-    echo "\n(Vedi REGOLE-PRODUZIONE/05-SYNC-REPO-DAL-SERVER.md)\n";
+    echo "\n(Vedi REGOLE-PRODUZIONE/REGOLE.md)\n";
 }
 
 function runApplyDelta(string $crmRoot, string $deltaPath, array $options): void
