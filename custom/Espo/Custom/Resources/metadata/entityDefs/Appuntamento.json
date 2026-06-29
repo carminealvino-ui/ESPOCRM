@@ -81,6 +81,7 @@
         },
         "parent": {
             "type": "linkParent",
+            "view": "custom:views/fields/appuntamento-parent",
             "entityList": [
                 "Prospect",
                 "Lead",
