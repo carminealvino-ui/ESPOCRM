@@ -87,5 +87,17 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
 
             Dep.prototype.calculateSeconds.call(this);
         },
-    });
+
+        afterRender: function () {
+            Dep.prototype.afterRender.call(this);
+
+            if (!this.shouldEnforceDefaultDuration()) {
+                return;
+            }
+
+            this.enforceDefaultDuration();
+            setTimeout(() => this.enforceDefaultDuration(), 300);
+            setTimeout(() => this.enforceDefaultDuration(), 1000);
+        },
+    };
 });
