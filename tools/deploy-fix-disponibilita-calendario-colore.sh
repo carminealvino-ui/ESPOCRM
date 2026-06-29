@@ -16,6 +16,7 @@ FILES=(
   "custom/Espo/Custom/Resources/metadata/app/calendar.json"
   "client/custom/src/views/calendar/calendar.js"
   "tools/backfill-disponibilita-data-da-inizio.php"
+  "tools/fix-disponibilita-calendario-display.php"
 )
 
 echo "=== Fix disponibilità calendario (bianco, no brand) → ${CRM_ROOT} ==="
@@ -48,21 +49,16 @@ curl -fsSL -o "${TMP}" "${BASE}/client/custom/src/views/calendar/calendar.js?t=$
 deploy_client_file "client/custom/src/views/calendar/calendar.js" "${TMP}"
 rm -f "${TMP}"
 
-grep -q "buildDisponibilitaAvailabilityEvent" "${CRM_ROOT}/client/custom/src/views/calendar/calendar.js" || {
+grep -q "buildDisponibilitaEvents" "${CRM_ROOT}/client/custom/src/views/calendar/calendar.js" || {
   echo "ERRORE: calendar.js non aggiornato" >&2
-  exit 1
-}
-
-grep -q "resolveDisponibilitaBrandColor" "${CRM_ROOT}/client/custom/src/views/calendar/calendar.js" && {
-  echo "ERRORE: calendar.js contiene ancora colore brand" >&2
   exit 1
 }
 
 (cd "${CRM_ROOT}" && php command.php rebuild && php command.php clearCache)
 
 echo ""
-echo "Allineamento orari disponibilità sul giorno corretto..."
-(cd "${CRM_ROOT}" && php tools/backfill-disponibilita-data-da-inizio.php)
+echo "Ripristino etichette e colori disponibilità..."
+(cd "${CRM_ROOT}" && php tools/fix-disponibilita-calendario-display.php)
 
 echo ""
 echo "Fatto. Ctrl+Shift+R sul calendario."

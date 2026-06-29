@@ -4,6 +4,7 @@ namespace Espo\Custom\Hooks\Disponibilita;
 
 use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\Core\ORM\EntityManager;
+use Espo\Custom\Services\AppuntamentoCalendarColor;
 use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
@@ -76,6 +77,13 @@ class SetName implements BeforeSave
         }
 
         $entity->set('name', $nome);
+
+        $colore = (new AppuntamentoCalendarColor($this->entityManager))
+            ->resolveDisponibilitaColor($entity);
+
+        if ($colore !== null && $colore !== '') {
+            $entity->set('color', $colore);
+        }
     }
 
     private function resolveDataDisponibilita(Entity $entity): ?string

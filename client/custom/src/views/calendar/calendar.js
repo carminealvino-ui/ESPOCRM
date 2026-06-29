@@ -44,7 +44,7 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
         }
 
         resolveDisponibilitaDayDate(o) {
-            const candidates = [o.dateStartDate, o.datadisponibilita];
+            const candidates = [o.dateStartDate, o.datadisponibilita, o.dateStart];
 
             for (const value of candidates) {
                 if (!value) {
@@ -79,12 +79,16 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
         }
 
         buildLocalMomentFromTime(dayDate, timeStr) {
-            const day = this.getDateTime().toMoment(dayDate);
             const parts = String(timeStr).split(':');
+            const hour = parseInt(parts[0], 10) || 0;
+            const minute = parseInt(parts[1], 10) || 0;
+            const day = typeof this.dateToMoment === 'function' ?
+                this.dateToMoment(dayDate) :
+                this.getDateTime().toMoment(dayDate);
 
             return day.clone()
-                .hour(parseInt(parts[0], 10) || 0)
-                .minute(parseInt(parts[1], 10) || 0)
+                .hour(hour)
+                .minute(minute)
                 .second(0)
                 .millisecond(0);
         }
@@ -150,15 +154,31 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
             };
         }
 
+        buildDisponibilitaEvents(o) {
+            const events = [];
+            const headerEvent = super.convertToFcEvent(o);
+
+            const availabilityEvent = this.buildDisponibilitaAvailabilityEvent(o);
+
+            if (availabilityEvent) {
+                events.push(availabilityEvent);
+            }
+
+            events.push(headerEvent);
+
+            return events;
+        }
+
         convertToFcEvents(list) {
             const events = [];
 
             (list || []).forEach(o => {
                 if (o.scope === DISPONIBILITA_SCOPE) {
-                    const availabilityEvent = this.buildDisponibilitaAvailabilityEvent(o);
-
-                    if (availabilityEvent) {
-                        events.push(availabilityEvent);
+                    try {
+                        events.push(...this.buildDisponibilitaEvents(o));
+                    } catch (error) {
+                        console.error('[calendar] disponibilita render', error, o);
+                        events.push(super.convertToFcEvent(o));
                     }
 
                     return;
