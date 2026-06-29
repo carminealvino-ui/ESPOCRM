@@ -46,6 +46,34 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
             return this.model.isNew() && !this.model.get('isAllDay');
         },
 
+        findRecordView: function () {
+            let parent = this.getParentView && this.getParentView();
+
+            while (parent) {
+                if (typeof parent.getFieldView === 'function') {
+                    return parent;
+                }
+
+                parent = parent.getParentView && parent.getParentView();
+            }
+
+            return null;
+        },
+
+        reRenderDateEndField: function () {
+            const recordView = this.findRecordView();
+
+            if (!recordView) {
+                return;
+            }
+
+            const dateEndView = recordView.getFieldView(this.endField);
+
+            if (dateEndView && typeof dateEndView.reRender === 'function') {
+                dateEndView.reRender();
+            }
+        },
+
         enforceDefaultDuration: function () {
             if (!this.shouldEnforceDefaultDuration() || this._enforcingDefaultDuration) {
                 return;
@@ -72,10 +100,15 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
             this._enforcingDefaultDuration = true;
 
             try {
-                this.model.set(this.endField, expectedEnd, {updatedByDuration: true});
+                this.model.set({
+                    [this.endField]: expectedEnd,
+                    duration: defaultSeconds,
+                }, {ui: true, updatedByDuration: true});
             } finally {
                 this._enforcingDefaultDuration = false;
             }
+
+            this.reRenderDateEndField();
         },
 
         calculateSeconds: function () {
@@ -86,6 +119,26 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
             }
 
             Dep.prototype.calculateSeconds.call(this);
+        },
+
+        afterRender: function () {
+            Dep.prototype.afterRender.call(this);
+
+            if (!this.shouldEnforceDefaultDuration()) {
+                return;
+            }
+
+            const run = () => {
+                this.enforceDefaultDuration();
+
+                if (typeof this.updateDuration === 'function') {
+                    this.updateDuration();
+                }
+            };
+
+            run();
+            setTimeout(run, 300);
+            setTimeout(run, 1200);
         },
     });
 });

@@ -54,10 +54,53 @@ define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], 
             );
         }
 
+        applyAppuntamentoDurationToRecordView(view) {
+            if (!view || !view.model || !this.shouldPatchAppuntamentoDuration()) {
+                return;
+            }
+
+            const dateStart = view.model.get('dateStart') || this.options.dateStart;
+
+            if (!dateStart) {
+                return;
+            }
+
+            const seconds = this.getDefaultDurationSeconds();
+            const dateEnd = this.computeDateEnd(dateStart, seconds);
+
+            view.model.set({
+                dateStart: dateStart,
+                dateEnd: dateEnd,
+                duration: seconds,
+            }, {ui: true, updatedByDuration: true});
+
+            const dateEndView = view.getFieldView && view.getFieldView('dateEnd');
+
+            if (dateEndView && typeof dateEndView.reRender === 'function') {
+                dateEndView.reRender();
+            }
+        }
+
+        scheduleAppuntamentoDurationFix(view) {
+            const run = () => this.applyAppuntamentoDurationToRecordView(view);
+
+            run();
+
+            if (view && typeof view.once === 'function') {
+                view.once('after:render', run);
+            }
+
+            [300, 800, 1500].forEach(delay => {
+                setTimeout(run, delay);
+            });
+        }
+
         createRecordView(model, callback) {
             this.patchAppuntamentoDurationOptions();
 
             super.createRecordView(model, (view) => {
+                this.scheduleAppuntamentoDurationFix(view);
+
                 if (typeof callback === 'function') {
                     callback(view);
                 }

@@ -22,6 +22,8 @@ CLIENT=(
   "client/custom/src/views/appuntamento/record/edit.js"
   "client/custom/src/views/appuntamento/record/edit-small.js"
   "client/custom/src/views/appuntamento/fields/duration.js"
+  "client/custom/src/views/calendar/calendar.js"
+  "client/custom/src/views/calendar/modals/edit.js"
 )
 
 echo "=== Fix definitivo Appuntamento da Prospect → ${CRM_ROOT} ==="

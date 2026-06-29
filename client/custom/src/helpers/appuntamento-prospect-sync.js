@@ -120,6 +120,22 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         });
     };
 
+    const refreshDateEndField = function (view) {
+        if (!view || typeof view.getFieldView !== 'function') {
+            return;
+        }
+
+        const dateEndView = view.getFieldView('dateEnd');
+
+        if (!dateEndView) {
+            return;
+        }
+
+        if (typeof dateEndView.reRender === 'function') {
+            dateEndView.reRender();
+        }
+    };
+
     const refreshDurationField = function (view) {
         const fieldView = view.getFieldView && view.getFieldView('duration');
 
@@ -151,6 +167,7 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
 
         if (isSameDateTime(view, currentEnd, expectedEnd)) {
             refreshDurationField(view);
+            refreshDateEndField(view);
 
             return;
         }
@@ -167,6 +184,7 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         }
 
         refreshDurationField(view);
+        refreshDateEndField(view);
     };
 
     const syncFromProspect = function (view) {
@@ -234,8 +252,11 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
     };
 
     const scheduleDurationGuards = function (view) {
-        [500, 1000, 1500].forEach(delay => {
-            setTimeout(() => applyDefaultDuration(view), delay);
+        [300, 800, 1500, 2500].forEach(delay => {
+            setTimeout(() => {
+                applyDefaultDuration(view);
+                refreshDateEndField(view);
+            }, delay);
         });
     };
 
