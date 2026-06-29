@@ -68,16 +68,19 @@ define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], 
             const seconds = this.getDefaultDurationSeconds();
             const dateEnd = this.computeDateEnd(dateStart, seconds);
 
-            view.model.set({
-                dateStart: dateStart,
-                dateEnd: dateEnd,
-                duration: seconds,
-            }, {ui: true, updatedByDuration: true});
+            view.model.set('dateEnd', dateEnd, {
+                updatedByDuration: true,
+                fromField: 'duration',
+            });
 
-            const dateEndView = view.getFieldView && view.getFieldView('dateEnd');
+            const durationView = view.getFieldView && view.getFieldView('duration');
 
-            if (dateEndView && typeof dateEndView.reRender === 'function') {
-                dateEndView.reRender();
+            if (durationView) {
+                durationView.seconds = seconds;
+
+                if (typeof durationView.updateDuration === 'function') {
+                    durationView.updateDuration();
+                }
             }
         }
 
@@ -99,6 +102,19 @@ define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], 
             this.patchAppuntamentoDurationOptions();
 
             super.createRecordView(model, (view) => {
+                if (!this.id && !this.dateIsChanged && this.shouldPatchAppuntamentoDuration()) {
+                    const dateStart = this.options.dateStart;
+                    const dateEnd = this.options.dateEnd;
+
+                    if (dateStart && dateEnd) {
+                        model.set('dateStart', dateStart);
+                        model.set('dateEnd', dateEnd, {
+                            updatedByDuration: true,
+                            fromField: 'duration',
+                        });
+                    }
+                }
+
                 this.scheduleAppuntamentoDurationFix(view);
 
                 if (typeof callback === 'function') {

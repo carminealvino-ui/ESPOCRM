@@ -16,13 +16,6 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
             return 5400;
         },
 
-        getExpectedDateEnd: function (dateStart, seconds) {
-            return this.getDateTime()
-                .toMoment(dateStart)
-                .add(seconds, 'seconds')
-                .format(this.getDateTime().internalDateTimeFormat);
-        },
-
         getDateTimeUnix: function (value) {
             if (!value) {
                 return null;
@@ -31,19 +24,45 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
             return this.getDateTime().toMoment(value).unix();
         },
 
-        isSameDateTime: function (left, right) {
-            const leftUnix = this.getDateTimeUnix(left);
-            const rightUnix = this.getDateTimeUnix(right);
-
-            if (leftUnix === null || rightUnix === null) {
-                return left === right;
-            }
-
-            return leftUnix === rightUnix;
-        },
-
         shouldEnforceDefaultDuration: function () {
             return this.model.isNew() && !this.model.get('isAllDay');
+        },
+
+        needsDefaultDateEnd: function () {
+            if (!this.shouldEnforceDefaultDuration()) {
+                return false;
+            }
+
+            const dateStart = this.model.get(this.startField);
+
+            if (!dateStart) {
+                return false;
+            }
+
+            const defaultSeconds = this.getDefaultDurationSeconds();
+            const currentEnd = this.model.get(this.endField);
+
+            if (!currentEnd) {
+                return true;
+            }
+
+            const diff = this.getDateTimeUnix(currentEnd) - this.getDateTimeUnix(dateStart);
+
+            return diff !== defaultSeconds;
+        },
+
+        wireEndFieldView: function () {
+            if (this.endFieldView) {
+                return;
+            }
+
+            const recordView = this.findRecordView();
+
+            if (!recordView || typeof recordView.getFieldView !== 'function') {
+                return;
+            }
+
+            this.endFieldView = recordView.getFieldView(this.endField);
         },
 
         findRecordView: function () {
@@ -60,20 +79,6 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
             return null;
         },
 
-        reRenderDateEndField: function () {
-            const recordView = this.findRecordView();
-
-            if (!recordView) {
-                return;
-            }
-
-            const dateEndView = recordView.getFieldView(this.endField);
-
-            if (dateEndView && typeof dateEndView.reRender === 'function') {
-                dateEndView.reRender();
-            }
-        },
-
         enforceDefaultDuration: function () {
             if (!this.shouldEnforceDefaultDuration() || this._enforcingDefaultDuration) {
                 return;
@@ -87,33 +92,43 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
                 return;
             }
 
-            const defaultSeconds = this.getDefaultDurationSeconds();
-            const expectedEnd = this.getExpectedDateEnd(dateStart, defaultSeconds);
-            const currentEnd = this.model.get(this.endField);
+            if (!this.needsDefaultDateEnd()) {
+                this.seconds = this.getDefaultDurationSeconds();
 
-            this.seconds = defaultSeconds;
-
-            if (this.isSameDateTime(currentEnd, expectedEnd)) {
                 return;
             }
 
             this._enforcingDefaultDuration = true;
 
             try {
-                this.model.set({
-                    [this.endField]: expectedEnd,
-                    duration: defaultSeconds,
-                }, {ui: true, updatedByDuration: true});
+                this.seconds = this.getDefaultDurationSeconds();
+                this.wireEndFieldView();
+                Dep.prototype.updateDateEnd.call(this, this.name);
             } finally {
                 this._enforcingDefaultDuration = false;
             }
-
-            this.reRenderDateEndField();
         },
 
         calculateSeconds: function () {
             if (this.shouldEnforceDefaultDuration()) {
-                this.enforceDefaultDuration();
+                this.seconds = this.getDefaultDurationSeconds();
+
+                const dateStart = this.model.get(this.startField);
+                const dateEnd = this.model.get(this.endField);
+
+                if (dateStart && dateEnd) {
+                    const diff = this.getDateTimeUnix(dateEnd) - this.getDateTimeUnix(dateStart);
+
+                    if (diff !== this.seconds) {
+                        this.enforceDefaultDuration();
+
+                        return;
+                    }
+                } else if (dateStart) {
+                    this.enforceDefaultDuration();
+
+                    return;
+                }
 
                 return;
             }
@@ -128,6 +143,8 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
                 return;
             }
 
+            this.wireEndFieldView();
+
             const run = () => {
                 this.enforceDefaultDuration();
 
@@ -137,7 +154,8 @@ define('custom:views/appuntamento/fields/duration', ['views/fields/duration'], f
             };
 
             run();
-            setTimeout(run, 300);
+            setTimeout(run, 150);
+            setTimeout(run, 500);
             setTimeout(run, 1200);
         },
     });

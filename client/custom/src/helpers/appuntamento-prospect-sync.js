@@ -120,22 +120,6 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         });
     };
 
-    const refreshDateEndField = function (view) {
-        if (!view || typeof view.getFieldView !== 'function') {
-            return;
-        }
-
-        const dateEndView = view.getFieldView('dateEnd');
-
-        if (!dateEndView) {
-            return;
-        }
-
-        if (typeof dateEndView.reRender === 'function') {
-            dateEndView.reRender();
-        }
-    };
-
     const refreshDurationField = function (view) {
         const fieldView = view.getFieldView && view.getFieldView('duration');
 
@@ -167,7 +151,6 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
 
         if (isSameDateTime(view, currentEnd, expectedEnd)) {
             refreshDurationField(view);
-            refreshDateEndField(view);
 
             return;
         }
@@ -175,16 +158,23 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         view._applyingDefaultDuration = true;
 
         try {
-            view.model.set({
-                dateEnd: expectedEnd,
-                duration: defaultSeconds,
-            }, {ui: true, updatedByDuration: true});
+            const durationView = view.getFieldView && view.getFieldView('duration');
+
+            if (durationView && typeof durationView.enforceDefaultDuration === 'function') {
+                durationView.enforceDefaultDuration();
+
+                if (typeof durationView.updateDuration === 'function') {
+                    durationView.updateDuration();
+                }
+            } else {
+                view.model.set('dateEnd', expectedEnd, {
+                    updatedByDuration: true,
+                    fromField: 'duration',
+                });
+            }
         } finally {
             view._applyingDefaultDuration = false;
         }
-
-        refreshDurationField(view);
-        refreshDateEndField(view);
     };
 
     const syncFromProspect = function (view) {
@@ -255,7 +245,6 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         [300, 800, 1500, 2500].forEach(delay => {
             setTimeout(() => {
                 applyDefaultDuration(view);
-                refreshDateEndField(view);
             }, delay);
         });
     };
