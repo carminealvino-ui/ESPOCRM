@@ -5,6 +5,7 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
     const CalendarView = CalendarViewModule.default || CalendarViewModule;
     const APPUNTAMENTO_SCOPE = 'Appuntamento';
     const DISPONIBILITA_SCOPE = 'Disponibilita';
+    const DISPONIBILITA_INVERSE_GROUP = 'disponibilita-available';
 
     return class CustomCalendarView extends CalendarView {
 
@@ -46,36 +47,67 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
             return this.colors[DISPONIBILITA_SCOPE] || null;
         }
 
-        buildDisponibilitaBackgroundEvent(o, headerEvent) {
-            const brandColor = this.resolveDisponibilitaBrandColor(o);
+        resolveDisponibilitaDayDate(o) {
+            const candidates = [o.dateStartDate, o.datadisponibilita];
 
-            if (!o.orarioInizio || !o.orarioFine) {
+            for (const value of candidates) {
+                if (!value) {
+                    continue;
+                }
+
+                const normalized = String(value).substring(0, 10);
+
+                if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+                    return normalized;
+                }
+            }
+
+            return null;
+        }
+
+        buildLocalMoment(dayDate, timeMoment) {
+            const day = this.getDateTime().toMoment(dayDate);
+
+            return day.clone()
+                .hour(timeMoment.hour())
+                .minute(timeMoment.minute())
+                .second(0)
+                .millisecond(0);
+        }
+
+        buildDisponibilitaInverseBackground(o, headerEvent) {
+            const dayDate = this.resolveDisponibilitaDayDate(o);
+
+            if (!dayDate || !o.orarioInizio || !o.orarioFine) {
                 return null;
             }
 
-            const start = this.getDateTime().toMoment(o.orarioInizio);
-            const end = this.getDateTime().toMoment(o.orarioFine);
+            const inizio = this.getDateTime().toMoment(o.orarioInizio);
+            const fine = this.getDateTime().toMoment(o.orarioFine);
 
-            if (!start.isValid() || !end.isValid() || !end.isAfter(start)) {
+            if (!inizio.isValid() || !fine.isValid()) {
                 return null;
             }
 
-            const background = {...headerEvent};
+            const start = this.buildLocalMoment(dayDate, inizio);
+            const end = this.buildLocalMoment(dayDate, fine);
 
-            background.id = headerEvent.id + '-bg';
-            background.title = '';
-            background.start = start.toISOString(true);
-            background.end = end.toISOString(true);
-            background.allDay = false;
-            background.display = 'background';
-            background.groupId = 'disponibilita-working';
-
-            if (brandColor) {
-                background.color = this.shadeColor(brandColor, 0.82);
-                background.originalColor = brandColor;
+            if (!end.isAfter(start)) {
+                return null;
             }
 
-            return background;
+            return {
+                ...headerEvent,
+                id: headerEvent.id + '-inv',
+                title: '',
+                start: start.toISOString(true),
+                end: end.toISOString(true),
+                allDay: false,
+                display: 'inverse-background',
+                groupId: DISPONIBILITA_INVERSE_GROUP,
+                color: this.colors.bg || this.colors['bg'],
+                editable: false,
+            };
         }
 
         convertToFcEvents(list) {
@@ -93,10 +125,10 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
 
                     events.push(headerEvent);
 
-                    const backgroundEvent = this.buildDisponibilitaBackgroundEvent(o, headerEvent);
+                    const inverseBackground = this.buildDisponibilitaInverseBackground(o, headerEvent);
 
-                    if (backgroundEvent) {
-                        events.push(backgroundEvent);
+                    if (inverseBackground) {
+                        events.push(inverseBackground);
                     }
 
                     return;

@@ -1,6 +1,8 @@
 {
     "additionalAttributeList": [
         "color",
+        "dateStartDate",
+        "datadisponibilita",
         "orarioInizio",
         "orarioFine"
     ]

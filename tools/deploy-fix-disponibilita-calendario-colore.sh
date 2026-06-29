@@ -51,8 +51,8 @@ rm -f "${TMP}"
 (cd "${CRM_ROOT}" && php command.php rebuild && php command.php clearCache)
 
 echo ""
-echo "Backfill colori esistenti (opzionale ma consigliato):"
+echo "Allinea date/orari record esistenti (consigliato se fasce su giorni sbagliati):"
 echo "  cd ${CRM_ROOT}"
-echo "  php tools/backfill-brand-color-calendario.php --apply-default-colors --only=disponibilita --force-color"
+echo "  php tools/backfill-disponibilita-data-da-inizio.php"
 echo ""
 echo "Fatto. Ctrl+Shift+R sul calendario."
