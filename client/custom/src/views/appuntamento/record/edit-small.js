@@ -2,7 +2,7 @@
 
 define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'], function (Dep) {
 
-    const FALLBACK_DURATION_SECONDS = 5400;
+    const DEFAULT_DURATION_SECONDS = 5400;
 
     return Dep.extend({
 
@@ -17,28 +17,26 @@ define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'
                 this.applyDefaultDuration();
             });
 
+            this.listenTo(this.model, 'change:dateEnd', () => {
+                if (this._applyingDefaultDuration) {
+                    return;
+                }
+
+                this.applyDefaultDuration();
+            });
+
             this.once('after:render', () => {
                 this.applyDefaultDuration();
+                setTimeout(() => this.applyDefaultDuration(), 300);
+                setTimeout(() => this.applyDefaultDuration(), 1000);
             });
         },
 
-        getDefaultDurationSeconds: function () {
-            const fromField = this.model.getFieldParam('duration', 'default');
-
-            if (fromField !== null && fromField !== undefined && fromField !== '') {
-                return parseInt(fromField, 10);
-            }
-
-            const entityType = this.model.entityType || this.model.name;
-            const fromMeta = this.getMetadata().get(
-                ['entityDefs', entityType, 'fields', 'duration', 'default']
-            );
-
-            if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
-                return parseInt(fromMeta, 10);
-            }
-
-            return FALLBACK_DURATION_SECONDS;
+        getExpectedDateEnd: function (dateStart) {
+            return this.getDateTime()
+                .toMoment(dateStart)
+                .add(DEFAULT_DURATION_SECONDS, 'seconds')
+                .format(this.getDateTime().internalDateTimeFormat);
         },
 
         applyDefaultDuration: function () {
@@ -52,16 +50,23 @@ define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'
                 return;
             }
 
-            const seconds = this.getDefaultDurationSeconds();
-            const dateEnd = this.getDateTime()
-                .toMoment(dateStart)
-                .add(seconds, 'seconds')
-                .format(this.getDateTime().internalDateTimeFormat);
+            const expectedEnd = this.getExpectedDateEnd(dateStart);
+            const currentEnd = this.model.get('dateEnd');
 
-            this.model.set({
-                dateEnd: dateEnd,
-                duration: seconds,
-            }, {ui: true});
+            if (currentEnd === expectedEnd) {
+                return;
+            }
+
+            this._applyingDefaultDuration = true;
+
+            try {
+                this.model.set({
+                    dateEnd: expectedEnd,
+                    duration: DEFAULT_DURATION_SECONDS,
+                }, {ui: true, updatedByDuration: true});
+            } finally {
+                this._applyingDefaultDuration = false;
+            }
         },
     });
 });

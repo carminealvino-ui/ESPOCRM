@@ -1,12 +1,12 @@
 /* global define */
 
 /**
- * Campo Relazionato a — sync Fornitore/Brand/Categoria da Prospect.
- * VERSIONE: 1.2.5
+ * Campo Relazionato a — sync da Prospect (fornitore, brand, CAP, prospect link).
+ * VERSIONE: 1.2.6
  */
 define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], function (Dep) {
 
-    const VERSION = '1.2.5';
+    const VERSION = '1.2.6';
 
     const PROSPECT_SELECT = [
         'name',
@@ -17,6 +17,14 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
         'productBrandName',
         'productCategoryId',
         'productCategoryName',
+        'cAPId',
+        'cAPName',
+        'phoneNumber',
+        'addressStreet',
+        'addressCity',
+        'addressPostalCode',
+        'addressState',
+        'addressCountry',
     ].join(',');
 
     const LINK_FIELDS = [
@@ -24,6 +32,8 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
         'productBrand',
         'productCategory',
         'prospect',
+        'cAP',
+        'telefono',
     ];
 
     const resolveBrandFromAzienda = function (azienda, data) {
@@ -51,7 +61,7 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
             }
 
             return data;
-        });
+        }).catch(() => data);
     };
 
     const resolveBrandFromCategory = function (data) {
@@ -68,7 +78,7 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
             }
 
             return data;
-        });
+        }).catch(() => data);
     };
 
     const resolvePartnerFromBrand = function (data) {
@@ -85,7 +95,23 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
             }
 
             return data;
-        });
+        }).catch(() => data);
+    };
+
+    const buildLocation = function (response) {
+        const parts = [
+            response.addressStreet,
+            response.addressPostalCode,
+            response.addressCity,
+            response.addressState,
+            response.addressCountry,
+        ].filter(part => part !== null && part !== undefined && String(part).trim() !== '');
+
+        if (!parts.length) {
+            return null;
+        }
+
+        return parts.join(', ');
     };
 
     const refreshLinkFields = function (recordView) {
@@ -113,24 +139,22 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
             productBrandName: response.productBrandName || null,
             productCategoryId: response.productCategoryId || null,
             productCategoryName: response.productCategoryName || null,
+            cAPId: response.cAPId || null,
+            cAPName: response.cAPName || null,
         };
+
+        const location = buildLocation(response);
+        const patchExtra = {};
+
+        if (location && !model.get('location')) {
+            patchExtra.location = location;
+        }
 
         return resolveBrandFromAzienda(data.azienda, data)
             .then(resolveBrandFromCategory)
             .then(resolvePartnerFromBrand)
             .then(resolved => {
-                model.set({
-                    prospectId: resolved.prospectId,
-                    prospectName: resolved.prospectName,
-                    azienda: resolved.azienda,
-                    fornitorePartnerId: resolved.fornitorePartnerId,
-                    fornitorePartnerName: resolved.fornitorePartnerName,
-                    productBrandId: resolved.productBrandId,
-                    productBrandName: resolved.productBrandName,
-                    productCategoryId: resolved.productCategoryId,
-                    productCategoryName: resolved.productCategoryName,
-                }, {ui: true, prospectSync: true});
-
+                model.set(Object.assign({}, resolved, patchExtra), {ui: true, prospectSync: true});
                 refreshLinkFields(recordView);
             });
     };
@@ -159,6 +183,11 @@ define('custom:views/fields/appuntamento-parent', ['views/fields/link-parent'], 
             this.listenTo(this.model, 'change:parentId change:parentType', () => {
                 this.scheduleProspectSync();
             });
+        },
+
+        afterRender: function () {
+            Dep.prototype.afterRender.call(this);
+            this.scheduleProspectSync();
         },
 
         findRecordView: function () {
