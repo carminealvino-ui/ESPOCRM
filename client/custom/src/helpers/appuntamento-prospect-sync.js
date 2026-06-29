@@ -4,6 +4,7 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
 
     const PROSPECT_SELECT = [
         'name',
+        'azienda',
         'fornitorePartnerId',
         'fornitorePartnerName',
         'productBrandId',
@@ -97,41 +98,64 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         return parts.join(', ');
     };
 
+    const buildProspectPatch = function (view, prospectId, response) {
+        const patch = {
+            prospectId: response.id || prospectId,
+            prospectName: response.name || view.model.get('prospectName'),
+            fornitorePartnerId: response.fornitorePartnerId || null,
+            fornitorePartnerName: response.fornitorePartnerName || null,
+            productBrandId: response.productBrandId || null,
+            productBrandName: response.productBrandName || null,
+            productCategoryId: response.productCategoryId || null,
+            productCategoryName: response.productCategoryName || null,
+            cAPId: response.cAPId || null,
+            cAPName: response.cAPName || null,
+        };
+
+        if (view.model.get('parentType') === 'Prospect' && !view.model.get('parentId')) {
+            patch.parentId = prospectId;
+            patch.parentName = response.name || view.model.get('parentName');
+        }
+
+        const location = buildLocationFromProspect(response);
+
+        if (location && !view.model.get('location')) {
+            patch.location = location;
+        }
+
+        return patch;
+    };
+
+    const refreshLinkFields = function (view) {
+        if (!view || typeof view.getFieldView !== 'function') {
+            return;
+        }
+
+        ['fornitorePartner', 'productBrand', 'productCategory', 'prospect', 'cAP', 'telefono'].forEach(name => {
+            const fieldView = view.getFieldView(name);
+
+            if (fieldView && typeof fieldView.reRender === 'function') {
+                fieldView.reRender();
+            }
+        });
+    };
+
     const syncFromProspect = function (view) {
         const prospectId = resolveProspectId(view);
 
         if (!prospectId) {
-            return;
+            return Promise.resolve();
         }
 
-        Espo.Ajax.getRequest('Prospect/' + prospectId, {
+        return Espo.Ajax.getRequest('Prospect/' + prospectId, {
             select: PROSPECT_SELECT,
         }).then(response => {
-            const patch = {
-                prospectId: response.id || prospectId,
-                prospectName: response.name || view.model.get('prospectName'),
-                fornitorePartnerId: response.fornitorePartnerId || null,
-                fornitorePartnerName: response.fornitorePartnerName || null,
-                productBrandId: response.productBrandId || null,
-                productBrandName: response.productBrandName || null,
-                productCategoryId: response.productCategoryId || null,
-                productCategoryName: response.productCategoryName || null,
-                cAPId: response.cAPId || null,
-                cAPName: response.cAPName || null,
-            };
-
-            if (view.model.get('parentType') === 'Prospect' && !view.model.get('parentId')) {
-                patch.parentId = prospectId;
-                patch.parentName = response.name || view.model.get('parentName');
-            }
-
-            const location = buildLocationFromProspect(response);
-
-            if (location && !view.model.get('location')) {
-                patch.location = location;
-            }
-
-            view.model.set(patch, {ui: true, prospectSync: true});
+            const data = buildProspectPatch(view, prospectId, response);
+            view.model.set(data, {ui: true, prospectSync: true});
+            refreshLinkFields(view);
+            applyDefaultDuration(view);
+        }).catch(error => {
+            console.error('[appuntamento-prospect-sync]', error);
         });
     };
 
@@ -165,13 +189,21 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         const currentEnd = view.model.get('dateEnd');
 
         if (isSameDateTime(view, currentEnd, expectedEnd)) {
+            refreshDurationField(view);
+
             return;
         }
 
-        view.model.set({
-            dateEnd: expectedEnd,
-            duration: defaultSeconds,
-        }, {ui: true, updatedByDuration: true});
+        view._applyingDefaultDuration = true;
+
+        try {
+            view.model.set({
+                dateEnd: expectedEnd,
+                duration: defaultSeconds,
+            }, {ui: true, updatedByDuration: true});
+        } finally {
+            view._applyingDefaultDuration = false;
+        }
 
         refreshDurationField(view);
     };
@@ -198,12 +230,19 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
         view._defaultDurationTimer = setTimeout(run, 250);
     };
 
+    const scheduleDurationGuards = function (view) {
+        [500, 1000, 1500].forEach(delay => {
+            setTimeout(() => applyDefaultDuration(view), delay);
+        });
+    };
+
     return {
         FALLBACK_DURATION_SECONDS: FALLBACK_DURATION_SECONDS,
         getDefaultDurationSeconds: getDefaultDurationSeconds,
         computeDateEnd: computeDateEnd,
         refreshDurationField: refreshDurationField,
         applyDefaultDuration: applyDefaultDuration,
+        syncFromProspect: syncFromProspect,
 
         setupProspectSync: function (view) {
             view.listenTo(view.model, 'change:parentId change:parentType change:prospectId', () => {
@@ -212,7 +251,15 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
 
             view.once('after:render', () => {
                 scheduleProspectSync(view);
+
+                if (resolveProspectId(view)) {
+                    setTimeout(() => scheduleProspectSync(view), 300);
+                }
             });
+
+            if (resolveProspectId(view)) {
+                scheduleProspectSync(view);
+            }
         },
 
         setupDefaultDuration: function (view) {
@@ -224,9 +271,17 @@ define('custom:helpers/appuntamento-prospect-sync', [], function () {
                 scheduleDefaultDuration(view);
             });
 
+            view.listenTo(view.model, 'change:dateEnd', () => {
+                if (view._applyingDefaultDuration) {
+                    return;
+                }
+
+                scheduleDefaultDuration(view);
+            });
+
             view.once('after:render', () => {
                 scheduleDefaultDuration(view);
-                setTimeout(() => applyDefaultDuration(view), 500);
+                scheduleDurationGuards(view);
             });
         },
     };
