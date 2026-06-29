@@ -39,12 +39,8 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
             };
         }
 
-        resolveDisponibilitaBrandColor(o) {
-            if (o.color) {
-                return o.color;
-            }
-
-            return this.colors[DISPONIBILITA_SCOPE] || null;
+        getNonWorkingBackgroundColor() {
+            return this.colors.bg || this.colors['bg'] || '#d3d3d3';
         }
 
         resolveDisponibilitaDayDate(o) {
@@ -65,20 +61,53 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
             return null;
         }
 
-        buildLocalMoment(dayDate, timeMoment) {
+        parseTimesFromName(name) {
+            if (!name) {
+                return null;
+            }
+
+            const match = String(name).match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+
+            if (!match) {
+                return null;
+            }
+
+            return {
+                start: match[1],
+                end: match[2],
+            };
+        }
+
+        buildLocalMomentFromTime(dayDate, timeStr) {
             const day = this.getDateTime().toMoment(dayDate);
+            const parts = String(timeStr).split(':');
 
             return day.clone()
-                .hour(timeMoment.hour())
-                .minute(timeMoment.minute())
+                .hour(parseInt(parts[0], 10) || 0)
+                .minute(parseInt(parts[1], 10) || 0)
                 .second(0)
                 .millisecond(0);
         }
 
-        buildDisponibilitaInverseBackground(o, headerEvent) {
+        resolveDisponibilitaTimes(o) {
             const dayDate = this.resolveDisponibilitaDayDate(o);
 
-            if (!dayDate || !o.orarioInizio || !o.orarioFine) {
+            if (!dayDate) {
+                return null;
+            }
+
+            const fromName = this.parseTimesFromName(o.name);
+
+            if (fromName) {
+                const start = this.buildLocalMomentFromTime(dayDate, fromName.start);
+                const end = this.buildLocalMomentFromTime(dayDate, fromName.end);
+
+                if (end.isAfter(start)) {
+                    return {start, end};
+                }
+            }
+
+            if (!o.orarioInizio || !o.orarioFine) {
                 return null;
             }
 
@@ -89,23 +118,34 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
                 return null;
             }
 
-            const start = this.buildLocalMoment(dayDate, inizio);
-            const end = this.buildLocalMoment(dayDate, fine);
+            const start = this.buildLocalMomentFromTime(dayDate, inizio.format('HH:mm'));
+            const end = this.buildLocalMomentFromTime(dayDate, fine.format('HH:mm'));
 
             if (!end.isAfter(start)) {
                 return null;
             }
 
+            return {start, end};
+        }
+
+        buildDisponibilitaAvailabilityEvent(o) {
+            const times = this.resolveDisponibilitaTimes(o);
+
+            if (!times) {
+                return null;
+            }
+
             return {
-                ...headerEvent,
-                id: headerEvent.id + '-inv',
+                id: DISPONIBILITA_SCOPE + '-' + o.id + '-avail',
+                recordId: o.id,
+                scope: DISPONIBILITA_SCOPE,
                 title: '',
-                start: start.toISOString(true),
-                end: end.toISOString(true),
+                start: times.start.toISOString(true),
+                end: times.end.toISOString(true),
                 allDay: false,
                 display: 'inverse-background',
                 groupId: DISPONIBILITA_INVERSE_GROUP,
-                color: this.colors.bg || this.colors['bg'],
+                color: this.getNonWorkingBackgroundColor(),
                 editable: false,
             };
         }
@@ -115,20 +155,10 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
 
             (list || []).forEach(o => {
                 if (o.scope === DISPONIBILITA_SCOPE) {
-                    const headerEvent = super.convertToFcEvent(o);
-                    const brandColor = this.resolveDisponibilitaBrandColor(o);
+                    const availabilityEvent = this.buildDisponibilitaAvailabilityEvent(o);
 
-                    if (brandColor) {
-                        headerEvent.color = brandColor;
-                        headerEvent.originalColor = brandColor;
-                    }
-
-                    events.push(headerEvent);
-
-                    const inverseBackground = this.buildDisponibilitaInverseBackground(o, headerEvent);
-
-                    if (inverseBackground) {
-                        events.push(inverseBackground);
+                    if (availabilityEvent) {
+                        events.push(availabilityEvent);
                     }
 
                     return;

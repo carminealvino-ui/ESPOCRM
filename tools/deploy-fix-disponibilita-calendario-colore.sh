@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Allinea colore calendario lavorativo (Disponibilità ricorrenti) alla palette brand.
+# Calendario lavorativo: fascia bianca da Disponibilità (senza colore brand).
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-disponibilita-calendario-colore-9999/tools/deploy-fix-disponibilita-calendario-colore.sh?t=$(date +%s)" | bash
@@ -15,10 +15,10 @@ FILES=(
   "custom/Espo/Custom/Hooks/Disponibilita/SetName.php"
   "custom/Espo/Custom/Resources/metadata/app/calendar.json"
   "client/custom/src/views/calendar/calendar.js"
-  "tools/data/brand-calendar-colors.json"
+  "tools/backfill-disponibilita-data-da-inizio.php"
 )
 
-echo "=== Fix colore calendario Disponibilità ricorrenti → ${CRM_ROOT} ==="
+echo "=== Fix disponibilità calendario (bianco, no brand) → ${CRM_ROOT} ==="
 
 for rel in "${FILES[@]}"; do
   target="${CRM_ROOT}/${rel}"
@@ -48,11 +48,21 @@ curl -fsSL -o "${TMP}" "${BASE}/client/custom/src/views/calendar/calendar.js?t=$
 deploy_client_file "client/custom/src/views/calendar/calendar.js" "${TMP}"
 rm -f "${TMP}"
 
+grep -q "buildDisponibilitaAvailabilityEvent" "${CRM_ROOT}/client/custom/src/views/calendar/calendar.js" || {
+  echo "ERRORE: calendar.js non aggiornato" >&2
+  exit 1
+}
+
+grep -q "resolveDisponibilitaBrandColor" "${CRM_ROOT}/client/custom/src/views/calendar/calendar.js" && {
+  echo "ERRORE: calendar.js contiene ancora colore brand" >&2
+  exit 1
+}
+
 (cd "${CRM_ROOT}" && php command.php rebuild && php command.php clearCache)
 
 echo ""
-echo "Allinea date/orari record esistenti (consigliato se fasce su giorni sbagliati):"
-echo "  cd ${CRM_ROOT}"
-echo "  php tools/backfill-disponibilita-data-da-inizio.php"
+echo "Allineamento orari disponibilità sul giorno corretto..."
+(cd "${CRM_ROOT}" && php tools/backfill-disponibilita-data-da-inizio.php)
+
 echo ""
 echo "Fatto. Ctrl+Shift+R sul calendario."
