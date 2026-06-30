@@ -426,60 +426,63 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
         mapContrattiTile: function (tile) {
             return this.mapQuoteMetricTile(tile, [
-                {key: 'totali', label: 'Contratti totali'},
-                {key: 'finanziamentiRifiutati', label: 'Contratti con finanziamenti rifiutati'},
                 {key: 'lordi', label: 'Contratti lordi'},
                 {key: 'recessi', label: 'Contratti con recessi'},
+                {key: 'totali', label: 'Contratti totali'},
+                {key: 'finanziamentiRifiutati', label: 'Contratti con finanziamenti rifiutati'},
                 {key: 'netti', label: 'Contratti netti'},
             ], this.formatNumber);
         },
 
         mapValoreProduzioneTile: function (tile) {
             return this.mapQuoteMetricTile(tile, [
-                {key: 'totali', label: 'Valore produzione totale'},
-                {key: 'finanziamentiRifiutati', label: 'Valore con finanziamenti rifiutati'},
-                {key: 'lordi', label: 'Valore produzione lordo'},
+                {key: 'lordi', label: 'Valore produzione totale'},
                 {key: 'recessi', label: 'Valore con recessi'},
+                {key: 'totali', label: 'Valore produzione lordo'},
+                {key: 'finanziamentiRifiutati', label: 'Valore con finanziamenti rifiutati'},
                 {key: 'netti', label: 'Valore produzione netto'},
             ], this.formatCurrency);
         },
 
         mapProvvigioniTile: function (tile) {
             return this.mapQuoteMetricTile(tile, [
-                {key: 'totali', label: 'Provvigioni totali'},
-                {key: 'finanziamentiRifiutati', label: 'Provvigioni con finanziamenti rifiutati'},
-                {key: 'lordi', label: 'Provvigioni lordi'},
+                {key: 'lordi', label: 'Provvigioni totali'},
                 {key: 'recessi', label: 'Provvigioni con recessi'},
+                {key: 'totali', label: 'Provvigioni lordi'},
+                {key: 'finanziamentiRifiutati', label: 'Provvigioni con finanziamenti rifiutati'},
                 {key: 'netti', label: 'Provvigioni nette'},
             ], this.formatCurrency);
         },
 
         /**
-         * Contratti / valore / provvigioni: % su totali, netti su lordi.
+         * Contratti / valore / provvigioni — stessa gerarchia degli Appuntamenti:
+         * lordi (tutti) → recessi % su lordi → totali (dopo recessi, base) → netti.
          *
          * @param {Function} formatValue
          */
         mapQuoteMetricTile: function (tile, rows, formatValue) {
             const source = tile || {};
-            const baseTotali = Number(source.totali || 0);
             const baseLordi = Number(source.lordi || 0);
+            const baseTotali = Number(source.totali || 0);
 
             return rows.map(def => {
                 const raw = Number(source[def.key] || 0);
                 let value = formatValue.call(this, raw);
                 let base = null;
+                let isBase = false;
 
                 if (def.key === 'lordi') {
                     base = null;
-                } else if (def.key === 'netti') {
+                } else if (def.key === 'recessi') {
                     base = baseLordi;
                 } else {
                     base = baseTotali;
+                    isBase = def.key === 'totali';
                 }
 
                 if (base !== null) {
                     const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
-                    value += ' · ' + percent + '%' + (def.key === 'totali' ? ' (base)' : '');
+                    value += ' · ' + percent + '%' + (isBase ? ' (base)' : '');
                 }
 
                 return {

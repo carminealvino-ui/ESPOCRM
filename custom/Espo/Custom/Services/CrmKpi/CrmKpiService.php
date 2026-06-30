@@ -159,51 +159,51 @@ class CrmKpiService
 
     private function getContrattiTile(KpiContext $ctx): object
     {
-        $totali = $this->countQuotes($ctx);
-        $finanziamentiRifiutati = $this->countQuotes($ctx, onlyFinancingKo: true);
-        $lordi = $this->countQuotes($ctx, excludeRecesso: true);
+        $lordi = $this->countQuotes($ctx);
         $recessi = $this->countQuotes($ctx, onlyRecesso: true);
+        $finanziamentiRifiutati = $this->countQuotes($ctx, onlyFinancingKo: true);
+        $totali = $this->countQuotes($ctx, excludeRecesso: true);
         $netti = $this->countQuotes($ctx, excludeFinancingKo: true, excludeRecesso: true);
 
         return (object) [
-            'totali' => $totali,
-            'finanziamentiRifiutati' => $finanziamentiRifiutati,
             'lordi' => $lordi,
             'recessi' => $recessi,
+            'finanziamentiRifiutati' => $finanziamentiRifiutati,
+            'totali' => $totali,
             'netti' => $netti,
         ];
     }
 
     private function getValoreProduzioneTile(KpiContext $ctx): object
     {
-        $totali = $this->sumQuoteAmount($ctx);
-        $finanziamentiRifiutati = $this->sumQuoteAmount($ctx, onlyFinancingKo: true);
-        $lordi = $this->sumQuoteAmount($ctx, excludeRecesso: true);
+        $lordi = $this->sumQuoteAmount($ctx);
         $recessi = $this->sumQuoteAmount($ctx, onlyRecesso: true);
+        $finanziamentiRifiutati = $this->sumQuoteAmount($ctx, onlyFinancingKo: true);
+        $totali = $this->sumQuoteAmount($ctx, excludeRecesso: true);
         $netti = $this->sumQuoteAmount($ctx, excludeFinancingKo: true, excludeRecesso: true);
 
         return (object) [
-            'totali' => round($totali, 2),
-            'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
             'lordi' => round($lordi, 2),
             'recessi' => round($recessi, 2),
+            'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
+            'totali' => round($totali, 2),
             'netti' => round($netti, 2),
         ];
     }
 
     private function getProvvigioniTile(KpiContext $ctx): object
     {
-        $totali = $this->sumQuoteProvvigioni($ctx);
-        $finanziamentiRifiutati = $this->sumQuoteProvvigioni($ctx, onlyFinancingKo: true);
-        $lordi = $this->sumQuoteProvvigioni($ctx, excludeRecesso: true);
+        $lordi = $this->sumQuoteProvvigioni($ctx);
         $recessi = $this->sumQuoteProvvigioni($ctx, onlyRecesso: true);
+        $finanziamentiRifiutati = $this->sumQuoteProvvigioni($ctx, onlyFinancingKo: true);
+        $totali = $this->sumQuoteProvvigioni($ctx, excludeRecesso: true);
         $netti = $this->sumQuoteProvvigioni($ctx, excludeFinancingKo: true, excludeRecesso: true);
 
         return (object) [
-            'totali' => round($totali, 2),
-            'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
             'lordi' => round($lordi, 2),
             'recessi' => round($recessi, 2),
+            'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
+            'totali' => round($totali, 2),
             'netti' => round($netti, 2),
         ];
     }
@@ -396,7 +396,7 @@ class CrmKpiService
         bool $onlyFinancingKo = false,
         bool $onlyRecesso = false
     ): int {
-        if ($onlyFinancingKo || $excludeFinancingKo) {
+        if ($onlyFinancingKo || $excludeFinancingKo || $onlyRecesso || $excludeRecesso) {
             return $this->countQuotesResolved($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso);
         }
 
@@ -413,7 +413,7 @@ class CrmKpiService
         bool $onlyFinancingKo = false,
         bool $onlyRecesso = false
     ): float {
-        if ($onlyFinancingKo || $excludeFinancingKo) {
+        if ($onlyFinancingKo || $excludeFinancingKo || $onlyRecesso || $excludeRecesso) {
             return $this->sumQuoteFieldResolved(
                 $ctx,
                 ['importoContratto', 'amount', 'grandTotalAmount'],
@@ -438,7 +438,7 @@ class CrmKpiService
         bool $onlyFinancingKo = false,
         bool $onlyRecesso = false
     ): float {
-        if ($onlyFinancingKo || $excludeFinancingKo) {
+        if ($onlyFinancingKo || $excludeFinancingKo || $onlyRecesso || $excludeRecesso) {
             return $this->sumQuoteFieldResolved(
                 $ctx,
                 ['totaleProvvigioni'],
@@ -549,7 +549,7 @@ class CrmKpiService
         bool $onlyFinancingKo,
         bool $onlyRecesso,
     ): bool {
-        $isRecesso = $quote->get('statoContratto') === self::CONTRACT_RECESSO;
+        $isRecesso = $this->isQuoteRecesso($quote);
         $isFinancingRejected = $this->isQuoteFinancingRejected($quote, $opportunityRejectedMap);
 
         if ($onlyRecesso) {
@@ -1026,7 +1026,7 @@ class CrmKpiService
      */
     private function isQuoteNetto(Entity $quote, ?array $opportunityRejectedMap = null): bool
     {
-        if ($quote->get('statoContratto') === self::CONTRACT_RECESSO) {
+        if ($this->isQuoteRecesso($quote)) {
             return false;
         }
 
