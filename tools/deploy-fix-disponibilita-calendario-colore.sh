@@ -17,6 +17,8 @@ FILES=(
   "client/custom/src/views/calendar/calendar.js"
   "tools/backfill-disponibilita-data-da-inizio.php"
   "tools/fix-disponibilita-calendario-display.php"
+  "tools/purge-disponibilita-orfane.php"
+  "tools/report-disponibilita-settimana.php"
 )
 
 echo "=== Fix disponibilità calendario (bianco, no brand) → ${CRM_ROOT} ==="
@@ -63,6 +65,14 @@ echo "Allineamento date/orari disponibilità..."
 echo ""
 echo "Ripristino etichette, isAllDay e colori..."
 (cd "${CRM_ROOT}" && php tools/fix-disponibilita-calendario-display.php)
+
+echo ""
+echo "Eliminazione 14 disponibilità orfane (senza data/orario)..."
+(cd "${CRM_ROOT}" && php tools/purge-disponibilita-orfane.php)
+
+echo ""
+echo "Report settimana 29/06 - 05/07:"
+(cd "${CRM_ROOT}" && php tools/report-disponibilita-settimana.php --from=2026-06-29 --to=2026-07-05)
 
 echo ""
 echo "Fatto. Ctrl+Shift+R sul calendario."
