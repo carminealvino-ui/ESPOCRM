@@ -39,6 +39,7 @@ $timezone = new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE);
 $today = (new \DateTimeImmutable('today', $timezone))->format('Y-m-d');
 
 echo '=== Backfill Call da appuntamenti Pending ===' . PHP_EOL;
+echo 'Creator: ' . AppuntamentoPendingCallCreator::CREATOR_VERSION . PHP_EOL;
 echo 'Oggi (Rome): ' . $today . PHP_EOL;
 echo 'Modalità: ' . ($create ? 'CREA Call mancanti' : 'SOLO ANTEPRIMA (aggiungi --create)') . PHP_EOL;
 
@@ -150,7 +151,9 @@ foreach ($collection as $appuntamento) {
                 . PHP_EOL;
         } else {
             $stats['failed']++;
-            $reason = $creator->diagnoseCreateBlockReason($full) ?: 'motivo sconosciuto';
+            $reason = $creator->getLastFailureReason()
+                ?: $creator->diagnoseCreateBlockReason($full)
+                ?: 'motivo sconosciuto';
             echo 'ERRORE ' . $appuntamentoId . ' | ' . $reason . PHP_EOL;
         }
     } catch (\Throwable $e) {

@@ -113,7 +113,7 @@ foreach ($collection as $appuntamento) {
         'call_day' => $callDateRome,
         'call_id' => $existingCall?->getId(),
         'call_status' => $existingCall ? (string) $existingCall->get('status') : null,
-        'lead_ok' => canResolveLead($entityManager, $appuntamento),
+        'lead_ok' => canResolveLead($entityManager, $appuntamento, $creator),
     ];
 
     if ($existingCall) {
@@ -251,11 +251,13 @@ function findExistingPendingCall($entityManager, string $appuntamentoId): ?Entit
         ->findOne();
 }
 
-function canResolveLead($entityManager, Entity $appuntamento): bool
+function canResolveLead($entityManager, Entity $appuntamento, AppuntamentoPendingCallCreator $creator): bool
 {
     if ($appuntamento->get('parentType') === 'Lead' && $appuntamento->get('parentId')) {
-        return true;
+        if ($entityManager->getEntityById('Lead', $appuntamento->get('parentId'))) {
+            return true;
+        }
     }
 
-    return (bool) $appuntamento->get('prospectId');
+    return $creator->resolveProspect($appuntamento) !== null;
 }

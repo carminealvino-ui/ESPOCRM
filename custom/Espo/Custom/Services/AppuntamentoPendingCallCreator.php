@@ -17,6 +17,21 @@ class AppuntamentoPendingCallCreator
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
     private const ADMIN_USER_ID = '1';
     private const REMINDER_SECONDS = 0;
+    public const CREATOR_VERSION = '2026-06-30d';
+
+    private ?string $lastFailureReason = null;
+
+    public function getLastFailureReason(): ?string
+    {
+        return $this->lastFailureReason;
+    }
+
+    private function fail(string $reason): null
+    {
+        $this->lastFailureReason = $reason;
+
+        return null;
+    }
 
     /** @var array<string, string> */
     private static array $rememberedLeadIds = [];
@@ -50,22 +65,24 @@ class AppuntamentoPendingCallCreator
         ?\DateTimeImmutable $notBefore = null,
         ?string $leadIdOverride = null
     ): ?string {
+        $this->lastFailureReason = null;
+
         if ($appuntamento->get('status') !== 'Held') {
-            return null;
+            return $this->fail('status=' . (string) $appuntamento->get('status') . ' (atteso Held)');
         }
 
         if ($appuntamento->get('sottostato') !== 'Pending') {
-            return null;
+            return $this->fail('sottostato=' . (string) $appuntamento->get('sottostato') . ' (atteso Pending)');
         }
 
         if (!PendingCallDateTime::isAppointmentEligible($appuntamento->get('dateStart'))) {
-            return null;
+            return $this->fail('appuntamento prima del 2026');
         }
 
         $appuntamentoId = $appuntamento->getId();
 
         if (!$appuntamentoId) {
-            return null;
+            return $this->fail('appuntamento senza id');
         }
 
         $existingCallId = $this->findExistingPlannedPendingCallId($appuntamentoId);
@@ -75,17 +92,27 @@ class AppuntamentoPendingCallCreator
             $existingCall = $this->entityManager->getEntityById('Call', $existingCallId);
 
             if ($existingCall) {
-                $this->syncPopupReminders($existingCall);
+                $this->syncPopupRemindersSafe($existingCall);
             }
 
             return $existingCallId;
         }
 
+        $prospect = $this->resolveProspect($appuntamento);
         $leadId = $leadIdOverride ?: $this->ensureLeadId($appuntamento);
+        $parentType = 'Lead';
+        $parentId = $leadId;
+        $parentEntity = $leadId ? $this->entityManager->getEntityById('Lead', $leadId) : null;
 
-        if (!$leadId) {
+        if (!$parentEntity && $prospect) {
+            $parentType = 'Prospect';
+            $parentId = $prospect->getId();
+            $parentEntity = $prospect;
+        }
+
+        if (!$parentEntity || !$parentId) {
             $this->log->warning(
-                'Auto-create Call Pending: Lead non trovato per Appuntamento {id} (parentType={parentType}, parentId={parentId}, prospectId={prospectId})',
+                'Auto-create Call Pending: Lead/Prospect non trovato per Appuntamento {id} (parentType={parentType}, parentId={parentId}, prospectId={prospectId})',
                 [
                     'id' => $appuntamentoId,
                     'parentType' => (string) $appuntamento->get('parentType'),
@@ -94,21 +121,10 @@ class AppuntamentoPendingCallCreator
                 ]
             );
 
-            return null;
-        }
-
-        $lead = $this->entityManager->getEntityById('Lead', $leadId);
-
-        if (!$lead) {
-            $this->log->warning(
-                'Auto-create Call Pending: Lead {leadId} inesistente per Appuntamento {id}',
-                [
-                    'id' => $appuntamentoId,
-                    'leadId' => $leadId,
-                ]
-            );
-
-            return null;
+            return $this->fail('lead/prospect non risolvibile (parent='
+                . (string) $appuntamento->get('parentType')
+                . '/' . (string) $appuntamento->get('parentId')
+                . ' prospect=' . (string) $appuntamento->get('prospectId') . ')');
         }
 
         unset(self::$rememberedLeadIds[$appuntamentoId]);
@@ -117,16 +133,26 @@ class AppuntamentoPendingCallCreator
         $callInstant = $this->buildCallInstantFromAppointment($appuntamento, $notBefore);
 
         if (!$callInstant) {
-            return null;
+            return $this->fail('data richiamo non calcolabile');
         }
 
         $callDateStartUtc = BusinessDateTime::businessToStorage($callInstant);
+        $leadSync = new LeadProspectSync($this->entityManager);
+        $parentName = trim((string) ($appuntamento->get('parentName') ?: $leadSync->resolveDisplayName($parentEntity)));
+        $telefono = trim((string) ($appuntamento->get('telefono')
+            ?: ($parentType === 'Lead'
+                ? $parentEntity->get('phoneNumber')
+                : $leadSync->resolvePhoneFromProspect($parentEntity))));
 
-        $parentName = $appuntamento->get('parentName') ?: $lead->get('name');
-        $telefono = $appuntamento->get('telefono') ?: $lead->get('phoneNumber');
+        if ($telefono === '') {
+            return $this->fail('telefono mancante su appuntamento/lead/prospect');
+        }
+
         $presentation = $this->buildCallPresentationFields($callInstant, $parentName, $telefono);
-        $ownerUserId = $this->resolveOwnerUserId($appuntamento);
+        $ownerUserId = $this->resolveOwnerUserId($appuntamento) ?: self::ADMIN_USER_ID;
         $ownerUserName = $this->resolveOwnerUserName($ownerUserId);
+        $prospectId = $prospect?->getId() ?: $appuntamento->get('prospectId');
+        $prospectName = $prospect?->get('name') ?: $appuntamento->get('prospectName');
 
         $call = $this->entityManager->createEntity('Call');
 
@@ -140,17 +166,18 @@ class AppuntamentoPendingCallCreator
             'status' => 'Planned',
             'direction' => 'Outbound',
             'tipologia' => self::TIPOLOGIA,
-            'parentType' => 'Lead',
-            'parentId' => $leadId,
+            'richiamo' => self::TIPOLOGIA,
+            'parentType' => $parentType,
+            'parentId' => $parentId,
             'parentName' => $parentName,
-            'prospectId' => $appuntamento->get('prospectId'),
-            'prospectName' => $appuntamento->get('prospectName'),
+            'prospectId' => $prospectId,
+            'prospectName' => $prospectName,
             'telefono' => $telefono,
             'dateStart' => $callDateStartUtc,
             'assignedUserId' => $ownerUserId,
             'assignedUserName' => $ownerUserName,
-            'usersIds' => $ownerUserId ? [$ownerUserId] : [],
-            'usersNames' => $usersNames !== [] ? $usersNames : (object) [],
+            'usersIds' => [$ownerUserId],
+            'usersNames' => $usersNames,
             'daRichiamare' => false,
             'whatsApp' => true,
             'vocale' => false,
@@ -166,31 +193,39 @@ class AppuntamentoPendingCallCreator
                 'skipHooks' => true,
             ]);
         } catch (\Throwable $e) {
+            $message = $e->getMessage();
+
             $this->log->error(
                 'Auto-create Call Pending: salvataggio fallito per Appuntamento {id}: {message}',
                 [
                     'id' => $appuntamentoId,
-                    'message' => $e->getMessage(),
+                    'message' => $message,
                     'exception' => $e,
                 ]
             );
 
-            throw $e;
+            return $this->fail('salvataggio Call fallito: ' . $message);
         }
 
-        $this->syncPopupReminders($call);
+        $callId = $call->getId();
+
+        if (!$callId) {
+            return $this->fail('salvataggio Call senza id');
+        }
+
+        $this->syncPopupRemindersSafe($call);
 
         $this->log->info(
             'Auto-create Call Pending: creata Call {callId} per Appuntamento {id} UTC {dateStartUtc} (Rome {dateStartRome})',
             [
-                'callId' => $call->getId(),
+                'callId' => $callId,
                 'id' => $appuntamentoId,
                 'dateStartUtc' => $callDateStartUtc,
                 'dateStartRome' => PendingCallDateTime::formatBusinessDateTime($callInstant),
             ]
         );
 
-        return $call->getId();
+        return $callId;
     }
 
     public function diagnoseCreateBlockReason(Entity $appuntamento): ?string
@@ -217,21 +252,35 @@ class AppuntamentoPendingCallCreator
             return 'call pianificata già presente';
         }
 
+        $prospect = $this->resolveProspect($appuntamento);
         $leadId = $this->ensureLeadId($appuntamento);
+        $hasParent = ($leadId && $this->entityManager->getEntityById('Lead', $leadId)) || $prospect;
 
-        if (!$leadId) {
-            return 'lead non risolvibile (parent='
+        if (!$hasParent) {
+            return 'lead/prospect non risolvibile (parent='
                 . (string) $appuntamento->get('parentType')
                 . '/' . (string) $appuntamento->get('parentId')
                 . ' prospect=' . (string) $appuntamento->get('prospectId') . ')';
         }
 
-        if (!$this->entityManager->getEntityById('Lead', $leadId)) {
-            return 'lead ' . $leadId . ' inesistente';
-        }
-
         if (!$this->buildEffectiveCallInstant($appuntamento)) {
             return 'data richiamo non calcolabile';
+        }
+
+        $leadSync = new LeadProspectSync($this->entityManager);
+        $telefono = trim((string) $appuntamento->get('telefono'));
+
+        if ($telefono === '' && $leadId) {
+            $lead = $this->entityManager->getEntityById('Lead', $leadId);
+            $telefono = trim((string) ($lead?->get('phoneNumber') ?: ''));
+        }
+
+        if ($telefono === '' && $prospect) {
+            $telefono = trim((string) ($leadSync->resolvePhoneFromProspect($prospect) ?: ''));
+        }
+
+        if ($telefono === '') {
+            return 'telefono mancante su appuntamento/lead/prospect';
         }
 
         return null;
@@ -579,29 +628,85 @@ class AppuntamentoPendingCallCreator
             . BusinessDateTime::formatBusiness($dataRichiamo, 'd/m/Y H:i');
     }
 
-    public function resolveLeadId(Entity $appuntamento): ?string
+    public function resolveProspect(Entity $appuntamento): ?Entity
     {
-        $appuntamentoId = $appuntamento->getId();
-
-        if ($appuntamentoId && isset(self::$rememberedLeadIds[$appuntamentoId])) {
-            return self::$rememberedLeadIds[$appuntamentoId];
-        }
-
-        if ($appuntamento->get('parentType') === 'Lead') {
+        if ($appuntamento->get('parentType') === 'Prospect') {
             $parentId = $appuntamento->get('parentId');
 
             if ($parentId) {
-                return $parentId;
+                $prospect = $this->entityManager->getEntityById('Prospect', $parentId);
+
+                if ($prospect) {
+                    return $prospect;
+                }
             }
         }
 
         $prospectId = $appuntamento->get('prospectId');
 
-        if (!$prospectId) {
+        if ($prospectId) {
+            $prospect = $this->entityManager->getEntityById('Prospect', $prospectId);
+
+            if ($prospect) {
+                return $prospect;
+            }
+        }
+
+        $telefono = trim((string) $appuntamento->get('telefono'));
+
+        if ($telefono === '') {
             return null;
         }
 
-        $prospect = $this->entityManager->getEntityById('Prospect', $prospectId);
+        $digits = preg_replace('/\D+/', '', $telefono) ?: '';
+
+        if ($digits === '') {
+            return null;
+        }
+
+        $repository = $this->entityManager->getRDBRepository('Prospect');
+
+        foreach (['phoneNumber', 'telefono'] as $field) {
+            $prospect = $repository->where([$field => $digits])->findOne();
+
+            if ($prospect) {
+                return $prospect;
+            }
+
+            if (str_starts_with($digits, '39') && strlen($digits) > 10) {
+                $local = substr($digits, 2);
+                $prospect = $repository->where([$field => $local])->findOne();
+
+                if ($prospect) {
+                    return $prospect;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function resolveLeadId(Entity $appuntamento): ?string
+    {
+        $appuntamentoId = $appuntamento->getId();
+
+        if ($appuntamentoId && isset(self::$rememberedLeadIds[$appuntamentoId])) {
+            $leadId = self::$rememberedLeadIds[$appuntamentoId];
+
+            if ($this->entityManager->getEntityById('Lead', $leadId)) {
+                return $leadId;
+            }
+        }
+
+        if ($appuntamento->get('parentType') === 'Lead') {
+            $parentId = $appuntamento->get('parentId');
+
+            if ($parentId && $this->entityManager->getEntityById('Lead', $parentId)) {
+                return $parentId;
+            }
+        }
+
+        $prospect = $this->resolveProspect($appuntamento);
 
         if (!$prospect) {
             return null;
@@ -628,13 +733,7 @@ class AppuntamentoPendingCallCreator
             }
         }
 
-        $prospectId = $appuntamento->get('prospectId');
-
-        if (!$prospectId) {
-            return null;
-        }
-
-        $prospect = $this->entityManager->getEntityById('Prospect', $prospectId);
+        $prospect = $this->resolveProspect($appuntamento);
 
         if (!$prospect) {
             return null;
@@ -810,7 +909,7 @@ class AppuntamentoPendingCallCreator
         $userIds = $this->resolveCallReminderUserIds($call);
 
         if ($userIds === []) {
-            return;
+            $userIds = [self::ADMIN_USER_ID];
         }
 
         $remindAt = $this->buildRemindAtUtc((string) $dateStart, self::REMINDER_SECONDS);
@@ -860,6 +959,22 @@ class AppuntamentoPendingCallCreator
             if ($reminder) {
                 $this->entityManager->removeEntity($reminder, ['skipAcl' => true]);
             }
+        }
+    }
+
+    private function syncPopupRemindersSafe(Entity $call): void
+    {
+        try {
+            $this->syncPopupReminders($call);
+        } catch (\Throwable $e) {
+            $this->log->warning(
+                'Auto-create Call Pending: promemoria non creati per Call {callId}: {message}',
+                [
+                    'callId' => $call->getId(),
+                    'message' => $e->getMessage(),
+                    'exception' => $e,
+                ]
+            );
         }
     }
 
