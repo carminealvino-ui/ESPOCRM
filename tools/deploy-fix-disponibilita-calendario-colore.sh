@@ -57,7 +57,11 @@ grep -q "buildDisponibilitaEvents" "${CRM_ROOT}/client/custom/src/views/calendar
 (cd "${CRM_ROOT}" && php command.php rebuild && php command.php clearCache)
 
 echo ""
-echo "Ripristino etichette e colori disponibilità..."
+echo "Allineamento date/orari disponibilità..."
+(cd "${CRM_ROOT}" && php tools/backfill-disponibilita-data-da-inizio.php)
+
+echo ""
+echo "Ripristino etichette, isAllDay e colori..."
 (cd "${CRM_ROOT}" && php tools/fix-disponibilita-calendario-display.php)
 
 echo ""

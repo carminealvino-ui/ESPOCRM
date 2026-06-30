@@ -117,6 +117,13 @@ foreach ($rows as $row) {
         'id' => $row['id'],
     ]);
 
+    $entity = $entityManager->getEntityById('Disponibilita', $row['id']);
+
+    if ($entity) {
+        $entity->set('datadisponibilita', $target);
+        $entityManager->saveEntity($entity);
+    }
+
     $updated++;
 }
 
@@ -186,6 +193,24 @@ function resolveTargetDate(array $row, DateTimeZone $timezone): ?string
 
         if ($date !== null) {
             return $date;
+        }
+    }
+
+    foreach (['orario_inizio', 'orario_fine'] as $field) {
+        $value = $row[$field] ?? null;
+
+        if (!is_string($value) || $value === '') {
+            continue;
+        }
+
+        try {
+            return extractDateUtcToRome($value, $timezone);
+        } catch (\Throwable) {
+            $date = normalizeDate($value);
+
+            if ($date !== null) {
+                return $date;
+            }
         }
     }
 
