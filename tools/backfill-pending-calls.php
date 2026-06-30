@@ -122,11 +122,11 @@ foreach ($collection as $appuntamento) {
             : '?';
 
         if (!$create) {
-            $leadOk = $creator->resolveLeadId($full) || $full->get('prospectId');
+            $reason = $creator->diagnoseCreateBlockReason($full);
 
-            if (!$leadOk) {
+            if ($reason !== null) {
                 $stats['skipped_no_lead']++;
-                echo 'SKIP no-lead ' . $appuntamentoId . ' | ' . (string) $full->get('name') . PHP_EOL;
+                echo 'SKIP ' . $appuntamentoId . ' | ' . $reason . PHP_EOL;
                 continue;
             }
 
@@ -150,10 +150,8 @@ foreach ($collection as $appuntamento) {
                 . PHP_EOL;
         } else {
             $stats['failed']++;
-            echo 'ERRORE creazione per app. ' . $appuntamentoId
-                . ' (status=' . (string) $full->get('status')
-                . ' sottostato=' . (string) $full->get('sottostato')
-                . ' prospect=' . (string) $full->get('prospectId') . ')' . PHP_EOL;
+            $reason = $creator->diagnoseCreateBlockReason($full) ?: 'motivo sconosciuto';
+            echo 'ERRORE ' . $appuntamentoId . ' | ' . $reason . PHP_EOL;
         }
     } catch (\Throwable $e) {
         $stats['failed']++;

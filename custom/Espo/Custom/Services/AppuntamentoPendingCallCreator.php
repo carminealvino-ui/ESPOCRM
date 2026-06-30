@@ -150,7 +150,7 @@ class AppuntamentoPendingCallCreator
             'assignedUserId' => $ownerUserId,
             'assignedUserName' => $ownerUserName,
             'usersIds' => $ownerUserId ? [$ownerUserId] : [],
-            'usersNames' => $usersNames,
+            'usersNames' => $usersNames !== [] ? $usersNames : (object) [],
             'daRichiamare' => false,
             'whatsApp' => true,
             'vocale' => false,
@@ -191,6 +191,50 @@ class AppuntamentoPendingCallCreator
         );
 
         return $call->getId();
+    }
+
+    public function diagnoseCreateBlockReason(Entity $appuntamento): ?string
+    {
+        if ($appuntamento->get('status') !== 'Held') {
+            return 'status=' . (string) $appuntamento->get('status') . ' (atteso Held)';
+        }
+
+        if ($appuntamento->get('sottostato') !== 'Pending') {
+            return 'sottostato=' . (string) $appuntamento->get('sottostato') . ' (atteso Pending)';
+        }
+
+        if (!PendingCallDateTime::isAppointmentEligible($appuntamento->get('dateStart'))) {
+            return 'appuntamento prima del 2026';
+        }
+
+        $appuntamentoId = $appuntamento->getId();
+
+        if (!$appuntamentoId) {
+            return 'appuntamento senza id';
+        }
+
+        if ($this->findExistingPlannedPendingCallId($appuntamentoId)) {
+            return 'call pianificata già presente';
+        }
+
+        $leadId = $this->ensureLeadId($appuntamento);
+
+        if (!$leadId) {
+            return 'lead non risolvibile (parent='
+                . (string) $appuntamento->get('parentType')
+                . '/' . (string) $appuntamento->get('parentId')
+                . ' prospect=' . (string) $appuntamento->get('prospectId') . ')';
+        }
+
+        if (!$this->entityManager->getEntityById('Lead', $leadId)) {
+            return 'lead ' . $leadId . ' inesistente';
+        }
+
+        if (!$this->buildEffectiveCallInstant($appuntamento)) {
+            return 'data richiamo non calcolabile';
+        }
+
+        return null;
     }
 
     public function createRichiamoIfNeeded(Entity $appuntamento): ?string
@@ -577,7 +621,11 @@ class AppuntamentoPendingCallCreator
         $leadId = $this->resolveLeadId($appuntamento);
 
         if ($leadId) {
-            return $leadId;
+            $lead = $this->entityManager->getEntityById('Lead', $leadId);
+
+            if ($lead) {
+                return $leadId;
+            }
         }
 
         $prospectId = $appuntamento->get('prospectId');
@@ -598,12 +646,18 @@ class AppuntamentoPendingCallCreator
 
         if (!$lead) {
             $lead = $this->entityManager->createEntity('Lead');
+
+            $leadSync->syncLeadFromProspect($lead, $prospect, false);
             $lead->set(['status' => 'In Process']);
 
             $ownerUserId = $this->resolveOwnerUserId($appuntamento);
 
             if ($ownerUserId) {
                 $lead->set('assignedUserId', $ownerUserId);
+            }
+
+            if (!trim((string) $lead->get('name'))) {
+                $lead->set('name', $leadSync->resolveDisplayName($prospect) ?: 'Prospect ' . $prospectId);
             }
 
             $this->entityManager->saveEntity($lead, [
