@@ -59,7 +59,7 @@ class YieldBuilder
             $rows[] = self::buildPeriodRow($label, $buckets[$day] ?? self::emptyMetrics());
         }
 
-        return self::applyEfficiencyPercents($rows);
+        return self::applyColumnSharePercents($rows);
     }
 
     /**
@@ -83,7 +83,7 @@ class YieldBuilder
             );
         }
 
-        return self::applyEfficiencyPercents($rows);
+        return self::applyColumnSharePercents($rows);
     }
 
     /**
@@ -153,121 +153,52 @@ class YieldBuilder
 
     private static function buildCell(object $step): object
     {
-        $percents = [];
-
-        if ($step->key === 'appuntamentiNetti' && $step->percentOfPrevious !== null) {
-            $percents[] = $step->percentOfPrevious;
-        }
-
-        if ($step->percentOfNetti !== null) {
-            $percents[] = $step->percentOfNetti;
-        }
-
-        if ($step->percentOfOpportunita !== null && $step->key !== 'contrattiNetti') {
-            $percents[] = $step->percentOfOpportunita;
-        }
-
         return (object) [
             'value' => (int) $step->value,
-            'percents' => $percents,
+            'percents' => [],
         ];
     }
 
     /**
-     * Efficienza periodo (le righe sommano a 100%):
-     *   R_app = appuntamenti lordi giorno / totale lordi periodo
-     *   R_contr = contratti netti giorno / totale contratti netti periodo
-     *   score = R_contr / R_app
-     *   eff%  = score / Σ score × 100 (solo se contratti netti > 0)
+     * Percentuale di ogni cella sul totale della colonna (le righe sommano a 100%).
      *
      * @param object[] $rows
      * @return object[]
      */
-    private static function applyEfficiencyPercents(array $rows): array
+    private static function applyColumnSharePercents(array $rows): array
     {
         if ($rows === []) {
             return $rows;
         }
 
-        $totalLordi = 0;
-        $totalContrattiNetti = 0;
+        $columnCount = count(self::PIPELINE_COLUMNS);
+        $columnTotals = array_fill(0, $columnCount, 0);
 
         foreach ($rows as $row) {
-            $metrics = self::metricsFromCells($row->cells);
-            $totalLordi += $metrics['appuntamentiLordi'];
-            $totalContrattiNetti += $metrics['contrattiNetti'];
-        }
+            foreach ($row->cells as $index => $cell) {
+                if ($index >= $columnCount) {
+                    continue;
+                }
 
-        if ($totalLordi <= 0 || $totalContrattiNetti <= 0) {
-            return $rows;
-        }
-
-        $scores = [];
-
-        foreach ($rows as $index => $row) {
-            $metrics = self::metricsFromCells($row->cells);
-            $lordi = $metrics['appuntamentiLordi'];
-            $contrattiNetti = $metrics['contrattiNetti'];
-
-            if ($lordi <= 0 || $contrattiNetti <= 0) {
-                $scores[$index] = 0.0;
-                continue;
+                $columnTotals[$index] += (int) ($cell->value ?? 0);
             }
-
-            $appointmentRatio = $lordi / $totalLordi;
-            $contractRatio = $contrattiNetti / $totalContrattiNetti;
-            $scores[$index] = $contractRatio / $appointmentRatio;
         }
 
-        $scoreTotal = array_sum($scores);
+        foreach ($rows as $row) {
+            foreach ($row->cells as $index => $cell) {
+                $total = $columnTotals[$index] ?? 0;
+                $value = (int) ($cell->value ?? 0);
 
-        if ($scoreTotal <= 0) {
-            return $rows;
-        }
+                if ($total <= 0) {
+                    $cell->percents = [];
+                    continue;
+                }
 
-        foreach ($rows as $index => $row) {
-            $score = $scores[$index] ?? 0.0;
-
-            if ($score <= 0) {
-                continue;
+                $cell->percents = [round(($value / $total) * 100, 1)];
             }
-
-            $cell = $row->cells[4] ?? null;
-
-            if (!$cell || (int) ($cell->value ?? 0) <= 0) {
-                continue;
-            }
-
-            $cell->percents[] = round(($score / $scoreTotal) * 100, 1);
         }
 
         return $rows;
-    }
-
-    /**
-     * @param object[] $cells
-     * @return array<string, int>
-     */
-    private static function metricsFromCells(array $cells): array
-    {
-        $keys = [
-            'appuntamentiLordi',
-            'appuntamentiNetti',
-            'opportunita',
-            'contratti',
-            'contrattiNetti',
-        ];
-        $metrics = self::emptyMetrics();
-
-        foreach ($cells as $index => $cell) {
-            if (!isset($keys[$index])) {
-                continue;
-            }
-
-            $metrics[$keys[$index]] = (int) ($cell->value ?? 0);
-        }
-
-        return $metrics;
     }
 
     private static function formatStepMeta(object $step): string
