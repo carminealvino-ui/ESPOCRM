@@ -122,7 +122,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 {
                     label: 'Appuntamenti lordi',
                     value: this.formatNumber(baseLordi),
-                    detail: this.computePercent(baseLordi, baseTotali) + ' su App. totali',
+                    detail: '',
                 },
                 {
                     label: 'Appuntamenti totali',
@@ -132,22 +132,23 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 {
                     label: 'Appuntamenti netti',
                     value: this.formatNumber(baseNetti),
-                    detail: this.computePercent(baseNetti, baseTotali) + ' su App. totali',
+                    detail: this.percentOfTotali(baseNetti, baseTotali),
                 },
                 {
                     label: 'Contratti lordi',
                     value: this.formatNumber(baseContrattiLordi),
-                    detail: this.computePercent(baseContrattiLordi, baseNetti) + ' su App. netti · '
-                        + this.computePercent(baseContrattiLordi, baseTotali) + ' su App. totali',
+                    detail: this.percentOfTotali(baseContrattiLordi, baseTotali),
                 },
                 {
                     label: 'Contratti netti',
                     value: this.formatNumber(baseContrattiNetti),
-                    detail: this.computePercent(baseContrattiNetti, baseContrattiLordi) + ' su Contr. lordi · '
-                        + this.computePercent(baseContrattiNetti, baseNetti) + ' su App. netti · '
-                        + this.computePercent(baseContrattiNetti, baseTotali) + ' su App. totali',
+                    detail: this.percentOfTotali(baseContrattiNetti, baseTotali),
                 },
             ];
+        },
+
+        percentOfTotali: function (value, baseTotali) {
+            return this.computePercent(value, baseTotali) + ' su App. totali';
         },
 
         computePercent: function (value, base) {
