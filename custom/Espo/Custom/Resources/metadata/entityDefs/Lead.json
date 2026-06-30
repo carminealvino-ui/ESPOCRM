@@ -245,14 +245,16 @@
                 "In Gestione",
                 "Richiesta Assegnazione",
                 "Trattativa Aperta",
-                "Trattativa Chiusa"
+                "Trattativa Chiusa",
+                "Sospeso"
             ],
             "style": {
                 "": null,
                 "In Gestione": null,
                 "Richiesta Assegnazione": null,
                 "Trattativa Aperta": null,
-                "Trattativa Chiusa": null
+                "Trattativa Chiusa": null,
+                "Sospeso": "warning"
             },
             "maxLength": 100,
             "isCustom": true

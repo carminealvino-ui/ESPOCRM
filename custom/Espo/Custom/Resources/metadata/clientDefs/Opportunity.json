@@ -19,5 +19,20 @@
             "action": "createContratto",
             "hidden": true
         }
+    ],
+    "filterList": [
+        "__APPEND__",
+        {
+            "name": "senzaRiscontroPeriodo",
+            "label": "Senza Riscontro"
+        },
+        {
+            "name": "senzaRiscontroMesePrecedente",
+            "label": "Senza Riscontro mese precedente"
+        },
+        {
+            "name": "senzaInvioWhatsapp",
+            "label": "Senza invio WhatsApp"
+        }
     ]
 }

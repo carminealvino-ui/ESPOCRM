@@ -8,7 +8,10 @@ Usare questa sequenza per **ogni** intervento (fix, deploy, layout).
 └─────────────────┬───────────────────┘
                   ▼
 ┌─────────────────────────────────────┐
-│ 1. Backup (backup_dev + layout se UI)│
+│ 1. Backup OBBLIGATORIO              │
+│    · backup_dev (file)              │
+│    · dashboard / Softaculous se UI  │
+│    · path rollback annotato         │
 └─────────────────┬───────────────────┘
                   ▼
 ┌─────────────────────────────────────┐
@@ -46,9 +49,11 @@ Non saltare l’export usando delta vecchi.
 
 ## Checklist rapida (spuntare mentalmente)
 
-- [ ] Ho letto le tre regole in `REGOLE-PRODUZIONE/README.md`
+- [ ] Ho letto le regole in `REGOLE-PRODUZIONE/README.md` (inclusa regola 9)
 - [ ] Esiste `tools/` sul server (`bootstrap-server-tools.sh` se manca)
-- [ ] Backup fatto e percorso annotato (timestamp)
+- [ ] Backup file **e** (se dashboard/script UI) backup preferenze o Softaculous
+- [ ] Percorso rollback scritto prima del deploy
+- [ ] Se hook PHP: `hookVersion` aggiornata nel codice
 - [ ] Un solo passo eseguito
 - [ ] Screenshot o output terminale verificato
 - [ ] Solo ora passo al passo successivo
