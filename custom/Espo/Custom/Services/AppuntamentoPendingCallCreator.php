@@ -68,7 +68,7 @@ class AppuntamentoPendingCallCreator
             return null;
         }
 
-        $existingCallId = $this->findExistingCallId($appuntamentoId);
+        $existingCallId = $this->findExistingPlannedPendingCallId($appuntamentoId);
 
         if ($existingCallId) {
             $this->syncCallOwnerFromAppuntamento($existingCallId, $appuntamento);
@@ -113,6 +113,7 @@ class AppuntamentoPendingCallCreator
 
         unset(self::$rememberedLeadIds[$appuntamentoId]);
 
+        $notBefore = $this->resolveNotBeforeForCall($appuntamento, $notBefore);
         $callInstant = $this->buildCallInstantFromAppointment($appuntamento, $notBefore);
 
         if (!$callInstant) {
@@ -514,7 +515,7 @@ class AppuntamentoPendingCallCreator
             . BusinessDateTime::formatBusiness($dataRichiamo, 'd/m/Y H:i');
     }
 
-    private function resolveLeadId(Entity $appuntamento): ?string
+    public function resolveLeadId(Entity $appuntamento): ?string
     {
         $appuntamentoId = $appuntamento->getId();
 
@@ -546,6 +547,50 @@ class AppuntamentoPendingCallCreator
             ->findExistingLeadByProspect($prospect);
 
         return $lead?->getId();
+    }
+
+    /**
+     * Se la data richiamo calcolata è nel passato, slitta a oggi (o lunedì se weekend).
+     */
+    private function resolveNotBeforeForCall(
+        Entity $appuntamento,
+        ?\DateTimeImmutable $notBefore
+    ): ?\DateTimeImmutable {
+        if ($notBefore !== null) {
+            return $notBefore;
+        }
+
+        $dateStart = $appuntamento->get('dateStart');
+
+        if (!$dateStart) {
+            return null;
+        }
+
+        $timezone = new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE);
+        $scheduled = PendingCallDateTime::computeCallInstant(
+            BusinessDateTime::storageToBusiness($dateStart),
+            null
+        );
+        $now = new \DateTimeImmutable('now', $timezone);
+
+        if ($scheduled >= $now) {
+            return null;
+        }
+
+        return new \DateTimeImmutable('today', $timezone);
+    }
+
+    private function findExistingPlannedPendingCallId(string $appuntamentoId): ?string
+    {
+        $existing = $this->entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'nota*' => self::NOTA_PREFIX . ' ' . $appuntamentoId,
+                'status' => 'Planned',
+            ])
+            ->findOne();
+
+        return $existing?->getId();
     }
 
     private function findExistingCallId(string $appuntamentoId): ?string

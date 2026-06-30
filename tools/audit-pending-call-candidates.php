@@ -65,6 +65,7 @@ $stats = [
     'not_eligible_date' => 0,
     'has_call' => 0,
     'has_planned_call' => 0,
+    'has_only_completed_call' => 0,
     'missing_call' => 0,
     'missing_call_tomorrow' => 0,
     'missing_call_today' => 0,
@@ -120,9 +121,15 @@ foreach ($collection as $appuntamento) {
 
         if ((string) $existingCall->get('status') === 'Planned') {
             $stats['has_planned_call']++;
+        } else {
+            $stats['has_only_completed_call']++;
         }
 
-        continue;
+        if ((string) $existingCall->get('status') === 'Planned') {
+            continue;
+        }
+
+        // Appuntamento ancora Pending ma Call già esitata → serve nuova Call
     }
 
     $stats['missing_call']++;
@@ -145,11 +152,21 @@ foreach ($collection as $appuntamento) {
     }
 
     if ($createMissing && $row['lead_ok']) {
-        $callId = $creator->createIfNeeded($appuntamento);
+        $full = $entityManager->getEntityById('Appuntamento', $appuntamentoId);
+        $notBefore = new \DateTimeImmutable('today', $timezone);
+        $leadId = $full ? $creator->resolveLeadId($full) : null;
 
-        if ($callId) {
-            $stats['created']++;
-            echo 'CREATA Call ' . $callId . ' per appuntamento ' . $appuntamentoId . ' (' . $callTimeRome . ')' . PHP_EOL;
+        if ($full && $leadId) {
+            $callId = $creator->createIfNeeded($full, $notBefore, $leadId);
+
+            if ($callId) {
+                $stats['created']++;
+                echo 'CREATA Call ' . $callId . ' per appuntamento ' . $appuntamentoId . ' (' . $callTimeRome . ')' . PHP_EOL;
+            } else {
+                echo 'ERRORE creazione per appuntamento ' . $appuntamentoId . PHP_EOL;
+            }
+        } elseif ($full && !$leadId) {
+            echo 'SKIP no-lead ' . $appuntamentoId . PHP_EOL;
         }
     }
 }
@@ -215,18 +232,21 @@ function findExistingPendingCall($entityManager, string $appuntamentoId): ?Entit
 {
     $prefix = 'Auto-Pending-Appuntamento: ' . $appuntamentoId;
 
-    $byNota = $entityManager
+    $planned = $entityManager
         ->getRDBRepository('Call')
-        ->where(['nota*' => $prefix])
+        ->where([
+            'nota*' => $prefix,
+            'status' => 'Planned',
+        ])
         ->findOne();
 
-    if ($byNota) {
-        return $byNota;
+    if ($planned) {
+        return $planned;
     }
 
     return $entityManager
         ->getRDBRepository('Call')
-        ->where(['nota*' => '%' . $prefix . '%'])
+        ->where(['nota*' => $prefix])
         ->findOne();
 }
 
