@@ -425,6 +425,10 @@ class BrandCalendarColorBackfill
             $targetColor = $this->resolveColorFromMap($displayName, $colorMap);
 
             if ($targetColor === null) {
+                $targetColor = AppuntamentoCalendarColor::resolveColorForBrandKey($displayName);
+            }
+
+            if ($targetColor === null) {
                 if ($this->verbose) {
                     $this->logLine("Brand saltato (no colore in JSON): {$displayName}");
                 }

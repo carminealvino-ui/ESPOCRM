@@ -73,14 +73,9 @@ echo "Aggiornamento colori ProductBrand..."
   --only=brands --apply-default-colors --verbose)
 
 echo ""
-echo "Anteprima colori Disponibilità (dry-run)..."
+echo "Aggiornamento colori Disponibilità (solo campo color)..."
 (cd "${CRM_ROOT}" && php tools/backfill-brand-color-calendario.php \
-  --only=disponibilita --force-color --dry-run --verbose)
-
-echo ""
-echo "Aggiornamento colori Disponibilità (solo campo color, skipHooks)..."
-(cd "${CRM_ROOT}" && php tools/backfill-brand-color-calendario.php \
-  --only=disponibilita --force-color --verbose)
+  --only=disponibilita --force-color)
 
 echo ""
 echo "Fatto. Ctrl+Shift+R sul calendario."

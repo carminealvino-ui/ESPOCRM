@@ -40,6 +40,21 @@ class AppuntamentoCalendarColor
         'PROGETTO' => '#2EC4B6',
         'ARTEL' => '#56B4E9',
         'GFB' => '#332288',
+        'ENEL' => '#E69F00',
+        'RE SOLE' => '#F0E442',
+        'VODAFONE' => '#CC79A7',
+    ];
+
+    /** Palette auto per brand senza entry esplicita. */
+    private const AUTO_BRAND_COLORS = [
+        '#999999',
+        '#CC79A7',
+        '#F0E442',
+        '#0173B2',
+        '#785EF0',
+        '#332288',
+        '#56B4E9',
+        '#009E73',
     ];
 
     public function __construct(
@@ -110,7 +125,16 @@ class AppuntamentoCalendarColor
             }
         }
 
-        $key = strtoupper($brandName);
+        return self::resolveColorForBrandKey($brandName);
+    }
+
+    public static function resolveColorForBrandKey(string $brandName): ?string
+    {
+        $key = strtoupper(trim($brandName));
+
+        if ($key === '') {
+            return null;
+        }
 
         $jsonColor = self::loadJsonBrandColor($key);
 
@@ -118,7 +142,25 @@ class AppuntamentoCalendarColor
             return $jsonColor;
         }
 
-        return self::BRAND_PALETTE_DALTON[$key] ?? null;
+        if (isset(self::BRAND_PALETTE_DALTON[$key])) {
+            return self::BRAND_PALETTE_DALTON[$key];
+        }
+
+        $firstToken = explode(' ', $key)[0] ?? '';
+
+        if ($firstToken !== '' && isset(self::BRAND_PALETTE_DALTON[$firstToken])) {
+            return self::BRAND_PALETTE_DALTON[$firstToken];
+        }
+
+        return self::autoColorForBrandKey($key);
+    }
+
+    private static function autoColorForBrandKey(string $key): string
+    {
+        $palette = self::AUTO_BRAND_COLORS;
+        $idx = abs(crc32($key)) % count($palette);
+
+        return $palette[$idx];
     }
 
     private static function loadJsonBrandColor(string $brandKey): ?string
@@ -144,6 +186,10 @@ class AppuntamentoCalendarColor
                 }
 
                 foreach ($decoded as $name => $hex) {
+                    if (str_starts_with((string) $name, '_')) {
+                        continue;
+                    }
+
                     $map[strtoupper((string) $name)] = trim((string) $hex);
                 }
 
@@ -151,9 +197,20 @@ class AppuntamentoCalendarColor
             }
         }
 
-        $color = $map[$brandKey] ?? null;
+        if (isset($map[$brandKey])) {
+            $color = $map[$brandKey];
 
-        return ($color !== null && $color !== '') ? $color : null;
+            return $color !== '' ? $color : null;
+        }
+
+        $firstToken = explode(' ', $brandKey)[0] ?? '';
+
+        if ($firstToken !== '' && isset($map[$firstToken])) {
+            return $map[$firstToken] !== '' ? $map[$firstToken] : null;
+        }
+
+        return null;
+    }
 
     private function resolveDisponibilitaBrandName(Entity $entity): string
     {
