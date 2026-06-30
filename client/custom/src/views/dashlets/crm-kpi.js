@@ -116,35 +116,36 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             const baseContrattiLordi = valueByKey.contratti || 0;
             const baseContrattiNetti = valueByKey.contrattiNetti || 0;
             const appuntamentiTotali = Number(appuntamentiTile.totali || 0);
+            const baseTotali = appuntamentiTotali > 0 ? appuntamentiTotali : baseLordi;
 
             return [
                 {
                     label: 'Appuntamenti lordi',
                     value: this.formatNumber(baseLordi),
-                    detail: '100.0% (base)',
+                    detail: this.computePercent(baseLordi, baseTotali) + ' su App. totali',
                 },
                 {
                     label: 'Appuntamenti totali',
                     value: this.formatNumber(appuntamentiTotali),
-                    detail: this.computePercent(appuntamentiTotali, baseLordi) + ' su App. lordi',
+                    detail: '100.0% (base)',
                 },
                 {
                     label: 'Appuntamenti netti',
                     value: this.formatNumber(baseNetti),
-                    detail: this.computePercent(baseNetti, baseLordi) + ' su App. lordi',
+                    detail: this.computePercent(baseNetti, baseTotali) + ' su App. totali',
                 },
                 {
                     label: 'Contratti lordi',
                     value: this.formatNumber(baseContrattiLordi),
                     detail: this.computePercent(baseContrattiLordi, baseNetti) + ' su App. netti · '
-                        + this.computePercent(baseContrattiLordi, baseLordi) + ' su App. lordi',
+                        + this.computePercent(baseContrattiLordi, baseTotali) + ' su App. totali',
                 },
                 {
                     label: 'Contratti netti',
                     value: this.formatNumber(baseContrattiNetti),
                     detail: this.computePercent(baseContrattiNetti, baseContrattiLordi) + ' su Contr. lordi · '
                         + this.computePercent(baseContrattiNetti, baseNetti) + ' su App. netti · '
-                        + this.computePercent(baseContrattiNetti, baseLordi) + ' su App. lordi',
+                        + this.computePercent(baseContrattiNetti, baseTotali) + ' su App. totali',
                 },
             ];
         },
