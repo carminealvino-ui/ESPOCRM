@@ -6,7 +6,7 @@ use Espo\Custom\Tools\DateTime\BusinessDateTime;
 
 /**
  * Calcola data/ora richiamo Call per Appuntamento Pending:
- * +2 giorni dalla data appuntamento, ore 9:30 (Europe/Rome).
+ * +2 giorni dalla data appuntamento, ore 9:00 (Europe/Rome).
  * Se il risultato cade sabato o domenica, slitta al lunedì successivo.
  */
 class PendingCallDateTime
@@ -14,7 +14,7 @@ class PendingCallDateTime
     public const POPUP_DELAY_HOURS = 12;
 
     private const CALL_HOUR = 9;
-    private const CALL_MINUTE = 30;
+    private const CALL_MINUTE = 0;
     private const DAYS_OFFSET = 2;
 
     /** Appuntamenti con dateStart precedente non generano Call automatiche. */

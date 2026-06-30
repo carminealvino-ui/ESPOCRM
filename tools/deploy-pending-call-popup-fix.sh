@@ -15,8 +15,12 @@ echo "=== Fix popup Call Pending → ${CRM_ROOT} ==="
 
 FILES=(
   "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"
+  "custom/Espo/Custom/Hooks/Appuntamento/AutoCreatePendingCall.php"
+  "custom/Espo/Custom/Hooks/Appuntamento/CreateCallFromRichiamo.php"
   "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
+  "custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php"
   "custom/Espo/Custom/Hooks/Call/NormalizeAutoPendingFields.php"
+  "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
   "client/custom/src/helpers/call-esito-popup-defaults.js"
   "tools/fix-call-assignment-from-appuntamento.php"
 )
@@ -27,6 +31,11 @@ for rel in "${FILES[@]}"; do
   curl -fsSL -o "${target}" "${BASE}/${rel}?t=$(date +%s)"
   echo "OK ${rel}"
 done
+
+grep -q "createRichiamoIfNeeded" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
+  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (createRichiamoIfNeeded)" >&2
+  exit 1
+}
 
 grep -q "syncPopupReminders" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
   echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato" >&2

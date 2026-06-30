@@ -11,12 +11,11 @@ use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Appuntamento Held + sottostato Pending → Call pianificata +2 giorni alle 9:00
- * (weekend slittato al lunedì), con promemoria popup.
+ * Appuntamento con richiamo flaggato → Call pianificata su dataRichiamo.
  */
-class AutoCreatePendingCall implements AfterSave
+class CreateCallFromRichiamo implements AfterSave
 {
-    public static int $order = 5;
+    public static int $order = 6;
 
     public function __construct(
         private EntityManager $entityManager,
@@ -38,6 +37,23 @@ class AutoCreatePendingCall implements AfterSave
             return;
         }
 
+        if (!$entity->get('daRichiamare')) {
+            return;
+        }
+
+        if (!$entity->get('dataRichiamo') || !$entity->get('richiamo')) {
+            return;
+        }
+
+        if (
+            !$entity->isNew()
+            && !$entity->isAttributeChanged('daRichiamare')
+            && !$entity->isAttributeChanged('dataRichiamo')
+            && !$entity->isAttributeChanged('richiamo')
+        ) {
+            return;
+        }
+
         try {
             $creator = new AppuntamentoPendingCallCreator(
                 $this->entityManager,
@@ -45,10 +61,10 @@ class AutoCreatePendingCall implements AfterSave
                 $this->standardTesto
             );
 
-            $creator->createIfNeeded($entity);
+            $creator->createRichiamoIfNeeded($entity);
         } catch (\Throwable $e) {
             $this->log->error(
-                'Auto-create Call Pending per Appuntamento {id} fallita: {message}',
+                'Auto-create Call richiamo per Appuntamento {id} fallita: {message}',
                 [
                     'id' => $entity->getId(),
                     'message' => $e->getMessage(),

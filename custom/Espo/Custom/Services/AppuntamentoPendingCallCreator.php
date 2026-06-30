@@ -3,6 +3,7 @@
 namespace Espo\Custom\Services;
 
 use Espo\Core\Utils\Log;
+use Espo\Custom\Services\CallStandardTesto;
 use Espo\Custom\Tools\Appuntamento\PendingCallDateTime;
 use Espo\Custom\Tools\DateTime\BusinessDateTime;
 use Espo\Modules\Crm\Entities\Reminder;
@@ -12,20 +13,28 @@ use Espo\ORM\EntityManager;
 class AppuntamentoPendingCallCreator
 {
     private const NOTA_PREFIX = 'Auto-Pending-Appuntamento:';
+    private const NOTA_RICHIAMO_PREFIX = 'Auto-Richiamo-Appuntamento:';
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
     private const ADMIN_USER_ID = '1';
-    private const TESTO_STANDARD =
-        'Salve, sono Carmine Alvino di ARIEL ENERGIA, mi fa sapere entro la giornata di oggi '
-        . 'poi cosa ha deciso rispetto alla proposta che le ho fatto, Grazie';
-    private const REMINDER_SECONDS = 900;
+    private const REMINDER_SECONDS = 0;
 
     /** @var array<string, string> */
     private static array $rememberedLeadIds = [];
 
     public function __construct(
         private EntityManager $entityManager,
-        private Log $log
+        private Log $log,
+        private ?CallStandardTesto $standardTesto = null,
     ) {}
+
+    private function getStandardTesto(): string
+    {
+        if ($this->standardTesto) {
+            return $this->standardTesto->get();
+        }
+
+        return CallStandardTesto::DEFAULT;
+    }
 
     public static function rememberLeadId(string $appuntamentoId, string $leadId): void
     {
@@ -144,12 +153,11 @@ class AppuntamentoPendingCallCreator
             'daRichiamare' => false,
             'whatsApp' => true,
             'vocale' => false,
-            'testo' => self::TESTO_STANDARD,
+            'testo' => $this->getStandardTesto(),
             'nota' => $this->buildNota($appuntamentoId, $appuntamento->get('dateStart')),
         ]));
 
-        // skipHooks: bypass formula Call; dateStart già in UTC (come Disponibilita/SetName).
-        // I promemoria popup vanno creati a mano: skipHooks salta il saver dei reminders.
+        // skipHooks: bypass formula Call; dateStart già in UTC. Promemoria creati a mano sotto.
         $this->entityManager->saveEntity($call, [
             'skipAcl' => true,
             'silent' => true,
@@ -165,6 +173,113 @@ class AppuntamentoPendingCallCreator
                 'id' => $appuntamentoId,
                 'dateStartUtc' => $callDateStartUtc,
                 'dateStartRome' => PendingCallDateTime::formatBusinessDateTime($callInstant),
+            ]
+        );
+
+        return $call->getId();
+    }
+
+    public function createRichiamoIfNeeded(Entity $appuntamento): ?string
+    {
+        if (!$appuntamento->get('daRichiamare')) {
+            return null;
+        }
+
+        $dataRichiamo = $appuntamento->get('dataRichiamo');
+        $tipologia = trim((string) $appuntamento->get('richiamo'));
+
+        if (!$dataRichiamo || $tipologia === '') {
+            return null;
+        }
+
+        $appuntamentoId = $appuntamento->getId();
+
+        if (!$appuntamentoId) {
+            return null;
+        }
+
+        $existingCallId = $this->findExistingRichiamoCallId($appuntamentoId, $dataRichiamo);
+
+        if ($existingCallId) {
+            $this->syncCallOwnerFromAppuntamento($existingCallId, $appuntamento);
+            $existingCall = $this->entityManager->getEntityById('Call', $existingCallId);
+
+            if ($existingCall) {
+                $this->syncPopupReminders($existingCall);
+            }
+
+            return $existingCallId;
+        }
+
+        $leadId = $this->resolveLeadId($appuntamento);
+
+        if (!$leadId) {
+            return null;
+        }
+
+        $lead = $this->entityManager->getEntityById('Lead', $leadId);
+
+        if (!$lead) {
+            return null;
+        }
+
+        $callInstant = BusinessDateTime::storageToBusiness($dataRichiamo);
+        $callDateStartUtc = BusinessDateTime::businessToStorage($callInstant);
+        $parentName = $appuntamento->get('parentName') ?: $lead->get('name');
+        $telefono = $appuntamento->get('telefono') ?: $lead->get('phoneNumber');
+        $presentation = $this->buildCallPresentationFields(
+            $callInstant,
+            $parentName,
+            $telefono,
+            $tipologia
+        );
+        $ownerUserId = $this->resolveOwnerUserId($appuntamento);
+        $ownerUserName = $this->resolveOwnerUserName($ownerUserId);
+
+        $call = $this->entityManager->createEntity('Call');
+
+        $usersNames = [];
+
+        if ($ownerUserId && $ownerUserName) {
+            $usersNames[$ownerUserId] = $ownerUserName;
+        }
+
+        $call->set(array_merge($presentation, [
+            'status' => 'Planned',
+            'direction' => 'Outbound',
+            'tipologia' => $tipologia,
+            'parentType' => 'Lead',
+            'parentId' => $leadId,
+            'parentName' => $parentName,
+            'prospectId' => $appuntamento->get('prospectId'),
+            'prospectName' => $appuntamento->get('prospectName'),
+            'telefono' => $telefono,
+            'dateStart' => $callDateStartUtc,
+            'assignedUserId' => $ownerUserId,
+            'assignedUserName' => $ownerUserName,
+            'usersIds' => $ownerUserId ? [$ownerUserId] : [],
+            'usersNames' => $usersNames,
+            'daRichiamare' => false,
+            'whatsApp' => true,
+            'vocale' => false,
+            'testo' => $this->getStandardTesto(),
+            'nota' => $this->buildRichiamoNota($appuntamentoId, $dataRichiamo),
+        ]));
+
+        $this->entityManager->saveEntity($call, [
+            'skipAcl' => true,
+            'silent' => true,
+            'skipHooks' => true,
+        ]);
+
+        $this->syncPopupReminders($call);
+
+        $this->log->info(
+            'Auto-create Call richiamo: creata Call {callId} per Appuntamento {id} UTC {dateStartUtc}',
+            [
+                'callId' => $call->getId(),
+                'id' => $appuntamentoId,
+                'dateStartUtc' => $callDateStartUtc,
             ]
         );
 
@@ -273,6 +388,8 @@ class AppuntamentoPendingCallCreator
             $usersIds = $call->get('usersIds') ?: [];
 
             if (in_array($ownerUserId, $usersIds, true)) {
+                $this->syncPopupReminders($call);
+
                 return;
             }
         }
@@ -348,15 +465,17 @@ class AppuntamentoPendingCallCreator
     public function buildCallPresentationFields(
         \DateTimeImmutable $callInstant,
         ?string $parentName,
-        ?string $telefono
+        ?string $telefono,
+        ?string $tipologia = null
     ): array {
         $dataLabel = PendingCallDateTime::formatBusinessDateTime($callInstant);
+        $tipologia = trim((string) ($tipologia ?: self::TIPOLOGIA));
 
         $parentName = trim((string) $parentName);
         $telefono = trim((string) $telefono);
 
         $name = mb_strtoupper(
-            $dataLabel . ' - ' . self::TIPOLOGIA . ' - ' . $parentName . ' - ' . $telefono,
+            $dataLabel . ' - ' . $tipologia . ' - ' . $parentName . ' - ' . $telefono,
             'UTF-8'
         );
 
@@ -386,6 +505,13 @@ class AppuntamentoPendingCallCreator
         }
 
         return implode("\n", $lines);
+    }
+
+    private function buildRichiamoNota(string $appuntamentoId, string $dataRichiamo): string
+    {
+        return self::NOTA_RICHIAMO_PREFIX . ' ' . $appuntamentoId
+            . "\nRichiamo programmato dal riscontro appuntamento per "
+            . BusinessDateTime::formatBusiness($dataRichiamo, 'd/m/Y H:i');
     }
 
     private function resolveLeadId(Entity $appuntamento): ?string
@@ -432,6 +558,25 @@ class AppuntamentoPendingCallCreator
             ->findOne();
 
         return $existing?->getId();
+    }
+
+    private function findExistingRichiamoCallId(string $appuntamentoId, string $dataRichiamo): ?string
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'nota*' => self::NOTA_RICHIAMO_PREFIX . ' ' . $appuntamentoId,
+                'status' => 'Planned',
+            ])
+            ->find();
+
+        foreach ($collection as $call) {
+            if ($call->get('dateStart') === $dataRichiamo) {
+                return $call->getId();
+            }
+        }
+
+        return null;
     }
 
     public function syncPopupReminders(Entity $call): void
@@ -562,6 +707,10 @@ class AppuntamentoPendingCallCreator
             $start = new \DateTimeImmutable($dateStartUtc, new \DateTimeZone('UTC'));
         } catch (\Throwable) {
             $start = new \DateTimeImmutable($dateStartUtc);
+        }
+
+        if ($secondsBefore <= 0) {
+            return $start->format('Y-m-d H:i:s');
         }
 
         return $start->modify('-' . $secondsBefore . ' seconds')->format('Y-m-d H:i:s');
