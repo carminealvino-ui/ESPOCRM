@@ -379,21 +379,27 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
         mapAppuntamentiTile: function (tile) {
             const source = tile || {};
-            const base = Number(source.lordi || 0);
+            const baseLordi = Number(source.lordi || 0);
+            const baseTotali = Number(source.totali || 0);
 
             return [
-                        {key: 'lordi', label: 'Appuntamenti lordi'},
-                        {key: 'annullati', label: 'Appuntamenti annullati'},
-                        {key: 'totali', label: 'Appuntamenti totali'},
-                        {key: 'ingestibili', label: 'Appuntamenti ingestibili'},
-                        {key: 'netti', label: 'Appuntamenti netti'},
-                    ].map(def => {
+                {key: 'lordi', label: 'Appuntamenti lordi', base: null},
+                {key: 'annullati', label: 'Appuntamenti annullati', base: baseLordi},
+                {key: 'totali', label: 'Appuntamenti totali', base: baseTotali, isBase: true},
+                {key: 'ingestibili', label: 'Appuntamenti ingestibili', base: baseTotali},
+                {key: 'netti', label: 'Appuntamenti netti', base: baseTotali},
+            ].map(def => {
                 const raw = Number(source[def.key] || 0);
-                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+                let value = this.formatNumber(raw);
+
+                if (def.base !== null) {
+                    const percent = def.base > 0 ? ((raw / def.base) * 100).toFixed(1) : '0.0';
+                    value += ' · ' + percent + '%' + (def.isBase ? ' (base)' : '');
+                }
 
                 return {
                     label: def.label,
-                    value: this.formatNumber(raw) + ' · ' + percent + '%',
+                    value: value,
                 };
             });
         },

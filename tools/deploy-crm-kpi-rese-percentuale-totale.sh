@@ -15,6 +15,7 @@ echo "=== KPI rese: percentuali sul totale colonna → ${CRM_ROOT} ==="
 
 FILES=(
   "custom/Espo/Custom/Tools/CrmKpi/YieldBuilder.php"
+  "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
   "client/custom/src/views/dashlets/crm-kpi.js"
   "client/custom/res/templates/dashlets/crm-kpi.tpl"
   "client/custom/css/crm-kpi-dashlet.css"
@@ -29,6 +30,11 @@ done
 
 grep -q "applyColumnSharePercents" "${CRM_ROOT}/custom/Espo/Custom/Tools/CrmKpi/YieldBuilder.php" || {
   echo "ERRORE: YieldBuilder.php non aggiornato" >&2
+  exit 1
+}
+
+grep -q "getNetAppuntamentoIds" "${CRM_ROOT}/custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php" || {
+  echo "ERRORE: CrmKpiService.php non aggiornato" >&2
   exit 1
 }
 

@@ -278,9 +278,11 @@ class CrmKpiService
     }
 
     /**
+     * Appuntamenti netti (svolti, non ingestibili) per opportunità e pipeline.
+     *
      * @return string[]
      */
-    private function getAppuntamentoIds(KpiContext $ctx): array
+    private function getNetAppuntamentoIds(KpiContext $ctx): array
     {
         $ids = [];
 
@@ -289,7 +291,9 @@ class CrmKpiService
             ->select(['id'])
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
-                $this->notAnnullatoWhere()
+                $this->notAnnullatoWhere(),
+                ['status!=' => 'Ingestibile'],
+                ['status' => 'Held']
             ))
             ->find();
 
@@ -307,10 +311,10 @@ class CrmKpiService
         bool $lost = false
     ): int {
         if ($pending) {
-            return $this->countOpportunitiesPending($this->getAppuntamentoIds($ctx), $ctx);
+            return $this->countOpportunitiesPending($this->getNetAppuntamentoIds($ctx), $ctx);
         }
 
-        $appuntamentoIds = $this->getAppuntamentoIds($ctx);
+        $appuntamentoIds = $this->getNetAppuntamentoIds($ctx);
 
         if ($appuntamentoIds === []) {
             return 0;
@@ -817,7 +821,7 @@ class CrmKpiService
             $weekBuckets[$weekIndex] = YieldBuilder::emptyMetrics();
         }
 
-        $appuntamentoIds = [];
+        $appuntamentoIdsForOpportunita = [];
 
         $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
@@ -831,7 +835,10 @@ class CrmKpiService
                 continue;
             }
 
-            $appuntamentoIds[] = $appuntamento->getId();
+            if ($this->isAppuntamentoNetto($appuntamento)) {
+                $appuntamentoIdsForOpportunita[] = $appuntamento->getId();
+            }
+
             $weekday = (int) (new \DateTimeImmutable($date))->format('N');
             $weekIndex = WeekOfMonth::resolveIndexForDate($date);
 
@@ -850,11 +857,11 @@ class CrmKpiService
             }
         }
 
-        if ($appuntamentoIds !== []) {
+        if ($appuntamentoIdsForOpportunita !== []) {
             try {
                 $this->aggregateOpportunitiesByAppuntamento(
                     $ctx,
-                    $appuntamentoIds,
+                    $appuntamentoIdsForOpportunita,
                     $weekdayBuckets,
                     $weekBuckets
                 );
