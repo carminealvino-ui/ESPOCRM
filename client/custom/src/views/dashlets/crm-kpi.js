@@ -425,64 +425,66 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         mapContrattiTile: function (tile) {
-            const source = tile || {};
-            const base = Number(source.totali || 0);
-
-            return [
+            return this.mapQuoteMetricTile(tile, [
                 {key: 'totali', label: 'Contratti totali'},
                 {key: 'finanziamentiRifiutati', label: 'Contratti con finanziamenti rifiutati'},
                 {key: 'lordi', label: 'Contratti lordi'},
                 {key: 'recessi', label: 'Contratti con recessi'},
                 {key: 'netti', label: 'Contratti netti'},
-            ].map(def => {
-                const raw = Number(source[def.key] || 0);
-                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
-
-                return {
-                    label: def.label,
-                    value: this.formatNumber(raw) + ' · ' + percent + '%',
-                };
-            });
+            ], this.formatNumber);
         },
 
         mapValoreProduzioneTile: function (tile) {
-            const source = tile || {};
-            const base = Number(source.totali || 0);
-
-            return [
+            return this.mapQuoteMetricTile(tile, [
                 {key: 'totali', label: 'Valore produzione totale'},
                 {key: 'finanziamentiRifiutati', label: 'Valore con finanziamenti rifiutati'},
                 {key: 'lordi', label: 'Valore produzione lordo'},
                 {key: 'recessi', label: 'Valore con recessi'},
                 {key: 'netti', label: 'Valore produzione netto'},
-            ].map(def => {
-                const raw = Number(source[def.key] || 0);
-                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
-
-                return {
-                    label: def.label,
-                    value: this.formatCurrency(raw) + ' · ' + percent + '%',
-                };
-            });
+            ], this.formatCurrency);
         },
 
         mapProvvigioniTile: function (tile) {
-            const source = tile || {};
-            const base = Number(source.totali || 0);
-
-            return [
+            return this.mapQuoteMetricTile(tile, [
                 {key: 'totali', label: 'Provvigioni totali'},
                 {key: 'finanziamentiRifiutati', label: 'Provvigioni con finanziamenti rifiutati'},
                 {key: 'lordi', label: 'Provvigioni lordi'},
                 {key: 'recessi', label: 'Provvigioni con recessi'},
                 {key: 'netti', label: 'Provvigioni nette'},
-            ].map(def => {
+            ], this.formatCurrency);
+        },
+
+        /**
+         * Contratti / valore / provvigioni: % su totali, netti su lordi.
+         *
+         * @param {Function} formatValue
+         */
+        mapQuoteMetricTile: function (tile, rows, formatValue) {
+            const source = tile || {};
+            const baseTotali = Number(source.totali || 0);
+            const baseLordi = Number(source.lordi || 0);
+
+            return rows.map(def => {
                 const raw = Number(source[def.key] || 0);
-                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+                let value = formatValue.call(this, raw);
+                let base = null;
+
+                if (def.key === 'lordi') {
+                    base = null;
+                } else if (def.key === 'netti') {
+                    base = baseLordi;
+                } else {
+                    base = baseTotali;
+                }
+
+                if (base !== null) {
+                    const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+                    value += ' · ' + percent + '%' + (def.key === 'totali' ? ' (base)' : '');
+                }
 
                 return {
                     label: def.label,
-                    value: this.formatCurrency(raw) + ' · ' + percent + '%',
+                    value: value,
                 };
             });
         },

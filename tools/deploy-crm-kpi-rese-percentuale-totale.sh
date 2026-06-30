@@ -38,6 +38,11 @@ grep -q "getNetAppuntamentoIds" "${CRM_ROOT}/custom/Espo/Custom/Services/CrmKpi/
   exit 1
 }
 
+grep -q "mapQuoteMetricTile" "${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js" || {
+  echo "ERRORE: crm-kpi.js non aggiornato (mapQuoteMetricTile)" >&2
+  exit 1
+}
+
 grep -q "mapPipelineResultsRows" "${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js" || {
   echo "ERRORE: crm-kpi.js non aggiornato" >&2
   exit 1
