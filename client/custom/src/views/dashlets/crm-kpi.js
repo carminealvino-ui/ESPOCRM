@@ -95,11 +95,11 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 yieldsByWeekday: this.mapYieldRows(summary.yieldsByWeekday),
                 yieldsByWeek: this.mapYieldRows(summary.yieldsByWeek),
                 yieldColumns: summary.yieldColumns || this.getDefaultYieldColumns(),
-                pipelineResultsRows: this.mapPipelineResultsRows(pipeline),
+                pipelineResultsRows: this.mapPipelineResultsRows(pipeline, tiles.appuntamenti || {}),
             };
         },
 
-        mapPipelineResultsRows: function (pipeline) {
+        mapPipelineResultsRows: function (pipeline, appuntamentiTile) {
             const steps = pipeline || [];
 
             if (!steps.length) {
@@ -115,8 +115,14 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             const baseNetti = valueByKey.appuntamentiNetti || 0;
             const baseContrattiLordi = valueByKey.contratti || 0;
             const baseContrattiNetti = valueByKey.contrattiNetti || 0;
+            const appuntamentiTotali = Number(appuntamentiTile.totali || 0);
 
             return [
+                {
+                    label: 'Appuntamenti totali',
+                    value: this.formatNumber(appuntamentiTotali),
+                    detail: this.computePercent(appuntamentiTotali, baseLordi) + ' su App. lordi',
+                },
                 {
                     label: 'Appuntamenti lordi',
                     value: this.formatNumber(baseLordi),
@@ -219,14 +225,12 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         drawSalesPipeline: function () {
             const steps = this.getPipelineSteps();
             const $container = this.$el.find('[data-name="pipeline-chart"]');
-            const $legend = this.$el.find('.crm-kpi-pipeline-legend');
 
             if (!$container.length || !steps.length) {
                 return;
             }
 
             $container.empty();
-            $legend.empty();
 
             const hasValues = steps.some(step => Number(step.value || 0) > 0);
 
@@ -260,8 +264,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             } else {
                 this.drawPipelineFallback($container, chartData);
             }
-
-            this.drawPipelineLegend($legend, chartData);
         },
 
         getPipelinePercentMeta: function (item) {

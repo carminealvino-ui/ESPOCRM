@@ -257,6 +257,7 @@
 .crm-kpi-pipeline-results-table th,
 .crm-kpi-pipeline-results-table td {
     white-space: nowrap;
+    font-size: 12px;
 }
 
 .crm-kpi-pipeline {
