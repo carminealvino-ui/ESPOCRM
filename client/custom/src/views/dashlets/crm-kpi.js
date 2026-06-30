@@ -116,18 +116,31 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             const baseContrattiLordi = valueByKey.contratti || 0;
             const baseContrattiNetti = valueByKey.contrattiNetti || 0;
 
-            return steps.map(step => {
-                const value = Number(step.value || 0);
-
-                return {
-                    label: step.label || step.key || '-',
-                    value: this.formatNumber(value),
-                    percLordi: this.computePercent(value, baseLordi),
-                    percNetti: this.computePercent(value, baseNetti),
-                    percContrattiLordi: this.computePercent(value, baseContrattiLordi),
-                    percContrattiNetti: this.computePercent(value, baseContrattiNetti),
-                };
-            });
+            return [
+                {
+                    label: 'Appuntamenti lordi',
+                    value: this.formatNumber(baseLordi),
+                    detail: '100.0% (base)',
+                },
+                {
+                    label: 'Appuntamenti netti',
+                    value: this.formatNumber(baseNetti),
+                    detail: this.computePercent(baseNetti, baseLordi) + ' su App. lordi',
+                },
+                {
+                    label: 'Contratti lordi',
+                    value: this.formatNumber(baseContrattiLordi),
+                    detail: this.computePercent(baseContrattiLordi, baseNetti) + ' su App. netti · '
+                        + this.computePercent(baseContrattiLordi, baseLordi) + ' su App. lordi',
+                },
+                {
+                    label: 'Contratti netti',
+                    value: this.formatNumber(baseContrattiNetti),
+                    detail: this.computePercent(baseContrattiNetti, baseContrattiLordi) + ' su Contr. lordi · '
+                        + this.computePercent(baseContrattiNetti, baseNetti) + ' su App. netti · '
+                        + this.computePercent(baseContrattiNetti, baseLordi) + ' su App. lordi',
+                },
+            ];
         },
 
         computePercent: function (value, base) {

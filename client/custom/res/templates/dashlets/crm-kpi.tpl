@@ -84,10 +84,7 @@
                                         <tr>
                                             <th>Risultato</th>
                                             <th>Valore</th>
-                                            <th>% su App. lordi</th>
-                                            <th>% su App. netti</th>
-                                            <th>% su Contr. lordi</th>
-                                            <th>% su Contr. netti</th>
+                                            <th>Percentuali</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -95,10 +92,7 @@
                                             <tr>
                                                 <th class="crm-kpi-yields-row-label">{{label}}</th>
                                                 <td>{{value}}</td>
-                                                <td>{{percLordi}}</td>
-                                                <td>{{percNetti}}</td>
-                                                <td>{{percContrattiLordi}}</td>
-                                                <td>{{percContrattiNetti}}</td>
+                                                <td>{{detail}}</td>
                                             </tr>
                                         {{/each}}
                                     </tbody>
