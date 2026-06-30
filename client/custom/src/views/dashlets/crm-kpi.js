@@ -119,14 +119,14 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
             return [
                 {
-                    label: 'Appuntamenti totali',
-                    value: this.formatNumber(appuntamentiTotali),
-                    detail: this.computePercent(appuntamentiTotali, baseLordi) + ' su App. lordi',
-                },
-                {
                     label: 'Appuntamenti lordi',
                     value: this.formatNumber(baseLordi),
                     detail: '100.0% (base)',
+                },
+                {
+                    label: 'Appuntamenti totali',
+                    value: this.formatNumber(appuntamentiTotali),
+                    detail: this.computePercent(appuntamentiTotali, baseLordi) + ' su App. lordi',
                 },
                 {
                     label: 'Appuntamenti netti',
