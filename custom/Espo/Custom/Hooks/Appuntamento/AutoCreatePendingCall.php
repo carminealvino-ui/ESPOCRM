@@ -12,11 +12,11 @@ use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
  * Appuntamento Held + sottostato Pending → Call pianificata +2 giorni alle 9:00
- * (weekend slittato al lunedì), con promemoria popup.
+ * (dopo GlobalLogic che crea il Lead). Order 20 = dopo gli altri hook.
  */
 class AutoCreatePendingCall implements AfterSave
 {
-    public static int $order = 5;
+    public static int $order = 20;
 
     public function __construct(
         private EntityManager $entityManager,
