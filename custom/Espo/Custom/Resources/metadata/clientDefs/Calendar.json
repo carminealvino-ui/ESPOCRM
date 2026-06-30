@@ -2,6 +2,7 @@
     "calendarView": "custom:views/calendar/calendar",
     "scopeList": [
         "Appuntamento",
+        "Disponibilita",
         "Meeting",
         "Call",
         "Task"
