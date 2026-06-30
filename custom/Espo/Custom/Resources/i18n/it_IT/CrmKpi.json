@@ -1,0 +1,27 @@
+{
+    "fields": {
+        "period": "Periodo",
+        "title": "Titolo",
+        "productBrand": "Brand",
+        "autorefreshInterval": "Intervallo di Aggiornamento Automatico"
+    },
+    "options": {
+        "period": {
+            "totals": "Totali",
+            "currentYear": "Totali Anno in Corso",
+            "previousYear": "Totali Anno Precedente",
+            "currentQuarter": "Totali Trimestre in Corso",
+            "previousQuarter": "Totali Trimestre Precedente",
+            "currentMonth": "Totali Mese in Corso",
+            "previousMonth": "Totali Mese Precedente"
+        },
+        "autorefreshInterval": {
+            "0": "Nessuno",
+            "0.5": "30 secondi",
+            "1": "1 minuto",
+            "2": "2 minuti",
+            "5": "5 minuti",
+            "10": "10 minuti"
+        }
+    }
+}

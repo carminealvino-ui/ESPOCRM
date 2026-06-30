@@ -26,6 +26,11 @@
     },
     "presetFilters": {
         "svolto": "Svolto",
-        "nonSvolto": "Non Svolto"
+        "nonSvolto": "Non Svolto",
+        "meseCorrente": "Mese corrente",
+        "meseCorrenteSvolto": "Svolti mese corrente",
+        "pianificato": "Pianificato",
+        "appuntamentiSenzaOpportunita": "Senza opportunità",
+        "appuntamentiConPiuOpportunita": "Con più opportunità"
     }
 }
