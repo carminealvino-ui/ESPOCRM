@@ -33,6 +33,19 @@
                 {
                     "name": "status"
                 }
+            ],
+            [
+                {
+                    "name": "daRichiamare"
+                }
+            ],
+            [
+                {
+                    "name": "richiamo"
+                },
+                {
+                    "name": "dataRichiamo"
+                }
             ]
         ],
         "label": ""

@@ -14,6 +14,7 @@ class AppuntamentoPendingCallCreator
 {
     private const NOTA_PREFIX = 'Auto-Pending-Appuntamento:';
     private const NOTA_RICHIAMO_PREFIX = 'Auto-Richiamo-Appuntamento:';
+    private const NOTA_RICHIAMO_CALL_PREFIX = 'Auto-Richiamo-Call:';
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
     private const ADMIN_USER_ID = '1';
     private const REMINDER_SECONDS = 0;
@@ -139,6 +140,7 @@ class AppuntamentoPendingCallCreator
             'status' => 'Planned',
             'direction' => 'Outbound',
             'tipologia' => self::TIPOLOGIA,
+            'richiamo' => self::TIPOLOGIA,
             'parentType' => 'Lead',
             'parentId' => $leadId,
             'parentName' => $parentName,
@@ -198,14 +200,19 @@ class AppuntamentoPendingCallCreator
             return null;
         }
 
-        $existingCallId = $this->findExistingRichiamoCallId($appuntamentoId, $dataRichiamo);
+        $existingCallId = $this->findPlannedRichiamoCallIdByAppuntamento($appuntamentoId);
 
         if ($existingCallId) {
-            $this->syncCallOwnerFromAppuntamento($existingCallId, $appuntamento);
             $existingCall = $this->entityManager->getEntityById('Call', $existingCallId);
 
-            if ($existingCall) {
-                $this->syncPopupReminders($existingCall);
+            if ($existingCall && (string) $existingCall->get('dateStart') !== $dataRichiamo) {
+                $this->applyRinvioToStoredCall($existingCall, $dataRichiamo, $tipologia);
+            } else {
+                $this->syncCallOwnerFromAppuntamento($existingCallId, $appuntamento);
+
+                if ($existingCall) {
+                    $this->syncPopupReminders($existingCall);
+                }
             }
 
             return $existingCallId;
@@ -248,6 +255,7 @@ class AppuntamentoPendingCallCreator
             'status' => 'Planned',
             'direction' => 'Outbound',
             'tipologia' => $tipologia,
+            'richiamo' => $tipologia,
             'parentType' => 'Lead',
             'parentId' => $leadId,
             'parentName' => $parentName,
@@ -284,6 +292,187 @@ class AppuntamentoPendingCallCreator
         );
 
         return $call->getId();
+    }
+
+    /**
+     * Rinvio richiamo ancora Pianificato: sposta dateStart alla nuova dataRichiamo.
+     */
+    public function applyRinvioToEntity(Entity $call): bool
+    {
+        if ($call->getEntityType() !== 'Call' || (string) $call->get('status') !== 'Planned') {
+            return false;
+        }
+
+        if (!$call->get('daRichiamare') || !$call->get('dataRichiamo')) {
+            return false;
+        }
+
+        $dataRichiamo = (string) $call->get('dataRichiamo');
+        $previousDateStart = (string) ($call->getFetched('dateStart') ?: $call->get('dateStart'));
+
+        if ($dataRichiamo === $previousDateStart && !$call->isAttributeChanged('dataRichiamo')) {
+            $call->set([
+                'daRichiamare' => false,
+                'dataRichiamo' => null,
+            ]);
+
+            return false;
+        }
+
+        $tipologia = trim((string) ($call->get('richiamo') ?: $call->get('tipologia')));
+
+        if ($tipologia === '') {
+            return false;
+        }
+
+        $callInstant = BusinessDateTime::storageToBusiness($dataRichiamo);
+        $presentation = $this->buildCallPresentationFields(
+            $callInstant,
+            $call->get('parentName'),
+            $call->get('telefono'),
+            $tipologia
+        );
+
+        $nota = trim((string) $call->get('nota'));
+        $rinvioLine = $this->buildRinvioNotaLine($previousDateStart, $dataRichiamo);
+
+        $call->set(array_merge($presentation, [
+            'dateStart' => BusinessDateTime::businessToStorage($callInstant),
+            'tipologia' => $tipologia,
+            'richiamo' => $tipologia,
+            'daRichiamare' => false,
+            'dataRichiamo' => null,
+            'nota' => $nota !== '' ? $nota . "\n" . $rinvioLine : $rinvioLine,
+        ]));
+
+        return true;
+    }
+
+    /**
+     * Dopo esito Svolto/Non svolto con flag rinvio: crea nuova Call pianificata.
+     */
+    public function createFollowUpFromCall(Entity $sourceCall): ?string
+    {
+        if (!$sourceCall->get('daRichiamare')) {
+            return null;
+        }
+
+        $dataRichiamo = $sourceCall->get('dataRichiamo');
+        $tipologia = trim((string) ($sourceCall->get('richiamo') ?: $sourceCall->get('tipologia')));
+
+        if (!$dataRichiamo || $tipologia === '') {
+            return null;
+        }
+
+        $status = (string) $sourceCall->get('status');
+
+        if (!in_array($status, ['Held', 'Not Held'], true)) {
+            return null;
+        }
+
+        $sourceCallId = $sourceCall->getId();
+
+        if (!$sourceCallId) {
+            return null;
+        }
+
+        $existingCallId = $this->findPlannedFollowUpCallId($sourceCallId);
+
+        if ($existingCallId) {
+            $existingCall = $this->entityManager->getEntityById('Call', $existingCallId);
+
+            if ($existingCall && (string) $existingCall->get('dateStart') !== $dataRichiamo) {
+                $this->applyRinvioToStoredCall($existingCall, $dataRichiamo, $tipologia);
+            } elseif ($existingCall) {
+                $this->syncPopupReminders($existingCall);
+            }
+
+            return $existingCallId;
+        }
+
+        $callInstant = BusinessDateTime::storageToBusiness($dataRichiamo);
+        $callDateStartUtc = BusinessDateTime::businessToStorage($callInstant);
+        $parentName = $sourceCall->get('parentName');
+        $telefono = $sourceCall->get('telefono');
+        $presentation = $this->buildCallPresentationFields(
+            $callInstant,
+            $parentName,
+            $telefono,
+            $tipologia
+        );
+
+        $call = $this->entityManager->createEntity('Call');
+
+        $ownerUserId = $sourceCall->get('assignedUserId');
+        $ownerUserName = $sourceCall->get('assignedUserName');
+        $usersNames = [];
+
+        if ($ownerUserId && $ownerUserName) {
+            $usersNames[(string) $ownerUserId] = (string) $ownerUserName;
+        }
+
+        $call->set(array_merge($presentation, [
+            'status' => 'Planned',
+            'direction' => $sourceCall->get('direction') ?: 'Outbound',
+            'tipologia' => $tipologia,
+            'richiamo' => $tipologia,
+            'parentType' => $sourceCall->get('parentType'),
+            'parentId' => $sourceCall->get('parentId'),
+            'parentName' => $parentName,
+            'prospectId' => $sourceCall->get('prospectId'),
+            'prospectName' => $sourceCall->get('prospectName'),
+            'telefono' => $telefono,
+            'dateStart' => $callDateStartUtc,
+            'assignedUserId' => $ownerUserId,
+            'assignedUserName' => $ownerUserName,
+            'usersIds' => $ownerUserId ? [(string) $ownerUserId] : [],
+            'usersNames' => $usersNames,
+            'daRichiamare' => false,
+            'whatsApp' => (bool) $sourceCall->get('whatsApp'),
+            'vocale' => (bool) $sourceCall->get('vocale'),
+            'testo' => $sourceCall->get('testo') ?: $this->getStandardTesto(),
+            'nota' => $this->buildFollowUpCallNota($sourceCallId, $dataRichiamo),
+        ]));
+
+        $this->entityManager->saveEntity($call, [
+            'skipAcl' => true,
+            'silent' => true,
+            'skipHooks' => true,
+        ]);
+
+        $this->syncPopupReminders($call);
+
+        $this->log->info(
+            'Follow-up Call richiamo: creata Call {callId} da Call {sourceId} UTC {dateStartUtc}',
+            [
+                'callId' => $call->getId(),
+                'sourceId' => $sourceCallId,
+                'dateStartUtc' => $callDateStartUtc,
+            ]
+        );
+
+        return $call->getId();
+    }
+
+    public function clearRinvioFlagsOnCall(string $callId): void
+    {
+        $call = $this->entityManager->getEntityById('Call', $callId);
+
+        if (!$call || !$call->get('daRichiamare')) {
+            return;
+        }
+
+        $call->set([
+            'daRichiamare' => false,
+            'dataRichiamo' => null,
+            'richiamo' => '',
+        ]);
+
+        $this->entityManager->saveEntity($call, [
+            'skipAcl' => true,
+            'silent' => true,
+            'skipHooks' => true,
+        ]);
     }
 
     public function resolveOwnerUserId(Entity $appuntamento): ?string
@@ -548,6 +737,68 @@ class AppuntamentoPendingCallCreator
         return $lead?->getId();
     }
 
+    private function findPlannedRichiamoCallIdByAppuntamento(string $appuntamentoId): ?string
+    {
+        $existing = $this->entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'nota*' => self::NOTA_RICHIAMO_PREFIX . ' ' . $appuntamentoId,
+                'status' => 'Planned',
+            ])
+            ->findOne();
+
+        return $existing?->getId();
+    }
+
+    private function findPlannedFollowUpCallId(string $sourceCallId): ?string
+    {
+        $existing = $this->entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'nota*' => self::NOTA_RICHIAMO_CALL_PREFIX . ' ' . $sourceCallId,
+                'status' => 'Planned',
+            ])
+            ->findOne();
+
+        return $existing?->getId();
+    }
+
+    private function applyRinvioToStoredCall(Entity $call, string $dataRichiamo, string $tipologia): void
+    {
+        $call->set([
+            'daRichiamare' => true,
+            'dataRichiamo' => $dataRichiamo,
+            'richiamo' => $tipologia,
+        ]);
+
+        $this->applyRinvioToEntity($call);
+
+        $this->entityManager->saveEntity($call, [
+            'skipAcl' => true,
+            'silent' => true,
+            'skipHooks' => true,
+        ]);
+
+        $this->syncPopupReminders($call);
+    }
+
+    private function buildRinvioNotaLine(string $previousDateStart, string $newDateStart): string
+    {
+        $nowUtc = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+
+        return 'Rinviato il '
+            . BusinessDateTime::formatBusiness($nowUtc, 'd/m/Y H:i')
+            . ' da ' . BusinessDateTime::formatBusiness($previousDateStart, 'd/m/Y H:i')
+            . ' a ' . BusinessDateTime::formatBusiness($newDateStart, 'd/m/Y H:i');
+    }
+
+    private function buildFollowUpCallNota(string $sourceCallId, string $dataRichiamo): string
+    {
+        return self::NOTA_RICHIAMO_CALL_PREFIX . ' ' . $sourceCallId
+            . "\nRichiamo programmato dopo esito contatto per "
+            . BusinessDateTime::formatBusiness($dataRichiamo, 'd/m/Y H:i');
+    }
+
     private function findExistingCallId(string $appuntamentoId): ?string
     {
         $existing = $this->entityManager
@@ -558,25 +809,6 @@ class AppuntamentoPendingCallCreator
             ->findOne();
 
         return $existing?->getId();
-    }
-
-    private function findExistingRichiamoCallId(string $appuntamentoId, string $dataRichiamo): ?string
-    {
-        $collection = $this->entityManager
-            ->getRDBRepository('Call')
-            ->where([
-                'nota*' => self::NOTA_RICHIAMO_PREFIX . ' ' . $appuntamentoId,
-                'status' => 'Planned',
-            ])
-            ->find();
-
-        foreach ($collection as $call) {
-            if ($call->get('dateStart') === $dataRichiamo) {
-                return $call->getId();
-            }
-        }
-
-        return null;
     }
 
     public function syncPopupReminders(Entity $call): void

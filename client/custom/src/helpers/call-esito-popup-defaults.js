@@ -88,6 +88,22 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         return changed;
     };
 
+    const applyRinvioDefaults = function (model) {
+        if (!model) {
+            return false;
+        }
+
+        let changed = false;
+        const tipologia = normalize(model.get('tipologia'));
+
+        if (tipologia && !normalize(model.get('richiamo'))) {
+            model.set('richiamo', tipologia);
+            changed = true;
+        }
+
+        return changed;
+    };
+
     const getDefaultAttributes = function (model, notificationName) {
         if (!isAutoPendingCall(model, notificationName)) {
             return null;
@@ -114,6 +130,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
 
     const applyDefaults = function (model, notificationName) {
         normalizeMisplacedFields(model);
+        applyRinvioDefaults(model);
 
         const attributes = getDefaultAttributes(model, notificationName);
 
@@ -199,6 +216,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
 
         normalizeMisplacedFields(model);
         applyDefaults(model, notificationName);
+        applyRinvioDefaults(model);
 
         const canale = model.get('canaleContatto');
 

@@ -1,20 +1,37 @@
 {
     "fields": {
-        "productCategory": {
-            "readOnly": {
+        "dataRichiamo": {
+            "visible": {
                 "conditionGroup": [
                     {
-                        "type": "and",
-                        "value": [
-                            {
-                                "type": "isEmpty",
-                                "attribute": "productBrandId"
-                            },
-                            {
-                                "type": "isEmpty",
-                                "attribute": "azienda"
-                            }
-                        ]
+                        "type": "isTrue",
+                        "attribute": "daRichiamare"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "daRichiamare"
+                    }
+                ]
+            }
+        },
+        "richiamo": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "daRichiamare"
+                    }
+                ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "daRichiamare"
                     }
                 ]
             }

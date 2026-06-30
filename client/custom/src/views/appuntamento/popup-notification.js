@@ -24,6 +24,10 @@ define('custom:views/appuntamento/popup-notification', [
                     return false;
                 }
 
+                if (model.get('daRichiamare') && (!model.get('dataRichiamo') || !model.get('richiamo'))) {
+                    return false;
+                }
+
                 return true;
             },
             incompleteMessage: 'Compilare Stato, Sottostato ed Esito, poi cliccare Salva.',
@@ -40,6 +44,16 @@ define('custom:views/appuntamento/popup-notification', [
 
                 if (!model.get('esito')) {
                     missing.push('Esito');
+                }
+
+                if (model.get('daRichiamare')) {
+                    if (!model.get('dataRichiamo')) {
+                        missing.push('Data Richiamo');
+                    }
+
+                    if (!model.get('richiamo')) {
+                        missing.push('Richiamo');
+                    }
                 }
 
                 return missing;
@@ -59,15 +73,47 @@ define('custom:views/appuntamento/popup-notification', [
             isComplete: function (model) {
                 const status = model.get('status');
 
-                return !!status && status !== 'Planned';
-            },
-            incompleteMessage: 'Selezionare Stato (Svolto o Non svolto) e cliccare Salva.',
-            getMissingFields: function (model) {
-                if (!model.get('status') || model.get('status') === 'Planned') {
-                    return ['Stato'];
+                if (model.get('daRichiamare')) {
+                    if (!model.get('dataRichiamo') || !model.get('richiamo')) {
+                        return false;
+                    }
+
+                    if (!status || status === 'Planned') {
+                        return true;
+                    }
+
+                    return true;
                 }
 
-                return [];
+                return !!status && status !== 'Planned';
+            },
+            incompleteMessage: 'Selezionare Stato (Svolto o Non svolto), oppure Rinvia richiamo con data e tipologia.',
+            getMissingFields: function (model) {
+                const missing = [];
+
+                if (model.get('daRichiamare')) {
+                    if (!model.get('dataRichiamo')) {
+                        missing.push('Data Richiamo');
+                    }
+
+                    if (!model.get('richiamo')) {
+                        missing.push('Richiamo');
+                    }
+
+                    if (!model.get('status') || model.get('status') === 'Planned') {
+                        return missing;
+                    }
+
+                    if (!missing.length && model.get('status')) {
+                        return [];
+                    }
+                }
+
+                if (!model.get('status') || model.get('status') === 'Planned') {
+                    missing.push('Stato');
+                }
+
+                return missing;
             },
         },
         Task: {
@@ -218,7 +264,7 @@ define('custom:views/appuntamento/popup-notification', [
             }
 
             const fieldNames = model.entityType === 'Call' ?
-                ['status', 'direction', 'tipologia', 'whatsApp', 'testo'] :
+                ['status', 'direction', 'tipologia', 'whatsApp', 'testo', 'daRichiamare', 'dataRichiamo', 'richiamo'] :
                 ['status', 'direction', 'sottostato', 'esito', 'noteEsito', 'tipologia', 'canaleContatto', 'description', 'daRichiamare', 'dataRichiamo', 'richiamo'];
 
             fieldNames.forEach(fieldName => {
