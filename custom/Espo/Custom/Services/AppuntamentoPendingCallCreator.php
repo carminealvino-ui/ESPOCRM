@@ -159,11 +159,24 @@ class AppuntamentoPendingCallCreator
         ]));
 
         // skipHooks: bypass formula Call; dateStart già in UTC. Promemoria creati a mano sotto.
-        $this->entityManager->saveEntity($call, [
-            'skipAcl' => true,
-            'silent' => true,
-            'skipHooks' => true,
-        ]);
+        try {
+            $this->entityManager->saveEntity($call, [
+                'skipAcl' => true,
+                'silent' => true,
+                'skipHooks' => true,
+            ]);
+        } catch (\Throwable $e) {
+            $this->log->error(
+                'Auto-create Call Pending: salvataggio fallito per Appuntamento {id}: {message}',
+                [
+                    'id' => $appuntamentoId,
+                    'message' => $e->getMessage(),
+                    'exception' => $e,
+                ]
+            );
+
+            throw $e;
+        }
 
         $this->syncPopupReminders($call);
 
@@ -458,6 +471,13 @@ class AppuntamentoPendingCallCreator
             BusinessDateTime::storageToBusiness($dateStart),
             $notBefore
         );
+    }
+
+    public function buildEffectiveCallInstant(Entity $appuntamento): ?\DateTimeImmutable
+    {
+        $notBefore = $this->resolveNotBeforeForCall($appuntamento, null);
+
+        return $this->buildCallInstantFromAppointment($appuntamento, $notBefore);
     }
 
     /**

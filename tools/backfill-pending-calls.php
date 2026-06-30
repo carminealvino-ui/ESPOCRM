@@ -5,9 +5,12 @@
  *
  *   php tools/backfill-pending-calls.php           # anteprima
  *   php tools/backfill-pending-calls.php --create  # crea Call Pianificato
+ *   php tools/backfill-pending-calls.php --create --limit=10
  */
 
 declare(strict_types=1);
+
+set_time_limit(0);
 
 require_once __DIR__ . '/../bootstrap.php';
 
@@ -17,6 +20,13 @@ use Espo\Custom\Tools\Appuntamento\PendingCallDateTime;
 use Espo\Custom\Tools\DateTime\BusinessDateTime;
 
 $create = in_array('--create', $argv ?? [], true);
+$limit = null;
+
+foreach ($argv ?? [] as $arg) {
+    if (str_starts_with($arg, '--limit=')) {
+        $limit = max(1, (int) substr($arg, 8));
+    }
+}
 
 $app = new Application();
 $app->setupSystemUser();
@@ -26,12 +36,15 @@ $log = $app->getContainer()->get('log');
 $creator = new AppuntamentoPendingCallCreator($entityManager, $log);
 
 $timezone = new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE);
-$notBefore = new \DateTimeImmutable('today', $timezone);
-$today = $notBefore->format('Y-m-d');
+$today = (new \DateTimeImmutable('today', $timezone))->format('Y-m-d');
 
 echo '=== Backfill Call da appuntamenti Pending ===' . PHP_EOL;
 echo 'Oggi (Rome): ' . $today . PHP_EOL;
 echo 'Modalità: ' . ($create ? 'CREA Call mancanti' : 'SOLO ANTEPRIMA (aggiungi --create)') . PHP_EOL;
+
+if ($limit !== null) {
+    echo 'Limite: ' . $limit . ' Call' . PHP_EOL;
+}
 
 $heldTotal = $entityManager
     ->getRDBRepository('Appuntamento')
@@ -61,81 +74,94 @@ $stats = [
 ];
 
 foreach ($collection as $appuntamento) {
+    if ($limit !== null && $stats['to_create'] >= $limit && !$create) {
+        break;
+    }
+
+    if ($limit !== null && $stats['created'] >= $limit && $create) {
+        break;
+    }
+
     $stats['total']++;
-    $appuntamentoId = (string) $appuntamento->getId();
-    $dateStart = $appuntamento->get('dateStart');
 
-    if (!PendingCallDateTime::isAppointmentEligible($dateStart)) {
-        $stats['skipped_not_eligible']++;
-        continue;
-    }
+    try {
+        $appuntamentoId = (string) $appuntamento->getId();
+        $dateStart = $appuntamento->get('dateStart');
 
-    $plannedCall = $entityManager
-        ->getRDBRepository('Call')
-        ->where([
-            'nota*' => 'Auto-Pending-Appuntamento: ' . $appuntamentoId,
-            'status' => 'Planned',
-        ])
-        ->findOne();
+        if (!PendingCallDateTime::isAppointmentEligible($dateStart)) {
+            $stats['skipped_not_eligible']++;
+            continue;
+        }
 
-    if ($plannedCall) {
-        $stats['skipped_has_planned']++;
-        continue;
-    }
+        $plannedCall = $entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'nota*' => 'Auto-Pending-Appuntamento: ' . $appuntamentoId,
+                'status' => 'Planned',
+            ])
+            ->findOne();
 
-    $full = $entityManager->getEntityById('Appuntamento', $appuntamentoId);
+        if ($plannedCall) {
+            $stats['skipped_has_planned']++;
+            continue;
+        }
 
-    if (!$full) {
+        $full = $entityManager->getEntityById('Appuntamento', $appuntamentoId);
+
+        if (!$full) {
+            $stats['failed']++;
+            continue;
+        }
+
+        $callInstant = $creator->buildEffectiveCallInstant($full);
+        $callWhen = $callInstant
+            ? PendingCallDateTime::formatBusinessDateTime($callInstant, 'd/m/Y H:i')
+            : '?';
+        $appWhen = $dateStart
+            ? BusinessDateTime::formatBusiness($dateStart, 'd/m/Y H:i')
+            : '?';
+
+        if (!$create) {
+            $leadOk = $creator->resolveLeadId($full) || $full->get('prospectId');
+
+            if (!$leadOk) {
+                $stats['skipped_no_lead']++;
+                echo 'SKIP no-lead ' . $appuntamentoId . ' | ' . (string) $full->get('name') . PHP_EOL;
+                continue;
+            }
+
+            $stats['to_create']++;
+            echo 'CREEREBBE ' . $appuntamentoId
+                . ' | app. ' . $appWhen
+                . ' → richiamo ' . $callWhen
+                . ' | ' . (string) $full->get('name')
+                . PHP_EOL;
+            continue;
+        }
+
+        $stats['to_create']++;
+        $callId = $creator->createIfNeeded($full);
+
+        if ($callId) {
+            $stats['created']++;
+            echo 'CREATA ' . $callId
+                . ' per app. ' . $appuntamentoId
+                . ' | richiamo ' . $callWhen
+                . PHP_EOL;
+        } else {
+            $stats['failed']++;
+            echo 'ERRORE creazione per app. ' . $appuntamentoId
+                . ' (status=' . (string) $full->get('status')
+                . ' sottostato=' . (string) $full->get('sottostato')
+                . ' prospect=' . (string) $full->get('prospectId') . ')' . PHP_EOL;
+        }
+    } catch (\Throwable $e) {
         $stats['failed']++;
-        continue;
-    }
-
-    $leadId = $creator->ensureLeadId($full);
-
-    if (!$leadId) {
-        $stats['skipped_no_lead']++;
-        echo 'SKIP no-lead ' . $appuntamentoId
-            . ' | ' . (string) $full->get('name')
-            . ' | parent=' . (string) $full->get('parentType')
-            . '/' . (string) $full->get('parentId')
-            . ' prospect=' . (string) $full->get('prospectId')
-            . PHP_EOL;
-        continue;
-    }
-
-    $callInstant = $creator->buildCallInstantFromAppointment($full, $notBefore);
-    $callWhen = $callInstant
-        ? PendingCallDateTime::formatBusinessDateTime($callInstant, 'd/m/Y H:i')
-        : '?';
-    $appWhen = $dateStart
-        ? BusinessDateTime::formatBusiness($dateStart, 'd/m/Y H:i')
-        : '?';
-
-    $stats['to_create']++;
-
-    if (!$create) {
-        echo 'CREEREBBE ' . $appuntamentoId
-            . ' | app. ' . $appWhen
-            . ' → richiamo ' . $callWhen
-            . ' | ' . (string) $full->get('name')
-            . PHP_EOL;
-        continue;
-    }
-
-    $callId = $creator->createIfNeeded($full, $notBefore, $leadId);
-
-    if ($callId) {
-        $stats['created']++;
-        echo 'CREATA ' . $callId
-            . ' per app. ' . $appuntamentoId
-            . ' | richiamo ' . $callWhen
-            . PHP_EOL;
-    } else {
-        $stats['failed']++;
-        echo 'ERRORE creazione per app. ' . $appuntamentoId
-            . ' (lead=' . $leadId
-            . ' status=' . (string) $full->get('status')
-            . ' sottostato=' . (string) $full->get('sottostato') . ')' . PHP_EOL;
+        echo 'EXCEPTION ' . ($appuntamentoId ?? '?') . ': ' . $e->getMessage() . PHP_EOL;
+        $log->error('Backfill pending call failed: {message}', [
+            'message' => $e->getMessage(),
+            'exception' => $e,
+        ]);
     }
 }
 
