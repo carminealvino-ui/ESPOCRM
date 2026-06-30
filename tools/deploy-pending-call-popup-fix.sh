@@ -24,6 +24,7 @@ FILES=(
   "client/custom/src/helpers/call-esito-popup-defaults.js"
   "tools/fix-call-assignment-from-appuntamento.php"
   "tools/audit-pending-call-candidates.php"
+  "tools/backfill-pending-calls.php"
 )
 
 for rel in "${FILES[@]}"; do
@@ -48,6 +49,8 @@ grep -q "syncPopupReminders" "${CRM_ROOT}/custom/Espo/Custom/Services/Appuntamen
 echo ""
 echo "Audit appuntamenti Pending senza Call:"
 echo "  php ${CRM_ROOT}/tools/audit-pending-call-candidates.php"
+echo "Crea Call mancanti (backfill):"
+echo "  php ${CRM_ROOT}/tools/backfill-pending-calls.php --create"
 echo "Ripara promemoria sulle Call già create:"
 echo "  php ${CRM_ROOT}/tools/fix-call-assignment-from-appuntamento.php"
 echo ""

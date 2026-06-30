@@ -65,6 +65,7 @@ $stats = [
     'not_eligible_date' => 0,
     'has_call' => 0,
     'has_planned_call' => 0,
+    'has_only_completed_call' => 0,
     'missing_call' => 0,
     'missing_call_tomorrow' => 0,
     'missing_call_today' => 0,
@@ -120,9 +121,15 @@ foreach ($collection as $appuntamento) {
 
         if ((string) $existingCall->get('status') === 'Planned') {
             $stats['has_planned_call']++;
+        } else {
+            $stats['has_only_completed_call']++;
         }
 
-        continue;
+        if ((string) $existingCall->get('status') === 'Planned') {
+            continue;
+        }
+
+        // Appuntamento ancora Pending ma Call già esitata → serve nuova Call
     }
 
     $stats['missing_call']++;
@@ -145,11 +152,21 @@ foreach ($collection as $appuntamento) {
     }
 
     if ($createMissing && $row['lead_ok']) {
-        $callId = $creator->createIfNeeded($appuntamento);
+        $full = $entityManager->getEntityById('Appuntamento', $appuntamentoId);
+        $notBefore = new \DateTimeImmutable('today', $timezone);
+        $leadId = $full ? $creator->resolveLeadId($full) : null;
 
-        if ($callId) {
-            $stats['created']++;
-            echo 'CREATA Call ' . $callId . ' per appuntamento ' . $appuntamentoId . ' (' . $callTimeRome . ')' . PHP_EOL;
+        if ($full && $leadId) {
+            $callId = $creator->createIfNeeded($full, $notBefore, $leadId);
+
+            if ($callId) {
+                $stats['created']++;
+                echo 'CREATA Call ' . $callId . ' per appuntamento ' . $appuntamentoId . ' (' . $callTimeRome . ')' . PHP_EOL;
+            } else {
+                echo 'ERRORE creazione per appuntamento ' . $appuntamentoId . PHP_EOL;
+            }
+        } elseif ($full && !$leadId) {
+            echo 'SKIP no-lead ' . $appuntamentoId . PHP_EOL;
         }
     }
 }
@@ -158,8 +175,9 @@ echo '--- Riepilogo ---' . PHP_EOL;
 echo 'Appuntamenti Pending totali:        ' . $stats['total_pending'] . PHP_EOL;
 echo '  di cui eleggibili (da 2026):      ' . $stats['eligible'] . PHP_EOL;
 echo '  esclusi (app. prima del 2026):    ' . $stats['not_eligible_date'] . PHP_EOL;
-echo 'Con Call già presente:              ' . $stats['has_call'] . PHP_EOL;
+echo 'Con Call collegata (qualsiasi stato): ' . $stats['has_call'] . PHP_EOL;
 echo '  di cui ancora Pianificato:        ' . $stats['has_planned_call'] . PHP_EOL;
+echo '  solo Svolto/Non svolto (da rifare): ' . $stats['has_only_completed_call'] . PHP_EOL;
 echo 'Senza Call (da creare):             ' . $stats['missing_call'] . PHP_EOL;
 echo '  → richiamo DOMANI (' . $tomorrow . '):  ' . $stats['missing_call_tomorrow'] . PHP_EOL;
 echo '  → richiamo OGGI:                  ' . $stats['missing_call_today'] . PHP_EOL;
@@ -215,18 +233,21 @@ function findExistingPendingCall($entityManager, string $appuntamentoId): ?Entit
 {
     $prefix = 'Auto-Pending-Appuntamento: ' . $appuntamentoId;
 
-    $byNota = $entityManager
+    $planned = $entityManager
         ->getRDBRepository('Call')
-        ->where(['nota*' => $prefix])
+        ->where([
+            'nota*' => $prefix,
+            'status' => 'Planned',
+        ])
         ->findOne();
 
-    if ($byNota) {
-        return $byNota;
+    if ($planned) {
+        return $planned;
     }
 
     return $entityManager
         ->getRDBRepository('Call')
-        ->where(['nota*' => '%' . $prefix . '%'])
+        ->where(['nota*' => $prefix])
         ->findOne();
 }
 
