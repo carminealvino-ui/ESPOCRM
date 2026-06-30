@@ -32,6 +32,13 @@ $today = $notBefore->format('Y-m-d');
 echo '=== Backfill Call da appuntamenti Pending ===' . PHP_EOL;
 echo 'Oggi (Rome): ' . $today . PHP_EOL;
 echo 'Modalità: ' . ($create ? 'CREA Call mancanti' : 'SOLO ANTEPRIMA (aggiungi --create)') . PHP_EOL;
+
+$heldTotal = $entityManager
+    ->getRDBRepository('Appuntamento')
+    ->where(['status' => 'Held'])
+    ->count();
+
+echo 'Appuntamenti Held (tutti i sottostati): ' . $heldTotal . PHP_EOL;
 echo PHP_EOL;
 
 $collection = $entityManager
@@ -76,23 +83,23 @@ foreach ($collection as $appuntamento) {
         continue;
     }
 
-    $leadId = $creator->resolveLeadId($appuntamento);
-
-    if (!$leadId) {
-        $stats['skipped_no_lead']++;
-        echo 'SKIP no-lead ' . $appuntamentoId
-            . ' | ' . (string) $appuntamento->get('name')
-            . ' | parent=' . (string) $appuntamento->get('parentType')
-            . '/' . (string) $appuntamento->get('parentId')
-            . ' prospect=' . (string) $appuntamento->get('prospectId')
-            . PHP_EOL;
-        continue;
-    }
-
     $full = $entityManager->getEntityById('Appuntamento', $appuntamentoId);
 
     if (!$full) {
         $stats['failed']++;
+        continue;
+    }
+
+    $leadId = $creator->ensureLeadId($full);
+
+    if (!$leadId) {
+        $stats['skipped_no_lead']++;
+        echo 'SKIP no-lead ' . $appuntamentoId
+            . ' | ' . (string) $full->get('name')
+            . ' | parent=' . (string) $full->get('parentType')
+            . '/' . (string) $full->get('parentId')
+            . ' prospect=' . (string) $full->get('prospectId')
+            . PHP_EOL;
         continue;
     }
 
@@ -125,7 +132,10 @@ foreach ($collection as $appuntamento) {
             . PHP_EOL;
     } else {
         $stats['failed']++;
-        echo 'ERRORE creazione per app. ' . $appuntamentoId . PHP_EOL;
+        echo 'ERRORE creazione per app. ' . $appuntamentoId
+            . ' (lead=' . $leadId
+            . ' status=' . (string) $full->get('status')
+            . ' sottostato=' . (string) $full->get('sottostato') . ')' . PHP_EOL;
     }
 }
 
@@ -139,7 +149,12 @@ echo 'Da creare:                     ' . $stats['to_create'] . PHP_EOL;
 if ($create) {
     echo 'Create:                        ' . $stats['created'] . PHP_EOL;
     echo 'Fallite:                       ' . $stats['failed'] . PHP_EOL;
-} elseif ($stats['to_create'] > 0) {
+}
+
+if ($stats['total'] === 0) {
+    echo PHP_EOL . 'ATTENZIONE: nessun appuntamento con status=Held e sottostato=Pending.' . PHP_EOL;
+    echo 'Le Call automatiche partono solo da appuntamenti esitati così.' . PHP_EOL;
+} elseif ($stats['to_create'] > 0 && !$create) {
     echo PHP_EOL . 'Per creare le Call:' . PHP_EOL;
     echo '  php tools/backfill-pending-calls.php --create' . PHP_EOL;
 }

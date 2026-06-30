@@ -82,7 +82,7 @@ class AppuntamentoPendingCallCreator
             return $existingCallId;
         }
 
-        $leadId = $leadIdOverride ?: $this->resolveLeadId($appuntamento);
+        $leadId = $leadIdOverride ?: $this->ensureLeadId($appuntamento);
 
         if (!$leadId) {
             $this->log->warning(
@@ -736,6 +736,102 @@ class AppuntamentoPendingCallCreator
             ->findExistingLeadByProspect($prospect);
 
         return $lead?->getId();
+    }
+
+    /**
+     * Risolve il Lead collegato; se manca ma c'è il Prospect, lo crea come GlobalLogic.
+     */
+    public function ensureLeadId(Entity $appuntamento): ?string
+    {
+        $leadId = $this->resolveLeadId($appuntamento);
+
+        if ($leadId) {
+            return $leadId;
+        }
+
+        $prospectId = $appuntamento->get('prospectId');
+
+        if (!$prospectId) {
+            return null;
+        }
+
+        $prospect = $this->entityManager->getEntityById('Prospect', $prospectId);
+
+        if (!$prospect) {
+            return null;
+        }
+
+        $leadSync = new LeadProspectSync($this->entityManager);
+        $lead = $leadSync->findExistingLeadByProspect($prospect);
+        $isNewLead = !$lead;
+
+        if (!$lead) {
+            $lead = $this->entityManager->createEntity('Lead');
+            $lead->set(['status' => 'In Process']);
+
+            $ownerUserId = $this->resolveOwnerUserId($appuntamento);
+
+            if ($ownerUserId) {
+                $lead->set('assignedUserId', $ownerUserId);
+            }
+
+            $this->entityManager->saveEntity($lead, [
+                'skipAcl' => true,
+                'silent' => true,
+            ]);
+        }
+
+        $leadSync->syncLeadFromProspect($lead, $prospect, !$isNewLead);
+        $lead->set('status', 'In Process');
+        $leadSync->linkLeadAndProspect($lead, $prospect);
+
+        $this->entityManager->saveEntity($lead, [
+            'skipAcl' => true,
+            'silent' => true,
+        ]);
+
+        $leadId = $lead->getId();
+
+        if (!$leadId) {
+            return null;
+        }
+
+        $appuntamentoId = $appuntamento->getId();
+
+        if ($appuntamentoId) {
+            $leadName = $lead->get('name');
+
+            if (!$leadName) {
+                $leadName = trim(
+                    ($lead->get('firstName') ?: '') . ' ' . ($lead->get('lastName') ?: '')
+                );
+            }
+
+            $fresh = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
+
+            if ($fresh) {
+                $fresh->set([
+                    'parentType' => 'Lead',
+                    'parentId' => $leadId,
+                    'parentName' => $leadName ?: $fresh->get('parentName'),
+                ]);
+
+                $this->entityManager->saveEntity($fresh, [
+                    'skipAcl' => true,
+                    'silent' => true,
+                    'skipHooks' => true,
+                    'skipAutoCreatePendingCall' => true,
+                ]);
+
+                $appuntamento->set([
+                    'parentType' => 'Lead',
+                    'parentId' => $leadId,
+                    'parentName' => $leadName ?: $appuntamento->get('parentName'),
+                ]);
+            }
+        }
+
+        return $leadId;
     }
 
     /**

@@ -154,7 +154,7 @@ foreach ($collection as $appuntamento) {
     if ($createMissing && $row['lead_ok']) {
         $full = $entityManager->getEntityById('Appuntamento', $appuntamentoId);
         $notBefore = new \DateTimeImmutable('today', $timezone);
-        $leadId = $full ? $creator->resolveLeadId($full) : null;
+        $leadId = $full ? $creator->ensureLeadId($full) : null;
 
         if ($full && $leadId) {
             $callId = $creator->createIfNeeded($full, $notBefore, $leadId);
