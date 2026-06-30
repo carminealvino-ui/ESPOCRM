@@ -42,6 +42,8 @@ fi
 FILES=(
   "custom/Espo/Custom/Hooks/Disponibilita/SetName.php"
   "custom/Espo/Custom/Resources/metadata/app/calendar.json"
+  "custom/Espo/Custom/Services/AppuntamentoCalendarColor.php"
+  "custom/Espo/Custom/Services/BrandCalendarColorBackfill.php"
   "tools/data/brand-calendar-colors.json"
   "tools/backfill-brand-color-calendario.php"
 )

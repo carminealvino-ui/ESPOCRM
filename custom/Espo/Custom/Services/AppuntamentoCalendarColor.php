@@ -112,8 +112,48 @@ class AppuntamentoCalendarColor
 
         $key = strtoupper($brandName);
 
+        $jsonColor = self::loadJsonBrandColor($key);
+
+        if ($jsonColor !== null) {
+            return $jsonColor;
+        }
+
         return self::BRAND_PALETTE_DALTON[$key] ?? null;
     }
+
+    private static function loadJsonBrandColor(string $brandKey): ?string
+    {
+        static $map = null;
+
+        if ($map === null) {
+            $map = [];
+            $candidates = [
+                getcwd() . '/tools/data/brand-calendar-colors.json',
+                dirname(__DIR__, 4) . '/tools/data/brand-calendar-colors.json',
+            ];
+
+            foreach ($candidates as $path) {
+                if (!is_readable($path)) {
+                    continue;
+                }
+
+                $decoded = json_decode((string) file_get_contents($path), true);
+
+                if (!is_array($decoded)) {
+                    continue;
+                }
+
+                foreach ($decoded as $name => $hex) {
+                    $map[strtoupper((string) $name)] = trim((string) $hex);
+                }
+
+                break;
+            }
+        }
+
+        $color = $map[$brandKey] ?? null;
+
+        return ($color !== null && $color !== '') ? $color : null;
 
     private function resolveDisponibilitaBrandName(Entity $entity): string
     {
