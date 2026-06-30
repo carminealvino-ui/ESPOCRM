@@ -5,6 +5,7 @@ namespace Espo\Custom\Services;
 use Espo\Core\Utils\Log;
 use Espo\Custom\Tools\Appuntamento\PendingCallDateTime;
 use Espo\Custom\Tools\DateTime\BusinessDateTime;
+use Espo\Modules\Crm\Entities\Reminder;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
@@ -62,6 +63,11 @@ class AppuntamentoPendingCallCreator
 
         if ($existingCallId) {
             $this->syncCallOwnerFromAppuntamento($existingCallId, $appuntamento);
+            $existingCall = $this->entityManager->getEntityById('Call', $existingCallId);
+
+            if ($existingCall) {
+                $this->syncPopupReminders($existingCall);
+            }
 
             return $existingCallId;
         }
@@ -140,20 +146,17 @@ class AppuntamentoPendingCallCreator
             'vocale' => false,
             'testo' => self::TESTO_STANDARD,
             'nota' => $this->buildNota($appuntamentoId, $appuntamento->get('dateStart')),
-            'reminders' => [
-                [
-                    'type' => 'popup',
-                    'seconds' => self::REMINDER_SECONDS,
-                ],
-            ],
         ]));
 
         // skipHooks: bypass formula Call; dateStart già in UTC (come Disponibilita/SetName).
+        // I promemoria popup vanno creati a mano: skipHooks salta il saver dei reminders.
         $this->entityManager->saveEntity($call, [
             'skipAcl' => true,
             'silent' => true,
             'skipHooks' => true,
         ]);
+
+        $this->syncPopupReminders($call);
 
         $this->log->info(
             'Auto-create Call Pending: creata Call {callId} per Appuntamento {id} UTC {dateStartUtc} (Rome {dateStartRome})',
@@ -287,6 +290,8 @@ class AppuntamentoPendingCallCreator
             'skipAcl' => true,
             'silent' => true,
         ]);
+
+        $this->syncPopupReminders($call);
 
         $this->log->info(
             'Auto-create Call Pending: aggiornato assegnatario Call {callId} -> user {userId}',
@@ -427,5 +432,138 @@ class AppuntamentoPendingCallCreator
             ->findOne();
 
         return $existing?->getId();
+    }
+
+    public function syncPopupReminders(Entity $call): void
+    {
+        if ($call->getEntityType() !== 'Call' || $call->get('status') !== 'Planned') {
+            return;
+        }
+
+        $callId = $call->getId();
+        $dateStart = $call->get('dateStart');
+
+        if (!$callId || !$dateStart) {
+            return;
+        }
+
+        $userIds = $this->resolveCallReminderUserIds($call);
+
+        if ($userIds === []) {
+            return;
+        }
+
+        $remindAt = $this->buildRemindAtUtc((string) $dateStart, self::REMINDER_SECONDS);
+        $existing = $this->loadPopupReminderMap($callId);
+
+        foreach ($userIds as $userId) {
+            $current = $existing[$userId] ?? null;
+
+            if (
+                $current
+                && $current['remindAt'] === $remindAt
+                && (int) $current['seconds'] === self::REMINDER_SECONDS
+            ) {
+                continue;
+            }
+
+            if ($current && $current['id']) {
+                $reminder = $this->entityManager->getEntityById('Reminder', $current['id']);
+
+                if ($reminder) {
+                    $this->entityManager->removeEntity($reminder, ['skipAcl' => true]);
+                }
+            }
+
+            $this->entityManager->createEntity('Reminder', [
+                'entityType' => 'Call',
+                'entityId' => $callId,
+                'type' => Reminder::TYPE_POPUP,
+                'userId' => $userId,
+                'seconds' => self::REMINDER_SECONDS,
+                'remindAt' => $remindAt,
+                'startAt' => $dateStart,
+            ], [
+                'skipAcl' => true,
+                'silent' => true,
+                'skipHooks' => true,
+            ]);
+        }
+
+        foreach ($existing as $userId => $data) {
+            if (in_array($userId, $userIds, true) || !$data['id']) {
+                continue;
+            }
+
+            $reminder = $this->entityManager->getEntityById('Reminder', $data['id']);
+
+            if ($reminder) {
+                $this->entityManager->removeEntity($reminder, ['skipAcl' => true]);
+            }
+        }
+    }
+
+    /**
+     * @return string[]
+     */
+    private function resolveCallReminderUserIds(Entity $call): array
+    {
+        $userIds = array_values(array_filter(array_map(
+            'strval',
+            $call->get('usersIds') ?: []
+        )));
+
+        if ($userIds !== []) {
+            return array_values(array_unique($userIds));
+        }
+
+        $assignedUserId = $call->get('assignedUserId');
+
+        return $assignedUserId ? [(string) $assignedUserId] : [];
+    }
+
+    /**
+     * @return array<string, array{id: ?string, remindAt: ?string, seconds: int}>
+     */
+    private function loadPopupReminderMap(string $callId): array
+    {
+        $map = [];
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Reminder')
+            ->select(['id', 'userId', 'remindAt', 'seconds'])
+            ->where([
+                'entityType' => 'Call',
+                'entityId' => $callId,
+                'type' => Reminder::TYPE_POPUP,
+            ])
+            ->find();
+
+        foreach ($collection as $reminder) {
+            $userId = (string) $reminder->get('userId');
+
+            if ($userId === '') {
+                continue;
+            }
+
+            $map[$userId] = [
+                'id' => $reminder->getId(),
+                'remindAt' => $reminder->get('remindAt'),
+                'seconds' => (int) $reminder->get('seconds'),
+            ];
+        }
+
+        return $map;
+    }
+
+    private function buildRemindAtUtc(string $dateStartUtc, int $secondsBefore): string
+    {
+        try {
+            $start = new \DateTimeImmutable($dateStartUtc, new \DateTimeZone('UTC'));
+        } catch (\Throwable) {
+            $start = new \DateTimeImmutable($dateStartUtc);
+        }
+
+        return $start->modify('-' . $secondsBefore . ' seconds')->format('Y-m-d H:i:s');
     }
 }

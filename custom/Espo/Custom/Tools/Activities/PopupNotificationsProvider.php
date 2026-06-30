@@ -193,7 +193,9 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
         $userId = $user->getId();
         $dateField = $entityType === Task::ENTITY_TYPE ? 'dateEnd' : 'dateStart';
-        $popupCutoff = PendingCallDateTime::popupEligibilityCutoff();
+        $popupCutoff = $entityType === 'Appuntamento'
+            ? PendingCallDateTime::popupEligibilityCutoff()
+            : $now;
         $resultList = [];
 
         $collection = $this->entityManager

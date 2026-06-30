@@ -39,8 +39,10 @@ class NormalizeAutoPendingFields implements BeforeSave
         $name = strtoupper(trim((string) $entity->get('name')));
 
         return str_contains($nota, self::NOTA_PREFIX)
+            || $tipologia === self::TIPOLOGIA_RICHIAMO
             || $tipologia === self::LEGACY_TIPOLOGIA
-            || str_contains($name, 'CONTATTO DOPO PRIMA VISITA');
+            || str_contains($name, 'CONTATTO DOPO PRIMA VISITA')
+            || str_contains($name, 'RICHIAMO SU OPPORTUNIT');
     }
 
     private function normalizeMisplacedFields(Entity $entity): void

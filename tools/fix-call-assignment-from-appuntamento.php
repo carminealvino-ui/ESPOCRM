@@ -29,6 +29,7 @@ $collection = $entityManager
 
 $updated = 0;
 $skipped = 0;
+$remindersSynced = 0;
 
 foreach ($collection as $call) {
     $nota = (string) $call->get('nota');
@@ -68,16 +69,18 @@ foreach ($collection as $call) {
         $changed = true;
     }
 
-    if (!$changed) {
+    if ($changed) {
+        $entityManager->saveEntity($call, ['skipAcl' => true, 'silent' => true]);
+        $updated++;
+        echo 'OK ' . $call->getId() . ' (' . $status . ')' . PHP_EOL;
+    } else {
         $skipped++;
-
-        continue;
     }
 
-    $entityManager->saveEntity($call, ['skipAcl' => true, 'silent' => true]);
-    $updated++;
-
-    echo 'OK ' . $call->getId() . ' (' . $status . ')' . PHP_EOL;
+    if ($status === 'Planned') {
+        $creator->syncPopupReminders($call);
+        $remindersSynced++;
+    }
 }
 
-echo PHP_EOL . "Aggiornate: {$updated}, saltate: {$skipped}" . PHP_EOL;
+echo PHP_EOL . "Aggiornate: {$updated}, saltate: {$skipped}, promemoria popup: {$remindersSynced}" . PHP_EOL;

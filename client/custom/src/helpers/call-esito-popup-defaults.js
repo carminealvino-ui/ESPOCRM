@@ -30,6 +30,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         const popupName = normalize(notificationName);
 
         return nota.indexOf(AUTO_PENDING_NOTA_PREFIX) !== -1
+            || tipologia === TIPOLOGIA_RICHIAMO_OPPORTUNITA
             || tipologia === LEGACY_TIPOLOGIA
             || containsLegacyTipologia(name)
             || containsLegacyTipologia(popupName);
