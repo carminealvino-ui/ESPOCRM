@@ -132,23 +132,52 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 {
                     label: 'Appuntamenti netti',
                     value: this.formatNumber(baseNetti),
-                    detail: this.percentOfTotali(baseNetti, baseTotali),
+                    detail: this.joinPercentDetails([
+                        this.percentOfTotali(baseNetti, baseTotali),
+                        '100.0% (base netti)',
+                    ]),
                 },
                 {
                     label: 'Contratti lordi',
                     value: this.formatNumber(baseContrattiLordi),
-                    detail: this.percentOfTotali(baseContrattiLordi, baseTotali),
+                    detail: this.joinPercentDetails([
+                        this.percentOfTotali(baseContrattiLordi, baseTotali),
+                        this.percentOfNetti(baseContrattiLordi, baseNetti),
+                    ]),
                 },
                 {
                     label: 'Contratti netti',
                     value: this.formatNumber(baseContrattiNetti),
-                    detail: this.percentOfTotali(baseContrattiNetti, baseTotali),
+                    detail: this.joinPercentDetails([
+                        this.percentOfTotali(baseContrattiNetti, baseTotali),
+                        this.percentOfNetti(baseContrattiNetti, baseNetti),
+                    ]),
                 },
             ];
         },
 
+        joinPercentDetails: function (parts) {
+            return (parts || []).filter(part => part && part !== '-').join(' · ');
+        },
+
         percentOfTotali: function (value, baseTotali) {
-            return this.computePercent(value, baseTotali) + ' su App. totali';
+            const percent = this.computePercent(value, baseTotali);
+
+            if (percent === '-') {
+                return percent;
+            }
+
+            return percent + ' su App. totali';
+        },
+
+        percentOfNetti: function (value, baseNetti) {
+            const percent = this.computePercent(value, baseNetti);
+
+            if (percent === '-') {
+                return percent;
+            }
+
+            return percent + ' su App. netti';
         },
 
         computePercent: function (value, base) {
