@@ -250,6 +250,15 @@
     margin-bottom: 6px;
 }
 
+.crm-kpi-pipeline-results {
+    margin-top: 10px;
+}
+
+.crm-kpi-pipeline-results-table th,
+.crm-kpi-pipeline-results-table td {
+    white-space: nowrap;
+}
+
 .crm-kpi-pipeline {
     display: grid;
     grid-template-columns: 1fr;

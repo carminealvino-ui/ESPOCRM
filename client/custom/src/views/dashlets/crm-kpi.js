@@ -95,7 +95,50 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 yieldsByWeekday: this.mapYieldRows(summary.yieldsByWeekday),
                 yieldsByWeek: this.mapYieldRows(summary.yieldsByWeek),
                 yieldColumns: summary.yieldColumns || this.getDefaultYieldColumns(),
+                pipelineResultsRows: this.mapPipelineResultsRows(pipeline),
             };
+        },
+
+        mapPipelineResultsRows: function (pipeline) {
+            const steps = pipeline || [];
+
+            if (!steps.length) {
+                return [];
+            }
+
+            const valueByKey = {};
+            steps.forEach(step => {
+                valueByKey[step.key] = Number(step.value || 0);
+            });
+
+            const baseLordi = valueByKey.appuntamentiLordi || 0;
+            const baseNetti = valueByKey.appuntamentiNetti || 0;
+            const baseContrattiLordi = valueByKey.contratti || 0;
+            const baseContrattiNetti = valueByKey.contrattiNetti || 0;
+
+            return steps.map(step => {
+                const value = Number(step.value || 0);
+
+                return {
+                    label: step.label || step.key || '-',
+                    value: this.formatNumber(value),
+                    percLordi: this.computePercent(value, baseLordi),
+                    percNetti: this.computePercent(value, baseNetti),
+                    percContrattiLordi: this.computePercent(value, baseContrattiLordi),
+                    percContrattiNetti: this.computePercent(value, baseContrattiNetti),
+                };
+            });
+        },
+
+        computePercent: function (value, base) {
+            const num = Number(value || 0);
+            const den = Number(base || 0);
+
+            if (den <= 0) {
+                return '-';
+            }
+
+            return ((num / den) * 100).toFixed(1) + '%';
         },
 
         getDefaultYieldColumns: function () {

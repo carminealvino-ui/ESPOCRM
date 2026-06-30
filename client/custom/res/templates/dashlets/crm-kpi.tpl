@@ -76,6 +76,35 @@
                             <div class="crm-kpi-pipeline-chart" data-name="pipeline-chart"></div>
                             <div class="crm-kpi-pipeline-legend legend-container"></div>
                         </div>
+                        <div class="crm-kpi-pipeline-results">
+                            <div class="crm-kpi-panel-note text-muted small">Risultati: percentuali relative ai riferimenti principali</div>
+                            <div class="crm-kpi-yields-table-wrap">
+                                <table class="crm-kpi-yields-table crm-kpi-pipeline-results-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Risultato</th>
+                                            <th>Valore</th>
+                                            <th>% su App. lordi</th>
+                                            <th>% su App. netti</th>
+                                            <th>% su Contr. lordi</th>
+                                            <th>% su Contr. netti</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{#each pipelineResultsRows}}
+                                            <tr>
+                                                <th class="crm-kpi-yields-row-label">{{label}}</th>
+                                                <td>{{value}}</td>
+                                                <td>{{percLordi}}</td>
+                                                <td>{{percNetti}}</td>
+                                                <td>{{percContrattiLordi}}</td>
+                                                <td>{{percContrattiNetti}}</td>
+                                            </tr>
+                                        {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     {{else}}
                         <div class="text-muted small">Nessun dato nel periodo selezionato.</div>
                     {{/if}}
