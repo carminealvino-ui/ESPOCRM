@@ -17,7 +17,7 @@ class AppuntamentoPendingCallCreator
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
     private const ADMIN_USER_ID = '1';
     private const REMINDER_SECONDS = 0;
-    public const CREATOR_VERSION = '2026-06-30d';
+    public const CREATOR_VERSION = '2026-06-30e';
 
     private ?string $lastFailureReason = null;
 
@@ -99,7 +99,24 @@ class AppuntamentoPendingCallCreator
         }
 
         $prospect = $this->resolveProspect($appuntamento);
-        $leadId = $leadIdOverride ?: $this->ensureLeadId($appuntamento);
+        $leadId = $leadIdOverride ?: $this->resolveLeadId($appuntamento);
+
+        if (!$leadId && $prospect) {
+            try {
+                $leadId = $this->ensureLeadId($appuntamento);
+            } catch (\Throwable $e) {
+                $this->log->warning(
+                    'Auto-create Call Pending: ensureLeadId fallito per Appuntamento {id}, uso Prospect: {message}',
+                    [
+                        'id' => $appuntamentoId,
+                        'message' => $e->getMessage(),
+                        'exception' => $e,
+                    ]
+                );
+                $leadId = null;
+            }
+        }
+
         $parentType = 'Lead';
         $parentId = $leadId;
         $parentEntity = $leadId ? $this->entityManager->getEntityById('Lead', $leadId) : null;
@@ -152,6 +169,12 @@ class AppuntamentoPendingCallCreator
         $ownerUserId = $this->resolveOwnerUserId($appuntamento) ?: self::ADMIN_USER_ID;
         $ownerUserName = $this->resolveOwnerUserName($ownerUserId);
         $prospectId = $prospect?->getId() ?: $appuntamento->get('prospectId');
+
+        if (!$prospectId && $parentType === 'Lead') {
+            $prospectId = $parentEntity->get('prospectId')
+                ?: (new LeadProspectSync($this->entityManager))->findProspectForLead($parentEntity)?->getId();
+        }
+
         $prospectName = $prospect?->get('name') ?: $appuntamento->get('prospectName');
 
         $call = $this->entityManager->createEntity('Call');
@@ -191,6 +214,7 @@ class AppuntamentoPendingCallCreator
                 'skipAcl' => true,
                 'silent' => true,
                 'skipHooks' => true,
+                'isImport' => true,
             ]);
         } catch (\Throwable $e) {
             $message = $e->getMessage();
@@ -253,8 +277,17 @@ class AppuntamentoPendingCallCreator
         }
 
         $prospect = $this->resolveProspect($appuntamento);
-        $leadId = $this->ensureLeadId($appuntamento);
+        $leadId = $this->resolveLeadId($appuntamento);
         $hasParent = ($leadId && $this->entityManager->getEntityById('Lead', $leadId)) || $prospect;
+
+        if (!$hasParent) {
+            try {
+                $leadId = $this->ensureLeadId($appuntamento);
+                $hasParent = (bool) ($leadId && $this->entityManager->getEntityById('Lead', $leadId));
+            } catch (\Throwable) {
+                $hasParent = $prospect !== null;
+            }
+        }
 
         if (!$hasParent) {
             return 'lead/prospect non risolvibile (parent='

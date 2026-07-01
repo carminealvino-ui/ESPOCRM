@@ -20,11 +20,13 @@ FILES=(
   "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
   "custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php"
   "custom/Espo/Custom/Hooks/Call/NormalizeAutoPendingFields.php"
+  "custom/Espo/Custom/Resources/metadata/formula/Call.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
   "client/custom/src/helpers/call-esito-popup-defaults.js"
   "tools/fix-call-assignment-from-appuntamento.php"
   "tools/audit-pending-call-candidates.php"
   "tools/backfill-pending-calls.php"
+  "tools/diagnose-pending-call-one.php"
 )
 
 for rel in "${FILES[@]}"; do
@@ -34,8 +36,8 @@ for rel in "${FILES[@]}"; do
   echo "OK ${rel}"
 done
 
-grep -q "createRichiamoIfNeeded" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
-  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (createRichiamoIfNeeded)" >&2
+grep -q "2026-06-30e" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
+  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (atteso CREATOR_VERSION 2026-06-30e)" >&2
   exit 1
 }
 

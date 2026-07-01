@@ -74,6 +74,18 @@ $stats = [
     'failed' => 0,
 ];
 
+/** @var array<string, int> $failureReasons */
+$failureReasons = [];
+/** @var list<string> $failureSamples */
+$failureSamples = [];
+
+if (AppuntamentoPendingCallCreator::CREATOR_VERSION !== '2026-06-30e') {
+    echo 'ATTENZIONE: versione creator '
+        . AppuntamentoPendingCallCreator::CREATOR_VERSION
+        . ' — eseguire deploy-pending-call-popup-fix.sh (atteso 2026-06-30e)'
+        . PHP_EOL;
+}
+
 foreach ($collection as $appuntamento) {
     if ($limit !== null && $stats['to_create'] >= $limit && !$create) {
         break;
@@ -111,6 +123,12 @@ foreach ($collection as $appuntamento) {
 
         if (!$full) {
             $stats['failed']++;
+            $reason = 'appuntamento non ricaricabile';
+            $failureReasons[$reason] = ($failureReasons[$reason] ?? 0) + 1;
+            if (count($failureSamples) < 5) {
+                $failureSamples[] = $appuntamentoId . ' | ' . $reason;
+            }
+            echo 'ERRORE ' . $appuntamentoId . ' | ' . $reason . PHP_EOL;
             continue;
         }
 
@@ -154,10 +172,19 @@ foreach ($collection as $appuntamento) {
             $reason = $creator->getLastFailureReason()
                 ?: $creator->diagnoseCreateBlockReason($full)
                 ?: 'motivo sconosciuto';
+            $failureReasons[$reason] = ($failureReasons[$reason] ?? 0) + 1;
+            if (count($failureSamples) < 5) {
+                $failureSamples[] = $appuntamentoId . ' | ' . $reason;
+            }
             echo 'ERRORE ' . $appuntamentoId . ' | ' . $reason . PHP_EOL;
         }
     } catch (\Throwable $e) {
         $stats['failed']++;
+        $reason = 'EXCEPTION: ' . $e->getMessage();
+        $failureReasons[$reason] = ($failureReasons[$reason] ?? 0) + 1;
+        if (count($failureSamples) < 5) {
+            $failureSamples[] = ($appuntamentoId ?? '?') . ' | ' . $reason;
+        }
         echo 'EXCEPTION ' . ($appuntamentoId ?? '?') . ': ' . $e->getMessage() . PHP_EOL;
         $log->error('Backfill pending call failed: {message}', [
             'message' => $e->getMessage(),
@@ -176,6 +203,23 @@ echo 'Da creare:                     ' . $stats['to_create'] . PHP_EOL;
 if ($create) {
     echo 'Create:                        ' . $stats['created'] . PHP_EOL;
     echo 'Fallite:                       ' . $stats['failed'] . PHP_EOL;
+
+    if ($failureReasons !== []) {
+        echo PHP_EOL . '--- Motivi fallimento (aggregati) ---' . PHP_EOL;
+        arsort($failureReasons);
+
+        foreach ($failureReasons as $reason => $count) {
+            echo $count . 'x  ' . $reason . PHP_EOL;
+        }
+    }
+
+    if ($failureSamples !== []) {
+        echo PHP_EOL . '--- Esempi (max 5) ---' . PHP_EOL;
+
+        foreach ($failureSamples as $sample) {
+            echo $sample . PHP_EOL;
+        }
+    }
 }
 
 if ($stats['total'] === 0) {
