@@ -10,8 +10,6 @@ use Espo\ORM\Repository\Option\SaveOptions;
 
 class SyncOwnerFromAppuntamento implements BeforeSave
 {
-    private const NOTA_PREFIX = 'Auto-Pending-Appuntamento:';
-
     public static int $order = 4;
 
     public function __construct(
@@ -25,7 +23,7 @@ class SyncOwnerFromAppuntamento implements BeforeSave
             return;
         }
 
-        $appuntamentoId = $this->extractAppuntamentoId((string) $entity->get('nota'));
+        $appuntamentoId = $this->callCreator->extractAppuntamentoIdFromNota((string) $entity->get('nota'));
 
         if (!$appuntamentoId) {
             return;
@@ -36,6 +34,8 @@ class SyncOwnerFromAppuntamento implements BeforeSave
         if (!$appuntamento) {
             return;
         }
+
+        $this->callCreator->syncCallNameFromAppuntamento($entity, $appuntamento);
 
         $ownerUserId = $this->callCreator->resolveOwnerUserId($appuntamento);
 
@@ -55,18 +55,5 @@ class SyncOwnerFromAppuntamento implements BeforeSave
             'usersIds' => [$ownerUserId],
             'usersNames' => $ownerUserName ? [$ownerUserId => $ownerUserName] : (object) [],
         ]);
-    }
-
-    private function extractAppuntamentoId(string $nota): ?string
-    {
-        if (!str_contains($nota, self::NOTA_PREFIX)) {
-            return null;
-        }
-
-        if (!preg_match('/' . preg_quote(self::NOTA_PREFIX, '/') . '\s*([a-z0-9]{17})/i', $nota, $matches)) {
-            return null;
-        }
-
-        return $matches[1];
     }
 }

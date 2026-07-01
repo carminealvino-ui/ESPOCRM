@@ -79,10 +79,10 @@ $failureReasons = [];
 /** @var list<string> $failureSamples */
 $failureSamples = [];
 
-if (AppuntamentoPendingCallCreator::CREATOR_VERSION !== '2026-06-30e') {
+if (AppuntamentoPendingCallCreator::CREATOR_VERSION !== '2026-07-01a') {
     echo 'ATTENZIONE: versione creator '
         . AppuntamentoPendingCallCreator::CREATOR_VERSION
-        . ' — eseguire deploy-pending-call-popup-fix.sh (atteso 2026-06-30e)'
+        . ' — eseguire deploy-pending-call-popup-fix.sh (atteso 2026-07-01a)'
         . PHP_EOL;
 }
 

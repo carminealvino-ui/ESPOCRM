@@ -101,21 +101,25 @@ foreach ($callsById as $call) {
     if ($appuntamentoId) {
         $appuntamento = $entityManager->getEntityById('Appuntamento', $appuntamentoId);
 
-        if ($appuntamento) {
-            $ownerUserId = $creator->resolveOwnerUserId($appuntamento);
+            if ($appuntamento) {
+                $ownerUserId = $creator->resolveOwnerUserId($appuntamento);
 
-            if ($ownerUserId && (string) $call->get('assignedUserId') !== $ownerUserId) {
-                $ownerUserName = $entityManager->getEntityById('User', $ownerUserId)?->get('name');
+                if ($ownerUserId && (string) $call->get('assignedUserId') !== $ownerUserId) {
+                    $ownerUserName = $entityManager->getEntityById('User', $ownerUserId)?->get('name');
 
-                $call->set([
-                    'assignedUserId' => $ownerUserId,
-                    'assignedUserName' => $ownerUserName,
-                    'usersIds' => [$ownerUserId],
-                    'usersNames' => $ownerUserName ? [$ownerUserId => $ownerUserName] : (object) [],
-                ]);
-                $changed = true;
+                    $call->set([
+                        'assignedUserId' => $ownerUserId,
+                        'assignedUserName' => $ownerUserName,
+                        'usersIds' => [$ownerUserId],
+                        'usersNames' => $ownerUserName ? [$ownerUserId => $ownerUserName] : (object) [],
+                    ]);
+                    $changed = true;
+                }
+
+                if ($creator->syncCallNameFromAppuntamento($call, $appuntamento)) {
+                    $changed = true;
+                }
             }
-        }
     }
 
     $status = (string) $call->get('status');

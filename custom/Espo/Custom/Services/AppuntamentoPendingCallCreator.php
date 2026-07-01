@@ -17,7 +17,7 @@ class AppuntamentoPendingCallCreator
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
     private const ADMIN_USER_ID = '1';
     private const REMINDER_SECONDS = 0;
-    public const CREATOR_VERSION = '2026-06-30e';
+    public const CREATOR_VERSION = '2026-07-01a';
 
     private ?string $lastFailureReason = null;
 
@@ -165,7 +165,11 @@ class AppuntamentoPendingCallCreator
             return $this->fail('telefono mancante su appuntamento/lead/prospect');
         }
 
-        $presentation = $this->buildCallPresentationFields($callInstant, $parentName, $telefono);
+        $presentation = $this->buildCallPresentationFields(
+            BusinessDateTime::storageToBusiness($appuntamento->get('dateStart')),
+            $parentName,
+            $telefono
+        );
         $ownerUserId = $this->resolveOwnerUserId($appuntamento) ?: self::ADMIN_USER_ID;
         $ownerUserName = $this->resolveOwnerUserName($ownerUserId);
         $prospectId = $prospect?->getId() ?: $appuntamento->get('prospectId');
@@ -367,8 +371,11 @@ class AppuntamentoPendingCallCreator
         $callDateStartUtc = BusinessDateTime::businessToStorage($callInstant);
         $parentName = $appuntamento->get('parentName') ?: $lead->get('name');
         $telefono = $appuntamento->get('telefono') ?: $lead->get('phoneNumber');
+        $appointmentInstant = $appuntamento->get('dateStart') ?
+            BusinessDateTime::storageToBusiness($appuntamento->get('dateStart')) :
+            $callInstant;
         $presentation = $this->buildCallPresentationFields(
-            $callInstant,
+            $appointmentInstant,
             $parentName,
             $telefono,
             $tipologia
@@ -607,15 +614,24 @@ class AppuntamentoPendingCallCreator
     }
 
     /**
+     * Campi presentazione Call: il nome usa la data appuntamento (non dateStart della Call).
+     *
      * @return array{name: string, whatsAppNumero: ?string, dateEnd: null}
      */
     public function buildCallPresentationFields(
-        \DateTimeImmutable $callInstant,
+        ?\DateTimeImmutable $appointmentInstant,
         ?string $parentName,
         ?string $telefono,
         ?string $tipologia = null
     ): array {
-        $dataLabel = PendingCallDateTime::formatBusinessDateTime($callInstant);
+        if (!$appointmentInstant) {
+            $appointmentInstant = new \DateTimeImmutable(
+                'now',
+                new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE)
+            );
+        }
+
+        $dataLabel = PendingCallDateTime::formatBusinessDateTime($appointmentInstant);
         $tipologia = trim((string) ($tipologia ?: self::TIPOLOGIA));
 
         $parentName = trim((string) $parentName);
@@ -638,6 +654,41 @@ class AppuntamentoPendingCallCreator
             'whatsAppNumero' => $whatsAppNumero,
             'dateEnd' => null,
         ];
+    }
+
+    public function extractAppuntamentoIdFromNota(string $nota): ?string
+    {
+        if (preg_match('/Auto-(?:Pending|Richiamo)-Appuntamento:\s*([a-z0-9]{17})/i', $nota, $matches)) {
+            return $matches[1];
+        }
+
+        return null;
+    }
+
+    public function syncCallNameFromAppuntamento(Entity $call, Entity $appuntamento): bool
+    {
+        $dateStart = $appuntamento->get('dateStart');
+
+        if (!$dateStart) {
+            return false;
+        }
+
+        $presentation = $this->buildCallPresentationFields(
+            BusinessDateTime::storageToBusiness($dateStart),
+            $call->get('parentName'),
+            $call->get('telefono'),
+            $call->get('tipologia')
+        );
+
+        $newName = $presentation['name'];
+
+        if ((string) $call->get('name') === $newName) {
+            return false;
+        }
+
+        $call->set('name', $newName);
+
+        return true;
     }
 
     private function buildNota(string $appuntamentoId, ?string $appointmentDateStart): string
