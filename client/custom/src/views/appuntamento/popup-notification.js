@@ -473,12 +473,117 @@ define('custom:views/appuntamento/popup-notification', [
 
             const entityType = this.esitoEntityType || this.notificationData.entityType;
             const model = this.getEsitoModel();
+            const recordView = this.getView('esitoRecord');
+            let fetchedAttributes = {};
             let saveAttributes = null;
 
+            if (recordView && typeof recordView.fetch === 'function') {
+                fetchedAttributes = recordView.fetch() || {};
+            }
+
+            if (model && fetchedAttributes && typeof fetchedAttributes === 'object') {
+                model.set(fetchedAttributes, {silent: true});
+            }
+
             if (entityType === 'Call') {
-                saveAttributes = CallEsitoDefaults.getSaveAttributes(
-                    model,
-                    this.notificationData.name
+                saveAttributes = Object.assign(
+                    {},
+                    fetchedAttributes,
+                    CallEsitoDefaults.getSaveAttributes(
+                        model,
+                        this.notificationData.name
+                    )
+                );
+            } else {
+                saveAttributes = fetchedAttributes;
+            }
+
+            // Fallback: in alcuni casi selectize aggiorna prima il DOM del model.
+            if (!saveAttributes.status) {
+                const domStatus = this.getCurrentStatus();
+
+                if (domStatus) {
+                    saveAttributes.status = domStatus;
+                }
+            }
+
+            if (entityType === 'Call' && model && !saveAttributes.tipologia) {
+                saveAttributes.tipologia = model.get('tipologia');
+            }
+
+            if (entityType === 'Call' && model && !saveAttributes.direction) {
+                saveAttributes.direction = model.get('direction');
+            }
+
+            if (entityType === 'Call' && model && !saveAttributes.testo) {
+                saveAttributes.testo = model.get('testo');
+            }
+
+            if (entityType === 'Call' && model && typeof saveAttributes.whatsApp === 'undefined') {
+                saveAttributes.whatsApp = model.get('whatsApp');
+            }
+
+            if (entityType === 'Call' && model && typeof saveAttributes.vocale === 'undefined') {
+                saveAttributes.vocale = model.get('vocale');
+            }
+
+            if (entityType === 'Call' && model && typeof saveAttributes.daRichiamare === 'undefined') {
+                saveAttributes.daRichiamare = model.get('daRichiamare');
+            }
+
+            if (entityType === 'Call' && model && typeof saveAttributes.dataRichiamo === 'undefined') {
+                saveAttributes.dataRichiamo = model.get('dataRichiamo');
+            }
+
+            if (entityType === 'Call' && model && typeof saveAttributes.richiamo === 'undefined') {
+                saveAttributes.richiamo = model.get('richiamo');
+            }
+
+            if (entityType === 'Call' && model && !saveAttributes.esito) {
+                saveAttributes.esito = model.get('esito');
+            }
+
+            if (entityType === 'Call' && model && typeof saveAttributes.description === 'undefined') {
+                saveAttributes.description = model.get('description');
+            }
+
+            if (entityType === 'Call' && model && !saveAttributes.testo) {
+                saveAttributes.testo = model.get('testo');
+            }
+
+            if (entityType === 'Call' && model && !saveAttributes.status) {
+                saveAttributes.status = model.get('status');
+            }
+
+            if (entityType === 'Call' && model && !saveAttributes.status) {
+                Espo.Ui.error('Stato mancante: seleziona Svolto o Non svolto.');
+
+                return;
+            }
+
+            if (entityType === 'Call' && model) {
+                saveAttributes = Object.assign(
+                    {},
+                    CallEsitoDefaults.getSaveAttributes(
+                        model,
+                        this.notificationData.name
+                    ),
+                    saveAttributes
+                );
+            }
+
+            if (model && saveAttributes && typeof saveAttributes === 'object') {
+                model.set(saveAttributes, {silent: true});
+            }
+
+            if (entityType === 'Call') {
+                saveAttributes = Object.assign(
+                    {},
+                    saveAttributes,
+                    CallEsitoDefaults.getSaveAttributes(
+                        model,
+                        this.notificationData.name
+                    )
                 );
             }
 
