@@ -210,7 +210,11 @@ define('custom:views/appuntamento/popup-notification', [
             let fetchedAttributes = null;
 
             if (typeof recordView.fetch === 'function') {
-                fetchedAttributes = recordView.fetch();
+                try {
+                    fetchedAttributes = recordView.fetch();
+                } catch (e) {
+                    fetchedAttributes = {};
+                }
             }
 
             const model = recordView.model || this.esitoModel;
@@ -219,22 +223,11 @@ define('custom:views/appuntamento/popup-notification', [
                 model.set(fetchedAttributes, {silent: true});
             }
 
-            if (!model) {
-                return;
+            const domStatus = this.getCurrentStatus();
+
+            if (model && domStatus) {
+                model.set('status', domStatus, {silent: true});
             }
-
-            const fieldNames = model.entityType === 'Call' ?
-                ['status', 'direction', 'tipologia', 'whatsApp', 'testo', 'daRichiamare', 'dataRichiamo', 'richiamo', 'telefono', 'whatsAppNumero'] :
-                ['status', 'direction', 'sottostato', 'esito', 'noteEsito', 'tipologia', 'canaleContatto', 'description', 'daRichiamare', 'dataRichiamo', 'richiamo'];
-
-            fieldNames.forEach(fieldName => {
-                const fieldView = recordView.getFieldView && recordView.getFieldView(fieldName);
-
-                if (fieldView && typeof fieldView.fetch === 'function') {
-                    fieldView.fetch();
-                }
-            });
-
         }
 
         getMissingEsitoFields() {
@@ -270,6 +263,12 @@ define('custom:views/appuntamento/popup-notification', [
 
             if (!model || !this.esitoPopupConfig) {
                 return false;
+            }
+
+            const domStatus = this.getCurrentStatus();
+
+            if (domStatus && domStatus !== model.get('status')) {
+                model.set('status', domStatus, {silent: true});
             }
 
             return this.esitoPopupConfig.isComplete(model);
@@ -464,6 +463,39 @@ define('custom:views/appuntamento/popup-notification', [
                 });
         }
 
+        buildSaveAttributes() {
+            const entityType = this.esitoEntityType || this.notificationData.entityType;
+            const model = this.getEsitoModel();
+            const domStatus = this.getCurrentStatus();
+
+            if (domStatus && model) {
+                model.set('status', domStatus, {silent: true});
+            }
+
+            if (entityType !== 'Call') {
+                return {};
+            }
+
+            const saveAttributes = CallEsitoDefaults.getSaveAttributes(
+                model,
+                this.notificationData.name
+            );
+
+            if (domStatus) {
+                saveAttributes.status = domStatus;
+            }
+
+            if (!saveAttributes.status) {
+                return null;
+            }
+
+            if (model) {
+                model.set(saveAttributes, {silent: true});
+            }
+
+            return saveAttributes;
+        }
+
         actionSaveEsito() {
             if (!this.isEsitoComplete()) {
                 Espo.Ui.warning(this.getIncompleteMessage());
@@ -473,123 +505,21 @@ define('custom:views/appuntamento/popup-notification', [
 
             const entityType = this.esitoEntityType || this.notificationData.entityType;
             const model = this.getEsitoModel();
-            const recordView = this.getView('esitoRecord');
-            let fetchedAttributes = {};
-            let saveAttributes = null;
+            const saveAttributes = this.buildSaveAttributes();
 
-            if (recordView && typeof recordView.fetch === 'function') {
-                fetchedAttributes = recordView.fetch() || {};
-            }
-
-            if (model && fetchedAttributes && typeof fetchedAttributes === 'object') {
-                model.set(fetchedAttributes, {silent: true});
-            }
-
-            if (entityType === 'Call') {
-                saveAttributes = Object.assign(
-                    {},
-                    fetchedAttributes,
-                    CallEsitoDefaults.getSaveAttributes(
-                        model,
-                        this.notificationData.name
-                    )
-                );
-            } else {
-                saveAttributes = fetchedAttributes;
-            }
-
-            // Fallback: in alcuni casi selectize aggiorna prima il DOM del model.
-            if (!saveAttributes.status) {
-                const domStatus = this.getCurrentStatus();
-
-                if (domStatus) {
-                    saveAttributes.status = domStatus;
-                }
-            }
-
-            if (entityType === 'Call' && model && !saveAttributes.tipologia) {
-                saveAttributes.tipologia = model.get('tipologia');
-            }
-
-            if (entityType === 'Call' && model && !saveAttributes.direction) {
-                saveAttributes.direction = model.get('direction');
-            }
-
-            if (entityType === 'Call' && model && !saveAttributes.testo) {
-                saveAttributes.testo = model.get('testo');
-            }
-
-            if (entityType === 'Call' && model && typeof saveAttributes.whatsApp === 'undefined') {
-                saveAttributes.whatsApp = model.get('whatsApp');
-            }
-
-            if (entityType === 'Call' && model && typeof saveAttributes.vocale === 'undefined') {
-                saveAttributes.vocale = model.get('vocale');
-            }
-
-            if (entityType === 'Call' && model && typeof saveAttributes.daRichiamare === 'undefined') {
-                saveAttributes.daRichiamare = model.get('daRichiamare');
-            }
-
-            if (entityType === 'Call' && model && typeof saveAttributes.dataRichiamo === 'undefined') {
-                saveAttributes.dataRichiamo = model.get('dataRichiamo');
-            }
-
-            if (entityType === 'Call' && model && typeof saveAttributes.richiamo === 'undefined') {
-                saveAttributes.richiamo = model.get('richiamo');
-            }
-
-            if (entityType === 'Call' && model && !saveAttributes.esito) {
-                saveAttributes.esito = model.get('esito');
-            }
-
-            if (entityType === 'Call' && model && typeof saveAttributes.description === 'undefined') {
-                saveAttributes.description = model.get('description');
-            }
-
-            if (entityType === 'Call' && model && !saveAttributes.testo) {
-                saveAttributes.testo = model.get('testo');
-            }
-
-            if (entityType === 'Call' && model && !saveAttributes.status) {
-                saveAttributes.status = model.get('status');
-            }
-
-            if (entityType === 'Call' && model && !saveAttributes.status) {
+            if (entityType === 'Call' && !saveAttributes) {
                 Espo.Ui.error('Stato mancante: seleziona Svolto o Non svolto.');
 
                 return;
             }
 
-            if (entityType === 'Call' && model) {
-                saveAttributes = Object.assign(
-                    {},
-                    CallEsitoDefaults.getSaveAttributes(
-                        model,
-                        this.notificationData.name
-                    ),
-                    saveAttributes
-                );
-            }
-
-            if (model && saveAttributes && typeof saveAttributes === 'object') {
-                model.set(saveAttributes, {silent: true});
-            }
-
-            if (entityType === 'Call') {
-                saveAttributes = Object.assign(
-                    {},
-                    saveAttributes,
-                    CallEsitoDefaults.getSaveAttributes(
-                        model,
-                        this.notificationData.name
-                    )
-                );
-            }
-
             Espo.Ui.notify(' ...');
 
-            model.save(saveAttributes)
+            const savePromise = entityType === 'Call' ?
+                model.save(saveAttributes) :
+                model.save();
+
+            savePromise
                 .then(() => {
                     Espo.Ui.notify();
                     super.resolveCancel();
