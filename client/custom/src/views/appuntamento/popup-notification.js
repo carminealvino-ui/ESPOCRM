@@ -207,18 +207,24 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
+            let fetchedAttributes = null;
+
             if (typeof recordView.fetch === 'function') {
-                recordView.fetch();
+                fetchedAttributes = recordView.fetch();
             }
 
             const model = recordView.model || this.esitoModel;
+
+            if (model && fetchedAttributes && typeof fetchedAttributes === 'object') {
+                model.set(fetchedAttributes, {silent: true});
+            }
 
             if (!model) {
                 return;
             }
 
             const fieldNames = model.entityType === 'Call' ?
-                ['status', 'direction', 'tipologia', 'whatsApp', 'testo'] :
+                ['status', 'direction', 'tipologia', 'whatsApp', 'testo', 'daRichiamare', 'dataRichiamo', 'richiamo', 'telefono', 'whatsAppNumero'] :
                 ['status', 'direction', 'sottostato', 'esito', 'noteEsito', 'tipologia', 'canaleContatto', 'description', 'daRichiamare', 'dataRichiamo', 'richiamo'];
 
             fieldNames.forEach(fieldName => {
@@ -451,6 +457,10 @@ define('custom:views/appuntamento/popup-notification', [
                 .then(() => {
                     Espo.Ui.notify();
                     this.openCreateOpportunityModal(model);
+                })
+                .catch(error => {
+                    Espo.Ui.notify(false);
+                    Espo.Ui.error((error && error.message) || 'Errore salvataggio esito.');
                 });
         }
 
@@ -478,6 +488,10 @@ define('custom:views/appuntamento/popup-notification', [
                 .then(() => {
                     Espo.Ui.notify();
                     super.resolveCancel();
+                })
+                .catch(error => {
+                    Espo.Ui.notify(false);
+                    Espo.Ui.error((error && error.message) || 'Errore salvataggio esito.');
                 });
         }
 

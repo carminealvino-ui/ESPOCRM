@@ -2,6 +2,7 @@
 custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php
 custom/Espo/Custom/Hooks/Appuntamento/AutoCreatePendingCall.php
 custom/Espo/Custom/Hooks/Appuntamento/CreateCallFromRichiamo.php
+custom/Espo/Custom/Hooks/Call/RinvioRichiamo.php
 custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php
 custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php
 custom/Espo/Custom/Hooks/Call/NormalizeAutoPendingFields.php
@@ -9,3 +10,4 @@ custom/Espo/Custom/Resources/metadata/formula/Call.json
 custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json
 custom/Espo/Custom/Resources/layouts/Call/detailEsitoPopup.json
 client/custom/src/helpers/call-esito-popup-defaults.js
+client/custom/src/views/appuntamento/popup-notification.js
