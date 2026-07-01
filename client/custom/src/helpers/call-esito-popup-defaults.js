@@ -40,6 +40,42 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         return normalize(value).indexOf(AUTO_PENDING_DESCRIPTION_PREFIX) !== -1;
     };
 
+    const extractTelefonoFromName = function (name) {
+        const parts = normalize(name).split(' - ');
+
+        if (parts.length < 4) {
+            return null;
+        }
+
+        return normalize(parts[parts.length - 1]);
+    };
+
+    const ensureContactFields = function (model) {
+        if (!model) {
+            return false;
+        }
+
+        let telefono = normalize(model.get('telefono'));
+
+        if (!telefono) {
+            telefono = extractTelefonoFromName(model.get('name')) || '';
+
+            if (telefono) {
+                model.set('telefono', telefono);
+            }
+        }
+
+        if (!normalize(model.get('whatsAppNumero')) && telefono) {
+            const digits = telefono.replace(/\D+/g, '');
+
+            if (digits) {
+                model.set('whatsAppNumero', 'https://wa.me/+39' + digits);
+            }
+        }
+
+        return Boolean(telefono);
+    };
+
     const buildUpdatedName = function (model) {
         const currentName = normalize(model.get('name'));
         const tipologia = normalize(model.get('tipologia'));
@@ -114,6 +150,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
 
     const applyDefaults = function (model, notificationName) {
         normalizeMisplacedFields(model);
+        ensureContactFields(model);
 
         const attributes = getDefaultAttributes(model, notificationName);
 
@@ -186,7 +223,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             return false;
         }
 
-        refreshRecordFields(recordView, ['tipologia', 'direction', 'testo']);
+        refreshRecordFields(recordView, ['tipologia', 'direction', 'testo', 'telefono', 'whatsAppNumero']);
         forceDomValues(recordView);
 
         return true;
@@ -198,6 +235,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         }
 
         normalizeMisplacedFields(model);
+        ensureContactFields(model);
         applyDefaults(model, notificationName);
 
         const canale = model.get('canaleContatto');

@@ -9,6 +9,16 @@
             ],
             [
                 {
+                    "name": "telefono",
+                    "readOnly": true
+                },
+                {
+                    "name": "whatsAppNumero",
+                    "readOnly": true
+                }
+            ],
+            [
+                {
                     "name": "direction"
                 },
                 {
@@ -32,6 +42,19 @@
             [
                 {
                     "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "daRichiamare"
+                }
+            ],
+            [
+                {
+                    "name": "richiamo"
+                },
+                {
+                    "name": "dataRichiamo"
                 }
             ]
         ],

@@ -29,6 +29,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Call/NormalizeAutoPendingFields.php"
   "custom/Espo/Custom/Resources/metadata/formula/Call.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
+  "custom/Espo/Custom/Resources/layouts/Call/detailEsitoPopup.json"
   "client/custom/src/helpers/call-esito-popup-defaults.js"
   "tools/fix-call-assignment-from-appuntamento.php"
   "tools/audit-pending-call-candidates.php"
