@@ -1,49 +1,16 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit', ['crm:views/meeting/record/edit'], function (MeetingEditModule) {
+define('custom:views/appuntamento/record/edit', [
+    'views/record/edit',
+    'custom:helpers/appuntamento-prospect-sync',
+], function (Dep, ProspectSync) {
 
-    const Parent = MeetingEditModule.default || MeetingEditModule;
-    const DEFAULT_DURATION_SECONDS = 5400;
+    return Dep.extend({
 
-    return class AppuntamentoEditView extends Parent {
+        setup: function () {
+            Dep.prototype.setup.call(this);
 
-        setup() {
-            super.setup();
-
-            if (!this.model.isNew() || this.model.get('isAllDay')) {
-                return;
-            }
-
-            this.listenTo(this.model, 'change:dateStart', () => {
-                this.applyDefaultDuration();
-            });
-
-            this.once('after:render', () => {
-                this.applyDefaultDuration();
-                setTimeout(() => this.applyDefaultDuration(), 0);
-                setTimeout(() => this.applyDefaultDuration(), 150);
-            });
-        }
-
-        applyDefaultDuration() {
-            if (!this.model.isNew() || this.model.get('isAllDay')) {
-                return;
-            }
-
-            const dateStart = this.model.get('dateStart');
-
-            if (!dateStart) {
-                return;
-            }
-
-            const dateEnd = this.getDateTime()
-                .toMoment(dateStart)
-                .add(DEFAULT_DURATION_SECONDS, 'seconds')
-                .format(this.getDateTime().internalDateTimeFormat);
-
-            this.model.set({
-                dateEnd: dateEnd,
-            }, {updatedByDuration: true});
-        }
-    };
+            ProspectSync.setupProspectSync(this);
+        },
+    });
 });
