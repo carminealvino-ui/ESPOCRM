@@ -1,0 +1,10 @@
+# Durata Appuntamento da calendario (1h30) — backup prima del deploy
+client/custom/src/helpers/appuntamento-prospect-sync.js
+client/custom/src/views/appuntamento/fields/duration.js
+client/custom/src/views/appuntamento/record/edit-small.js
+client/custom/src/views/appuntamento/record/edit.js
+client/custom/src/views/calendar/calendar.js
+client/custom/src/views/calendar/modals/edit.js
+custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json
+custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
+custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json
