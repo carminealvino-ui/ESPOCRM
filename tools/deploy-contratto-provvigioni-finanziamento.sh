@@ -16,6 +16,8 @@ mkdir -p "${BK}"
 for f in \
   custom/Espo/Custom/Hooks/Quote/BeforeSave.php \
   custom/Espo/Custom/Hooks/Quote/SetPresentedWhenNumeroContratto.php \
+  custom/Espo/Custom/Hooks/Quote/NormalizeDefaults.php \
+  custom/Espo/Custom/Hooks/Quote/SyncTotaleProvvigioni.php \
   custom/Espo/Custom/Hooks/Provvigione/UpdateQuoteTotaleProvvigioni.php \
   custom/Espo/Custom/Services/QuoteTotaleProvvigioniService.php \
   custom/Espo/Custom/Resources/layouts/Quote/detail.json \
@@ -36,6 +38,8 @@ fetch() {
 
 fetch custom/Espo/Custom/Hooks/Quote/BeforeSave.php
 fetch custom/Espo/Custom/Hooks/Quote/SetPresentedWhenNumeroContratto.php
+fetch custom/Espo/Custom/Hooks/Quote/NormalizeDefaults.php
+fetch custom/Espo/Custom/Hooks/Quote/SyncTotaleProvvigioni.php
 fetch custom/Espo/Custom/Hooks/Provvigione/UpdateQuoteTotaleProvvigioni.php
 fetch custom/Espo/Custom/Services/QuoteTotaleProvvigioniService.php
 fetch custom/Espo/Custom/Resources/layouts/Quote/detail.json

@@ -3,6 +3,7 @@
 namespace Espo\Custom\Services;
 
 use Espo\ORM\EntityManager;
+use PDO;
 
 /**
  * Aggiorna totaleProvvigioni sul contratto dalla somma delle righe Provvigione.
@@ -15,34 +16,46 @@ class QuoteTotaleProvvigioniService
 
     public function syncForQuoteId(string $quoteId): void
     {
-        $provvigioni = $this->entityManager
-            ->getRDBRepository('Provvigione')
-            ->where(['contrattoId' => $quoteId])
-            ->find();
+        $pdo = $this->entityManager->getPDO();
 
-        $totale = 0.0;
+        $stmt = $pdo->prepare(
+            'SELECT COALESCE(SUM(importo), 0) AS totale
+             FROM provvigione
+             WHERE deleted = 0 AND contratto_id = :quoteId'
+        );
+        $stmt->execute(['quoteId' => $quoteId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        foreach ($provvigioni as $provvigione) {
-            $totale += (float) ($provvigione->get('importo') ?? 0);
-        }
-
-        $quote = $this->entityManager->getEntityById('Quote', $quoteId);
-
-        if (!$quote) {
+        if ($row === false) {
             return;
         }
 
-        if ((float) ($quote->get('totaleProvvigioni') ?? 0) === $totale) {
+        $totale = round((float) $row['totale'], 2);
+
+        $check = $pdo->prepare(
+            'SELECT totale_provvigioni
+             FROM quote
+             WHERE id = :quoteId AND deleted = 0'
+        );
+        $check->execute(['quoteId' => $quoteId]);
+        $current = $check->fetch(PDO::FETCH_ASSOC);
+
+        if ($current === false) {
             return;
         }
 
-        // Update diretto: evita conflitto version (optimisticConcurrencyControl).
-        $this->entityManager
-            ->getQuery()
-            ->update()
-            ->in('Quote')
-            ->set(['totaleProvvigioni' => $totale])
-            ->where(['id' => $quoteId])
-            ->execute();
+        if (round((float) ($current['totale_provvigioni'] ?? 0), 2) === $totale) {
+            return;
+        }
+
+        $update = $pdo->prepare(
+            'UPDATE quote
+             SET totale_provvigioni = :totale
+             WHERE id = :quoteId AND deleted = 0'
+        );
+        $update->execute([
+            'totale' => $totale,
+            'quoteId' => $quoteId,
+        ]);
     }
 }

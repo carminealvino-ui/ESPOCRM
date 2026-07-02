@@ -148,7 +148,6 @@
             "isCustom": true
         },
         "venditaAbbinataAdAltroProdotto": {
-            "notNull": true,
             "type": "bool",
             "default": false,
             "isCustom": true
@@ -159,7 +158,6 @@
             "isCustom": true
         },
         "finanziamento": {
-            "notNull": true,
             "type": "bool",
             "default": false,
             "isCustom": true
@@ -200,7 +198,6 @@
             "isCustom": true
         },
         "tassoZero": {
-            "notNull": true,
             "type": "bool",
             "default": false,
             "isCustom": true

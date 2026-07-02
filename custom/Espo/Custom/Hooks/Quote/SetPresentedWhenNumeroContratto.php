@@ -34,6 +34,14 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
             return;
         }
 
+        if (!$entity->get('number')) {
+            $entity->set('number', $entity->get('numeroContratto'));
+        }
+
+        if (!$entity->get('codiceContratto')) {
+            $entity->set('codiceContratto', $entity->get('numeroContratto'));
+        }
+
         $entity->set('status', self::STATUS_PRESENTED);
     }
 
