@@ -6,8 +6,9 @@
 #   bash tools/backup-dev-batch.sh pending-call-popup \
 #     --manifest tools/backup-manifests/pending-call-popup.files
 #
-# PASSO 1 — deploy (salvare su disco, NON pipe):
-#   curl -fsSL ".../deploy-pending-call-popup-fix.sh" -o tools/deploy-pending-call-popup-fix.sh
+# PASSO 1 — deploy (aggiorna sempre lo script prima di eseguire):
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-pending-call-popup-9999/tools/deploy-pending-call-popup-fix.sh" \
+#     -o tools/deploy-pending-call-popup-fix.sh
 #   bash tools/deploy-pending-call-popup-fix.sh
 
 set -euo pipefail
@@ -17,6 +18,23 @@ BRANCH="${2:-cursor/fix-pending-call-popup-9999}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 FIX_TAG="pending-call-popup"
+SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+
+if [[ "${DEPLOY_SELF_UPDATED:-}" != "1" ]]; then
+  tmp_script="${SCRIPT_PATH}.new.$$"
+  if curl -fsSL -o "${tmp_script}" "${BASE}/tools/deploy-pending-call-popup-fix.sh?t=$(date +%s)"; then
+    if ! cmp -s "${SCRIPT_PATH}" "${tmp_script}"; then
+      mv "${tmp_script}" "${SCRIPT_PATH}"
+      chmod +x "${SCRIPT_PATH}"
+      echo "Script deploy aggiornato da ${BRANCH}, riesecuzione..."
+      exec env DEPLOY_SELF_UPDATED=1 bash "${SCRIPT_PATH}" "$@"
+    fi
+    rm -f "${tmp_script}"
+  else
+    rm -f "${tmp_script}"
+    echo "ATTENZIONE: impossibile aggiornare lo script deploy da GitHub, uso copia locale." >&2
+  fi
+fi
 
 echo "=== Fix popup Call Pending → ${CRM_ROOT} ==="
 
@@ -28,6 +46,7 @@ FILES=(
   "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
   "custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php"
   "custom/Espo/Custom/Hooks/Call/NormalizeAutoPendingFields.php"
+  "custom/Espo/Custom/Hooks/Call/SyncOwnerFromAppuntamento.php"
   "custom/Espo/Custom/Resources/metadata/formula/Call.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Call.json"
   "custom/Espo/Custom/Resources/metadata/logicDefs/Call.json"
@@ -82,8 +101,18 @@ for rel in "${FILES[@]}"; do
   echo "OK ${rel}"
 done
 
-grep -q "2026-07-01b" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
-  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (atteso CREATOR_VERSION 2026-07-01b)" >&2
+grep -q "applyRinvioToEntity" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
+  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca applyRinvioToEntity)" >&2
+  exit 1
+}
+
+grep -q "getDaRichiamareLabel" "${CRM_ROOT}/client/custom/src/helpers/call-esito-popup-defaults.js" || {
+  echo "ERRORE: call-esito-popup-defaults.js non aggiornato (manca getDaRichiamareLabel)" >&2
+  exit 1
+}
+
+grep -q "call-da-richiamare" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Call.json" || {
+  echo "ERRORE: entityDefs/Call.json non aggiornato (manca view call-da-richiamare)" >&2
   exit 1
 }
 
