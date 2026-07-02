@@ -664,6 +664,9 @@ class CreateContratto
             'prezzoCodiceIvaEsclusa' =>
                 $opportunity->get('prezzoCodiceIvaEsclusa'),
 
+            'minusPlus' =>
+                $this->resolveMinusPlusForQuote($opportunity, $amount),
+
             // =================================================
             // DATA
             // =================================================

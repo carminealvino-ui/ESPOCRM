@@ -135,7 +135,7 @@ if grep -q "client/custom/src/custom-product-button.js" "${CRM_ROOT}/custom/Espo
   exit 1
 fi
 
-if rg -q "\"minusPlus\"|\"margineSuListino\"|\"contattoPersonaleArquati\"|\"integrazionePncPercentuale\"|\"ordineIncompletoAriel\"" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"; then
+if rg -q "\"margineSuListino\"|\"contattoPersonaleArquati\"|\"integrazionePncPercentuale\"|\"ordineIncompletoAriel\"" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"; then
   echo "ERRORE: entityDefs/Quote.json non aggiornato (campi provvigioni legacy ancora presenti)" >&2
   exit 1
 fi
