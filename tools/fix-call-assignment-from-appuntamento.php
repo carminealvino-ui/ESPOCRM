@@ -84,11 +84,14 @@ if ($total === 0) {
 $updated = 0;
 $skipped = 0;
 $remindersSynced = 0;
+$namesFixed = 0;
+$namesStillBroken = 0;
 
 foreach ($callsById as $call) {
     $nota = (string) $call->get('nota');
     $description = (string) $call->get('description');
     $changed = false;
+    $oldName = (string) $call->get('name');
 
     if ($nota === '' && str_contains($description, 'Richiamo automatico per appuntamento Pending del')) {
         $call->set('nota', $description);
@@ -96,32 +99,52 @@ foreach ($callsById as $call) {
         $changed = true;
     }
 
+    $appuntamento = null;
     $appuntamentoId = extractAppuntamentoId($nota);
 
     if ($appuntamentoId) {
         $appuntamento = $entityManager->getEntityById('Appuntamento', $appuntamentoId);
+    }
 
-            if ($appuntamento) {
-                $ownerUserId = $creator->resolveOwnerUserId($appuntamento);
+    if (!$appuntamento) {
+        $appuntamento = $creator->findAppuntamentoForCall($call);
+    }
 
-                if ($ownerUserId && (string) $call->get('assignedUserId') !== $ownerUserId) {
-                    $ownerUserName = $entityManager->getEntityById('User', $ownerUserId)?->get('name');
+    if ($appuntamento) {
+        if ($creator->callNameMissingContact($oldName)) {
+            $appuntamento = $creator->hydrateAppuntamentoContactLinks($appuntamento);
+        }
 
-                    $call->set([
-                        'assignedUserId' => $ownerUserId,
-                        'assignedUserName' => $ownerUserName,
-                        'usersIds' => [$ownerUserId],
-                        'usersNames' => $ownerUserName ? [$ownerUserId => $ownerUserName] : (object) [],
-                    ]);
-                    $changed = true;
-                }
+        $ownerUserId = $creator->resolveOwnerUserId($appuntamento);
 
-                if ($creator->syncCallNameFromAppuntamento($call, $appuntamento)) {
-                    $changed = true;
-                }
-            }
+        if ($ownerUserId && (string) $call->get('assignedUserId') !== $ownerUserId) {
+            $ownerUserName = $entityManager->getEntityById('User', $ownerUserId)?->get('name');
+
+            $call->set([
+                'assignedUserId' => $ownerUserId,
+                'assignedUserName' => $ownerUserName,
+                'usersIds' => [$ownerUserId],
+                'usersNames' => $ownerUserName ? [$ownerUserId => $ownerUserName] : (object) [],
+            ]);
+            $changed = true;
+        }
+
+        if ($creator->syncCallNameFromAppuntamento($call, $appuntamento)) {
+            $changed = true;
+            $namesFixed++;
+        } elseif ($creator->callNameMissingContact($oldName)
+            && $creator->rebuildCallNameFromEntity($call)
+        ) {
+            $changed = true;
+            $namesFixed++;
+        }
     } elseif ($creator->rebuildCallNameFromEntity($call)) {
         $changed = true;
+        $namesFixed++;
+    }
+
+    if ($creator->callNameMissingContact((string) $call->get('name'))) {
+        $namesStillBroken++;
     }
 
     $status = (string) $call->get('status');
@@ -153,7 +176,7 @@ foreach ($callsById as $call) {
     }
 }
 
-echo PHP_EOL . "Aggiornate: {$updated}, saltate: {$skipped}, promemoria popup: {$remindersSynced}" . PHP_EOL;
+echo PHP_EOL . "Aggiornate: {$updated}, saltate: {$skipped}, nomi corretti: {$namesFixed}, nomi ancora senza contatto: {$namesStillBroken}, promemoria popup: {$remindersSynced}" . PHP_EOL;
 
 function isAutoPendingCall(Entity $call): bool
 {

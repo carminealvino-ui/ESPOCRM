@@ -39,6 +39,7 @@ fi
 echo "=== Fix popup Call Pending → ${CRM_ROOT} ==="
 
 FILES=(
+  "custom/Espo/Custom/Services/LeadProspectSync.php"
   "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"
   "custom/Espo/Custom/Hooks/Appuntamento/AutoCreatePendingCall.php"
   "custom/Espo/Custom/Hooks/Appuntamento/CreateCallFromRichiamo.php"
@@ -67,6 +68,7 @@ FILES=(
   "tools/audit-pending-call-candidates.php"
   "tools/backfill-pending-calls.php"
   "tools/diagnose-pending-call-one.php"
+  "tools/diagnose-call-name.php"
 )
 
 has_backup() {
@@ -102,8 +104,8 @@ for rel in "${FILES[@]}"; do
   echo "OK ${rel}"
 done
 
-grep -q "resolveCallContactName" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
-  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca resolveCallContactName)" >&2
+grep -q "resolveNameByPhone" "${CRM_ROOT}/custom/Espo/Custom/Services/LeadProspectSync.php" || {
+  echo "ERRORE: LeadProspectSync.php non aggiornato (manca resolveNameByPhone)" >&2
   exit 1
 }
 
@@ -117,8 +119,8 @@ grep -q "call-da-richiamare" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/
   exit 1
 }
 
-grep -q "syncPopupReminders" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
-  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato" >&2
+grep -q "hydrateAppuntamentoContactLinks" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
+  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca hydrateAppuntamentoContactLinks)" >&2
   exit 1
 }
 

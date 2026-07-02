@@ -18,7 +18,7 @@ class AppuntamentoPendingCallCreator
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
     private const ADMIN_USER_ID = '1';
     private const REMINDER_SECONDS = 0;
-    public const CREATOR_VERSION = '2026-07-01d';
+    public const CREATOR_VERSION = '2026-07-01f';
 
     private ?string $lastFailureReason = null;
 
@@ -677,6 +677,11 @@ class AppuntamentoPendingCallCreator
 
         $contactName = $this->resolveCallContactName($call, $appuntamento);
 
+        if ($contactName === '' && $this->callNameMissingContact((string) $call->get('name'))) {
+            $appuntamento = $this->hydrateAppuntamentoContactLinks($appuntamento);
+            $contactName = $this->resolveCallContactName($call, $appuntamento);
+        }
+
         if ($contactName !== '') {
             if (!trim((string) $call->get('parentName'))) {
                 $call->set('parentName', $contactName);
@@ -699,8 +704,9 @@ class AppuntamentoPendingCallCreator
         );
 
         $newName = $presentation['name'];
+        $oldName = (string) $call->get('name');
 
-        if ((string) $call->get('name') === $newName) {
+        if ($oldName === $newName) {
             return false;
         }
 
@@ -726,6 +732,7 @@ class AppuntamentoPendingCallCreator
         if ($appuntamento) {
             $candidates[] = trim((string) $appuntamento->get('parentName'));
             $candidates[] = trim((string) $appuntamento->get('prospectName'));
+            $candidates[] = $this->parseContactFromAppuntamento($appuntamento);
 
             if (!$prospect) {
                 $prospect = $this->resolveProspect($appuntamento);
@@ -820,7 +827,170 @@ class AppuntamentoPendingCallCreator
             }
         }
 
+        $phone = trim((string) ($call?->get('telefono') ?: $appuntamento?->get('telefono')));
+
+        if ($phone !== '') {
+            $name = $leadSync->resolveNameByPhone($phone);
+
+            if ($name) {
+                return $name;
+            }
+        }
+
         return '';
+    }
+
+    public function callNameMissingContact(string $name): bool
+    {
+        return str_contains($name, ' - - ') || (bool) preg_match('/ - [^-]+ - - /', $name);
+    }
+
+    public function hydrateAppuntamentoContactLinks(Entity $appuntamento): Entity
+    {
+        $prospect = $this->resolveProspect($appuntamento);
+
+        if ($prospect) {
+            try {
+                $this->ensureLeadId($appuntamento);
+            } catch (\Throwable $e) {
+                $this->log->warning(
+                    'hydrateAppuntamentoContactLinks: ensureLeadId fallito per {id}: {message}',
+                    [
+                        'id' => $appuntamento->getId(),
+                        'message' => $e->getMessage(),
+                    ]
+                );
+            }
+        }
+
+        $appuntamentoId = $appuntamento->getId();
+
+        if (!$appuntamentoId) {
+            return $appuntamento;
+        }
+
+        return $this->entityManager->getEntityById('Appuntamento', $appuntamentoId) ?: $appuntamento;
+    }
+
+    public function parseContactFromAppuntamento(Entity $appuntamento): string
+    {
+        $description = (string) $appuntamento->get('description');
+
+        if (preg_match('/Cliente:\s*(.+)/iu', $description, $matches)) {
+            $name = trim($matches[1]);
+
+            if ($name !== '') {
+                return $name;
+            }
+        }
+
+        $appuntamentoId = $appuntamento->getId();
+
+        if ($appuntamentoId) {
+            $opportunity = $this->entityManager
+                ->getRDBRepository('Opportunity')
+                ->where(['appuntamentoId' => $appuntamentoId])
+                ->order('createdAt', 'DESC')
+                ->findOne();
+
+            if ($opportunity) {
+                $name = trim((string) $opportunity->get('prospectName'));
+
+                if ($name !== '') {
+                    return $name;
+                }
+            }
+        }
+
+        return '';
+    }
+
+    public function findAppuntamentoForCall(Entity $call): ?Entity
+    {
+        $appuntamentoId = $this->extractAppuntamentoIdFromNota((string) $call->get('nota'));
+
+        if ($appuntamentoId) {
+            $appuntamento = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
+
+            if ($appuntamento) {
+                return $appuntamento;
+            }
+        }
+
+        $repository = $this->entityManager->getRDBRepository('Appuntamento');
+        $heldPending = [
+            'status' => 'Held',
+            'sottostato' => 'Pending',
+        ];
+
+        $prospectId = $call->get('prospectId');
+
+        if ($prospectId) {
+            $appuntamento = $repository
+                ->where(array_merge($heldPending, ['prospectId' => $prospectId]))
+                ->order('dateStart', 'DESC')
+                ->findOne();
+
+            if ($appuntamento) {
+                return $appuntamento;
+            }
+        }
+
+        $phone = trim((string) $call->get('telefono'));
+
+        if ($phone === '') {
+            return null;
+        }
+
+        $leadSync = new LeadProspectSync($this->entityManager);
+
+        foreach (['Prospect', 'Lead'] as $entityType) {
+            $entity = $leadSync->findEntityByPhone($entityType, $phone);
+
+            if (!$entity) {
+                continue;
+            }
+
+            if ($entityType === 'Prospect') {
+                $appuntamento = $repository
+                    ->where(array_merge($heldPending, ['prospectId' => $entity->getId()]))
+                    ->order('dateStart', 'DESC')
+                    ->findOne();
+
+                if ($appuntamento) {
+                    return $appuntamento;
+                }
+            }
+
+            $appuntamento = $repository
+                ->where(array_merge($heldPending, [
+                    'parentType' => 'Lead',
+                    'parentId' => $entity->getId(),
+                ]))
+                ->order('dateStart', 'DESC')
+                ->findOne();
+
+            if ($appuntamento) {
+                return $appuntamento;
+            }
+        }
+
+        foreach ($leadSync->phoneDigitVariants($phone) as $variant) {
+            $appuntamento = $repository
+                ->where(array_merge($heldPending, ['telefono' => $variant]))
+                ->order('dateStart', 'DESC')
+                ->findOne()
+                ?: $repository
+                    ->where(array_merge($heldPending, ['telefono*' => '%' . $variant]))
+                    ->order('dateStart', 'DESC')
+                    ->findOne();
+
+            if ($appuntamento) {
+                return $appuntamento;
+            }
+        }
+
+        return null;
     }
 
     public function rebuildCallNameFromEntity(Entity $call): bool
@@ -832,6 +1002,14 @@ class AppuntamentoPendingCallCreator
         }
 
         $contactName = $this->resolveCallContactName($call);
+
+        if ($contactName === '') {
+            $appuntamento = $this->findAppuntamentoForCall($call);
+
+            if ($appuntamento) {
+                $contactName = $this->resolveCallContactName($call, $appuntamento);
+            }
+        }
 
         if ($contactName === '') {
             return false;
