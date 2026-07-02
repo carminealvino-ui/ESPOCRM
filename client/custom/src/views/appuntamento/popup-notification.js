@@ -385,7 +385,8 @@ define('custom:views/appuntamento/popup-notification', [
             CallEsitoDefaults.setupRinvioFieldListeners(
                 recordView,
                 model,
-                this.getDateTime()
+                this.getDateTime(),
+                this
             );
 
             this.listenTo(model, 'change:status', () => this.updateActionButtons());

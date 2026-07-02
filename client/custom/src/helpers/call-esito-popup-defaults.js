@@ -134,7 +134,60 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         return changed;
     };
 
-    const applyRinvioDefaults = function (model, dateTime) {
+    const resolveDateTime = function (view, dateTime) {
+        if (dateTime && typeof dateTime.getNowMoment === 'function') {
+            return dateTime;
+        }
+
+        let current = view;
+
+        while (current) {
+            if (typeof current.getDateTime === 'function') {
+                const resolved = current.getDateTime();
+
+                if (resolved && typeof resolved.getNowMoment === 'function') {
+                    return resolved;
+                }
+            }
+
+            current = current.getParentView && current.getParentView();
+        }
+
+        return null;
+    };
+
+    const buildDefaultDataRichiamo = function (dateTime) {
+        if (!dateTime || typeof dateTime.getNowMoment !== 'function') {
+            const d = new Date();
+
+            d.setDate(d.getDate() + 1);
+            d.setHours(9, 0, 0, 0);
+
+            const pad = (value) => String(value).padStart(2, '0');
+
+            return d.getFullYear() + '-'
+                + pad(d.getMonth() + 1) + '-'
+                + pad(d.getDate()) + ' '
+                + pad(d.getHours()) + ':'
+                + pad(d.getMinutes()) + ':00';
+        }
+
+        const moment = dateTime.getNowMoment().clone().add(1, 'days').hours(9).minutes(0).seconds(0);
+
+        if (typeof dateTime.toUtc === 'function') {
+            return dateTime.toUtc(moment);
+        }
+
+        if (typeof dateTime.toUtcDateTime === 'function') {
+            return dateTime.toUtcDateTime(moment);
+        }
+
+        const format = dateTime.internalDateTimeFormat || 'YYYY-MM-DD HH:mm:ss';
+
+        return moment.format(format);
+    };
+
+    const applyRinvioDefaults = function (model, dateTime, view) {
         if (!model) {
             return false;
         }
@@ -151,29 +204,31 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             changed = true;
         }
 
-        if (!model.get('dataRichiamo') && dateTime) {
-            const moment = dateTime.getNowMoment().clone().add(1, 'days').hours(9).minutes(0).seconds(0);
+        if (!model.get('dataRichiamo')) {
+            const resolvedDateTime = resolveDateTime(view, dateTime);
 
-            model.set('dataRichiamo', dateTime.toUtc(moment));
+            model.set('dataRichiamo', buildDefaultDataRichiamo(resolvedDateTime));
             changed = true;
         }
 
         return changed;
     };
 
-    const setupRinvioFieldListeners = function (view, model, dateTime) {
-        if (!view || !model) {
+    const setupRinvioFieldListeners = function (recordView, model, dateTime, rootView) {
+        if (!recordView || !model) {
             return;
         }
 
+        const dateTimeView = rootView || recordView;
+
         const apply = () => {
-            applyRinvioDefaults(model, dateTime);
-            refreshRecordFields(view, ['richiamo', 'dataRichiamo', 'daRichiamare']);
+            applyRinvioDefaults(model, dateTime, dateTimeView);
+            refreshRecordFields(recordView, ['richiamo', 'dataRichiamo', 'daRichiamare']);
         };
 
-        view.listenTo(model, 'change:daRichiamare', apply);
-        view.listenTo(model, 'change:status', () => {
-            refreshRecordFields(view, ['daRichiamare']);
+        recordView.listenTo(model, 'change:daRichiamare', apply);
+        recordView.listenTo(model, 'change:status', () => {
+            refreshRecordFields(recordView, ['daRichiamare']);
             apply();
         });
         apply();
@@ -292,7 +347,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         normalizeMisplacedFields(model);
         ensureContactFields(model);
         applyDefaults(model, notificationName);
-        applyRinvioDefaults(model, null);
+        applyRinvioDefaults(model, null, null);
 
         const canale = model.get('canaleContatto');
 
