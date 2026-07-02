@@ -1,0 +1,46 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "parent"
+                }
+            ],
+            [
+                {
+                    "name": "telefono"
+                },
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "dateStart"
+                },
+                {
+                    "name": "tipologia"
+                }
+            ],
+            [
+                {
+                    "name": "esito"
+                }
+            ],
+            [
+                {
+                    "name": "daRichiamare"
+                }
+            ],
+            [
+                {
+                    "name": "richiamo"
+                },
+                {
+                    "name": "dataRichiamo"
+                }
+            ]
+        ],
+        "label": ""
+    }
+]

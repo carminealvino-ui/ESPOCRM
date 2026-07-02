@@ -159,6 +159,7 @@
         "daRichiamare": {
             "notNull": true,
             "type": "bool",
+            "view": "custom:views/fields/call-da-richiamare",
             "isCustom": true
         },
         "duration": {

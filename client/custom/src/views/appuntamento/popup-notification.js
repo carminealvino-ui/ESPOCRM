@@ -69,7 +69,7 @@ define('custom:views/appuntamento/popup-notification', [
 
                 return !!status && status !== 'Planned';
             },
-            incompleteMessage: 'Selezionare Stato (Svolto o Non svolto), oppure Rinvia richiamo con data e tipologia.',
+            incompleteMessage: 'Selezionare Stato (Svolto o Non svolto), oppure Rinvia richiamo / Crea nuova chiamata con data e tipologia.',
             getMissingFields: function (model) {
                 const missing = [];
 
@@ -382,14 +382,14 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
-            const apply = () => {
-                CallEsitoDefaults.applyRinvioDefaults(model, this.getDateTime());
-                CallEsitoDefaults.refreshRecordFields(recordView, ['richiamo', 'dataRichiamo']);
-                this.updateActionButtons();
-            };
+            CallEsitoDefaults.setupRinvioFieldListeners(
+                recordView,
+                model,
+                this.getDateTime()
+            );
 
-            this.listenTo(model, 'change:daRichiamare', apply);
-            apply();
+            this.listenTo(model, 'change:status', () => this.updateActionButtons());
+            this.updateActionButtons();
         }
 
         getCurrentStatus() {

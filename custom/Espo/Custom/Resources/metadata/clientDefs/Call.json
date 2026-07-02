@@ -3,7 +3,8 @@
     "color": null,
     "iconClass": "fas fa-phone",
     "recordViews": {
-        "edit": "custom:views/call/record/edit"
+        "edit": "custom:views/call/record/edit",
+        "editSmall": "custom:views/call/record/edit-small"
     },
     "filterList": [
         {

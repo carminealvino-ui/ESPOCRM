@@ -23,6 +23,8 @@ define('custom:views/call/record/edit', [
 
             this.listenTo(this.model, 'change:esito', () => this.toggleCreateAppuntamentoButton());
             this.listenTo(this.model, 'change:status', () => this.toggleCreateAppuntamentoButton());
+
+            CallEsitoDefaults.setupRinvioFieldListeners(this, this.model, this.getDateTime());
         },
 
         toggleCreateAppuntamentoButton: function () {

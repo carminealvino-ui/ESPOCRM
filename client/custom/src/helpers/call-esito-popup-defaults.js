@@ -13,6 +13,16 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         whatsapp: 'WhatsApp',
     };
 
+    const getDaRichiamareLabel = function (status) {
+        status = normalize(status);
+
+        if (status === 'Held' || status === 'Not Held') {
+            return 'Crea nuova chiamata';
+        }
+
+        return 'Rinvia richiamo';
+    };
+
     const normalize = function (value) {
         return (value || '').toString().trim();
     };
@@ -149,6 +159,24 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         }
 
         return changed;
+    };
+
+    const setupRinvioFieldListeners = function (view, model, dateTime) {
+        if (!view || !model) {
+            return;
+        }
+
+        const apply = () => {
+            applyRinvioDefaults(model, dateTime);
+            refreshRecordFields(view, ['richiamo', 'dataRichiamo', 'daRichiamare']);
+        };
+
+        view.listenTo(model, 'change:daRichiamare', apply);
+        view.listenTo(model, 'change:status', () => {
+            refreshRecordFields(view, ['daRichiamare']);
+            apply();
+        });
+        apply();
     };
 
     const getDefaultAttributes = function (model, notificationName) {
@@ -312,6 +340,8 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
     return {
         applyDefaults: applyDefaults,
         applyRinvioDefaults: applyRinvioDefaults,
+        setupRinvioFieldListeners: setupRinvioFieldListeners,
+        getDaRichiamareLabel: getDaRichiamareLabel,
         applyWhatsAppTesto: applyWhatsAppTesto,
         applyWhatsAppDescription: applyWhatsAppTesto,
         normalizeMisplacedFields: normalizeMisplacedFields,
