@@ -25,10 +25,13 @@ for f in \
   custom/Espo/Custom/Services/ProvvigioneManager.php \
   custom/Espo/Custom/Services/RegolaProvvigionaleCalculator.php \
   custom/Espo/Custom/Services/ProvvigioneAccrual.php \
+  custom/Espo/Custom/Hooks/Quote/AssignNumberACodiceContratto.php \
+  custom/Espo/Custom/Resources/layouts/Quote/list.json \
   custom/Espo/Custom/Resources/layouts/Quote/detail.json \
   custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json \
   custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json \
   custom/Espo/Custom/Resources/metadata/formula/Quote.json \
+  custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json \
   custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
 do
   cp -a "${f}" "${BK}/" 2>/dev/null || true
@@ -52,11 +55,13 @@ fetch custom/Espo/Custom/Services/QuoteTotaleProvvigioniService.php
 fetch custom/Espo/Custom/Services/ProvvigioneManager.php
 fetch custom/Espo/Custom/Services/RegolaProvvigionaleCalculator.php
 fetch custom/Espo/Custom/Services/ProvvigioneAccrual.php
+fetch custom/Espo/Custom/Hooks/Quote/AssignNumberACodiceContratto.php
+fetch custom/Espo/Custom/Resources/layouts/Quote/list.json
 fetch custom/Espo/Custom/Resources/layouts/Quote/detail.json
 fetch custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
 fetch custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json
 fetch custom/Espo/Custom/Resources/metadata/formula/Quote.json
-fetch custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
+fetch custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json
 
 php command.php rebuild
 php command.php clear-cache 2>/dev/null || true

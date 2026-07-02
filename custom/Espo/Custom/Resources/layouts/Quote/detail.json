@@ -3,7 +3,7 @@
         "rows": [
             [
                 {
-                    "name": "codiceContratto"
+                    "name": "numberA"
                 },
                 {
                     "name": "opportunity"
