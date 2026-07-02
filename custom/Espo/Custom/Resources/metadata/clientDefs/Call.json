@@ -1,0 +1,49 @@
+{
+    "kanbanViewMode": false,
+    "color": null,
+    "iconClass": "fas fa-phone",
+    "recordViews": {
+        "edit": "custom:views/call/record/edit"
+    },
+    "filterList": [
+        {
+            "name": "planned"
+        },
+        {
+            "name": "daRiscontrare",
+            "label": "Da riscontrare"
+        },
+        {
+            "name": "richiamiPianificati",
+            "label": "Richiami pianificati"
+        },
+        {
+            "name": "held",
+            "style": "success"
+        },
+        {
+            "name": "todays"
+        }
+    ],
+    "boolFilterList": [
+        "onlyMy"
+    ],
+    "relationshipPanels": {
+        "parent": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        },
+        "leads": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        },
+        "relazionatoA": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        },
+        "prospect": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        }
+    }
+}

@@ -1,0 +1,108 @@
+{
+    "view": "custom:views/dashlets/calls",
+    "aclScope": "Call",
+    "entityType": "Call",
+    "options": {
+        "fields": {
+            "title": {
+                "type": "varchar",
+                "required": true
+            },
+            "autorefreshInterval": {
+                "type": "enumFloat",
+                "options": [0, 0.5, 1, 2, 5, 10]
+            },
+            "displayRecords": {
+                "type": "int",
+                "min": 1,
+                "max": 20
+            },
+            "expandedLayout": {
+                "type": "base",
+                "view": "views/dashlets/fields/records/expanded-layout"
+            },
+            "orderBy": {
+                "type": "enum",
+                "view": "views/dashlets/fields/records/sort-by"
+            },
+            "order": {
+                "type": "enum",
+                "view": "views/dashlets/fields/records/sort-direction",
+                "options": ["asc", "desc"],
+                "translation": "DashletOptions.options.sortDirection"
+            }
+        },
+        "defaults": {
+            "orderBy": "dateStart",
+            "order": "asc",
+            "displayRecords": 10,
+            "populateAssignedUser": true,
+            "expandedLayout": {
+                "rows": [
+                    [
+                        {
+                            "name": "name",
+                            "link": true
+                        }
+                    ],
+                    [
+                        {
+                            "name": "data",
+                            "soft": true
+                        },
+                        {
+                            "name": "dateStart",
+                            "soft": true
+                        }
+                    ],
+                    [
+                        {
+                            "name": "status",
+                            "soft": true
+                        },
+                        {
+                            "name": "parent",
+                            "soft": true
+                        }
+                    ]
+                ]
+            },
+            "searchData": {
+                "primary": "daRiscontrare"
+            }
+        },
+        "layout": [
+            {
+                "rows": [
+                    [
+                        {"name": "title"},
+                        {"name": "autorefreshInterval"}
+                    ],
+                    [
+                        {"name": "displayRecords"},
+                        false
+                    ],
+                    [
+                        {
+                            "name": "orderBy",
+                            "labelTranslation": "DashletOptions.fields.sortBy"
+                        },
+                        {
+                            "name": "order",
+                            "labelTranslation": "DashletOptions.fields.sortDirection"
+                        }
+                    ],
+                    [
+                        {"name": "expandedLayout"},
+                        false
+                    ]
+                ]
+            }
+        ]
+    },
+    "accessDataList": [
+        {
+            "inPortalDisabled": true
+        }
+    ]
+}

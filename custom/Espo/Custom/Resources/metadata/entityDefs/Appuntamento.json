@@ -253,6 +253,31 @@
             "cutHeight": 200,
             "isCustom": true
         },
+        "daRichiamare": {
+            "notNull": true,
+            "type": "bool",
+            "default": false,
+            "isCustom": true
+        },
+        "dataRichiamo": {
+            "notNull": false,
+            "type": "datetime",
+            "default": "javascript: return this.dateTime.getDateTimeShiftedFromNow(1, 'week', 15);",
+            "useNumericFormat": true,
+            "minuteStep": 30,
+            "isCustom": true
+        },
+        "richiamo": {
+            "type": "enum",
+            "options": [
+                "",
+                "Richiamo su Opportunità Generata",
+                "Richiamo per Nuovo Appuntamento",
+                "Richiamo per Informazioni Aggiuntive"
+            ],
+            "default": "",
+            "isCustom": true
+        },
         "sottostato": {
             "type": "enum",
             "options": [

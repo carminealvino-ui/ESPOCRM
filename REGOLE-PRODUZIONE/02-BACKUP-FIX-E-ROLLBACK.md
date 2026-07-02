@@ -1,5 +1,11 @@
 # Regola 2 — Backup del fix e rollback
 
+## Regola ferrea
+
+**Mai scrivere o deployare codice in produzione senza backup verificato.**
+
+Vedi regola completa: [`09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md`](09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md).
+
 ## Prima di qualsiasi modifica
 
 Leggere la struttura cartelle: [`04-STRUTTURA-BACKUP-DEV.md`](04-STRUTTURA-BACKUP-DEV.md).
@@ -61,4 +67,10 @@ php command.php rebuild && rm -rf data/cache/*
 ## Cosa non sostituisce il backup file
 
 - Backup **database** (cliente, contratti): export MySQL o snapshot hosting se serve rollback dati.
+- **Softaculous**: backup manuale prima di interventi grossi; restore **completo** solo in emergenza (perde dati successivi al backup).
+- **Dashboard tab**: backup riga `preferences` (script in regola 9) — i tab **non** sono file in `custom/`.
 - Cartella `tools/` sul server: non è in Espo; va scaricata con bootstrap (vedi `tools/LEGGI-PRIMA.md`).
+
+## hookVersion
+
+Ogni fix su hook con campo `hookVersion` → aggiornare versione in PHP e su `$entity->set('hookVersion', …)`. Dettaglio: [`09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md`](09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md).

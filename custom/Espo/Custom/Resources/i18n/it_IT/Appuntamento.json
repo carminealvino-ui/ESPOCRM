@@ -10,7 +10,12 @@
         "productBrand": "Brand",
         "cAPCodice": "CAP Codice",
         "indirizzoCity": "Indirizzo Città",
-        "opportunita": "Opportunità"
+        "opportunita": "Opportunità",
+        "daRichiamare": "Rinvia richiamo",
+        "dataRichiamo": "Data Richiamo",
+        "richiamo": "Richiamo",
+        "noteEsito": "Note Esito",
+        "esito": "Esito"
     },
     "labels": {
         "Create Appuntamento": "Crea Appuntamento",
@@ -26,6 +31,11 @@
     },
     "presetFilters": {
         "svolto": "Svolto",
-        "nonSvolto": "Non Svolto"
+        "nonSvolto": "Non Svolto",
+        "meseCorrente": "Mese corrente",
+        "meseCorrenteSvolto": "Svolti mese corrente",
+        "pianificato": "Pianificato",
+        "appuntamentiSenzaOpportunita": "Senza opportunità",
+        "appuntamentiConPiuOpportunita": "Con più opportunità"
     }
 }
