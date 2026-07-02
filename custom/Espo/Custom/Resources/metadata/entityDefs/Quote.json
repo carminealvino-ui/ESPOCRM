@@ -32,10 +32,6 @@
             "type": "currency",
             "isCustom": true
         },
-        "minusPlus": {
-            "type": "currency",
-            "isCustom": true
-        },
         "taxRate": {
             "decimalPlaces": 2
         },
@@ -104,35 +100,6 @@
         "numeroPod": {
             "type": "int",
             "minValue": 0,
-            "isCustom": true
-        },
-        "prezzoListinoIvaEsclusa": {
-            "type": "currency",
-            "isCustom": true
-        },
-        "prezzoCodiceIvaEsclusa": {
-            "type": "currency",
-            "isCustom": true
-        },
-        "margineSuListino": {
-            "type": "float",
-            "decimalPlaces": 2,
-            "readOnly": true,
-            "isCustom": true
-        },
-        "contattoPersonaleArquati": {
-            "type": "bool",
-            "default": false,
-            "isCustom": true
-        },
-        "integrazionePncPercentuale": {
-            "type": "float",
-            "decimalPlaces": 2,
-            "isCustom": true
-        },
-        "ordineIncompletoAriel": {
-            "type": "bool",
-            "default": false,
             "isCustom": true
         }
     },

@@ -23,6 +23,14 @@
             "name": "nonSvolto",
             "label": "Non Svolto",
             "style": "danger"
+        },
+        {
+            "name": "appuntamentiSenzaOpportunita",
+            "label": "Senza opportunità"
+        },
+        {
+            "name": "appuntamentiConPiuOpportunita",
+            "label": "Con più opportunità"
         }
     ]
 }

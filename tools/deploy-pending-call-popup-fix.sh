@@ -1,0 +1,163 @@
+#!/usr/bin/env bash
+# Fix popup richiami Call da appuntamento Pending (promemoria + cutoff).
+#
+# PASSO 0 — backup obbligatorio:
+#   cd ~/public_html/crm/mec-group
+#   bash tools/backup-dev-batch.sh pending-call-popup \
+#     --manifest tools/backup-manifests/pending-call-popup.files
+#
+# PASSO 1 — deploy (aggiorna sempre lo script prima di eseguire):
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-pending-call-popup-9999/tools/deploy-pending-call-popup-fix.sh" \
+#     -o tools/deploy-pending-call-popup-fix.sh
+#   bash tools/deploy-pending-call-popup-fix.sh
+
+set -euo pipefail
+
+CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
+BRANCH="${2:-cursor/fix-pending-call-popup-9999}"
+REPO="carminealvino-ui/ESPOCRM"
+BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
+FIX_TAG="pending-call-popup"
+SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+
+if [[ "${DEPLOY_SELF_UPDATED:-}" != "1" ]]; then
+  tmp_script="${SCRIPT_PATH}.new.$$"
+  if curl -fsSL -o "${tmp_script}" "${BASE}/tools/deploy-pending-call-popup-fix.sh?t=$(date +%s)"; then
+    if ! cmp -s "${SCRIPT_PATH}" "${tmp_script}"; then
+      mv "${tmp_script}" "${SCRIPT_PATH}"
+      chmod +x "${SCRIPT_PATH}"
+      echo "Script deploy aggiornato da ${BRANCH}, riesecuzione..."
+      exec env DEPLOY_SELF_UPDATED=1 bash "${SCRIPT_PATH}" "$@"
+    fi
+    rm -f "${tmp_script}"
+  else
+    rm -f "${tmp_script}"
+    echo "ATTENZIONE: impossibile aggiornare lo script deploy da GitHub, uso copia locale." >&2
+  fi
+fi
+
+echo "=== Fix popup Call Pending → ${CRM_ROOT} ==="
+
+FILES=(
+  "custom/Espo/Custom/Services/LeadProspectSync.php"
+  "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"
+  "custom/Espo/Custom/Hooks/Appuntamento/AutoCreatePendingCall.php"
+  "custom/Espo/Custom/Hooks/Appuntamento/CreateCallFromRichiamo.php"
+  "custom/Espo/Custom/Hooks/Call/ClearPopupRemindersOnComplete.php"
+  "custom/Espo/Custom/Hooks/Call/RinvioRichiamo.php"
+  "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
+  "client/custom/src/init/popup-notifications-ordered.js"
+  "custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php"
+  "custom/Espo/Custom/Hooks/Call/NormalizeAutoPendingFields.php"
+  "custom/Espo/Custom/Hooks/Call/SyncOwnerFromAppuntamento.php"
+  "custom/Espo/Custom/Resources/metadata/formula/Call.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Call.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
+  "custom/Espo/Custom/Resources/metadata/logicDefs/Call.json"
+  "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
+  "custom/Espo/Custom/Resources/layouts/Quote/detail.json"
+  "custom/Espo/Custom/Resources/metadata/app/client.json"
+  "custom/Espo/Custom/Resources/metadata/clientDefs/Call.json"
+  "custom/Espo/Custom/Resources/layouts/Call/editSmall.json"
+  "custom/Espo/Custom/Resources/layouts/Call/detailSmall.json"
+  "custom/Espo/Custom/Resources/layouts/Call/detail.json"
+  "custom/Espo/Custom/Resources/layouts/Call/detailEsitoPopup.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Call.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
+  "client/custom/src/helpers/call-esito-popup-defaults.js"
+  "client/custom/src/views/fields/call-da-richiamare.js"
+  "client/custom/src/views/call/record/edit.js"
+  "client/custom/src/views/call/record/edit-small.js"
+  "client/custom/src/views/appuntamento/popup-notification.js"
+  "client/custom/src/views/fields/appuntamento-sottostato-popup.js"
+  "tools/fix-call-assignment-from-appuntamento.php"
+  "tools/audit-pending-call-candidates.php"
+  "tools/backfill-pending-calls.php"
+  "tools/diagnose-pending-call-one.php"
+  "tools/diagnose-call-name.php"
+)
+
+has_backup() {
+  local sessions="${CRM_ROOT}/backup_dev/_sessions"
+  [[ -d "${sessions}" ]] || return 1
+  local latest
+  latest="$(find "${sessions}" -maxdepth 1 -type d -name "*_${FIX_TAG}" 2>/dev/null | sort -r | head -1)"
+  [[ -n "${latest}" && -f "${latest}/manifest.txt" && -f "${latest}/files.list" ]]
+}
+
+if [[ "${SKIP_BACKUP_CHECK:-}" != "1" ]] && ! has_backup; then
+  echo ""
+  echo "PASSO 0 — esegui prima il backup in backup_dev/:"
+  echo "  cd ${CRM_ROOT}"
+  echo "  bash tools/backup-dev-batch.sh ${FIX_TAG} \\"
+  echo "    --manifest tools/backup-manifests/pending-call-popup.files"
+  echo ""
+  echo "Poi:"
+  echo "  bash tools/deploy-pending-call-popup-fix.sh"
+  exit 1
+fi
+
+if has_backup; then
+  latest="$(find "${CRM_ROOT}/backup_dev/_sessions" -maxdepth 1 -type d -name "*_${FIX_TAG}" 2>/dev/null | sort -r | head -1)"
+  echo "Backup rilevato: ${latest#${CRM_ROOT}/}"
+fi
+echo ""
+
+for rel in "${FILES[@]}"; do
+  target="${CRM_ROOT}/${rel}"
+  mkdir -p "$(dirname "${target}")"
+  curl -fsSL -o "${target}" "${BASE}/${rel}?t=$(date +%s)"
+  echo "OK ${rel}"
+done
+
+grep -q "resolveNameByPhone" "${CRM_ROOT}/custom/Espo/Custom/Services/LeadProspectSync.php" || {
+  echo "ERRORE: LeadProspectSync.php non aggiornato (manca resolveNameByPhone)" >&2
+  exit 1
+}
+
+grep -q "buildDefaultDataRichiamo" "${CRM_ROOT}/client/custom/src/helpers/call-esito-popup-defaults.js" || {
+  echo "ERRORE: call-esito-popup-defaults.js non aggiornato (manca buildDefaultDataRichiamo)" >&2
+  exit 1
+}
+
+grep -q "call-da-richiamare" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Call.json" || {
+  echo "ERRORE: entityDefs/Call.json non aggiornato (manca view call-da-richiamare)" >&2
+  exit 1
+}
+
+grep -q "appuntamento-sottostato-popup" "${CRM_ROOT}/custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json" || {
+  echo "ERRORE: detailEsitoPopup Appuntamento non aggiornato (manca view sottostato dedicata)" >&2
+  exit 1
+}
+
+if grep -q "client/custom/src/custom-product-button.js" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/app/client.json"; then
+  echo "ERRORE: client.json non aggiornato (script custom-product-button ancora attivo)" >&2
+  exit 1
+fi
+
+if rg -q "\"minusPlus\"|\"margineSuListino\"|\"prezzoListinoIvaEsclusa\"|\"prezzoCodiceIvaEsclusa\"|\"contattoPersonaleArquati\"|\"integrazionePncPercentuale\"|\"ordineIncompletoAriel\"" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"; then
+  echo "ERRORE: entityDefs/Quote.json non aggiornato (campi provvigioni legacy ancora presenti)" >&2
+  exit 1
+fi
+
+grep -q "buildCallAppointmentSignature" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
+  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca buildCallAppointmentSignature)" >&2
+  exit 1
+}
+
+grep -q "isCanonicalPlannedCallForSignature" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
+  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca isCanonicalPlannedCallForSignature)" >&2
+  exit 1
+}
+
+(cd "${CRM_ROOT}" && php command.php rebuild && php command.php clearCache)
+
+echo ""
+echo "Audit appuntamenti Pending senza Call:"
+echo "  php ${CRM_ROOT}/tools/audit-pending-call-candidates.php"
+echo "Crea Call mancanti (backfill):"
+echo "  php ${CRM_ROOT}/tools/backfill-pending-calls.php --create"
+echo "Ripara promemoria sulle Call già create:"
+echo "  php ${CRM_ROOT}/tools/fix-call-assignment-from-appuntamento.php"
+echo ""
+echo "Poi Ctrl+Shift+R nel browser."

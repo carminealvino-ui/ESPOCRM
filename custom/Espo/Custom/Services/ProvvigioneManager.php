@@ -134,16 +134,6 @@ class ProvvigioneManager
             return null;
         }
 
-        $context['plusvalenza'] = $this->floatField($quote, 'minusPlus') ?? $context['plusvalenza'];
-
-        if ($context['marginePercentuale'] !== null && !$quote->get('margineSuListino')) {
-            $quote->set('margineSuListino', $context['marginePercentuale']);
-            $this->entityManager->saveEntity($quote, [
-                'skipHooks' => true,
-                'silent' => true,
-            ]);
-        }
-
         $result = $this->calculator->calculateBest($context);
 
         $provvigione = $this->saveConsolidataProvvigione(
@@ -178,19 +168,6 @@ class ProvvigioneManager
         }
 
         $minusPlus = $this->resolveMinusPlusValue($quote, $opportunity, $imponibile);
-
-        $quote->set([
-            'minusPlus' => $minusPlus,
-            'prezzoCodiceIvaEsclusa' => $quote->get('prezzoCodiceIvaEsclusa')
-                ?: $opportunity->get('prezzoCodiceIvaEsclusa'),
-            'prezzoListinoIvaEsclusa' => $quote->get('prezzoListinoIvaEsclusa')
-                ?: $opportunity->get('prezzoListinoIvaEsclusa'),
-        ]);
-
-        $this->entityManager->saveEntity($quote, [
-            'skipHooks' => true,
-            'silent' => true,
-        ]);
 
         $context['plusvalenza'] = ($minusPlus !== null && $minusPlus > 0) ? $minusPlus : null;
 
@@ -493,8 +470,7 @@ class ProvvigioneManager
         ?float $imponibile,
         ?float $prezzoListino
     ): ?float {
-        $stored = $this->floatField($source, 'margineSuListino')
-            ?? $this->floatField($opportunity, 'suPrezzoCodice');
+        $stored = $this->floatField($opportunity, 'suPrezzoCodice');
 
         if ($stored !== null) {
             return $stored;
@@ -512,7 +488,7 @@ class ProvvigioneManager
         Entity $opportunity,
         ?float $imponibile
     ): ?float {
-        $stored = $this->floatField($quote, 'minusPlus') ?? $this->floatField($opportunity, 'minusPlus');
+        $stored = $this->floatField($opportunity, 'minusPlus');
 
         if ($stored !== null) {
             return round($stored, 2);

@@ -1,11 +1,14 @@
 {
     "scriptList": [
         "__APPEND__",
-        "client/custom/src/custom-product-button.js"
+        "client/custom/src/init/auth-token-redirect.js",
+        "client/custom/src/init/popup-notifications-ordered.js"
     ],
     "cssList": [
         "__APPEND__",
         "client/custom/css/custom-ui.css",
-        "client/custom/css/selectize-dropdown-alignment.css"
+        "client/custom/css/selectize-dropdown-alignment.css",
+        "client/custom/res/css/esito-popup-notification.css",
+        "client/custom/css/crm-kpi-dashlet.css"
     ]
 }

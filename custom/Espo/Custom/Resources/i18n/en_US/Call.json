@@ -1,0 +1,54 @@
+{
+    "fields": {
+        "nota": "Nota",
+        "whatsApp": "WhatsApp",
+        "telefono": "Telefono",
+        "testo": "Testo",
+        "tipologia": "Tipologia",
+        "vocale": "Vocale",
+        "canaleContatto": "Channel",
+        "esito": "Outcome",
+        "whatsAppNumero": "WhatsApp Numero",
+        "data": "Feedback Date",
+        "dataRichiamo": "Data Richiamo",
+        "richiamo": "Richiamo",
+        "daRichiamare": "Da richiamare",
+        "prospect": "Prospect"
+    },
+    "options": {
+        "tipologia": {
+            "": "",
+            "Primo Contatto": "Primo Contatto",
+            "Contatto dopo Prima Visita": "Contatto dopo Prima Visita",
+            "Richiamo su Opportunità Generata": "Richiamo su Opportunità Generata",
+            "Richiamo per Nuovo Appuntamento": "Richiamo per Nuovo Appuntamento",
+            "Conferma Appuntamento": "Conferma Appuntamento",
+            "Informazioni aggiuntive": "Informazioni aggiuntive",
+            "WhatsApp (Primo Contatto)": "WhatsApp (Primo Contatto)",
+            "WhatsApp (Last Minute)": "WhatsApp (Last Minute)",
+            "WhatsApp per Richiesta Appuntamento": "WhatsApp per Richiesta Appuntamento",
+            "WhatsApp su Opportunità Generata": "WhatsApp su Opportunità Generata",
+            "WhatsApp (Risposta)": "WhatsApp (Risposta)",
+            "WhatsApp (Appuntamento non Svolto)": "WhatsApp (Appuntamento non Svolto)"
+        },
+        "canaleContatto": {
+            "call": "Call",
+            "whatsapp": "WhatsApp"
+        },
+        "esito": {
+            "": "",
+            "Non interessato": "Not interested",
+            "In Trattativa": "In negotiation",
+            "Opportunità Accettata": "Opportunity accepted"
+        },
+        "richiamo": {
+            "": "",
+            "Richiamo su Opportunità Generata": "Richiamo su Opportunità Generata",
+            "Richiamo per Nuovo Appuntamento": "Richiamo per Nuovo Appuntamento",
+            "Richiamo per Informazioni Aggiuntive": "Richiamo per Informazioni Aggiuntive"
+        }
+    },
+    "links": {
+        "prospect": "Prospect"
+    }
+}

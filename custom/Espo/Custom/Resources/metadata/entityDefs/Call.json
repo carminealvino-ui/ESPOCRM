@@ -1,0 +1,206 @@
+{
+    "fields": {
+        "parent": {
+            "entityList": [
+                "Account",
+                "Contact",
+                "Opportunity",
+                "Case",
+                "Lead",
+                "Prospect",
+                "FornitorePartner",
+                "Provvigione"
+            ]
+        },
+        "nota": {
+            "type": "text",
+            "rowsMin": 2,
+            "cutHeight": 200,
+            "isCustom": true
+        },
+        "whatsApp": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "telefono": {
+            "type": "varchar",
+            "trim": true,
+            "options": [],
+            "isCustom": true
+        },
+        "testo": {
+            "type": "text",
+            "rowsMin": 2,
+            "cutHeight": 200,
+            "isCustom": true
+        },
+        "tipologia": {
+            "type": "enum",
+            "options": [
+                "",
+                "Primo Contatto",
+                "Contatto dopo Prima Visita",
+                "Richiamo su Opportunità Generata",
+                "Richiamo per Nuovo Appuntamento",
+                "Conferma Appuntamento",
+                "Informazioni aggiuntive",
+                "WhatsApp (Primo Contatto)",
+                "WhatsApp (Last Minute)",
+                "WhatsApp per Richiesta Appuntamento",
+                "WhatsApp su Opportunità Generata",
+                "WhatsApp (Risposta)",
+                "WhatsApp (Appuntamento non Svolto)"
+            ],
+            "style": {
+                "": null,
+                "Primo Contatto": null,
+                "Contatto dopo Prima Visita": null,
+                "Richiamo su Opportunità Generata": null,
+                "Richiamo per Nuovo Appuntamento": null,
+                "Conferma Appuntamento": null,
+                "Informazioni aggiuntive": null,
+                "WhatsApp (Primo Contatto)": null,
+                "WhatsApp (Last Minute)": null,
+                "WhatsApp per Richiesta Appuntamento": null,
+                "WhatsApp su Opportunità Generata": null,
+                "WhatsApp (Risposta)": null,
+                "WhatsApp (Appuntamento non Svolto)": null
+            },
+            "default": "",
+            "isCustom": true
+        },
+        "esito": {
+            "type": "enum",
+            "options": [
+                "",
+                "Non interessato",
+                "In Trattativa",
+                "Opportunità Accettata"
+            ],
+            "style": {
+                "": null,
+                "Non interessato": "danger",
+                "In Trattativa": "warning",
+                "Opportunità Accettata": "success"
+            },
+            "default": "",
+            "isCustom": true
+        },
+        "vocale": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "canaleContatto": {
+            "type": "enum",
+            "options": [
+                "call",
+                "whatsapp"
+            ],
+            "default": "call",
+            "notStorable": true,
+            "view": "custom:views/fields/call-canale-contatto",
+            "isCustom": true
+        },
+        "whatsAppNumero": {
+            "type": "url",
+            "isCustom": true
+        },
+        "data": {
+            "notNull": false,
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "createdAt": {
+            "useNumericFormat": true,
+            "minuteStep": 30
+        },
+        "dateEnd": {
+            "useNumericFormat": true,
+            "minuteStep": 30,
+            "required": false,
+            "after": null
+        },
+        "dateStart": {
+            "useNumericFormat": true,
+            "minuteStep": 15
+        },
+        "name": {
+            "required": false,
+            "options": []
+        },
+        "dataRichiamo": {
+            "notNull": false,
+            "type": "datetime",
+            "default": "javascript: return this.dateTime.toUtc(this.dateTime.getNowMoment().add(1, 'days').hours(9).minutes(0).seconds(0));",
+            "useNumericFormat": true,
+            "minuteStep": 30,
+            "isCustom": true
+        },
+        "richiamo": {
+            "type": "enum",
+            "options": [
+                "",
+                "Richiamo su Opportunità Generata",
+                "Richiamo per Nuovo Appuntamento",
+                "Richiamo per Informazioni Aggiuntive"
+            ],
+            "style": {
+                "": null,
+                "Richiamo su Opportunità Generata": null,
+                "Richiamo per Nuovo Appuntamento": null,
+                "Richiamo per Informazioni Aggiuntive": null
+            },
+            "default": "",
+            "isCustom": true
+        },
+        "daRichiamare": {
+            "notNull": true,
+            "type": "bool",
+            "view": "custom:views/fields/call-da-richiamare",
+            "isCustom": true
+        },
+        "duration": {
+            "options": [
+                0,
+                300,
+                600,
+                900,
+                1800,
+                2700,
+                3600,
+                7200,
+                86400
+            ],
+            "default": 0
+        },
+        "prospect": {
+            "type": "link"
+        }
+    },
+    "links": {
+        "leads": {
+            "audited": false
+        },
+        "prospect": {
+            "type": "belongsTo",
+            "foreign": "contattiTelefonici",
+            "entity": "Prospect",
+            "audited": false,
+            "isCustom": true
+        }
+    },
+    "collection": {
+        "orderBy": "dateStart",
+        "order": "desc",
+        "textFilterFields": [
+            "name",
+            "telefono"
+        ],
+        "fullTextSearch": false,
+        "countDisabled": false
+    },
+    "optimisticConcurrencyControl": false
+}

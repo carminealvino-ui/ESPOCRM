@@ -76,6 +76,82 @@ class LeadProspectSync
         return null;
     }
 
+    /**
+     * @return string[]
+     */
+    public function phoneDigitVariants(?string $telefono): array
+    {
+        $digits = preg_replace('/\D+/', '', (string) $telefono) ?: '';
+
+        if (strlen($digits) < 8) {
+            return [];
+        }
+
+        $variants = array_values(array_unique(array_filter([
+            $digits,
+            str_starts_with($digits, '39') && strlen($digits) > 10 ? substr($digits, 2) : null,
+            !str_starts_with($digits, '39') ? '39' . $digits : null,
+        ])));
+
+        $suffixes = [];
+
+        foreach ($variants as $variant) {
+            if (strlen($variant) >= 9) {
+                $suffixes[] = substr($variant, -9);
+            }
+
+            if (strlen($variant) >= 10) {
+                $suffixes[] = substr($variant, -10);
+            }
+        }
+
+        return array_values(array_unique(array_merge($variants, $suffixes)));
+    }
+
+    public function findEntityByPhone(string $entityType, string $telefono): ?Entity
+    {
+        if (!in_array($entityType, ['Prospect', 'Lead'], true)) {
+            return null;
+        }
+
+        $repository = $this->entityManager->getRDBRepository($entityType);
+
+        foreach ($this->phoneDigitVariants($telefono) as $variant) {
+            $entity = $repository->where(['phoneNumber' => $variant])->findOne()
+                ?: $repository->where(['phoneNumber*' => '%' . $variant])->findOne();
+
+            if ($entityType === 'Prospect' && !$entity) {
+                $entity = $repository->where(['telefono' => $variant])->findOne()
+                    ?: $repository->where(['telefono*' => '%' . $variant])->findOne();
+            }
+
+            if ($entity) {
+                return $entity;
+            }
+        }
+
+        return null;
+    }
+
+    public function resolveNameByPhone(?string $telefono): ?string
+    {
+        foreach (['Prospect', 'Lead'] as $entityType) {
+            $entity = $this->findEntityByPhone($entityType, (string) $telefono);
+
+            if (!$entity) {
+                continue;
+            }
+
+            $name = $this->resolveDisplayName($entity);
+
+            if ($name) {
+                return $name;
+            }
+        }
+
+        return null;
+    }
+
     public function resolveDisplayName(Entity $entity): ?string
     {
         $name = trim((string) $entity->get('name'));
@@ -93,10 +169,12 @@ class LeadProspectSync
         }
 
         if ($entity->getEntityType() === 'Prospect') {
-            $rs = $entity->get('ragioneSociale');
+            foreach (['ragioneSociale', 'insegna', 'azienda'] as $field) {
+                $value = trim((string) $entity->get($field));
 
-            if ($rs) {
-                return trim((string) $rs);
+                if ($value !== '') {
+                    return $value;
+                }
             }
         }
 

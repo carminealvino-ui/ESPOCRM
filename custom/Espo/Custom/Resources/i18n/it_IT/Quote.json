@@ -33,9 +33,6 @@
         "importoContratto": "Importo Contratto",
         "importoContrattoCurrency": "Importo Contratto (Valuta)",
         "importoContrattoConverted": "Importo Contratto (Convertito)",
-        "minusPlus": "Minus/Plus",
-        "minusPlusCurrency": "Minus/Plus (Valuta)",
-        "minusPlusConverted": "Minus/Plus (Convertito)",
         "taxRate": "Tax Rate",
         "aliquotaIVA": "Aliquota IVA",
         "billingContact": "Contraente",
@@ -48,13 +45,7 @@
         "hookVersion": "HookVersion",
         "fornitorePartner": "Fornitore / Partner",
         "productBrand": "Brand",
-        "productCategory": "Categoria prodotto",
-        "prezzoListinoIvaEsclusa": "Prezzo listino (IVA escl.)",
-        "margineSuListino": "Margine % su listino",
-        "prezzoCodiceIvaEsclusa": "Prezzo a codice (IVA escl.)",
-        "contattoPersonaleArquati": "Contatto personale ARQUATI (+5%)",
-        "integrazionePncPercentuale": "Integrazione PNC %",
-        "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)"
+        "productCategory": "Categoria prodotto"
     },
     "links": {
         "cAP": "CAP",
@@ -77,5 +68,13 @@
             "Available": "Disponibile",
             "Not Available": "Non Disponibile"
         }
+    },
+    "presetFilters": {
+        "meseCorrente": "Mese corrente",
+        "dataInstallazionePeriodo": "Data installazione nel periodo",
+        "dataInstallazioneMesePrecedente": "Data installazione mese precedente",
+        "contrattiBacklog": "Contratti in backlog",
+        "contrattiInLavorazione": "Contratti in lavorazione",
+        "contrattiSospesiFinanziamento": "Sospesi finanziamento"
     }
 }

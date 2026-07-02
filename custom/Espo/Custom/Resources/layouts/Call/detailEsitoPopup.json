@@ -1,0 +1,63 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "dateStart",
+                    "readOnly": true
+                }
+            ],
+            [
+                {
+                    "name": "telefono",
+                    "readOnly": true
+                },
+                {
+                    "name": "whatsAppNumero",
+                    "readOnly": true
+                }
+            ],
+            [
+                {
+                    "name": "direction"
+                },
+                {
+                    "name": "tipologia"
+                }
+            ],
+            [
+                {
+                    "name": "whatsApp"
+                }
+            ],
+            [
+                {
+                    "name": "testo",
+                    "fullWidth": true,
+                    "params": {
+                        "rows": 4
+                    }
+                }
+            ],
+            [
+                {
+                    "name": "status"
+                }
+            ],
+            [
+                {
+                    "name": "daRichiamare"
+                }
+            ],
+            [
+                {
+                    "name": "richiamo"
+                },
+                {
+                    "name": "dataRichiamo"
+                }
+            ]
+        ],
+        "label": ""
+    }
+]
