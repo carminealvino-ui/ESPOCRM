@@ -3,6 +3,7 @@
 namespace Espo\Custom\Hooks\Quote;
 
 use Espo\Core\Hook\Hook\AfterSave;
+use Espo\Core\InjectableFactory;
 use Espo\Custom\Services\ProvvigioneManager;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
@@ -17,7 +18,7 @@ class ProvvigioneConsolidata implements AfterSave
 
     public function __construct(
         private EntityManager $entityManager,
-        private ProvvigioneManager $provvigioneManager
+        private InjectableFactory $injectableFactory
     ) {}
 
     public function afterSave(Entity $entity, SaveOptions $options): void
@@ -65,10 +66,29 @@ class ProvvigioneConsolidata implements AfterSave
             return;
         }
 
+        $manager = $this->resolveManager();
+
+        if (!$manager) {
+            return;
+        }
+
         try {
-            $this->provvigioneManager->createConsolidataForQuote($opportunity, $entity);
+            $manager->createConsolidataForQuote($opportunity, $entity);
         } catch (\Throwable) {
             // Evita 500 sul salvataggio contratto se il ricalcolo provvigioni fallisce.
+        }
+    }
+
+    private function resolveManager(): ?ProvvigioneManager
+    {
+        if (!class_exists(ProvvigioneManager::class)) {
+            return null;
+        }
+
+        try {
+            return $this->injectableFactory->create(ProvvigioneManager::class);
+        } catch (\Throwable) {
+            return null;
         }
     }
 }

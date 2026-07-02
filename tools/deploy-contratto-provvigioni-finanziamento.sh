@@ -22,6 +22,9 @@ for f in \
   custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php \
   custom/Espo/Custom/Hooks/Provvigione/UpdateQuoteTotaleProvvigioni.php \
   custom/Espo/Custom/Services/QuoteTotaleProvvigioniService.php \
+  custom/Espo/Custom/Services/ProvvigioneManager.php \
+  custom/Espo/Custom/Services/RegolaProvvigionaleCalculator.php \
+  custom/Espo/Custom/Services/ProvvigioneAccrual.php \
   custom/Espo/Custom/Resources/layouts/Quote/detail.json \
   custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json \
   custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json \
@@ -46,6 +49,9 @@ fetch custom/Espo/Custom/Hooks/Quote/ComputeImportoSaldo.php
 fetch custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
 fetch custom/Espo/Custom/Hooks/Provvigione/UpdateQuoteTotaleProvvigioni.php
 fetch custom/Espo/Custom/Services/QuoteTotaleProvvigioniService.php
+fetch custom/Espo/Custom/Services/ProvvigioneManager.php
+fetch custom/Espo/Custom/Services/RegolaProvvigionaleCalculator.php
+fetch custom/Espo/Custom/Services/ProvvigioneAccrual.php
 fetch custom/Espo/Custom/Resources/layouts/Quote/detail.json
 fetch custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
 fetch custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json
@@ -82,7 +88,7 @@ require 'bootstrap.php';
 \$app = new \Espo\Core\Application();
 \$app->setupSystemUser();
 \$pdo = \$app->getContainer()->get('entityManager')->getPDO();
-\$stmt = \$pdo->prepare(\"UPDATE quote SET status = 'Presented' WHERE deleted = 0 AND status = 'Draft' AND numero_contratto IS NOT NULL AND TRIM(numero_contratto) != ''\");
+\$stmt = \$pdo->prepare(\"UPDATE quote SET status = 'Presented', codice_contratto = COALESCE(NULLIF(TRIM(codice_contratto), ''), numero_contratto) WHERE deleted = 0 AND status = 'Draft' AND numero_contratto IS NOT NULL AND TRIM(numero_contratto) != ''\");
 \$stmt->execute();
 echo 'Contratti aggiornati a Presentato: ' . \$stmt->rowCount() . PHP_EOL;
 "
