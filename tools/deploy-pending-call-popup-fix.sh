@@ -54,6 +54,8 @@ FILES=(
   "custom/Espo/Custom/Resources/metadata/entityDefs/Call.json"
   "custom/Espo/Custom/Resources/metadata/logicDefs/Call.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
+  "custom/Espo/Custom/Resources/layouts/Quote/detail.json"
+  "custom/Espo/Custom/Resources/metadata/app/client.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Call.json"
   "custom/Espo/Custom/Resources/layouts/Call/editSmall.json"
   "custom/Espo/Custom/Resources/layouts/Call/detailSmall.json"
@@ -125,6 +127,11 @@ grep -q "appuntamento-sottostato-popup" "${CRM_ROOT}/custom/Espo/Custom/Resource
   echo "ERRORE: detailEsitoPopup Appuntamento non aggiornato (manca view sottostato dedicata)" >&2
   exit 1
 }
+
+if grep -q "client/custom/src/custom-product-button.js" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/app/client.json"; then
+  echo "ERRORE: client.json non aggiornato (script custom-product-button ancora attivo)" >&2
+  exit 1
+fi
 
 grep -q "buildCallAppointmentSignature" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
   echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca buildCallAppointmentSignature)" >&2
