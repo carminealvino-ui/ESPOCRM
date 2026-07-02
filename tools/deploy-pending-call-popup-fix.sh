@@ -52,6 +52,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Call/SyncOwnerFromAppuntamento.php"
   "custom/Espo/Custom/Resources/metadata/formula/Call.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Call.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
   "custom/Espo/Custom/Resources/metadata/logicDefs/Call.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
   "custom/Espo/Custom/Resources/layouts/Quote/detail.json"
@@ -62,6 +63,7 @@ FILES=(
   "custom/Espo/Custom/Resources/layouts/Call/detail.json"
   "custom/Espo/Custom/Resources/layouts/Call/detailEsitoPopup.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Call.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
   "client/custom/src/helpers/call-esito-popup-defaults.js"
   "client/custom/src/views/fields/call-da-richiamare.js"
   "client/custom/src/views/call/record/edit.js"
@@ -130,6 +132,11 @@ grep -q "appuntamento-sottostato-popup" "${CRM_ROOT}/custom/Espo/Custom/Resource
 
 if grep -q "client/custom/src/custom-product-button.js" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/app/client.json"; then
   echo "ERRORE: client.json non aggiornato (script custom-product-button ancora attivo)" >&2
+  exit 1
+fi
+
+if rg -q "\"minusPlus\"|\"margineSuListino\"|\"prezzoListinoIvaEsclusa\"|\"prezzoCodiceIvaEsclusa\"|\"contattoPersonaleArquati\"|\"integrazionePncPercentuale\"|\"ordineIncompletoAriel\"" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"; then
+  echo "ERRORE: entityDefs/Quote.json non aggiornato (campi provvigioni legacy ancora presenti)" >&2
   exit 1
 fi
 

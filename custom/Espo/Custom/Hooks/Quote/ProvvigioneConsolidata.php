@@ -36,11 +36,6 @@ class ProvvigioneConsolidata implements AfterSave
             'dataAttivazione',
             'dataInstallazione',
             'productCategoryId',
-            'minusPlus',
-            'prezzoListinoIvaEsclusa',
-            'prezzoCodiceIvaEsclusa',
-            'margineSuListino',
-            'contattoPersonaleArquati',
         ];
 
         $changed = false;
