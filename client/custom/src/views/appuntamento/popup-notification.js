@@ -423,26 +423,21 @@ define('custom:views/appuntamento/popup-notification', [
                 Held: [
                     'Pending',
                     'Gestito',
-                    'Rifissato',
                     'Chiuso Positivamente',
                     'Non Interessato',
-                    'Solo Informazioni',
-                    'Prodotto non Conforme',
-                    'Fuori Target',
                 ],
                 'Not Held': [
                     'Non Confermato',
                     'Non Ricevuto',
-                    'Infattibilità Tecnica',
                     'Non Gestito',
                     'Annullato',
+                    'Rifissato',
                 ],
                 Ingestibile: [
-                    'Non Confermato',
-                    'Non Ricevuto',
                     'Infattibilità Tecnica',
-                    'Non Gestito',
-                    'Annullato',
+                    'Solo Informazioni',
+                    'Prodotto non Conforme',
+                    'Fuori Target',
                 ],
             };
 
