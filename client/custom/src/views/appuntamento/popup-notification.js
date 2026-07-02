@@ -200,6 +200,10 @@ define('custom:views/appuntamento/popup-notification', [
                                     this.setupRinvioDefaults(view);
                                 }
 
+                                if (entityType === 'Appuntamento') {
+                                    this.setupAppuntamentoSottostatoFilter(view);
+                                }
+
                                 this.setupActionButtonListeners(view);
                                 this.updateActionButtons();
                                 resolve();
@@ -391,6 +395,75 @@ define('custom:views/appuntamento/popup-notification', [
 
             this.listenTo(model, 'change:status', () => this.updateActionButtons());
             this.updateActionButtons();
+        }
+
+        setupAppuntamentoSottostatoFilter(recordView) {
+            const entityType = this.esitoEntityType || this.notificationData.entityType;
+
+            if (entityType !== 'Appuntamento' || !recordView || !recordView.model) {
+                return;
+            }
+
+            const apply = () => this.applyAppuntamentoSottostatoFilter(recordView);
+
+            this.listenTo(recordView.model, 'change:status', apply);
+            this.listenToOnce(recordView, 'after:render', apply);
+            window.setTimeout(apply, 0);
+        }
+
+        applyAppuntamentoSottostatoFilter(recordView) {
+            const model = recordView && recordView.model;
+
+            if (!model || !recordView.$el) {
+                return;
+            }
+
+            const status = (model.get('status') || '').toString();
+            const allowedMap = {
+                Held: [
+                    'Pending',
+                    'Gestito',
+                    'Rifissato',
+                    'Chiuso Positivamente',
+                    'Non Interessato',
+                    'Solo Informazioni',
+                    'Prodotto non Conforme',
+                    'Fuori Target',
+                ],
+                'Not Held': [
+                    'Non Confermato',
+                    'Non Ricevuto',
+                    'Infattibilità Tecnica',
+                    'Non Gestito',
+                    'Annullato',
+                ],
+                Ingestibile: [
+                    'Non Confermato',
+                    'Non Ricevuto',
+                    'Infattibilità Tecnica',
+                    'Non Gestito',
+                    'Annullato',
+                ],
+            };
+
+            const allowed = allowedMap[status] || [];
+            const current = (model.get('sottostato') || '').toString();
+
+            if (current && allowed.length && !allowed.includes(current)) {
+                model.set('sottostato', '', {silent: true});
+            }
+
+            const $select = recordView.$el.find('.field[data-name="sottostato"] select');
+
+            if ($select.length) {
+                $select.find('option').each(function () {
+                    const value = (this.value || '').toString();
+                    const visible = value === '' || allowed.length === 0 || allowed.includes(value);
+
+                    this.hidden = !visible;
+                    this.disabled = !visible;
+                });
+            }
         }
 
         getCurrentStatus() {
