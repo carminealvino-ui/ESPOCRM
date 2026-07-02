@@ -420,29 +420,6 @@ define('custom:views/appuntamento/popup-notification', [
 
             const status = (model.get('status') || '').toString();
             const isPlanned = status === 'Planned' || status === '';
-            const allowedMap = {
-                Held: [
-                    'Pending',
-                    'Gestito',
-                    'Chiuso Positivamente',
-                    'Non Interessato',
-                ],
-                'Not Held': [
-                    'Non Confermato',
-                    'Non Ricevuto',
-                    'Non Gestito',
-                    'Annullato',
-                    'Rifissato',
-                ],
-                Ingestibile: [
-                    'Infattibilità Tecnica',
-                    'Solo Informazioni',
-                    'Prodotto non Conforme',
-                    'Fuori Target',
-                ],
-            };
-
-            const allowed = allowedMap[status] || [];
             const current = (model.get('sottostato') || '').toString();
             const currentEsito = (model.get('esito') || '').toString();
 
@@ -456,11 +433,6 @@ define('custom:views/appuntamento/popup-notification', [
                 }
             }
 
-            if (!isPlanned && current && allowed.length && !allowed.includes(current)) {
-                model.set('sottostato', '', {silent: true});
-            }
-
-            const $select = recordView.$el.find('.field[data-name="sottostato"] select');
             const $sottostatoField = recordView.$el.find('.field[data-name="sottostato"]');
             const $esitoField = recordView.$el.find('.field[data-name="esito"]');
             const $sottostatoCell = $sottostatoField.closest('.cell, .field-container');
@@ -474,50 +446,6 @@ define('custom:views/appuntamento/popup-notification', [
             if ($esitoField.length || $esitoCell.length) {
                 $esitoField.toggleClass('hidden', isPlanned);
                 $esitoCell.toggleClass('hidden', isPlanned);
-            }
-
-            if ($select.length) {
-                $select.find('option').each(function () {
-                    const value = (this.value || '').toString();
-                    const visible = !isPlanned && (value === '' || allowed.includes(value));
-
-                    this.hidden = !visible;
-                    this.disabled = !visible;
-                });
-            }
-
-            const sottostatoView = recordView.getFieldView && recordView.getFieldView('sottostato');
-            const selectize = sottostatoView && sottostatoView.selectize;
-
-            if (selectize) {
-                if (!sottostatoView.__allSottostatoOptions) {
-                    sottostatoView.__allSottostatoOptions = JSON.parse(JSON.stringify(selectize.options || {}));
-                }
-
-                const allOptions = sottostatoView.__allSottostatoOptions || {};
-                const currentValue = (selectize.getValue && selectize.getValue()) || '';
-
-                selectize.clearOptions();
-
-                if (allOptions['']) {
-                    selectize.addOption(allOptions['']);
-                } else {
-                    selectize.addOption({value: '', text: ''});
-                }
-
-                if (!isPlanned) {
-                    allowed.forEach(value => {
-                        if (allOptions[value]) {
-                            selectize.addOption(allOptions[value]);
-                        } else {
-                            selectize.addOption({value: value, text: value});
-                        }
-                    });
-                }
-
-                const keepCurrent = !isPlanned && currentValue && allowed.includes(currentValue);
-                selectize.setValue(keepCurrent ? currentValue : '', true);
-                selectize.refreshOptions(false);
             }
 
             this.updateActionButtons();

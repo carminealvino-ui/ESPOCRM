@@ -65,6 +65,7 @@ FILES=(
   "client/custom/src/views/call/record/edit.js"
   "client/custom/src/views/call/record/edit-small.js"
   "client/custom/src/views/appuntamento/popup-notification.js"
+  "client/custom/src/views/fields/appuntamento-sottostato-popup.js"
   "tools/fix-call-assignment-from-appuntamento.php"
   "tools/audit-pending-call-candidates.php"
   "tools/backfill-pending-calls.php"
@@ -117,6 +118,11 @@ grep -q "buildDefaultDataRichiamo" "${CRM_ROOT}/client/custom/src/helpers/call-e
 
 grep -q "call-da-richiamare" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Call.json" || {
   echo "ERRORE: entityDefs/Call.json non aggiornato (manca view call-da-richiamare)" >&2
+  exit 1
+}
+
+grep -q "appuntamento-sottostato-popup" "${CRM_ROOT}/custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json" || {
+  echo "ERRORE: detailEsitoPopup Appuntamento non aggiornato (manca view sottostato dedicata)" >&2
   exit 1
 }
 
