@@ -36,11 +36,13 @@ class QuoteTotaleProvvigioniService
             return;
         }
 
-        $quote->set('totaleProvvigioni', $totale);
-
-        $this->entityManager->saveEntity($quote, [
-            'skipHooks' => true,
-            'silent' => true,
-        ]);
+        // Update diretto: evita conflitto version (optimisticConcurrencyControl).
+        $this->entityManager
+            ->getQuery()
+            ->update()
+            ->in('Quote')
+            ->set(['totaleProvvigioni' => $totale])
+            ->where(['id' => $quoteId])
+            ->execute();
     }
 }

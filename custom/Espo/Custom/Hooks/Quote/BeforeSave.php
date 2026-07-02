@@ -2,6 +2,7 @@
 
 namespace Espo\Custom\Hooks\Quote;
 
+use Espo\Custom\Services\QuoteTotaleProvvigioniService;
 use Espo\ORM\Entity;
 use Espo\Core\Hooks\Base;
 
@@ -138,12 +139,13 @@ class BeforeSave extends Base
             $totale += $importo;
         }
 
-        // totale provvigioni (persiste: afterSave non salva da solo)
-        $entity->set('totaleProvvigioni', $totale);
+        $quoteId = $entity->getId();
 
-        $em->saveEntity($entity, [
-            'skipHooks' => true,
-            'silent' => true,
-        ]);
+        if (!$quoteId) {
+            return;
+        }
+
+        $service = new QuoteTotaleProvvigioniService($em);
+        $service->syncForQuoteId($quoteId);
     }
 }
