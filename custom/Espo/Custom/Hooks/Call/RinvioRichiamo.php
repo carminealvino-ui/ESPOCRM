@@ -91,6 +91,10 @@ class RinvioRichiamo implements BeforeSave, AfterSave
                 $this->callCreator->clearRinvioFlagsOnCall($callId);
             }
 
+            if (in_array($status, ['Held', 'Not Held'], true)) {
+                $this->callCreator->clearPopupReminders($entity);
+            }
+
             if ($status === 'Planned') {
                 $fresh = $this->entityManager->getEntityById('Call', $callId);
 

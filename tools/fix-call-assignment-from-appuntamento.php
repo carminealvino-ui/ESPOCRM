@@ -173,6 +173,8 @@ foreach ($callsById as $call) {
         $creator->syncPopupReminders($call);
         $remindersSynced++;
         echo 'REMINDER ' . $call->getId() . PHP_EOL;
+    } else {
+        $creator->clearPopupReminders($call);
     }
 }
 

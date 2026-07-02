@@ -9,6 +9,7 @@ use Espo\Core\Utils\Config;
 use Espo\Core\Utils\DateTime as DateTimeUtil;
 use Espo\Core\Utils\Log;
 use Espo\Entities\User;
+use Espo\Custom\Services\AppuntamentoPendingCallCreator;
 use Espo\Custom\Tools\Appuntamento\PendingCallDateTime;
 use Espo\Modules\Crm\Entities\Meeting;
 use Espo\Modules\Crm\Entities\Reminder;
@@ -36,6 +37,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         private Config $config,
         private EntityManager $entityManager,
         private Log $log,
+        private AppuntamentoPendingCallCreator $callCreator,
     ) {
         parent::__construct($config, $entityManager);
     }
@@ -241,6 +243,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             return null;
         }
 
+        if (!$this->isCallPopupVisible($entity)) {
+            return null;
+        }
+
         if (
             $entity instanceof CoreEntity &&
             $entity->hasLinkMultipleField('users') &&
@@ -272,6 +278,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         if (!$this->isPopupEligible($entity)) {
+            return null;
+        }
+
+        if (!$this->isCallPopupVisible($entity)) {
             return null;
         }
 
@@ -315,6 +325,15 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         return in_array($entity->get('status'), $statusList, true);
+    }
+
+    private function isCallPopupVisible(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== 'Call') {
+            return true;
+        }
+
+        return $this->callCreator->shouldShowAutoPendingCallInPopup($entity);
     }
 
     private function isPopupEligible(Entity $entity): bool

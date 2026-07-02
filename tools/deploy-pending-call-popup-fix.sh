@@ -43,6 +43,7 @@ FILES=(
   "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"
   "custom/Espo/Custom/Hooks/Appuntamento/AutoCreatePendingCall.php"
   "custom/Espo/Custom/Hooks/Appuntamento/CreateCallFromRichiamo.php"
+  "custom/Espo/Custom/Hooks/Call/ClearPopupRemindersOnComplete.php"
   "custom/Espo/Custom/Hooks/Call/RinvioRichiamo.php"
   "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
   "client/custom/src/init/popup-notifications-ordered.js"
@@ -119,8 +120,8 @@ grep -q "call-da-richiamare" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/
   exit 1
 }
 
-grep -q "hydrateAppuntamentoContactLinks" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
-  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca hydrateAppuntamentoContactLinks)" >&2
+grep -q "shouldShowAutoPendingCallInPopup" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
+  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca shouldShowAutoPendingCallInPopup)" >&2
   exit 1
 }
 

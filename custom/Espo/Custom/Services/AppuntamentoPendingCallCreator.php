@@ -18,7 +18,7 @@ class AppuntamentoPendingCallCreator
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
     private const ADMIN_USER_ID = '1';
     private const REMINDER_SECONDS = 0;
-    public const CREATOR_VERSION = '2026-07-01f';
+    public const CREATOR_VERSION = '2026-07-01g';
 
     private ?string $lastFailureReason = null;
 
@@ -1634,9 +1634,72 @@ class AppuntamentoPendingCallCreator
         return null;
     }
 
+    public function shouldShowAutoPendingCallInPopup(Entity $call): bool
+    {
+        if ($call->getEntityType() !== 'Call' || (string) $call->get('status') !== 'Planned') {
+            return false;
+        }
+
+        $nota = (string) $call->get('nota');
+        $appuntamentoId = $this->extractAppuntamentoIdFromNota($nota);
+
+        if (!$appuntamentoId || !str_contains($nota, self::NOTA_PREFIX)) {
+            return true;
+        }
+
+        $heldSibling = $this->entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'nota*' => self::NOTA_PREFIX . ' ' . $appuntamentoId,
+                'status' => ['Held', 'Not Held'],
+            ])
+            ->findOne();
+
+        if ($heldSibling && $heldSibling->getId() !== $call->getId()) {
+            return false;
+        }
+
+        $canonicalId = $this->findExistingPlannedPendingCallId($appuntamentoId);
+
+        return !$canonicalId || $canonicalId === $call->getId();
+    }
+
+    public function clearPopupReminders(Entity $call): void
+    {
+        if ($call->getEntityType() !== 'Call') {
+            return;
+        }
+
+        $callId = $call->getId();
+
+        if (!$callId) {
+            return;
+        }
+
+        foreach ($this->loadPopupReminderMap($callId) as $data) {
+            if (!$data['id']) {
+                continue;
+            }
+
+            $reminder = $this->entityManager->getEntityById('Reminder', $data['id']);
+
+            if ($reminder) {
+                $this->entityManager->removeEntity($reminder, ['skipAcl' => true]);
+            }
+        }
+    }
+
     public function syncPopupReminders(Entity $call): void
     {
         if ($call->getEntityType() !== 'Call' || $call->get('status') !== 'Planned') {
+            $this->clearPopupReminders($call);
+
+            return;
+        }
+
+        if (!$this->shouldShowAutoPendingCallInPopup($call)) {
+            $this->clearPopupReminders($call);
+
             return;
         }
 
