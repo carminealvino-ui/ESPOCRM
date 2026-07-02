@@ -120,6 +120,8 @@ foreach ($callsById as $call) {
                     $changed = true;
                 }
             }
+    } elseif ($creator->rebuildCallNameFromEntity($call)) {
+        $changed = true;
     }
 
     $status = (string) $call->get('status');
