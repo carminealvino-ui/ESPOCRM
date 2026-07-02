@@ -823,6 +823,59 @@ class AppuntamentoPendingCallCreator
         return '';
     }
 
+    public function rebuildCallNameFromEntity(Entity $call): bool
+    {
+        $telefono = trim((string) $call->get('telefono'));
+
+        if ($telefono === '') {
+            return false;
+        }
+
+        $contactName = $this->resolveCallContactName($call);
+
+        if ($contactName === '') {
+            return false;
+        }
+
+        if (!trim((string) $call->get('parentName'))) {
+            $call->set('parentName', $contactName);
+        }
+
+        $appointmentInstant = null;
+        $name = (string) $call->get('name');
+
+        if (preg_match('/^(\d{2}\/\d{2}\/\d{4})\s+(\d{2}:\d{2})/', $name, $matches)) {
+            $parsed = \DateTimeImmutable::createFromFormat(
+                'd/m/Y H:i',
+                $matches[1] . ' ' . $matches[2],
+                new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE)
+            );
+
+            if ($parsed) {
+                $appointmentInstant = $parsed;
+            }
+        }
+
+        if (!$appointmentInstant && $call->get('dateStart')) {
+            $appointmentInstant = BusinessDateTime::storageToBusiness((string) $call->get('dateStart'));
+        }
+
+        $presentation = $this->buildCallPresentationFields(
+            $appointmentInstant,
+            $contactName,
+            $telefono,
+            $call->get('tipologia')
+        );
+
+        if ((string) $call->get('name') === $presentation['name']) {
+            return false;
+        }
+
+        $call->set('name', $presentation['name']);
+
+        return true;
+    }
+
     public function syncCallNameFromLinkedAppuntamento(Entity $call): bool
     {
         $appuntamentoId = $this->extractAppuntamentoIdFromNota((string) $call->get('nota'));
