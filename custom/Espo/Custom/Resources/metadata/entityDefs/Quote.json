@@ -101,6 +101,14 @@
             "type": "int",
             "minValue": 0,
             "isCustom": true
+        },
+        "prezzoListinoIvaEsclusa": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "prezzoCodiceIvaEsclusa": {
+            "type": "currency",
+            "isCustom": true
         }
     },
     "links": {

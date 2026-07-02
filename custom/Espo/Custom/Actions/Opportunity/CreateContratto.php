@@ -658,6 +658,12 @@ class CreateContratto
             'importoContratto' =>
                 $amount,
 
+            'prezzoListinoIvaEsclusa' =>
+                $opportunity->get('prezzoListinoIvaEsclusa'),
+
+            'prezzoCodiceIvaEsclusa' =>
+                $opportunity->get('prezzoCodiceIvaEsclusa'),
+
             // =================================================
             // DATA
             // =================================================

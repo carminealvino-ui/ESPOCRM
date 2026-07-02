@@ -45,7 +45,9 @@
         "hookVersion": "HookVersion",
         "fornitorePartner": "Fornitore / Partner",
         "productBrand": "Brand",
-        "productCategory": "Categoria prodotto"
+        "productCategory": "Categoria prodotto",
+        "prezzoListinoIvaEsclusa": "Prezzo listino (IVA escl.)",
+        "prezzoCodiceIvaEsclusa": "Prezzo a codice (IVA escl.)"
     },
     "links": {
         "cAP": "CAP",
