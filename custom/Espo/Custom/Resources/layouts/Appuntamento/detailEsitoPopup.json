@@ -28,19 +28,6 @@
                         "rows": 4
                     }
                 }
-            ],
-            [
-                {
-                    "name": "daRichiamare"
-                }
-            ],
-            [
-                {
-                    "name": "richiamo"
-                },
-                {
-                    "name": "dataRichiamo"
-                }
             ]
         ],
         "label": ""
