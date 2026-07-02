@@ -18,7 +18,7 @@ class AppuntamentoPendingCallCreator
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
     private const ADMIN_USER_ID = '1';
     private const REMINDER_SECONDS = 0;
-    public const CREATOR_VERSION = '2026-07-01h';
+    public const CREATOR_VERSION = '2026-07-01i';
 
     private ?string $lastFailureReason = null;
 
@@ -1648,6 +1648,10 @@ class AppuntamentoPendingCallCreator
             return true;
         }
 
+        if (!$this->isCanonicalPlannedCallForSignature($call)) {
+            return false;
+        }
+
         $heldSibling = $this->findHeldCallWithSameAppointmentSignature($call);
 
         if ($heldSibling && $heldSibling->getId() !== $call->getId()) {
@@ -1678,6 +1682,20 @@ class AppuntamentoPendingCallCreator
         }
 
         return true;
+    }
+
+    public function isCanonicalPlannedCallForSignature(Entity $call): bool
+    {
+        $signature = $this->buildCallAppointmentSignature($call);
+
+        if (!$signature) {
+            return true;
+        }
+
+        [$appointmentLabel, $telefono] = explode('|', $signature, 2);
+        $canonical = $this->findCanonicalPlannedCallBySignature($appointmentLabel, $telefono);
+
+        return !$canonical || $canonical->getId() === $call->getId();
     }
 
     public function buildCallAppointmentSignature(Entity $call): ?string
@@ -1776,6 +1794,61 @@ class AppuntamentoPendingCallCreator
         }
 
         return null;
+    }
+
+    private function findCanonicalPlannedCallBySignature(string $appointmentLabel, string $telefono): ?Entity
+    {
+        $phoneVariants = array_values(array_unique(array_filter([
+            $telefono,
+            '39' . $telefono,
+        ])));
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'status' => 'Planned',
+                'tipologia' => self::TIPOLOGIA,
+                'name*' => $appointmentLabel . '%',
+            ])
+            ->order('createdAt', 'ASC')
+            ->find();
+
+        $best = null;
+
+        foreach ($collection as $candidate) {
+            if (!$this->isAutoManagedRichiamoCall($candidate) || $this->isFollowUpRichiamoCall($candidate)) {
+                continue;
+            }
+
+            $digits = preg_replace('/\D+/', '', (string) $candidate->get('telefono')) ?: '';
+
+            if ($digits !== '' && str_starts_with($digits, '39') && strlen($digits) > 10) {
+                $digits = substr($digits, 2);
+            }
+
+            if (!in_array($digits, $phoneVariants, true)) {
+                continue;
+            }
+
+            if (!$best) {
+                $best = $candidate;
+                continue;
+            }
+
+            $bestCreatedAt = (string) ($best->get('createdAt') ?: '');
+            $candidateCreatedAt = (string) ($candidate->get('createdAt') ?: '');
+
+            if ($candidateCreatedAt !== '' && ($bestCreatedAt === '' || $candidateCreatedAt < $bestCreatedAt)) {
+                $best = $candidate;
+                continue;
+            }
+
+            if ($candidateCreatedAt === $bestCreatedAt && strcmp((string) $candidate->getId(), (string) $best->getId()) < 0) {
+                $best = $candidate;
+            }
+        }
+
+        return $best;
     }
 
     public function clearPopupReminders(Entity $call): void

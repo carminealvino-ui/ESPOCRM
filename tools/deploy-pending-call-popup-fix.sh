@@ -125,6 +125,11 @@ grep -q "buildCallAppointmentSignature" "${CRM_ROOT}/custom/Espo/Custom/Services
   exit 1
 }
 
+grep -q "isCanonicalPlannedCallForSignature" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
+  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca isCanonicalPlannedCallForSignature)" >&2
+  exit 1
+}
+
 (cd "${CRM_ROOT}" && php command.php rebuild && php command.php clearCache)
 
 echo ""
