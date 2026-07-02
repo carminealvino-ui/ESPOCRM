@@ -8,6 +8,7 @@ use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
  * Numero contratto valorizzato → stato Bozza (Draft) diventa Presentato (Presented).
+ * Non modifica il campo core "number" (numerazione Espo): solo codiceContratto custom.
  */
 class SetPresentedWhenNumeroContratto implements BeforeSave
 {
@@ -34,11 +35,7 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
             return;
         }
 
-        if (!$entity->get('number')) {
-            $entity->set('number', $entity->get('numeroContratto'));
-        }
-
-        if (!$entity->get('codiceContratto')) {
+        if (!$this->hasCodiceContratto($entity)) {
             $entity->set('codiceContratto', $entity->get('numeroContratto'));
         }
 
@@ -48,6 +45,17 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
     private function hasNumeroContratto(Entity $entity): bool
     {
         $value = $entity->get('numeroContratto');
+
+        if ($value === null) {
+            return false;
+        }
+
+        return trim((string) $value) !== '';
+    }
+
+    private function hasCodiceContratto(Entity $entity): bool
+    {
+        $value = $entity->get('codiceContratto');
 
         if ($value === null) {
             return false;

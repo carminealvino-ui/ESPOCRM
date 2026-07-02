@@ -65,6 +65,10 @@ class ProvvigioneConsolidata implements AfterSave
             return;
         }
 
-        $this->provvigioneManager->createConsolidataForQuote($opportunity, $entity);
+        try {
+            $this->provvigioneManager->createConsolidataForQuote($opportunity, $entity);
+        } catch (\Throwable) {
+            // Evita 500 sul salvataggio contratto se il ricalcolo provvigioni fallisce.
+        }
     }
 }
