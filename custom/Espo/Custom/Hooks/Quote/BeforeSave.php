@@ -138,7 +138,12 @@ class BeforeSave extends Base
             $totale += $importo;
         }
 
-        // totale provvigioni
+        // totale provvigioni (persiste: afterSave non salva da solo)
         $entity->set('totaleProvvigioni', $totale);
+
+        $em->saveEntity($entity, [
+            'skipHooks' => true,
+            'silent' => true,
+        ]);
     }
 }
