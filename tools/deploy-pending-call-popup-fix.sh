@@ -44,6 +44,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Appuntamento/CreateCallFromRichiamo.php"
   "custom/Espo/Custom/Hooks/Call/RinvioRichiamo.php"
   "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
+  "client/custom/src/init/popup-notifications-ordered.js"
   "custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php"
   "custom/Espo/Custom/Hooks/Call/NormalizeAutoPendingFields.php"
   "custom/Espo/Custom/Hooks/Call/SyncOwnerFromAppuntamento.php"
@@ -101,8 +102,8 @@ for rel in "${FILES[@]}"; do
   echo "OK ${rel}"
 done
 
-grep -q "syncCallNameFromLinkedAppuntamento" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
-  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca syncCallNameFromLinkedAppuntamento)" >&2
+grep -q "resolveCallContactName" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
+  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca resolveCallContactName)" >&2
   exit 1
 }
 

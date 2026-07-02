@@ -18,7 +18,7 @@ class AppuntamentoPendingCallCreator
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
     private const ADMIN_USER_ID = '1';
     private const REMINDER_SECONDS = 0;
-    public const CREATOR_VERSION = '2026-07-01c';
+    public const CREATOR_VERSION = '2026-07-01d';
 
     private ?string $lastFailureReason = null;
 
@@ -156,7 +156,7 @@ class AppuntamentoPendingCallCreator
 
         $callDateStartUtc = BusinessDateTime::businessToStorage($callInstant);
         $leadSync = new LeadProspectSync($this->entityManager);
-        $parentName = trim((string) ($appuntamento->get('parentName') ?: $leadSync->resolveDisplayName($parentEntity)));
+        $parentName = $this->resolveCallContactName(null, $appuntamento, $parentEntity, $prospect);
         $telefono = trim((string) ($appuntamento->get('telefono')
             ?: ($parentType === 'Lead'
                 ? $parentEntity->get('phoneNumber')
@@ -371,6 +371,7 @@ class AppuntamentoPendingCallCreator
         $callInstant = BusinessDateTime::storageToBusiness($dataRichiamo);
         $callDateStartUtc = BusinessDateTime::businessToStorage($callInstant);
         $parentName = $appuntamento->get('parentName') ?: $lead->get('name');
+        $parentName = $this->resolveCallContactName(null, $appuntamento, $lead, null) ?: $parentName;
         $telefono = $appuntamento->get('telefono') ?: $lead->get('phoneNumber');
         $appointmentInstant = $appuntamento->get('dateStart') ?
             BusinessDateTime::storageToBusiness($appuntamento->get('dateStart')) :
@@ -674,9 +675,25 @@ class AppuntamentoPendingCallCreator
             return false;
         }
 
+        $contactName = $this->resolveCallContactName($call, $appuntamento);
+
+        if ($contactName !== '') {
+            if (!trim((string) $call->get('parentName'))) {
+                $call->set('parentName', $contactName);
+            }
+
+            if (!trim((string) $call->get('prospectName'))) {
+                $prospectName = trim((string) $appuntamento->get('prospectName'));
+
+                if ($prospectName !== '') {
+                    $call->set('prospectName', $prospectName);
+                }
+            }
+        }
+
         $presentation = $this->buildCallPresentationFields(
             BusinessDateTime::storageToBusiness($dateStart),
-            $call->get('parentName'),
+            $contactName,
             $call->get('telefono'),
             $call->get('tipologia')
         );
@@ -690,6 +707,120 @@ class AppuntamentoPendingCallCreator
         $call->set('name', $newName);
 
         return true;
+    }
+
+    public function resolveCallContactName(
+        ?Entity $call = null,
+        ?Entity $appuntamento = null,
+        ?Entity $parentEntity = null,
+        ?Entity $prospect = null
+    ): string {
+        $leadSync = new LeadProspectSync($this->entityManager);
+        $candidates = [];
+
+        if ($call) {
+            $candidates[] = trim((string) $call->get('parentName'));
+            $candidates[] = trim((string) $call->get('prospectName'));
+        }
+
+        if ($appuntamento) {
+            $candidates[] = trim((string) $appuntamento->get('parentName'));
+            $candidates[] = trim((string) $appuntamento->get('prospectName'));
+
+            if (!$prospect) {
+                $prospect = $this->resolveProspect($appuntamento);
+            }
+
+            if (!$parentEntity) {
+                $parentType = $appuntamento->get('parentType');
+                $parentId = $appuntamento->get('parentId');
+
+                if ($parentType && $parentId) {
+                    $parentEntity = $this->entityManager->getEntityById($parentType, $parentId);
+                }
+            }
+        }
+
+        foreach ($candidates as $candidate) {
+            if ($candidate !== '') {
+                return $candidate;
+            }
+        }
+
+        if ($parentEntity) {
+            $name = $leadSync->resolveDisplayName($parentEntity);
+
+            if ($name) {
+                return $name;
+            }
+        }
+
+        if ($prospect) {
+            $name = $leadSync->resolveDisplayName($prospect);
+
+            if ($name) {
+                return $name;
+            }
+        }
+
+        if ($call) {
+            $prospectId = $call->get('prospectId');
+
+            if ($prospectId) {
+                $linkedProspect = $this->entityManager->getEntityById('Prospect', $prospectId);
+
+                if ($linkedProspect) {
+                    $name = $leadSync->resolveDisplayName($linkedProspect);
+
+                    if ($name) {
+                        return $name;
+                    }
+                }
+            }
+
+            $parentType = $call->get('parentType');
+            $parentId = $call->get('parentId');
+
+            if ($parentType && $parentId) {
+                $parent = $this->entityManager->getEntityById($parentType, $parentId);
+
+                if ($parent) {
+                    $name = $leadSync->resolveDisplayName($parent);
+
+                    if ($name) {
+                        return $name;
+                    }
+                }
+            }
+
+            $parts = explode(' - ', (string) $call->get('name'));
+
+            if (count($parts) >= 4) {
+                $parsed = trim($parts[2]);
+
+                if ($parsed !== '') {
+                    return $parsed;
+                }
+            }
+        }
+
+        if ($appuntamento) {
+            $leadId = $this->resolveLeadId($appuntamento);
+
+            if ($leadId) {
+                $lead = $this->entityManager->getEntityById('Lead', $leadId);
+
+                if ($lead) {
+                    $name = $leadSync->resolveDisplayName($lead);
+
+                    if ($name) {
+                        return $name;
+                    }
+                }
+            }
+        }
+
+        return '';
     }
 
     public function syncCallNameFromLinkedAppuntamento(Entity $call): bool
@@ -984,15 +1115,24 @@ class AppuntamentoPendingCallCreator
     private function buildFollowUpCallName(Entity $sourceCall, string $tipologia): string
     {
         $name = (string) $sourceCall->get('name');
+        $contactName = $this->resolveCallContactName($sourceCall);
 
         if ($name !== '' && $tipologia !== '') {
             $parts = explode(' - ', $name);
 
             if (count($parts) >= 4) {
+                if ($contactName !== '') {
+                    $parts[2] = $contactName;
+                }
+
                 $parts[1] = $tipologia;
 
                 return mb_strtoupper(implode(' - ', $parts), 'UTF-8');
             }
+        }
+
+        if ($contactName !== '') {
+            return mb_strtoupper($name !== '' ? $name : ('RICHIAMO - ' . $contactName), 'UTF-8');
         }
 
         return $name !== '' ? $name : ('RICHIAMO - ' . $sourceCall->getId());
