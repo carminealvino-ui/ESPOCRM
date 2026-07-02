@@ -98,6 +98,20 @@ class PendingCallDateTime
             ->format('Y-m-d H:i:s');
     }
 
+    /** Data/ora default rinvio richiamo: giorno successivo alle 09:00 (Europe/Rome). */
+    public static function defaultRinvioInstant(?\DateTimeImmutable $from = null): \DateTimeImmutable
+    {
+        $timezone = new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE);
+        $base = ($from ?? new \DateTimeImmutable('now', $timezone))->setTimezone($timezone);
+
+        return $base->modify('+1 day')->setTime(9, 0, 0);
+    }
+
+    public static function defaultRinvioDateTimeUtc(): string
+    {
+        return BusinessDateTime::businessToStorage(self::defaultRinvioInstant());
+    }
+
     private static function adjustWeekendToMonday(\DateTimeImmutable $date): \DateTimeImmutable
     {
         $weekday = (int) $date->format('w');

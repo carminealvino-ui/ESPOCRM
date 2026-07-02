@@ -134,7 +134,7 @@
         "dataRichiamo": {
             "notNull": false,
             "type": "datetime",
-            "default": "javascript: return this.dateTime.getDateTimeShiftedFromNow(1, 'week', 15);",
+            "default": "javascript: return this.dateTime.toUtc(this.dateTime.getNowMoment().add(1, 'days').hours(9).minutes(0).seconds(0));",
             "useNumericFormat": true,
             "minuteStep": 30,
             "isCustom": true

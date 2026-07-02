@@ -124,6 +124,33 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         return changed;
     };
 
+    const applyRinvioDefaults = function (model, dateTime) {
+        if (!model) {
+            return false;
+        }
+
+        let changed = false;
+        const tipologia = normalize(model.get('tipologia'));
+
+        if (!model.get('daRichiamare')) {
+            return false;
+        }
+
+        if (tipologia && !normalize(model.get('richiamo'))) {
+            model.set('richiamo', tipologia);
+            changed = true;
+        }
+
+        if (!model.get('dataRichiamo') && dateTime) {
+            const moment = dateTime.getNowMoment().clone().add(1, 'days').hours(9).minutes(0).seconds(0);
+
+            model.set('dataRichiamo', dateTime.toUtc(moment));
+            changed = true;
+        }
+
+        return changed;
+    };
+
     const getDefaultAttributes = function (model, notificationName) {
         if (!isAutoPendingCall(model, notificationName)) {
             return null;
@@ -237,6 +264,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         normalizeMisplacedFields(model);
         ensureContactFields(model);
         applyDefaults(model, notificationName);
+        applyRinvioDefaults(model, null);
 
         const canale = model.get('canaleContatto');
 
@@ -283,6 +311,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
 
     return {
         applyDefaults: applyDefaults,
+        applyRinvioDefaults: applyRinvioDefaults,
         applyWhatsAppTesto: applyWhatsAppTesto,
         applyWhatsAppDescription: applyWhatsAppTesto,
         normalizeMisplacedFields: normalizeMisplacedFields,

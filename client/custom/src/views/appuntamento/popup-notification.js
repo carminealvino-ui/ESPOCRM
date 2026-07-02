@@ -59,15 +59,37 @@ define('custom:views/appuntamento/popup-notification', [
             isComplete: function (model) {
                 const status = model.get('status');
 
-                return !!status && status !== 'Planned';
-            },
-            incompleteMessage: 'Selezionare Stato (Svolto o Non svolto) e cliccare Salva.',
-            getMissingFields: function (model) {
-                if (!model.get('status') || model.get('status') === 'Planned') {
-                    return ['Stato'];
+                if (model.get('daRichiamare')) {
+                    if (!model.get('dataRichiamo') || !model.get('richiamo')) {
+                        return false;
+                    }
+
+                    return true;
                 }
 
-                return [];
+                return !!status && status !== 'Planned';
+            },
+            incompleteMessage: 'Selezionare Stato (Svolto o Non svolto), oppure Rinvia richiamo con data e tipologia.',
+            getMissingFields: function (model) {
+                const missing = [];
+
+                if (model.get('daRichiamare')) {
+                    if (!model.get('dataRichiamo')) {
+                        missing.push('Data Richiamo');
+                    }
+
+                    if (!model.get('richiamo')) {
+                        missing.push('Richiamo');
+                    }
+
+                    return missing;
+                }
+
+                if (!model.get('status') || model.get('status') === 'Planned') {
+                    missing.push('Stato');
+                }
+
+                return missing;
             },
         },
         Task: {
@@ -175,6 +197,7 @@ define('custom:views/appuntamento/popup-notification', [
                                 if (entityType === 'Call') {
                                     CallEsitoDefaults.applyDefaults(model, this.notificationData.name);
                                     CallEsitoDefaults.applyWithRetry(view, this.notificationData.name);
+                                    this.setupRinvioDefaults(view);
                                 }
 
                                 this.setupActionButtonListeners(view);
@@ -344,6 +367,29 @@ define('custom:views/appuntamento/popup-notification', [
                     window.setTimeout(() => this.updateActionButtons(), 50);
                 }
             );
+        }
+
+        setupRinvioDefaults(recordView) {
+            const entityType = this.esitoEntityType || this.notificationData.entityType;
+
+            if (entityType !== 'Call' && entityType !== 'Appuntamento') {
+                return;
+            }
+
+            const model = recordView.model;
+
+            if (!model) {
+                return;
+            }
+
+            const apply = () => {
+                CallEsitoDefaults.applyRinvioDefaults(model, this.getDateTime());
+                CallEsitoDefaults.refreshRecordFields(recordView, ['richiamo', 'dataRichiamo']);
+                this.updateActionButtons();
+            };
+
+            this.listenTo(model, 'change:daRichiamare', apply);
+            apply();
         }
 
         getCurrentStatus() {
