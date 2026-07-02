@@ -419,6 +419,7 @@ define('custom:views/appuntamento/popup-notification', [
             }
 
             const status = (model.get('status') || '').toString();
+            const isPlanned = status === 'Planned' || status === '';
             const allowedMap = {
                 Held: [
                     'Pending',
@@ -443,22 +444,45 @@ define('custom:views/appuntamento/popup-notification', [
 
             const allowed = allowedMap[status] || [];
             const current = (model.get('sottostato') || '').toString();
+            const currentEsito = (model.get('esito') || '').toString();
 
-            if (current && allowed.length && !allowed.includes(current)) {
+            if (isPlanned) {
+                if (current) {
+                    model.set('sottostato', '', {silent: true});
+                }
+
+                if (currentEsito) {
+                    model.set('esito', '', {silent: true});
+                }
+            }
+
+            if (!isPlanned && current && allowed.length && !allowed.includes(current)) {
                 model.set('sottostato', '', {silent: true});
             }
 
             const $select = recordView.$el.find('.field[data-name="sottostato"] select');
+            const $sottostatoField = recordView.$el.find('.field[data-name="sottostato"]');
+            const $esitoField = recordView.$el.find('.field[data-name="esito"]');
+
+            if ($sottostatoField.length) {
+                $sottostatoField.toggleClass('hidden', isPlanned);
+            }
+
+            if ($esitoField.length) {
+                $esitoField.toggleClass('hidden', isPlanned);
+            }
 
             if ($select.length) {
                 $select.find('option').each(function () {
                     const value = (this.value || '').toString();
-                    const visible = value === '' || allowed.length === 0 || allowed.includes(value);
+                    const visible = !isPlanned && (value === '' || allowed.includes(value));
 
                     this.hidden = !visible;
                     this.disabled = !visible;
                 });
             }
+
+            this.updateActionButtons();
         }
 
         getCurrentStatus() {
