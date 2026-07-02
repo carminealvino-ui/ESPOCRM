@@ -18,7 +18,7 @@ class AppuntamentoPendingCallCreator
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
     private const ADMIN_USER_ID = '1';
     private const REMINDER_SECONDS = 0;
-    public const CREATOR_VERSION = '2026-07-01g';
+    public const CREATOR_VERSION = '2026-07-01h';
 
     private ?string $lastFailureReason = null;
 
@@ -1640,28 +1640,142 @@ class AppuntamentoPendingCallCreator
             return false;
         }
 
-        $nota = (string) $call->get('nota');
-        $appuntamentoId = $this->extractAppuntamentoIdFromNota($nota);
-
-        if (!$appuntamentoId || !str_contains($nota, self::NOTA_PREFIX)) {
+        if (!$this->isAutoManagedRichiamoCall($call)) {
             return true;
         }
 
-        $heldSibling = $this->entityManager
-            ->getRDBRepository('Call')
-            ->where([
-                'nota*' => self::NOTA_PREFIX . ' ' . $appuntamentoId,
-                'status' => ['Held', 'Not Held'],
-            ])
-            ->findOne();
+        if ($this->isFollowUpRichiamoCall($call)) {
+            return true;
+        }
+
+        $heldSibling = $this->findHeldCallWithSameAppointmentSignature($call);
 
         if ($heldSibling && $heldSibling->getId() !== $call->getId()) {
             return false;
         }
 
-        $canonicalId = $this->findExistingPlannedPendingCallId($appuntamentoId);
+        $nota = (string) $call->get('nota');
+        $appuntamentoId = $this->extractAppuntamentoIdFromNota($nota);
 
-        return !$canonicalId || $canonicalId === $call->getId();
+        if ($appuntamentoId && str_contains($nota, self::NOTA_PREFIX)) {
+            $heldByAppuntamento = $this->entityManager
+                ->getRDBRepository('Call')
+                ->where([
+                    'nota*' => self::NOTA_PREFIX . ' ' . $appuntamentoId,
+                    'status' => ['Held', 'Not Held'],
+                ])
+                ->findOne();
+
+            if ($heldByAppuntamento && $heldByAppuntamento->getId() !== $call->getId()) {
+                return false;
+            }
+
+            $canonicalId = $this->findExistingPlannedPendingCallId($appuntamentoId);
+
+            if ($canonicalId && $canonicalId !== $call->getId()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function buildCallAppointmentSignature(Entity $call): ?string
+    {
+        $telefono = preg_replace('/\D+/', '', (string) $call->get('telefono')) ?: '';
+
+        if ($telefono === '') {
+            return null;
+        }
+
+        $appointmentLabel = $this->extractAppointmentLabelFromCallName((string) $call->get('name'));
+
+        if ($appointmentLabel === '') {
+            return null;
+        }
+
+        if (str_starts_with($telefono, '39') && strlen($telefono) > 10) {
+            $telefono = substr($telefono, 2);
+        }
+
+        return $appointmentLabel . '|' . $telefono;
+    }
+
+    public function isAutoManagedRichiamoCall(Entity $call): bool
+    {
+        if ($call->getEntityType() !== 'Call') {
+            return false;
+        }
+
+        $nota = (string) $call->get('nota');
+        $tipologia = trim((string) $call->get('tipologia'));
+        $name = strtoupper(trim((string) $call->get('name')));
+
+        return str_contains($nota, self::NOTA_PREFIX)
+            || str_contains($nota, self::NOTA_RICHIAMO_PREFIX)
+            || str_contains($nota, self::NOTA_RICHIAMO_CALL_PREFIX)
+            || str_contains($nota, 'Auto-Rinvio-Call:')
+            || $tipologia === self::TIPOLOGIA
+            || str_contains($name, 'RICHIAMO SU OPPORTUNIT');
+    }
+
+    private function isFollowUpRichiamoCall(Entity $call): bool
+    {
+        $nota = (string) $call->get('nota');
+
+        return str_contains($nota, self::NOTA_RICHIAMO_CALL_PREFIX)
+            || str_contains($nota, 'Auto-Rinvio-Call:');
+    }
+
+    private function extractAppointmentLabelFromCallName(string $name): string
+    {
+        if (preg_match('/^(\d{2}\/\d{2}\/\d{4}\s+\d{2}:\d{2})/', trim($name), $matches)) {
+            return $matches[1];
+        }
+
+        return '';
+    }
+
+    private function findHeldCallWithSameAppointmentSignature(Entity $call): ?Entity
+    {
+        $signature = $this->buildCallAppointmentSignature($call);
+
+        if (!$signature) {
+            return null;
+        }
+
+        [$appointmentLabel, $telefono] = explode('|', $signature, 2);
+        $phoneVariants = array_values(array_unique(array_filter([
+            $telefono,
+            '39' . $telefono,
+        ])));
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'status' => ['Held', 'Not Held'],
+                'tipologia' => self::TIPOLOGIA,
+                'name*' => $appointmentLabel . '%',
+            ])
+            ->find();
+
+        foreach ($collection as $held) {
+            if ($held->getId() === $call->getId()) {
+                continue;
+            }
+
+            $heldDigits = preg_replace('/\D+/', '', (string) $held->get('telefono')) ?: '';
+
+            if ($heldDigits !== '' && str_starts_with($heldDigits, '39') && strlen($heldDigits) > 10) {
+                $heldDigits = substr($heldDigits, 2);
+            }
+
+            if (in_array($heldDigits, $phoneVariants, true)) {
+                return $held;
+            }
+        }
+
+        return null;
     }
 
     public function clearPopupReminders(Entity $call): void

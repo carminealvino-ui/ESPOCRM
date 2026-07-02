@@ -120,8 +120,8 @@ grep -q "call-da-richiamare" "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/
   exit 1
 }
 
-grep -q "shouldShowAutoPendingCallInPopup" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
-  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca shouldShowAutoPendingCallInPopup)" >&2
+grep -q "buildCallAppointmentSignature" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
+  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca buildCallAppointmentSignature)" >&2
   exit 1
 }
 

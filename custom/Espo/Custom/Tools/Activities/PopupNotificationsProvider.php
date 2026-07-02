@@ -50,11 +50,12 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
     {
         $items = array_values(array_filter(
             parent::get($user),
-            fn (Item $item): bool => $this->isItemPopupEligible($item)
+            fn (Item $item): bool => $this->isItemVisible($item)
         ));
 
         $seenReminderIds = [];
         $seenEntityKeys = [];
+        $seenCallSignatures = [];
 
         foreach ($items as $item) {
             $reminderId = $item->getId();
@@ -68,6 +69,8 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             if ($entityKey) {
                 $seenEntityKeys[$entityKey] = true;
             }
+
+            $this->rememberCallSignature($item, $seenCallSignatures);
         }
 
         foreach ($this->findPlannedReminderItems($user) as $item) {
@@ -83,6 +86,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
                 continue;
             }
 
+            if ($this->isDuplicateCallSignature($item, $seenCallSignatures)) {
+                continue;
+            }
+
             $items[] = $item;
 
             if ($reminderId) {
@@ -92,9 +99,11 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             if ($entityKey) {
                 $seenEntityKeys[$entityKey] = true;
             }
+
+            $this->rememberCallSignature($item, $seenCallSignatures);
         }
 
-        foreach ($this->findPastPlannedActivityEntityItems($user, $seenEntityKeys) as $item) {
+        foreach ($this->findPastPlannedActivityEntityItems($user, $seenEntityKeys, $seenCallSignatures) as $item) {
             $items[] = $item;
         }
 
@@ -102,7 +111,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             return $this->compareItems($a, $b);
         });
 
-        return $items;
+        return array_values(array_filter(
+            $items,
+            fn (Item $item): bool => $this->isItemVisible($item)
+        ));
     }
 
     /**
@@ -147,8 +159,11 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
      * @param array<string, bool> $seenEntityKeys
      * @return Item[]
      */
-    private function findPastPlannedActivityEntityItems(User $user, array $seenEntityKeys): array
-    {
+    private function findPastPlannedActivityEntityItems(
+        User $user,
+        array $seenEntityKeys,
+        array &$seenCallSignatures
+    ): array {
         $resultList = [];
         $now = (new DateTime())->format(DateTimeUtil::SYSTEM_DATE_TIME_FORMAT);
 
@@ -159,7 +174,8 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
                     $entityType,
                     $statusList,
                     $now,
-                    $seenEntityKeys
+                    $seenEntityKeys,
+                    $seenCallSignatures
                 );
             } catch (Throwable $e) {
                 $this->log->error('PopupNotificationsProvider past planned query failed for ' . $entityType, [
@@ -187,7 +203,8 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         string $entityType,
         array $statusList,
         string $now,
-        array &$seenEntityKeys
+        array &$seenEntityKeys,
+        array &$seenCallSignatures
     ): array {
         if (!$this->entityManager->hasRepository($entityType)) {
             return [];
@@ -213,7 +230,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             ->find();
 
         foreach ($collection as $entity) {
-            $item = $this->buildEntityItemIfNew($entity, $seenEntityKeys);
+            $item = $this->buildEntityItemIfNew($entity, $seenEntityKeys, $seenCallSignatures);
 
             if ($item !== null) {
                 $resultList[] = $item;
@@ -265,8 +282,11 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
     /**
      * @param array<string, bool> $seenEntityKeys
      */
-    private function buildEntityItemIfNew(Entity $entity, array &$seenEntityKeys): ?Item
-    {
+    private function buildEntityItemIfNew(
+        Entity $entity,
+        array &$seenEntityKeys,
+        array &$seenCallSignatures
+    ): ?Item {
         $entityKey = $this->getEntityKey($entity->getEntityType(), $entity->getId());
 
         if (!$entityKey || isset($seenEntityKeys[$entityKey])) {
@@ -285,7 +305,17 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             return null;
         }
 
+        $signature = $this->getCallSignatureForEntity($entity);
+
+        if ($signature && isset($seenCallSignatures[$signature])) {
+            return null;
+        }
+
         $seenEntityKeys[$entityKey] = true;
+
+        if ($signature) {
+            $seenCallSignatures[$signature] = true;
+        }
 
         return new Item(
             $this->buildPastPlannedItemId($entity->getEntityType(), $entity->getId()),
@@ -351,6 +381,78 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         return $dateStart <= PendingCallDateTime::popupEligibilityCutoff();
+    }
+
+    private function isItemVisible(Item $item): bool
+    {
+        $data = $item->getData();
+
+        if (!is_object($data)) {
+            return true;
+        }
+
+        $entityType = $data->entityType ?? null;
+        $entityId = $data->id ?? null;
+
+        if ($entityType === 'Call' && $entityId) {
+            $entity = $this->entityManager->getEntityById('Call', $entityId);
+
+            if (!$entity) {
+                return false;
+            }
+
+            return $this->isCallPopupVisible($entity);
+        }
+
+        return $this->isItemPopupEligible($item);
+    }
+
+    /**
+     * @param array<string, bool> $seenCallSignatures
+     */
+    private function rememberCallSignature(Item $item, array &$seenCallSignatures): void
+    {
+        $signature = $this->getCallSignatureForItem($item);
+
+        if ($signature) {
+            $seenCallSignatures[$signature] = true;
+        }
+    }
+
+    /**
+     * @param array<string, bool> $seenCallSignatures
+     */
+    private function isDuplicateCallSignature(Item $item, array $seenCallSignatures): bool
+    {
+        $signature = $this->getCallSignatureForItem($item);
+
+        return $signature !== null && isset($seenCallSignatures[$signature]);
+    }
+
+    private function getCallSignatureForItem(Item $item): ?string
+    {
+        $data = $item->getData();
+
+        if (!is_object($data) || ($data->entityType ?? null) !== 'Call' || !($data->id ?? null)) {
+            return null;
+        }
+
+        $entity = $this->entityManager->getEntityById('Call', (string) $data->id);
+
+        return $entity ? $this->getCallSignatureForEntity($entity) : null;
+    }
+
+    private function getCallSignatureForEntity(Entity $entity): ?string
+    {
+        if ($entity->getEntityType() !== 'Call') {
+            return null;
+        }
+
+        if (!$this->callCreator->isAutoManagedRichiamoCall($entity)) {
+            return null;
+        }
+
+        return $this->callCreator->buildCallAppointmentSignature($entity);
     }
 
     private function isItemPopupEligible(Item $item): bool
