@@ -106,8 +106,8 @@ grep -q "applyRinvioToEntity" "${CRM_ROOT}/custom/Espo/Custom/Services/Appuntame
   exit 1
 }
 
-grep -q "getDaRichiamareLabel" "${CRM_ROOT}/client/custom/src/helpers/call-esito-popup-defaults.js" || {
-  echo "ERRORE: call-esito-popup-defaults.js non aggiornato (manca getDaRichiamareLabel)" >&2
+grep -q "getDaRichiamareLabel" "${CRM_ROOT}/client/custom/src/views/fields/call-da-richiamare.js" || {
+  echo "ERRORE: call-da-richiamare.js non aggiornato (manca getDaRichiamareLabel)" >&2
   exit 1
 }
 

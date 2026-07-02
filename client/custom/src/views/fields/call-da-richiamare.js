@@ -1,9 +1,16 @@
 define('custom:views/fields/call-da-richiamare', [
     'views/fields/bool',
-    'custom:helpers/call-esito-popup-defaults',
-], function (Dep, CallEsitoDefaultsModule) {
+], function (Dep) {
 
-    const CallEsitoDefaults = CallEsitoDefaultsModule.default || CallEsitoDefaultsModule;
+    const getDaRichiamareLabel = function (status) {
+        status = (status || '').toString().trim();
+
+        if (status === 'Held' || status === 'Not Held') {
+            return 'Crea nuova chiamata';
+        }
+
+        return 'Rinvia richiamo';
+    };
 
     return Dep.extend({
 
@@ -16,13 +23,16 @@ define('custom:views/fields/call-da-richiamare', [
         },
 
         translateFieldLabel: function () {
-            return CallEsitoDefaults.getDaRichiamareLabel(this.model.get('status'));
+            return getDaRichiamareLabel(this.model.get('status'));
         },
 
         updateDynamicLabel: function () {
             const label = this.translateFieldLabel();
 
-            this.$label && this.$label.text(label);
+            if (this.$label) {
+                this.$label.text(label);
+            }
+
             this.$el.find('label').first().text(label);
         },
 
