@@ -24,6 +24,15 @@ use Throwable;
 class PopupNotificationsProvider extends BasePopupNotificationsProvider
 {
     /**
+     * Entità escluse dai popup promemoria.
+     *
+     * @var string[]
+     */
+    private const BLOCKED_POPUP_ENTITY_TYPES = [
+        'Disponibilita',
+    ];
+
+    /**
      * @var array<string, string[]>
      */
     private const PLANNED_STATUS_BY_ENTITY_TYPE = [
@@ -250,6 +259,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             return null;
         }
 
+        if (in_array($entityType, self::BLOCKED_POPUP_ENTITY_TYPES, true)) {
+            return null;
+        }
+
         $entity = $this->entityManager->getEntityById($entityType, $entityId);
 
         if (!$entity || !$this->isPlannedActivity($entity) || !$this->userCanSeeActivity($entity, $userId)) {
@@ -393,6 +406,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
         $entityType = $data->entityType ?? null;
         $entityId = $data->id ?? null;
+
+        if ($entityType && in_array($entityType, self::BLOCKED_POPUP_ENTITY_TYPES, true)) {
+            return false;
+        }
 
         if ($entityType === 'Call' && $entityId) {
             $entity = $this->entityManager->getEntityById('Call', $entityId);
