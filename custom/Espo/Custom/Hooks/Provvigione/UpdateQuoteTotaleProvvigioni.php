@@ -6,6 +6,7 @@ use Espo\Core\Hook\Hook\AfterRemove;
 use Espo\Core\Hook\Hook\AfterSave;
 use Espo\Custom\Services\QuoteTotaleProvvigioniService;
 use Espo\ORM\Entity;
+use Espo\ORM\Repository\Option\RemoveOptions;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
@@ -24,7 +25,7 @@ class UpdateQuoteTotaleProvvigioni implements AfterSave, AfterRemove
         $this->sync($entity);
     }
 
-    public function afterRemove(Entity $entity): void
+    public function afterRemove(Entity $entity, RemoveOptions $options): void
     {
         $this->sync($entity);
     }
