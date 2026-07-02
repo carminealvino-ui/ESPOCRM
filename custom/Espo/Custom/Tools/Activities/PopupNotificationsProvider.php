@@ -206,7 +206,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
                 'assignedUserId' => $userId,
                 $dateField . '<=' => $popupCutoff,
             ])
-            ->order($dateField, 'ASC')
+            ->order($dateField, 'DESC')
             ->limit(0, 50)
             ->find();
 
@@ -405,7 +405,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
     private function compareItems(Item $a, Item $b): int
     {
-        $dateCompare = $this->getItemSortTimestamp($a) <=> $this->getItemSortTimestamp($b);
+        $dateCompare = $this->getItemSortTimestamp($b) <=> $this->getItemSortTimestamp($a);
 
         if ($dateCompare !== 0) {
             return $dateCompare;
@@ -416,17 +416,48 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
     private function getItemSortTimestamp(Item $item): int
     {
+        $data = $item->getData();
+        $entityType = $data->entityType ?? null;
+
+        if ($entityType === 'Call') {
+            $name = (string) ($data->name ?? '');
+            $timestamp = $this->parseItalianDateTimeFromCallName($name);
+
+            if ($timestamp !== null) {
+                return $timestamp;
+            }
+        }
+
         $date = $this->getItemSortDate($item);
 
         if ($date === '') {
-            return PHP_INT_MAX;
+            return 0;
         }
 
         try {
             return (new DateTime($date))->getTimestamp();
         } catch (\Throwable) {
-            return PHP_INT_MAX;
+            return 0;
         }
+    }
+
+    private function parseItalianDateTimeFromCallName(string $name): ?int
+    {
+        if (!preg_match('/^(\d{2}\/\d{2}\/\d{4})\s+(\d{2}:\d{2})/', $name, $matches)) {
+            return null;
+        }
+
+        $parsed = \DateTimeImmutable::createFromFormat(
+            'd/m/Y H:i',
+            $matches[1] . ' ' . $matches[2],
+            new \DateTimeZone('Europe/Rome')
+        );
+
+        if (!$parsed) {
+            return null;
+        }
+
+        return $parsed->getTimestamp();
     }
 
     /**

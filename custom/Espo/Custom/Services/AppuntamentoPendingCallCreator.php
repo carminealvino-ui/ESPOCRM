@@ -18,7 +18,7 @@ class AppuntamentoPendingCallCreator
     private const TIPOLOGIA = 'Richiamo su Opportunità Generata';
     private const ADMIN_USER_ID = '1';
     private const REMINDER_SECONDS = 0;
-    public const CREATOR_VERSION = '2026-07-01b';
+    public const CREATOR_VERSION = '2026-07-01c';
 
     private ?string $lastFailureReason = null;
 
@@ -692,6 +692,23 @@ class AppuntamentoPendingCallCreator
         return true;
     }
 
+    public function syncCallNameFromLinkedAppuntamento(Entity $call): bool
+    {
+        $appuntamentoId = $this->extractAppuntamentoIdFromNota((string) $call->get('nota'));
+
+        if (!$appuntamentoId) {
+            return false;
+        }
+
+        $appuntamento = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
+
+        if (!$appuntamento) {
+            return false;
+        }
+
+        return $this->syncCallNameFromAppuntamento($call, $appuntamento);
+    }
+
     public function applyRinvioDefaultsToEntity(Entity $call): void
     {
         if (!$call->get('daRichiamare')) {
@@ -752,6 +769,8 @@ class AppuntamentoPendingCallCreator
             'dataRichiamo' => null,
             'nota' => $nota !== '' ? $nota . "\n" . $rinvioLine : $rinvioLine,
         ]);
+
+        $this->syncCallNameFromLinkedAppuntamento($call);
 
         return true;
     }

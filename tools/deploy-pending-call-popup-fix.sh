@@ -101,8 +101,8 @@ for rel in "${FILES[@]}"; do
   echo "OK ${rel}"
 done
 
-grep -q "applyRinvioToEntity" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
-  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca applyRinvioToEntity)" >&2
+grep -q "syncCallNameFromLinkedAppuntamento" "${CRM_ROOT}/custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php" || {
+  echo "ERRORE: AppuntamentoPendingCallCreator.php non aggiornato (manca syncCallNameFromLinkedAppuntamento)" >&2
   exit 1
 }
 
