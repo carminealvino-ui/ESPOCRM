@@ -87,6 +87,7 @@ $remindersSynced = 0;
 $namesFixed = 0;
 $namesStillBroken = 0;
 $popupSuppressed = 0;
+$duplicatesRemoved = 0;
 
 foreach ($callsById as $call) {
     $nota = (string) $call->get('nota');
@@ -178,14 +179,20 @@ foreach ($callsById as $call) {
         } else {
             $creator->clearPopupReminders($call);
             $popupSuppressed++;
-            echo 'SUPPRESS ' . $call->getId() . PHP_EOL;
+            if ($creator->isAutoManagedRichiamoCall($call)) {
+                $entityManager->removeEntity($call, ['skipAcl' => true]);
+                $duplicatesRemoved++;
+                echo 'DELETE DUPLICATE ' . $call->getId() . PHP_EOL;
+            } else {
+                echo 'SUPPRESS ' . $call->getId() . PHP_EOL;
+            }
         }
     } else {
         $creator->clearPopupReminders($call);
     }
 }
 
-echo PHP_EOL . "Aggiornate: {$updated}, saltate: {$skipped}, nomi corretti: {$namesFixed}, nomi ancora senza contatto: {$namesStillBroken}, promemoria popup: {$remindersSynced}, popup soppressi (duplicati): {$popupSuppressed}" . PHP_EOL;
+echo PHP_EOL . "Aggiornate: {$updated}, saltate: {$skipped}, nomi corretti: {$namesFixed}, nomi ancora senza contatto: {$namesStillBroken}, promemoria popup: {$remindersSynced}, popup soppressi (duplicati): {$popupSuppressed}, duplicati rimossi: {$duplicatesRemoved}" . PHP_EOL;
 
 function isAutoPendingCall(Entity $call): bool
 {
