@@ -463,13 +463,17 @@ define('custom:views/appuntamento/popup-notification', [
             const $select = recordView.$el.find('.field[data-name="sottostato"] select');
             const $sottostatoField = recordView.$el.find('.field[data-name="sottostato"]');
             const $esitoField = recordView.$el.find('.field[data-name="esito"]');
+            const $sottostatoCell = $sottostatoField.closest('.cell, .field-container');
+            const $esitoCell = $esitoField.closest('.cell, .field-container');
 
-            if ($sottostatoField.length) {
+            if ($sottostatoField.length || $sottostatoCell.length) {
                 $sottostatoField.toggleClass('hidden', isPlanned);
+                $sottostatoCell.toggleClass('hidden', isPlanned);
             }
 
-            if ($esitoField.length) {
+            if ($esitoField.length || $esitoCell.length) {
                 $esitoField.toggleClass('hidden', isPlanned);
+                $esitoCell.toggleClass('hidden', isPlanned);
             }
 
             if ($select.length) {
@@ -480,6 +484,40 @@ define('custom:views/appuntamento/popup-notification', [
                     this.hidden = !visible;
                     this.disabled = !visible;
                 });
+            }
+
+            const sottostatoView = recordView.getFieldView && recordView.getFieldView('sottostato');
+            const selectize = sottostatoView && sottostatoView.selectize;
+
+            if (selectize) {
+                if (!sottostatoView.__allSottostatoOptions) {
+                    sottostatoView.__allSottostatoOptions = JSON.parse(JSON.stringify(selectize.options || {}));
+                }
+
+                const allOptions = sottostatoView.__allSottostatoOptions || {};
+                const currentValue = (selectize.getValue && selectize.getValue()) || '';
+
+                selectize.clearOptions();
+
+                if (allOptions['']) {
+                    selectize.addOption(allOptions['']);
+                } else {
+                    selectize.addOption({value: '', text: ''});
+                }
+
+                if (!isPlanned) {
+                    allowed.forEach(value => {
+                        if (allOptions[value]) {
+                            selectize.addOption(allOptions[value]);
+                        } else {
+                            selectize.addOption({value: value, text: value});
+                        }
+                    });
+                }
+
+                const keepCurrent = !isPlanned && currentValue && allowed.includes(currentValue);
+                selectize.setValue(keepCurrent ? currentValue : '', true);
+                selectize.refreshOptions(false);
             }
 
             this.updateActionButtons();
