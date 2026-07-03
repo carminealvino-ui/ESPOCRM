@@ -240,6 +240,50 @@
     margin-bottom: 6px;
 }
 
+.crm-kpi-panel-alerts-avvisi .crm-kpi-panel-note {
+    margin-bottom: 8px;
+    font-size: 10px;
+}
+
+.crm-kpi-panel-alerts-criticita {
+    border-color: #d9534f;
+}
+
+.crm-kpi-criticita-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.crm-kpi-panel-criticita-entity {
+    border: 1px solid #d9534f;
+    border-radius: 6px;
+    padding: 8px 10px;
+    background: rgba(217, 83, 79, 0.04);
+    min-height: 0;
+}
+
+.crm-kpi-panel-criticita-entity .crm-kpi-panel-subtitle {
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #c9302c;
+}
+
+.crm-kpi-alert-criticita {
+    border-color: rgba(217, 83, 79, 0.45);
+}
+
+.crm-kpi-alert-criticita-active {
+    border-color: #d9534f;
+    background: rgba(217, 83, 79, 0.1);
+}
+
+.crm-kpi-criticita-empty {
+    padding: 4px 0;
+    font-size: 0.78rem;
+}
+
 .crm-kpi-panel-pipeline {
     margin-bottom: 0;
     padding: 8px 10px;
@@ -390,6 +434,10 @@
     }
 
     .crm-kpi-yields-row {
+        grid-template-columns: 1fr;
+    }
+
+    .crm-kpi-criticita-row {
         grid-template-columns: 1fr;
     }
 

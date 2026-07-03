@@ -29,6 +29,8 @@
         "nonSvolto": "Non Svolto",
         "meseCorrente": "Mese corrente",
         "meseCorrenteSvolto": "Svolti mese corrente",
-        "pianificato": "Pianificato"
+        "pianificato": "Pianificato",
+        "appuntamentiSenzaOpportunita": "Senza opportunità",
+        "appuntamentiConPiuOpportunita": "Con più opportunità"
     }
 }

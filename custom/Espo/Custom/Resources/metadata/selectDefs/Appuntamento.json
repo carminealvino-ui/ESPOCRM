@@ -4,6 +4,8 @@
         "svolto": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\Svolto",
         "nonSvolto": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\NonSvolto",
         "meseCorrente": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\MeseCorrente",
-        "meseCorrenteSvolto": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\MeseCorrenteSvolto"
+        "meseCorrenteSvolto": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\MeseCorrenteSvolto",
+        "appuntamentiSenzaOpportunita": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\AppuntamentiSenzaOpportunita",
+        "appuntamentiConPiuOpportunita": "Espo\\Custom\\Classes\\Select\\Appuntamento\\PrimaryFilters\\AppuntamentiConPiuOpportunita"
     }
 }

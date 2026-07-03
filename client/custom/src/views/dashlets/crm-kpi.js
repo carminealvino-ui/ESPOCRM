@@ -91,7 +91,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     provvigioni: this.mapProvvigioniTile(tiles.provvigioni),
                 },
                 alertsAvvisi: this.mapAlerts(summary.alerts, 'avvisi'),
-                alertsCriticita: this.mapAlerts(summary.alerts, 'criticita'),
+                criticitaBoxes: this.mapCriticitaBoxes(summary.alerts),
                 yieldsByWeekday: this.mapYieldRows(summary.yieldsByWeekday),
                 yieldsByWeek: this.mapYieldRows(summary.yieldsByWeek),
                 yieldColumns: summary.yieldColumns || this.getDefaultYieldColumns(),
@@ -212,8 +212,31 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                         label: alert.label,
                         value: alert.value,
                         meta: alert.meta || null,
+                        entity: alert.entity || null,
                     };
                 });
+        },
+
+        mapCriticitaBoxes: function (alerts) {
+            const entities = [
+                {key: 'appuntamenti', title: 'Appuntamenti'},
+                {key: 'opportunita', title: 'Opportunità'},
+                {key: 'contratti', title: 'Contratti'},
+                {key: 'chiamate', title: 'Chiamate'},
+            ];
+
+            const criticita = this.mapAlerts(alerts, 'criticita');
+
+            return entities.map(entity => {
+                const items = criticita.filter(alert => (alert.entity || '') === entity.key);
+
+                return {
+                    key: entity.key,
+                    title: entity.title,
+                    alerts: items,
+                    hasAlerts: items.length > 0,
+                };
+            });
         },
 
         mapYieldRows: function (rows) {
@@ -535,21 +558,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
         actionOpenAlert: function (data) {
             const key = data && data.key;
-            const period = this.getOption('period') || 'currentMonth';
-
-            if (key === 'opportunityWithoutPhoneFollowUp') {
-                const filter = period === 'previousMonth'
-                    ? 'senzaRiscontroMesePrecedente'
-                    : 'senzaRiscontroPeriodo';
-
-                this.getRouter().navigate(
-                    this.buildEntityListUrl('Opportunity', filter),
-                    {trigger: true}
-                );
-
-                return;
-            }
-
             const alerts = (this.summary && this.summary.alerts) || [];
             const alert = alerts.find(function (item) {
                 return item.key === key;

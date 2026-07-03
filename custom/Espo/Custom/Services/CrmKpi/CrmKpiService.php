@@ -1091,7 +1091,9 @@ class CrmKpiService
     private function getAlertsSafe(?string $from, ?string $to, ?string $productBrandId): array
     {
         try {
-            return (new Alerts($this->entityManager))->build($from, $to, $productBrandId);
+            $built = (new Alerts($this->entityManager))->build($from, $to, $productBrandId);
+
+            return array_merge($built->avvisi, $built->criticita);
         } catch (\Throwable) {
             return [];
         }

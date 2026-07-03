@@ -7,6 +7,7 @@
         "senzaRiscontroTelefonico": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\SenzaRiscontroTelefonico",
         "senzaRiscontroPeriodo": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\SenzaRiscontroPeriodo",
         "senzaRiscontroMesePrecedente": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\SenzaRiscontroMesePrecedente",
+        "senzaInvioWhatsapp": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\SenzaInvioWhatsapp",
         "contrattiBacklog": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\ContrattiBacklog",
         "contrattiInLavorazione": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\ContrattiInLavorazione",
         "installatoPeriodo": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\InstallatoPeriodo",

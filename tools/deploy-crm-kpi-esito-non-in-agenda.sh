@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# KPI: rese giorno/settimana + esito "Appuntamento non in agenda" come annullato.
+# KPI: rese, avvisi totali, criticità per entità.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-esito-non-in-agenda-9999/tools/deploy-crm-kpi-esito-non-in-agenda.sh?t=$(date +%s)" | bash
@@ -35,6 +35,19 @@ FILES=(
   "custom/Espo/Custom/Tools/CrmKpi/Alerts.php"
   "custom/Espo/Custom/Tools/CrmKpi/FunnelBuilder.php"
   "custom/Espo/Custom/Tools/CrmKpi/YieldBuilder.php"
+  "custom/Espo/Custom/Classes/Select/Appuntamento/PrimaryFilters/AppuntamentiSenzaOpportunita.php"
+  "custom/Espo/Custom/Classes/Select/Appuntamento/PrimaryFilters/AppuntamentiConPiuOpportunita.php"
+  "custom/Espo/Custom/Classes/Select/Opportunity/PrimaryFilters/SenzaInvioWhatsapp.php"
+  "custom/Espo/Custom/Classes/Select/Call/PrimaryFilters/RichiamiPianificati.php"
+  "custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiSospesiFinanziamento.php"
+  "custom/Espo/Custom/Resources/metadata/selectDefs/Appuntamento.json"
+  "custom/Espo/Custom/Resources/metadata/selectDefs/Opportunity.json"
+  "custom/Espo/Custom/Resources/metadata/selectDefs/Call.json"
+  "custom/Espo/Custom/Resources/metadata/selectDefs/Quote.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Appuntamento.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Call.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
 )
 
 for rel in "${FILES[@]}"; do

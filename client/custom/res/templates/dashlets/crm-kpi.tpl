@@ -169,6 +169,7 @@
                 <div class="crm-kpi-alerts-row">
                     <div class="crm-kpi-panel crm-kpi-panel-alerts crm-kpi-panel-alerts-avvisi">
                         <div class="crm-kpi-panel-title">Avvisi</div>
+                        <div class="crm-kpi-panel-note text-muted small">Valori totali (non filtrati per periodo)</div>
                         <div class="crm-kpi-alerts">
                             {{#each alertsAvvisi}}
                                 <div class="crm-kpi-alert{{#if value}} crm-kpi-alert-warn{{/if}}" data-action="openAlert" data-key="{{key}}">
@@ -185,16 +186,27 @@
                     </div>
                     <div class="crm-kpi-panel crm-kpi-panel-alerts crm-kpi-panel-alerts-criticita">
                         <div class="crm-kpi-panel-title">Criticità</div>
-                        <div class="crm-kpi-alerts">
-                            {{#each alertsCriticita}}
-                                <div class="crm-kpi-alert{{#if value}} crm-kpi-alert-warn{{/if}}" data-action="openAlert" data-key="{{key}}">
-                                    <span class="crm-kpi-alert-value">{{value}}</span>
-                                    <span class="crm-kpi-alert-body">
-                                        <span class="crm-kpi-alert-label">{{label}}</span>
-                                        {{#if meta}}
-                                            <span class="crm-kpi-alert-meta">{{meta}}</span>
+                        <div class="crm-kpi-criticita-row">
+                            {{#each criticitaBoxes}}
+                                <div class="crm-kpi-panel crm-kpi-panel-criticita-entity">
+                                    <div class="crm-kpi-panel-subtitle">{{title}}</div>
+                                    <div class="crm-kpi-alerts">
+                                        {{#if hasAlerts}}
+                                            {{#each alerts}}
+                                                <div class="crm-kpi-alert crm-kpi-alert-criticita{{#if value}} crm-kpi-alert-criticita-active{{/if}}" data-action="openAlert" data-key="{{key}}">
+                                                    <span class="crm-kpi-alert-value">{{value}}</span>
+                                                    <span class="crm-kpi-alert-body">
+                                                        <span class="crm-kpi-alert-label">{{label}}</span>
+                                                        {{#if meta}}
+                                                            <span class="crm-kpi-alert-meta">{{meta}}</span>
+                                                        {{/if}}
+                                                    </span>
+                                                </div>
+                                            {{/each}}
+                                        {{else}}
+                                            <div class="crm-kpi-criticita-empty text-muted small">Nessuna criticità</div>
                                         {{/if}}
-                                    </span>
+                                    </div>
                                 </div>
                             {{/each}}
                         </div>
