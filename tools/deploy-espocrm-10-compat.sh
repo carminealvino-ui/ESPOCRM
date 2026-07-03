@@ -13,6 +13,7 @@ BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 STAMP=$(date +%Y%m%d-%H%M%S)
 
 FILES=(
+  "custom/Espo/Custom/Binding.php"
   "custom/Espo/Custom/Controllers/CallStandardTesto.php"
   "custom/Espo/Custom/Controllers/Appuntamento.php"
   "custom/Espo/Custom/Controllers/InvitoAFatturare.php"
@@ -21,6 +22,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Quote/BeforeSave.php"
   "custom/Espo/Custom/Hooks/Provvigione/BeforeSave.php"
   "custom/Espo/Custom/Hooks/Prospect/SyncPlannedAppointments.php"
+  "custom/Espo/Custom/Tools/Notification/RecordService.php"
 )
 
 echo "==> Deploy EspoCRM 10 compat (${BRANCH}) in ${CRM_ROOT}"
