@@ -24,6 +24,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Provvigione/BeforeSave.php"
   "custom/Espo/Custom/Hooks/Prospect/SyncPlannedAppointments.php"
   "custom/Espo/Custom/Hooks/Call/ApplyBeforeSaveDefaults.php"
+  "custom/Espo/Custom/Hooks/Call/SetDataRiscontroOnComplete.php"
   "custom/Espo/Custom/Resources/metadata/formula/Call.json"
   "custom/Espo/Custom/Tools/Notification/RecordService.php"
   "tools/diagnose-notification-count.php"
