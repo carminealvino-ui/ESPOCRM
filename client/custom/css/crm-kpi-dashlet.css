@@ -259,7 +259,7 @@
 
 .crm-kpi-criticita-row {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
 }
 
@@ -433,6 +433,10 @@
 
     .crm-kpi-tile-title {
         font-size: 0.9rem;
+    }
+
+    .crm-kpi-criticita-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
