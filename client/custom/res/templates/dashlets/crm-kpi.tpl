@@ -191,9 +191,9 @@
                                 <div class="crm-kpi-panel crm-kpi-panel-criticita-entity">
                                     <div class="crm-kpi-panel-subtitle">{{title}}</div>
                                     <div class="crm-kpi-alerts">
-                                        {{#if hasAlerts}}
-                                            {{#each alerts}}
-                                                <div class="crm-kpi-alert crm-kpi-alert-criticita{{#if value}} crm-kpi-alert-criticita-active{{/if}}" data-action="openAlert" data-key="{{key}}">
+                                        {{#each alerts}}
+                                            {{#if value}}
+                                                <div class="crm-kpi-alert crm-kpi-alert-criticita crm-kpi-alert-criticita-active" data-action="openAlert" data-key="{{key}}">
                                                     <span class="crm-kpi-alert-value">{{value}}</span>
                                                     <span class="crm-kpi-alert-body">
                                                         <span class="crm-kpi-alert-label">{{label}}</span>
@@ -202,8 +202,9 @@
                                                         {{/if}}
                                                     </span>
                                                 </div>
-                                            {{/each}}
-                                        {{else}}
+                                            {{/if}}
+                                        {{/each}}
+                                        {{#if showEmpty}}
                                             <div class="crm-kpi-criticita-empty text-muted small">Nessuna criticità</div>
                                         {{/if}}
                                     </div>

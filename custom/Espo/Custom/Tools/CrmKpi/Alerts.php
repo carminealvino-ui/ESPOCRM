@@ -104,7 +104,7 @@ class Alerts
      */
     private function buildCriticita(?string $productBrandId): array
     {
-        return [
+        $items = [
             $this->alert(
                 'contractsSuspendedFinancing',
                 'Contratti Sospesi Finanziamento',
@@ -124,6 +124,11 @@ class Alerts
                 'contratti'
             ),
         ];
+
+        return array_values(array_filter(
+            $items,
+            static fn (object $item): bool => (int) ($item->value ?? 0) > 0
+        ));
     }
 
     private function alert(

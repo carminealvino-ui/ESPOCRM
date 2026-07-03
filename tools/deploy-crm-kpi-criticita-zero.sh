@@ -29,6 +29,8 @@ backup_if_exists() {
 
 FILES=(
   "client/custom/src/views/dashlets/crm-kpi.js"
+  "client/custom/res/templates/dashlets/crm-kpi.tpl"
+  "custom/Espo/Custom/Tools/CrmKpi/Alerts.php"
 )
 
 for rel in "${FILES[@]}"; do

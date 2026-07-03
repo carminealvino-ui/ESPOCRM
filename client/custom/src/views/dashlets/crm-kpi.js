@@ -237,6 +237,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     title: entity.title,
                     alerts: items,
                     hasAlerts: items.length > 0,
+                    showEmpty: items.length === 0,
                 };
             });
         },
