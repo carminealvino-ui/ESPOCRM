@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# KPI: percentuali Valore produzione / Provvigioni / Contratti sempre sui lordi.
+# KPI: percentuali Contratti / Valore / Provvigioni (lordi 100%, doppia % su fin./netti).
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-percentuali-lordi-9999/tools/deploy-crm-kpi-percentuali-lordi.sh?t=$(date +%s)" | bash

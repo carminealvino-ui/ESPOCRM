@@ -480,21 +480,32 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         /**
-         * Contratti / valore / provvigioni — percentuali sempre sulla riga lordi (totali).
+         * Contratti / valore / provvigioni:
+         * lordi 100% · recessi/totali % sui lordi · fin./netti % lordi e % totali.
          *
          * @param {Function} formatValue
          */
         mapQuoteMetricTile: function (tile, rows, formatValue) {
             const source = tile || {};
-            const baseLordi = Number(source.totali || 0);
+            const baseLordi = Number(source.lordi || 0);
+            const baseTotali = Number(source.totali || 0);
 
             return rows.map(def => {
                 const raw = Number(source[def.key] || 0);
                 let value = formatValue.call(this, raw);
+                const percentLordi = this.formatPercentOf(raw, baseLordi);
 
-                if (def.key !== 'lordi') {
-                    const percent = baseLordi > 0 ? ((raw / baseLordi) * 100).toFixed(1) : '0.0';
-                    value += ' · ' + percent + '%';
+                if (def.key === 'lordi') {
+                    value += ' · ' + percentLordi;
+                } else if (def.key === 'recessi' || def.key === 'totali') {
+                    value += ' · ' + percentLordi + ' sui lordi';
+                } else if (def.key === 'finanziamentiRifiutati' || def.key === 'netti') {
+                    const percentTotali = this.formatPercentOf(raw, baseTotali);
+
+                    value += ' · ' + this.joinPercentDetails([
+                        percentLordi + ' sui lordi',
+                        percentTotali + ' sui totali',
+                    ]);
                 }
 
                 return {
@@ -502,6 +513,17 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     value: value,
                 };
             });
+        },
+
+        formatPercentOf: function (value, base) {
+            const num = Number(value || 0);
+            const den = Number(base || 0);
+
+            if (den <= 0) {
+                return '0.0%';
+            }
+
+            return ((num / den) * 100).toFixed(1) + '%';
         },
 
         getPeriodLabel: function () {
