@@ -12,12 +12,7 @@ use Espo\ORM\EntityManager;
 use Espo\Tools\Notification\RecordService as BaseRecordService;
 use Espo\Tools\Stream\NoteAccessControl;
 use Espo\Tools\User\PreferencesProvider;
-use UnexpectedValueException;
 
-/**
- * EspoCRM 10.0: getNotReadCount() fa is_int() sul risultato COUNT.
- * Con MySQL/PDO il valore arriva spesso come stringa numerica → UnexpectedValueException.
- */
 class RecordService extends BaseRecordService
 {
     public function __construct(
@@ -41,15 +36,6 @@ class RecordService extends BaseRecordService
     }
 
     public function getNotReadCount(User $user): int
-    {
-        try {
-            return parent::getNotReadCount($user);
-        } catch (UnexpectedValueException) {
-            return $this->countUnreadFallback($user);
-        }
-    }
-
-    private function countUnreadFallback(User $user): int
     {
         $userId = $user->getId();
 

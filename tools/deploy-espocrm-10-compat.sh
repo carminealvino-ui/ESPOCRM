@@ -14,6 +14,7 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 
 FILES=(
   "custom/Espo/Custom/Binding.php"
+  "custom/Espo/Custom/Controllers/Notification.php"
   "custom/Espo/Custom/Controllers/CallStandardTesto.php"
   "custom/Espo/Custom/Controllers/Appuntamento.php"
   "custom/Espo/Custom/Controllers/InvitoAFatturare.php"
