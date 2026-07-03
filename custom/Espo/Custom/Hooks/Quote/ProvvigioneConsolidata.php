@@ -39,8 +39,6 @@ class ProvvigioneConsolidata implements AfterSave
             'minusPlus',
             'prezzoListinoIvaEsclusa',
             'prezzoCodiceIvaEsclusa',
-            'margineSuListino',
-            'contattoPersonaleArquati',
         ];
 
         $changed = false;

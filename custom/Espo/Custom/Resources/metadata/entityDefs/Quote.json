@@ -116,27 +116,6 @@
             "type": "currency",
             "isCustom": true
         },
-        "margineSuListino": {
-            "type": "float",
-            "decimalPlaces": 2,
-            "readOnly": true,
-            "isCustom": true
-        },
-        "contattoPersonaleArquati": {
-            "type": "bool",
-            "default": false,
-            "isCustom": true
-        },
-        "integrazionePncPercentuale": {
-            "type": "float",
-            "decimalPlaces": 2,
-            "isCustom": true
-        },
-        "ordineIncompletoAriel": {
-            "type": "bool",
-            "default": false,
-            "isCustom": true
-        },
         "codiceContratto": {
             "type": "varchar",
             "maxLength": 100,

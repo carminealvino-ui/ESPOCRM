@@ -544,20 +544,7 @@ class QuotePricingCalculator
         $totalListino = $this->sumListinoNetFromProductsOnItems($entity);
 
         if ($prezzoListino === null && $totalListino > 0) {
-            $prezzoListino = $totalListino;
             $entity->set('prezzoListinoIvaEsclusa', round($totalListino, 2));
-        }
-
-        if ($prezzoListino !== null && $prezzoListino > 0) {
-            $entity->set(
-                'margineSuListino',
-                round((($imponibile - $prezzoListino) / $prezzoListino) * 100, 2)
-            );
-        } elseif ($totalPrezzoCodice > 0) {
-            $entity->set(
-                'margineSuListino',
-                round((($imponibile - $totalPrezzoCodice) / $totalPrezzoCodice) * 100, 2)
-            );
         }
 
         if (!$entity->get('importoContratto') && $entity->get('grandTotalAmount')) {

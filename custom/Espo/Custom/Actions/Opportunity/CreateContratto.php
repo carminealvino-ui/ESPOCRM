@@ -664,18 +664,6 @@ class CreateContratto
             'prezzoCodiceIvaEsclusa' =>
                 $opportunity->get('prezzoCodiceIvaEsclusa'),
 
-            'margineSuListino' =>
-                $this->resolveMargineSuListino($opportunity, $amount),
-
-            'contattoPersonaleArquati' =>
-                (bool) $opportunity->get('contattoPersonaleArquati'),
-
-            'integrazionePncPercentuale' =>
-                $opportunity->get('integrazionePncPercentuale'),
-
-            'ordineIncompletoAriel' =>
-                (bool) $opportunity->get('ordineIncompletoAriel'),
-
             'minusPlus' =>
                 $this->resolveMinusPlusForQuote($opportunity, $amount),
 

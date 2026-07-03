@@ -64,12 +64,9 @@ class ProvvigioneManager
             'plusvalenza' => $plusvalenza,
             'marginePercentuale' => $margine,
             'numeroPod' => $source?->get('numeroPod') ?? $opportunity?->get('numeroPod'),
-            'contattoPersonaleArquati' => (bool) ($source?->get('contattoPersonaleArquati')
-                ?? $opportunity?->get('contattoPersonaleArquati')),
-            'integrazionePncPercentuale' => $this->floatField($source, 'integrazionePncPercentuale')
-                ?? $this->floatField($opportunity, 'integrazionePncPercentuale'),
-            'ordineIncompletoAriel' => (bool) ($source?->get('ordineIncompletoAriel')
-                ?? $opportunity?->get('ordineIncompletoAriel')),
+            'contattoPersonaleArquati' => (bool) $opportunity?->get('contattoPersonaleArquati'),
+            'integrazionePncPercentuale' => $this->floatField($opportunity, 'integrazionePncPercentuale'),
+            'ordineIncompletoAriel' => (bool) $opportunity?->get('ordineIncompletoAriel'),
         ];
     }
 
@@ -135,14 +132,6 @@ class ProvvigioneManager
         }
 
         $context['plusvalenza'] = $this->floatField($quote, 'minusPlus') ?? $context['plusvalenza'];
-
-        if ($context['marginePercentuale'] !== null && !$quote->get('margineSuListino')) {
-            $quote->set('margineSuListino', $context['marginePercentuale']);
-            $this->entityManager->saveEntity($quote, [
-                'skipHooks' => true,
-                'silent' => true,
-            ]);
-        }
 
         $result = $this->calculator->calculateBest($context);
 
@@ -493,8 +482,7 @@ class ProvvigioneManager
         ?float $imponibile,
         ?float $prezzoListino
     ): ?float {
-        $stored = $this->floatField($source, 'margineSuListino')
-            ?? $this->floatField($opportunity, 'suPrezzoCodice');
+        $stored = $this->floatField($opportunity, 'suPrezzoCodice');
 
         if ($stored !== null) {
             return $stored;
