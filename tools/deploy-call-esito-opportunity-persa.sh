@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Call esito Non interessato → opportunità persa + appuntamento non più Pending.
+# Call esito Non interessato → opportunità persa (+ bonifica retroattiva).
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/call-esito-opportunity-persa-9999/tools/deploy-call-esito-opportunity-persa.sh?t=$(date +%s)" | bash
 #   php clear_cache.php && php rebuild.php
+#   php tools/bonifica-call-esito-opportunity-persa.php --dry-run
+#   php tools/bonifica-call-esito-opportunity-persa.php
 
 set -euo pipefail
 
@@ -14,21 +16,40 @@ BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 STAMP=$(date +%Y%m%d-%H%M%S)
 LOCAL_BACKUP="${CRM_ROOT}/backup/call-esito-opportunity-persa/server-${STAMP}"
 
-REL="custom/Espo/Custom/Hooks/Call/SyncOpportunityFromEsito.php"
-SRC="${CRM_ROOT}/${REL}"
+echo "=== Backup in ${LOCAL_BACKUP} ==="
+mkdir -p "${LOCAL_BACKUP}"
 
-echo "=== Backup ${REL} ==="
-mkdir -p "${LOCAL_BACKUP}/$(dirname "${REL}")"
-if [[ -f "${SRC}" ]]; then
-  cp -a "${SRC}" "${LOCAL_BACKUP}/${REL}"
-  echo "BACKUP ${REL}"
-fi
+backup_if_exists() {
+  local rel="$1"
+  local src="${CRM_ROOT}/${rel}"
+  if [[ -f "${src}" ]]; then
+    mkdir -p "${LOCAL_BACKUP}/$(dirname "${rel}")"
+    cp -a "${src}" "${LOCAL_BACKUP}/${rel}"
+    echo "BACKUP ${rel}"
+  fi
+}
+
+FILES=(
+  "custom/Espo/Custom/Services/CallEsitoOpportunitySync.php"
+  "custom/Espo/Custom/Hooks/Call/SyncOpportunityFromEsito.php"
+  "tools/bonifica-call-esito-opportunity-persa.php"
+)
+
+for rel in "${FILES[@]}"; do
+  backup_if_exists "${rel}"
+done
 
 echo "=== Download da ${BRANCH} ==="
-mkdir -p "$(dirname "${SRC}")"
-curl -fsSL "${BASE}/${REL}?t=${STAMP}" -o "${SRC}"
-echo "OK ${REL}"
+for rel in "${FILES[@]}"; do
+  dest="${CRM_ROOT}/${rel}"
+  mkdir -p "$(dirname "${dest}")"
+  curl -fsSL "${BASE}/${rel}?t=${STAMP}" -o "${dest}"
+  echo "OK ${rel}"
+done
 
 echo ""
 echo "=== Deploy completato ==="
-echo "Poi: cd ${CRM_ROOT} && php clear_cache.php && php rebuild.php"
+echo "Poi:"
+echo "  cd ${CRM_ROOT} && php clear_cache.php && php rebuild.php"
+echo "  php tools/bonifica-call-esito-opportunity-persa.php --dry-run"
+echo "  php tools/bonifica-call-esito-opportunity-persa.php"
