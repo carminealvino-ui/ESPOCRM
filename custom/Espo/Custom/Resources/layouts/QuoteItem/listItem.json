@@ -1,0 +1,37 @@
+[
+    {
+        "name": "name",
+        "align": "left",
+        "width": 30
+    },
+    {
+        "name": "quantity",
+        "align": "left",
+        "width": 8
+    },
+    {
+        "name": "taxes",
+        "align": "left",
+        "width": 8
+    },
+    {
+        "name": "listPrice",
+        "align": "right",
+        "width": 12
+    },
+    {
+        "name": "prezzoCodice",
+        "align": "right",
+        "width": 12
+    },
+    {
+        "name": "unitPrice",
+        "align": "right",
+        "width": 12
+    },
+    {
+        "name": "amount",
+        "align": "right",
+        "width": 12
+    }
+]
