@@ -6,6 +6,7 @@ use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
 use Espo\Core\Controllers\Record;
 use Espo\Custom\Actions\Lead\RepairFromProspect;
+use Espo\ORM\EntityManager;
 
 class Lead extends Record
 {
@@ -24,7 +25,7 @@ class Lead extends Record
             'limit' => isset($data->limit) ? (int) $data->limit : null,
         ];
 
-        $entityManager = $this->getContainer()->get('entityManager');
+        $entityManager = $this->injectableFactory->create(EntityManager::class);
 
         $action = new RepairFromProspect($entityManager);
 

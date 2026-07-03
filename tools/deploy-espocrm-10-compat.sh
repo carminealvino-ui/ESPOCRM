@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Compatibilità EspoCRM 10: migrazione controller/hook da classi Base rimosse in v10.
+# Compatibilità EspoCRM 10: migrazione controller/hook da API legacy rimosse in v10.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-espocrm-10-compat-9999/tools/deploy-espocrm-10-compat.sh?t=$(date +%s)" | bash
@@ -14,7 +14,12 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 
 FILES=(
   "custom/Espo/Custom/Controllers/CallStandardTesto.php"
+  "custom/Espo/Custom/Controllers/Appuntamento.php"
+  "custom/Espo/Custom/Controllers/InvitoAFatturare.php"
+  "custom/Espo/Custom/Controllers/Opportunity.php"
+  "custom/Espo/Custom/Controllers/Lead.php"
   "custom/Espo/Custom/Hooks/Quote/BeforeSave.php"
+  "custom/Espo/Custom/Hooks/Provvigione/BeforeSave.php"
   "custom/Espo/Custom/Hooks/Prospect/SyncPlannedAppointments.php"
 )
 
@@ -27,11 +32,14 @@ for rel in "${FILES[@]}"; do
   echo "  OK ${rel}"
 done
 
-LEGACY="${CRM_ROOT}/custom/Espo/Custom/Hooks/Provvigione/BeforeSaveLegacy.php"
-if [[ -f "${LEGACY}" ]]; then
-  rm -f "${LEGACY}"
-  echo "  RIMOSSO BeforeSaveLegacy.php (sostituito da AccrualAndAmount)"
-fi
+for legacy in \
+  "${CRM_ROOT}/custom/Espo/Custom/Hooks/Provvigione/BeforeSaveLegacy.php"
+do
+  if [[ -f "${legacy}" ]]; then
+    rm -f "${legacy}"
+    echo "  RIMOSSO $(basename "${legacy}")"
+  fi
+done
 
 cd "${CRM_ROOT}"
 php command.php rebuild

@@ -5,17 +5,16 @@ namespace Espo\Custom\Controllers;
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
 use Espo\Core\Controllers\Record;
-use Espo\Core\InjectableFactory;
+use Espo\Custom\Actions\InvitoAFatturare\GeneraDaProvvigioni;
+use Espo\Custom\Services\InvitoAFatturareManager;
+use Espo\ORM\EntityManager;
 
 class InvitoAFatturare extends Record
 {
     public function postActionGeneraDaProvvigioni(Request $request, Response $response): object
     {
-        /** @var InjectableFactory $injectableFactory */
-        $injectableFactory = $this->getContainer()->get('injectableFactory');
-
-        return $injectableFactory
-            ->create(\Espo\Custom\Actions\InvitoAFatturare\GeneraDaProvvigioni::class)
+        return $this->injectableFactory
+            ->create(GeneraDaProvvigioni::class)
             ->run($request);
     }
 
@@ -28,15 +27,14 @@ class InvitoAFatturare extends Record
             throw new \Exception('ID invito mancante.');
         }
 
-        $entityManager = $this->getContainer()->get('entityManager');
+        $entityManager = $this->injectableFactory->create(EntityManager::class);
         $invito = $entityManager->getEntityById('InvitoAFatturare', $id);
 
         if (!$invito) {
             throw new \Exception('Invito non trovato.');
         }
 
-        $injectableFactory = $this->getContainer()->get('injectableFactory');
-        $manager = $injectableFactory->create(\Espo\Custom\Services\InvitoAFatturareManager::class);
+        $manager = $this->injectableFactory->create(InvitoAFatturareManager::class);
         $manager->emettiInvito($invito);
 
         return (object) [
