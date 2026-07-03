@@ -46,14 +46,9 @@
             "decimalPlaces": 2
         },
         "numberA": {
-            "type": "varchar",
-            "maxLength": 100,
-            "autoincrement": true,
-            "unique": true,
-            "readOnly": true,
             "prefix": "Contratto_",
-            "padLength": 5,
             "nextNumber": 143,
+            "readOnly": true,
             "isCustom": true
         },
         "totalPrezzoCodice": {
