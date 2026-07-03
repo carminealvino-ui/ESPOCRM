@@ -480,34 +480,21 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         /**
-         * Contratti / valore / provvigioni — stessa gerarchia degli Appuntamenti:
-         * lordi (tutti) → recessi % su lordi → totali (dopo recessi, base) → netti.
+         * Contratti / valore / provvigioni — percentuali sempre sulla riga lordi (totali).
          *
          * @param {Function} formatValue
          */
         mapQuoteMetricTile: function (tile, rows, formatValue) {
             const source = tile || {};
-            const baseLordi = Number(source.lordi || 0);
-            const baseTotali = Number(source.totali || 0);
+            const baseLordi = Number(source.totali || 0);
 
             return rows.map(def => {
                 const raw = Number(source[def.key] || 0);
                 let value = formatValue.call(this, raw);
-                let base = null;
-                let isBase = false;
 
-                if (def.key === 'lordi') {
-                    base = null;
-                } else if (def.key === 'recessi') {
-                    base = baseLordi;
-                } else {
-                    base = baseTotali;
-                    isBase = def.key === 'totali';
-                }
-
-                if (base !== null) {
-                    const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
-                    value += ' · ' + percent + '%' + (isBase ? ' (base)' : '');
+                if (def.key !== 'lordi') {
+                    const percent = baseLordi > 0 ? ((raw / baseLordi) * 100).toFixed(1) : '0.0';
+                    value += ' · ' + percent + '%';
                 }
 
                 return {
