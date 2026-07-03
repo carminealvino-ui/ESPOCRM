@@ -17,6 +17,7 @@ class CrmKpiService
         'Annullato dal Consulente',
         'Annullato Azienda',
         'Annullato Call Center',
+        'Appuntamento non in agenda',
     ];
 
     /** @var string[] */
