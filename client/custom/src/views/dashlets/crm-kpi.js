@@ -228,7 +228,9 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             const criticita = this.mapAlerts(alerts, 'criticita');
 
             return entities.map(entity => {
-                const items = criticita.filter(alert => (alert.entity || '') === entity.key);
+                const items = criticita
+                    .filter(alert => (alert.entity || '') === entity.key)
+                    .filter(alert => Number(alert.value || 0) > 0);
 
                 return {
                     key: entity.key,
