@@ -43,3 +43,12 @@ for rel in "${FILES[@]}"; do
 done
 
 echo "=== Fine. Esegui: php clear_cache.php && php rebuild.php (poi Ctrl+Shift+R) ==="
+
+JS="${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js"
+if [[ -f "${JS}" ]]; then
+  if grep -q "kpi-tile-labels-v3" "${JS}" && ! grep -q "sui lordi" "${JS}"; then
+    echo "VERIFICA OK: ${JS}"
+  else
+    echo "ATTENZIONE: verifica manuale ${JS} — attendi 1 min e rilancia lo script"
+  fi
+fi

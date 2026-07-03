@@ -11,7 +11,7 @@ declare(strict_types=1);
 $root = getenv('CRM_ROOT') ?: getcwd();
 
 $checks = [
-    'client/custom/src/views/dashlets/crm-kpi.js' => 'mapValoreProduzioneTile',
+    'client/custom/src/views/dashlets/crm-kpi.js' => 'kpi-tile-labels-v3',
     'client/custom/src/views/dashlets/options/crm-kpi.js' => 'applyCrmKpiFieldLabels',
     'client/custom/res/templates/dashlets/crm-kpi.tpl' => 'Pipeline di vendita',
     'custom/Espo/Custom/Controllers/Appuntamento.php' => 'getActionGetSummary',

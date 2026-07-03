@@ -49,4 +49,22 @@ for rel in "${FILES[@]}"; do
   echo "OK ${rel}"
 done
 
-echo "=== Fine. Esegui: php clear_cache.php && php rebuild.php (poi Ctrl+Shift+R) ==="
+JS="${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js"
+if ! grep -q "kpi-tile-labels-v3" "${JS}"; then
+  echo "ERRORE: crm-kpi.js non contiene la versione attesa (kpi-tile-labels-v3)"
+  exit 1
+fi
+if grep -q "sui lordi" "${JS}"; then
+  echo "ERRORE: crm-kpi.js contiene ancora 'sui lordi' — file vecchio"
+  exit 1
+fi
+echo "VERIFICA OK: crm-kpi.js versione tile corretta"
+
+echo ""
+echo "=== Cache ==="
+cd "${CRM_ROOT}"
+php clear_cache.php
+php rebuild.php
+
+echo ""
+echo "=== Fine. Ctrl+Shift+R sulla dashboard KPI ==="

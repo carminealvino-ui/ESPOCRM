@@ -1,5 +1,7 @@
 define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!espo-funnel-chart'], function (Dep) {
 
+    // kpi-tile-labels-v3: etichette corte, Lordo/Totale corretti, % senza suffissi
+
     return Dep.extend({
 
         name: 'CrmKpi',
