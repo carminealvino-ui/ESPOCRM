@@ -1,5 +1,6 @@
 [
     {
+        "label": "Regola",
         "rows": [
             [
                 {
@@ -25,6 +26,17 @@
             ],
             [
                 {
+                    "name": "description",
+                    "fullWidth": true
+                }
+            ]
+        ]
+    },
+    {
+        "label": "Ambito",
+        "rows": [
+            [
+                {
                     "name": "fornitorePartner"
                 },
                 {
@@ -42,7 +54,12 @@
                     "name": "giorniLiquidazione"
                 },
                 false
-            ],
+            ]
+        ]
+    },
+    {
+        "label": "Calcolo",
+        "rows": [
             [
                 {
                     "name": "percentuale"
@@ -62,7 +79,12 @@
                     "name": "importoFissoPod"
                 },
                 false
-            ],
+            ]
+        ]
+    },
+    {
+        "label": "Fasce",
+        "rows": [
             [
                 {
                     "name": "margineMin"
@@ -89,12 +111,6 @@
                     "name": "podMax"
                 },
                 false
-            ],
-            [
-                {
-                    "name": "description",
-                    "fullWidth": true
-                }
             ]
         ]
     }

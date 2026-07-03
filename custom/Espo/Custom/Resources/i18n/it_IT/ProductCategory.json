@@ -9,5 +9,8 @@
     },
     "tooltips": {
         "gruppoProvvigione": "Raggruppa la categoria per il calcolo delle provvigioni (es. Tende da Sole, Pergole, Vetrate, Clima). Le fasce % per margine si configureranno in un passo successivo."
+    },
+    "links": {
+        "regoleProvvigionali": "Regole provvigioni"
     }
 }

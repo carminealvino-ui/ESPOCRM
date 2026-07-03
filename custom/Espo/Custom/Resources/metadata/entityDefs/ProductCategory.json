@@ -84,6 +84,13 @@
             "entity": "Quote",
             "audited": false,
             "isCustom": true
+        },
+        "regoleProvvigionali": {
+            "type": "hasMany",
+            "foreign": "productCategory",
+            "entity": "RegolaProvvigionale",
+            "audited": false,
+            "isCustom": true
         }
     }
 }

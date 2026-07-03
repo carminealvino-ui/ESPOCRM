@@ -1,12 +1,12 @@
 {
     "labels": {
-        "RegolaProvvigionale": "Regola provvigionale",
-        "RegolaProvvigionali": "Regole provvigionali",
-        "Create RegolaProvvigionale": "Crea regola provvigionale"
+        "RegolaProvvigionale": "Regola provvigioni",
+        "RegolaProvvigionali": "Regole provvigioni",
+        "Create RegolaProvvigionale": "Crea regola provvigioni"
     },
     "fields": {
         "attiva": "Attiva",
-        "priorita": "Priorita",
+        "priorita": "Priorità",
         "regimeProvvigione": "Regime",
         "tipoCalcolo": "Tipo calcolo",
         "tipoProvvigioneRecord": "Tipo record provvigione",
@@ -25,17 +25,48 @@
         "gruppoProvvigione": "Gruppo provvigionale",
         "fornitorePartner": "Fornitore / Partner",
         "productBrand": "Brand",
-        "productCategory": "Categoria prodotto"
+        "productCategory": "Categoria prodotto",
+        "provvigioni": "Provvigioni"
     },
     "options": {
+        "regimeProvvigione": {
+            "ARQUATI_PNC": "ARQUATI PNC",
+            "ARIEL_2026": "Ariel 2026",
+            "GFB_VODAFONE_COEFF": "GFB Vodafone (coefficiente)",
+            "GFB_FASTWEB_POD": "GFB Fastweb (POD)",
+            "GFB_RS_BIMESTRE": "GFB Re Sole (bimestre)",
+            "SOLUTION_ENEL_GETTONE": "Solution Enel (gettone)",
+            "GENERICO": "Generico"
+        },
         "tipoCalcolo": {
             "PercentualeImponibile": "Percentuale su imponibile",
             "PercentualeImponibileAddizionale": "Percentuale + addizionale (es. Ariel 10+5)",
-            "CoefficienteCanone": "Coefficiente x canone mensile",
+            "CoefficienteCanone": "Coefficiente × canone mensile",
             "GettoneFisso": "Gettone fisso",
             "ImportoFissoPod": "Importo fisso per POD",
             "PercentualePlusvalenza": "Percentuale su plusvalenza",
             "PercentualeMargine": "Percentuale su base margine"
+        },
+        "tipoProvvigioneRecord": {
+            "Provvigione Base": "Provvigione base",
+            "Plus Provvigionale": "Plus provvigionale",
+            "Minus Provvigionale": "Minus provvigionale",
+            "Bonus (Sabato-Domenica)": "Bonus sabato-domenica",
+            "Gara (Soglia >2.5k)": "Gara soglia > 2.500 €",
+            "Gara (Soglia >3.5)": "Gara soglia > 3.500 €",
+            "Gara (Soglia >5k)": "Gara soglia > 5.000 €"
+        },
+        "gruppoProvvigione": {
+            "Tende da Sole": "Tende da sole",
+            "Pergole": "Pergole",
+            "Vetrate": "Vetrate",
+            "Clima e altro": "Clima e altro"
         }
+    },
+    "links": {
+        "fornitorePartner": "Fornitore / Partner",
+        "productBrand": "Brand",
+        "productCategory": "Categoria prodotto",
+        "provvigioni": "Provvigioni"
     }
 }

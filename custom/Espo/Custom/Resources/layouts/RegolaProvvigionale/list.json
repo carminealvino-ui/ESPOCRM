@@ -1,26 +1,35 @@
 [
     {
         "name": "name",
+        "link": true,
         "width": 22
     },
     {
         "name": "regimeProvvigione",
-        "width": 14
+        "width": 12
     },
     {
         "name": "tipoCalcolo",
-        "width": 16
-    },
-    {
-        "name": "productBrand",
         "width": 14
     },
     {
+        "name": "tipoProvvigioneRecord",
+        "width": 14
+    },
+    {
+        "name": "gruppoProvvigione",
+        "width": 12
+    },
+    {
+        "name": "productBrand",
+        "width": 12
+    },
+    {
         "name": "priorita",
-        "width": 8
+        "width": 6
     },
     {
         "name": "attiva",
-        "width": 8
+        "width": 6
     }
 ]
