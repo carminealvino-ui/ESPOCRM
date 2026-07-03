@@ -2,18 +2,19 @@
 
 namespace Espo\Custom\Hooks\Quote;
 
+use Espo\Core\Hook\Hook\BeforeSave as BeforeSaveHook;
 use Espo\ORM\Entity;
-use Espo\Core\Hooks\Base;
+use Espo\ORM\EntityManager;
+use Espo\ORM\Repository\Option\SaveOptions;
 
-class BeforeSave extends Base
+class BeforeSave implements BeforeSaveHook
 {
-    // =========================
-    // PRIMA DEL SALVATAGGIO
-    // =========================
-    public function beforeSave(Entity $entity, array $options)
-    {
-        $em = $this->getEntityManager();
+    public function __construct(
+        private EntityManager $entityManager
+    ) {}
 
+    public function beforeSave(Entity $entity, SaveOptions $options): void
+    {
         $itemList = $entity->get('itemList');
 
         if (empty($itemList) || !is_array($itemList)) {
@@ -22,11 +23,7 @@ class BeforeSave extends Base
 
         $totalePrezzoCodice = 0;
 
-        // =========================
-        // ARTICOLI
-        // =========================
-        foreach ($itemList as $index => $item) {
-
+        foreach ($itemList as $item) {
             $productId = null;
 
             if (is_object($item) && isset($item->productId)) {
@@ -36,13 +33,11 @@ class BeforeSave extends Base
             }
 
             if ($productId) {
-
-                $product = $em->getRepository('Product')
+                $product = $this->entityManager->getRepository('Product')
                     ->where(['id' => $productId])
                     ->findOne();
 
                 if ($product) {
-
                     $prezzoCodice = $product->get('prezzoCodice');
 
                     if ($prezzoCodice === null) {
@@ -72,73 +67,5 @@ class BeforeSave extends Base
 
         $entity->set('itemList', $itemList);
         $entity->set('totalPrezzoCodice', $totalePrezzoCodice);
-    }
-
-    // =========================
-    // DOPO IL SALVATAGGIO
-    // =========================
-    public function afterSave(Entity $entity, array $options)
-    {
-        $em = $this->getEntityManager();
-
-        $provvigioniList = $em->getRepository('Provvigione')
-            ->where(['contrattoId' => $entity->getId()])
-            ->find();
-
-        $totale = 0;
-
-        foreach ($provvigioniList as $p) {
-
-            $tipo = $p->get('tipo');
-            $tasso = (float) $p->get('tassoProvvigioni');
-
-            $base = 0;
-
-            // =========================
-            // BASE CALCOLO CORRETTA
-            // =========================
-            if ($tipo === 'Provvigione Base') {
-
-                $amount = (float) $entity->get('amount');      // totale
-                $tax = (float) $entity->get('taxAmount');      // IVA
-
-                $base = $amount - $tax; // 👉 NETTO
-            }
-
-            elseif ($tipo === 'Plus Provvigionale' || $tipo === 'Minus Provvigionale') {
-                $base = (float) $entity->get('minusPlus');
-            }
-
-            elseif ($tipo === 'Bonus (Sabato-Domenica)') {
-
-                $date = $entity->get('dateQuoted');
-
-                if ($date) {
-                    $day = date('N', strtotime($date));
-
-                    if ($day >= 6) {
-                        $base = (float) ($entity->get('amount') - $entity->get('taxAmount'));
-                    }
-                }
-            }
-
-            // =========================
-            // CALCOLO
-            // =========================
-            $importo = 0;
-
-            if ($base > 0 && $tasso > 0) {
-                $importo = ($base * $tasso) / 100;
-            }
-
-            // aggiorna senza loop
-            $p->set('importo', $importo);
-            $em->saveEntity($p, ['skipHooks' => true]);
-
-            $totale += $importo;
-        }
-
-        // totale provvigioni
-        $entity->set('totaleProvvigioni', $totale);
     }
 }
