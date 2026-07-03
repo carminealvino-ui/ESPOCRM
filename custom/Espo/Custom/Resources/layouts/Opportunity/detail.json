@@ -68,38 +68,6 @@
         "rows": [
             [
                 {
-                    "name": "finanziamento"
-                },
-                {
-                    "name": "statoFinanziamento"
-                }
-            ],
-            [
-                {
-                    "name": "importoCaparra"
-                },
-                {
-                    "name": "importoFinanziato"
-                },
-                {
-                    "name": "nrRate"
-                }
-            ],
-            [
-                {
-                    "name": "tassoZero"
-                },
-                false,
-                false
-            ]
-        ],
-        "style": "default",
-        "label": "Finanziamento"
-    },
-    {
-        "rows": [
-            [
-                {
                     "name": "priceBook"
                 },
                 false
@@ -152,6 +120,38 @@
         "style": "default",
         "hidden": false,
         "customLabel": "Formulazione Opportunit\u00e0"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "statoFinanziamento"
+                }
+            ],
+            [
+                {
+                    "name": "importoCaparra"
+                },
+                {
+                    "name": "importoFinanziato"
+                },
+                {
+                    "name": "nrRate"
+                }
+            ],
+            [
+                {
+                    "name": "tassoZero"
+                },
+                false,
+                false
+            ]
+        ],
+        "style": "default",
+        "label": "Finanziamento"
     },
     {
         "rows": [
