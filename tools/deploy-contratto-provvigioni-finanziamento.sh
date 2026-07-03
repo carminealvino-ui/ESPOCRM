@@ -62,11 +62,22 @@ fetch custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
 fetch custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json
 fetch custom/Espo/Custom/Resources/metadata/formula/Quote.json
 fetch custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json
+fetch custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
+
+echo ""
+echo "=== Fix duplicati number_a (prima del rebuild) ==="
+curl -fsSL "${BASE}/tools/fix-quote-numbera-duplicates.php?t=$(date +%s)" -o tools/fix-quote-numbera-duplicates.php
+php tools/fix-quote-numbera-duplicates.php
 
 php command.php rebuild
 php command.php clear-cache 2>/dev/null || true
 rm -rf data/cache/* 2>/dev/null || true
 chmod -R u+rwX data/cache 2>/dev/null || true
+
+echo ""
+echo "=== Backfill Codice Contratto automatico (numberA) ==="
+curl -fsSL "${BASE}/tools/backfill-quote-numbera.php?t=$(date +%s)" -o tools/backfill-quote-numbera.php
+php tools/backfill-quote-numbera.php
 
 echo ""
 echo "=== Allinea totaleProvvigioni su contratti esistenti ==="
@@ -93,7 +104,7 @@ require 'bootstrap.php';
 \$app = new \Espo\Core\Application();
 \$app->setupSystemUser();
 \$pdo = \$app->getContainer()->get('entityManager')->getPDO();
-\$stmt = \$pdo->prepare(\"UPDATE quote SET status = 'Presented', codice_contratto = COALESCE(NULLIF(TRIM(codice_contratto), ''), numero_contratto) WHERE deleted = 0 AND status = 'Draft' AND numero_contratto IS NOT NULL AND TRIM(numero_contratto) != ''\");
+\$stmt = \$pdo->prepare(\"UPDATE quote SET status = 'Presented' WHERE deleted = 0 AND status = 'Draft' AND numero_contratto IS NOT NULL AND TRIM(numero_contratto) != ''\");
 \$stmt->execute();
 echo 'Contratti aggiornati a Presentato: ' . \$stmt->rowCount() . PHP_EOL;
 "
