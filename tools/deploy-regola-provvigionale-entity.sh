@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-# Entità RegolaProvvigionale (Regole provvigioni): metadata, layout, relazioni.
+# Entità RegolaProvvigionale (Regole provvigioni): metadata, tabella DB, layout.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/regola-provvigionale-entity-9999/tools/deploy-regola-provvigionale-entity.sh?t=$(date +%s)" | bash
-#   php clear_cache.php && php rebuild.php
-#   mysql ... < database/2026-07-03-regola-provvigionale-seed-minimal.sql   # opzionale se tabella vuota
 
 set -euo pipefail
 
@@ -42,6 +40,8 @@ FILES=(
   "custom/Espo/Custom/Resources/layouts/RegolaProvvigionale/list.json"
   "custom/Espo/Custom/Resources/layouts/RegolaProvvigionale/filters.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/RegolaProvvigionale.json"
+  "database/2026-07-03-regola-provvigionale-create-table.sql"
+  "tools/create-regola-provvigionale-table.php"
 )
 
 for rel in "${FILES[@]}"; do
@@ -56,14 +56,23 @@ for rel in "${FILES[@]}"; do
 done
 
 echo ""
-echo "=== Cache ==="
+echo "=== Crea tabella regola_provvigionale (se assente) ==="
 cd "${CRM_ROOT}"
+php tools/create-regola-provvigionale-table.php
+
+echo ""
+echo "=== Cache + rebuild ==="
 php clear_cache.php
 php rebuild.php
 
 echo ""
+echo "=== Verifica tabella ==="
+php tools/create-regola-provvigionale-table.php
+
+echo ""
 echo "=== Fine ==="
-echo "Menu: Amministrazione → Entità → Regole provvigioni (o cerca nel tab)"
-echo "Seed ARQUATI/Ariel (se non già eseguiti):"
-echo "  mysql ... < database/2026-05-26-arquati-pnc-regole-provvigioni-seed.sql"
-echo "  mysql ... < database/2026-05-26-gdl-ariel-2026-regole-provvigioni-seed.sql"
+echo "Menu CRM: Regole provvigioni"
+echo ""
+echo "Popolare regole (opzionale, da mysql client o phpMyAdmin):"
+echo "  database/2026-05-26-arquati-pnc-regole-provvigioni-seed.sql"
+echo "  database/2026-05-26-gdl-ariel-2026-regole-provvigioni-seed.sql"
