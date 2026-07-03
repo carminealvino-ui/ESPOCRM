@@ -452,36 +452,36 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         mapContrattiTile: function (tile) {
             return this.mapQuoteMetricTile(tile, [
                 {key: 'lordi', label: 'Lordi'},
-                {key: 'recessi', label: 'Con recessi'},
+                {key: 'recessi', label: 'Recessi'},
                 {key: 'totali', label: 'Totali'},
-                {key: 'finanziamentiRifiutati', label: 'Con finanziamenti rifiutati'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamenti rifiutati'},
                 {key: 'netti', label: 'Netti'},
             ], this.formatNumber);
         },
 
         mapValoreProduzioneTile: function (tile) {
             return this.mapQuoteMetricTile(tile, [
-                {key: 'lordi', label: 'Totale'},
-                {key: 'recessi', label: 'Con recessi'},
-                {key: 'totali', label: 'Lordo'},
-                {key: 'finanziamentiRifiutati', label: 'Con finanziamenti rifiutati'},
+                {key: 'lordi', label: 'Lordo'},
+                {key: 'recessi', label: 'Recessi'},
+                {key: 'totali', label: 'Totale'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamenti rifiutati'},
                 {key: 'netti', label: 'Netto'},
             ], this.formatCurrency);
         },
 
         mapProvvigioniTile: function (tile) {
             return this.mapQuoteMetricTile(tile, [
-                {key: 'lordi', label: 'Totali'},
-                {key: 'recessi', label: 'Con recessi'},
-                {key: 'totali', label: 'Lordi'},
-                {key: 'finanziamentiRifiutati', label: 'Con finanziamenti rifiutati'},
+                {key: 'lordi', label: 'Lordi'},
+                {key: 'recessi', label: 'Recessi'},
+                {key: 'totali', label: 'Totali'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamenti rifiutati'},
                 {key: 'netti', label: 'Nette'},
             ], this.formatCurrency);
         },
 
         /**
          * Contratti / valore / provvigioni:
-         * lordi 100% · recessi/totali % sui lordi · fin./netti % lordi e % totali.
+         * lordi 100% · recessi/totali % lordi · fin./netti % lordi e % totali.
          *
          * @param {Function} formatValue
          */
@@ -498,13 +498,13 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 if (def.key === 'lordi') {
                     value += ' · ' + percentLordi;
                 } else if (def.key === 'recessi' || def.key === 'totali') {
-                    value += ' · ' + percentLordi + ' sui lordi';
+                    value += ' · ' + percentLordi;
                 } else if (def.key === 'finanziamentiRifiutati' || def.key === 'netti') {
                     const percentTotali = this.formatPercentOf(raw, baseTotali);
 
                     value += ' · ' + this.joinPercentDetails([
-                        percentLordi + ' sui lordi',
-                        percentTotali + ' sui totali',
+                        percentLordi,
+                        percentTotali,
                     ]);
                 }
 
