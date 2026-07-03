@@ -213,6 +213,14 @@
     border-bottom: 0;
 }
 
+.crm-kpi-criticita-section {
+    width: 100%;
+}
+
+.crm-kpi-criticita-section .crm-kpi-panel-alerts-criticita {
+    width: 100%;
+}
+
 .crm-kpi-alerts-row {
     display: flex;
     flex-direction: row;

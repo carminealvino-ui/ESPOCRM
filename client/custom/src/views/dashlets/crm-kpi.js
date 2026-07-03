@@ -90,7 +90,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     valoreProduzione: this.mapValoreProduzioneTile(tiles.valoreProduzione),
                     provvigioni: this.mapProvvigioniTile(tiles.provvigioni),
                 },
-                alertsAvvisi: this.mapAlerts(summary.alerts, 'avvisi'),
                 criticitaBoxes: this.mapCriticitaBoxes(summary.alerts),
                 yieldsByWeekday: this.mapYieldRows(summary.yieldsByWeekday),
                 yieldsByWeek: this.mapYieldRows(summary.yieldsByWeek),

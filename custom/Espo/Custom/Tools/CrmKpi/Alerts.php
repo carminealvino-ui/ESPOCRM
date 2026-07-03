@@ -40,74 +40,57 @@ class Alerts
         unset($from, $to);
 
         return (object) [
-            'avvisi' => $this->buildAvvisi($productBrandId),
             'criticita' => $this->buildCriticita($productBrandId),
         ];
     }
 
     /**
-     * @return object[]
-     */
-    private function buildAvvisi(?string $productBrandId): array
-    {
-        return [
-            $this->alert(
-                'appuntamentiSenzaOpportunita',
-                'Appuntamenti senza opportunità',
-                $this->countAppuntamentiSenzaOpportunita($productBrandId),
-                '#Appuntamento/list/primaryFilter=appuntamentiSenzaOpportunita',
-                null,
-                'avvisi',
-                'appuntamenti'
-            ),
-            $this->alert(
-                'appuntamentiConPiuOpportunita',
-                'Appuntamenti con più opportunità',
-                $this->countAppuntamentiConPiuOpportunita($productBrandId),
-                '#Appuntamento/list/primaryFilter=appuntamentiConPiuOpportunita',
-                null,
-                'avvisi',
-                'appuntamenti'
-            ),
-            $this->alert(
-                'opportunityWithoutWhatsapp',
-                'Opportunità senza invio WhatsApp',
-                $this->countOpportunitiesWithoutWhatsapp($productBrandId),
-                '#Opportunity/list/primaryFilter=senzaInvioWhatsapp',
-                null,
-                'avvisi',
-                'opportunita'
-            ),
-            $this->alert(
-                'opportunityWithoutPhoneFollowUp',
-                'Opportunità senza Riscontro',
-                $this->countOpportunitiesWithoutPhoneFollowUp($productBrandId),
-                '#Opportunity/list/primaryFilter=senzaRiscontroTelefonico',
-                null,
-                'avvisi',
-                'opportunita'
-            ),
-            $this->alert(
-                'richiamiPianificati',
-                'Richiami Pianificati',
-                $this->countRichiamiPianificati(),
-                '#Call/list/primaryFilter=richiamiPianificati',
-                null,
-                'avvisi',
-                'chiamate'
-            ),
-        ];
-    }
-
-    /**
+     * Criticità operative per entità (valori totali, non filtrati per periodo KPI).
+     *
      * @return object[]
      */
     private function buildCriticita(?string $productBrandId): array
     {
-        $items = [
+        return [
+            $this->alert(
+                'appuntamentiSenzaOpportunita',
+                'Senza opportunità',
+                $this->countAppuntamentiSenzaOpportunita($productBrandId),
+                '#Appuntamento/list/primaryFilter=appuntamentiSenzaOpportunita',
+                null,
+                'criticita',
+                'appuntamenti'
+            ),
+            $this->alert(
+                'appuntamentiConPiuOpportunita',
+                'Con più opportunità',
+                $this->countAppuntamentiConPiuOpportunita($productBrandId),
+                '#Appuntamento/list/primaryFilter=appuntamentiConPiuOpportunita',
+                null,
+                'criticita',
+                'appuntamenti'
+            ),
+            $this->alert(
+                'opportunityWithoutWhatsapp',
+                'Senza invio WhatsApp',
+                $this->countOpportunitiesWithoutWhatsapp($productBrandId),
+                '#Opportunity/list/primaryFilter=senzaInvioWhatsapp',
+                null,
+                'criticita',
+                'opportunita'
+            ),
+            $this->alert(
+                'opportunityWithoutPhoneFollowUp',
+                'Senza riscontro telefonico',
+                $this->countOpportunitiesWithoutPhoneFollowUp($productBrandId),
+                '#Opportunity/list/primaryFilter=senzaRiscontroTelefonico',
+                null,
+                'criticita',
+                'opportunita'
+            ),
             $this->alert(
                 'contractsSuspendedFinancing',
-                'Contratti Sospesi Finanziamento',
+                'Sospesi finanziamento',
                 $this->countContractsSuspendedFinancing($productBrandId),
                 '#Quote/list/primaryFilter=contrattiSospesiFinanziamento',
                 null,
@@ -116,19 +99,32 @@ class Alerts
             ),
             $this->alert(
                 'contractsSuspendedOrders',
-                'Contratti Sospesi Ordini',
+                'Sospesi ordini',
                 $this->countContractsSuspendedOrders($productBrandId),
                 '#Quote/list/primaryFilter=contrattiInLavorazione',
                 null,
                 'criticita',
                 'contratti'
             ),
+            $this->alert(
+                'richiamiPianificati',
+                'Richiami pianificati',
+                $this->countRichiamiPianificati(),
+                '#Call/list/primaryFilter=richiamiPianificati',
+                null,
+                'criticita',
+                'chiamate'
+            ),
+            $this->alert(
+                'chiamateScadute',
+                'Chiamate scadute',
+                $this->countChiamateScadute(),
+                '#Call/list/primaryFilter=chiamateScadute',
+                null,
+                'criticita',
+                'chiamate'
+            ),
         ];
-
-        return array_values(array_filter(
-            $items,
-            static fn (object $item): bool => (int) ($item->value ?? 0) > 0
-        ));
     }
 
     private function alert(
@@ -137,7 +133,7 @@ class Alerts
         int $value,
         string $link,
         ?string $meta = null,
-        string $group = 'avvisi',
+        string $group = 'criticita',
         string $entity = 'appuntamenti'
     ): object {
         $item = (object) [
@@ -270,6 +266,17 @@ class Alerts
                     ['richiamo!=' => ''],
                     ['richiamo!=' => null],
                 ],
+            ])
+            ->count();
+    }
+
+    private function countChiamateScadute(): int
+    {
+        return (int) $this->entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'status' => 'Planned',
+                'dateStart<' => date('Y-m-d H:i:s'),
             ])
             ->count();
     }

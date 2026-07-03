@@ -1093,7 +1093,7 @@ class CrmKpiService
         try {
             $built = (new Alerts($this->entityManager))->build($from, $to, $productBrandId);
 
-            return array_merge($built->avvisi, $built->criticita);
+            return $built->criticita ?? [];
         } catch (\Throwable) {
             return [];
         }
