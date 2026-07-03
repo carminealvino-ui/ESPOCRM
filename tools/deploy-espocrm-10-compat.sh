@@ -23,6 +23,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Provvigione/BeforeSave.php"
   "custom/Espo/Custom/Hooks/Prospect/SyncPlannedAppointments.php"
   "custom/Espo/Custom/Tools/Notification/RecordService.php"
+  "tools/diagnose-notification-count.php"
 )
 
 echo "==> Deploy EspoCRM 10 compat (${BRANCH}) in ${CRM_ROOT}"
