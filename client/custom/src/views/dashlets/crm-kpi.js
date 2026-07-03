@@ -451,31 +451,31 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
         mapContrattiTile: function (tile) {
             return this.mapQuoteMetricTile(tile, [
-                {key: 'lordi', label: 'Contratti lordi'},
-                {key: 'recessi', label: 'Contratti con recessi'},
-                {key: 'totali', label: 'Contratti totali'},
-                {key: 'finanziamentiRifiutati', label: 'Contratti con finanziamenti rifiutati'},
-                {key: 'netti', label: 'Contratti netti'},
+                {key: 'lordi', label: 'Lordi'},
+                {key: 'recessi', label: 'Con recessi'},
+                {key: 'totali', label: 'Totali'},
+                {key: 'finanziamentiRifiutati', label: 'Con finanziamenti rifiutati'},
+                {key: 'netti', label: 'Netti'},
             ], this.formatNumber);
         },
 
         mapValoreProduzioneTile: function (tile) {
             return this.mapQuoteMetricTile(tile, [
-                {key: 'lordi', label: 'Valore produzione totale'},
-                {key: 'recessi', label: 'Valore con recessi'},
-                {key: 'totali', label: 'Valore produzione lordo'},
-                {key: 'finanziamentiRifiutati', label: 'Valore con finanziamenti rifiutati'},
-                {key: 'netti', label: 'Valore produzione netto'},
+                {key: 'lordi', label: 'Totale'},
+                {key: 'recessi', label: 'Con recessi'},
+                {key: 'totali', label: 'Lordo'},
+                {key: 'finanziamentiRifiutati', label: 'Con finanziamenti rifiutati'},
+                {key: 'netti', label: 'Netto'},
             ], this.formatCurrency);
         },
 
         mapProvvigioniTile: function (tile) {
             return this.mapQuoteMetricTile(tile, [
-                {key: 'lordi', label: 'Provvigioni totali'},
-                {key: 'recessi', label: 'Provvigioni con recessi'},
-                {key: 'totali', label: 'Provvigioni lordi'},
-                {key: 'finanziamentiRifiutati', label: 'Provvigioni con finanziamenti rifiutati'},
-                {key: 'netti', label: 'Provvigioni nette'},
+                {key: 'lordi', label: 'Totali'},
+                {key: 'recessi', label: 'Con recessi'},
+                {key: 'totali', label: 'Lordi'},
+                {key: 'finanziamentiRifiutati', label: 'Con finanziamenti rifiutati'},
+                {key: 'netti', label: 'Nette'},
             ], this.formatCurrency);
         },
 
