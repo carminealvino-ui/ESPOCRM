@@ -50,8 +50,8 @@ for rel in "${FILES[@]}"; do
 done
 
 JS="${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js"
-if ! grep -q "kpi-tile-labels-v3" "${JS}"; then
-  echo "ERRORE: crm-kpi.js non contiene la versione attesa (kpi-tile-labels-v3)"
+if ! grep -q "kpi-tile-labels-v4" "${JS}"; then
+  echo "ERRORE: crm-kpi.js non contiene la versione attesa (kpi-tile-labels-v4)"
   exit 1
 fi
 if grep -q "sui lordi" "${JS}"; then
