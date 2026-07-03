@@ -67,8 +67,6 @@ class FunnelBuilder
         ];
 
         $max = max($appuntamentiLordi, $appuntamentiNetti, $opportunita, $contratti, $contrattiNetti, 1.0);
-        $baseNetti = max($appuntamentiNetti, 1.0);
-        $baseOpportunita = max($opportunita, 1.0);
 
         $result = [];
         $previousValue = null;
@@ -80,15 +78,15 @@ class FunnelBuilder
             $percentOfOpportunita = null;
 
             if ($previousValue !== null) {
-                $percentOfPrevious = round(($value / max($previousValue, 1.0)) * 100, 1);
+                $percentOfPrevious = self::ratioPercent($value, $previousValue);
             }
 
             if ($step['key'] === 'opportunita') {
-                $percentOfNetti = round(($value / $baseNetti) * 100, 1);
+                $percentOfNetti = self::ratioPercent($value, $appuntamentiNetti);
             }
 
             if (in_array($step['key'], ['contratti', 'contrattiNetti'], true)) {
-                $percentOfOpportunita = round(($value / $baseOpportunita) * 100, 1);
+                $percentOfOpportunita = self::ratioPercent($value, $opportunita);
             }
 
             $result[] = (object) [
@@ -105,5 +103,21 @@ class FunnelBuilder
         }
 
         return $result;
+    }
+
+    /**
+     * Efficacia: 0% se il valore e' 0; null se manca la base (niente % fuorvianti).
+     */
+    private static function ratioPercent(float $value, float $base): ?float
+    {
+        if ($value <= 0) {
+            return 0.0;
+        }
+
+        if ($base <= 0) {
+            return null;
+        }
+
+        return round(($value / $base) * 100, 1);
     }
 }
