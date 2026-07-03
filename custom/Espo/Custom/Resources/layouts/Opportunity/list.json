@@ -1,0 +1,65 @@
+[
+    {
+        "name": "name",
+        "width": 40,
+        "link": true,
+        "align": "left"
+    },
+    {
+        "name": "fornitorePartner",
+        "width": 16
+    },
+    {
+        "name": "productBrand",
+        "width": 16
+    },
+    {
+        "name": "productCategory",
+        "width": 16
+    },
+    {
+        "name": "stage",
+        "width": 12,
+        "align": "left"
+    },
+    {
+        "name": "statoContratto",
+        "width": 10,
+        "align": "left"
+    },
+    {
+        "name": "finanziamento",
+        "width": 8,
+        "align": "center"
+    },
+    {
+        "name": "statoFinanziamento",
+        "width": 10,
+        "align": "left"
+    },
+    {
+        "name": "importoFinanziato",
+        "width": 10,
+        "align": "right"
+    },
+    {
+        "name": "amount",
+        "width": 12,
+        "align": "right"
+    },
+    {
+        "name": "prezzoCodiceIvaInclusa",
+        "width": 12,
+        "align": "right"
+    },
+    {
+        "name": "suPrezzoPromo",
+        "width": 6,
+        "align": "right"
+    },
+    {
+        "name": "minusPlus",
+        "width": 10,
+        "align": "right"
+    }
+]

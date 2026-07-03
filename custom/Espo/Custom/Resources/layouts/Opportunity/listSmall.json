@@ -1,0 +1,37 @@
+[
+    {
+        "name": "name",
+        "link": true,
+        "align": "left"
+    },
+    {
+        "name": "finanziamento",
+        "width": 8,
+        "align": "center"
+    },
+    {
+        "name": "statoFinanziamento",
+        "width": 12,
+        "align": "left"
+    },
+    {
+        "name": "prezzoListinoIVAInclusa",
+        "width": 10,
+        "align": "right"
+    },
+    {
+        "name": "prezzoCodiceIvaInclusa",
+        "width": 10,
+        "align": "right"
+    },
+    {
+        "name": "suPrezzoPromo",
+        "width": 8,
+        "align": "right"
+    },
+    {
+        "name": "amount",
+        "width": 10,
+        "align": "right"
+    }
+]

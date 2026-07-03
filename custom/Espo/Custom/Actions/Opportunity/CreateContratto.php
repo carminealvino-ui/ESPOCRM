@@ -624,6 +624,27 @@ class CreateContratto
             'hookVersion' =>
                 $hookVersion,
 
+            'finanziamento' =>
+                (bool) $opportunity->get('finanziamento'),
+
+            'statoContratto' =>
+                $opportunity->get('statoContratto'),
+
+            'statoFinanziamento' =>
+                $opportunity->get('statoFinanziamento'),
+
+            'importoCaparra' =>
+                $opportunity->get('importoCaparra'),
+
+            'importoFinanziato' =>
+                $opportunity->get('importoFinanziato'),
+
+            'nrRate' =>
+                $opportunity->get('nrRate'),
+
+            'tassoZero' =>
+                (bool) $opportunity->get('tassoZero'),
+
             'fornitorePartnerId' =>
                 $fornitorePartnerId,
 

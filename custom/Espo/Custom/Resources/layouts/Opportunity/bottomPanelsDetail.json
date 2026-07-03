@@ -1,0 +1,20 @@
+{
+    "activities": {
+        "disabled": true
+    },
+    "items": {
+        "disabled": true
+    },
+    "history": {
+        "disabled": true
+    },
+    "stream": {
+        "disabled": true
+    },
+    "_delimiter_": {
+        "disabled": true
+    },
+    "toDo": {
+        "index": 0
+    }
+}

@@ -1,0 +1,65 @@
+[
+    {
+        "name": "hookVersion"
+    },
+    {
+        "name": "dataOpportunit"
+    },
+    {
+        "name": "importoOpportunit"
+    },
+    {
+        "name": "finanziamento"
+    },
+    {
+        "name": "statoFinanziamento"
+    },
+    {
+        "name": "importoCaparra"
+    },
+    {
+        "name": "importoFinanziato"
+    },
+    {
+        "name": "nrRate"
+    },
+    {
+        "name": "tassoZero"
+    },
+    {
+        "name": "azienda"
+    },
+    {
+        "name": "cAP"
+    },
+    {
+        "name": "prospect"
+    },
+    {
+        "name": "lead"
+    },
+    {
+        "name": "originalLead"
+    },
+    {
+        "name": "account"
+    },
+    {
+        "name": "contact"
+    },
+    {
+        "name": "contacts"
+    },
+    {
+        "name": "telefono"
+    },
+    {
+        "name": "whatsApp"
+    },
+    {
+        "name": ":assignedUser"
+    },
+    {
+        "name": "teams"
+    }
+]

@@ -54,7 +54,14 @@
         "prezzoCodiceIvaEsclusa": "Prezzo a codice (IVA escl.)",
         "contattoPersonaleArquati": "Contatto personale ARQUATI (+5%)",
         "integrazionePncPercentuale": "Integrazione PNC %",
-        "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)"
+        "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)",
+        "finanziamento": "Finanziamento",
+        "statoFinanziamento": "Stato Finanziamento",
+        "statoContratto": "Stato Contratto",
+        "importoCaparra": "Importo Caparra",
+        "importoFinanziato": "Importo Finanziato",
+        "nrRate": "Nr. Rate",
+        "tassoZero": "Tasso Zero"
     },
     "links": {
         "cAP": "CAP",

@@ -2,7 +2,14 @@
     "fields": {
         "productCategory": "Categoria prodotto",
         "fornitorePartner": "Fornitore / Partner",
-        "productBrand": "Brand"
+        "productBrand": "Brand",
+        "finanziamento": "Finanziamento",
+        "statoFinanziamento": "Stato Finanziamento",
+        "statoContratto": "Stato Contratto",
+        "importoCaparra": "Importo Caparra",
+        "importoFinanziato": "Importo Finanziato",
+        "nrRate": "Nr. Rate",
+        "tassoZero": "Tasso Zero"
     },
     "presetFilters": {
         "meseCorrente": "Mese corrente",

@@ -1,0 +1,23 @@
+[
+    "stage",
+    "statoContratto",
+    "finanziamento",
+    "statoFinanziamento",
+    "importoCaparra",
+    "importoFinanziato",
+    "nrRate",
+    "tassoZero",
+    "leadSource",
+    "callCenter",
+    "azienda",
+    "lineaProdotto",
+    "prospect",
+    "lead",
+    "account",
+    "importoOpportunit",
+    "prezzoListinoIvaEsclusa",
+    "prezzoCodiceIvaEsclusa",
+    "amount",
+    "assignedUser",
+    "teams"
+]
