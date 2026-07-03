@@ -3,16 +3,17 @@
         "rows": [
             [
                 {
-                    "name": "number"
+                    "name": "numberA"
                 },
                 {
-                    "name": "account"
+                    "name": "opportunity"
                 }
             ],
             [
                 {
-                    "name": "opportunity"
-                }
+                    "name": "account"
+                },
+                false
             ],
             [
                 {
@@ -25,6 +26,7 @@
                 }
             ],
             [
+                false,
                 {
                     "name": "productCategory",
                     "customLabel": "Categoria prodotto"
@@ -32,25 +34,56 @@
             ],
             [
                 {
+                    "name": "numeroContratto"
+                },
+                {
                     "name": "dateQuoted"
                 },
+                {
+                    "name": "importoContratto"
+                },
+                false
+            ],
+            [
                 {
                     "name": "status"
                 },
                 {
-                    "name": "importoContratto"
+                    "name": "statoContratto"
+                },
+                {
+                    "name": "statoFinanziamento"
+                }
+            ],
+            [
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "importoCaparra"
+                },
+                {
+                    "name": "importoSaldo"
+                }
+            ],
+            [
+                {
+                    "name": "tassoZero"
+                },
+                {
+                    "name": "importoFinanziato"
+                },
+                {
+                    "name": "rataPrestito"
+                },
+                {
+                    "name": "nrRate"
                 }
             ],
             [
                 {
                     "name": "description"
                 }
-            ],
-            [
-                {
-                    "name": "name"
-                },
-                false
             ]
         ],
         "style": "default",
@@ -73,6 +106,14 @@
                 {
                     "name": "shippingAddress"
                 }
+            ],
+            [
+                {
+                    "name": "shippingProvider"
+                },
+                {
+                    "name": "dataInstallazione"
+                }
             ]
         ],
         "style": "default",
@@ -82,64 +123,26 @@
         "rows": [
             [
                 {
-                    "name": "tax"
+                    "name": "priceBook"
                 },
                 {
-                    "name": "shippingProvider"
+                    "name": "venditaAbbinataAdAltroProdotto"
+                },
+                {
+                    "name": "scontoVenditaAbbinata"
                 }
             ],
             [
                 {
-                    "name": "priceBook"
+                    "name": "tax"
                 },
                 {
                     "name": "isTaxInclusive"
-                }
+                },
+                false
             ]
         ],
         "style": "default",
         "label": ""
-    },
-    {
-        "rows": [
-            [
-                {
-                    "name": "prezzoListinoIvaEsclusa",
-                    "customLabel": "Prezzo listino (IVA escl.)"
-                },
-                {
-                    "name": "prezzoCodiceIvaEsclusa",
-                    "customLabel": "Prezzo a codice (IVA escl.)"
-                }
-            ],
-            [
-                {
-                    "name": "margineSuListino",
-                    "customLabel": "Margine % su listino"
-                },
-                {
-                    "name": "contattoPersonaleArquati",
-                    "customLabel": "Contatto personale ARQUATI (+5%)"
-                }
-            ],
-            [
-                {
-                    "name": "integrazionePncPercentuale",
-                    "customLabel": "Integrazione PNC % (da contratto)"
-                }
-            ],
-            [
-                {
-                    "name": "minusPlus",
-                    "customLabel": "Plusvalenza / Minusvalenza (€)"
-                },
-                {
-                    "name": "ordineIncompletoAriel",
-                    "customLabel": "Ordine incompleto Ariel (−5% provv.)"
-                }
-            ]
-        ],
-        "style": "default",
-        "label": "Provvigioni (calcolo)"
     }
 ]

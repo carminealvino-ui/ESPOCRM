@@ -17,6 +17,9 @@
         "fornitorePartner": {
             "layout": null,
             "selectPrimaryFilterName": null
+        },
+        "provvigioni": {
+            "disabled": true
         }
     },
     "additionalLayouts": {
@@ -69,6 +72,8 @@
     "kanbanViewMode": false,
     "color": null,
     "iconClass": "fas fa-file-lines",
+    "defaultSortBy": "dateQuoted",
+    "defaultOrder": "desc",
     "filterList": [
         "__APPEND__",
         {

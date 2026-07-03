@@ -25,9 +25,11 @@ FILES=(
   "custom/Espo/Custom/Resources/client/custom/src/views/quote/record/panels/items.js"
   "custom/Espo/Custom/Resources/client/custom/src/views/modals/select-product-for-quote.js"
   "custom/Espo/Custom/Resources/metadata/formula/Quote.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/QuoteItem.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/QuoteItem.json"
+  "custom/Espo/Custom/Resources/layouts/Quote/detail.json"
   "custom/Espo/Custom/Resources/layouts/QuoteItem/listItem.json"
 )
 
