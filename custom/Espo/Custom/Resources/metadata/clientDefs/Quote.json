@@ -16,7 +16,8 @@
             "createDisabled": false,
             "selectDisabled": false,
             "unlinkDisabled": false,
-            "order": 20
+            "order": 20,
+            "layout": "listSmall"
         }
     }
 }

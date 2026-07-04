@@ -23,9 +23,5 @@
     {
         "name": "importoConsolidato",
         "width": 11
-    },
-    {
-        "name": "regolaProvvigionale",
-        "width": 16
     }
 ]

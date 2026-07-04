@@ -1,11 +1,14 @@
 {
     "fields": {
+        "name": "Descrizione",
         "tipo": "Tipo provvigione",
-        "tassoProvvigioni": "Tasso / coefficiente",
+        "tassoProvvigioni": "Tasso / coefficiente %",
         "importo": "Importo",
         "contratto": "Contratto",
         "cliente": "Cliente",
         "regolaProvvigionale": "Regola provvigionale",
+        "baseCalcolo": "Base del calcolo",
+        "importoBaseCalcolo": "Importo base",
         "statoProvvigione": "Stato provvigione",
         "regimeProvvigione": "Regime provvigionale",
         "dataInstallazione": "Data installazione",
@@ -31,6 +34,14 @@
             "InInvito": "In invito a fatturare",
             "Fatturata": "Fatturata",
             "Stornata": "Stornata"
+        },
+        "baseCalcolo": {
+            "ImponibileContratto": "Imponibile contratto (IVA escl.)",
+            "Plusvalenza": "Plusvalenza (imponibile − codice)",
+            "MargineSuListino": "Imponibile (regola % margine)",
+            "CanoneMensile": "Canone mensile",
+            "GettoneFisso": "Gettone fisso",
+            "NumeroPod": "Numero POD"
         }
     }
 }

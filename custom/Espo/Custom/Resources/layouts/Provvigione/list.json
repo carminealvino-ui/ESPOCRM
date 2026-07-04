@@ -1,30 +1,39 @@
 [
     {
         "name": "name",
-        "link": true
+        "link": true,
+        "customLabel": "Descrizione"
     },
     {
         "name": "statoProvvigione",
-        "width": 12
+        "width": 10
     },
     {
         "name": "tipo",
+        "width": 12
+    },
+    {
+        "name": "baseCalcolo",
         "width": 14
     },
     {
-        "name": "regolaProvvigionale",
-        "width": 16
+        "name": "importoBaseCalcolo",
+        "width": 12
+    },
+    {
+        "name": "tassoProvvigioni",
+        "width": 8
     },
     {
         "name": "importoConsolidato",
-        "width": 12
+        "width": 11
     },
     {
-        "name": "dataCompetenza",
-        "width": 12
+        "name": "regolaProvvigionale",
+        "width": 14
     },
     {
         "name": "contratto",
-        "width": 14
+        "width": 12
     }
 ]

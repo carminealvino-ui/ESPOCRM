@@ -83,6 +83,28 @@
         "rows": [
             [
                 {
+                    "name": "baseCalcolo",
+                    "customLabel": "Base del calcolo"
+                },
+                {
+                    "name": "importoBaseCalcolo",
+                    "customLabel": "Importo base"
+                }
+            ],
+            [
+                {
+                    "name": "regolaProvvigionale"
+                },
+                false
+            ]
+        ],
+        "style": "default",
+        "label": "Calcolo provvigionale"
+    },
+    {
+        "rows": [
+            [
+                {
                     "name": "dataInstallazione"
                 },
                 {

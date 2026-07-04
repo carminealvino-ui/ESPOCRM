@@ -519,10 +519,14 @@ class ProvvigioneManager
         ]);
 
         if ($rule) {
+            $baseCalcolo = $this->resolveBaseCalcolo($rule, $context);
+
             $provvigione->set([
                 'regolaProvvigionaleId' => $rule->getId(),
                 'regolaProvvigionaleName' => $rule->get('name'),
                 'tassoProvvigioni' => $this->resolveDisplayTasso($rule),
+                'baseCalcolo' => $baseCalcolo['baseCalcolo'],
+                'importoBaseCalcolo' => $baseCalcolo['importoBaseCalcolo'],
             ]);
         }
 
@@ -814,7 +818,7 @@ class ProvvigioneManager
         $importoContratto = $this->floatField($quote, 'importoContratto');
 
         if ($importoContratto !== null && $importoContratto > 0) {
-            return $importoContratto;
+            return round($importoContratto, 2);
         }
 
         $amount = $this->floatField($quote, 'amount');
@@ -825,16 +829,72 @@ class ProvvigioneManager
         }
 
         if ($amount !== null) {
-            return $amount;
+            $aliquota = $this->floatField($quote, 'aliquotaIVA')
+                ?? $this->floatField($quote, 'taxRate');
+
+            if ($aliquota !== null && $aliquota > 0) {
+                return round($amount / (1 + $aliquota / 100), 2);
+            }
+
+            return round($amount, 2);
         }
 
         return $opportunity ? $this->resolveImponibile($opportunity) : null;
     }
 
+    /**
+     * @param array<string, mixed>|null $context
+     * @return array{baseCalcolo: string, importoBaseCalcolo: float|null}
+     */
+    private function resolveBaseCalcolo(?Entity $rule, ?array $context): array
+    {
+        $tipo = $rule?->get('tipoCalcolo') ?? 'PercentualeImponibile';
+
+        return match ($tipo) {
+            'PercentualePlusvalenza' => [
+                'baseCalcolo' => 'Plusvalenza',
+                'importoBaseCalcolo' => isset($context['plusvalenza'])
+                    ? round((float) $context['plusvalenza'], 2)
+                    : null,
+            ],
+            'PercentualeMargine' => [
+                'baseCalcolo' => 'MargineSuListino',
+                'importoBaseCalcolo' => isset($context['imponibile'])
+                    ? round((float) $context['imponibile'], 2)
+                    : null,
+            ],
+            'CoefficienteCanone' => [
+                'baseCalcolo' => 'CanoneMensile',
+                'importoBaseCalcolo' => isset($context['canoneMensile'])
+                    ? round((float) $context['canoneMensile'], 2)
+                    : null,
+            ],
+            'GettoneFisso' => [
+                'baseCalcolo' => 'GettoneFisso',
+                'importoBaseCalcolo' => $this->floatField($rule, 'gettoneImporto'),
+            ],
+            'ImportoFissoPod' => [
+                'baseCalcolo' => 'NumeroPod',
+                'importoBaseCalcolo' => isset($context['numeroPod'])
+                    ? (float) (int) $context['numeroPod']
+                    : null,
+            ],
+            default => [
+                'baseCalcolo' => 'ImponibileContratto',
+                'importoBaseCalcolo' => isset($context['imponibile'])
+                    ? round((float) $context['imponibile'], 2)
+                    : null,
+            ],
+        };
+    }
+
     private function buildProvvigioneName(Entity $quote, string $tipo, ?Entity $rule): string
     {
-        $contractRef = $quote->get('number') ?: $quote->getId();
-        $ruleLabel = $rule?->get('name') ?: $tipo;
+        $contractRef = (string) ($quote->get('number') ?: $quote->getId());
+
+        if ($rule && $rule->get('name')) {
+            return $contractRef . ' — ' . $rule->get('name');
+        }
 
         $prefix = match ($tipo) {
             'Plus Provvigionale' => 'PLUS',
@@ -842,7 +902,7 @@ class ProvvigioneManager
             default => 'CONS',
         };
 
-        return $prefix . '-' . $contractRef . ' — ' . $ruleLabel;
+        return $prefix . '-' . $contractRef . ' — ' . $tipo;
     }
 
     private function resolveDisplayTasso(?Entity $rule): ?float

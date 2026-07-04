@@ -1,5 +1,10 @@
 {
     "fields": {
+        "name": {
+            "type": "varchar",
+            "required": true,
+            "trim": true
+        },
         "tipo": {
             "type": "enum",
             "options": [
@@ -90,6 +95,25 @@
         },
         "importoConsolidato": {
             "type": "currency",
+            "isCustom": true
+        },
+        "baseCalcolo": {
+            "type": "enum",
+            "readOnly": true,
+            "options": [
+                "",
+                "ImponibileContratto",
+                "Plusvalenza",
+                "MargineSuListino",
+                "CanoneMensile",
+                "GettoneFisso",
+                "NumeroPod"
+            ],
+            "isCustom": true
+        },
+        "importoBaseCalcolo": {
+            "type": "currency",
+            "readOnly": true,
             "isCustom": true
         },
         "scostamentoImporto": {
