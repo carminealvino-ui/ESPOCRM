@@ -14,7 +14,7 @@ use Espo\ORM\Repository\Option\SaveOptions;
  */
 class AccrualAndAmount implements BeforeSave
 {
-    public static int $order = 9;
+    public static int $order = 1;
 
     public function __construct(
         private EntityManager $entityManager,
@@ -24,6 +24,8 @@ class AccrualAndAmount implements BeforeSave
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
+        $this->ensurePlaceholderName($entity);
+
         if ($options->get('skipHooks') || $options->get('skipRules')) {
             $this->applyAccrualDates($entity);
             $this->applyScostamento($entity);
@@ -39,6 +41,28 @@ class AccrualAndAmount implements BeforeSave
 
         $this->applyAccrualDates($entity);
         $this->applyScostamento($entity);
+    }
+
+    private function ensurePlaceholderName(Entity $entity): void
+    {
+        if ($entity->get('name')) {
+            return;
+        }
+
+        $tipo = $entity->get('tipo') ?: 'Provvigione Base';
+
+        if ($entity->get('contrattoId')) {
+            $quote = $this->entityManager->getEntityById('Quote', $entity->get('contrattoId'));
+
+            if ($quote) {
+                $ref = $quote->get('number') ?: $quote->getId();
+                $entity->set('name', $ref . ' — ' . $tipo);
+
+                return;
+            }
+        }
+
+        $entity->set('name', 'PROVV-' . $tipo);
     }
 
     private function applyAccrualDates(Entity $entity): void

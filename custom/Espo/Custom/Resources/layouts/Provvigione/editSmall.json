@@ -1,0 +1,22 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "tipo"
+                },
+                {
+                    "name": "statoProvvigione"
+                }
+            ],
+            [
+                {
+                    "name": "contratto"
+                },
+                {
+                    "name": "cliente"
+                }
+            ]
+        ]
+    }
+]
