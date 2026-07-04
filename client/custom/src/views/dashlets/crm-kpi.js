@@ -1,5 +1,7 @@
 define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!espo-funnel-chart'], function (Dep) {
 
+    // kpi-tile-labels-v4: metriche lordi 100%, doppia % su ingestibili/netti/contratti funnel
+
     return Dep.extend({
 
         name: 'CrmKpi',
@@ -90,8 +92,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     valoreProduzione: this.mapValoreProduzioneTile(tiles.valoreProduzione),
                     provvigioni: this.mapProvvigioniTile(tiles.provvigioni),
                 },
-                alertsAvvisi: this.mapAlerts(summary.alerts, 'avvisi'),
-                alertsCriticita: this.mapAlerts(summary.alerts, 'criticita'),
+                criticitaBoxes: this.mapCriticitaBoxes(summary.alerts),
                 yieldsByWeekday: this.mapYieldRows(summary.yieldsByWeekday),
                 yieldsByWeek: this.mapYieldRows(summary.yieldsByWeek),
                 yieldColumns: summary.yieldColumns || this.getDefaultYieldColumns(),
@@ -112,45 +113,44 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             });
 
             const baseLordi = valueByKey.appuntamentiLordi || 0;
+            const baseTotali = Number(appuntamentiTile.totali || 0);
             const baseNetti = valueByKey.appuntamentiNetti || 0;
             const baseContrattiLordi = valueByKey.contratti || 0;
             const baseContrattiNetti = valueByKey.contrattiNetti || 0;
-            const appuntamentiTotali = Number(appuntamentiTile.totali || 0);
-            const baseTotali = appuntamentiTotali > 0 ? appuntamentiTotali : baseLordi;
 
             return [
                 {
-                    label: 'Appuntamenti lordi',
+                    label: 'Lordi',
                     value: this.formatNumber(baseLordi),
-                    detail: '',
+                    detail: this.formatPercentOf(baseLordi, baseLordi),
                 },
                 {
-                    label: 'Appuntamenti totali',
-                    value: this.formatNumber(appuntamentiTotali),
-                    detail: '100.0% (base)',
+                    label: 'Totali',
+                    value: this.formatNumber(baseTotali),
+                    detail: this.formatPercentOf(baseTotali, baseLordi),
                 },
                 {
-                    label: 'Appuntamenti netti',
+                    label: 'Netti',
                     value: this.formatNumber(baseNetti),
                     detail: this.joinPercentDetails([
-                        this.percentOfTotali(baseNetti, baseTotali),
-                        '100.0% (base netti)',
+                        this.formatPercentOf(baseNetti, baseLordi),
+                        this.formatPercentOf(baseNetti, baseTotali),
                     ]),
                 },
                 {
-                    label: 'Contratti lordi',
+                    label: 'Contr. lordi',
                     value: this.formatNumber(baseContrattiLordi),
                     detail: this.joinPercentDetails([
-                        this.percentOfTotali(baseContrattiLordi, baseTotali),
-                        this.percentOfNetti(baseContrattiLordi, baseNetti),
+                        this.formatPercentOf(baseContrattiLordi, baseLordi),
+                        this.formatPercentOf(baseContrattiLordi, baseTotali),
                     ]),
                 },
                 {
-                    label: 'Contratti netti',
+                    label: 'Contr. netti',
                     value: this.formatNumber(baseContrattiNetti),
                     detail: this.joinPercentDetails([
-                        this.percentOfTotali(baseContrattiNetti, baseTotali),
-                        this.percentOfNetti(baseContrattiNetti, baseNetti),
+                        this.formatPercentOf(baseContrattiNetti, baseLordi),
+                        this.formatPercentOf(baseContrattiNetti, baseTotali),
                     ]),
                 },
             ];
@@ -158,26 +158,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
         joinPercentDetails: function (parts) {
             return (parts || []).filter(part => part && part !== '-').join(' · ');
-        },
-
-        percentOfTotali: function (value, baseTotali) {
-            const percent = this.computePercent(value, baseTotali);
-
-            if (percent === '-') {
-                return percent;
-            }
-
-            return percent + ' su App. totali';
-        },
-
-        percentOfNetti: function (value, baseNetti) {
-            const percent = this.computePercent(value, baseNetti);
-
-            if (percent === '-') {
-                return percent;
-            }
-
-            return percent + ' su App. netti';
         },
 
         computePercent: function (value, base) {
@@ -212,8 +192,34 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                         label: alert.label,
                         value: alert.value,
                         meta: alert.meta || null,
+                        entity: alert.entity || null,
                     };
                 });
+        },
+
+        mapCriticitaBoxes: function (alerts) {
+            const entities = [
+                {key: 'appuntamenti', title: 'Appuntamenti'},
+                {key: 'opportunita', title: 'Opportunità'},
+                {key: 'contratti', title: 'Contratti'},
+                {key: 'chiamate', title: 'Chiamate'},
+            ];
+
+            const criticita = this.mapAlerts(alerts, 'criticita');
+
+            return entities.map(entity => {
+                const items = criticita
+                    .filter(alert => (alert.entity || '') === entity.key)
+                    .filter(alert => Number(alert.value || 0) > 0);
+
+                return {
+                    key: entity.key,
+                    title: entity.title,
+                    alerts: items,
+                    hasAlerts: items.length > 0,
+                    showEmpty: items.length === 0,
+                };
+            });
         },
 
         mapYieldRows: function (rows) {
@@ -378,30 +384,13 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         mapAppuntamentiTile: function (tile) {
-            const source = tile || {};
-            const baseLordi = Number(source.lordi || 0);
-            const baseTotali = Number(source.totali || 0);
-
-            return [
-                {key: 'lordi', label: 'Appuntamenti lordi', base: null},
-                {key: 'annullati', label: 'Appuntamenti annullati', base: baseLordi},
-                {key: 'totali', label: 'Appuntamenti totali', base: baseTotali, isBase: true},
-                {key: 'ingestibili', label: 'Appuntamenti ingestibili', base: baseTotali},
-                {key: 'netti', label: 'Appuntamenti netti', base: baseTotali},
-            ].map(def => {
-                const raw = Number(source[def.key] || 0);
-                let value = this.formatNumber(raw);
-
-                if (def.base !== null) {
-                    const percent = def.base > 0 ? ((raw / def.base) * 100).toFixed(1) : '0.0';
-                    value += ' · ' + percent + '%' + (def.isBase ? ' (base)' : '');
-                }
-
-                return {
-                    label: def.label,
-                    value: value,
-                };
-            });
+            return this.mapMetricTile(tile, [
+                {key: 'lordi', label: 'Lordi'},
+                {key: 'annullati', label: 'Annullati'},
+                {key: 'totali', label: 'Totali'},
+                {key: 'ingestibili', label: 'Ingestibili'},
+                {key: 'netti', label: 'Netti'},
+            ], this.formatNumber);
         },
 
         mapOpportunitaTile: function (tile) {
@@ -425,42 +414,42 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         mapContrattiTile: function (tile) {
-            return this.mapQuoteMetricTile(tile, [
-                {key: 'lordi', label: 'Contratti lordi'},
-                {key: 'recessi', label: 'Contratti con recessi'},
-                {key: 'totali', label: 'Contratti totali'},
-                {key: 'finanziamentiRifiutati', label: 'Contratti con finanziamenti rifiutati'},
-                {key: 'netti', label: 'Contratti netti'},
+            return this.mapMetricTile(tile, [
+                {key: 'lordi', label: 'Lordi'},
+                {key: 'recessi', label: 'Recessi'},
+                {key: 'totali', label: 'Totali'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamenti rifiutati'},
+                {key: 'netti', label: 'Netti'},
             ], this.formatNumber);
         },
 
         mapValoreProduzioneTile: function (tile) {
-            return this.mapQuoteMetricTile(tile, [
-                {key: 'lordi', label: 'Valore produzione totale'},
-                {key: 'recessi', label: 'Valore con recessi'},
-                {key: 'totali', label: 'Valore produzione lordo'},
-                {key: 'finanziamentiRifiutati', label: 'Valore con finanziamenti rifiutati'},
-                {key: 'netti', label: 'Valore produzione netto'},
+            return this.mapMetricTile(tile, [
+                {key: 'lordi', label: 'Lordo'},
+                {key: 'recessi', label: 'Recessi'},
+                {key: 'totali', label: 'Totale'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamenti rifiutati'},
+                {key: 'netti', label: 'Netto'},
             ], this.formatCurrency);
         },
 
         mapProvvigioniTile: function (tile) {
-            return this.mapQuoteMetricTile(tile, [
-                {key: 'lordi', label: 'Provvigioni totali'},
-                {key: 'recessi', label: 'Provvigioni con recessi'},
-                {key: 'totali', label: 'Provvigioni lordi'},
-                {key: 'finanziamentiRifiutati', label: 'Provvigioni con finanziamenti rifiutati'},
-                {key: 'netti', label: 'Provvigioni nette'},
+            return this.mapMetricTile(tile, [
+                {key: 'lordi', label: 'Lordi'},
+                {key: 'recessi', label: 'Recessi'},
+                {key: 'totali', label: 'Totali'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamenti rifiutati'},
+                {key: 'netti', label: 'Nette'},
             ], this.formatCurrency);
         },
 
         /**
-         * Contratti / valore / provvigioni — stessa gerarchia degli Appuntamenti:
-         * lordi (tutti) → recessi % su lordi → totali (dopo recessi, base) → netti.
+         * Tile metriche gerarchiche: lordi 100% · annullati/recessi/totali % lordi ·
+         * ingestibili/fin./netti % lordi e % totali.
          *
          * @param {Function} formatValue
          */
-        mapQuoteMetricTile: function (tile, rows, formatValue) {
+        mapMetricTile: function (tile, rows, formatValue) {
             const source = tile || {};
             const baseLordi = Number(source.lordi || 0);
             const baseTotali = Number(source.totali || 0);
@@ -468,21 +457,27 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             return rows.map(def => {
                 const raw = Number(source[def.key] || 0);
                 let value = formatValue.call(this, raw);
-                let base = null;
-                let isBase = false;
+                const percentLordi = this.formatPercentOf(raw, baseLordi);
 
                 if (def.key === 'lordi') {
-                    base = null;
-                } else if (def.key === 'recessi') {
-                    base = baseLordi;
-                } else {
-                    base = baseTotali;
-                    isBase = def.key === 'totali';
-                }
+                    value += ' · ' + percentLordi;
+                } else if (
+                    def.key === 'annullati'
+                    || def.key === 'recessi'
+                    || def.key === 'totali'
+                ) {
+                    value += ' · ' + percentLordi;
+                } else if (
+                    def.key === 'ingestibili'
+                    || def.key === 'finanziamentiRifiutati'
+                    || def.key === 'netti'
+                ) {
+                    const percentTotali = this.formatPercentOf(raw, baseTotali);
 
-                if (base !== null) {
-                    const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
-                    value += ' · ' + percent + '%' + (isBase ? ' (base)' : '');
+                    value += ' · ' + this.joinPercentDetails([
+                        percentLordi,
+                        percentTotali,
+                    ]);
                 }
 
                 return {
@@ -490,6 +485,21 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     value: value,
                 };
             });
+        },
+
+        mapQuoteMetricTile: function (tile, rows, formatValue) {
+            return this.mapMetricTile(tile, rows, formatValue);
+        },
+
+        formatPercentOf: function (value, base) {
+            const num = Number(value || 0);
+            const den = Number(base || 0);
+
+            if (den <= 0) {
+                return '0.0%';
+            }
+
+            return ((num / den) * 100).toFixed(1) + '%';
         },
 
         getPeriodLabel: function () {
@@ -535,21 +545,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
         actionOpenAlert: function (data) {
             const key = data && data.key;
-            const period = this.getOption('period') || 'currentMonth';
-
-            if (key === 'opportunityWithoutPhoneFollowUp') {
-                const filter = period === 'previousMonth'
-                    ? 'senzaRiscontroMesePrecedente'
-                    : 'senzaRiscontroPeriodo';
-
-                this.getRouter().navigate(
-                    this.buildEntityListUrl('Opportunity', filter),
-                    {trigger: true}
-                );
-
-                return;
-            }
-
             const alerts = (this.summary && this.summary.alerts) || [];
             const alert = alerts.find(function (item) {
                 return item.key === key;
