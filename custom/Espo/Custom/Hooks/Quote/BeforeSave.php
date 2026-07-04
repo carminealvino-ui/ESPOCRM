@@ -2,18 +2,24 @@
 
 namespace Espo\Custom\Hooks\Quote;
 
+use Espo\Core\Hook\Hook\BeforeSave as BeforeSaveHook;
 use Espo\ORM\Entity;
-use Espo\Core\Hooks\Base;
+use Espo\ORM\EntityManager;
+use Espo\ORM\Repository\Option\SaveOptions;
 
-class BeforeSave extends Base
+/**
+ * Prezzo codice su righe contratto e totale prezzo codice.
+ */
+class BeforeSave implements BeforeSaveHook
 {
-    // =========================
-    // PRIMA DEL SALVATAGGIO
-    // =========================
-    public function beforeSave(Entity $entity, array $options)
-    {
-        $em = $this->getEntityManager();
+    public static int $order = 5;
 
+    public function __construct(
+        private EntityManager $entityManager
+    ) {}
+
+    public function beforeSave(Entity $entity, SaveOptions $options): void
+    {
         $itemList = $entity->get('itemList');
 
         if (empty($itemList) || !is_array($itemList)) {
@@ -22,11 +28,7 @@ class BeforeSave extends Base
 
         $totalePrezzoCodice = 0;
 
-        // =========================
-        // ARTICOLI
-        // =========================
-        foreach ($itemList as $index => $item) {
-
+        foreach ($itemList as $item) {
             $productId = null;
 
             if (is_object($item) && isset($item->productId)) {
@@ -36,13 +38,12 @@ class BeforeSave extends Base
             }
 
             if ($productId) {
-
-                $product = $em->getRepository('Product')
+                $product = $this->entityManager
+                    ->getRDBRepository('Product')
                     ->where(['id' => $productId])
                     ->findOne();
 
                 if ($product) {
-
                     $prezzoCodice = $product->get('prezzoCodice');
 
                     if ($prezzoCodice === null) {
@@ -72,17 +73,5 @@ class BeforeSave extends Base
 
         $entity->set('itemList', $itemList);
         $entity->set('totalPrezzoCodice', $totalePrezzoCodice);
-    }
-
-    // =========================
-    // DOPO IL SALVATAGGIO
-    // =========================
-    public function afterSave(Entity $entity, array $options)
-    {
-        $injectableFactory = $this->getContainer()->get('injectableFactory');
-        /** @var \Espo\Custom\Services\ProvvigioneManager $manager */
-        $manager = $injectableFactory->create(\Espo\Custom\Services\ProvvigioneManager::class);
-
-        $manager->refreshQuoteTotaleProvvigioni($entity);
     }
 }

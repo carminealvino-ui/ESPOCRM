@@ -27,6 +27,18 @@ mkdir -p custom/Espo/Custom/Resources/metadata/clientDefs
 curl -fsSL "${BASE}/custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json?t=$(date +%s)" \
   -o custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json
 
+curl -fsSL "${BASE}/custom/Espo/Custom/Hooks/Quote/BeforeSave.php?t=$(date +%s)" \
+  -o custom/Espo/Custom/Hooks/Quote/BeforeSave.php
+
+curl -fsSL "${BASE}/custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php?t=$(date +%s)" \
+  -o custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php
+
+LEGACY_HOOK="custom/Espo/Custom/Hooks/Provvigione/BeforeSaveLegacy.php"
+if [[ -f "${LEGACY_HOOK}" ]]; then
+  mv "${LEGACY_HOOK}" "${LEGACY_HOOK}.bak.$(date +%s)"
+  echo "Spostato ${LEGACY_HOOK} in backup"
+fi
+
 php clear_cache.php
 php rebuild.php
 

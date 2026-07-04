@@ -30,9 +30,9 @@ FILES=(
   "custom/Espo/Custom/Services/ProvvigioneManager.php"
   "custom/Espo/Custom/Services/RegolaProvvigionaleCalculator.php"
   "custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php"
-  "custom/Espo/Custom/Hooks/Provvigione/BeforeSaveLegacy.php"
   "custom/Espo/Custom/Hooks/Provvigione/AfterSaveContratto.php"
   "custom/Espo/Custom/Hooks/Quote/BeforeSave.php"
+  "custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php"
   "custom/Espo/Custom/Actions/Quote/RicalcolaProvvigioni.php"
   "custom/Espo/Custom/Controllers/Quote.php"
   "custom/Espo/Custom/Resources/metadata/app/actions.json"
@@ -50,6 +50,7 @@ FILES=(
 
 LEGACY_REMOVE=(
   "client/custom/src/views/quote/record/detail.js"
+  "custom/Espo/Custom/Hooks/Provvigione/BeforeSaveLegacy.php"
 )
 
 for rel in "${FILES[@]}"; do
