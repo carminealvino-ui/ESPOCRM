@@ -39,7 +39,13 @@ if [[ -f "${LEGACY_HOOK}" ]]; then
   echo "Spostato ${LEGACY_HOOK} in backup"
 fi
 
+curl -fsSL "${BASE}/custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php?t=$(date +%s)" \
+  -o custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php
+
+curl -fsSL "${BASE}/custom/Espo/Custom/Resources/metadata/entityDefs/Provvigione.json?t=$(date +%s)" \
+  -o custom/Espo/Custom/Resources/metadata/entityDefs/Provvigione.json
+
 php clear_cache.php
 php rebuild.php
 
-echo "OK — riapri Contratto con Ctrl+F5"
+echo "OK — riapri CRM con Ctrl+F5 e riprova Salva provvigione"
