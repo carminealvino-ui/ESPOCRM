@@ -16,6 +16,7 @@ cd "${CRM_ROOT}"
 
 FILES=(
   "custom/Espo/Custom/Controllers/CallStandardTesto.php"
+  "custom/Espo/Custom/Controllers/Appuntamento.php"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
   "custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json"
   "custom/Espo/Custom/Resources/layouts/Quote/detail.json"

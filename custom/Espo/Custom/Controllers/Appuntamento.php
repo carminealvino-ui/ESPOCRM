@@ -6,10 +6,10 @@ use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
 use Espo\Core\Controllers\Record;
 use Espo\Core\Exceptions\Forbidden;
-use Espo\Core\InjectableFactory;
 use Espo\Custom\Services\AppuntamentoRifissatoCreator;
 use Espo\Custom\Services\CrmKpi\CrmKpiService;
 use Espo\Custom\Tools\CrmKpi\DateRange;
+use Espo\ORM\EntityManager;
 
 /**
  * Appuntamento custom actions: KPI dashlet + rifissato.
@@ -44,9 +44,9 @@ class Appuntamento extends Record
             $assignedUsersIds = [];
         }
 
-        $creator = new AppuntamentoRifissatoCreator(
-            $this->getContainer()->get('entityManager')
-        );
+        $entityManager = $this->injectableFactory->create(EntityManager::class);
+
+        $creator = new AppuntamentoRifissatoCreator($entityManager);
 
         $id = $creator->create(
             (string) $sourceId,
@@ -63,16 +63,13 @@ class Appuntamento extends Record
 
         $productBrandId = $this->normalizeBrandId($request->getQueryParam('productBrandId'));
 
-        /** @var InjectableFactory $injectableFactory */
-        $injectableFactory = $this->getContainer()->get('injectableFactory');
-        $service = $injectableFactory->create(CrmKpiService::class);
-        $user = $this->getUser();
+        $service = $this->injectableFactory->create(CrmKpiService::class);
 
-        if (!$user) {
+        if (!$this->user) {
             throw new Forbidden();
         }
 
-        return $service->getSummary($user, $period, $productBrandId);
+        return $service->getSummary($this->user, $period, $productBrandId);
     }
 
     private function normalizeBrandId(?string $productBrandId): ?string
