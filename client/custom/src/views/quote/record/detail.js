@@ -1,6 +1,6 @@
 /* global define, Espo */
 
-define('custom:views/quote/record/detail', ['crm:views/quote/record/detail'], function (Dep) {
+define('custom:views/quote/record/detail', ['sales:views/quote/record/detail'], function (Dep) {
 
     return Dep.extend({
 
