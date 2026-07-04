@@ -658,6 +658,24 @@ class CreateContratto
             'importoContratto' =>
                 $amount,
 
+            'finanziamento' =>
+                (bool) $opportunity->get('finanziamento'),
+
+            'statoFinanziamento' =>
+                $opportunity->get('statoFinanziamento'),
+
+            'importoCaparra' =>
+                $opportunity->get('importoCaparra'),
+
+            'importoFinanziato' =>
+                $opportunity->get('importoFinanziato'),
+
+            'nrRate' =>
+                $opportunity->get('nrRate'),
+
+            'tassoZero' =>
+                (bool) $opportunity->get('tassoZero'),
+
             'prezzoListinoIvaEsclusa' =>
                 $opportunity->get('prezzoListinoIvaEsclusa'),
 
