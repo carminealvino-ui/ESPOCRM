@@ -99,34 +99,5 @@
         ],
         "style": "default",
         "label": ""
-    },
-    {
-        "rows": [
-            [
-                {
-                    "name": "contattoPersonaleArquati",
-                    "customLabel": "Contatto personale ARQUATI (+5%)"
-                },
-                {
-                    "name": "ordineIncompletoAriel",
-                    "customLabel": "Ordine incompleto Ariel (−5% provv.)"
-                }
-            ],
-            [
-                {
-                    "name": "minusPlus",
-                    "customLabel": "Plusvalenza / Minusvalenza (€)",
-                    "readOnly": true
-                },
-                {
-                    "name": "margineSuListino",
-                    "customLabel": "Margine % su listino",
-                    "readOnly": true
-                }
-            ]
-        ],
-        "style": "default",
-        "label": "Opzioni provvigioni",
-        "noteText": "Le provvigioni si generano dal subpanel sotto con «Ricalcola provvigioni» (regole provvigionali). I campi listino sono copiati dall'opportunità alla creazione contratto."
     }
 ]
