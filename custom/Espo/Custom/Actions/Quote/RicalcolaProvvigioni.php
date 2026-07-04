@@ -46,7 +46,7 @@ class RicalcolaProvvigioni
             'id' => $quote->getId(),
             'count' => $count,
             'created' => $result['created'],
-            'updated' => $result['updated'],
+            'purged' => $result['purged'],
         ];
     }
 }

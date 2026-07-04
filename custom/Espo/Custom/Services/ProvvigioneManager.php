@@ -109,7 +109,7 @@ class ProvvigioneManager
             $appuntamento
         );
 
-        $this->entityManager->saveEntity($provvigione, ['silent' => true]);
+        $this->saveProvvigione($provvigione);
 
         return $provvigione;
     }
@@ -200,26 +200,24 @@ class ProvvigioneManager
         $opportunity = $this->resolveOpportunityForQuote($quote, null);
 
         if (!$opportunity) {
-            return ['created' => 0, 'updated' => 0];
+            return ['created' => 0, 'updated' => 0, 'purged' => 0];
         }
 
-        $before = $this->entityManager
-            ->getRDBRepository('Provvigione')
-            ->where(['contrattoId' => $quote->getId()])
-            ->count();
+        $purged = $this->purgeProvvigioniForQuote($quote->getId());
+        $this->syncQuotePricingFields($quote, $opportunity);
 
         $this->createConsolidataForQuote($opportunity, $quote);
+        $this->refreshQuoteTotaleProvvigioni($quote);
 
-        $after = $this->entityManager
+        $count = $this->entityManager
             ->getRDBRepository('Provvigione')
             ->where(['contrattoId' => $quote->getId()])
             ->count();
 
-        $this->refreshQuoteTotaleProvvigioni($quote);
-
         return [
-            'created' => max(0, $after - $before),
-            'updated' => $before,
+            'created' => $count,
+            'updated' => 0,
+            'purged' => $purged,
         ];
     }
 
@@ -237,23 +235,86 @@ class ProvvigioneManager
                 continue;
             }
 
-            $totale += (float) (
-                $provvigione->get('importoConsolidato')
-                ?? $provvigione->get('importo')
-                ?? 0
-            );
+            $importo = $provvigione->get('importoConsolidato');
+
+            if ($importo === null || $importo === '') {
+                continue;
+            }
+
+            $totale += (float) $importo;
         }
 
-        $quote->set('totaleProvvigioni', round($totale, 2));
+        $quote->set('totaleProvvigioni', $totale > 0 ? round($totale, 2) : null);
 
         $this->entityManager->saveEntity($quote, [
             'skipHooks' => true,
             'silent' => true,
+            'skipFormula' => true,
         ]);
+    }
+
+    private function purgeProvvigioniForQuote(string $quoteId): int
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quoteId])
+            ->find();
+
+        $count = 0;
+
+        foreach ($collection as $provvigione) {
+            $this->entityManager->removeEntity($provvigione);
+            $count++;
+        }
+
+        return $count;
+    }
+
+    private function syncQuotePricingFields(Entity $quote, Entity $opportunity): void
+    {
+        $imponibile = $this->resolveQuoteImponibile($quote, $opportunity);
+        $prezzoCodice = $this->floatField($quote, 'prezzoCodiceIvaEsclusa')
+            ?? $this->floatField($opportunity, 'prezzoCodiceIvaEsclusa');
+        $prezzoListino = $this->floatField($quote, 'prezzoListinoIvaEsclusa')
+            ?? $this->floatField($opportunity, 'prezzoListinoIvaEsclusa');
+
+        if ($imponibile !== null && $prezzoCodice !== null) {
+            $quote->set('minusPlus', round($imponibile - $prezzoCodice, 2));
+        }
+
+        if ($imponibile !== null && $prezzoListino !== null && $prezzoListino > 0) {
+            $quote->set(
+                'margineSuListino',
+                round((($imponibile - $prezzoListino) / $prezzoListino) * 100, 2)
+            );
+        }
+
+        if ($imponibile !== null && !$quote->get('importoContratto')) {
+            $quote->set('importoContratto', $imponibile);
+        }
+
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+            'silent' => true,
+            'skipFormula' => true,
+        ]);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function saveProvvigione(Entity $provvigione, array $options = []): void
+    {
+        $this->entityManager->saveEntity($provvigione, array_merge([
+            'silent' => true,
+            'skipFormula' => true,
+        ], $options));
     }
 
     public function createConsolidataForQuote(Entity $opportunity, Entity $quote): ?Entity
     {
+        $this->syncQuotePricingFields($quote, $opportunity);
+
         $category = $this->resolveProductCategory($quote, $opportunity);
 
         $imponibile = $this->resolveQuoteImponibile($quote, $opportunity);
@@ -454,7 +515,7 @@ class ProvvigioneManager
             }
         }
 
-        $this->entityManager->saveEntity($provvigione, ['silent' => true]);
+        $this->saveProvvigione($provvigione);
 
         return $provvigione;
     }
@@ -639,7 +700,7 @@ class ProvvigioneManager
             'name' => 'PLUS-CP5-' . ($quote->get('number') ?? $quote->getId()),
         ]);
 
-        $this->entityManager->saveEntity($plus, ['silent' => true]);
+        $this->saveProvvigione($plus);
     }
 
     private function resolveOpportunityForQuote(Entity $quote, ?Entity $provvigione): ?Entity

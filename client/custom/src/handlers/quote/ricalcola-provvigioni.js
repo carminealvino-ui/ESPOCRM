@@ -22,7 +22,8 @@ define('custom:handlers/quote/ricalcola-provvigioni', ['action-handler'], functi
                 });
             }).then(function (result) {
                 Espo.Ui.success(
-                    'Provvigioni aggiornate: ' + (result.count || 0)
+                    'Provvigioni rigenerate: ' + (result.count || 0)
+                    + (result.purged ? ' (rimosse ' + result.purged + ' righe obsolete)' : '')
                 );
                 model.fetch();
                 view.reRender();
