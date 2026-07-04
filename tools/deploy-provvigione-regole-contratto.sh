@@ -28,6 +28,7 @@ backup_if_exists() {
 
 FILES=(
   "custom/Espo/Custom/Services/ProvvigioneManager.php"
+  "custom/Espo/Custom/Resources/layouts/Quote/relationships/provvigioni.json"
   "custom/Espo/Custom/Services/RegolaProvvigionaleCalculator.php"
   "custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php"
   "custom/Espo/Custom/Hooks/Provvigione/AfterSaveContratto.php"

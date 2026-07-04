@@ -1,0 +1,22 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "tipo",
+        "width": 14
+    },
+    {
+        "name": "regolaProvvigionale",
+        "width": 18
+    },
+    {
+        "name": "tassoProvvigioni",
+        "width": 10
+    },
+    {
+        "name": "importoConsolidato",
+        "width": 12
+    }
+]

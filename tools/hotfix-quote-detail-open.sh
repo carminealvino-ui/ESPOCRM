@@ -42,8 +42,12 @@ fi
 curl -fsSL "${BASE}/custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php?t=$(date +%s)" \
   -o custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php
 
-curl -fsSL "${BASE}/custom/Espo/Custom/Resources/metadata/entityDefs/Provvigione.json?t=$(date +%s)" \
-  -o custom/Espo/Custom/Resources/metadata/entityDefs/Provvigione.json
+curl -fsSL "${BASE}/custom/Espo/Custom/Services/ProvvigioneManager.php?t=$(date +%s)" \
+  -o custom/Espo/Custom/Services/ProvvigioneManager.php
+
+mkdir -p custom/Espo/Custom/Resources/layouts/Quote/relationships
+curl -fsSL "${BASE}/custom/Espo/Custom/Resources/layouts/Quote/relationships/provvigioni.json?t=$(date +%s)" \
+  -o custom/Espo/Custom/Resources/layouts/Quote/relationships/provvigioni.json
 
 php clear_cache.php
 php rebuild.php
