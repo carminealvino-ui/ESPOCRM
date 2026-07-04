@@ -1,0 +1,31 @@
+.invito-provvigioni-modal {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.invito-provvigioni-group {
+    margin-bottom: 12px;
+}
+
+.invito-provvigioni-venditore-header {
+    background: #f5f5f5;
+    padding: 8px 12px;
+    border-bottom: 1px solid #ddd;
+    font-size: 13px;
+}
+
+.invito-provvigioni-table {
+    margin-bottom: 0;
+    font-size: 12px;
+}
+
+.invito-provvigioni-table th,
+.invito-provvigioni-table td {
+    vertical-align: middle !important;
+}
+
+.invito-provvigioni-toolbar {
+    padding: 4px 0 8px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 12px;
+}

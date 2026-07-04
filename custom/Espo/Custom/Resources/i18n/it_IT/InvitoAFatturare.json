@@ -2,7 +2,10 @@
     "labels": {
         "InvitoAFatturare": "Invito a fatturare",
         "InvitiAFatturare": "Inviti a fatturare",
-        "Create InvitoAFatturare": "Crea invito a fatturare"
+        "Create InvitoAFatturare": "Crea invito a fatturare",
+        "selezionaProvvigioni": "Seleziona provvigioni",
+        "generaDaProvvigioni": "Genera da provvigioni",
+        "emettiInvito": "Emetti invito"
     },
     "fields": {
         "numero": "Numero invito",

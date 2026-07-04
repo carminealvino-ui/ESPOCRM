@@ -3,7 +3,16 @@
     "recordViews": {
         "detail": "custom:views/invito-a-fatturare/record/detail"
     },
+    "iconClass": "fas fa-file-invoice-dollar",
+    "color": "#5cb85c",
     "buttonList": [
+        {
+            "name": "selezionaProvvigioni",
+            "label": "Seleziona provvigioni",
+            "style": "success",
+            "action": "selezionaProvvigioni",
+            "acl": "edit"
+        },
         {
             "name": "generaDaProvvigioni",
             "label": "Genera da provvigioni",

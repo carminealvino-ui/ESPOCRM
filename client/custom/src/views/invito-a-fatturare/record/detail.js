@@ -7,20 +7,65 @@ define('custom:views/invito-a-fatturare/record/detail', ['views/record/detail'],
         setup: function () {
             Dep.prototype.setup.call(this);
 
-            this.addMenuItem('buttons', {
-                name: 'generaDaProvvigioni',
-                label: 'Genera da provvigioni',
-                style: 'default',
-                action: 'generaDaProvvigioni',
-                acl: 'edit'
-            });
+            if (this.model.get('stato') === 'Bozza') {
+                this.addMenuItem('buttons', {
+                    name: 'selezionaProvvigioni',
+                    label: 'Seleziona provvigioni',
+                    style: 'success',
+                    action: 'selezionaProvvigioni',
+                    acl: 'edit',
+                });
+
+                this.addMenuItem('buttons', {
+                    name: 'generaDaProvvigioni',
+                    label: 'Genera da provvigioni',
+                    style: 'default',
+                    action: 'generaDaProvvigioni',
+                    acl: 'edit',
+                });
+            }
 
             this.addMenuItem('buttons', {
                 name: 'emettiInvito',
                 label: 'Emetti invito',
                 style: 'primary',
                 action: 'emettiInvito',
-                acl: 'edit'
+                acl: 'edit',
+                hidden: this.model.get('stato') !== 'Bozza',
+            });
+        },
+
+        actionSelezionaProvvigioni: function () {
+            var self = this;
+            var consulenteId = this.model.get('consulenteId') || this.model.get('assignedUserId');
+
+            if (!consulenteId) {
+                Espo.Ui.error('Selezionare il consulente sull\'invito.');
+
+                return;
+            }
+
+            if (!this.model.get('meseCompetenza')) {
+                Espo.Ui.error('Impostare il mese competenza sull\'invito.');
+
+                return;
+            }
+
+            if (this.model.isNew()) {
+                Espo.Ui.error('Salvare l\'invito prima di selezionare le provvigioni.');
+
+                return;
+            }
+
+            this.createView('selectProvvigioniModal', 'custom:views/invito-a-fatturare/modals/select-provvigioni', {
+                invitoModel: this.model,
+            }, function (view) {
+                view.render();
+
+                self.listenToOnce(view, 'saved', function () {
+                    self.model.fetch();
+                    self.reRender();
+                });
             });
         },
 
@@ -36,18 +81,17 @@ define('custom:views/invito-a-fatturare/record/detail', ['views/record/detail'],
             }
 
             Espo.Ui.confirm({
-                message: 'Collegare le provvigioni consolidate del mese ' + mese + ' a questo invito?'
+                message: 'Collegare automaticamente tutte le provvigioni consolidate del mese ' + mese + '?'
             }).then(function () {
                 return Espo.Ajax.postRequest('InvitoAFatturare/action/generaDaProvvigioni', {
                     consulenteId: consulenteId,
                     meseCompetenza: mese,
                     fornitorePartnerId: self.model.get('fornitorePartnerId'),
-                    productBrandId: self.model.get('productBrandId')
+                    productBrandId: self.model.get('productBrandId'),
+                    invitoId: self.model.id,
                 });
             }).then(function (result) {
-                Espo.Ui.success(
-                    'Provvigioni collegate: ' + (result.count || 0)
-                );
+                Espo.Ui.success('Provvigioni collegate: ' + (result.count || 0));
                 self.model.fetch();
                 self.reRender();
             });
@@ -60,13 +104,13 @@ define('custom:views/invito-a-fatturare/record/detail', ['views/record/detail'],
                 message: 'Confermi l\'emissione dell\'invito a fatturare?'
             }).then(function () {
                 return Espo.Ajax.postRequest('InvitoAFatturare/action/emetti', {
-                    id: self.model.id
+                    id: self.model.id,
                 });
             }).then(function () {
                 Espo.Ui.success('Invito emesso.');
                 self.model.fetch();
                 self.reRender();
             });
-        }
+        },
     });
 });
