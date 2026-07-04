@@ -1,0 +1,14 @@
+{
+    "controller": "controllers/record",
+    "recordViews": {
+        "detail": "custom:views/provvigione/record/detail",
+        "edit": "custom:views/provvigione/record/edit"
+    },
+    "relationshipPanels": {
+        "provvigioni": {
+            "createDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": true
+        }
+    }
+}

@@ -1,0 +1,8 @@
+[
+    {
+        "name": "provvigioni",
+        "label": "Provvigioni",
+        "view": "views/record/panels/relationship",
+        "order": 20
+    }
+]

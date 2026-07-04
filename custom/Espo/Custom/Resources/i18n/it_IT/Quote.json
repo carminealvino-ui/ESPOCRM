@@ -70,7 +70,8 @@
     "labels": {
         "Create Quote": "Creare un Contratto",
         "Quote Items": "Contratto articoli",
-        "Shipping Providers": "Installatore"
+        "Shipping Providers": "Installatore",
+        "Ricalcola provvigioni": "Ricalcola provvigioni"
     },
     "options": {
         "inventoryStatus": {

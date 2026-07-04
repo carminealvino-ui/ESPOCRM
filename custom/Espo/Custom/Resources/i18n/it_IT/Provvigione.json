@@ -1,5 +1,11 @@
 {
     "fields": {
+        "tipo": "Tipo provvigione",
+        "tassoProvvigioni": "Tasso / coefficiente",
+        "importo": "Importo",
+        "contratto": "Contratto",
+        "cliente": "Cliente",
+        "regolaProvvigionale": "Regola provvigionale",
         "statoProvvigione": "Stato provvigione",
         "regimeProvvigione": "Regime provvigionale",
         "dataInstallazione": "Data installazione",

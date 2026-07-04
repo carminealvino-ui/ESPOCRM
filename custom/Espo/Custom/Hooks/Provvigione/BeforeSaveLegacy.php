@@ -9,7 +9,7 @@ class BeforeSaveLegacy extends Base
 {
     public function beforeSave(Entity $entity, array $options)
     {
-        if (!$entity->get('contrattoId')) {
+        if ($entity->get('contrattoId')) {
             return;
         }
 

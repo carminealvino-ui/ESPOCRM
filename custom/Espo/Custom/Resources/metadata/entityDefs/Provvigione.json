@@ -1,5 +1,30 @@
 {
     "fields": {
+        "tipo": {
+            "type": "enum",
+            "options": [
+                "Provvigione Base",
+                "Plus Provvigionale",
+                "Minus Provvigionale",
+                "Bonus (Sabato-Domenica)",
+                "Gara (Soglia >2.5k)",
+                "Gara (Soglia >3.5)",
+                "Gara (Soglia >5k)"
+            ],
+            "default": "Provvigione Base",
+            "isCustom": true
+        },
+        "tassoProvvigioni": {
+            "type": "float",
+            "decimalPlaces": 2,
+            "readOnly": true,
+            "isCustom": true
+        },
+        "importo": {
+            "type": "currency",
+            "readOnly": true,
+            "isCustom": true
+        },
         "statoProvvigione": {
             "type": "enum",
             "options": [
@@ -105,9 +130,29 @@
             "type": "link",
             "readOnly": true,
             "isCustom": true
+        },
+        "contratto": {
+            "type": "link",
+            "isCustom": true
+        },
+        "cliente": {
+            "type": "link",
+            "isCustom": true
         }
     },
     "links": {
+        "contratto": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "Quote",
+            "isCustom": true
+        },
+        "cliente": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "Account",
+            "isCustom": true
+        },
         "appuntamento": {
             "type": "belongsTo",
             "foreign": "provvigioni",

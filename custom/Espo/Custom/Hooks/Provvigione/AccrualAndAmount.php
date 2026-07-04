@@ -4,6 +4,7 @@ namespace Espo\Custom\Hooks\Provvigione;
 
 use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\Custom\Services\ProvvigioneAccrual;
+use Espo\Custom\Services\ProvvigioneManager;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
@@ -17,14 +18,27 @@ class AccrualAndAmount implements BeforeSave
 
     public function __construct(
         private EntityManager $entityManager,
-        private ProvvigioneAccrual $accrual
+        private ProvvigioneAccrual $accrual,
+        private ProvvigioneManager $provvigioneManager
     ) {}
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
+        if ($options->get('skipHooks') || $options->get('skipRules')) {
+            $this->applyAccrualDates($entity);
+            $this->applyScostamento($entity);
+
+            return;
+        }
+
+        if ($entity->get('contrattoId') && $entity->get('statoProvvigione') !== 'Prevista') {
+            $this->provvigioneManager->syncProvvigioneFromContratto($entity);
+        } else {
+            $this->applyLegacyQuoteCalculation($entity);
+        }
+
         $this->applyAccrualDates($entity);
         $this->applyScostamento($entity);
-        $this->applyLegacyQuoteCalculation($entity);
     }
 
     private function applyAccrualDates(Entity $entity): void

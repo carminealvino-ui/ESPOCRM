@@ -1,0 +1,112 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "statoProvvigione"
+                }
+            ],
+            [
+                {
+                    "name": "tipo"
+                },
+                {
+                    "name": "regimeProvvigione"
+                }
+            ],
+            [
+                {
+                    "name": "contratto"
+                },
+                {
+                    "name": "cliente"
+                }
+            ],
+            [
+                {
+                    "name": "opportunita"
+                },
+                {
+                    "name": "regolaProvvigionale"
+                }
+            ],
+            [
+                {
+                    "name": "productCategory"
+                },
+                {
+                    "name": "fornitorePartner"
+                }
+            ],
+            [
+                {
+                    "name": "productBrand"
+                },
+                false
+            ]
+        ],
+        "style": "default",
+        "label": "Overview"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "tassoProvvigioni"
+                },
+                {
+                    "name": "importo"
+                }
+            ],
+            [
+                {
+                    "name": "importoPrevisto"
+                },
+                {
+                    "name": "importoConsolidato"
+                }
+            ],
+            [
+                {
+                    "name": "scostamentoImporto"
+                },
+                false
+            ]
+        ],
+        "style": "default",
+        "label": "Importi"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "dataInstallazione"
+                },
+                {
+                    "name": "dataAttivazione"
+                }
+            ],
+            [
+                {
+                    "name": "dataCompetenza"
+                },
+                {
+                    "name": "dataLiquidazionePrevista"
+                }
+            ],
+            [
+                {
+                    "name": "dataLiquidazioneEffettiva"
+                },
+                {
+                    "name": "giorniLiquidazioneDaAttivazione"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": "Date liquidazione"
+    }
+]

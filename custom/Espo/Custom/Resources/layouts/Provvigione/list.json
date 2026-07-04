@@ -1,0 +1,30 @@
+[
+    {
+        "name": "name",
+        "link": true
+    },
+    {
+        "name": "statoProvvigione",
+        "width": 12
+    },
+    {
+        "name": "tipo",
+        "width": 14
+    },
+    {
+        "name": "regolaProvvigionale",
+        "width": 16
+    },
+    {
+        "name": "importoConsolidato",
+        "width": 12
+    },
+    {
+        "name": "dataCompetenza",
+        "width": 12
+    },
+    {
+        "name": "contratto",
+        "width": 14
+    }
+]

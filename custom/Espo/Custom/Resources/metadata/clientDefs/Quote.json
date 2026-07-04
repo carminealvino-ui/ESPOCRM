@@ -1,0 +1,24 @@
+{
+    "controller": "controllers/record",
+    "recordViews": {
+        "detail": "custom:views/quote/record/detail"
+    },
+    "iconClass": "fas fa-file-contract",
+    "buttonList": [
+        {
+            "name": "ricalcolaProvvigioni",
+            "label": "Ricalcola provvigioni",
+            "style": "default",
+            "action": "ricalcolaProvvigioni",
+            "acl": "edit"
+        }
+    ],
+    "relationshipPanels": {
+        "provvigioni": {
+            "createDisabled": false,
+            "selectDisabled": false,
+            "unlinkDisabled": false,
+            "order": 20
+        }
+    }
+}
