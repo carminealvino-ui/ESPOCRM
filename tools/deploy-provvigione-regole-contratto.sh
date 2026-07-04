@@ -43,13 +43,26 @@ FILES=(
   "custom/Espo/Custom/Resources/layouts/Provvigione/detail.json"
   "custom/Espo/Custom/Resources/layouts/Provvigione/list.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Provvigione.json"
-  "client/custom/src/views/quote/record/detail.js"
   "client/custom/src/views/provvigione/record/detail.js"
   "client/custom/src/views/provvigione/record/edit.js"
+  "client/custom/src/handlers/quote/ricalcola-provvigioni.js"
+)
+
+LEGACY_REMOVE=(
+  "client/custom/src/views/quote/record/detail.js"
 )
 
 for rel in "${FILES[@]}"; do
   backup_if_exists "${rel}"
+done
+
+for rel in "${LEGACY_REMOVE[@]}"; do
+  src="${CRM_ROOT}/${rel}"
+  if [[ -f "${src}" ]]; then
+    backup_if_exists "${rel}"
+    rm -f "${src}"
+    echo "REMOVED legacy ${rel}"
+  fi
 done
 
 echo "=== Deploy da ${BRANCH} ==="

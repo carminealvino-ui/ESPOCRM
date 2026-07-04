@@ -1,8 +1,5 @@
 {
     "controller": "controllers/record",
-    "recordViews": {
-        "detail": "custom:views/quote/record/detail"
-    },
     "iconClass": "fas fa-file-contract",
     "buttonList": [
         {
@@ -10,6 +7,7 @@
             "label": "Ricalcola provvigioni",
             "style": "default",
             "action": "ricalcolaProvvigioni",
+            "handler": "custom:handlers/quote/ricalcola-provvigioni",
             "acl": "edit"
         }
     ],
