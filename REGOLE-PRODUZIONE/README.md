@@ -94,7 +94,8 @@ Vedi [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md).
 | `09-NO-CODICE-SENZA-BACKUP-E-HOOKVERSION.md` | **Backup obbligatorio**, dashboard, Softaculous, **hookVersion** |
 | `10-RIAPPLICA-VARIAZIONI-DOPO-RESTORE.md` | Piano step post-restore Softaculous |
 | `11-I18N-IT-IT-SOLO-AGGIUNTE.md` | **it_IT: solo nuove chiavi**, mai modificare etichette esistenti |
+| `13-SCOPE-MODULI-NON-REGRESSIONE.md` | **Ambito per modulo** — KPI, Contratto, provvigioni non si mescolano |
 
 ---
 
-*Ultimo aggiornamento regole: 2026-06-20*
+*Ultimo aggiornamento regole: 2026-07-04*

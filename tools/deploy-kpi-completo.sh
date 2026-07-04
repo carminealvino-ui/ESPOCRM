@@ -2,7 +2,7 @@
 # Deploy completo KPI dashlet v2 — un solo comando, niente patch manuali.
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-rese-periodo-9999/tools/deploy-kpi-completo.sh?t=$(date +%s)" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-recessi-finanziamento-9999/tools/deploy-kpi-completo.sh?t=$(date +%s)" | bash
 #   php clear_cache.php && php rebuild.php
 #
 # NON sovrascrive Global.json né altri i18n it_IT (regola 11).
@@ -10,7 +10,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="cursor/crm-kpi-rese-periodo-9999"
+BRANCH="cursor/crm-kpi-recessi-finanziamento-9999"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 STAMP=$(date +%Y%m%d-%H%M%S)
