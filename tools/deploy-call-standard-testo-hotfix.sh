@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Hotfix: classe CallStandardTesto mancante (errore 500 salvataggio Appuntamento).
+# Hotfix Espo 10: CallStandardTesto senza Espo\Core\Controllers\Base (rimosso in v10).
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-dashlet-v2-9999/tools/deploy-call-standard-testo-hotfix.sh?t=$(date +%s)" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-recessi-finanziamento-9999/tools/deploy-call-standard-testo-hotfix.sh?t=$(date +%s)" | bash
 #   php clear_cache.php
 
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="cursor/crm-kpi-dashlet-v2-9999"
+BRANCH="cursor/crm-kpi-recessi-finanziamento-9999"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 STAMP=$(date +%Y%m%d-%H%M%S)
