@@ -6,14 +6,6 @@ define('custom:views/quote/record/detail', ['sales:views/quote/record/detail'], 
 
         setup: function () {
             Dep.prototype.setup.call(this);
-
-            this.addMenuItem('buttons', {
-                name: 'ricalcolaProvvigioni',
-                label: this.translate('Ricalcola provvigioni', 'labels', 'Quote'),
-                style: 'default',
-                action: 'ricalcolaProvvigioni',
-                acl: 'edit'
-            });
         },
 
         actionRicalcolaProvvigioni: function () {
