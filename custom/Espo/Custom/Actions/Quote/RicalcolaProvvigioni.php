@@ -37,6 +37,8 @@ class RicalcolaProvvigioni
 
         $result = $this->provvigioneManager->recalculateAllForQuote($quote);
 
+        $quote = $this->entityManager->getEntityById('Quote', $quote->getId());
+
         $count = $this->entityManager
             ->getRDBRepository('Provvigione')
             ->where(['contrattoId' => $quote->getId()])
@@ -47,6 +49,7 @@ class RicalcolaProvvigioni
             'count' => $count,
             'created' => $result['created'],
             'purged' => $result['purged'],
+            'totaleProvvigioni' => $quote->get('totaleProvvigioni'),
         ];
     }
 }

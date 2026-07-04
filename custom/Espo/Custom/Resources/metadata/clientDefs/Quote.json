@@ -1,25 +1,6 @@
 {
     "controller": "controllers/record",
     "iconClass": "fas fa-file-contract",
-    "fieldDefs": {
-        "totaleProvvigioni": {
-            "hidden": true
-        }
-    },
-    "dynamicLogic": {
-        "fields": {
-            "totaleProvvigioni": {
-                "visible": {
-                    "conditionGroup": [
-                        {
-                            "type": "isTrue",
-                            "attribute": "deleted"
-                        }
-                    ]
-                }
-            }
-        }
-    },
     "buttonList": [
         {
             "name": "ricalcolaProvvigioni",

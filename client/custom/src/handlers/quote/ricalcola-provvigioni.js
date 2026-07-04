@@ -25,6 +25,11 @@ define('custom:handlers/quote/ricalcola-provvigioni', ['action-handler'], functi
                     'Provvigioni rigenerate: ' + (result.count || 0)
                     + (result.purged ? ' (rimosse ' + result.purged + ' righe obsolete)' : '')
                 );
+
+                if (result.totaleProvvigioni !== undefined) {
+                    model.set('totaleProvvigioni', result.totaleProvvigioni);
+                }
+
                 model.fetch();
                 view.reRender();
             });
