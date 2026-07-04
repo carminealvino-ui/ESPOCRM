@@ -43,6 +43,17 @@
             ],
             [
                 {
+                    "name": "numeroContratto"
+                },
+                {
+                    "name": "statoContratto"
+                },
+                {
+                    "name": "statoFinanziamento"
+                }
+            ],
+            [
+                {
                     "name": "description"
                 }
             ],
@@ -55,6 +66,46 @@
         ],
         "style": "default",
         "label": "Overview"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "statoFinanziamento"
+                }
+            ],
+            [
+                {
+                    "name": "importoCaparra"
+                },
+                {
+                    "name": "importoSaldo"
+                }
+            ],
+            [
+                {
+                    "name": "importoFinanziato"
+                },
+                {
+                    "name": "rataPrestito"
+                },
+                {
+                    "name": "nrRate"
+                }
+            ],
+            [
+                {
+                    "name": "tassoZero"
+                },
+                false,
+                false
+            ]
+        ],
+        "style": "default",
+        "label": "Finanziamento"
     },
     {
         "rows": [

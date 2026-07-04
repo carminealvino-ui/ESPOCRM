@@ -32,6 +32,89 @@
             "type": "currency",
             "isCustom": true
         },
+        "numeroContratto": {
+            "type": "varchar",
+            "maxLength": 100,
+            "isCustom": true
+        },
+        "finanziamento": {
+            "type": "bool",
+            "default": false,
+            "isCustom": true
+        },
+        "statoFinanziamento": {
+            "type": "enum",
+            "options": [
+                "",
+                "In lavorazione",
+                "In rivalutazione",
+                "In Attesa Documentazione",
+                "Approvato",
+                "Respinto",
+                "Annullato"
+            ],
+            "style": {
+                "": null,
+                "In lavorazione": null,
+                "In rivalutazione": null,
+                "In Attesa Documentazione": null,
+                "Approvato": null,
+                "Respinto": null,
+                "Annullato": null
+            },
+            "default": null,
+            "isCustom": true
+        },
+        "importoCaparra": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoFinanziato": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoSaldo": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "rataPrestito": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "nrRate": {
+            "type": "int",
+            "isCustom": true
+        },
+        "tassoZero": {
+            "type": "bool",
+            "default": false,
+            "isCustom": true
+        },
+        "statoContratto": {
+            "type": "enum",
+            "options": [
+                "",
+                "Inserito",
+                "In lavorazione",
+                "Appuntamento Fissato",
+                "Installato",
+                "Sospeso",
+                "Annullato",
+                "Recesso"
+            ],
+            "style": {
+                "": null,
+                "Inserito": null,
+                "In lavorazione": null,
+                "Appuntamento Fissato": null,
+                "Installato": null,
+                "Sospeso": null,
+                "Annullato": null,
+                "Recesso": null
+            },
+            "default": "Inserito",
+            "isCustom": true
+        },
         "minusPlus": {
             "type": "currency",
             "isCustom": true
