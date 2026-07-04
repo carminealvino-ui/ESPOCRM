@@ -114,10 +114,6 @@
             "type": "link",
             "isCustom": true
         },
-        "invitoAFatturare": {
-            "type": "link",
-            "isCustom": true
-        },
         "fornitorePartner": {
             "type": "link",
             "isCustom": true
@@ -169,12 +165,6 @@
             "type": "belongsTo",
             "foreign": "provvigioni",
             "entity": "ProductCategory",
-            "isCustom": true
-        },
-        "invitoAFatturare": {
-            "type": "belongsTo",
-            "foreign": "provvigioni",
-            "entity": "InvitoAFatturare",
             "isCustom": true
         },
         "fornitorePartner": {
