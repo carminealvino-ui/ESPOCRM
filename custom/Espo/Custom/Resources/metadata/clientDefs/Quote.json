@@ -1,11 +1,25 @@
 {
     "controller": "controllers/record",
     "iconClass": "fas fa-file-contract",
+    "dynamicLogic": {
+        "fields": {
+            "totaleProvvigioni": {
+                "visible": {
+                    "conditionGroup": [
+                        {
+                            "type": "isTrue",
+                            "attribute": "deleted"
+                        }
+                    ]
+                }
+            }
+        }
+    },
     "buttonList": [
         {
             "name": "ricalcolaProvvigioni",
             "label": "Ricalcola provvigioni",
-            "style": "default",
+            "style": "primary",
             "action": "ricalcolaProvvigioni",
             "handler": "custom:handlers/quote/ricalcola-provvigioni",
             "acl": "edit"
@@ -13,8 +27,8 @@
     ],
     "relationshipPanels": {
         "provvigioni": {
-            "createDisabled": false,
-            "selectDisabled": false,
+            "createDisabled": true,
+            "selectDisabled": true,
             "unlinkDisabled": false,
             "order": 20,
             "layout": "listSmall"

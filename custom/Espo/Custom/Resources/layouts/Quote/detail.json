@@ -104,42 +104,29 @@
         "rows": [
             [
                 {
-                    "name": "prezzoListinoIvaEsclusa",
-                    "customLabel": "Prezzo listino (IVA escl.)"
-                },
-                {
-                    "name": "prezzoCodiceIvaEsclusa",
-                    "customLabel": "Prezzo a codice (IVA escl.)"
-                }
-            ],
-            [
-                {
-                    "name": "margineSuListino",
-                    "customLabel": "Margine % su listino"
-                },
-                {
                     "name": "contattoPersonaleArquati",
                     "customLabel": "Contatto personale ARQUATI (+5%)"
-                }
-            ],
-            [
-                {
-                    "name": "integrazionePncPercentuale",
-                    "customLabel": "Integrazione PNC % (da contratto)"
-                }
-            ],
-            [
-                {
-                    "name": "minusPlus",
-                    "customLabel": "Plusvalenza / Minusvalenza (€)"
                 },
                 {
                     "name": "ordineIncompletoAriel",
                     "customLabel": "Ordine incompleto Ariel (−5% provv.)"
                 }
+            ],
+            [
+                {
+                    "name": "minusPlus",
+                    "customLabel": "Plusvalenza / Minusvalenza (€)",
+                    "readOnly": true
+                },
+                {
+                    "name": "margineSuListino",
+                    "customLabel": "Margine % su listino",
+                    "readOnly": true
+                }
             ]
         ],
         "style": "default",
-        "label": "Provvigioni (calcolo)"
+        "label": "Opzioni provvigioni",
+        "noteText": "Le provvigioni si generano dal subpanel sotto con «Ricalcola provvigioni» (regole provvigionali). I campi listino sono copiati dall'opportunità alla creazione contratto."
     }
 ]

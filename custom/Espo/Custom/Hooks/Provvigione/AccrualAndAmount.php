@@ -35,8 +35,6 @@ class AccrualAndAmount implements BeforeSave
 
         if ($entity->get('contrattoId') && $entity->get('statoProvvigione') !== 'Prevista') {
             $this->provvigioneManager->syncProvvigioneFromContratto($entity);
-        } else {
-            $this->applyLegacyQuoteCalculation($entity);
         }
 
         $this->applyAccrualDates($entity);
@@ -123,67 +121,6 @@ class AccrualAndAmount implements BeforeSave
                 'scostamentoImporto',
                 (float) $consolidato - (float) $previsto
             );
-        }
-    }
-
-    private function applyLegacyQuoteCalculation(Entity $entity): void
-    {
-        if (!$entity->get('contrattoId')) {
-            return;
-        }
-
-        if ($entity->get('statoProvvigione') === 'Prevista') {
-            return;
-        }
-
-        $quote = $this->entityManager
-            ->getRDBRepository('Quote')
-            ->where(['id' => $entity->get('contrattoId')])
-            ->findOne();
-
-        if (!$quote) {
-            return;
-        }
-
-        $tipo = $entity->get('tipo');
-        $tasso = (float) $entity->get('tassoProvvigioni');
-
-        $base = 0.0;
-
-        if ($tipo === 'Provvigione Base') {
-            $base = (float) $quote->get('amount');
-        } elseif ($tipo === 'Plus Provvigionale' || $tipo === 'Minus Provvigionale') {
-            $base = (float) $quote->get('minusPlus');
-        } elseif ($tipo === 'Bonus (Sabato-Domenica)') {
-            $date = $quote->get('dateQuoted');
-
-            if ($date) {
-                $day = date('N', strtotime($date));
-
-                if ($day >= 6) {
-                    $base = (float) $quote->get('amount');
-                }
-            }
-        } elseif ($tipo && strpos($tipo, 'Gara') !== false) {
-            $amount = (float) $quote->get('amount');
-
-            if (strpos($tipo, '2.5') !== false && $amount > 2500) {
-                $base = $amount;
-            }
-
-            if (strpos($tipo, '3.5') !== false && $amount > 3500) {
-                $base = $amount;
-            }
-
-            if (strpos($tipo, '5') !== false && $amount > 5000) {
-                $base = $amount;
-            }
-        }
-
-        if ($base > 0 && $tasso > 0) {
-            $importo = ($base * $tasso) / 100;
-            $entity->set('importo', $importo);
-            $entity->set('importoConsolidato', $importo);
         }
     }
 }
