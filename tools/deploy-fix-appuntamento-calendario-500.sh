@@ -24,6 +24,8 @@ FILES=(
   "custom/Espo/Custom/Services/Appuntamento.php"
   "custom/Espo/Custom/Services/AppuntamentoRifissatoCreator.php"
   "custom/Espo/Custom/Controllers/Appuntamento.php"
+  "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"
+  "custom/Espo/Custom/Tools/Appuntamento/PendingCallDateTime.php"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
   "client/custom/src/helpers/appuntamento-prospect-sync.js"
   "client/custom/src/helpers/appuntamento-sottostato-map.js"
@@ -60,7 +62,7 @@ for rel in "${FILES[@]}"; do
 done
 
 grep -q "implements BeforeSave" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
-grep -q "RequiredDefaults" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/RequiredDefaults.php"
+grep -q "normalizeMultiEnum" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/RequiredDefaults.php"
 grep -q "status') !== 'Held'" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/ProvvigioneForecast.php"
 grep -q "videoCallTelefonico" "${CRM_ROOT}/custom/Espo/Custom/Services/Appuntamento.php"
 grep -q "findDuplicateProspect" "${CRM_ROOT}/custom/Espo/Custom/Services/Prospect.php"

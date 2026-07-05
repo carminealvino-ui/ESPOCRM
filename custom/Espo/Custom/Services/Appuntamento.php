@@ -34,9 +34,13 @@ class Appuntamento extends \Espo\Core\Templates\Services\Event
             'zTL' => false,
             'syncConGoogle' => false,
         ] as $field => $default) {
-            if (!property_exists($data, $field) || $data->{$field} === null) {
+            if (!property_exists($data, $field) || $data->{$field} === null || $data->{$field} === '') {
                 $data->{$field} = $default;
             }
+        }
+
+        if (property_exists($data, 'tipo') && is_string($data->tipo) && $data->tipo !== '') {
+            $data->tipo = [$data->tipo];
         }
 
         return $data;

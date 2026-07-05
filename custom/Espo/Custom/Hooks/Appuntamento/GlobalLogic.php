@@ -181,7 +181,7 @@ class GlobalLogic implements BeforeSave
 
             $entity->set(
                 'hookVersion',
-                '1.7.5'
+                '1.7.6'
             );
 
             if ($entity->hasAttribute('zTL') && $entity->get('zTL') === null) {
@@ -220,9 +220,9 @@ class GlobalLogic implements BeforeSave
 
             ) {
 
-                $prospect = $this->entityManager->getEntity(
+                $prospect = $this->entityManager->getEntityById(
                     'Prospect',
-                    $entity->get('parentId')
+                    (string) $entity->get('parentId')
                 );
             }
 
@@ -233,9 +233,9 @@ class GlobalLogic implements BeforeSave
 
             ) {
 
-                $prospect = $this->entityManager->getEntity(
+                $prospect = $this->entityManager->getEntityById(
                     'Prospect',
-                    $entity->get('prospectId')
+                    (string) $entity->get('prospectId')
                 );
             }
 
@@ -252,9 +252,9 @@ class GlobalLogic implements BeforeSave
 
             ) {
 
-                $lead = $this->entityManager->getEntity(
+                $lead = $this->entityManager->getEntityById(
                     'Lead',
-                    $entity->get('parentId')
+                    (string) $entity->get('parentId')
                 );
             }
 
@@ -677,6 +677,13 @@ class GlobalLogic implements BeforeSave
                 $entity->set('assignedUserId', '1');
             }
 
+        } catch (\Throwable $e) {
+            error_log(
+                '[Appuntamento GlobalLogic] ' . $e->getMessage() . ' in ' .
+                $e->getFile() . ':' . $e->getLine()
+            );
+
+            throw $e;
         } finally {
 
             self::$processing = false;

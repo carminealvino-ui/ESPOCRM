@@ -7,7 +7,7 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Default obbligatori per campi bool NOT NULL assenti dal form calendario (edit-small).
+ * Normalizza campi obbligatori / tipi prima del persist (form calendario e modale).
  */
 class RequiredDefaults implements BeforeSave
 {
@@ -20,6 +20,11 @@ class RequiredDefaults implements BeforeSave
         'syncConGoogle' => false,
     ];
 
+    /** @var string[] */
+    private const MULTI_ENUM_FIELDS = [
+        'tipo',
+    ];
+
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
         if ($options->get('skipHooks')) {
@@ -27,13 +32,57 @@ class RequiredDefaults implements BeforeSave
         }
 
         foreach (self::BOOL_DEFAULTS as $field => $default) {
-            if (!$entity->hasAttribute($field)) {
-                continue;
+            $this->normalizeBool($entity, $field, $default);
+        }
+
+        foreach (self::MULTI_ENUM_FIELDS as $field) {
+            $this->normalizeMultiEnum($entity, $field);
+        }
+    }
+
+    private function normalizeBool(Entity $entity, string $field, bool $default): void
+    {
+        if (!$entity->hasAttribute($field)) {
+            return;
+        }
+
+        $value = $entity->get($field);
+
+        if ($value === null || $value === '') {
+            $entity->set($field, $default);
+
+            return;
+        }
+
+        if (is_string($value)) {
+            $lower = strtolower($value);
+
+            if ($lower === 'true' || $lower === '1') {
+                $entity->set($field, true);
+
+                return;
             }
 
-            if ($entity->get($field) === null) {
-                $entity->set($field, $default);
+            if ($lower === 'false' || $lower === '0') {
+                $entity->set($field, false);
             }
+        }
+    }
+
+    private function normalizeMultiEnum(Entity $entity, string $field): void
+    {
+        if (!$entity->hasAttribute($field)) {
+            return;
+        }
+
+        $value = $entity->get($field);
+
+        if ($value === null || $value === '' || $value === []) {
+            return;
+        }
+
+        if (is_string($value)) {
+            $entity->set($field, [$value]);
         }
     }
 }
