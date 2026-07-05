@@ -376,6 +376,7 @@
         "videoCallTelefonico": {
             "notNull": true,
             "type": "bool",
+            "default": false,
             "isCustom": true
         },
         "callCenter": {
@@ -429,6 +430,7 @@
         "zTL": {
             "notNull": true,
             "type": "bool",
+            "default": false,
             "isCustom": true
         },
         "sorgente": {

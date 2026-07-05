@@ -16,6 +16,7 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 BACKUP="${CRM_ROOT}/backup_dev/Appuntamento/calendario-500-${STAMP}"
 
 FILES=(
+  "custom/Espo/Custom/Hooks/Appuntamento/RequiredDefaults.php"
   "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
   "custom/Espo/Custom/Hooks/Appuntamento/ProvvigioneForecast.php"
   "custom/Espo/Custom/Services/ProvvigioneManager.php"
@@ -23,6 +24,7 @@ FILES=(
   "custom/Espo/Custom/Services/Appuntamento.php"
   "custom/Espo/Custom/Services/AppuntamentoRifissatoCreator.php"
   "custom/Espo/Custom/Controllers/Appuntamento.php"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
   "client/custom/src/helpers/appuntamento-prospect-sync.js"
   "client/custom/src/helpers/appuntamento-sottostato-map.js"
   "client/custom/src/views/fields/appuntamento-parent.js"
@@ -33,6 +35,7 @@ FILES=(
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/logicDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
+  "tools/diagnose-appuntamento-save.php"
 )
 
 echo "=== Backup ${BACKUP} ==="
@@ -57,12 +60,18 @@ for rel in "${FILES[@]}"; do
 done
 
 grep -q "implements BeforeSave" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
+grep -q "RequiredDefaults" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/RequiredDefaults.php"
 grep -q "status') !== 'Held'" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/ProvvigioneForecast.php"
+grep -q "videoCallTelefonico" "${CRM_ROOT}/custom/Espo/Custom/Services/Appuntamento.php"
 grep -q "findDuplicateProspect" "${CRM_ROOT}/custom/Espo/Custom/Services/Prospect.php"
 
 echo ""
-echo "=== Pulizia cache ==="
+echo "=== Diagnostica salvataggio ==="
 cd "${CRM_ROOT}"
+php tools/diagnose-appuntamento-save.php || true
+
+echo ""
+echo "=== Pulizia cache ==="
 php clear_cache.php 2>/dev/null || true
 rm -rf data/cache/* 2>/dev/null || true
 php -r "if (function_exists('opcache_reset')) { opcache_reset(); echo \"opcache_reset OK\n\"; }" 2>/dev/null || true

@@ -10,6 +10,8 @@ class Appuntamento extends \Espo\Core\Templates\Services\Event
 
     public function createEntity($data)
     {
+        $data = $this->normalizeCreateData($data);
+
         $duplicate = $this->findDuplicateForCreate($data);
 
         if ($duplicate) {
@@ -17,6 +19,27 @@ class Appuntamento extends \Espo\Core\Templates\Services\Event
         }
 
         return parent::createEntity($data);
+    }
+
+    /**
+     * @param array<string, mixed>|object $data
+     * @return object
+     */
+    private function normalizeCreateData(array|object $data): object
+    {
+        $data = (object) (is_array($data) ? $data : (array) $data);
+
+        foreach ([
+            'videoCallTelefonico' => false,
+            'zTL' => false,
+            'syncConGoogle' => false,
+        ] as $field => $default) {
+            if (!property_exists($data, $field) || $data->{$field} === null) {
+                $data->{$field} = $default;
+            }
+        }
+
+        return $data;
     }
 
     private function findDuplicateForCreate(object $data): ?Entity

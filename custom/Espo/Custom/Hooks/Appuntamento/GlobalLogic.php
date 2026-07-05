@@ -181,11 +181,19 @@ class GlobalLogic implements BeforeSave
 
             $entity->set(
                 'hookVersion',
-                '1.7.4'
+                '1.7.5'
             );
 
             if ($entity->hasAttribute('zTL') && $entity->get('zTL') === null) {
                 $entity->set('zTL', false);
+            }
+
+            if ($entity->hasAttribute('videoCallTelefonico') && $entity->get('videoCallTelefonico') === null) {
+                $entity->set('videoCallTelefonico', false);
+            }
+
+            if ($entity->hasAttribute('syncConGoogle') && $entity->get('syncConGoogle') === null) {
+                $entity->set('syncConGoogle', false);
             }
 
             $this->applyDefaultDurationOnCreate($entity);
@@ -665,6 +673,8 @@ class GlobalLogic implements BeforeSave
                     'assignedUsersIds',
                     ['1']
                 );
+
+                $entity->set('assignedUserId', '1');
             }
 
         } finally {
