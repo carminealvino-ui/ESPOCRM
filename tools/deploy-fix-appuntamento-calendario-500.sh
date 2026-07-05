@@ -63,6 +63,7 @@ done
 
 grep -q "implements BeforeSave" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
 grep -q "normalizeMultiEnum" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/RequiredDefaults.php"
+grep -q "resolveAdminUserId" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
 grep -q "status') !== 'Held'" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/ProvvigioneForecast.php"
 grep -q "videoCallTelefonico" "${CRM_ROOT}/custom/Espo/Custom/Services/Appuntamento.php"
 grep -q "findDuplicateProspect" "${CRM_ROOT}/custom/Espo/Custom/Services/Prospect.php"

@@ -181,7 +181,7 @@ class GlobalLogic implements BeforeSave
 
             $entity->set(
                 'hookVersion',
-                '1.7.6'
+                '1.7.7'
             );
 
             if ($entity->hasAttribute('zTL') && $entity->get('zTL') === null) {
@@ -645,36 +645,20 @@ class GlobalLogic implements BeforeSave
             }
 
             // ========================================
-            // FIX ASSEGNAZIONE ADMIN
+            // FIX ASSEGNAZIONE ADMIN (Not Held / Ingestibile)
+            // Solo assignedUserId: assignedUsersIds in beforeSave
+            // può causare fatal/recursion su Espo 10 in create.
             // ========================================
 
             if (
-
                 $status === 'Not Held' ||
                 $status === 'Ingestibile'
-
             ) {
+                $adminId = $this->resolveAdminUserId();
 
-                // ========================================
-                // RESET UTENTI ASSEGNATI
-                // ========================================
-
-                $entity->set(
-                    'assignedUsersIds',
-                    []
-                );
-
-                // ========================================
-                // ASSEGNA SOLO ADMIN
-                // USER ID = 1
-                // ========================================
-
-                $entity->set(
-                    'assignedUsersIds',
-                    ['1']
-                );
-
-                $entity->set('assignedUserId', '1');
+                if ($adminId) {
+                    $entity->set('assignedUserId', $adminId);
+                }
             }
 
         } catch (\Throwable $e) {
@@ -953,6 +937,24 @@ class GlobalLogic implements BeforeSave
                 $category->get('productBrandName')
             );
         }
+    }
+
+    private function resolveAdminUserId(): ?string
+    {
+        static $adminId = null;
+
+        if ($adminId !== null) {
+            return $adminId !== '' ? $adminId : null;
+        }
+
+        $admin = $this->entityManager
+            ->getRDBRepository('User')
+            ->where(['userName' => 'admin', 'isActive' => true])
+            ->findOne();
+
+        $adminId = $admin?->getId() ?? '1';
+
+        return $adminId !== '' ? $adminId : null;
     }
 
 }
