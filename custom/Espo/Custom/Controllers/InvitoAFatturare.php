@@ -5,7 +5,6 @@ namespace Espo\Custom\Controllers;
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
 use Espo\Core\Controllers\Record;
-use Espo\Core\InjectableFactory;
 use Espo\Custom\Actions\InvitoAFatturare\CollegaProvvigioni;
 use Espo\Custom\Actions\InvitoAFatturare\GeneraDaProvvigioni;
 use Espo\Custom\Actions\InvitoAFatturare\GetProvvigioniEleggibili;
@@ -14,11 +13,6 @@ use Espo\ORM\EntityManager;
 
 class InvitoAFatturare extends Record
 {
-    public function __construct(
-        private InjectableFactory $injectableFactory,
-        private EntityManager $entityManager
-    ) {}
-
     public function postActionGeneraDaProvvigioni(Request $request, Response $response): object
     {
         return $this->injectableFactory
@@ -56,7 +50,8 @@ class InvitoAFatturare extends Record
             throw new \Exception('ID invito mancante.');
         }
 
-        $invito = $this->entityManager->getEntityById('InvitoAFatturare', $id);
+        $entityManager = $this->injectableFactory->create(EntityManager::class);
+        $invito = $entityManager->getEntityById('InvitoAFatturare', $id);
 
         if (!$invito) {
             throw new \Exception('Invito non trovato.');
