@@ -11,7 +11,8 @@
         "editSmall": "custom:views/appuntamento/record/edit-small"
     },
     "fieldViews": {
-        "parent": "custom:views/fields/appuntamento-parent"
+        "parent": "custom:views/fields/appuntamento-parent",
+        "sottostato": "custom:views/fields/appuntamento-sottostato"
     },
     "modalViews": {
         "detail": "crm:views/meeting/modals/detail"
