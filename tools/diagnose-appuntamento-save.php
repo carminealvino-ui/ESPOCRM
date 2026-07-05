@@ -188,9 +188,18 @@ foreach ($scenarios as $label => $extra) {
         $em->removeEntity($entity);
         diag_line('[OK] record test rimosso');
     } catch (Throwable $e) {
-        diag_line('[ERRORE] ' . $e->getMessage());
-        diag_line('  in ' . $e->getFile() . ':' . $e->getLine());
-        diag_line(substr($e->getTraceAsString(), 0, 1500));
+        $msg = $e->getMessage();
+        $expected = $label === 'Not Held senza prospect'
+            && str_contains($msg, 'senza prospect o cliente non consentito');
+
+        if ($expected) {
+            diag_line('[ATTESO] ' . $msg);
+            diag_line('  (regola PreventDuplicate v1.0.6: nuovo appuntamento richiede prospect/cliente)');
+        } else {
+            diag_line('[ERRORE] ' . $msg);
+            diag_line('  in ' . $e->getFile() . ':' . $e->getLine());
+            diag_line(substr($e->getTraceAsString(), 0, 1500));
+        }
     }
 }
 
