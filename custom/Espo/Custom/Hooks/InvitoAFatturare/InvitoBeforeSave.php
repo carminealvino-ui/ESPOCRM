@@ -9,6 +9,7 @@ use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
  * Totali amministrativi e allineamento stato provvigioni incluse.
+ * File: InvitoBeforeSave.php (nome file = nome classe, richiesto da Espo HookManager).
  */
 class InvitoBeforeSave implements BeforeSaveHook
 {

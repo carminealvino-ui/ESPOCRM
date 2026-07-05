@@ -31,7 +31,7 @@ backup_if_exists() {
 FILES=(
   "custom/Espo/Custom/Services/InvitoAFatturareManager.php"
   "custom/Espo/Custom/Controllers/InvitoAFatturare.php"
-  "custom/Espo/Custom/Hooks/InvitoAFatturare/BeforeSave.php"
+  "custom/Espo/Custom/Hooks/InvitoAFatturare/InvitoBeforeSave.php"
   "custom/Espo/Custom/Actions/InvitoAFatturare/GeneraDaProvvigioni.php"
   "custom/Espo/Custom/Actions/InvitoAFatturare/GetProvvigioniEleggibili.php"
   "custom/Espo/Custom/Actions/InvitoAFatturare/CollegaProvvigioni.php"

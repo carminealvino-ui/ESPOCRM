@@ -1,6 +1,6 @@
 <?php
 /**
- * Trova classi PHP duplicate sotto custom/Espo/Custom/Hooks (causa fatal "already in use").
+ * Trova classi PHP duplicate e mismatch nome file/classe (Espo HookManager).
  *
  *   cd ~/public_html/crm/mec-group
  *   php tools/diagnose-duplicate-hooks.php
@@ -23,6 +23,8 @@ echo "Root: {$hooksRoot}\n\n";
 $classes = [];
 /** @var list<string> */
 $suspiciousFiles = [];
+/** @var list<string> */
+$nameMismatches = [];
 
 $iterator = new RecursiveIteratorIterator(
     new RecursiveDirectoryIterator($hooksRoot, FilesystemIterator::SKIP_DOTS)
@@ -61,8 +63,30 @@ foreach ($iterator as $fileInfo) {
         continue;
     }
 
-    $fqcn = trim($nsMatch[1]) . '\\' . $classMatch[1];
+    $namespace = trim($nsMatch[1]);
+    $classShort = $classMatch[1];
+    $fqcn = $namespace . '\\' . $classShort;
     $classes[$fqcn][] = $path;
+
+    $expectedFromPath = pathToExpectedClass($path, $crmRoot);
+
+    if ($expectedFromPath !== $fqcn) {
+        $nameMismatches[] = "{$path}\n  atteso: {$expectedFromPath}\n  trovato: {$fqcn}";
+    }
+
+    if (!class_exists($fqcn, false)) {
+        // Autoload non ancora caricato: verifica sintassi base
+        continue;
+    }
+}
+
+function pathToExpectedClass(string $filePath, string $crmRoot): string
+{
+    $relative = preg_replace('#^' . preg_quote($crmRoot . '/', '#') . '#', '', $filePath);
+    $relative = preg_replace('/\.php$/i', '', (string) $relative);
+    $relative = preg_replace('/^(application|custom)[\/\\\\]/i', '', (string) $relative);
+
+    return str_replace('/', '\\', (string) $relative);
 }
 
 $duplicateCount = 0;
@@ -83,9 +107,17 @@ foreach ($classes as $fqcn => $paths) {
 }
 
 if ($duplicateCount === 0) {
-    echo "[OK] Nessuna classe duplicata trovata.\n";
+    echo "[OK] Nessuna classe duplicata.\n";
+}
+
+if ($nameMismatches !== []) {
+    echo "\n=== Mismatch nome file / classe (causa get_class_methods error) ===\n";
+
+    foreach ($nameMismatches as $line) {
+        echo "[MISMATCH] {$line}\n\n";
+    }
 } else {
-    echo "Trovate {$duplicateCount} classi duplicate.\n";
+    echo "[OK] Tutti i file hook hanno nome classe coerente col path.\n";
 }
 
 if ($suspiciousFiles !== []) {
@@ -94,22 +126,17 @@ if ($suspiciousFiles !== []) {
     foreach ($suspiciousFiles as $path) {
         echo "  - {$path}\n";
     }
-
-    echo "\nSpostare in backup_dev/hooks_quarantine/ e ricostruire cache.\n";
 } else {
     echo "\n[OK] Nessun file backup/copy in Hooks.\n";
 }
 
-echo "\nVerifica InvitoAFatturare: classe deve essere InvitoBeforeSave\n";
-$invitoFile = $hooksRoot . '/InvitoAFatturare/BeforeSave.php';
+$invitoCanonical = $hooksRoot . '/InvitoAFatturare/InvitoBeforeSave.php';
+$invitoLegacy = $hooksRoot . '/InvitoAFatturare/BeforeSave.php';
 
-if (is_file($invitoFile)) {
-    $content = (string) file_get_contents($invitoFile);
-    echo str_contains($content, 'class InvitoBeforeSave')
-        ? "[OK] InvitoBeforeSave presente\n"
-        : "[MANCA] Rinominare class BeforeSave -> InvitoBeforeSave\n";
-} else {
-    echo "[--] File InvitoAFatturare/BeforeSave.php assente\n";
-}
+echo "\n=== InvitoAFatturare ===\n";
+echo is_file($invitoCanonical) ? "[OK] InvitoBeforeSave.php presente\n" : "[MANCA] InvitoBeforeSave.php\n";
+echo is_file($invitoLegacy) ? "[ERRORE] BeforeSave.php ancora presente (rimuovere)\n" : "[OK] BeforeSave.php assente\n";
 
-exit($duplicateCount > 0 ? 1 : 0);
+$exitCode = ($duplicateCount > 0 || $nameMismatches !== [] || is_file($invitoLegacy)) ? 1 : 0;
+
+exit($exitCode);

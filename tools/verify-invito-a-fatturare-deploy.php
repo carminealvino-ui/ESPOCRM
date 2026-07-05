@@ -16,7 +16,7 @@ $checks = [
     ['custom/Espo/Custom/Actions/InvitoAFatturare/GetProvvigioniEleggibili.php', 'GetProvvigioniEleggibili'],
     ['custom/Espo/Custom/Actions/InvitoAFatturare/CollegaProvvigioni.php', 'collegaProvvigioni'],
     ['custom/Espo/Custom/Controllers/InvitoAFatturare.php', 'postActionCollegaProvvigioni'],
-    ['custom/Espo/Custom/Hooks/InvitoAFatturare/BeforeSave.php', 'recalculateTotals'],
+    ['custom/Espo/Custom/Hooks/InvitoAFatturare/InvitoBeforeSave.php', 'recalculateTotals'],
     ['client/custom/src/views/invito-a-fatturare/modals/select-provvigioni.js', 'enrichGroups'],
     ['client/custom/src/views/invito-a-fatturare/record/detail.js', 'actionSelezionaProvvigioni'],
     ['client/custom/res/templates/invito-a-fatturare/modals/select-provvigioni.tpl', 'Tipo Provv:'],
