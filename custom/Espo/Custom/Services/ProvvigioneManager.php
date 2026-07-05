@@ -94,6 +94,10 @@ class ProvvigioneManager
         $context = $this->buildContextFromEntities($category, $appuntamento, $imponibile);
         $result = $this->calculator->calculateBest($context);
 
+        if ($result === null) {
+            return null;
+        }
+
         $provvigione = $this->findProvvigione(
             'Prevista',
             appuntamentoId: $appuntamento->getId()
@@ -108,6 +112,11 @@ class ProvvigioneManager
             $context,
             $appuntamento
         );
+
+        $provvigione->set([
+            'appuntamentoId' => $appuntamento->getId(),
+            'appuntamentoName' => $appuntamento->get('name'),
+        ]);
 
         $this->entityManager->saveEntity($provvigione, ['silent' => true]);
 
@@ -325,8 +334,8 @@ class ProvvigioneManager
             $parent->get('fornitorePartnerName'),
             $parent->get('productBrandName')
         );
-        $importo = $result['importo'] ?? null;
-        $rule = $result['regola'] ?? null;
+        $importo = $result !== null ? ($result['importo'] ?? null) : null;
+        $rule = $result !== null ? ($result['regola'] ?? null) : null;
 
         $dataAttivazione = $dateSource->get('dataAttivazione');
         $dataInstallazione = $dateSource->get('dataInstallazione') ?? $dateSource->get('installazione');

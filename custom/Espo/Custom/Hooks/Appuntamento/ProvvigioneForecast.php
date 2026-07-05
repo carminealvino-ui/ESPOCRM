@@ -21,6 +21,10 @@ class ProvvigioneForecast implements AfterSave
             return;
         }
 
+        if ($entity->get('status') !== 'Held') {
+            return;
+        }
+
         if (!$entity->get('productCategoryId')) {
             return;
         }

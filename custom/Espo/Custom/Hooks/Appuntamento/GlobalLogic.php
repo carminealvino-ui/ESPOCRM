@@ -141,13 +141,17 @@
 
 namespace Espo\Custom\Hooks\Appuntamento;
 
+use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\Core\ORM\EntityManager;
 use Espo\Custom\Services\LeadProspectSync;
 use Espo\Custom\Services\LineaProdottoCategorySync;
 use Espo\ORM\Entity;
+use Espo\ORM\Repository\Option\SaveOptions;
 
-class GlobalLogic
+class GlobalLogic implements BeforeSave
 {
+    public static int $order = 5;
+
     private EntityManager $entityManager;
 
     private static bool $processing = false;
@@ -157,8 +161,12 @@ class GlobalLogic
         $this->entityManager = $entityManager;
     }
 
-    public function beforeSave(Entity $entity, array $options = [])
+    public function beforeSave(Entity $entity, SaveOptions $options): void
     {
+        if ($options->get('skipHooks')) {
+            return;
+        }
+
         if (self::$processing) {
             return;
         }
@@ -173,8 +181,12 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.7.3'
+                '1.7.4'
             );
+
+            if ($entity->hasAttribute('zTL') && $entity->get('zTL') === null) {
+                $entity->set('zTL', false);
+            }
 
             $this->applyDefaultDurationOnCreate($entity);
             $this->syncDataAppuntamentoFromDateStart($entity);
