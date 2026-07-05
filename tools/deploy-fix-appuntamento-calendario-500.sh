@@ -37,7 +37,10 @@ FILES=(
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/logicDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
+  "custom/Espo/Custom/Hooks/InvitoAFatturare/BeforeSave.php"
   "tools/diagnose-appuntamento-save.php"
+  "tools/diagnose-duplicate-hooks.php"
+  "tools/fix-duplicate-hooks.sh"
 )
 
 echo "=== Backup ${BACKUP} ==="
@@ -63,10 +66,15 @@ done
 
 grep -q "implements BeforeSave" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
 grep -q "normalizeMultiEnum" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/RequiredDefaults.php"
+grep -q "class InvitoBeforeSave" "${CRM_ROOT}/custom/Espo/Custom/Hooks/InvitoAFatturare/BeforeSave.php"
 grep -q "resolveAdminUserId" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
 grep -q "status') !== 'Held'" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Appuntamento/ProvvigioneForecast.php"
 grep -q "videoCallTelefonico" "${CRM_ROOT}/custom/Espo/Custom/Services/Appuntamento.php"
 grep -q "findDuplicateProspect" "${CRM_ROOT}/custom/Espo/Custom/Services/Prospect.php"
+
+echo ""
+echo "=== Quarantena hook duplicati ==="
+bash "${CRM_ROOT}/tools/fix-duplicate-hooks.sh" "${CRM_ROOT}" || true
 
 echo ""
 echo "=== Diagnostica salvataggio ==="

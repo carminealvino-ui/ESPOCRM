@@ -57,6 +57,20 @@ diag_line('=== Diagnostica Appuntamento save ===');
 diag_line('Data: ' . date('Y-m-d H:i:s'));
 diag_line('');
 
+$dupScript = $crmRoot . '/tools/diagnose-duplicate-hooks.php';
+
+if (is_file($dupScript)) {
+    diag_line('=== Controllo hook duplicati ===');
+    passthru('php ' . escapeshellarg($dupScript), $dupExit);
+    diag_line('');
+
+    if ($dupExit !== 0) {
+        diag_line('[STOP] Risolvere hook duplicati prima:');
+        diag_line('  curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-appuntamento-calendario-500-9999/tools/fix-duplicate-hooks.sh?t=' . time() . '" | bash');
+        exit(1);
+    }
+}
+
 $globalLogic = (string) @file_get_contents(
     $crmRoot . '/custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php'
 );
@@ -66,7 +80,10 @@ $requiredDefaults = (string) @file_get_contents(
 
 $checks = [
     'GlobalLogic BeforeSave' => str_contains($globalLogic, 'implements BeforeSave'),
-    'GlobalLogic no assignedUsersIds' => !str_contains($globalLogic, "assignedUsersIds"),
+    'GlobalLogic no assignedUsersIds set' => !preg_match(
+        "/->set\\(\\s*['\"]assignedUsersIds['\"]/",
+        $globalLogic
+    ),
     'RequiredDefaults hook' => is_file($crmRoot . '/custom/Espo/Custom/Hooks/Appuntamento/RequiredDefaults.php'),
     'normalizeMultiEnum tipo' => str_contains($requiredDefaults, 'normalizeMultiEnum'),
     'Services/Appuntamento.php' => is_file($crmRoot . '/custom/Espo/Custom/Services/Appuntamento.php'),
