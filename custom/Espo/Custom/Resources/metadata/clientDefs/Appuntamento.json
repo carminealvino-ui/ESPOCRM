@@ -8,12 +8,20 @@
         "list": "crm:views/meeting/record/list",
         "detail": "crm:views/meeting/record/detail",
         "edit": "crm:views/meeting/record/edit",
-        "editSmall": "crm:views/meeting/record/edit-small"
+        "editSmall": "custom:views/appuntamento/record/edit-small"
+    },
+    "fieldViews": {
+        "parent": "custom:views/fields/appuntamento-parent"
     },
     "modalViews": {
         "detail": "crm:views/meeting/modals/detail"
     },
     "filterList": [
+        {
+            "name": "pianificato",
+            "label": "Pianificato",
+            "style": "info"
+        },
         {
             "name": "svolto",
             "label": "Svolto",
@@ -23,6 +31,11 @@
             "name": "nonSvolto",
             "label": "Non Svolto",
             "style": "danger"
+        },
+        {
+            "name": "ingestibile",
+            "label": "Ingestibile",
+            "style": "warning"
         }
     ]
 }
