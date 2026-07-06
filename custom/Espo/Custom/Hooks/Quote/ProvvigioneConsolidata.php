@@ -15,6 +15,20 @@ class ProvvigioneConsolidata implements AfterSave
 {
     public static int $order = 15;
 
+    /** @var list<string> */
+    private const PRICING_FIELDS = [
+        'itemList',
+        'amount',
+        'taxAmount',
+        'grandTotalAmount',
+        'totalPrezzoCodice',
+        'prezzoCodiceIvaEsclusa',
+        'prezzoCodiceIvaInclusa',
+        'minusPlus',
+        'importoContratto',
+        'isTaxInclusive',
+    ];
+
     public function __construct(
         private EntityManager $entityManager,
         private ProvvigioneManager $provvigioneManager
@@ -26,10 +40,35 @@ class ProvvigioneConsolidata implements AfterSave
             return;
         }
 
-        if (!$entity->get('opportunityId')) {
+        if (!$entity->getId()) {
             return;
         }
 
-        $this->provvigioneManager->recalculateAllForQuote($entity);
+        if (!$this->shouldRecalculate($entity)) {
+            return;
+        }
+
+        $quote = $this->entityManager->getEntityById('Quote', $entity->getId());
+
+        if (!$quote || !$quote->get('opportunityId')) {
+            return;
+        }
+
+        $this->provvigioneManager->recalculateAllForQuote($quote);
+    }
+
+    private function shouldRecalculate(Entity $entity): bool
+    {
+        if ($entity->isNew()) {
+            return (bool) $entity->get('opportunityId');
+        }
+
+        foreach (self::PRICING_FIELDS as $field) {
+            if ($entity->isAttributeChanged($field)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

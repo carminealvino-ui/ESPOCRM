@@ -13,6 +13,7 @@ FILES=(
   client/custom/src/handlers/quote/crea-prodotto-articoli.js
   client/custom/src/handlers/quote/ricalcola-provvigioni.js
   client/custom/src/views/quote/record/detail.js
+  client/custom/src/views/quote/record/edit.js
   client/custom/src/views/quote/record/item.js
   client/custom/src/views/quote/record/panels/items.js
   client/custom/src/views/quote/record/panels/finanziamento.js

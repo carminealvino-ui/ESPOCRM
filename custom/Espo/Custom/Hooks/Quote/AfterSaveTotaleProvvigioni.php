@@ -12,7 +12,7 @@ use Espo\ORM\Repository\Option\SaveOptions;
  */
 class AfterSaveTotaleProvvigioni implements AfterSave
 {
-    public static int $order = 10;
+    public static int $order = 20;
 
     public function __construct(
         private ProvvigioneManager $provvigioneManager

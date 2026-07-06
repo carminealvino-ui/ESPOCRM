@@ -1,16 +1,19 @@
 {
     "controller": "controllers/record",
     "recordViews": {
-        "detail": "custom:views/quote/record/detail"
+        "detail": "custom:views/quote/record/detail",
+        "edit": "custom:views/quote/record/edit"
     },
     "viewSetupHandlers": {
         "record/detail": [
             "__APPEND__",
-            "custom:handlers/quote/crea-prodotto-articoli"
+            "custom:handlers/quote/crea-prodotto-articoli",
+            "custom:handlers/quote/refresh-provvigioni-on-save"
         ],
         "record/edit": [
             "__APPEND__",
-            "custom:handlers/quote/crea-prodotto-articoli"
+            "custom:handlers/quote/crea-prodotto-articoli",
+            "custom:handlers/quote/refresh-provvigioni-on-save"
         ]
     },
     "iconClass": "fas fa-file-contract",

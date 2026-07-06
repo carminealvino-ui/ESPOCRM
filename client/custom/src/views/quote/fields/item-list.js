@@ -164,7 +164,74 @@ define('custom:views/quote/fields/item-list', [
                         this.applyCatalogPricesToItemRow(itemView);
                     }.bind(this), 80);
                 });
+
+                ['prezzoCodice', 'quantity', 'unitPrice', 'amount', 'listPrice'].forEach(function (field) {
+                    this.listenTo(itemView.model, 'change:' + field, function () {
+                        this.syncItemListFromViews();
+                        this.calculateAmount();
+                        this.updateQuoteDerivedPricing();
+                    });
+                }.bind(this));
             }.bind(this));
+        },
+
+        getAliquotaIva: function () {
+            var aliquota = this.model.get('aliquotaIVA');
+
+            if (aliquota != null && aliquota > 0) {
+                return aliquota;
+            }
+
+            var taxRate = this.model.get('taxRate');
+
+            if (taxRate != null && taxRate > 0) {
+                return taxRate < 1 ? taxRate * 100 : taxRate;
+            }
+
+            return 10;
+        },
+
+        updateQuoteDerivedPricing: function () {
+            var itemList = this.getLiveItemList();
+            var taxInclusive = !!this.model.get('isTaxInclusive');
+            var aliquota = this.getAliquotaIva();
+            var totaleCodice = 0;
+
+            itemList.forEach(function (item) {
+                var prezzo = parseFloat(item.prezzoCodice) || 0;
+                var qty = parseFloat(item.quantity) || 0;
+
+                if (prezzo > 0 && qty > 0) {
+                    totaleCodice += prezzo * qty;
+                }
+            });
+
+            totaleCodice = Math.round(totaleCodice * 100) / 100;
+
+            if (totaleCodice <= 0) {
+                return;
+            }
+
+            var codiceNet = taxInclusive
+                ? Math.round((totaleCodice / (1 + aliquota / 100)) * 100) / 100
+                : totaleCodice;
+
+            var patch = {
+                totalPrezzoCodice: totaleCodice,
+                prezzoCodiceIvaEsclusa: codiceNet,
+            };
+
+            if (taxInclusive) {
+                patch.prezzoCodiceIvaInclusa = totaleCodice;
+            }
+
+            var imponibile = parseFloat(this.model.get('amount')) || 0;
+
+            if (imponibile > 0) {
+                patch.minusPlus = Math.round((imponibile - codiceNet) * 100) / 100;
+            }
+
+            this.model.set(patch, {ui: true});
         },
 
         applyCatalogPricesToItemRow: async function (itemView) {
@@ -203,6 +270,7 @@ define('custom:views/quote/fields/item-list', [
             }
 
             this.syncItemListFromViews();
+            this.updateQuoteDerivedPricing();
         },
 
         bindCatalogPriceRefresh: function () {
@@ -293,6 +361,7 @@ define('custom:views/quote/fields/item-list', [
 
             this.model.set(this.name, itemList, {ui: true});
             this.calculateAmount();
+            this.updateQuoteDerivedPricing();
         },
 
         afterRender: function () {

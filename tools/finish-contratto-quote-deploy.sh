@@ -10,9 +10,11 @@ cd "${CRM_ROOT}" || exit 1
 
 CLIENT_FILES=(
   client/custom/src/handlers/quote/catalog-prices.js
+  client/custom/src/handlers/quote/refresh-provvigioni-on-save.js
   client/custom/src/handlers/quote/crea-prodotto-articoli.js
   client/custom/src/handlers/quote/ricalcola-provvigioni.js
   client/custom/src/views/quote/record/detail.js
+  client/custom/src/views/quote/record/edit.js
   client/custom/src/views/quote/record/item.js
   client/custom/src/views/quote/fields/item-list.js
   client/custom/src/views/quote/record/panels/items.js

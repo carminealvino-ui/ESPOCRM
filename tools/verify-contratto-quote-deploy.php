@@ -142,6 +142,22 @@ check_contains(
 );
 
 check_contains(
+    "{$base}/client/custom/src/handlers/quote/refresh-provvigioni-on-save.js",
+    'refreshProvvigioniUi',
+    'Handler refresh provvigioni dopo save',
+    $ok,
+    $errors
+);
+
+check_contains(
+    "{$base}/custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php",
+    'itemList',
+    'Hook provvigioni su modifica articoli',
+    $ok,
+    $errors
+);
+
+check_contains(
     "{$base}/custom/Espo/Custom/Services/ProvvigioneManager.php",
     'importoConsolidato',
     'ProvvigioneManager usa importoConsolidato',
