@@ -165,6 +165,7 @@ fetch tools/run-regola-provvigionale-seed.php
 fetch database/2026-05-26-gdl-ariel-2026-regole-provvigioni-seed.sql
 fetch database/2026-05-26-arquati-pnc-regole-provvigioni-seed.sql
 fetch database/2026-07-06-bonus-weekend-regola-provvigioni-seed.sql
+fetch database/2026-07-06-ariel-minus-35-regola-provvigioni-seed.sql
 php tools/run-provvigione-schema-patch.php
 php tools/run-regola-provvigionale-seed.php
 

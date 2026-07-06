@@ -17,6 +17,7 @@ $files = [
     __DIR__ . '/../database/2026-05-26-gdl-ariel-2026-regole-provvigioni-seed.sql',
     __DIR__ . '/../database/2026-05-26-arquati-pnc-regole-provvigioni-seed.sql',
     __DIR__ . '/../database/2026-07-06-bonus-weekend-regola-provvigioni-seed.sql',
+    __DIR__ . '/../database/2026-07-06-ariel-minus-35-regola-provvigioni-seed.sql',
 ];
 
 foreach ($files as $file) {
@@ -57,7 +58,7 @@ $count = (int) $check->fetchColumn();
 
 echo "\nRegole attive in DB: {$count}\n";
 
-$required = ['arielPlus35', 'arielBase105', 'arqCpP5', 'bonusWeekendSd'];
+$required = ['arielPlus35', 'arielMinus35', 'arielBase105', 'arqCpP5', 'bonusWeekendSd'];
 $placeholders = implode(',', array_fill(0, count($required), '?'));
 $stmt = $pdo->prepare(
     "SELECT id FROM regola_provvigionale WHERE deleted = 0 AND id IN ({$placeholders})"

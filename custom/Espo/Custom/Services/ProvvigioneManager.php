@@ -424,6 +424,9 @@ class ProvvigioneManager
 
         if ($context['plusvalenza'] !== null && $context['plusvalenza'] > 0) {
             $this->ensureArielPlusProvvigione($opportunity, $quote, $category, $context);
+        } elseif ($minusPlus !== null && $minusPlus < 0) {
+            $context['plusvalenza'] = $minusPlus;
+            $this->ensureArielMinusProvvigione($opportunity, $quote, $category, $context);
         }
 
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
@@ -466,6 +469,44 @@ class ProvvigioneManager
             $context,
             'Plus Provvigionale',
             $this->buildProvvigioneName($quote, 'Plus Provvigionale', $plusRule)
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function ensureArielMinusProvvigione(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        array $context
+    ): void {
+        $minusvalenza = $context['plusvalenza'] ?? null;
+
+        if ($minusvalenza === null || $minusvalenza >= 0) {
+            return;
+        }
+
+        $minusRule = $this->entityManager->getEntityById('RegolaProvvigionale', 'arielMinus35');
+
+        if (!$minusRule || !$minusRule->get('attiva')) {
+            return;
+        }
+
+        $minusImporto = $this->calculator->calculateRule($minusRule, $context);
+
+        if ($minusImporto === null || $minusImporto >= 0) {
+            return;
+        }
+
+        $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            ['importo' => $minusImporto, 'regola' => $minusRule],
+            $context,
+            'Minus Provvigionale',
+            $this->buildProvvigioneName($quote, 'Minus Provvigionale', $minusRule)
         );
     }
 
@@ -843,6 +884,10 @@ class ProvvigioneManager
             if ($tipo === 'Plus Provvigionale') {
                 return $this->resultFromRuleId('arielPlus35', $context);
             }
+
+            if ($tipo === 'Minus Provvigionale') {
+                return $this->resultFromRuleId('arielMinus35', $context, true);
+            }
         }
 
         if ($regime === 'ARQUATI_PNC' && $tipo === 'Plus Provvigionale' && !empty($context['contattoPersonaleArquati'])) {
@@ -865,7 +910,7 @@ class ProvvigioneManager
      * @param array<string, mixed> $context
      * @return array{importo: float, regola: Entity}|null
      */
-    private function resultFromRuleId(string $ruleId, array $context): ?array
+    private function resultFromRuleId(string $ruleId, array $context, bool $allowNegative = false): ?array
     {
         $rule = $this->entityManager->getEntityById('RegolaProvvigionale', $ruleId);
 
@@ -875,7 +920,15 @@ class ProvvigioneManager
 
         $importo = $this->calculator->calculateRule($rule, $context);
 
-        if ($importo === null || $importo <= 0) {
+        if ($importo === null) {
+            return null;
+        }
+
+        if ($allowNegative) {
+            if ($importo >= 0) {
+                return null;
+            }
+        } elseif ($importo <= 0) {
             return null;
         }
 
