@@ -11,12 +11,6 @@
             ],
             [
                 {
-                    "name": "importoSaldo"
-                },
-                false
-            ],
-            [
-                {
                     "name": "tassoZero"
                 },
                 {

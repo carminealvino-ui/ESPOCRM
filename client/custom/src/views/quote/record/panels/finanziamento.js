@@ -9,11 +9,6 @@ define('custom:views/quote/record/panels/finanziamento', ['views/record/panels/b
         },
         {
             cols: [
-                {field: 'importoSaldo', width: 6},
-            ],
-        },
-        {
-            cols: [
                 {field: 'tassoZero', width: 3},
                 {field: 'importoFinanziato', width: 3},
                 {field: 'rataPrestito', width: 3},

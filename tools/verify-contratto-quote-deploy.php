@@ -77,10 +77,18 @@ check_contains(
     $errors
 );
 
-check_contains(
+check_not_contains(
     "{$base}/client/custom/src/views/quote/record/panels/finanziamento.js",
-    'col-sm-',
-    'Finanziamento panel layout multi-colonna',
+    'importoSaldo',
+    'Importo saldo fuori dal pannello finanziamento',
+    $ok,
+    $errors
+);
+
+check_contains(
+    "{$base}/custom/Espo/Custom/Resources/layouts/Quote/detail.json",
+    '"name": "importoSaldo"',
+    'Importo saldo in Overview detail',
     $ok,
     $errors
 );
