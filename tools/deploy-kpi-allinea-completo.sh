@@ -11,6 +11,7 @@ set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
 BRANCH_KPI="cursor/crm-kpi-criticita-unificata-9999"
+BRANCH_PATCH="cursor/allinea-post-2-luglio-9999"
 BRANCH_ESPO10="cursor/fix-espocrm-10-compat-9999"
 REPO="carminealvino-ui/ESPOCRM"
 STAMP=$(date +%Y%m%d-%H%M%S)
@@ -26,7 +27,6 @@ download() {
 }
 
 FILES_KPI=(
-  "client/custom/css/crm-kpi-dashlet.css"
   "client/custom/res/templates/dashlets/crm-kpi.tpl"
   "client/custom/src/views/dashlets/crm-kpi.js"
   "client/custom/src/views/dashlets/options/crm-kpi.js"
@@ -67,6 +67,9 @@ echo "=== Download KPI (branch unica) ==="
 for rel in "${FILES_KPI[@]}"; do
   download "${BRANCH_KPI}" "${rel}"
 done
+
+echo "=== CSS Criticità 4 colonne (patch allinea) ==="
+download "${BRANCH_PATCH}" "client/custom/css/crm-kpi-dashlet.css"
 
 sed -i 's/formatPaymentMeta/buildCriticita/' "${CRM_ROOT}/tools/verify-crm-kpi-deploy.php" 2>/dev/null || true
 
