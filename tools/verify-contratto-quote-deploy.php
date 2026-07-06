@@ -79,8 +79,8 @@ check_contains(
 
 check_contains(
     "{$base}/client/custom/src/views/quote/record/panels/finanziamento.js",
-    'views/record/panels/bottom',
-    'Finanziamento panel estende bottom',
+    'col-sm-',
+    'Finanziamento panel layout multi-colonna',
     $ok,
     $errors
 );
