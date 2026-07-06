@@ -73,6 +73,7 @@ REMAINING=(
   client/custom/src/views/quote/fields/item-list.js
   client/custom/src/views/quote/record/panels/items.js
   client/custom/src/views/quote/record/panels/finanziamento.js
+  client/custom/css/custom-ui.css
   client/custom/src/views/provvigione/record/detail.js
   client/custom/src/views/provvigione/record/edit.js
 )

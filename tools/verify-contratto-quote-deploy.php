@@ -79,8 +79,24 @@ check_contains(
 
 check_contains(
     "{$base}/client/custom/src/views/quote/record/panels/finanziamento.js",
-    '{{{var finanziamentoField this}}}',
-    'Finanziamento panel usa var helper Espo per i valori',
+    'setupFields: function',
+    'Finanziamento panel usa setupFields standard',
+    $ok,
+    $errors
+);
+
+check_not_contains(
+    "{$base}/client/custom/src/views/quote/record/panels/finanziamento.js",
+    'templateContent',
+    'Finanziamento panel senza template custom (usa side Espo)',
+    $ok,
+    $errors
+);
+
+check_contains(
+    "{$base}/client/custom/css/custom-ui.css",
+    'panel-finanziamento',
+    'CSS griglia pannello Finanziamento',
     $ok,
     $errors
 );

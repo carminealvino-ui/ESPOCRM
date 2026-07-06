@@ -39,3 +39,34 @@ body.content-width-wide .record .record-grid,
 body[data-content-width="wide"] .record .record-grid {
     max-width: min(98vw, 2800px) !important;
 }
+
+/* Quote — pannello Finanziamento: 2 righe (template standard Espo + griglia CSS) */
+.panel.panel-finanziamento .panel-body-form > div {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 15px;
+}
+
+.panel.panel-finanziamento .panel-body-form > div > .cell[data-name="finanziamento"] {
+    grid-column: 1 / 3;
+}
+
+.panel.panel-finanziamento .panel-body-form > div > .cell[data-name="statoFinanziamento"] {
+    grid-column: 3 / 5;
+}
+
+.panel.panel-finanziamento .panel-body-form > div > .cell[data-name="tassoZero"] {
+    grid-column: 1 / 2;
+}
+
+.panel.panel-finanziamento .panel-body-form > div > .cell[data-name="importoFinanziato"] {
+    grid-column: 2 / 3;
+}
+
+.panel.panel-finanziamento .panel-body-form > div > .cell[data-name="rataPrestito"] {
+    grid-column: 3 / 4;
+}
+
+.panel.panel-finanziamento .panel-body-form > div > .cell[data-name="nrRate"] {
+    grid-column: 4 / 5;
+}
