@@ -13,7 +13,8 @@ class ProvvigioneManager
     public function __construct(
         private EntityManager $entityManager,
         private RegolaProvvigionaleCalculator $calculator,
-        private ProvvigioneAccrual $accrual
+        private ProvvigioneAccrual $accrual,
+        private QuotePricingCalculator $quotePricingCalculator
     ) {}
 
     /**
@@ -287,22 +288,9 @@ class ProvvigioneManager
 
     private function syncQuotePricingFields(Entity $quote, Entity $opportunity): void
     {
+        $this->quotePricingCalculator->syncOnBeforeSave($quote);
+
         $imponibile = $this->resolveQuoteImponibile($quote, $opportunity);
-        $prezzoCodice = $this->floatField($quote, 'prezzoCodiceIvaEsclusa')
-            ?? $this->floatField($opportunity, 'prezzoCodiceIvaEsclusa');
-        $prezzoListino = $this->floatField($quote, 'prezzoListinoIvaEsclusa')
-            ?? $this->floatField($opportunity, 'prezzoListinoIvaEsclusa');
-
-        if ($imponibile !== null && $prezzoCodice !== null) {
-            $quote->set('minusPlus', round($imponibile - $prezzoCodice, 2));
-        }
-
-        if ($imponibile !== null && $prezzoListino !== null && $prezzoListino > 0) {
-            $quote->set(
-                'margineSuListino',
-                round((($imponibile - $prezzoListino) / $prezzoListino) * 100, 2)
-            );
-        }
 
         if ($imponibile !== null && !$quote->get('importoContratto')) {
             $quote->set('importoContratto', $imponibile);
@@ -874,6 +862,12 @@ class ProvvigioneManager
         Entity $opportunity,
         ?float $imponibile
     ): ?float {
+        $fromCalculator = $this->quotePricingCalculator->resolveMinusPlusForQuote($quote);
+
+        if ($fromCalculator !== null) {
+            return $fromCalculator;
+        }
+
         $stored = $this->floatField($quote, 'minusPlus') ?? $this->floatField($opportunity, 'minusPlus');
 
         if ($stored !== null) {
@@ -881,12 +875,13 @@ class ProvvigioneManager
         }
 
         $prezzoCodice = $this->resolvePrezzoCodice($quote, $opportunity);
+        $imponibileNet = $this->quotePricingCalculator->resolveImponibileNetto($quote) ?? $imponibile;
 
-        if ($imponibile === null || $prezzoCodice === null) {
+        if ($imponibileNet === null || $prezzoCodice === null) {
             return null;
         }
 
-        return round($imponibile - $prezzoCodice, 2);
+        return round($imponibileNet - $prezzoCodice, 2);
     }
 
     private function resolveQuoteImponibile(Entity $quote, ?Entity $opportunity = null): ?float

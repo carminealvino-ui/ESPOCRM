@@ -109,6 +109,30 @@ check_contains(
     $errors
 );
 
+check_contains(
+    "{$base}/custom/Espo/Custom/Services/QuotePricingCalculator.php",
+    'resolveMinusPlusForQuote',
+    'QuotePricingCalculator B2C minusPlus',
+    $ok,
+    $errors
+);
+
+check_contains(
+    "{$base}/custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php",
+    'syncOnBeforeSave',
+    'Hook SyncContractPricing',
+    $ok,
+    $errors
+);
+
+check_contains(
+    "{$base}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json",
+    '"prezzoCodiceIvaInclusa"',
+    'Campo prezzoCodiceIvaInclusa su Quote',
+    $ok,
+    $errors
+);
+
 check_not_contains(
     "{$base}/custom/Espo/Custom/Hooks/Quote/BeforeSave.php",
     'function afterSave',
@@ -168,6 +192,15 @@ if (!is_file($formulaFile)) {
         $errors[] = 'NON OK: formula Quote senza number\\round';
     } else {
         $ok[] = 'formula Quote con number\\round';
+    }
+
+    if (
+        !str_contains($formulaScript, 'isTaxInclusive != true')
+        && !str_contains($formulaRaw, 'isTaxInclusive != true')
+    ) {
+        $errors[] = 'NON OK: formula Quote non delega minusPlus B2C a PHP';
+    } else {
+        $ok[] = 'formula Quote minusPlus B2C delegato a QuotePricingCalculator';
     }
 }
 

@@ -116,6 +116,10 @@
             "type": "currency",
             "isCustom": true
         },
+        "prezzoCodiceIvaInclusa": {
+            "type": "currency",
+            "isCustom": true
+        },
         "margineSuListino": {
             "type": "float",
             "decimalPlaces": 2,

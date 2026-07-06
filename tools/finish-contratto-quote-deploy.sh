@@ -38,10 +38,25 @@ if [[ ! -f client/custom/src/views/quote/record/detail.js ]]; then
 fi
 
 echo ""
-echo "=== 2) Backfill provvigioni (ricalcolo completo) ==="
+echo "=== 2) Pricing B2C (prezzo codice IVA inclusa) + Provvigioni ==="
+curl -fsSL "${BASE}/custom/Espo/Custom/Services/QuotePricingCalculator.php?t=$(date +%s)" \
+  -o custom/Espo/Custom/Services/QuotePricingCalculator.php
+curl -fsSL "${BASE}/custom/Espo/Custom/Services/QuoteProvvigioniSync.php?t=$(date +%s)" \
+  -o custom/Espo/Custom/Services/QuoteProvvigioniSync.php
+curl -fsSL "${BASE}/custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php?t=$(date +%s)" \
+  -o custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
+curl -fsSL "${BASE}/custom/Espo/Custom/Hooks/Quote/BeforeSave.php?t=$(date +%s)" \
+  -o custom/Espo/Custom/Hooks/Quote/BeforeSave.php
+curl -fsSL "${BASE}/custom/Espo/Custom/Services/ProvvigioneManager.php?t=$(date +%s)" \
+  -o custom/Espo/Custom/Services/ProvvigioneManager.php
+curl -fsSL "${BASE}/custom/Espo/Custom/Resources/metadata/formula/Quote.json?t=$(date +%s)" \
+  -o custom/Espo/Custom/Resources/metadata/formula/Quote.json
+curl -fsSL "${BASE}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json?t=$(date +%s)" \
+  -o custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
 curl -fsSL "${BASE}/tools/backfill-quote-provvigioni.php?t=$(date +%s)" -o tools/backfill-quote-provvigioni.php
 curl -fsSL "${BASE}/custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php?t=$(date +%s)" \
   -o custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
+php rebuild.php
 php tools/backfill-quote-provvigioni.php
 
 echo ""

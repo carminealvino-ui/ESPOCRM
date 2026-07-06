@@ -22,6 +22,7 @@ mkdir -p "${BK}"
 
 FILES=(
   custom/Espo/Custom/Hooks/Quote/BeforeSave.php
+  custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
   custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php
   custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
   custom/Espo/Custom/Hooks/Quote/SetPresentedWhenNumeroContratto.php
@@ -31,6 +32,8 @@ FILES=(
   custom/Espo/Custom/Hooks/Provvigione/AfterSaveContratto.php
   custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php
   custom/Espo/Custom/Services/ProvvigioneManager.php
+  custom/Espo/Custom/Services/QuotePricingCalculator.php
+  custom/Espo/Custom/Services/QuoteProvvigioniSync.php
   custom/Espo/Custom/Services/RegolaProvvigionaleCalculator.php
   custom/Espo/Custom/Entities/RegolaProvvigionale.php
   custom/Espo/Custom/Repositories/RegolaProvvigionale.php
@@ -120,6 +123,11 @@ php tools/verify-contratto-quote-deploy.php || {
   echo "ERRORE: verifica deploy fallita — controllare i file sopra"
   exit 1
 }
+
+echo ""
+echo "=== Backfill provvigioni (ricalcolo completo) ==="
+curl -fsSL "${BASE}/tools/backfill-quote-provvigioni.php?t=$(date +%s)" -o tools/backfill-quote-provvigioni.php
+php tools/backfill-quote-provvigioni.php
 
 echo ""
 echo "=== Backfill totaleProvvigioni (importoConsolidato) ==="
