@@ -71,8 +71,24 @@ check_contains(
 
 check_contains(
     "{$base}/custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json",
+    'custom:views/quote/record/panels/finanziamento',
+    'Finanziamento panel con view definita',
+    $ok,
+    $errors
+);
+
+check_contains(
+    "{$base}/client/custom/src/views/quote/record/panels/finanziamento.js",
+    'views/record/panels/bottom',
+    'Finanziamento panel estende bottom',
+    $ok,
+    $errors
+);
+
+check_not_contains(
+    "{$base}/custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json",
     '"layout": "finanziamento"',
-    'Finanziamento panel con layout standard',
+    'Finanziamento senza layout senza view',
     $ok,
     $errors
 );
@@ -97,14 +113,6 @@ check_contains(
     "{$base}/client/custom/src/views/quote/fields/item-list.js",
     'custom:views/quote/record/item',
     'item-list usa custom item view',
-    $ok,
-    $errors
-);
-
-check_not_contains(
-    "{$base}/custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json",
-    'custom:views/quote/record/panels/finanziamento',
-    'Finanziamento senza view custom rotta',
     $ok,
     $errors
 );

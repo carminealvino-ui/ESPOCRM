@@ -56,7 +56,7 @@
             {
                 "name": "finanziamento",
                 "label": "Finanziamento",
-                "layout": "finanziamento",
+                "view": "custom:views/quote/record/panels/finanziamento",
                 "isForm": true,
                 "order": 10
             }
@@ -74,7 +74,7 @@
             {
                 "name": "finanziamento",
                 "label": "Finanziamento",
-                "layout": "finanziamento",
+                "view": "custom:views/quote/record/panels/finanziamento",
                 "isForm": true,
                 "order": 10
             }
@@ -92,7 +92,7 @@
             {
                 "name": "finanziamento",
                 "label": "Finanziamento",
-                "layout": "finanziamento",
+                "view": "custom:views/quote/record/panels/finanziamento",
                 "isForm": true,
                 "order": 10
             }
@@ -110,7 +110,7 @@
             {
                 "name": "finanziamento",
                 "label": "Finanziamento",
-                "layout": "finanziamento",
+                "view": "custom:views/quote/record/panels/finanziamento",
                 "isForm": true,
                 "order": 10
             }

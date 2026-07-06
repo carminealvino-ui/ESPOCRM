@@ -16,6 +16,7 @@ CLIENT_FILES=(
   client/custom/src/views/quote/record/item.js
   client/custom/src/views/quote/fields/item-list.js
   client/custom/src/views/quote/record/panels/items.js
+  client/custom/src/views/quote/record/panels/finanziamento.js
   client/custom/src/views/quote/fields/item-list.js
   client/custom/src/views/provvigione/record/detail.js
   client/custom/src/views/provvigione/record/edit.js
@@ -60,6 +61,8 @@ curl -fsSL "${BASE}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json?
   -o custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
 curl -fsSL "${BASE}/custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json?t=$(date +%s)" \
   -o custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json
+curl -fsSL "${BASE}/client/custom/src/views/quote/record/panels/finanziamento.js?t=$(date +%s)" \
+  -o client/custom/src/views/quote/record/panels/finanziamento.js
 curl -fsSL "${BASE}/custom/Espo/Custom/Resources/metadata/entityDefs/QuoteItem.json?t=$(date +%s)" \
   -o custom/Espo/Custom/Resources/metadata/entityDefs/QuoteItem.json
 curl -fsSL "${BASE}/custom/Espo/Custom/Resources/layouts/QuoteItem/listItem.json?t=$(date +%s)" \
