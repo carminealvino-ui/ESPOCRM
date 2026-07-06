@@ -356,6 +356,7 @@ class ProvvigioneManager
         );
 
         $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
+        $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
         $this->refreshQuoteTotaleProvvigioni($quote);
 
@@ -424,6 +425,8 @@ class ProvvigioneManager
         if ($context['plusvalenza'] !== null && $context['plusvalenza'] > 0) {
             $this->ensureArielPlusProvvigione($opportunity, $quote, $category, $context);
         }
+
+        $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
         $this->refreshQuoteTotaleProvvigioni($quote);
 
@@ -706,6 +709,107 @@ class ProvvigioneManager
         $this->saveProvvigione($plus);
     }
 
+    /**
+     * Bonus sabato/domenica: riga aggiuntiva se data contratto o appuntamento in weekend.
+     *
+     * @param array<string, mixed> $context
+     */
+    private function ensureWeekendBonusProvvigione(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        array $context,
+        ?float $imponibile
+    ): void {
+        if ($imponibile === null || $imponibile <= 0) {
+            return;
+        }
+
+        if (!$this->isWeekendContractDate($quote, $opportunity)) {
+            return;
+        }
+
+        $result = $this->resultFromRuleId('bonusWeekendSd', $context)
+            ?? $this->calculator->calculateForTipoRecord($context, 'Bonus (Sabato-Domenica)');
+
+        if ($result === null) {
+            return;
+        }
+
+        $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            $result,
+            $context,
+            'Bonus (Sabato-Domenica)',
+            $this->buildProvvigioneName($quote, 'Bonus (Sabato-Domenica)', $result['regola'] ?? null)
+        );
+    }
+
+    private function isWeekendContractDate(Entity $quote, ?Entity $opportunity): bool
+    {
+        $date = $this->resolveWeekendReferenceDate($quote, $opportunity);
+
+        if ($date === null) {
+            return false;
+        }
+
+        $day = (int) (new \DateTimeImmutable($date))->format('N');
+
+        return $day >= 6;
+    }
+
+    private function resolveWeekendReferenceDate(Entity $quote, ?Entity $opportunity): ?string
+    {
+        $candidates = [
+            $quote->get('dateQuoted'),
+            $opportunity?->get('dataOpportunit'),
+        ];
+
+        if ($opportunity?->get('appuntamentoId')) {
+            $appuntamento = $this->entityManager->getEntityById(
+                'Appuntamento',
+                $opportunity->get('appuntamentoId')
+            );
+
+            if ($appuntamento) {
+                $candidates[] = $appuntamento->get('dateStart');
+            }
+        }
+
+        foreach ($candidates as $candidate) {
+            $normalized = $this->normalizeDateValue($candidate);
+
+            if ($normalized !== null) {
+                return $normalized;
+            }
+        }
+
+        return null;
+    }
+
+    private function normalizeDateValue(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $string = (string) $value;
+
+        if (strlen($string) >= 10) {
+            $string = substr($string, 0, 10);
+        }
+
+        $date = \DateTimeImmutable::createFromFormat('Y-m-d', $string);
+
+        if ($date === false) {
+            return null;
+        }
+
+        return $date->format('Y-m-d');
+    }
+
     private function resolveOpportunityForQuote(Entity $quote, ?Entity $provvigione): ?Entity
     {
         $opportunityId = $quote->get('opportunityId') ?: $provvigione?->get('opportunitaId');
@@ -747,6 +851,11 @@ class ProvvigioneManager
             if ($cpResult !== null) {
                 return $cpResult;
             }
+        }
+
+        if ($tipo === 'Bonus (Sabato-Domenica)') {
+            return $this->resultFromRuleId('bonusWeekendSd', $context)
+                ?? $this->calculator->calculateForTipoRecord($context, $tipo);
         }
 
         return $this->calculator->calculateForTipoRecord($context, $tipo);
@@ -970,6 +1079,7 @@ class ProvvigioneManager
         $prefix = match ($tipo) {
             'Plus Provvigionale' => 'PLUS',
             'Minus Provvigionale' => 'MINUS',
+            'Bonus (Sabato-Domenica)' => 'BONUS-WE',
             default => 'CONS',
         };
 
