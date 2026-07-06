@@ -23,6 +23,7 @@ mkdir -p "${BK}"
 FILES=(
   custom/Espo/Custom/Hooks/Quote/BeforeSave.php
   custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
+  custom/Espo/Custom/Hooks/Quote/SyncFinanziamentoFromOpportunity.php
   custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php
   custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
   custom/Espo/Custom/Hooks/Quote/SetPresentedWhenNumeroContratto.php
@@ -35,6 +36,11 @@ FILES=(
   custom/Espo/Custom/Services/QuotePricingCalculator.php
   custom/Espo/Custom/Services/QuoteProvvigioniSync.php
   custom/Espo/Custom/Services/RegolaProvvigionaleCalculator.php
+  custom/Espo/Custom/Tools/Quote/Api/PostGetItemCatalogPrices.php
+  custom/Espo/Custom/Resources/metadata/entityDefs/QuoteItem.json
+  custom/Espo/Custom/Resources/metadata/clientDefs/QuoteItem.json
+  custom/Espo/Custom/Resources/layouts/QuoteItem/listItem.json
+  custom/Espo/Custom/Resources/i18n/it_IT/QuoteItem.json
   custom/Espo/Custom/Entities/RegolaProvvigionale.php
   custom/Espo/Custom/Repositories/RegolaProvvigionale.php
   custom/Espo/Custom/Resources/metadata/scopes/RegolaProvvigionale.json
@@ -57,11 +63,12 @@ FILES=(
   custom/Espo/Custom/Resources/metadata/app/actions.json
   custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
   client/custom/src/handlers/quote/ricalcola-provvigioni.js
+  client/custom/src/handlers/quote/catalog-prices.js
   client/custom/src/handlers/quote/crea-prodotto-articoli.js
   client/custom/src/views/quote/record/detail.js
   client/custom/src/views/quote/record/item.js
+  client/custom/src/views/quote/fields/item-list.js
   client/custom/src/views/quote/record/panels/items.js
-  client/custom/src/views/quote/record/panels/finanziamento.js
   client/custom/src/views/quote/fields/item-list.js
   client/custom/src/views/provvigione/record/detail.js
   client/custom/src/views/provvigione/record/edit.js

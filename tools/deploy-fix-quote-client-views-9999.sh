@@ -9,12 +9,12 @@ BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 cd "${CRM_ROOT}" || exit 1
 
 FILES=(
+  client/custom/src/handlers/quote/catalog-prices.js
   client/custom/src/handlers/quote/crea-prodotto-articoli.js
   client/custom/src/handlers/quote/ricalcola-provvigioni.js
   client/custom/src/views/quote/record/detail.js
   client/custom/src/views/quote/record/item.js
   client/custom/src/views/quote/record/panels/items.js
-  client/custom/src/views/quote/record/panels/finanziamento.js
   client/custom/src/views/quote/fields/item-list.js
   client/custom/src/views/provvigione/record/detail.js
   client/custom/src/views/provvigione/record/edit.js

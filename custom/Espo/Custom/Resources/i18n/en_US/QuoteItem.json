@@ -1,0 +1,11 @@
+{
+    "fields": {
+        "prezzoCodice": "Prezzo Codice",
+        "prezzoCodiceCurrency": "Prezzo Codice (Valuta)",
+        "prezzoCodiceConverted": "Prezzo Codice (Convertito)",
+        "provvigioni": "Provvigioni"
+    },
+    "links": {
+        "provvigioni": "Provvigioni"
+    }
+}

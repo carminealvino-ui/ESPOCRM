@@ -20,13 +20,16 @@ class NormalizeDefaults implements BeforeSave
         }
 
         foreach ([
-            'finanziamento' => false,
             'tassoZero' => false,
             'venditaAbbinataAdAltroProdotto' => false,
         ] as $field => $default) {
             if ($entity->get($field) === null) {
                 $entity->set($field, $default);
             }
+        }
+
+        if ($entity->get('finanziamento') === null) {
+            $entity->set('finanziamento', false);
         }
 
         if ($entity->get('statoContratto') === null || $entity->get('statoContratto') === '') {

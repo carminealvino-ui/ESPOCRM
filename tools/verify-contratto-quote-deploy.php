@@ -71,8 +71,40 @@ check_contains(
 
 check_contains(
     "{$base}/custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json",
-    '"name": "finanziamento"',
-    'Finanziamento in bottomPanels clientDefs',
+    '"layout": "finanziamento"',
+    'Finanziamento panel con layout standard',
+    $ok,
+    $errors
+);
+
+check_contains(
+    "{$base}/custom/Espo/Custom/Resources/metadata/entityDefs/QuoteItem.json",
+    '"itemNotReadOnly": true',
+    'QuoteItem prezzoCodice editabile in riga',
+    $ok,
+    $errors
+);
+
+check_contains(
+    "{$base}/client/custom/src/handlers/quote/catalog-prices.js",
+    'getItemCatalogPrices',
+    'Handler catalog-prices client',
+    $ok,
+    $errors
+);
+
+check_contains(
+    "{$base}/client/custom/src/views/quote/fields/item-list.js",
+    'custom:views/quote/record/item',
+    'item-list usa custom item view',
+    $ok,
+    $errors
+);
+
+check_not_contains(
+    "{$base}/custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json",
+    'custom:views/quote/record/panels/finanziamento',
+    'Finanziamento senza view custom rotta',
     $ok,
     $errors
 );
