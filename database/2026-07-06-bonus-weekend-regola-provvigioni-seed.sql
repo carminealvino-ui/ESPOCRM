@@ -17,6 +17,7 @@ INSERT INTO regola_provvigionale (
     2
 )
 ON DUPLICATE KEY UPDATE
+    deleted = 0,
     name = VALUES(name),
     description = VALUES(description),
     attiva = VALUES(attiva),

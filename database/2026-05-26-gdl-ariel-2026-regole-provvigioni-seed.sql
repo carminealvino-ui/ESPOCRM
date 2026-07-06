@@ -49,6 +49,7 @@ INSERT INTO regola_provvigionale (
     35, NULL
 )
 ON DUPLICATE KEY UPDATE
+    deleted = 0,
     name = VALUES(name),
     attiva = VALUES(attiva),
     priorita = VALUES(priorita),
