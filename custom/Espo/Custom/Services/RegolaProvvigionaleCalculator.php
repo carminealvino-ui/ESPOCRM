@@ -87,9 +87,24 @@ class RegolaProvvigionaleCalculator
      */
     public function calculateBest(array $context): ?array
     {
+        return $this->calculateForTipoRecord($context, null);
+    }
+
+    /**
+     * Prima regola compatibile con il tipo record provvigione (se indicato).
+     *
+     * @param array<string, mixed> $context
+     * @return array{importo: float, regola: Entity}|null
+     */
+    public function calculateForTipoRecord(array $context, ?string $tipoRecord): ?array
+    {
         $rules = $this->findMatchingRules($context);
 
         foreach ($rules as $rule) {
+            if ($tipoRecord && $rule->get('tipoProvvigioneRecord') !== $tipoRecord) {
+                continue;
+            }
+
             $importo = $this->calculateRule($rule, $context);
 
             if ($importo !== null && $importo > 0) {

@@ -109,19 +109,230 @@ class ProvvigioneManager
             $appuntamento
         );
 
-        $this->entityManager->saveEntity($provvigione, ['silent' => true]);
+        $this->saveProvvigione($provvigione);
 
         return $provvigione;
     }
 
+    /**
+     * Applica le regole provvigionali a un record creato/modificato dal subpanel contratto.
+     */
+    public function syncProvvigioneFromContratto(Entity $provvigione): bool
+    {
+        if (!$provvigione->get('contrattoId')) {
+            return false;
+        }
+
+        if ($provvigione->get('statoProvvigione') === 'Prevista') {
+            return false;
+        }
+
+        $quote = $this->entityManager->getEntityById('Quote', $provvigione->get('contrattoId'));
+
+        if (!$quote) {
+            return false;
+        }
+
+        $opportunity = $this->resolveOpportunityForQuote($quote, $provvigione);
+        $category = $this->resolveProductCategory($quote, $opportunity);
+        $parent = $opportunity ?? $quote;
+
+        $imponibile = $this->resolveQuoteImponibile($quote, $opportunity);
+
+        $context = $this->buildContextFromEntities($category, $quote, $imponibile, $opportunity);
+        $context['imponibile'] = $imponibile;
+        $context['plusvalenza'] = $this->floatField($quote, 'minusPlus') ?? $context['plusvalenza'];
+
+        $tipo = $provvigione->get('tipo') ?: 'Provvigione Base';
+        $result = $this->resolveRuleResultForTipo($context, $tipo, $quote, $opportunity);
+
+        $this->enrichProvvigioneFromContratto($provvigione, $quote, $opportunity, $category, $parent);
+
+        if (!$provvigione->get('statoProvvigione')) {
+            $provvigione->set('statoProvvigione', 'Consolidata');
+        }
+
+        $this->applyProvvigioneFromCalculation(
+            $provvigione,
+            $parent,
+            $category,
+            $result,
+            (string) ($provvigione->get('statoProvvigione') ?: 'Consolidata'),
+            $context,
+            $quote
+        );
+
+        $provvigione->set([
+            'tipo' => $tipo,
+            'name' => $this->buildProvvigioneName($quote, $tipo, $result['regola'] ?? null),
+        ]);
+
+        if ($tipo === 'Provvigione Base' && $opportunity) {
+            $prevista = $this->findProvvigione('Prevista', opportunitaId: $opportunity->getId())
+                ?? $this->findProvvigione('Prevista', appuntamentoId: $opportunity->get('appuntamentoId'));
+
+            if ($prevista) {
+                $provvigione->set(
+                    'importoPrevisto',
+                    $prevista->get('importoPrevisto') ?? $prevista->get('importo')
+                );
+            }
+        }
+
+        if (
+            ($context['regime'] ?? '') === 'ARIEL_2026'
+            && $tipo === 'Provvigione Base'
+            && $opportunity
+        ) {
+            $this->ensureArielPlusProvvigione($opportunity, $quote, $category, $context);
+        }
+
+        return $result !== null;
+    }
+
+    /**
+     * Ricalcola tutte le provvigioni consolidate del contratto tramite regole.
+     *
+     * @return array{created: int, updated: int}
+     */
+    public function recalculateAllForQuote(Entity $quote): array
+    {
+        $opportunity = $this->resolveOpportunityForQuote($quote, null);
+
+        if (!$opportunity) {
+            return ['created' => 0, 'updated' => 0, 'purged' => 0];
+        }
+
+        $purged = $this->purgeProvvigioniForQuote($quote->getId());
+        $this->syncQuotePricingFields($quote, $opportunity);
+
+        $this->createConsolidataForQuote($opportunity, $quote);
+        $this->refreshQuoteTotaleProvvigioni($quote);
+
+        $count = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quote->getId()])
+            ->count();
+
+        return [
+            'created' => $count,
+            'updated' => 0,
+            'purged' => $purged,
+        ];
+    }
+
+    public function resolveTotaleProvvigioniForQuoteId(string $quoteId): ?float
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quoteId])
+            ->find();
+
+        $totale = 0.0;
+
+        foreach ($collection as $provvigione) {
+            if ($provvigione->get('statoProvvigione') === 'Stornata') {
+                continue;
+            }
+
+            if ($provvigione->get('statoProvvigione') === 'Prevista') {
+                continue;
+            }
+
+            $importo = $provvigione->get('importoConsolidato');
+
+            if ($importo === null || $importo === '') {
+                continue;
+            }
+
+            $totale += (float) $importo;
+        }
+
+        return $totale > 0 ? round($totale, 2) : null;
+    }
+
+    public function refreshQuoteTotaleProvvigioni(Entity $quote): void
+    {
+        if (!$quote->getId()) {
+            return;
+        }
+
+        $totale = $this->resolveTotaleProvvigioniForQuoteId($quote->getId());
+
+        $quote->set('totaleProvvigioni', $totale);
+
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+            'silent' => true,
+            'skipFormula' => true,
+        ]);
+    }
+
+    private function purgeProvvigioniForQuote(string $quoteId): int
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quoteId])
+            ->find();
+
+        $count = 0;
+
+        foreach ($collection as $provvigione) {
+            $this->entityManager->removeEntity($provvigione);
+            $count++;
+        }
+
+        return $count;
+    }
+
+    private function syncQuotePricingFields(Entity $quote, Entity $opportunity): void
+    {
+        $imponibile = $this->resolveQuoteImponibile($quote, $opportunity);
+        $prezzoCodice = $this->floatField($quote, 'prezzoCodiceIvaEsclusa')
+            ?? $this->floatField($opportunity, 'prezzoCodiceIvaEsclusa');
+        $prezzoListino = $this->floatField($quote, 'prezzoListinoIvaEsclusa')
+            ?? $this->floatField($opportunity, 'prezzoListinoIvaEsclusa');
+
+        if ($imponibile !== null && $prezzoCodice !== null) {
+            $quote->set('minusPlus', round($imponibile - $prezzoCodice, 2));
+        }
+
+        if ($imponibile !== null && $prezzoListino !== null && $prezzoListino > 0) {
+            $quote->set(
+                'margineSuListino',
+                round((($imponibile - $prezzoListino) / $prezzoListino) * 100, 2)
+            );
+        }
+
+        if ($imponibile !== null && !$quote->get('importoContratto')) {
+            $quote->set('importoContratto', $imponibile);
+        }
+
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+            'silent' => true,
+            'skipFormula' => true,
+        ]);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    private function saveProvvigione(Entity $provvigione, array $options = []): void
+    {
+        $this->entityManager->saveEntity($provvigione, array_merge([
+            'silent' => true,
+            'skipFormula' => true,
+        ], $options));
+    }
+
     public function createConsolidataForQuote(Entity $opportunity, Entity $quote): ?Entity
     {
+        $this->syncQuotePricingFields($quote, $opportunity);
+
         $category = $this->resolveProductCategory($quote, $opportunity);
 
-        $imponibile = $this->floatField($quote, 'amount')
-            ?? $this->floatField($quote, 'importoContratto')
-            ?? $this->floatField($opportunity, 'amount')
-            ?? $this->floatField($opportunity, 'importoOpportunit');
+        $imponibile = $this->resolveQuoteImponibile($quote, $opportunity);
 
         $context = $this->buildContextFromEntities($category, $quote, $imponibile, $opportunity);
         $context['imponibile'] = $imponibile;
@@ -157,6 +368,8 @@ class ProvvigioneManager
         );
 
         $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
+
+        $this->refreshQuoteTotaleProvvigioni($quote);
 
         return $provvigione;
     }
@@ -213,30 +426,56 @@ class ProvvigioneManager
             $baseResult,
             $context,
             'Provvigione Base',
-            'ARIEL-BASE-' . ($quote->get('number') ?? $quote->getId())
+            $this->buildProvvigioneName(
+                $quote,
+                'Provvigione Base',
+                $baseResult['regola'] ?? $baseRule
+            )
         );
 
         if ($context['plusvalenza'] !== null && $context['plusvalenza'] > 0) {
-            $plusRule = $this->entityManager->getEntityById('RegolaProvvigionale', 'arielPlus35');
-
-            if ($plusRule && $plusRule->get('attiva')) {
-                $plusImporto = $this->calculator->calculateRule($plusRule, $context);
-
-                if ($plusImporto !== null && $plusImporto > 0) {
-                    $this->saveConsolidataProvvigione(
-                        $opportunity,
-                        $quote,
-                        $category,
-                        ['importo' => $plusImporto, 'regola' => $plusRule],
-                        $context,
-                        'Plus Provvigionale',
-                        'ARIEL-PLUS35-' . ($quote->get('number') ?? $quote->getId())
-                    );
-                }
-            }
+            $this->ensureArielPlusProvvigione($opportunity, $quote, $category, $context);
         }
 
+        $this->refreshQuoteTotaleProvvigioni($quote);
+
         return $base;
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function ensureArielPlusProvvigione(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        array $context
+    ): void {
+        if ($context['plusvalenza'] === null || $context['plusvalenza'] <= 0) {
+            return;
+        }
+
+        $plusRule = $this->entityManager->getEntityById('RegolaProvvigionale', 'arielPlus35');
+
+        if (!$plusRule || !$plusRule->get('attiva')) {
+            return;
+        }
+
+        $plusImporto = $this->calculator->calculateRule($plusRule, $context);
+
+        if ($plusImporto === null || $plusImporto <= 0) {
+            return;
+        }
+
+        $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            ['importo' => $plusImporto, 'regola' => $plusRule],
+            $context,
+            'Plus Provvigionale',
+            $this->buildProvvigioneName($quote, 'Plus Provvigionale', $plusRule)
+        );
     }
 
     /**
@@ -291,14 +530,14 @@ class ProvvigioneManager
             }
         }
 
-        $this->entityManager->saveEntity($provvigione, ['silent' => true]);
+        $this->saveProvvigione($provvigione);
 
         return $provvigione;
     }
 
-    private function resolveProductCategory(Entity $quote, Entity $opportunity): ?Entity
+    private function resolveProductCategory(Entity $quote, ?Entity $opportunity): ?Entity
     {
-        $categoryId = $quote->get('productCategoryId') ?: $opportunity->get('productCategoryId');
+        $categoryId = $quote->get('productCategoryId') ?: $opportunity?->get('productCategoryId');
 
         if (!$categoryId) {
             return null;
@@ -334,11 +573,13 @@ class ProvvigioneManager
 
         $giorni = $rule?->get('giorniLiquidazione') ?? $this->accrual->getLiquidationDays($regime);
 
+        $tipoRecord = $rule?->get('tipoProvvigioneRecord') ?? 'Provvigione Base';
+
         $provvigione->set([
-            'name' => ($stato === 'Prevista' ? 'PREV-' : 'CONS-') . ($parent->get('name') ?? $parent->getId()),
+            'name' => $this->buildProvvigioneName($dateSource, $tipoRecord, $rule),
             'statoProvvigione' => $stato,
             'regimeProvvigione' => $regime,
-            'tipo' => $rule?->get('tipoProvvigioneRecord') ?? 'Provvigione Base',
+            'tipo' => $tipoRecord,
             'productCategoryId' => $category?->getId(),
             'productCategoryName' => $category?->get('name') ?? $parent->get('productCategoryName'),
             'fornitorePartnerId' => $parent->get('fornitorePartnerId'),
@@ -354,10 +595,14 @@ class ProvvigioneManager
         ]);
 
         if ($rule) {
+            $baseCalcolo = $this->resolveBaseCalcolo($rule, $context);
+
             $provvigione->set([
                 'regolaProvvigionaleId' => $rule->getId(),
                 'regolaProvvigionaleName' => $rule->get('name'),
-                'tassoProvvigioni' => $rule->get('percentuale') ?? $rule->get('coefficiente'),
+                'tassoProvvigioni' => $this->resolveDisplayTasso($rule),
+                'baseCalcolo' => $baseCalcolo['baseCalcolo'],
+                'importoBaseCalcolo' => $baseCalcolo['importoBaseCalcolo'],
             ]);
         }
 
@@ -470,7 +715,124 @@ class ProvvigioneManager
             'name' => 'PLUS-CP5-' . ($quote->get('number') ?? $quote->getId()),
         ]);
 
-        $this->entityManager->saveEntity($plus, ['silent' => true]);
+        $this->saveProvvigione($plus);
+    }
+
+    private function resolveOpportunityForQuote(Entity $quote, ?Entity $provvigione): ?Entity
+    {
+        $opportunityId = $quote->get('opportunityId') ?: $provvigione?->get('opportunitaId');
+
+        if (!$opportunityId) {
+            return null;
+        }
+
+        return $this->entityManager->getEntityById('Opportunity', $opportunityId);
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     * @return array{importo: float, regola: Entity}|null
+     */
+    private function resolveRuleResultForTipo(
+        array $context,
+        string $tipo,
+        Entity $quote,
+        ?Entity $opportunity
+    ): ?array {
+        $regime = $context['regime'] ?? '';
+
+        if ($regime === 'ARIEL_2026') {
+            if ($tipo === 'Provvigione Base') {
+                $ruleId = !empty($context['ordineIncompletoAriel']) ? 'arielBase10' : 'arielBase105';
+
+                return $this->resultFromRuleId($ruleId, $context);
+            }
+
+            if ($tipo === 'Plus Provvigionale') {
+                return $this->resultFromRuleId('arielPlus35', $context);
+            }
+        }
+
+        if ($regime === 'ARQUATI_PNC' && $tipo === 'Plus Provvigionale' && !empty($context['contattoPersonaleArquati'])) {
+            $cpResult = $this->resultFromRuleId('arqCpP5', $context);
+
+            if ($cpResult !== null) {
+                return $cpResult;
+            }
+        }
+
+        return $this->calculator->calculateForTipoRecord($context, $tipo);
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     * @return array{importo: float, regola: Entity}|null
+     */
+    private function resultFromRuleId(string $ruleId, array $context): ?array
+    {
+        $rule = $this->entityManager->getEntityById('RegolaProvvigionale', $ruleId);
+
+        if (!$rule || !$rule->get('attiva')) {
+            return null;
+        }
+
+        $importo = $this->calculator->calculateRule($rule, $context);
+
+        if ($importo === null || $importo <= 0) {
+            return null;
+        }
+
+        return [
+            'importo' => $importo,
+            'regola' => $rule,
+        ];
+    }
+
+    private function enrichProvvigioneFromContratto(
+        Entity $provvigione,
+        Entity $quote,
+        ?Entity $opportunity,
+        ?Entity $category,
+        Entity $parent
+    ): void {
+        $provvigione->set([
+            'contrattoId' => $quote->getId(),
+            'contrattoName' => $quote->get('name'),
+            'clienteId' => $quote->get('accountId'),
+            'clienteName' => $quote->get('accountName'),
+            'assignedUserId' => $provvigione->get('assignedUserId')
+                ?: $quote->get('assignedUserId')
+                ?: $opportunity?->get('assignedUserId'),
+            'assignedUserName' => $provvigione->get('assignedUserName')
+                ?: $quote->get('assignedUserName')
+                ?: $opportunity?->get('assignedUserName'),
+        ]);
+
+        if ($opportunity) {
+            $provvigione->set([
+                'opportunitaId' => $opportunity->getId(),
+                'opportunitaName' => $opportunity->get('name'),
+            ]);
+        }
+
+        if ($category) {
+            $provvigione->set([
+                'productCategoryId' => $category->getId(),
+                'productCategoryName' => $category->get('name'),
+            ]);
+        } elseif ($quote->get('productCategoryId')) {
+            $provvigione->set([
+                'productCategoryId' => $quote->get('productCategoryId'),
+                'productCategoryName' => $quote->get('productCategoryName'),
+            ]);
+        }
+
+        $provvigione->set([
+            'fornitorePartnerId' => $parent->get('fornitorePartnerId'),
+            'fornitorePartnerName' => $parent->get('fornitorePartnerName'),
+            'productBrandId' => $parent->get('productBrandId'),
+            'productBrandName' => $parent->get('productBrandName'),
+        ]);
     }
 
     private function resolvePrezzoListino(?Entity $source, ?Entity $opportunity): ?float
@@ -525,6 +887,114 @@ class ProvvigioneManager
         }
 
         return round($imponibile - $prezzoCodice, 2);
+    }
+
+    private function resolveQuoteImponibile(Entity $quote, ?Entity $opportunity = null): ?float
+    {
+        $importoContratto = $this->floatField($quote, 'importoContratto');
+
+        if ($importoContratto !== null && $importoContratto > 0) {
+            return round($importoContratto, 2);
+        }
+
+        $amount = $this->floatField($quote, 'amount');
+        $tax = $this->floatField($quote, 'taxAmount');
+
+        if ($amount !== null && $tax !== null && $tax > 0) {
+            return round($amount - $tax, 2);
+        }
+
+        if ($amount !== null) {
+            $aliquota = $this->floatField($quote, 'aliquotaIVA')
+                ?? $this->floatField($quote, 'taxRate');
+
+            if ($aliquota !== null && $aliquota > 0) {
+                return round($amount / (1 + $aliquota / 100), 2);
+            }
+
+            return round($amount, 2);
+        }
+
+        return $opportunity ? $this->resolveImponibile($opportunity) : null;
+    }
+
+    /**
+     * @param array<string, mixed>|null $context
+     * @return array{baseCalcolo: string, importoBaseCalcolo: float|null}
+     */
+    private function resolveBaseCalcolo(?Entity $rule, ?array $context): array
+    {
+        $tipo = $rule?->get('tipoCalcolo') ?? 'PercentualeImponibile';
+
+        return match ($tipo) {
+            'PercentualePlusvalenza' => [
+                'baseCalcolo' => 'Plusvalenza',
+                'importoBaseCalcolo' => isset($context['plusvalenza'])
+                    ? round((float) $context['plusvalenza'], 2)
+                    : null,
+            ],
+            'PercentualeMargine' => [
+                'baseCalcolo' => 'MargineSuListino',
+                'importoBaseCalcolo' => isset($context['imponibile'])
+                    ? round((float) $context['imponibile'], 2)
+                    : null,
+            ],
+            'CoefficienteCanone' => [
+                'baseCalcolo' => 'CanoneMensile',
+                'importoBaseCalcolo' => isset($context['canoneMensile'])
+                    ? round((float) $context['canoneMensile'], 2)
+                    : null,
+            ],
+            'GettoneFisso' => [
+                'baseCalcolo' => 'GettoneFisso',
+                'importoBaseCalcolo' => $this->floatField($rule, 'gettoneImporto'),
+            ],
+            'ImportoFissoPod' => [
+                'baseCalcolo' => 'NumeroPod',
+                'importoBaseCalcolo' => isset($context['numeroPod'])
+                    ? (float) (int) $context['numeroPod']
+                    : null,
+            ],
+            default => [
+                'baseCalcolo' => 'ImponibileContratto',
+                'importoBaseCalcolo' => isset($context['imponibile'])
+                    ? round((float) $context['imponibile'], 2)
+                    : null,
+            ],
+        };
+    }
+
+    private function buildProvvigioneName(Entity $quote, string $tipo, ?Entity $rule): string
+    {
+        $contractRef = (string) ($quote->get('number') ?: $quote->getId());
+
+        if ($rule && $rule->get('name')) {
+            return $contractRef . ' — ' . $rule->get('name');
+        }
+
+        $prefix = match ($tipo) {
+            'Plus Provvigionale' => 'PLUS',
+            'Minus Provvigionale' => 'MINUS',
+            default => 'CONS',
+        };
+
+        return $prefix . '-' . $contractRef . ' — ' . $tipo;
+    }
+
+    private function resolveDisplayTasso(?Entity $rule): ?float
+    {
+        if (!$rule) {
+            return null;
+        }
+
+        $percent = $this->floatField($rule, 'percentuale');
+        $add = $this->floatField($rule, 'percentualeAddizionale');
+
+        if ($rule->get('tipoCalcolo') === 'PercentualeImponibileAddizionale' && $percent !== null && $add !== null) {
+            return round($percent + $add, 2);
+        }
+
+        return $percent ?? $this->floatField($rule, 'coefficiente');
     }
 
     private function resolveImponibile(Entity $entity): ?float
