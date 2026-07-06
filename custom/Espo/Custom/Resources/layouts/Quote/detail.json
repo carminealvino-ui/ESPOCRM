@@ -42,7 +42,9 @@
                 {
                     "name": "importoContratto"
                 },
-                false
+                {
+                    "name": "importoCaparra"
+                }
             ],
             [
                 {

@@ -11,11 +11,9 @@
             ],
             [
                 {
-                    "name": "importoCaparra"
-                },
-                {
                     "name": "importoSaldo"
-                }
+                },
+                false
             ],
             [
                 {
@@ -26,14 +24,10 @@
                 },
                 {
                     "name": "nrRate"
-                }
-            ],
-            [
+                },
                 {
                     "name": "tassoZero"
-                },
-                false,
-                false
+                }
             ]
         ]
     }
