@@ -77,6 +77,22 @@ check_contains(
     $errors
 );
 
+check_contains(
+    "{$base}/client/custom/src/views/quote/record/panels/finanziamento.js",
+    'this.fieldList.push(col.field)',
+    'Finanziamento panel registra campi in fieldList',
+    $ok,
+    $errors
+);
+
+check_not_contains(
+    "{$base}/client/custom/src/views/quote/record/panels/finanziamento.js",
+    'afterRender: function',
+    'Finanziamento panel senza render manuale campi',
+    $ok,
+    $errors
+);
+
 check_not_contains(
     "{$base}/client/custom/src/views/quote/record/panels/finanziamento.js",
     'importoSaldo',

@@ -25,7 +25,7 @@ define('custom:views/quote/record/panels/finanziamento', ['views/record/panels/b
             '  {{#each cols}}',
             '  <div class="col-sm-{{width}} cell form-group" data-name="{{field}}">',
             '    <label class="control-label" data-name="{{field}}">',
-            '      <span class="label-text">{{translate field scope=../scope category="fields"}}</span>',
+            '      <span class="label-text">{{label}}</span>',
             '    </label>',
             '    <div class="field" data-name="{{field}}"></div>',
             '  </div>',
@@ -34,50 +34,32 @@ define('custom:views/quote/record/panels/finanziamento', ['views/record/panels/b
             '{{/each}}',
         ].join('\n'),
 
-        setup: function () {
-            this.fieldList = [];
-            Dep.prototype.setup.call(this);
-        },
-
         setupFields: function () {
             this.fieldList = [];
+
+            ROWS.forEach(function (row) {
+                row.cols.forEach(function (col) {
+                    this.fieldList.push(col.field);
+                }, this);
+            }, this);
         },
 
         data: function () {
             var scope = this.model.entityType;
 
             return {
-                scope: scope,
                 rows: ROWS.map(function (row) {
                     return {
-                        cols: row.cols.filter(function (col) {
-                            return col.field;
-                        }),
+                        cols: row.cols.map(function (col) {
+                            return {
+                                field: col.field,
+                                width: col.width,
+                                label: this.translate(col.field, 'fields', scope),
+                            };
+                        }, this),
                     };
-                }),
+                }, this),
             };
-        },
-
-        afterRender: function () {
-            ROWS.forEach(function (row) {
-                row.cols.forEach(function (col) {
-                    this.renderField(col.field);
-                }, this);
-            }, this);
-        },
-
-        renderField: function (field) {
-            if (!field || !(field in ((this.model.defs || {}).fields || {}))) {
-                return;
-            }
-
-            var key = field + 'Field';
-
-            if (this.hasView(key)) {
-                this.clearView(key);
-            }
-
-            this.createField(field);
         },
     });
 });
