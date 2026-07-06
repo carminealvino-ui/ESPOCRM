@@ -44,6 +44,7 @@ FILES=(
   custom/Espo/Custom/Controllers/Quote.php
   custom/Espo/Custom/Resources/layouts/Quote/detail.json
   custom/Espo/Custom/Resources/layouts/Quote/bottomPanelsDetail.json
+  custom/Espo/Custom/Resources/layouts/Quote/finanziamento.json
   custom/Espo/Custom/Resources/layouts/Quote/list.json
   custom/Espo/Custom/Resources/layouts/Quote/relationships/provvigioni.json
   custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
@@ -57,6 +58,7 @@ FILES=(
   client/custom/src/views/quote/record/detail.js
   client/custom/src/views/quote/record/item.js
   client/custom/src/views/quote/record/panels/items.js
+  client/custom/src/views/quote/record/panels/finanziamento.js
   client/custom/src/views/quote/fields/item-list.js
   client/custom/src/views/provvigione/record/detail.js
   client/custom/src/views/provvigione/record/edit.js

@@ -56,20 +56,8 @@
             {
                 "name": "finanziamento",
                 "label": "Finanziamento",
-                "view": "views/record/panels/bottom",
-                "order": 10,
-                "options": {
-                    "fieldList": [
-                        "finanziamento",
-                        "statoFinanziamento",
-                        "importoCaparra",
-                        "importoSaldo",
-                        "tassoZero",
-                        "importoFinanziato",
-                        "rataPrestito",
-                        "nrRate"
-                    ]
-                }
+                "view": "custom:views/quote/record/panels/finanziamento",
+                "order": 10
             }
         ],
         "edit": [
@@ -85,20 +73,8 @@
             {
                 "name": "finanziamento",
                 "label": "Finanziamento",
-                "view": "views/record/panels/bottom",
-                "order": 10,
-                "options": {
-                    "fieldList": [
-                        "finanziamento",
-                        "statoFinanziamento",
-                        "importoCaparra",
-                        "importoSaldo",
-                        "tassoZero",
-                        "importoFinanziato",
-                        "rataPrestito",
-                        "nrRate"
-                    ]
-                }
+                "view": "custom:views/quote/record/panels/finanziamento",
+                "order": 10
             }
         ],
         "detailSmall": [
@@ -114,20 +90,8 @@
             {
                 "name": "finanziamento",
                 "label": "Finanziamento",
-                "view": "views/record/panels/bottom",
-                "order": 10,
-                "options": {
-                    "fieldList": [
-                        "finanziamento",
-                        "statoFinanziamento",
-                        "importoCaparra",
-                        "importoSaldo",
-                        "tassoZero",
-                        "importoFinanziato",
-                        "rataPrestito",
-                        "nrRate"
-                    ]
-                }
+                "view": "custom:views/quote/record/panels/finanziamento",
+                "order": 10
             }
         ],
         "editSmall": [
@@ -143,20 +107,8 @@
             {
                 "name": "finanziamento",
                 "label": "Finanziamento",
-                "view": "views/record/panels/bottom",
-                "order": 10,
-                "options": {
-                    "fieldList": [
-                        "finanziamento",
-                        "statoFinanziamento",
-                        "importoCaparra",
-                        "importoSaldo",
-                        "tassoZero",
-                        "importoFinanziato",
-                        "rataPrestito",
-                        "nrRate"
-                    ]
-                }
+                "view": "custom:views/quote/record/panels/finanziamento",
+                "order": 10
             }
         ]
     },

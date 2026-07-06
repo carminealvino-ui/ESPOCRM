@@ -1,0 +1,40 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "statoFinanziamento"
+                }
+            ],
+            [
+                {
+                    "name": "importoCaparra"
+                },
+                {
+                    "name": "importoSaldo"
+                }
+            ],
+            [
+                {
+                    "name": "importoFinanziato"
+                },
+                {
+                    "name": "rataPrestito"
+                },
+                {
+                    "name": "nrRate"
+                }
+            ],
+            [
+                {
+                    "name": "tassoZero"
+                },
+                false,
+                false
+            ]
+        ]
+    }
+]
