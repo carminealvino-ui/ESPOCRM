@@ -13,6 +13,8 @@ $app->setupSystemUser();
 
 $pdo = $app->getContainer()->get('entityManager')->getPDO();
 
+echo "=== run-regola-provvigionale-seed v2 ===\n";
+
 $files = [
     __DIR__ . '/../database/2026-05-26-gdl-ariel-2026-regole-provvigioni-seed.sql',
     __DIR__ . '/../database/2026-05-26-arquati-pnc-regole-provvigioni-seed.sql',
@@ -145,18 +147,23 @@ $upsert = $pdo->prepare(
 );
 
 foreach ($requiredRules as $id => $rule) {
-    $upsert->execute([
-        'id' => $id,
-        'name' => $rule['name'],
-        'description' => $rule['description'],
-        'attiva' => $rule['attiva'],
-        'priorita' => $rule['priorita'],
-        'regime_provvigione' => $rule['regime_provvigione'],
-        'tipo_calcolo' => $rule['tipo_calcolo'],
-        'tipo_provvigione_record' => $rule['tipo_provvigione_record'],
-        'percentuale' => $rule['percentuale'],
-        'percentuale_addizionale' => $rule['percentuale_addizionale'] ?? null,
-    ]);
+    try {
+        $upsert->execute([
+            'id' => $id,
+            'name' => $rule['name'],
+            'description' => $rule['description'],
+            'attiva' => $rule['attiva'],
+            'priorita' => $rule['priorita'],
+            'regime_provvigione' => $rule['regime_provvigione'],
+            'tipo_calcolo' => $rule['tipo_calcolo'],
+            'tipo_provvigione_record' => $rule['tipo_provvigione_record'],
+            'percentuale' => $rule['percentuale'],
+            'percentuale_addizionale' => $rule['percentuale_addizionale'] ?? null,
+        ]);
+        echo "OK   upsert {$id}\n";
+    } catch (Throwable $e) {
+        echo "ERR  upsert {$id}: " . $e->getMessage() . "\n";
+    }
 }
 
 $check = $pdo->query('SELECT COUNT(*) FROM regola_provvigionale WHERE deleted = 0');
