@@ -53,6 +53,13 @@ FILES=(
   custom/Espo/Custom/Resources/metadata/app/actions.json
   custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
   client/custom/src/handlers/quote/ricalcola-provvigioni.js
+  client/custom/src/handlers/quote/crea-prodotto-articoli.js
+  client/custom/src/views/quote/record/detail.js
+  client/custom/src/views/quote/record/item.js
+  client/custom/src/views/quote/record/panels/items.js
+  client/custom/src/views/quote/fields/item-list.js
+  client/custom/src/views/provvigione/record/detail.js
+  client/custom/src/views/provvigione/record/edit.js
 )
 
 for f in "${FILES[@]}"; do

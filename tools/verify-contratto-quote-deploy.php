@@ -125,6 +125,22 @@ check_contains(
     $errors
 );
 
+check_contains(
+    "{$base}/client/custom/src/views/quote/record/detail.js",
+    'custom:views/quote/record/detail',
+    'Client view quote/record/detail.js',
+    $ok,
+    $errors
+);
+
+check_contains(
+    "{$base}/client/custom/src/views/quote/record/panels/items.js",
+    'custom:views/quote/record/panels/items',
+    'Client view quote/panels/items.js',
+    $ok,
+    $errors
+);
+
 $formulaFile = "{$base}/custom/Espo/Custom/Resources/metadata/formula/Quote.json";
 
 if (!is_file($formulaFile)) {
