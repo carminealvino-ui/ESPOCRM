@@ -17,6 +17,9 @@
             ],
             [
                 {
+                    "name": "tassoZero"
+                },
+                {
                     "name": "importoFinanziato"
                 },
                 {
@@ -24,9 +27,6 @@
                 },
                 {
                     "name": "nrRate"
-                },
-                {
-                    "name": "tassoZero"
                 }
             ]
         ]

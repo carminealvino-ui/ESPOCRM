@@ -9,7 +9,7 @@ use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Ricalcola provvigione consolidata quando cambiano importi o date attivazione.
+ * Ricalcola provvigioni consolidate ad ogni salvataggio contratto.
  */
 class ProvvigioneConsolidata implements AfterSave
 {
@@ -30,41 +30,6 @@ class ProvvigioneConsolidata implements AfterSave
             return;
         }
 
-        $watch = [
-            'amount',
-            'importoContratto',
-            'dataAttivazione',
-            'dataInstallazione',
-            'productCategoryId',
-            'minusPlus',
-            'prezzoListinoIvaEsclusa',
-            'prezzoCodiceIvaEsclusa',
-            'margineSuListino',
-            'contattoPersonaleArquati',
-        ];
-
-        $changed = false;
-
-        foreach ($watch as $field) {
-            if ($entity->isAttributeChanged($field)) {
-                $changed = true;
-                break;
-            }
-        }
-
-        if (!$changed && !$entity->isNew()) {
-            return;
-        }
-
-        $opportunity = $this->entityManager->getEntityById(
-            'Opportunity',
-            $entity->get('opportunityId')
-        );
-
-        if (!$opportunity) {
-            return;
-        }
-
-        $this->provvigioneManager->createConsolidataForQuote($opportunity, $entity);
+        $this->provvigioneManager->recalculateAllForQuote($entity);
     }
 }

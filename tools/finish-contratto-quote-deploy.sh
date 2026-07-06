@@ -38,7 +38,14 @@ if [[ ! -f client/custom/src/views/quote/record/detail.js ]]; then
 fi
 
 echo ""
-echo "=== 2) Backfill totaleProvvigioni ==="
+echo "=== 2) Backfill provvigioni (ricalcolo completo) ==="
+curl -fsSL "${BASE}/tools/backfill-quote-provvigioni.php?t=$(date +%s)" -o tools/backfill-quote-provvigioni.php
+curl -fsSL "${BASE}/custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php?t=$(date +%s)" \
+  -o custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
+php tools/backfill-quote-provvigioni.php
+
+echo ""
+echo "=== 3) Backfill totaleProvvigioni ==="
 curl -fsSL "${BASE}/tools/backfill-quote-totale-provvigioni.php?t=$(date +%s)" -o tools/backfill-quote-totale-provvigioni.php
 php tools/backfill-quote-totale-provvigioni.php
 
