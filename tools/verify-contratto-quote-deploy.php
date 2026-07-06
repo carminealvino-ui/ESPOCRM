@@ -117,6 +117,34 @@ check_not_contains(
     $errors
 );
 
+check_contains(
+    "{$base}/custom/Espo/Custom/Resources/metadata/scopes/RegolaProvvigionale.json",
+    '"entity": true',
+    'Entity RegolaProvvigionale in scopes',
+    $ok,
+    $errors
+);
+
+$formulaFile = "{$base}/custom/Espo/Custom/Resources/metadata/formula/Quote.json";
+
+if (!is_file($formulaFile)) {
+    $errors[] = "MANCANTE: formula Quote.json";
+} else {
+    $formula = file_get_contents($formulaFile) ?: '';
+
+    if (str_contains($formula, 'math\\round')) {
+        $errors[] = 'NON OK: formula Quote usa math\\round (deve essere number\\round)';
+    } else {
+        $ok[] = 'formula Quote senza math\\round';
+    }
+
+    if (!str_contains($formula, 'number\\round')) {
+        $errors[] = 'NON OK: formula Quote senza number\\round';
+    } else {
+        $ok[] = 'formula Quote con number\\round';
+    }
+}
+
 $legacy = [
     "{$base}/custom/Espo/Custom/Hooks/Quote/SyncTotaleProvvigioni.php",
     "{$base}/custom/Espo/Custom/Services/QuoteTotaleProvvigioniService.php",

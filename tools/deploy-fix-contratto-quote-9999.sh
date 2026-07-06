@@ -32,6 +32,14 @@ FILES=(
   custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php
   custom/Espo/Custom/Services/ProvvigioneManager.php
   custom/Espo/Custom/Services/RegolaProvvigionaleCalculator.php
+  custom/Espo/Custom/Entities/RegolaProvvigionale.php
+  custom/Espo/Custom/Repositories/RegolaProvvigionale.php
+  custom/Espo/Custom/Resources/metadata/scopes/RegolaProvvigionale.json
+  custom/Espo/Custom/Resources/metadata/entityDefs/RegolaProvvigionale.json
+  custom/Espo/Custom/Resources/metadata/clientDefs/RegolaProvvigionale.json
+  custom/Espo/Custom/Resources/layouts/RegolaProvvigionale/detail.json
+  custom/Espo/Custom/Resources/layouts/RegolaProvvigionale/list.json
+  custom/Espo/Custom/Resources/i18n/it_IT/RegolaProvvigionale.json
   custom/Espo/Custom/Actions/Quote/RicalcolaProvvigioni.php
   custom/Espo/Custom/Controllers/Quote.php
   custom/Espo/Custom/Resources/layouts/Quote/detail.json
@@ -81,6 +89,22 @@ for rel in "${FILES[@]}"; do
 done
 
 echo ""
+echo "=== Rebuild (registra entity RegolaProvvigionale) ==="
+php clear_cache.php
+php rebuild.php
+rm -rf data/cache/* 2>/dev/null || true
+chmod -R u+rwX data/cache 2>/dev/null || true
+
+echo ""
+echo "=== Schema provvigione + seed regole ==="
+curl -fsSL "${BASE}/tools/run-provvigione-schema-patch.php?t=$(date +%s)" -o tools/run-provvigione-schema-patch.php
+curl -fsSL "${BASE}/tools/run-regola-provvigionale-seed.php?t=$(date +%s)" -o tools/run-regola-provvigionale-seed.php
+curl -fsSL "${BASE}/database/2026-05-26-gdl-ariel-2026-regole-provvigioni-seed.sql?t=$(date +%s)" -o database/2026-05-26-gdl-ariel-2026-regole-provvigioni-seed.sql
+curl -fsSL "${BASE}/database/2026-05-26-arquati-pnc-regole-provvigioni-seed.sql?t=$(date +%s)" -o database/2026-05-26-arquati-pnc-regole-provvigioni-seed.sql
+php tools/run-provvigione-schema-patch.php
+php tools/run-regola-provvigionale-seed.php
+
+echo ""
 echo "=== Verifica file scaricati ==="
 curl -fsSL "${BASE}/tools/verify-contratto-quote-deploy.php?t=$(date +%s)" -o tools/verify-contratto-quote-deploy.php
 php tools/verify-contratto-quote-deploy.php || {
@@ -94,9 +118,8 @@ curl -fsSL "${BASE}/tools/backfill-quote-totale-provvigioni.php?t=$(date +%s)" -
 php tools/backfill-quote-totale-provvigioni.php
 
 echo ""
-echo "=== Rebuild + cache ==="
+echo "=== Cache finale ==="
 php clear_cache.php
-php rebuild.php
 rm -rf data/cache/* 2>/dev/null || true
 chmod -R u+rwX data/cache 2>/dev/null || true
 
