@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# KPI completo coerente (una sola branch) — risolve etichette incollate, Rese vuote, Avvisi/Criticità.
+# KPI completo coerente — branch unificata (etichette Lordi/Totali/Netto + Avvisi/Criticità).
 #
-# Problema tipico: mix v2 + criticita → CSS/tpl/js senza YieldBuilder/CrmKpiService allineati.
+# Problema tipico: branch criticita-zero ha etichette lunghe "Appuntamenti lordi";
+# la branch unificata usa Lordi, Totali, Netto sotto il titolo tile.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/allinea-post-2-luglio-9999/tools/deploy-kpi-allinea-completo.sh?t=$(date +%s)" | bash
@@ -9,7 +10,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH_KPI="cursor/crm-kpi-criticita-zero-9999"
+BRANCH_KPI="cursor/crm-kpi-criticita-unificata-9999"
 BRANCH_ESPO10="cursor/fix-espocrm-10-compat-9999"
 REPO="carminealvino-ui/ESPOCRM"
 STAMP=$(date +%Y%m%d-%H%M%S)
@@ -73,8 +74,9 @@ echo ""
 echo "=== Appuntamento Espo 10 (no getContainer) ==="
 download "${BRANCH_ESPO10}" "custom/Espo/Custom/Controllers/Appuntamento.php"
 
+grep -q "label: 'Lordi'" "${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js"
+grep -q "mapMetricTile" "${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js"
 grep -q 'injectableFactory' "${CRM_ROOT}/custom/Espo/Custom/Controllers/Appuntamento.php"
-grep -q 'YieldBuilder' "${CRM_ROOT}/custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
 test -f "${CRM_ROOT}/custom/Espo/Custom/Tools/CrmKpi/YieldBuilder.php"
 
 echo ""

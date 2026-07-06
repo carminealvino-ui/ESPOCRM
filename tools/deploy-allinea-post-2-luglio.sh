@@ -50,7 +50,7 @@ backup_files() {
 phase_a_kpi() {
   echo ""
   echo "========== A) KPI — deploy monolitico (crm-kpi-criticita-zero) =========="
-  echo "Esegue tools/deploy-kpi-allinea-completo.sh (CSS+JS+backend coerenti)"
+  echo "Esegue tools/deploy-kpi-allinea-completo.sh (branch criticita-unificata)"
   bash "${CRM_ROOT}/tools/deploy-kpi-allinea-completo.sh" "${CRM_ROOT}" 2>/dev/null || {
     local script_url="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/allinea-post-2-luglio-9999/tools/deploy-kpi-allinea-completo.sh"
     curl -fsSL "${script_url}?t=${STAMP}" | bash -s -- "${CRM_ROOT}"
