@@ -79,8 +79,8 @@ check_contains(
 
 check_contains(
     "{$base}/client/custom/src/views/quote/record/panels/finanziamento.js",
-    'this.fieldList.push(col.field)',
-    'Finanziamento panel registra campi in fieldList',
+    '{{{var finanziamentoField this}}}',
+    'Finanziamento panel usa var helper Espo per i valori',
     $ok,
     $errors
 );
