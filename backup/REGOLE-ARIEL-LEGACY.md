@@ -5,8 +5,8 @@ Riferimento documento **Nuove Scalette Minus** (promo settembre–dicembre 2025)
 ## Regime CRM
 
 - Codice: `ARIEL_LEGACY`
-- Attivo su contratti Ariel/GDL con **data contratto &lt; 01/02/2026** (allineato al cutover `ARIEL_2026` dal 01/02/2026).
-- Dal 24/01/2026 al 31/01/2026 non c’è documentazione esplicita: si usa legacy fino al 31/01, poi 2026.
+- Attivo su contratti Ariel/GDL con **data contratto &lt; 24/01/2026**.
+- Dal **24/01/2026** resta in vigore il regime `ARIEL_2026` (10+5%, plus/minus 35%).
 
 ## Base di calcolo
 

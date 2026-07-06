@@ -7,15 +7,15 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Numero contratto valorizzato → stato Bozza (Draft) diventa Presentato (Presented).
+ * Numero contratto valorizzato → stato Bozza diventa In lavorazione.
  * Il Codice Contratto automatico (numberA) è gestito da AssignNumberACodiceContratto.
  */
 class SetPresentedWhenNumeroContratto implements BeforeSave
 {
     public static int $order = 12;
 
-    private const STATUS_DRAFT = 'Draft';
-    private const STATUS_PRESENTED = 'Presented';
+    private const STATUS_BOZZA = 'Bozza';
+    private const STATUS_IN_LAVORAZIONE = 'In lavorazione';
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
@@ -31,11 +31,11 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
             return;
         }
 
-        if ($entity->get('status') !== self::STATUS_DRAFT) {
+        if ($entity->get('status') !== self::STATUS_BOZZA) {
             return;
         }
 
-        $entity->set('status', self::STATUS_PRESENTED);
+        $entity->set('status', self::STATUS_IN_LAVORAZIONE);
     }
 
     private function hasNumeroContratto(Entity $entity): bool

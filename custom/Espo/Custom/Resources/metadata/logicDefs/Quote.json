@@ -6,7 +6,7 @@
                     {
                         "type": "equals",
                         "attribute": "status",
-                        "value": "Approved"
+                        "value": "Installato"
                     }
                 ]
             }

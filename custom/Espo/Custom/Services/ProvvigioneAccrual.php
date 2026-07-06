@@ -43,7 +43,7 @@ class ProvvigioneAccrual
 
     /**
      * GDL + brand Ariel → regime in base alla data commerciale.
-     * Legacy (scalette minus) fino al 31/01/2026; ARIEL_2026 dal 01/02/2026.
+     * Legacy (scalette minus) fino al 23/01/2026; ARIEL_2026 dal 24/01/2026.
      */
     public function resolveRegimeFromCommercial(
         ?object $category,
@@ -77,7 +77,7 @@ class ProvvigioneAccrual
             return 'ARIEL_2026';
         }
 
-        $cutover = new DateTimeImmutable('2026-02-01');
+        $cutover = new DateTimeImmutable('2026-01-24');
 
         return $date < $cutover ? 'ARIEL_LEGACY' : 'ARIEL_2026';
     }

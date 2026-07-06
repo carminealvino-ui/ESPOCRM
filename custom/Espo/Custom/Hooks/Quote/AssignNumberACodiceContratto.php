@@ -14,7 +14,7 @@ class AssignNumberACodiceContratto implements BeforeSave
 {
     public static int $order = 13;
 
-    private const STATUS_DRAFT = 'Draft';
+    private const STATUS_BOZZA = 'Bozza';
 
     public function __construct(
         private EntityManager $entityManager
@@ -34,7 +34,7 @@ class AssignNumberACodiceContratto implements BeforeSave
             return;
         }
 
-        if ($entity->get('status') === self::STATUS_DRAFT) {
+        if ($entity->get('status') === self::STATUS_BOZZA) {
             return;
         }
 

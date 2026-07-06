@@ -6,7 +6,7 @@ Riferimento per il caso **DI MAGGIO** (partner **GDL**, brand **ARIEL**).
 
 - Codice: `ARIEL_2026`
 - Attivazione automatica se `fornitorePartner` contiene **GDL** o `productBrand` contiene **ARIEL**, con **data contratto ≥ 01/02/2026**.
-- Contratti con data **&lt; 01/02/2026** usano il regime legacy `ARIEL_LEGACY` (scalette minus — vedi `backup/REGOLE-ARIEL-LEGACY.md`).
+- Contratti con data **&lt; 24/01/2026** usano il regime legacy `ARIEL_LEGACY` (scalette minus — vedi `backup/REGOLE-ARIEL-LEGACY.md`).
 
 ## Provvigioni su contratto (implementato)
 

@@ -54,8 +54,14 @@
                     "name": "statoContratto"
                 },
                 {
+                    "name": "statoFinanziamento"
+                }
+            ],
+            [
+                {
                     "name": "importoSaldo"
                 },
+                false,
                 false
             ],
             [

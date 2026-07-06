@@ -19,7 +19,6 @@ class SyncFinanziamentoFromOpportunity implements BeforeSave
     /** @var list<string> */
     private const SYNC_FIELDS = [
         'finanziamento',
-        'statoContratto',
         'statoFinanziamento',
         'importoFinanziato',
         'rataPrestito',
@@ -103,7 +102,7 @@ class SyncFinanziamentoFromOpportunity implements BeforeSave
             return true;
         }
 
-        foreach (['statoFinanziamento', 'importoFinanziato', 'rataPrestito', 'nrRate', 'statoContratto'] as $field) {
+        foreach (['statoFinanziamento', 'importoFinanziato', 'rataPrestito', 'nrRate'] as $field) {
             $fromOpportunity = $opportunity->get($field);
 
             if ($fromOpportunity !== null && $fromOpportunity !== '' && $this->isEmptyQuoteField($entity, $field)) {
