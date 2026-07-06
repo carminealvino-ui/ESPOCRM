@@ -15,6 +15,8 @@ $columns = [
     'base_calcolo' => "VARCHAR(100) DEFAULT NULL",
     'importo_base_calcolo' => 'DOUBLE DEFAULT NULL',
     'importo_base_calcolo_currency' => "VARCHAR(3) DEFAULT 'EUR'",
+    'tasso_provvigioni' => 'DOUBLE DEFAULT NULL',
+    'tipo' => "VARCHAR(100) DEFAULT 'Provvigione Base'",
 ];
 
 foreach ($columns as $column => $definition) {

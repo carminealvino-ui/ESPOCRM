@@ -1,5 +1,30 @@
 {
+    "links": {
+        "meetings": "Riunioni",
+        "calls": "Chiamate",
+        "tasks": "Compiti",
+        "cliente": "Cliente",
+        "contratto": "Contratto",
+        "contrattoArticoli": "Contratto Articoli"
+    },
+    "labels": {
+        "Create Provvigione": "Crea Provvigione"
+    },
     "fields": {
+        "name": "Descrizione",
+        "tipo": "Tipo provvigione",
+        "cliente": "Cliente",
+        "contratto": "Contratto",
+        "importo": "Importo",
+        "importoCurrency": "Importo (Valuta)",
+        "importoConverted": "Importo (Convertito)",
+        "tassoProvvigioni": "Tasso %",
+        "baseCalcolo": "Base calcolo",
+        "importoBaseCalcolo": "Importo base",
+        "importoConsolidato": "Provvigione",
+        "importoPrevisto": "Importo previsto",
+        "contrattoArticoli": "Contratto Articoli",
+        "hookVersion": "HookVersion",
         "statoProvvigione": "Stato provvigione",
         "regimeProvvigione": "Regime provvigionale",
         "dataInstallazione": "Data installazione",
@@ -7,8 +32,6 @@
         "dataCompetenza": "Data competenza",
         "dataLiquidazionePrevista": "Liquidazione prevista",
         "dataLiquidazioneEffettiva": "Liquidazione effettiva",
-        "importoPrevisto": "Importo previsto",
-        "importoConsolidato": "Importo consolidato",
         "scostamentoImporto": "Scostamento",
         "giorniLiquidazioneDaAttivazione": "Giorni liquidazione da attivazione",
         "appuntamento": "Appuntamento",
@@ -16,9 +39,29 @@
         "productCategory": "Categoria prodotto",
         "invitoAFatturare": "Invito a fatturare",
         "fornitorePartner": "Fornitore / Partner",
-        "productBrand": "Brand"
+        "productBrand": "Brand",
+        "regolaProvvigionale": "Regola provvigionale"
     },
     "options": {
+        "tipo": {
+            "Provvigione Base": "Provvigione Base",
+            "Bonus (Sabato-Domenica)": "Bonus (Sabato-Domenica)",
+            "Plus Provvigionale": "Plus Provvigionale",
+            "Minus Provvigionale": "Minus Provvigionale",
+            "Gara (Soglia >2.5k)": "Gara (Soglia >2.5k)",
+            "Gara (Soglia >3.5)": "Gara (Soglia >3.5)",
+            "Gara (Soglia >5k)": "Gara (Soglia >5k)",
+            "Referenza Personale": "Referenza Personale"
+        },
+        "baseCalcolo": {
+            "ImponibileContratto": "Imponibile contratto",
+            "Plusvalenza": "Plusvalenza",
+            "Minusvalenza": "Minusvalenza",
+            "MargineSuListino": "Margine su listino",
+            "CanoneMensile": "Canone mensile",
+            "GettoneFisso": "Gettone fisso",
+            "NumeroPod": "Numero POD"
+        },
         "statoProvvigione": {
             "Prevista": "Prevista (forecast)",
             "Consolidata": "Consolidata",

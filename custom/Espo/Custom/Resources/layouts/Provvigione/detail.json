@@ -1,0 +1,50 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "tipo"
+                },
+                {
+                    "name": "statoProvvigione"
+                },
+                {
+                    "name": "assignedUser"
+                }
+            ],
+            [
+                {
+                    "name": "tassoProvvigioni"
+                },
+                {
+                    "name": "importoBaseCalcolo"
+                },
+                {
+                    "name": "baseCalcolo"
+                }
+            ],
+            [
+                {
+                    "name": "importoConsolidato"
+                },
+                {
+                    "name": "importoPrevisto"
+                },
+                {
+                    "name": "scostamentoImporto"
+                }
+            ],
+            [
+                {
+                    "name": "regolaProvvigionale"
+                },
+                {
+                    "name": "regimeProvvigione"
+                },
+                false
+            ]
+        ],
+        "style": "default",
+        "label": "Overview"
+    }
+]

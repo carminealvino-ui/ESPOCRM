@@ -1085,9 +1085,11 @@ class ProvvigioneManager
 
         return match ($tipo) {
             'PercentualePlusvalenza' => [
-                'baseCalcolo' => 'Plusvalenza',
+                'baseCalcolo' => isset($context['plusvalenza']) && (float) $context['plusvalenza'] < 0
+                    ? 'Minusvalenza'
+                    : 'Plusvalenza',
                 'importoBaseCalcolo' => isset($context['plusvalenza'])
-                    ? round((float) $context['plusvalenza'], 2)
+                    ? round(abs((float) $context['plusvalenza']), 2)
                     : null,
             ],
             'PercentualeMargine' => [
@@ -1123,20 +1125,19 @@ class ProvvigioneManager
 
     private function buildProvvigioneName(Entity $quote, string $tipo, ?Entity $rule): string
     {
+        $agent = (string) ($quote->get('assignedUserName') ?: '');
+
+        if ($agent !== '') {
+            return $agent . ' — ' . $tipo;
+        }
+
         $contractRef = (string) ($quote->get('number') ?: $quote->getId());
 
         if ($rule && $rule->get('name')) {
-            return $contractRef . ' — ' . $rule->get('name');
+            return $contractRef . ' — ' . $tipo;
         }
 
-        $prefix = match ($tipo) {
-            'Plus Provvigionale' => 'PLUS',
-            'Minus Provvigionale' => 'MINUS',
-            'Bonus (Sabato-Domenica)' => 'BONUS-WE',
-            default => 'CONS',
-        };
-
-        return $prefix . '-' . $contractRef . ' — ' . $tipo;
+        return $contractRef . ' — ' . $tipo;
     }
 
     private function resolveDisplayTasso(?Entity $rule): ?float
