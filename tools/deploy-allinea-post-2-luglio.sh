@@ -49,57 +49,12 @@ backup_files() {
 
 phase_a_kpi() {
   echo ""
-  echo "========== A) KPI — Avvisi, Criticità, etichette Lordo/Totale =========="
-  local backup="${CRM_ROOT}/backup_dev/KPI/allinea-${STAMP}"
-  local branch_v2="cursor/crm-kpi-dashlet-v2-9999"
-  local branch_crit="cursor/crm-kpi-criticita-zero-9999"
-  local branch_espo10="cursor/fix-espocrm-10-compat-9999"
-
-  local files_v2=(
-    "client/custom/css/crm-kpi-dashlet.css"
-    "client/custom/src/views/dashlets/options/crm-kpi.js"
-    "custom/Espo/Custom/Controllers/CrmKpi.php"
-    "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
-    "custom/Espo/Custom/Tools/CrmKpi/FunnelBuilder.php"
-    "custom/Espo/Custom/Tools/CrmKpi/KpiContext.php"
-    "custom/Espo/Custom/Tools/CrmKpi/DateRange.php"
-    "custom/Espo/Custom/Resources/metadata/dashlets/CrmKpi.json"
-    "custom/Espo/Custom/Resources/i18n/it_IT/CrmKpi.json"
-    "custom/Espo/Custom/Resources/i18n/it_IT/DashletOptions.json"
-  )
-
-  local files_crit=(
-    "client/custom/res/templates/dashlets/crm-kpi.tpl"
-    "client/custom/src/views/dashlets/crm-kpi.js"
-    "custom/Espo/Custom/Tools/CrmKpi/Alerts.php"
-    "tools/verify-crm-kpi-deploy.php"
-  )
-
-  echo "=== Backup ${backup} ==="
-  backup_files "${backup}" "${files_v2[@]}" "${files_crit[@]}" \
-    "custom/Espo/Custom/Controllers/Appuntamento.php"
-
-  echo "=== Download KPI v2 (tile, funnel, i18n) ==="
-  for rel in "${files_v2[@]}"; do
-    download "${branch_v2}" "${rel}"
-  done
-
-  echo "=== Download Avvisi + Criticità ==="
-  for rel in "${files_crit[@]}"; do
-    download "${branch_crit}" "${rel}"
-  done
-
-  sed -i 's/formatPaymentMeta/buildCriticita/' "${CRM_ROOT}/tools/verify-crm-kpi-deploy.php" 2>/dev/null || true
-
-  echo "=== Appuntamento controller Espo 10 (no getContainer) ==="
-  download "${branch_espo10}" "custom/Espo/Custom/Controllers/Appuntamento.php"
-
-  grep -q 'injectableFactory' "${CRM_ROOT}/custom/Espo/Custom/Controllers/Appuntamento.php"
-  grep -q 'getContainer' "${CRM_ROOT}/custom/Espo/Custom/Controllers/Appuntamento.php" \
-    && echo "ATTENZIONE: Appuntamento.php contiene ancora getContainer" || true
-
-  echo "Verifica: php tools/verify-crm-kpi-deploy.php"
-  echo "Browser: tab KPI → Avvisi + Criticità, etichette Lordo/Totale"
+  echo "========== A) KPI — deploy monolitico (crm-kpi-criticita-zero) =========="
+  echo "Esegue tools/deploy-kpi-allinea-completo.sh (CSS+JS+backend coerenti)"
+  bash "${CRM_ROOT}/tools/deploy-kpi-allinea-completo.sh" "${CRM_ROOT}" 2>/dev/null || {
+    local script_url="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/allinea-post-2-luglio-9999/tools/deploy-kpi-allinea-completo.sh"
+    curl -fsSL "${script_url}?t=${STAMP}" | bash -s -- "${CRM_ROOT}"
+  }
 }
 
 phase_b_sottostato() {
