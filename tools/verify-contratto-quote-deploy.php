@@ -130,15 +130,25 @@ $formulaFile = "{$base}/custom/Espo/Custom/Resources/metadata/formula/Quote.json
 if (!is_file($formulaFile)) {
     $errors[] = "MANCANTE: formula Quote.json";
 } else {
-    $formula = file_get_contents($formulaFile) ?: '';
+    $formulaRaw = file_get_contents($formulaFile) ?: '';
+    $formulaScript = $formulaRaw;
 
-    if (str_contains($formula, 'math\\round')) {
+    $decoded = json_decode($formulaRaw, true);
+
+    if (is_array($decoded) && isset($decoded['beforeSaveCustomScript'])) {
+        $formulaScript = (string) $decoded['beforeSaveCustomScript'];
+    }
+
+    if (str_contains($formulaScript, 'math\\round') || str_contains($formulaRaw, 'math\\\\round')) {
         $errors[] = 'NON OK: formula Quote usa math\\round (deve essere number\\round)';
     } else {
         $ok[] = 'formula Quote senza math\\round';
     }
 
-    if (!str_contains($formula, 'number\\round')) {
+    if (
+        !str_contains($formulaScript, 'number\\round')
+        && !str_contains($formulaRaw, 'number\\\\round')
+    ) {
         $errors[] = 'NON OK: formula Quote senza number\\round';
     } else {
         $ok[] = 'formula Quote con number\\round';
