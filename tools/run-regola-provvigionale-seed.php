@@ -20,6 +20,7 @@ $files = [
     __DIR__ . '/../database/2026-05-26-arquati-pnc-regole-provvigioni-seed.sql',
     __DIR__ . '/../database/2026-07-06-bonus-weekend-regola-provvigioni-seed.sql',
     __DIR__ . '/../database/2026-07-06-ariel-minus-35-regola-provvigioni-seed.sql',
+    __DIR__ . '/../database/2026-07-07-ariel-legacy-scalette-minus-seed.sql',
 ];
 
 /**

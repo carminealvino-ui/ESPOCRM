@@ -16,6 +16,7 @@ class ProvvigioneAccrual
         'GFB_VODAFONE_COEFF' => 0,
         'GFB_RS_BIMESTRE' => 0,
         'ARIEL_2026' => 0,
+        'ARIEL_LEGACY' => 0,
         'ARQUATI_PNC' => 0,
         'GENERICO' => 0,
     ];
@@ -41,18 +42,20 @@ class ProvvigioneAccrual
     }
 
     /**
-     * GDL + brand Ariel → regime mail febbraio 2026 (priorità su gruppo ARQUATI).
+     * GDL + brand Ariel → regime in base alla data commerciale.
+     * Legacy (scalette minus) fino al 31/01/2026; ARIEL_2026 dal 01/02/2026.
      */
     public function resolveRegimeFromCommercial(
         ?object $category,
         ?string $fornitorePartnerName,
-        ?string $productBrandName
+        ?string $productBrandName,
+        ?string $referenceDate = null
     ): string {
         $brand = strtoupper(trim((string) $productBrandName));
         $partner = strtoupper(trim((string) $fornitorePartnerName));
 
         if (str_contains($brand, 'ARIEL') || str_contains($partner, 'GDL')) {
-            return 'ARIEL_2026';
+            return $this->resolveArielRegimeByDate($referenceDate);
         }
 
         if ($category && $category->get('regimeProvvigione') === 'ARIEL_2026') {
@@ -60,6 +63,23 @@ class ProvvigioneAccrual
         }
 
         return $this->resolveRegimeFromCategory($category);
+    }
+
+    public function resolveArielRegimeByDate(?string $referenceDate): string
+    {
+        if (!$referenceDate) {
+            return 'ARIEL_2026';
+        }
+
+        try {
+            $date = new DateTimeImmutable($referenceDate);
+        } catch (\Exception) {
+            return 'ARIEL_2026';
+        }
+
+        $cutover = new DateTimeImmutable('2026-02-01');
+
+        return $date < $cutover ? 'ARIEL_LEGACY' : 'ARIEL_2026';
     }
 
     public function resolveEventDate(?string $dataAttivazione, ?string $dataInstallazione): ?string
@@ -123,6 +143,7 @@ class ProvvigioneAccrual
 
         return match ($regime) {
             'ARIEL_2026' => round($imponibile * 0.15, 2),
+            'ARIEL_LEGACY' => round($imponibile * 0.13, 2),
             'GFB_VODAFONE_COEFF' => round($imponibile * 2.0, 2),
             default => null,
         };
