@@ -22,6 +22,9 @@ fetch custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php
 fetch client/custom/src/views/dashlets/crm-kpi.js
 fetch client/custom/css/crm-kpi-dashlet.css
 fetch client/custom/res/templates/dashlets/crm-kpi.tpl
+fetch custom/Espo/Custom/Services/CallStandardTesto.php
+fetch custom/Espo/Custom/Controllers/CallStandardTesto.php
+fetch custom/Espo/Custom/Hooks/Call/PersistStandardTesto.php
 
 php clear_cache.php && php rebuild.php
 
