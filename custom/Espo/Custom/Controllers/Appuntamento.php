@@ -4,9 +4,8 @@ namespace Espo\Custom\Controllers;
 
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
+use Espo\Core\Controllers\Record;
 use Espo\Core\Exceptions\Forbidden;
-use Espo\Core\InjectableFactory;
-use Espo\Core\Templates\Controllers\Base;
 use Espo\Custom\Services\CrmKpi\CrmKpiService;
 use Espo\Custom\Tools\CrmKpi\DateRange;
 
@@ -16,7 +15,7 @@ use Espo\Custom\Tools\CrmKpi\DateRange;
  * GET api/v1/Appuntamento/action/getSummary
  * GET api/v1/Appuntamento/action/crmKpiSummary  (alias)
  */
-class Appuntamento extends Base
+class Appuntamento extends Record
 {
     public function getActionGetSummary(Request $request, Response $response): object
     {
@@ -31,10 +30,8 @@ class Appuntamento extends Base
     private function buildSummary(Request $request): object
     {
         $period = DateRange::normalizePeriod($request->getQueryParam('period') ?? DateRange::CURRENT_MONTH);
-
         $productBrandId = $this->normalizeBrandId($request->getQueryParam('productBrandId'));
 
-        /** @var InjectableFactory $injectableFactory */
         $injectableFactory = $this->getContainer()->get('injectableFactory');
         $service = $injectableFactory->create(CrmKpiService::class);
         $user = $this->getUser();
