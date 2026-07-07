@@ -45,9 +45,11 @@ class CrmKpi
         }
 
         $period = DateRange::normalizePeriod($request->getQueryParam('period') ?? DateRange::CURRENT_MONTH);
+        $productBrandId = trim((string) ($request->getQueryParam('productBrandId') ?? ''));
+        $productBrandId = $productBrandId !== '' ? $productBrandId : null;
 
         $service = $this->injectableFactory->create(CrmKpiService::class);
 
-        return $service->getSummary($user, $period);
+        return $service->getSummary($user, $period, $productBrandId);
     }
 }

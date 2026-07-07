@@ -55,7 +55,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 params.productBrandId = productBrandId;
             }
 
-            return Espo.Ajax.getRequest('Appuntamento/action/getSummary', params)
+            return Espo.Ajax.getRequest('CrmKpi/action/getSummary', params)
                 .then(response => {
                     this.summary = response;
                     this.loadError = null;
