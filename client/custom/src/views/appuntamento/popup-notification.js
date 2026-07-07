@@ -53,6 +53,13 @@ define('custom:views/appuntamento/popup-notification', [
                 return !!status && status !== 'Planned';
             },
             incompleteMessage: 'Selezionare Stato (Svolto o Non svolto) e cliccare Salva.',
+            getMissingFields: function (model) {
+                if (!model.get('status') || model.get('status') === 'Planned') {
+                    return ['Stato'];
+                }
+
+                return [];
+            },
         },
         Call: {
             layoutName: 'detailEsitoPopup',
@@ -227,36 +234,53 @@ define('custom:views/appuntamento/popup-notification', [
             return this.esitoModel;
         }
 
-        getFieldValue(fieldName) {
-            const recordView = this.getView('esitoRecord');
-
-            if (recordView && recordView.getFieldView) {
-                const field = recordView.getFieldView(fieldName);
-
-                if (field && typeof field.getValue === 'function') {
-                    const value = field.getValue();
-
-                    if (value !== null && value !== undefined) {
-                        return value;
-                    }
-                }
+        getEditableFieldNames(entityType) {
+            if (entityType === 'Call') {
+                return [
+                    'status',
+                    'direction',
+                    'tipologia',
+                    'whatsApp',
+                    'testo',
+                    'daRichiamare',
+                    'dataRichiamo',
+                    'richiamo',
+                ];
             }
 
-            const $field = this.$el.find('.field[data-name="' + fieldName + '"]');
+            return [
+                'status',
+                'direction',
+                'sottostato',
+                'esito',
+                'noteEsito',
+                'tipologia',
+                'canaleContatto',
+                'description',
+                'daRichiamare',
+                'dataRichiamo',
+                'richiamo',
+            ];
+        }
 
-            if ($field.length) {
-                const $input = $field.find('input, select, textarea').first();
-
-                if ($input.length) {
-                    const domValue = $input.val();
-
-                    if (domValue !== null && domValue !== undefined && domValue !== '') {
-                        return domValue;
-                    }
-                }
+        fetchEditableFields(recordView, entityType) {
+            if (!recordView) {
+                return;
             }
 
-            return null;
+            this.getEditableFieldNames(entityType).forEach(fieldName => {
+                const fieldView = recordView.getFieldView && recordView.getFieldView(fieldName);
+
+                if (!fieldView || typeof fieldView.fetch !== 'function') {
+                    return;
+                }
+
+                try {
+                    fieldView.fetch();
+                } catch (e) {
+                    // Campi read-only o DOM non pronto: ignora.
+                }
+            });
         }
 
         syncEsitoRecordModel() {
@@ -277,20 +301,19 @@ define('custom:views/appuntamento/popup-notification', [
             }
 
             const model = recordView.model || this.esitoModel;
+            const entityType = this.esitoEntityType || this.notificationData.entityType;
 
             if (model && fetchedAttributes && typeof fetchedAttributes === 'object') {
                 model.set(fetchedAttributes, {silent: true});
             }
 
-            const fieldsToSync = ['status', 'daRichiamare', 'dataRichiamo', 'richiamo', 'tipologia', 'testo', 'whatsApp'];
+            this.fetchEditableFields(recordView, entityType);
 
-            fieldsToSync.forEach(fieldName => {
-                const value = this.getFieldValue(fieldName);
+            const domStatus = this.getCurrentStatus();
 
-                if (model && value !== null && value !== undefined && value !== '') {
-                    model.set(fieldName, value, {silent: true});
-                }
-            });
+            if (model && domStatus) {
+                model.set('status', domStatus, {silent: true});
+            }
         }
 
         getMissingEsitoFields() {
@@ -328,6 +351,12 @@ define('custom:views/appuntamento/popup-notification', [
 
             if (!model || !this.esitoPopupConfig) {
                 return false;
+            }
+
+            const domStatus = this.getCurrentStatus();
+
+            if (domStatus && domStatus !== model.get('status')) {
+                model.set('status', domStatus, {silent: true});
             }
 
             return this.esitoPopupConfig.isComplete(model);
@@ -484,23 +513,40 @@ define('custom:views/appuntamento/popup-notification', [
         }
 
         getCurrentStatus() {
-            const status = this.getFieldValue('status');
-
-            if (status) {
-                return status;
-            }
-
             const recordView = this.getView('esitoRecord');
+            let status = null;
 
-            if (recordView && recordView.model) {
-                return recordView.model.get('status');
+            if (recordView && recordView.getFieldView) {
+                const statusField = recordView.getFieldView('status');
+
+                if (statusField && typeof statusField.getValue === 'function') {
+                    const fieldValue = statusField.getValue();
+
+                    if (fieldValue) {
+                        status = fieldValue;
+                    }
+                }
             }
 
-            if (this.esitoModel) {
-                return this.esitoModel.get('status');
+            const $select = this.$el.find('.field[data-name="status"] select');
+
+            if ($select.length) {
+                const domValue = $select.val();
+
+                if (domValue) {
+                    status = domValue;
+                }
             }
 
-            return null;
+            if (!status && recordView && recordView.model) {
+                status = recordView.model.get('status');
+            }
+
+            if (!status && this.esitoModel) {
+                status = this.esitoModel.get('status');
+            }
+
+            return status || null;
         }
 
         shouldShowCreateOpportunity() {
