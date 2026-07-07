@@ -311,8 +311,8 @@
 }
 
 .crm-kpi-pipeline-results-note {
-    margin-bottom: 10px;
-    line-height: 1.35;
+    margin-bottom: 6px;
+    line-height: 1.25;
     font-size: 10px !important;
     color: var(--text-muted-color, #6c757d);
 }
@@ -329,19 +329,19 @@
     display: grid;
     grid-template-columns: minmax(0, 1.15fr) 0.55fr 1.3fr;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
     width: 100%;
-    padding: 9px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    padding: 4px 5px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .crm-kpi-pipeline-results-head {
     padding-top: 0;
-    padding-bottom: 8px;
+    padding-bottom: 5px;
     font-size: 11px !important;
     font-weight: 600;
     color: var(--text-muted-color, #6c757d);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .crm-kpi-pipeline-results-head span:nth-child(2),
@@ -356,16 +356,18 @@
 
 .crm-kpi-pipeline-results-label {
     font-size: 11px !important;
-    font-weight: 600;
+    font-weight: 700;
     color: inherit;
     min-width: 0;
+    line-height: 1.35;
 }
 
 .crm-kpi-pipeline-results-value {
     font-size: 12px !important;
-    font-weight: 700;
+    font-weight: 600;
     text-align: right;
     white-space: nowrap;
+    line-height: 1.35;
 }
 
 .crm-kpi-pipeline-results-detail {
@@ -374,6 +376,7 @@
     text-align: right;
     white-space: nowrap;
     color: var(--text-muted-color, #6c757d);
+    line-height: 1.35;
 }
 
 .crm-kpi-pipeline {
