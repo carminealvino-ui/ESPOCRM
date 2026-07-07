@@ -19,6 +19,8 @@ fetch() {
 
 fetch custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php
 fetch client/custom/src/views/dashlets/crm-kpi.js
+fetch client/custom/css/crm-kpi-dashlet.css
+fetch client/custom/res/templates/dashlets/crm-kpi.tpl
 
 php clear_cache.php && php rebuild.php
 

@@ -1,6 +1,6 @@
 define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!espo-funnel-chart'], function (Dep) {
 
-    // kpi-tile-labels-v4: metriche lordi 100%, doppia % su ingestibili/netti/contratti funnel
+    // kpi-tile-labels-v5: pipeline results % contratti su opportunità, tabella full-width
 
     return Dep.extend({
 
@@ -112,11 +112,13 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 valueByKey[step.key] = Number(step.value || 0);
             });
 
-            const baseLordi = valueByKey.appuntamentiLordi || 0;
-            const baseTotali = Number(appuntamentiTile.totali || 0);
-            const baseNetti = valueByKey.appuntamentiNetti || 0;
-            const baseContrattiLordi = valueByKey.contratti || 0;
-            const baseContrattiNetti = valueByKey.contrattiNetti || 0;
+            const tile = appuntamentiTile || {};
+            const baseLordi = Number(tile.lordi ?? valueByKey.appuntamentiLordi ?? 0);
+            const baseTotali = Number(tile.totali ?? 0);
+            const baseNetti = Number(tile.netti ?? valueByKey.appuntamentiNetti ?? 0);
+            const baseOpportunita = Number(valueByKey.opportunita ?? 0);
+            const baseContratti = Number(valueByKey.contratti ?? 0);
+            const baseContrattiNetti = Number(valueByKey.contrattiNetti ?? 0);
 
             return [
                 {
@@ -139,10 +141,10 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 },
                 {
                     label: 'Contr. lordi',
-                    value: this.formatNumber(baseContrattiLordi),
+                    value: this.formatNumber(baseContratti),
                     detail: this.joinPercentDetails([
-                        this.formatPercentOf(baseContrattiLordi, baseLordi),
-                        this.formatPercentOf(baseContrattiLordi, baseTotali),
+                        this.formatPercentOf(baseContratti, baseLordi),
+                        this.formatPercentOf(baseContratti, baseOpportunita),
                     ]),
                 },
                 {
@@ -150,7 +152,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     value: this.formatNumber(baseContrattiNetti),
                     detail: this.joinPercentDetails([
                         this.formatPercentOf(baseContrattiNetti, baseLordi),
-                        this.formatPercentOf(baseContrattiNetti, baseTotali),
+                        this.formatPercentOf(baseContrattiNetti, baseOpportunita),
                     ]),
                 },
             ];

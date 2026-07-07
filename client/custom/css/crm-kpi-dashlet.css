@@ -304,17 +304,65 @@
 
 .crm-kpi-pipeline-results {
     margin-top: 10px;
+    width: 100%;
+}
+
+.crm-kpi-pipeline-results .crm-kpi-yields-table-wrap {
+    width: 100%;
+    margin: 0;
 }
 
 .crm-kpi-pipeline-results .crm-kpi-panel-note {
-    font-size: 10px;
+    font-size: 11px;
+    margin-bottom: 8px;
+}
+
+.crm-kpi-pipeline-results-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 13px;
+    line-height: 1.4;
 }
 
 .crm-kpi-pipeline-results-table th,
 .crm-kpi-pipeline-results-table td {
-    white-space: nowrap;
-    font-size: 10px;
-    padding: 3px 5px;
+    white-space: normal;
+    font-size: 13px;
+    padding: 7px 8px;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.crm-kpi-pipeline-results-table thead th {
+    font-weight: 600;
+    color: var(--text-muted-color, #6c757d);
+    font-size: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.crm-kpi-pipeline-results-table th.crm-kpi-yields-row-label {
+    width: 38%;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.crm-kpi-pipeline-results-table td:nth-child(2) {
+    width: 18%;
+    font-weight: 600;
+    text-align: center;
+}
+
+.crm-kpi-pipeline-results-table td:nth-child(3) {
+    width: 44%;
+    font-weight: 600;
+    text-align: right;
+}
+
+.crm-kpi-pipeline-results-table tbody tr:last-child th,
+.crm-kpi-pipeline-results-table tbody tr:last-child td {
+    border-bottom: 0;
 }
 
 .crm-kpi-pipeline {
