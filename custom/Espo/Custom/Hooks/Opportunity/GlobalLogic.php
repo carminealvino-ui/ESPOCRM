@@ -307,38 +307,26 @@
 
 namespace Espo\Custom\Hooks\Opportunity;
 
-use Espo\ORM\Entity;
-use Espo\ORM\EntityManager;
+use Espo\Core\Hook\Hook\AfterSave;
+use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\Custom\Services\LineaProdottoCategorySync;
 use Espo\Custom\Services\OpportunityPriceBookResolver;
 use Espo\Custom\Services\ReferenteContactService;
+use Espo\ORM\Entity;
+use Espo\ORM\EntityManager;
+use Espo\ORM\Repository\Option\SaveOptions;
 
-class GlobalLogic
+class GlobalLogic implements BeforeSave, AfterSave
 {
-    protected EntityManager $entityManager;
-
-
-    // =====================================================
-    // COSTRUTTORE
-    // =====================================================
+    public static int $order = 5;
 
     public function __construct(
-        EntityManager $entityManager
-    ) {
-        $this->entityManager = $entityManager;
-    }
+        private EntityManager $entityManager
+    ) {}
 
-
-    // =====================================================
-    // BEFORE SAVE
-    // =====================================================
-
-    public function beforeSave(
-        Entity $entity,
-        array $options = []
-    ): void {
-
-        if (!empty($options['skipHooks'])) {
+    public function beforeSave(Entity $entity, SaveOptions $options): void
+    {
+        if ($options->get('skipHooks')) {
             return;
         }
 
@@ -438,10 +426,8 @@ class GlobalLogic
     //
     // =====================================================
 
-    public function afterSave(
-        Entity $entity,
-        array $options = []
-    ): void {
+    public function afterSave(Entity $entity, SaveOptions $options): void
+    {
         $this->runOpportunitySync(
             $entity,
             $options,
@@ -451,11 +437,11 @@ class GlobalLogic
 
     private function runOpportunitySync(
         Entity $entity,
-        array $options,
+        SaveOptions $options,
         bool $importFromSource
     ): void {
 
-        if (!empty($options['skipHooks'])) {
+        if ($options->get('skipHooks')) {
             return;
         }
 
@@ -467,7 +453,7 @@ class GlobalLogic
 
         if ($entity->get('appuntamentoId')) {
 
-            $appuntamento = $this->entityManager->getEntity(
+            $appuntamento = $this->entityManager->getEntityById(
                 'Appuntamento',
                 $entity->get('appuntamentoId')
             );
@@ -513,7 +499,7 @@ class GlobalLogic
 
         if ($appuntamento->get('prospectId')) {
 
-            $prospect = $this->entityManager->getEntity(
+            $prospect = $this->entityManager->getEntityById(
                 'Prospect',
                 $appuntamento->get('prospectId')
             );
@@ -523,7 +509,7 @@ class GlobalLogic
 
         if ($appuntamento->get('leadId')) {
 
-            $lead = $this->entityManager->getEntity(
+            $lead = $this->entityManager->getEntityById(
                 'Lead',
                 $appuntamento->get('leadId')
             );
@@ -533,7 +519,7 @@ class GlobalLogic
             $appuntamento->get('parentId')
         ) {
 
-            $lead = $this->entityManager->getEntity(
+            $lead = $this->entityManager->getEntityById(
                 'Lead',
                 $appuntamento->get('parentId')
             );
@@ -764,44 +750,35 @@ class GlobalLogic
         // NAMING DEFINITIVO
         // =====================================================
 
-        if ($entity->get('prospectName')) {
+        $displayName = $entity->get('prospectName')
+            ?: $entity->get('appuntamentoName')
+            ?: $entity->get('leadName');
+
+        if ($displayName) {
 
             $brandLabel = trim((string) (
                 $entity->get('productBrandName')
                 ?: $entity->get('azienda')
             ));
 
-            $name =
+            $importo = $entity->get('amount')
+                ?? $entity->get('importoOpportunit');
 
-                $entity->get('dataOpportunit')
+            $importoLabel = ($importo !== null && $importo !== '')
+                ? number_format((float) $importo, 0, ',', '.')
+                : '';
 
-                . ' - '
-
-                . $entity->get('prospectName')
-
-                . ' - '
-
-                . $brandLabel
-
-                . ' - '
-
-                . strtoupper(
-                    (string) $entity->get('description')
-                )
-
-                . ' - € '
-
-                . number_format(
-                    (float) $entity->get('amount'),
-                    0,
-                    ',',
-                    '.'
-                );
-
+            $parts = array_filter([
+                $entity->get('dataOpportunit'),
+                $entity->get('prospectName'),
+                $brandLabel,
+                strtoupper((string) ($entity->get('description') ?: '')),
+                $importoLabel !== '' ? '€ ' . $importoLabel : null,
+            ], static fn ($part) => $part !== null && $part !== '');
 
             $entity->set(
                 'name',
-                $name
+                implode(' - ', $parts)
             );
         }
 
@@ -1071,7 +1048,10 @@ class GlobalLogic
         }
 
         if ($entity->isAttributeChanged('accountId') || $entity->isAttributeChanged('contactId')) {
-            $this->entityManager->saveEntity($entity, ['silent' => true]);
+            $this->entityManager->saveEntity($entity, [
+                SaveOptions::SKIP_HOOKS => true,
+                'silent' => true,
+            ]);
         }
     }
 
@@ -1151,7 +1131,10 @@ class GlobalLogic
         $entity->set('leadId', $lead->getId());
         $entity->set('leadName', $leadName);
 
-        $this->entityManager->saveEntity($entity, ['silent' => true]);
+        $this->entityManager->saveEntity($entity, [
+            SaveOptions::SKIP_HOOKS => true,
+            'silent' => true,
+        ]);
     }
 
     private function syncLeadFieldsFromOpportunity(Entity $opportunity, Entity $lead): void
@@ -1192,7 +1175,10 @@ class GlobalLogic
             }
         }
 
-        $this->entityManager->saveEntity($lead, ['silent' => true]);
+        $this->entityManager->saveEntity($lead, [
+            SaveOptions::SKIP_HOOKS => true,
+            'silent' => true,
+        ]);
     }
 
 }
