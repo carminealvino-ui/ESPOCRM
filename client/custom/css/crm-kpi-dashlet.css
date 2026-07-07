@@ -338,7 +338,7 @@
 .crm-kpi-pipeline-results-head {
     padding-top: 0;
     padding-bottom: 8px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-muted-color, #6c757d);
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
@@ -355,21 +355,21 @@
 }
 
 .crm-kpi-pipeline-results-label {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     color: inherit;
     min-width: 0;
 }
 
 .crm-kpi-pipeline-results-value {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     text-align: right;
     white-space: nowrap;
 }
 
 .crm-kpi-pipeline-results-detail {
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 600;
     text-align: right;
     white-space: nowrap;
