@@ -3,7 +3,7 @@
 namespace Espo\Custom\Controllers;
 
 use Espo\Core\Api\Request;
-use Espo\Core\Controllers\Base;
+use Espo\Core\Templates\Controllers\Base;
 use Espo\Custom\Services\CallStandardTesto as CallStandardTestoService;
 
 class CallStandardTesto extends Base
