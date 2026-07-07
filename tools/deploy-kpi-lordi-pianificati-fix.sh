@@ -17,6 +17,7 @@ fetch() {
   echo "OK $1"
 }
 
+fetch custom/Espo/Custom/Resources/metadata/app/client.json
 fetch custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php
 fetch client/custom/src/views/dashlets/crm-kpi.js
 fetch client/custom/css/crm-kpi-dashlet.css
