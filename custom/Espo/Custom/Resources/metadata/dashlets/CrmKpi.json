@@ -1,0 +1,60 @@
+{
+    "view": "custom:views/dashlets/crm-kpi",
+    "aclScope": "Appuntamento",
+    "options": {
+        "view": "custom:views/dashlets/options/crm-kpi",
+        "translation": "CrmKpi",
+        "fields": {
+            "title": {
+                "type": "varchar",
+                "required": true
+            },
+            "period": {
+                "type": "enum",
+                "options": [
+                    "totals",
+                    "currentYear",
+                    "previousYear",
+                    "currentQuarter",
+                    "previousQuarter",
+                    "currentMonth",
+                    "previousMonth"
+                ],
+                "translation": "CrmKpi.options.period"
+            },
+            "productBrand": {
+                "type": "link",
+                "entity": "ProductBrand"
+            },
+            "autorefreshInterval": {
+                "type": "enumFloat",
+                "options": [0, 0.5, 1, 2, 5, 10],
+                "translation": "CrmKpi.options.autorefreshInterval"
+            }
+        },
+        "defaults": {
+            "title": "KPI CRM",
+            "period": "currentMonth",
+            "autorefreshInterval": 5
+        },
+        "layout": [
+            {
+                "rows": [
+                    [
+                        {"name": "title"},
+                        {"name": "period", "labelText": "Periodo"}
+                    ],
+                    [
+                        {"name": "productBrand", "labelText": "Brand"},
+                        {"name": "autorefreshInterval"}
+                    ]
+                ]
+            }
+        ]
+    },
+    "accessDataList": [
+        {
+            "inPortalDisabled": true
+        }
+    ]
+}
