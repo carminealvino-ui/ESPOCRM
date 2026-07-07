@@ -770,7 +770,7 @@ class GlobalLogic implements BeforeSave, AfterSave
 
             $parts = array_filter([
                 $entity->get('dataOpportunit'),
-                $entity->get('prospectName'),
+                $displayName,
                 $brandLabel,
                 strtoupper((string) ($entity->get('description') ?: '')),
                 $importoLabel !== '' ? '€ ' . $importoLabel : null,
@@ -1049,7 +1049,7 @@ class GlobalLogic implements BeforeSave, AfterSave
 
         if ($entity->isAttributeChanged('accountId') || $entity->isAttributeChanged('contactId')) {
             $this->entityManager->saveEntity($entity, [
-                SaveOptions::SKIP_HOOKS => true,
+                'skipHooks' => true,
                 'silent' => true,
             ]);
         }
@@ -1132,7 +1132,7 @@ class GlobalLogic implements BeforeSave, AfterSave
         $entity->set('leadName', $leadName);
 
         $this->entityManager->saveEntity($entity, [
-            SaveOptions::SKIP_HOOKS => true,
+            'skipHooks' => true,
             'silent' => true,
         ]);
     }
@@ -1176,7 +1176,7 @@ class GlobalLogic implements BeforeSave, AfterSave
         }
 
         $this->entityManager->saveEntity($lead, [
-            SaveOptions::SKIP_HOOKS => true,
+            'skipHooks' => true,
             'silent' => true,
         ]);
     }
