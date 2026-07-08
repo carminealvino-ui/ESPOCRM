@@ -5,7 +5,6 @@ namespace Espo\Custom\Controllers;
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
 use Espo\Core\Controllers\Record;
-use Espo\ORM\EntityManager;
 
 /**
  * Controller base Opportunity.
@@ -15,10 +14,6 @@ use Espo\ORM\EntityManager;
  */
 class Opportunity extends Record
 {
-    public function __construct(
-        private EntityManager $entityManager
-    ) {}
-
     public function postActionCreateContratto(
         Request $request,
         Response $response
