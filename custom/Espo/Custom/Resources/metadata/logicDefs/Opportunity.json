@@ -59,6 +59,46 @@
                 ]
             }
         },
+        "importoFinanziato": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "nrRate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "tassoZero": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "importoRata": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
         "statoContratto": {
             "visible": {
                 "conditionGroup": [
@@ -71,15 +111,7 @@
             }
         },
         "finanziamento": {
-            "visible": {
-                "conditionGroup": [
-                    {
-                        "type": "equals",
-                        "attribute": "stage",
-                        "value": "Closed Won"
-                    }
-                ]
-            }
+            "visible": null
         },
         "originalLead": {
             "visible": {

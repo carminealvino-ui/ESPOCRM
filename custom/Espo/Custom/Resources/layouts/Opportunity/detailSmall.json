@@ -32,7 +32,7 @@
                     "name": "stage"
                 },
                 {
-                    "name": "closeDate"
+                    "name": "finanziamento"
                 }
             ],
             [
@@ -107,6 +107,14 @@
                 }
             ]
         ],
+        "dynamicLogicVisible": {
+            "conditionGroup": [
+                {
+                    "type": "isTrue",
+                    "attribute": "finanziamento"
+                }
+            ]
+        },
         "style": "default",
         "label": "Finanziamento"
     }

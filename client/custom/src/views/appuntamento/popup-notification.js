@@ -610,7 +610,10 @@ define('custom:views/appuntamento/popup-notification', [
                 attributes: attributes,
             }, view => {
                 view.render();
-                super.resolveCancel();
+
+                this.listenToOnce(view, 'after:save', () => {
+                    super.resolveCancel();
+                });
             });
         }
 
