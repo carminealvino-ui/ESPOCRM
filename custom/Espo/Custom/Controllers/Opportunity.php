@@ -103,22 +103,6 @@ class Opportunity extends Record
             }
         }
 
-        if (class_exists(\Espo\Core\Application::class) && method_exists(\Espo\Core\Application::class, 'getContainer')) {
-            try {
-                $container = \Espo\Core\Application::getContainer();
-
-                if ($container && method_exists($container, 'get')) {
-                    $maybe = $container->get('entityManager');
-
-                    if ($maybe instanceof EntityManager) {
-                        return $maybe;
-                    }
-                }
-            } catch (\Throwable $e) {
-                // Ignore and throw generic error below.
-            }
-        }
-
         throw new \RuntimeException('EntityManager non disponibile nel controller Opportunity.');
     }
 }
