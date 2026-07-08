@@ -5,6 +5,7 @@ namespace Espo\Custom\Controllers;
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
 use Espo\Core\Controllers\Record;
+use Espo\Core\InjectableFactory;
 
 /**
  * Controller base Opportunity.
@@ -25,14 +26,16 @@ class Opportunity extends Record
             throw new \Exception('ID mancante');
         }
 
-        $entityManager = $this->entityManager;
+        $entityManager = $this->getContainer()->get('entityManager');
         $opportunity = $entityManager->getEntityById('Opportunity', $id);
 
         if (!$opportunity) {
             throw new \Exception('Opportunità non trovata');
         }
 
-        $action = new \Espo\Custom\Actions\Opportunity\CreateContratto($entityManager);
+        /** @var InjectableFactory $injectableFactory */
+        $injectableFactory = $this->getContainer()->get('injectableFactory');
+        $action = $injectableFactory->create(\Espo\Custom\Actions\Opportunity\CreateContratto::class);
 
         return $action->run($opportunity);
     }
