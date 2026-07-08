@@ -253,6 +253,7 @@
         },
         "sottostato": {
             "type": "enum",
+            "view": "custom:views/fields/appuntamento-sottostato",
             "options": [
                 "",
                 "Pending",

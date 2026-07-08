@@ -18,6 +18,50 @@
                     }
                 ]
             }
+        },
+        "sottostato": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "notEquals",
+                        "attribute": "status",
+                        "value": "Planned"
+                    }
+                ]
+            }
+        },
+        "noteConsulente": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "notEquals",
+                        "attribute": "status",
+                        "value": "Planned"
+                    }
+                ]
+            }
+        },
+        "esito": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "notEquals",
+                        "attribute": "status",
+                        "value": "Planned"
+                    }
+                ]
+            }
+        },
+        "noteEsito": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "notEquals",
+                        "attribute": "status",
+                        "value": "Planned"
+                    }
+                ]
+            }
         }
     }
 }

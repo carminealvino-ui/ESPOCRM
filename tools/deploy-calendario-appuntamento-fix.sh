@@ -25,16 +25,25 @@ fetch() {
 }
 
 fetch client/custom/src/helpers/appuntamento-prospect-sync.js
+fetch client/custom/src/helpers/appuntamento-sottostato-map.js
+fetch client/custom/src/views/fields/appuntamento-sottostato.js
+fetch client/custom/src/views/fields/appuntamento-sottostato-popup.js
+fetch client/custom/src/views/fields/appuntamento-parent.js
+fetch client/custom/src/views/appuntamento/popup-notification.js
+fetch client/custom/res/templates/appuntamento/popup-notification.tpl
 fetch client/custom/src/views/appuntamento/fields/duration.js
 fetch client/custom/src/views/appuntamento/record/edit.js
 fetch client/custom/src/views/appuntamento/record/edit-small.js
 fetch client/custom/src/views/calendar/calendar.js
 fetch client/custom/src/views/calendar/modals/edit.js
 fetch custom/Espo/Custom/Controllers/Appuntamento.php
+fetch custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json
+fetch custom/Espo/Custom/Resources/metadata/app/popupNotifications.json
 fetch custom/Espo/Custom/Resources/metadata/scopes/Appuntamento.json
 fetch custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
 fetch custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json
 fetch custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json
+fetch custom/Espo/Custom/Resources/metadata/logicDefs/Appuntamento.json
 
 php clear_cache.php && php rebuild.php
 
