@@ -37,6 +37,10 @@ fetch client/custom/src/views/appuntamento/record/edit-small.js
 fetch client/custom/src/views/calendar/calendar.js
 fetch client/custom/src/views/calendar/modals/edit.js
 fetch custom/Espo/Custom/Controllers/Appuntamento.php
+fetch custom/Espo/Custom/Controllers/Opportunity.php
+fetch custom/Espo/Custom/Actions/Opportunity/CreateContratto.php
+fetch custom/Espo/Custom/Services/ReferenteContactService.php
+fetch custom/Espo/Custom/Services/LeadProspectSync.php
 fetch custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json
 fetch custom/Espo/Custom/Resources/metadata/app/popupNotifications.json
 fetch custom/Espo/Custom/Resources/metadata/scopes/Appuntamento.json
