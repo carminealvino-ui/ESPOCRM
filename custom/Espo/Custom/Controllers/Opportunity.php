@@ -77,6 +77,46 @@ class Opportunity extends Record
                     // Ignore and continue scanning.
                 }
             }
+
+            if ($value && is_object($value) && method_exists($value, 'getEntityManager')) {
+                try {
+                    $maybe = $value->getEntityManager();
+
+                    if ($maybe instanceof EntityManager) {
+                        return $maybe;
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore and continue scanning.
+                }
+            }
+
+            if ($value && is_object($value) && $value instanceof \ArrayAccess) {
+                try {
+                    $maybe = $value['entityManager'] ?? null;
+
+                    if ($maybe instanceof EntityManager) {
+                        return $maybe;
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore and continue scanning.
+                }
+            }
+        }
+
+        if (class_exists(\Espo\Core\Application::class) && method_exists(\Espo\Core\Application::class, 'getContainer')) {
+            try {
+                $container = \Espo\Core\Application::getContainer();
+
+                if ($container && method_exists($container, 'get')) {
+                    $maybe = $container->get('entityManager');
+
+                    if ($maybe instanceof EntityManager) {
+                        return $maybe;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore and throw generic error below.
+            }
         }
 
         throw new \RuntimeException('EntityManager non disponibile nel controller Opportunity.');
