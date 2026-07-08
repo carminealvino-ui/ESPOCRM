@@ -8,8 +8,15 @@ set -euo pipefail
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
 BRANCH="cursor/fix-calendario-appuntamento-9999"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
+TS=$(date +%s)
 
 cd "${CRM_ROOT}"
+
+if [[ -f custom/Espo/Custom/Controllers/Appuntamento.php ]]; then
+  mkdir -p backup
+  mv custom/Espo/Custom/Controllers/Appuntamento.php "backup/Appuntamento.php.removed-${TS}"
+  echo "RIMOSSO controller Appuntamento custom (404 su salvataggio)"
+fi
 
 fetch() {
   mkdir -p "$(dirname "$1")"
