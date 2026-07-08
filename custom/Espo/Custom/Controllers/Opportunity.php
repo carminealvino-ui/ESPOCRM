@@ -56,18 +56,6 @@ class Opportunity extends Record
             }
         }
 
-        if (method_exists($this, 'getContainer')) {
-            $container = $this->getContainer();
-
-            if ($container && method_exists($container, 'get')) {
-                $value = $container->get('entityManager');
-
-                if ($value instanceof EntityManager) {
-                    return $value;
-                }
-            }
-        }
-
         $ref = new \ReflectionObject($this);
 
         foreach ($ref->getProperties() as $property) {
