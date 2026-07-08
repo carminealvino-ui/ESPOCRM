@@ -15,22 +15,6 @@ use Espo\ORM\EntityManager;
  */
 class Opportunity extends Record
 {
-    private ?EntityManager $resolvedEntityManager = null;
-
-    public function __construct(...$args)
-    {
-        if (is_callable([get_parent_class($this), '__construct'])) {
-            parent::__construct(...$args);
-        }
-
-        foreach ($args as $arg) {
-            if ($arg instanceof EntityManager) {
-                $this->resolvedEntityManager = $arg;
-                break;
-            }
-        }
-    }
-
     public function postActionCreateContratto(
         Request $request,
         Response $response
@@ -56,10 +40,6 @@ class Opportunity extends Record
 
     private function resolveEntityManager(): EntityManager
     {
-        if ($this->resolvedEntityManager instanceof EntityManager) {
-            return $this->resolvedEntityManager;
-        }
-
         if (property_exists($this, 'entityManager')) {
             $value = $this->entityManager ?? null;
 
@@ -73,6 +53,22 @@ class Opportunity extends Record
 
             if ($value instanceof EntityManager) {
                 return $value;
+            }
+        }
+
+        if (method_exists($this, 'getRecordService')) {
+            try {
+                $recordService = $this->getRecordService();
+
+                if ($recordService && method_exists($recordService, 'getEntityManager')) {
+                    $value = $recordService->getEntityManager();
+
+                    if ($value instanceof EntityManager) {
+                        return $value;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore and continue scanning.
             }
         }
 
@@ -132,6 +128,40 @@ class Opportunity extends Record
                 } catch (\Throwable $e) {
                     // Ignore and continue scanning.
                 }
+            }
+        }
+
+        if (class_exists(\Espo\Core\Application::class)) {
+            try {
+                if (method_exists(\Espo\Core\Application::class, 'getContainer')) {
+                    $container = \Espo\Core\Application::getContainer();
+
+                    if ($container && method_exists($container, 'get')) {
+                        $maybe = $container->get('entityManager');
+
+                        if ($maybe instanceof EntityManager) {
+                            return $maybe;
+                        }
+                    }
+                }
+
+                if (method_exists(\Espo\Core\Application::class, 'getInstance')) {
+                    $app = \Espo\Core\Application::getInstance();
+
+                    if ($app && method_exists($app, 'getContainer')) {
+                        $container = $app->getContainer();
+
+                        if ($container && method_exists($container, 'get')) {
+                            $maybe = $container->get('entityManager');
+
+                            if ($maybe instanceof EntityManager) {
+                                return $maybe;
+                            }
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore and continue scanning.
             }
         }
 
