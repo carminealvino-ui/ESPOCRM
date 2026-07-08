@@ -14,8 +14,8 @@ cd "${CRM_ROOT}"
 
 if [[ -f custom/Espo/Custom/Controllers/Appuntamento.php ]]; then
   mkdir -p backup
-  mv custom/Espo/Custom/Controllers/Appuntamento.php "backup/Appuntamento.php.removed-${TS}"
-  echo "RIMOSSO controller Appuntamento custom (404 su salvataggio)"
+  cp custom/Espo/Custom/Controllers/Appuntamento.php "backup/Appuntamento.php.bak-${TS}"
+  echo "Backup controller Appuntamento esistente"
 fi
 
 fetch() {
@@ -30,6 +30,8 @@ fetch client/custom/src/views/appuntamento/record/edit.js
 fetch client/custom/src/views/appuntamento/record/edit-small.js
 fetch client/custom/src/views/calendar/calendar.js
 fetch client/custom/src/views/calendar/modals/edit.js
+fetch custom/Espo/Custom/Controllers/Appuntamento.php
+fetch custom/Espo/Custom/Resources/metadata/scopes/Appuntamento.json
 fetch custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
 fetch custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json
 fetch custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json
