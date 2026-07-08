@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Hotfix dedicato Crea Contratto (Opportunity/action/createContratto).
+# Hotfix Crea Contratto + articoli Quote (getItemCatalogPrices).
 #
 # Uso:
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-calendario-appuntamento-9999/tools/deploy-create-contratto-fix.sh" | bash
@@ -26,16 +26,32 @@ fetch() {
   echo "OK ${path}"
 }
 
-# Stack minimo necessario per endpoint createContratto.
+# Backend createContratto
 fetch custom/Espo/Custom/Controllers/Opportunity.php
 fetch custom/Espo/Custom/Actions/Opportunity/CreateContratto.php
 fetch custom/Espo/Custom/Services/ReferenteContactService.php
 fetch custom/Espo/Custom/Services/LeadProspectSync.php
-fetch custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
+
+# Backend prezzi articoli contratto (POST Quote/getItemCatalogPrices)
+fetch custom/Espo/Custom/Resources/routes.json
+fetch custom/Espo/Custom/Tools/Quote/Api/PostGetItemCatalogPrices.php
+fetch custom/Espo/Custom/Services/QuotePricingCalculator.php
+fetch custom/Espo/Custom/Services/QuoteProvvigioniSync.php
+
+# Metadata Quote
 fetch custom/Espo/Custom/Resources/metadata/app/client.json
 fetch custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
+fetch custom/Espo/Custom/Resources/metadata/formula/Quote.json
+
+# Frontend articoli contratto
+fetch client/custom/src/handlers/quote/catalog-prices.js
+fetch client/custom/src/views/quote/fields/item-list.js
+fetch client/custom/src/views/quote/record/item.js
+fetch custom/Espo/Custom/Resources/client/custom/src/handlers/quote/catalog-prices.js
+fetch custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
+fetch custom/Espo/Custom/Resources/client/custom/src/views/quote/record/item.js
 
 php clear_cache.php
 php rebuild.php
 
-echo "=== Fatto: deploy createContratto completato ==="
+echo "=== Fatto: deploy createContratto + articoli Quote completato ==="
