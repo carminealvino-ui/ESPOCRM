@@ -158,18 +158,7 @@
             }
         },
         "itemList": {
-            "visible": {
-                "conditionGroup": [
-                    {
-                        "type": "notIn",
-                        "attribute": "stage",
-                        "value": [
-                            "Closed Won",
-                            "Chiuso Positivamente"
-                        ]
-                    }
-                ]
-            }
+            "visible": null
         },
         "productCategory": {
             "readOnly": {
