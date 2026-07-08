@@ -15,17 +15,12 @@
 
 namespace Espo\Custom\Controllers;
 
+use Espo\Core\Controllers\Record;
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
-use Espo\ORM\EntityManager;
 
-class Opportunity
+class Opportunity extends Record
 {
-    public function __construct(
-        private EntityManager $entityManager
-    ) {}
-
-
     // =====================================================
     // ACTION CREATE CONTRATTO
     // =====================================================
@@ -59,7 +54,8 @@ class Opportunity
         // ENTITY MANAGER
         // =====================================================
 
-        $entityManager = $this->entityManager;
+        $entityManager = $this->getContainer()
+            ->get('entityManager');
 
 
 
