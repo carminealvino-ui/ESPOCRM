@@ -18,6 +18,13 @@ if [[ -f custom/Espo/Custom/Controllers/Appuntamento.php ]]; then
   echo "Backup controller Appuntamento esistente"
 fi
 
+if [[ -f custom/Espo/Custom/Controllers/Opportunity.php ]]; then
+  mkdir -p backup
+  cp custom/Espo/Custom/Controllers/Opportunity.php "backup/Opportunity.php.bak-${TS}"
+  rm -f custom/Espo/Custom/Controllers/Opportunity.php
+  echo "RIMOSSO controller Opportunity custom (usa action mapping standard)"
+fi
+
 fetch() {
   mkdir -p "$(dirname "$1")"
   curl -fsSL "${BASE}/$1" -o "$1"
@@ -37,7 +44,6 @@ fetch client/custom/src/views/appuntamento/record/edit-small.js
 fetch client/custom/src/views/calendar/calendar.js
 fetch client/custom/src/views/calendar/modals/edit.js
 fetch custom/Espo/Custom/Controllers/Appuntamento.php
-fetch custom/Espo/Custom/Controllers/Opportunity.php
 fetch custom/Espo/Custom/Actions/Opportunity/CreateContratto.php
 fetch custom/Espo/Custom/Services/ReferenteContactService.php
 fetch custom/Espo/Custom/Services/LeadProspectSync.php
