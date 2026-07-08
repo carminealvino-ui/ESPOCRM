@@ -44,6 +44,12 @@ fetch custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
 fetch custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json
 fetch custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json
 fetch custom/Espo/Custom/Resources/metadata/logicDefs/Appuntamento.json
+fetch custom/Espo/Custom/Resources/layouts/Opportunity/detailSmall.json
+fetch custom/Espo/Custom/Resources/layouts/Opportunity/detail.json
+fetch custom/Espo/Custom/Resources/metadata/entityDefs/Opportunity.json
+fetch custom/Espo/Custom/Resources/metadata/logicDefs/Opportunity.json
+fetch custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json
+fetch client/custom/src/views/opportunity/record/edit.js
 
 php clear_cache.php && php rebuild.php
 

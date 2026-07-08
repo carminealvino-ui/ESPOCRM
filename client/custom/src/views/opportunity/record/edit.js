@@ -49,6 +49,23 @@ define('custom:views/opportunity/record/edit', ['crm:views/opportunity/record/ed
             this.listenTo(this.model, 'change:azienda', function () {
                 this.debouncedResolvePriceBook();
             }, this);
+
+            this.listenTo(this.model, 'change:importoFinanziato change:nrRate', function () {
+                this.updateImportoRata();
+            }, this);
+        },
+
+        updateImportoRata: function () {
+            var importo = parseFloat(this.model.get('importoFinanziato'));
+            var rate = parseInt(this.model.get('nrRate'), 10);
+
+            if (!importo || !rate || rate <= 0) {
+                this.model.set('importoRata', null, {silent: true});
+
+                return;
+            }
+
+            this.model.set('importoRata', Math.round((importo / rate) * 100) / 100, {silent: true});
         },
 
         resolveReferenceDate: function () {
