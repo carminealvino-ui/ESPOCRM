@@ -101,6 +101,38 @@ class Opportunity extends Record
                     // Ignore and continue scanning.
                 }
             }
+
+            if ($value && is_object($value) && method_exists($value, 'create')) {
+                try {
+                    $maybe = $value->create(EntityManager::class);
+
+                    if ($maybe instanceof EntityManager) {
+                        return $maybe;
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore and continue scanning.
+                }
+            }
+        }
+
+        foreach (['container', 'appContainer', 'slimContainer'] as $globalKey) {
+            if (!isset($GLOBALS[$globalKey])) {
+                continue;
+            }
+
+            $globalContainer = $GLOBALS[$globalKey];
+
+            if ($globalContainer && is_object($globalContainer) && method_exists($globalContainer, 'get')) {
+                try {
+                    $maybe = $globalContainer->get('entityManager');
+
+                    if ($maybe instanceof EntityManager) {
+                        return $maybe;
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore and continue scanning.
+                }
+            }
         }
 
         throw new \RuntimeException('EntityManager non disponibile nel controller Opportunity.');
