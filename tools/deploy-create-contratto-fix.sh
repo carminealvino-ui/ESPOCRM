@@ -42,8 +42,9 @@ fetch custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
 # Rimuove hook legacy incompatibile Espo 10 (Espo\Core\Hooks\Base).
 rm -f custom/Espo/Custom/Hooks/Quote/BeforeSave.php
 
-# Metadata Quote
+# Metadata Quote + KPI layout (non rimuovere crm-kpi-dashlet.css)
 fetch custom/Espo/Custom/Resources/metadata/app/client.json
+fetch client/custom/css/crm-kpi-dashlet.css
 fetch custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
 fetch custom/Espo/Custom/Resources/metadata/formula/Quote.json
 
