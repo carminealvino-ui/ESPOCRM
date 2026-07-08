@@ -33,6 +33,7 @@ fetch custom/Espo/Custom/Services/ReferenteContactService.php
 fetch custom/Espo/Custom/Services/LeadProspectSync.php
 fetch custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
 fetch custom/Espo/Custom/Resources/metadata/app/client.json
+fetch custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
 
 php clear_cache.php
 php rebuild.php

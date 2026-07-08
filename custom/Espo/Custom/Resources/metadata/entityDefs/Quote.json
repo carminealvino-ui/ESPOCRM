@@ -178,7 +178,7 @@
             "isCustom": true
         },
         "itemList": {
-            "view": "custom:views/quote/fields/item-list"
+            "view": "sales:views/quote/fields/item-list"
         }
     },
     "collection": {
