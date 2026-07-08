@@ -591,12 +591,7 @@ class CreateContratto
         // CREAZIONE CONTRATTO
         // =====================================================
 
-        $quote = $this->entityManager
-            ->createEntity(
-                'Quote'
-            );
-
-        $quote->set([
+        $quoteData = [
 
             // =================================================
             // BASE
@@ -714,6 +709,9 @@ class CreateContratto
             'taxCodeId' =>
                 $taxCodeId,
 
+            // Forza base neutra per evitare taxRate=-1 durante formula su record appena creato.
+            'taxAmount' => 0,
+
             'isTaxInclusive' => true,
 
             // =================================================
@@ -776,13 +774,9 @@ class CreateContratto
 
             'teamsIds' =>
                 $teamsIds
-        ]);
+        ];
 
-        // =====================================================
-        // SAVE CONTRATTO
-        // =====================================================
-
-        $this->entityManager->saveEntity($quote);
+        $quote = $this->entityManager->createEntity('Quote', $quoteData);
 
         $this->refreshQuoteAfterCreate(
             $quote,
