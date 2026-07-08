@@ -25,7 +25,7 @@ class Opportunity extends Record
             throw new \Exception('ID mancante');
         }
 
-        $entityManager = $this->getContainer()->get('entityManager');
+        $entityManager = $this->getEntityManager();
         $opportunity = $entityManager->getEntityById('Opportunity', $id);
 
         if (!$opportunity) {
