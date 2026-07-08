@@ -127,6 +127,45 @@
         "rows": [
             [
                 {
+                    "name": "statoFinanziamento"
+                }
+            ],
+            [
+                {
+                    "name": "importoCaparra"
+                },
+                {
+                    "name": "importoFinanziato"
+                },
+                {
+                    "name": "nrRate"
+                }
+            ],
+            [
+                {
+                    "name": "tassoZero"
+                },
+                {
+                    "name": "importoRata"
+                },
+                false
+            ]
+        ],
+        "dynamicLogicVisible": {
+            "conditionGroup": [
+                {
+                    "type": "isTrue",
+                    "attribute": "finanziamento"
+                }
+            ]
+        },
+        "style": "default",
+        "label": "Finanziamento"
+    },
+    {
+        "rows": [
+            [
+                {
                     "name": "installazione"
                 },
                 {

@@ -171,6 +171,8 @@
             "type": "jsonArray",
             "notStorable": true,
             "view": "sales:views/opportunity/fields/item-list",
+            "layoutDetailDisabled": true,
+            "layoutEditDisabled": true,
             "layoutFiltersDisabled": true,
             "layoutListDisabled": true,
             "reportDisabled": true,
