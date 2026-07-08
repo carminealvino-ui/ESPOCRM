@@ -2,18 +2,23 @@
     "controller": "controllers/record",
     "acl": "crm:acl/meeting",
     "views": {
-        "detail": "crm:views/meeting/detail"
+        "detail": "views/detail"
     },
     "recordViews": {
-        "list": "crm:views/meeting/record/list",
-        "detail": "crm:views/meeting/record/detail",
-        "edit": "crm:views/meeting/record/edit",
-        "editSmall": "crm:views/meeting/record/edit-small"
+        "list": "views/record/list",
+        "detail": "views/record/detail",
+        "edit": "custom:views/appuntamento/record/edit",
+        "editSmall": "custom:views/appuntamento/record/edit-small"
     },
     "modalViews": {
-        "detail": "crm:views/meeting/modals/detail"
+        "detail": "views/modals/detail"
     },
     "filterList": [
+        {
+            "name": "pianificato",
+            "label": "Pianificato",
+            "style": "info"
+        },
         {
             "name": "svolto",
             "label": "Svolto",
@@ -23,6 +28,14 @@
             "name": "nonSvolto",
             "label": "Non Svolto",
             "style": "danger"
+        },
+        {
+            "name": "ingestibile",
+            "label": "Ingestibile",
+            "style": "warning"
         }
-    ]
+    ],
+    "kanbanViewMode": false,
+    "color": null,
+    "iconClass": "far fa-calendar"
 }
