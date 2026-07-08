@@ -49,6 +49,7 @@ fetch custom/Espo/Custom/Resources/layouts/Opportunity/detail.json
 fetch custom/Espo/Custom/Resources/metadata/entityDefs/Opportunity.json
 fetch custom/Espo/Custom/Resources/metadata/logicDefs/Opportunity.json
 fetch custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json
+fetch client/custom/src/views/opportunity/helpers/appuntamento-sync.js
 fetch client/custom/src/views/opportunity/record/edit.js
 
 php clear_cache.php && php rebuild.php

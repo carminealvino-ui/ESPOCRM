@@ -84,7 +84,6 @@
             "autocompleteOnEmpty": true
         },
         "telefono": {
-            "readOnly": true,
             "type": "foreign",
             "link": "prospect",
             "field": "phoneNumber",
@@ -245,7 +244,6 @@
         },
         "importoRata": {
             "type": "currency",
-            "readOnly": true,
             "isCustom": true
         },
         "statoContratto": {
