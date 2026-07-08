@@ -20,24 +20,7 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
         setup: function () {
             Dep.prototype.setup.call(this);
 
-            var originalGetTemplateAttrs = this.getTemplateAttrs && this.getTemplateAttrs.bind(this);
-            if (originalGetTemplateAttrs) {
-                this.getTemplateAttrs = function () {
-                    var args = arguments;
-
-                    return Promise.resolve()
-                        .then(function () {
-                            return originalGetTemplateAttrs.apply(this, args);
-                        }.bind(this))
-                        .catch(function (e) {
-                            var status = e && (e.status || e.statusCode || (e.xhr && e.xhr.status));
-                            if (status === 405) {
-                                return {};
-                            }
-                            throw e;
-                        });
-                };
-            }
+            this.patchQuoteItemTemplateAttrsEndpoint();
 
             this.dropdownItemList = this.dropdownItemList || [];
 
@@ -259,6 +242,34 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
                     view.render();
                 }.bind(this)
             );
+        },
+
+        patchQuoteItemTemplateAttrsEndpoint: function () {
+            if (window.__quoteItemTemplateAttrsPatched) {
+                return;
+            }
+
+            if (!window.Espo || !Espo.Ajax || !Espo.Ajax.postRequest || !Espo.Ajax.getRequest) {
+                return;
+            }
+
+            window.__quoteItemTemplateAttrsPatched = true;
+
+            var originalPostRequest = Espo.Ajax.postRequest.bind(Espo.Ajax);
+
+            Espo.Ajax.postRequest = function (url, data, options) {
+                if (url !== 'QuoteItem/action/getTemplateAttrs') {
+                    return originalPostRequest(url, data, options);
+                }
+
+                return Espo.Ajax.getRequest(url, data, options).catch(function (e) {
+                    var status = e && (e.status || e.statusCode || (e.xhr && e.xhr.status));
+                    if (status === 405) {
+                        return {};
+                    }
+                    throw e;
+                });
+            };
         },
     });
 });
