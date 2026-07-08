@@ -33,7 +33,7 @@ fetch custom/Espo/Custom/Services/ReferenteContactService.php
 fetch custom/Espo/Custom/Services/LeadProspectSync.php
 
 # Verifica hardening: il controller deployato non deve chiamare getContainer().
-if rg -n "getContainer\(" custom/Espo/Custom/Controllers/Opportunity.php >/dev/null; then
+if grep -n "getContainer(" custom/Espo/Custom/Controllers/Opportunity.php >/dev/null; then
   echo "ERRORE: Opportunity.php contiene ancora getContainer()"
   exit 1
 fi
