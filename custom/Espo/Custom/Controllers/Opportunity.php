@@ -15,6 +15,22 @@ use Espo\ORM\EntityManager;
  */
 class Opportunity extends Record
 {
+    private ?EntityManager $resolvedEntityManager = null;
+
+    public function __construct(...$args)
+    {
+        if (is_callable([get_parent_class($this), '__construct'])) {
+            parent::__construct(...$args);
+        }
+
+        foreach ($args as $arg) {
+            if ($arg instanceof EntityManager) {
+                $this->resolvedEntityManager = $arg;
+                break;
+            }
+        }
+    }
+
     public function postActionCreateContratto(
         Request $request,
         Response $response
@@ -40,6 +56,10 @@ class Opportunity extends Record
 
     private function resolveEntityManager(): EntityManager
     {
+        if ($this->resolvedEntityManager instanceof EntityManager) {
+            return $this->resolvedEntityManager;
+        }
+
         if (property_exists($this, 'entityManager')) {
             $value = $this->entityManager ?? null;
 
