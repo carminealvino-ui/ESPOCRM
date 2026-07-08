@@ -20,6 +20,25 @@ define('custom:views/quote/fields/item-list', ['sales:views/quote/fields/item-li
         setup: function () {
             Dep.prototype.setup.call(this);
 
+            var originalGetTemplateAttrs = this.getTemplateAttrs && this.getTemplateAttrs.bind(this);
+            if (originalGetTemplateAttrs) {
+                this.getTemplateAttrs = function () {
+                    var args = arguments;
+
+                    return Promise.resolve()
+                        .then(function () {
+                            return originalGetTemplateAttrs.apply(this, args);
+                        }.bind(this))
+                        .catch(function (e) {
+                            var status = e && (e.status || e.statusCode || (e.xhr && e.xhr.status));
+                            if (status === 405) {
+                                return {};
+                            }
+                            throw e;
+                        });
+                };
+            }
+
             this.dropdownItemList = this.dropdownItemList || [];
 
             var hasCreateProductAction = this.dropdownItemList.some(function (item) {
