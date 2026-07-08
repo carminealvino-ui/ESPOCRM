@@ -37,8 +37,10 @@ fetch custom/Espo/Custom/Resources/routes.json
 fetch custom/Espo/Custom/Tools/Quote/Api/PostGetItemCatalogPrices.php
 fetch custom/Espo/Custom/Services/QuotePricingCalculator.php
 fetch custom/Espo/Custom/Services/QuoteProvvigioniSync.php
-fetch custom/Espo/Custom/Hooks/Quote/BeforeSave.php
 fetch custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
+
+# Rimuove hook legacy incompatibile Espo 10 (Espo\Core\Hooks\Base).
+rm -f custom/Espo/Custom/Hooks/Quote/BeforeSave.php
 
 # Metadata Quote
 fetch custom/Espo/Custom/Resources/metadata/app/client.json
