@@ -169,8 +169,19 @@ class CreateContratto
     // RUN
     // =====================================================
 
-    public function run($opportunity)
+    public function run($opportunityOrId)
     {
+        $opportunity = $opportunityOrId;
+
+        if (!is_object($opportunityOrId)) {
+            $id = is_scalar($opportunityOrId) ? (string) $opportunityOrId : null;
+
+            if (!$id) {
+                throw new \Exception('ID opportunità mancante');
+            }
+
+            $opportunity = $this->entityManager->getEntityById('Opportunity', $id);
+        }
 
         // =====================================================
         // VALIDAZIONE

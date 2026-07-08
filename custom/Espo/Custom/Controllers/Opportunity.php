@@ -5,6 +5,7 @@ namespace Espo\Custom\Controllers;
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
 use Espo\Core\Controllers\Record;
+use Espo\Core\InjectableFactory;
 use Espo\ORM\EntityManager;
 
 /**
@@ -26,20 +27,86 @@ class Opportunity extends Record
             throw new \Exception('ID mancante');
         }
 
-        $entityManager = $this->resolveEntityManager();
-        $opportunity = $entityManager->getEntityById('Opportunity', $id);
+        $action = $this->resolveCreateContrattoAction();
 
-        if (!$opportunity) {
-            throw new \Exception('Opportunità non trovata');
+        return $action->run($id);
+    }
+
+    private function resolveCreateContrattoAction(): \Espo\Custom\Actions\Opportunity\CreateContratto
+    {
+        $injectableFactory = $this->resolveInjectableFactory();
+
+        if ($injectableFactory) {
+            return $injectableFactory->create(\Espo\Custom\Actions\Opportunity\CreateContratto::class);
         }
 
-        $action = new \Espo\Custom\Actions\Opportunity\CreateContratto($entityManager);
+        $entityManager = $this->resolveEntityManager();
 
-        return $action->run($opportunity);
+        return new \Espo\Custom\Actions\Opportunity\CreateContratto($entityManager);
+    }
+
+    private function resolveInjectableFactory(): ?InjectableFactory
+    {
+        if (method_exists($this, 'getContainer')) {
+            try {
+                $container = $this->getContainer();
+
+                if ($container && method_exists($container, 'get')) {
+                    $value = $container->get('injectableFactory');
+
+                    if ($value instanceof InjectableFactory) {
+                        return $value;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore and continue scanning.
+            }
+        }
+
+        $ref = new \ReflectionObject($this);
+
+        foreach ($ref->getProperties() as $property) {
+            $property->setAccessible(true);
+            $value = $property->getValue($this);
+
+            if ($value instanceof InjectableFactory) {
+                return $value;
+            }
+
+            if ($value && is_object($value) && method_exists($value, 'get')) {
+                try {
+                    $maybe = $value->get('injectableFactory');
+
+                    if ($maybe instanceof InjectableFactory) {
+                        return $maybe;
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore and continue scanning.
+                }
+            }
+        }
+
+        return null;
     }
 
     private function resolveEntityManager(): EntityManager
     {
+        if (method_exists($this, 'getContainer')) {
+            try {
+                $container = $this->getContainer();
+
+                if ($container && method_exists($container, 'get')) {
+                    $value = $container->get('entityManager');
+
+                    if ($value instanceof EntityManager) {
+                        return $value;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore and continue scanning.
+            }
+        }
+
         if (property_exists($this, 'entityManager')) {
             $value = $this->entityManager ?? null;
 
