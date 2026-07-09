@@ -40,6 +40,10 @@ else
 fi
 
 echo ""
-echo "=== Branch consigliata per restore noto-buono ==="
+echo "=== Backup congelato nel repo Git (sempre disponibile) ==="
+echo "  backup/stato-noto-buono-2026-07-09/"
+echo "  bash tools/restore-da-backup-repo.sh"
+echo ""
+echo "=== Branch / script curl ==="
 echo "  cursor/fix-contratto-stato-provvigioni-9999"
 echo "  bash tools/restore-stato-noto-buono.sh"
