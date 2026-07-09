@@ -62,6 +62,8 @@ done
 
 rm -f custom/Espo/Custom/Hooks/Quote/BeforeSave.php
 
+mkdir -p data/cache/application data/cache/application/modules
+
 php clear_cache.php
 php rebuild.php
 
