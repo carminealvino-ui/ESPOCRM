@@ -32,6 +32,16 @@ Con clone Git nel repo:
 
 Elenco: `bash tools/list-server-backups.sh`
 
+## Layout KPI “come prima” (Rese + griglia ampia)
+
+`deploy-popup-save-fix.sh` è **solo** il popup Contatto Telefonico, **non** il layout KPI.
+
+Per il layout che ricordi (branch `fix-kpi-lordi-pianificati-9999`):
+
+```bash
+curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-stato-provvigioni-9999/tools/deploy-kpi-layout-lordi-pianificati.sh?t=$(date +%s)" | bash
+```
+
 ## Non usare per KPI
 
 `deploy-crm-kpi-v2-hotfix.sh` **da solo** — reintroduce `Appuntamento.php` con `getContainer()`.
