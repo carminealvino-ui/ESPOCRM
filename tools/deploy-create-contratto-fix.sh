@@ -47,9 +47,7 @@ fetch custom/Espo/Custom/Services/ProvvigioneManager.php
 # Rimuove hook legacy incompatibile Espo 10 (Espo\Core\Hooks\Base).
 rm -f custom/Espo/Custom/Hooks/Quote/BeforeSave.php
 
-# Metadata Quote + KPI layout (non rimuovere crm-kpi-dashlet.css)
-fetch custom/Espo/Custom/Resources/metadata/app/client.json
-fetch client/custom/css/crm-kpi-dashlet.css
+# Metadata Quote (NON toccare client.json / CSS KPI — usare deploy-restore-kpi-layout.sh)
 fetch custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
 fetch custom/Espo/Custom/Resources/metadata/formula/Quote.json
 fetch custom/Espo/Custom/Resources/metadata/formula/QuoteItem.json
@@ -72,6 +70,10 @@ if grep -qE '(^|[^a-zA-Z_])empty\(' custom/Espo/Custom/Resources/metadata/formul
 fi
 
 echo "=== Fatto: deploy createContratto + articoli Quote completato ==="
+echo ""
+echo "NOTA: questo script NON modifica client.json né CSS KPI."
+echo "Per ripristinare il layout KPI:"
+echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-stato-provvigioni-9999/tools/deploy-restore-kpi-layout.sh\" | bash"
 echo ""
 echo "Per aggiornare TUTTI i contratti (provvigioni + stato):"
 echo "  php tools/migrate-ricalcola-provvigioni-contratti.php"
