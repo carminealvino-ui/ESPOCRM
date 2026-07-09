@@ -47,6 +47,7 @@ fetch custom/Espo/Custom/Resources/metadata/app/client.json
 fetch client/custom/css/crm-kpi-dashlet.css
 fetch custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
 fetch custom/Espo/Custom/Resources/metadata/formula/Quote.json
+fetch custom/Espo/Custom/Resources/metadata/formula/QuoteItem.json
 
 # Frontend articoli contratto
 fetch client/custom/src/handlers/quote/catalog-prices.js
@@ -59,8 +60,8 @@ fetch custom/Espo/Custom/Resources/client/custom/src/views/quote/record/item.js
 php clear_cache.php
 php rebuild.php
 
-if grep -qE '(^|[^a-zA-Z_])empty\(' custom/Espo/Custom/Resources/metadata/formula/Quote.json; then
-  echo "ERRORE: formula Quote contiene chiamata empty() non supportata da Espo" >&2
+if grep -qE '(^|[^a-zA-Z_])empty\(' custom/Espo/Custom/Resources/metadata/formula/Quote.json custom/Espo/Custom/Resources/metadata/formula/QuoteItem.json 2>/dev/null; then
+  echo "ERRORE: formula Quote/QuoteItem contiene chiamata empty() non supportata da Espo" >&2
   exit 1
 fi
 
