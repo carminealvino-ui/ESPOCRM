@@ -9,6 +9,7 @@
 #
 # Uso:
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-quote-9999/tools/deploy-fix-contratto-quote-9999.sh?t=$(date +%s)" | bash
+set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 BRANCH="${BRANCH:-cursor/fix-contratto-quote-9999}"
