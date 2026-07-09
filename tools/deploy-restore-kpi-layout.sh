@@ -26,9 +26,13 @@ fetch() {
 
 fetch custom/Espo/Custom/Resources/metadata/app/client.json
 fetch client/custom/css/crm-kpi-dashlet.css
+fetch custom/Espo/Custom/Controllers/Appuntamento.php
+fetch custom/Espo/Custom/Controllers/CrmKpi.php
 
 php clear_cache.php
 php rebuild.php
 
 echo "=== Fatto: layout KPI ripristinato (branch ${BRANCH}) ==="
+echo "Controller Appuntamento/CrmKpi aggiornati (fix getContainer Espo 10)."
 echo "Se il layout non torna corretto, esegui anche deploy-crm-kpi-v2-hotfix.sh dalla stessa branch."
+echo "Solo errore 500 API: tools/deploy-kpi-fix-500.sh"
