@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Ripristina file da backup/stato-noto-buono-2026-07-09 nel repo (NON da GitHub curl).
+# Ripristina file da backup/stato-noto-buono-2026-07-09 nel repo (serve clone Git).
 #
-# Uso sul server CRM (dopo git pull del repo):
-#   cd ~/public_html/crm/mec-group   # oppure path clone ESPOCRM
+# Sul server produzione (SENZA git) usare invece:
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-stato-provvigioni-9999/tools/deploy-restore-da-backup.sh?t=$(date +%s)" | bash
+#
+# Uso con repo Git:
 #   bash tools/restore-da-backup-repo.sh
 
 set -euo pipefail

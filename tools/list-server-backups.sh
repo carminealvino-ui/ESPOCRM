@@ -42,7 +42,7 @@ fi
 echo ""
 echo "=== Backup congelato nel repo Git (sempre disponibile) ==="
 echo "  backup/stato-noto-buono-2026-07-09/"
-echo "  bash tools/restore-da-backup-repo.sh"
+echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-stato-provvigioni-9999/tools/deploy-restore-da-backup.sh\" | bash"
 echo ""
 echo "=== Branch / script curl ==="
 echo "  cursor/fix-contratto-stato-provvigioni-9999"

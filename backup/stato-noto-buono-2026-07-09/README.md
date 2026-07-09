@@ -15,38 +15,14 @@ Snapshot **congelato nel repository Git**: non viene sovrascritto dai deploy cur
 | `metadata/app/client.json` | CSS KPI + script init (da branch KPI v2) |
 | `client/custom/css/crm-kpi-dashlet.css` | Layout dashlet KPI |
 
-## Restore sul server (copia da repo Git)
-
-Dopo `git pull` o clone nella cartella CRM:
+Oppure **senza git** (server produzione):
 
 ```bash
 cd ~/public_html/crm/mec-group
-SNAP=backup/stato-noto-buono-2026-07-09
-TS=$(date +%Y%m%d-%H%M%S)
-mkdir -p backup/pre-restore-${TS}
-
-# snapshot attuale
-cp -a custom/Espo/Custom/Controllers/Appuntamento.php backup/pre-restore-${TS}/ 2>/dev/null || true
-
-# ripristino
-cp -a ${SNAP}/custom/Espo/Custom/Controllers/Appuntamento.php custom/Espo/Custom/Controllers/
-cp -a ${SNAP}/custom/Espo/Custom/Controllers/CrmKpi.php custom/Espo/Custom/Controllers/
-cp -a ${SNAP}/custom/Espo/Custom/Services/ProvvigioneManager.php custom/Espo/Custom/Services/
-cp -a ${SNAP}/custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php custom/Espo/Custom/Hooks/Provvigione/
-cp -a ${SNAP}/custom/Espo/Custom/Hooks/Quote/SetPresentedWhenNumeroContratto.php custom/Espo/Custom/Hooks/Quote/
-cp -a ${SNAP}/custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php custom/Espo/Custom/Hooks/Quote/
-cp -a ${SNAP}/custom/Espo/Custom/Resources/metadata/app/client.json custom/Espo/Custom/Resources/metadata/app/
-cp -a ${SNAP}/client/custom/css/crm-kpi-dashlet.css client/custom/css/
-
-rm -f custom/Espo/Custom/Hooks/Quote/BeforeSave.php
-php clear_cache.php && php rebuild.php
+curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-stato-provvigioni-9999/tools/deploy-restore-da-backup.sh?t=$(date +%s)" | bash
 ```
 
-Oppure uno script:
-
-```bash
-bash tools/restore-da-backup-repo.sh
-```
+Con clone Git nel repo:
 
 ## Backup automatici sul server (creati dai deploy)
 
