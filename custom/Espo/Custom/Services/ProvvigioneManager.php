@@ -13,7 +13,8 @@ class ProvvigioneManager
     public function __construct(
         private EntityManager $entityManager,
         private RegolaProvvigionaleCalculator $calculator,
-        private ProvvigioneAccrual $accrual
+        private ProvvigioneAccrual $accrual,
+        private QuotePricingCalculator $quotePricingCalculator
     ) {}
 
     /**
@@ -118,10 +119,7 @@ class ProvvigioneManager
     {
         $category = $this->resolveProductCategory($quote, $opportunity);
 
-        $imponibile = $this->floatField($quote, 'amount')
-            ?? $this->floatField($quote, 'importoContratto')
-            ?? $this->floatField($opportunity, 'amount')
-            ?? $this->floatField($opportunity, 'importoOpportunit');
+        $imponibile = $this->resolveQuoteImponibile($quote, $opportunity);
 
         $context = $this->buildContextFromEntities($category, $quote, $imponibile, $opportunity);
         $context['imponibile'] = $imponibile;
@@ -361,6 +359,13 @@ class ProvvigioneManager
             ]);
         }
 
+        if (isset($context['imponibile']) && $provvigione->hasAttribute('importoBaseCalcolo')) {
+            $provvigione->set([
+                'baseCalcolo' => 'ImponibileContratto',
+                'importoBaseCalcolo' => round((float) $context['imponibile'], 2),
+            ]);
+        }
+
         if ($giorni > 0 && $eventDate) {
             $provvigione->set(
                 'dataLiquidazionePrevista',
@@ -527,8 +532,27 @@ class ProvvigioneManager
         return round($imponibile - $prezzoCodice, 2);
     }
 
+    private function resolveQuoteImponibile(Entity $quote, ?Entity $opportunity = null): ?float
+    {
+        $net = $this->quotePricingCalculator->resolveImponibileNetto($quote);
+
+        if ($net !== null && $net > 0) {
+            return $net;
+        }
+
+        if ($opportunity) {
+            return $this->resolveImponibile($opportunity);
+        }
+
+        return null;
+    }
+
     private function resolveImponibile(Entity $entity): ?float
     {
+        if ($entity->getEntityType() === 'Quote') {
+            return $this->quotePricingCalculator->resolveImponibileNetto($entity);
+        }
+
         return $this->floatField($entity, 'amount')
             ?? $this->floatField($entity, 'importoContratto')
             ?? $this->floatField($entity, 'importoOpportunita')

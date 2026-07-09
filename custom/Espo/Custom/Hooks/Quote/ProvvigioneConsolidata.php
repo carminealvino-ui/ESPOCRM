@@ -32,7 +32,11 @@ class ProvvigioneConsolidata implements AfterSave
 
         $watch = [
             'amount',
+            'taxAmount',
+            'grandTotalAmount',
             'importoContratto',
+            'numeroContratto',
+            'number',
             'dataAttivazione',
             'dataInstallazione',
             'productCategoryId',
@@ -41,6 +45,7 @@ class ProvvigioneConsolidata implements AfterSave
             'prezzoCodiceIvaEsclusa',
             'margineSuListino',
             'contattoPersonaleArquati',
+            'isTaxInclusive',
         ];
 
         $changed = false;

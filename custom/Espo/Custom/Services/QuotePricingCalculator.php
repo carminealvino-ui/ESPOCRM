@@ -751,10 +751,10 @@ class QuotePricingCalculator
     public function resolveImponibileNetto(Entity $entity): ?float
     {
         if ($entity->getEntityType() === 'Quote') {
-            $amount = $this->floatOrNull($entity->get('amount'));
+            $net = $this->resolveQuoteAmountNet($entity);
 
-            if ($amount !== null && $amount > 0) {
-                return $amount;
+            if ($net !== null && $net > 0) {
+                return $net;
             }
         }
 
@@ -774,12 +774,6 @@ class QuotePricingCalculator
             return null;
         }
 
-        $amount = $this->floatOrNull($entity->get('amount'));
-
-        if ($amount !== null && $amount > 0) {
-            return $amount;
-        }
-
         $taxAmount = $this->floatOrNull($entity->get('taxAmount')) ?? 0.0;
         $grandTotal = $this->floatOrNull($entity->get('grandTotalAmount'));
 
@@ -788,6 +782,36 @@ class QuotePricingCalculator
         }
 
         return null;
+    }
+
+    /**
+     * Imponibile netto da amount: se coincide col lordo (IVA inclusa), scorpora IVA.
+     */
+    private function resolveQuoteAmountNet(Entity $quote): ?float
+    {
+        $amount = $this->floatOrNull($quote->get('amount'));
+
+        if ($amount === null || $amount <= 0) {
+            return null;
+        }
+
+        $gross = $this->floatOrNull($quote->get('grandTotalAmount'))
+            ?? $this->floatOrNull($quote->get('importoContratto'));
+        $taxAmount = $this->floatOrNull($quote->get('taxAmount'));
+
+        if ($gross !== null && abs($amount - $gross) < 0.02) {
+            if ($taxAmount !== null && $taxAmount > 0) {
+                return round($amount - $taxAmount, 2);
+            }
+
+            if ($this->isQuotePricesTaxInclusive($quote)) {
+                $aliquota = $this->resolveAliquotaIva($quote);
+
+                return $this->splitImportoContratto($gross, $aliquota, true)['net'];
+            }
+        }
+
+        return $amount;
     }
 
     public function resolveMinusPlus(Entity $entity): ?float

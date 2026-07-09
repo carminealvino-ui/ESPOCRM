@@ -7,7 +7,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="cursor/fix-calendario-appuntamento-9999"
+BRANCH="cursor/fix-contratto-stato-provvigioni-9999"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 TS="$(date +%s)"
 
@@ -38,6 +38,9 @@ fetch custom/Espo/Custom/Tools/Quote/Api/PostGetItemCatalogPrices.php
 fetch custom/Espo/Custom/Services/QuotePricingCalculator.php
 fetch custom/Espo/Custom/Services/QuoteProvvigioniSync.php
 fetch custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
+fetch custom/Espo/Custom/Hooks/Quote/SetPresentedWhenNumeroContratto.php
+fetch custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
+fetch custom/Espo/Custom/Services/ProvvigioneManager.php
 
 # Rimuove hook legacy incompatibile Espo 10 (Espo\Core\Hooks\Base).
 rm -f custom/Espo/Custom/Hooks/Quote/BeforeSave.php
