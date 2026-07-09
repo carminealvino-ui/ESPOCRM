@@ -51,6 +51,9 @@ php clear_cache.php
 
 echo ""
 echo "=== Fatto PR #99 ==="
+echo "Per ricalcolare TUTTI i contratti:"
+echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}/tools/deploy-ricalcola-provvigioni-tutti.sh?t=\$(date +%s)\" | bash"
+echo ""
 echo "Atteso TSIGA: base 15% su €4909,09 → €736,36; plus 35% su €818,18 → €286,36"
 echo "totaleProvvigioni = somma importo consolidato (non descrizione testo)"
 echo ""

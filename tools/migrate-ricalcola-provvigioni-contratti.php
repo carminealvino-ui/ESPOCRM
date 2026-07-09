@@ -1,10 +1,11 @@
 <?php
 /**
- * Ricalcola provvigioni consolidate e aggiorna stato per tutti i contratti.
+ * Ricalcola provvigioni consolidate su tutti i contratti (o uno specifico).
  *
  *   php tools/migrate-ricalcola-provvigioni-contratti.php
  *   php tools/migrate-ricalcola-provvigioni-contratti.php --dry-run
  *   php tools/migrate-ricalcola-provvigioni-contratti.php --id=6a4e3247d258ac77f
+ *   php tools/migrate-ricalcola-provvigioni-contratti.php --codice=Contratto_00144
  */
 
 declare(strict_types=1);
@@ -23,10 +24,14 @@ use Espo\ORM\EntityManager;
 
 $dryRun = in_array('--dry-run', $argv ?? [], true);
 $onlyId = null;
+$onlyCodice = null;
 
 foreach ($argv ?? [] as $arg) {
     if (str_starts_with($arg, '--id=')) {
         $onlyId = substr($arg, 5);
+    }
+    if (str_starts_with($arg, '--codice=')) {
+        $onlyCodice = substr($arg, 9);
     }
 }
 
@@ -45,50 +50,68 @@ if ($onlyId) {
     $where['id'] = $onlyId;
 }
 
+if ($onlyCodice) {
+    $where['numberA'] = $onlyCodice;
+}
+
 $collection = $em
     ->getRDBRepository('Quote')
     ->where($where)
     ->order('createdAt', 'ASC')
     ->find();
 
+$total = $collection->count();
 $processed = 0;
 $skipped = 0;
 $errors = 0;
 $statusUpdated = 0;
-$provvigioniUpdated = 0;
+$changed = 0;
+$unchanged = 0;
 
-echo $dryRun ? "=== DRY RUN ===\n" : "=== MIGRAZIONE PROVVIGIONI CONTRATTI ===\n";
+echo $dryRun ? "=== DRY RUN — ricalcolo provvigioni contratti ===\n" : "=== RICALCOLO PROVVIGIONI SU TUTTI I CONTRATTI ===\n";
+echo "Record trovati: {$total}\n\n";
+
+$index = 0;
 
 foreach ($collection as $quote) {
-    $label = ($quote->get('number') ?: $quote->get('numberA') ?: $quote->getId())
-        . ' — ' . ($quote->get('name') ?? '');
+    $index++;
+    $codice = $quote->get('numberA') ?: $quote->get('number') ?: $quote->getId();
+    $cliente = $quote->get('accountName') ?: '';
+    $label = "{$codice}" . ($cliente ? " — {$cliente}" : '');
 
     if (!$quote->get('opportunityId')) {
-        echo "[SKIP] {$label} (senza opportunità)\n";
+        echo "[{$index}/{$total}] [SKIP] {$label} (senza opportunità)\n";
         $skipped++;
         continue;
     }
 
-    $nextStatus = match ($quote->get('status')) {
-        'Bozza' => 'In lavorazione',
-        'Draft' => 'Presented',
-        default => null,
-    };
-
-    $hasNumero = trim((string) ($quote->get('numeroContratto') ?? '')) !== ''
-        || trim((string) ($quote->get('number') ?? '')) !== '';
+    $oldTotale = $quote->get('totaleProvvigioni');
+    $oldFormatted = $oldTotale !== null && $oldTotale !== '' ? number_format((float) $oldTotale, 2, '.', '') : '—';
 
     if ($dryRun) {
-        echo "[DRY] {$label}\n";
-        if ($hasNumero && $nextStatus !== null) {
-            echo "      stato: {$quote->get('status')} → {$nextStatus}\n";
-        }
-        echo "      ricalcolo provvigioni\n";
+        echo "[{$index}/{$total}] [DRY] {$label} — totale attuale: €{$oldFormatted}\n";
         $processed++;
         continue;
     }
 
     try {
+        $quote = $em->getEntityById('Quote', $quote->getId());
+
+        if (!$quote) {
+            echo "[{$index}/{$total}] [SKIP] {$label} (non trovato dopo reload)\n";
+            $skipped++;
+            continue;
+        }
+
+        $hasNumero = trim((string) ($quote->get('numeroContratto') ?? '')) !== ''
+            || trim((string) ($quote->get('number') ?? '')) !== '';
+
+        $nextStatus = match ($quote->get('status')) {
+            'Bozza' => 'In lavorazione',
+            'Draft' => 'Presented',
+            default => null,
+        };
+
         if ($hasNumero && $nextStatus !== null) {
             $quote->set('status', $nextStatus);
             $em->saveEntity($quote, [
@@ -97,23 +120,45 @@ foreach ($collection as $quote) {
                 'skipFormula' => true,
             ]);
             $statusUpdated++;
+            $quote = $em->getEntityById('Quote', $quote->getId());
+        }
+
+        if (!$quote) {
+            throw new RuntimeException('Quote non trovato dopo aggiornamento stato');
         }
 
         $result = $provvigioneManager->recalculateAllForQuote($quote);
 
-        echo "[OK] {$label} — provvigioni: {$result['created']} (purge {$result['purged']})\n";
+        $quote = $em->getEntityById('Quote', $quote->getId());
+        $newTotale = $quote?->get('totaleProvvigioni');
+        $newFormatted = $newTotale !== null && $newTotale !== '' ? number_format((float) $newTotale, 2, '.', '') : '—';
+
+        $delta = '';
+
+        if ($oldFormatted !== '—' && $newFormatted !== '—' && $oldFormatted !== $newFormatted) {
+            $delta = " (era €{$oldFormatted})";
+            $changed++;
+        } elseif ($oldFormatted === $newFormatted) {
+            $unchanged++;
+        } else {
+            $changed++;
+        }
+
+        echo "[{$index}/{$total}] [OK] {$label} — totale: €{$newFormatted}{$delta}"
+            . " | provvigioni: {$result['created']}, purge: {$result['purged']}\n";
         $processed++;
-        $provvigioniUpdated += $result['created'];
     } catch (Throwable $e) {
-        echo "[ERR] {$label} — {$e->getMessage()}\n";
+        echo "[{$index}/{$total}] [ERR] {$label} — {$e->getMessage()}\n";
         $errors++;
     }
 }
 
-echo "\nContratti elaborati: {$processed}\n";
+echo "\n--- Riepilogo ---\n";
+echo "Elaborati: {$processed}\n";
 echo "Saltati: {$skipped}\n";
-echo "Stati aggiornati: {$statusUpdated}\n";
-echo "Provvigioni create/aggiornate: {$provvigioniUpdated}\n";
+echo "Totale modificato: {$changed}\n";
+echo "Totale invariato: {$unchanged}\n";
+echo "Stati aggiornati (Bozza→In lavorazione): {$statusUpdated}\n";
 echo "Errori: {$errors}\n";
 
 exit($errors > 0 ? 1 : 0);

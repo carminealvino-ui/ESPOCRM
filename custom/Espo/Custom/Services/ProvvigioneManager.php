@@ -224,6 +224,13 @@ class ProvvigioneManager
         $purged = $this->purgeProvvigioniForQuote($quote->getId());
         $this->syncQuotePricingFields($quote, $opportunity);
 
+        $quoteId = $quote->getId();
+        $quote = $this->entityManager->getEntityById('Quote', $quoteId);
+
+        if (!$quote) {
+            return ['created' => 0, 'updated' => 0, 'purged' => $purged];
+        }
+
         $this->createConsolidataForQuote($opportunity, $quote);
         $this->refreshQuoteTotaleProvvigioni($quote);
 
