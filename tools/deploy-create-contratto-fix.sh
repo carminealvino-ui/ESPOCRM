@@ -59,8 +59,8 @@ fetch custom/Espo/Custom/Resources/client/custom/src/views/quote/record/item.js
 php clear_cache.php
 php rebuild.php
 
-if grep -q 'empty(' custom/Espo/Custom/Resources/metadata/formula/Quote.json; then
-  echo "ERRORE: formula Quote contiene empty() non supportato da Espo" >&2
+if grep -qE '(^|[^a-zA-Z_])empty\(' custom/Espo/Custom/Resources/metadata/formula/Quote.json; then
+  echo "ERRORE: formula Quote contiene chiamata empty() non supportata da Espo" >&2
   exit 1
 fi
 
