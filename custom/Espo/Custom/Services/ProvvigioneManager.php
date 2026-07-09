@@ -155,6 +155,7 @@ class ProvvigioneManager
         );
 
         $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
+        $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
         $this->refreshQuoteTotaleProvvigioni($quote);
 
@@ -169,6 +170,7 @@ class ProvvigioneManager
             ->find();
 
         $totale = 0.0;
+        $counted = 0;
 
         foreach ($collection as $provvigione) {
             if ($provvigione->get('statoProvvigione') === 'Stornata') {
@@ -186,9 +188,10 @@ class ProvvigioneManager
             }
 
             $totale += (float) $importo;
+            $counted++;
         }
 
-        return $totale > 0 ? round($totale, 2) : null;
+        return $counted > 0 ? round($totale, 2) : null;
     }
 
     public function refreshQuoteTotaleProvvigioni(Entity $quote): void
@@ -312,7 +315,7 @@ class ProvvigioneManager
     }
 
     /**
-     * GDL / Ariel 2026: 10+5% su imponibile (o 10% se ordine incompleto) + 35% su plusvalenza.
+     * GDL / Ariel 2026: base/referenza + plus/minus + bonus weekend.
      *
      * @param array<string, mixed> $context
      */
@@ -344,16 +347,13 @@ class ProvvigioneManager
 
         $context['plusvalenza'] = ($minusPlus !== null && $minusPlus > 0) ? $minusPlus : null;
 
-        $ruleId = !empty($context['ordineIncompletoAriel']) ? 'arielBase10' : 'arielBase105';
-        $baseRule = $this->entityManager->getEntityById('RegolaProvvigionale', $ruleId);
-        $baseResult = null;
-
-        if ($baseRule && $baseRule->get('attiva')) {
-            $importo = $this->calculator->calculateRule($baseRule, $context);
-
-            if ($importo !== null && $importo > 0) {
-                $baseResult = ['importo' => $importo, 'regola' => $baseRule];
-            }
+        if ($this->isReferenzaPersonaleOpportunity($opportunity)) {
+            $baseResult = $this->resultFromRuleId('referenzaPersonale', $context);
+            $baseTipo = 'Referenza Personale';
+        } else {
+            $ruleId = !empty($context['ordineIncompletoAriel']) ? 'arielBase10' : 'arielBase105';
+            $baseResult = $this->resultFromRuleId($ruleId, $context);
+            $baseTipo = 'Provvigione Base';
         }
 
         $base = $this->saveConsolidataProvvigione(
@@ -362,33 +362,242 @@ class ProvvigioneManager
             $category,
             $baseResult,
             $context,
-            'Provvigione Base',
+            $baseTipo,
             null
         );
 
         if ($context['plusvalenza'] !== null && $context['plusvalenza'] > 0) {
-            $plusRule = $this->entityManager->getEntityById('RegolaProvvigionale', 'arielPlus35');
-
-            if ($plusRule && $plusRule->get('attiva')) {
-                $plusImporto = $this->calculator->calculateRule($plusRule, $context);
-
-                if ($plusImporto !== null && $plusImporto > 0) {
-                    $this->saveConsolidataProvvigione(
-                        $opportunity,
-                        $quote,
-                        $category,
-                        ['importo' => $plusImporto, 'regola' => $plusRule],
-                        $context,
-                        'Plus Provvigionale',
-                        null
-                    );
-                }
-            }
+            $this->ensureArielPlusProvvigione($opportunity, $quote, $category, $context);
+        } elseif ($minusPlus !== null && $minusPlus < 0) {
+            $context['plusvalenza'] = $minusPlus;
+            $this->ensureArielMinusProvvigione($opportunity, $quote, $category, $context);
         }
+
+        $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
         $this->refreshQuoteTotaleProvvigioni($quote);
 
         return $base;
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function ensureArielPlusProvvigione(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        array $context
+    ): void {
+        if ($context['plusvalenza'] === null || $context['plusvalenza'] <= 0) {
+            return;
+        }
+
+        $result = $this->resultFromRuleId('arielPlus35', $context);
+
+        if ($result === null) {
+            return;
+        }
+
+        $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            $result,
+            $context,
+            'Plus Provvigionale',
+            null
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function ensureArielMinusProvvigione(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        array $context
+    ): void {
+        $minusvalenza = $context['plusvalenza'] ?? null;
+
+        if ($minusvalenza === null || $minusvalenza >= 0) {
+            return;
+        }
+
+        $result = $this->resultFromRuleId('arielMinus35', $context, true);
+
+        if ($result === null) {
+            return;
+        }
+
+        $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            $result,
+            $context,
+            'Minus Provvigionale',
+            null
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function ensureWeekendBonusProvvigione(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        array $context,
+        ?float $imponibile
+    ): void {
+        if ($imponibile === null || $imponibile <= 0) {
+            return;
+        }
+
+        if (!$this->isWeekendContractDate($quote, $opportunity)) {
+            return;
+        }
+
+        $result = $this->resultFromRuleId('bonusWeekendSd', $context)
+            ?? $this->calculator->calculateForTipoRecord($context, 'Bonus (Sabato-Domenica)');
+
+        if ($result === null) {
+            return;
+        }
+
+        $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            $result,
+            $context,
+            'Bonus (Sabato-Domenica)',
+            null
+        );
+    }
+
+    private function isWeekendContractDate(Entity $quote, ?Entity $opportunity): bool
+    {
+        $date = $this->resolveWeekendReferenceDate($quote, $opportunity);
+
+        if ($date === null) {
+            return false;
+        }
+
+        $day = (int) (new \DateTimeImmutable($date))->format('N');
+
+        return $day >= 6;
+    }
+
+    private function resolveWeekendReferenceDate(Entity $quote, ?Entity $opportunity): ?string
+    {
+        $candidates = [
+            $quote->get('dateQuoted'),
+            $opportunity?->get('dataOpportunit'),
+        ];
+
+        if ($opportunity?->get('appuntamentoId')) {
+            $appuntamento = $this->entityManager->getEntityById(
+                'Appuntamento',
+                $opportunity->get('appuntamentoId')
+            );
+
+            if ($appuntamento) {
+                $candidates[] = $appuntamento->get('dateStart');
+            }
+        }
+
+        foreach ($candidates as $candidate) {
+            $normalized = $this->normalizeDateValue($candidate);
+
+            if ($normalized !== null) {
+                return $normalized;
+            }
+        }
+
+        return null;
+    }
+
+    private function normalizeDateValue(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $string = (string) $value;
+
+        if (strlen($string) >= 10) {
+            $string = substr($string, 0, 10);
+        }
+
+        $date = \DateTimeImmutable::createFromFormat('Y-m-d', $string);
+
+        if ($date === false) {
+            return null;
+        }
+
+        return $date->format('Y-m-d');
+    }
+
+    private function isReferenzaPersonaleOpportunity(Entity $opportunity): bool
+    {
+        $appuntamentoId = $opportunity->get('appuntamentoId');
+
+        if (!$appuntamentoId) {
+            return false;
+        }
+
+        $appuntamento = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
+
+        if (!$appuntamento) {
+            return false;
+        }
+
+        $tipo = $appuntamento->get('tipo');
+
+        if (is_array($tipo)) {
+            return in_array('Referenza Personale', $tipo, true);
+        }
+
+        if (is_string($tipo) && $tipo !== '') {
+            return str_contains($tipo, 'Referenza Personale');
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     * @return array{importo: float, regola: Entity}|null
+     */
+    private function resultFromRuleId(string $ruleId, array $context, bool $allowNegative = false): ?array
+    {
+        $rule = $this->entityManager->getEntityById('RegolaProvvigionale', $ruleId);
+
+        if (!$rule || !$rule->get('attiva')) {
+            return null;
+        }
+
+        $importo = $this->calculator->calculateRule($rule, $context);
+
+        if ($importo === null) {
+            return null;
+        }
+
+        if ($allowNegative) {
+            if ($importo >= 0) {
+                return null;
+            }
+        } elseif ($importo <= 0) {
+            return null;
+        }
+
+        return [
+            'importo' => $importo,
+            'regola' => $rule,
+        ];
     }
 
     /**
@@ -544,7 +753,7 @@ class ProvvigioneManager
         if (
             $dateSource->getEntityType() === 'Quote'
             && $importo !== null
-            && $importo > 0
+            && (float) $importo !== 0.0
         ) {
             $provvigione->set(
                 'name',

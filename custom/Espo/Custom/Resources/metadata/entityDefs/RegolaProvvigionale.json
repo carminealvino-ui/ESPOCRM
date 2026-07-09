@@ -56,7 +56,8 @@
                 "Bonus (Sabato-Domenica)",
                 "Gara (Soglia >2.5k)",
                 "Gara (Soglia >3.5)",
-                "Gara (Soglia >5k)"
+                "Gara (Soglia >5k)",
+                "Referenza Personale"
             ],
             "default": "Provvigione Base",
             "isCustom": true

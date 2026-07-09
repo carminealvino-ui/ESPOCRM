@@ -37,8 +37,19 @@ INSERT INTO regola_provvigionale (
     'PercentualePlusvalenza',
     'Plus Provvigionale',
     35, NULL
+),
+(
+    'arielMinus35',
+    'Ariel 2026 — 35% su minusvalenza',
+    'Minus sotto listino codice (contatore minus/plus negativo)',
+    0, 1, 545,
+    'ARIEL_2026',
+    'PercentualePlusvalenza',
+    'Minus Provvigionale',
+    35, NULL
 )
 ON DUPLICATE KEY UPDATE
+    deleted = 0,
     name = VALUES(name),
     attiva = VALUES(attiva),
     priorita = VALUES(priorita),

@@ -69,7 +69,7 @@ class RegolaProvvigionaleCalculator
             'ImportoFissoPod' => $pods !== null && $pods > 0
                 ? round((float) $rule->get('importoFissoPod') * $pods, 2)
                 : null,
-            'PercentualePlusvalenza' => $this->percentOf(
+            'PercentualePlusvalenza' => $this->percentOfPlusvalenza(
                 $plusvalenza,
                 (float) $rule->get('percentuale')
             ),
@@ -87,9 +87,24 @@ class RegolaProvvigionaleCalculator
      */
     public function calculateBest(array $context): ?array
     {
+        return $this->calculateForTipoRecord($context, null);
+    }
+
+    /**
+     * Prima regola compatibile con il tipo record provvigione (se indicato).
+     *
+     * @param array<string, mixed> $context
+     * @return array{importo: float, regola: Entity}|null
+     */
+    public function calculateForTipoRecord(array $context, ?string $tipoRecord): ?array
+    {
         $rules = $this->findMatchingRules($context);
 
         foreach ($rules as $rule) {
+            if ($tipoRecord && $rule->get('tipoProvvigioneRecord') !== $tipoRecord) {
+                continue;
+            }
+
             $importo = $this->calculateRule($rule, $context);
 
             if ($importo !== null && $importo > 0) {
@@ -183,7 +198,16 @@ class RegolaProvvigionaleCalculator
 
     private function percentOf(?float $base, float $percent): ?float
     {
-        if ($base === null || $percent <= 0) {
+        if ($base === null || $base <= 0 || $percent <= 0) {
+            return null;
+        }
+
+        return round($base * $percent / 100, 2);
+    }
+
+    private function percentOfPlusvalenza(?float $base, float $percent): ?float
+    {
+        if ($base === null || $base === 0.0 || $percent <= 0) {
             return null;
         }
 
