@@ -12,7 +12,7 @@ Snapshot **congelato nel repository Git**: non viene sovrascritto dai deploy cur
 | `Hooks/Provvigione/AccrualAndAmount.php` | Senza calcolo legacy che sovrascrive importi |
 | `Hooks/Quote/SetPresentedWhenNumeroContratto.php` | Stato Bozza → In lavorazione |
 | `Hooks/Quote/AfterSaveTotaleProvvigioni.php` | Totale provvigioni su contratto |
-| `metadata/app/client.json` | CSS KPI + script init (da branch KPI v2) |
+| `metadata/app/client.json` | CSS KPI + script init (senza custom-product-button duplicato) |
 | `client/custom/css/crm-kpi-dashlet.css` | Layout dashlet KPI |
 
 Oppure **senza git** (server produzione):
@@ -40,6 +40,14 @@ Per il layout che ricordi (branch `fix-kpi-lordi-pianificati-9999`):
 
 ```bash
 curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-stato-provvigioni-9999/tools/deploy-kpi-layout-lordi-pianificati.sh?t=$(date +%s)" | bash
+```
+
+## Contratti completi (stato / finanziamento / provvigioni)
+
+Il backup sopra **non** include metadata Quote (statoContratto, finanziamento). Per fix completo:
+
+```bash
+curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-stato-provvigioni-9999/tools/deploy-contratto-completo.sh?t=$(date +%s)" | bash
 ```
 
 ## Non usare per KPI

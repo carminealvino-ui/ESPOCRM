@@ -61,6 +61,21 @@ for rel in "${FILES[@]}"; do
 done
 
 rm -f custom/Espo/Custom/Hooks/Quote/BeforeSave.php
+rm -f client/custom/src/custom-product-button.js
+rm -f custom/Espo/Custom/Resources/client/custom/src/custom-product-button.js
+
+if grep -q 'custom-product-button' custom/Espo/Custom/Resources/metadata/app/client.json 2>/dev/null; then
+  php -r '
+    $p = $argv[1];
+    $j = json_decode(file_get_contents($p), true);
+    foreach (["scriptList"] as $k) {
+      if (!isset($j[$k]) || !is_array($j[$k])) continue;
+      $j[$k] = array_values(array_filter($j[$k], fn($v) => $v !== "client/custom/src/custom-product-button.js"));
+    }
+    file_put_contents($p, json_encode($j, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+  ' custom/Espo/Custom/Resources/metadata/app/client.json
+  echo "OK: rimosso custom-product-button da client.json"
+fi
 
 mkdir -p data/cache/application data/cache/application/modules
 

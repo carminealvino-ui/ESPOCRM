@@ -1,0 +1,31 @@
+[
+    {
+        "name": "name",
+        "link": true,
+        "customLabel": "Descrizione"
+    },
+    {
+        "name": "tipo",
+        "width": 12
+    },
+    {
+        "name": "baseCalcolo",
+        "width": 14
+    },
+    {
+        "name": "importoBaseCalcolo",
+        "width": 12
+    },
+    {
+        "name": "tassoProvvigioni",
+        "width": 8
+    },
+    {
+        "name": "importoConsolidato",
+        "width": 11
+    },
+    {
+        "name": "regolaProvvigionale",
+        "width": 16
+    }
+]

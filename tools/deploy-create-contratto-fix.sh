@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Hotfix Crea Contratto + articoli Quote (getItemCatalogPrices).
+# DEPRECATO per fix completi: usare deploy-contratto-completo.sh (stato/finanziamento/provvigioni).
 #
 # Uso:
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-calendario-appuntamento-9999/tools/deploy-create-contratto-fix.sh" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-stato-provvigioni-9999/tools/deploy-create-contratto-fix.sh" | bash
 
 set -euo pipefail
 
@@ -70,6 +71,9 @@ if grep -qE '(^|[^a-zA-Z_])empty\(' custom/Espo/Custom/Resources/metadata/formul
 fi
 
 echo "=== Fatto: deploy createContratto + articoli Quote completato ==="
+echo ""
+echo "ATTENZIONE: per stato contratto/finanziamento e provvigioni corrette usare:"
+echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}/tools/deploy-contratto-completo.sh\" | bash"
 echo ""
 echo "NOTA: questo script NON modifica client.json né CSS KPI."
 echo "Per ripristinare il layout KPI:"

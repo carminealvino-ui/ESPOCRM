@@ -1,0 +1,12 @@
+{
+    "items": {
+        "index": 0,
+        "sticked": true
+    },
+    "finanziamento": {
+        "index": 1
+    },
+    "provvigioni": {
+        "index": 2
+    }
+}

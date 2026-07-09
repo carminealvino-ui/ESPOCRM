@@ -1,0 +1,28 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "statoFinanziamento"
+                }
+            ],
+            [
+                {
+                    "name": "tassoZero"
+                },
+                {
+                    "name": "importoFinanziato"
+                },
+                {
+                    "name": "rataPrestito"
+                },
+                {
+                    "name": "nrRate"
+                }
+            ]
+        ]
+    }
+]

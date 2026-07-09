@@ -1,7 +1,6 @@
 {
     "scriptList": [
         "__APPEND__",
-        "client/custom/src/custom-product-button.js",
         "client/custom/src/init/auth-token-redirect.js",
         "client/custom/src/init/popup-notifications-ordered.js"
     ],
