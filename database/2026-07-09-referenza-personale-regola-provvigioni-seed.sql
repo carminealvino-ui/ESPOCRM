@@ -7,12 +7,12 @@ INSERT INTO regola_provvigionale (
 (
     'referenzaPersonale',
     'Referenza Personale',
-    'Appuntamento con tipo Referenza Personale — % su imponibile (modificabile da Regole provvigionali)',
+    'Appuntamento con tipo Referenza Personale — 6% su imponibile (modificabile da Regole provvigionali)',
     0, 1, 620,
     'ARIEL_2026',
     'PercentualeImponibile',
     'Referenza Personale',
-    10
+    6
 )
 ON DUPLICATE KEY UPDATE
     deleted = 0,
