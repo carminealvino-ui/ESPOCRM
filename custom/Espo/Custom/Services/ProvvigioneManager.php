@@ -363,7 +363,7 @@ class ProvvigioneManager
             $baseResult,
             $context,
             'Provvigione Base',
-            'ARIEL-BASE-' . ($quote->get('number') ?? $quote->getId())
+            null
         );
 
         if ($context['plusvalenza'] !== null && $context['plusvalenza'] > 0) {
@@ -380,7 +380,7 @@ class ProvvigioneManager
                         ['importo' => $plusImporto, 'regola' => $plusRule],
                         $context,
                         'Plus Provvigionale',
-                        'ARIEL-PLUS35-' . ($quote->get('number') ?? $quote->getId())
+                        null
                     );
                 }
             }
@@ -402,7 +402,7 @@ class ProvvigioneManager
         ?array $result,
         array $context,
         string $tipo,
-        ?string $nameSuffix
+        ?string $nameSuffix = null
     ): ?Entity {
         $provvigione = $this->findProvvigione(
             'Consolidata',
@@ -420,18 +420,27 @@ class ProvvigioneManager
             $quote
         );
 
+        $clienteId = $quote->get('accountId') ?: $opportunity->get('accountId');
+        $clienteName = $quote->get('accountName') ?: $opportunity->get('accountName');
+
         $provvigione->set([
             'tipo' => $tipo,
             'contrattoId' => $quote->getId(),
             'contrattoName' => $quote->get('name'),
             'opportunitaId' => $opportunity->getId(),
             'opportunitaName' => $opportunity->get('name'),
-            'clienteId' => $quote->get('accountId'),
-            'clienteName' => $quote->get('accountName'),
+            'clienteId' => $clienteId,
+            'clienteName' => $clienteName,
         ]);
 
-        if ($nameSuffix) {
-            $provvigione->set('name', $nameSuffix);
+        $importo = $provvigione->get('importoConsolidato') ?? $provvigione->get('importo');
+
+        if ($importo !== null && $importo !== '') {
+            $importoRounded = round((float) $importo, 2);
+            $provvigione->set([
+                'importo' => $importoRounded,
+                'importoConsolidato' => $importoRounded,
+            ]);
         }
 
         $this->saveProvvigioneEntity($provvigione);

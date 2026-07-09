@@ -53,6 +53,9 @@ php clear_cache.php
 
 echo ""
 echo "=== Fatto PR #99 ==="
+echo "Se GET /Provvigione dà 500 InvitoAFatturare, eseguire prima:"
+echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/provvigione-layout-pulizia-9999/tools/deploy-invitoa-fatturare-metadata.sh?t=\$(date +%s)\" | bash"
+echo ""
 echo "Per ricalcolare TUTTI i contratti:"
 echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}/tools/deploy-ricalcola-provvigioni-tutti.sh?t=\$(date +%s)\" | bash"
 echo ""
