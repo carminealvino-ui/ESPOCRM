@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # Hotfix Crea Contratto + articoli Quote (getItemCatalogPrices).
+# NON tocca metadata Quote (stato/finanziamento → PR #90).
+# NON tocca provvigioni (→ deploy-provvigioni-imponibile-netto.sh PR #99).
 #
 # Uso:
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-calendario-appuntamento-9999/tools/deploy-create-contratto-fix.sh" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-stato-provvigioni-9999/tools/deploy-create-contratto-fix.sh" | bash
 
 set -euo pipefail
 
@@ -47,34 +49,23 @@ fetch custom/Espo/Custom/Services/ProvvigioneManager.php
 # Rimuove hook legacy incompatibile Espo 10 (Espo\Core\Hooks\Base).
 rm -f custom/Espo/Custom/Hooks/Quote/BeforeSave.php
 
-# Metadata Quote (NON toccare client.json / CSS KPI — usare deploy-restore-kpi-layout.sh)
-fetch custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
-fetch custom/Espo/Custom/Resources/metadata/formula/Quote.json
-fetch custom/Espo/Custom/Resources/metadata/formula/QuoteItem.json
-
-# Frontend articoli contratto
+# Frontend articoli contratto (NON deployare Quote.json — regressione stati, usare PR #90)
 fetch client/custom/src/handlers/quote/catalog-prices.js
 fetch client/custom/src/views/quote/fields/item-list.js
 fetch client/custom/src/views/quote/record/item.js
 fetch custom/Espo/Custom/Resources/client/custom/src/handlers/quote/catalog-prices.js
 fetch custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
 fetch custom/Espo/Custom/Resources/client/custom/src/views/quote/record/item.js
-fetch tools/migrate-ricalcola-provvigioni-contratti.php
 
 php clear_cache.php
 php rebuild.php
 
-if grep -qE '(^|[^a-zA-Z_])empty\(' custom/Espo/Custom/Resources/metadata/formula/Quote.json custom/Espo/Custom/Resources/metadata/formula/QuoteItem.json 2>/dev/null; then
-  echo "ERRORE: formula Quote/QuoteItem contiene chiamata empty() non supportata da Espo" >&2
-  exit 1
-fi
-
 echo "=== Fatto: deploy createContratto + articoli Quote completato ==="
 echo ""
-echo "NOTA: questo script NON modifica client.json né CSS KPI."
-echo "Per ripristinare il layout KPI:"
-echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-stato-provvigioni-9999/tools/deploy-restore-kpi-layout.sh\" | bash"
+echo "Per metadata stato/finanziamento (PR #90):"
+echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-quote-9999/tools/deploy-fix-contratto-quote-9999.sh\" | bash"
 echo ""
-echo "Per aggiornare TUTTI i contratti (provvigioni + stato):"
-echo "  php tools/migrate-ricalcola-provvigioni-contratti.php"
-echo "  php tools/migrate-ricalcola-provvigioni-contratti.php --dry-run"
+echo "Per provvigioni imponibile netto (PR #99):"
+echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}/tools/deploy-provvigioni-imponibile-netto.sh\" | bash"
+echo ""
+echo "NOTA: questo script NON modifica client.json né CSS KPI."
