@@ -9,11 +9,12 @@ use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Date attivazione/installazione, liquidazione prevista, scostamenti e calcolo legacy.
+ * Date attivazione/installazione, liquidazione prevista e scostamenti.
+ * Il calcolo importi è delegato a ProvvigioneManager (regole provvigionali).
  */
 class AccrualAndAmount implements BeforeSave
 {
-    public static int $order = 9;
+    public static int $order = 1;
 
     public function __construct(
         private EntityManager $entityManager,
@@ -22,9 +23,39 @@ class AccrualAndAmount implements BeforeSave
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
+        $this->ensurePlaceholderName($entity);
+
+        if ($options->get('skipHooks') || $options->get('skipRules')) {
+            $this->applyAccrualDates($entity);
+            $this->applyScostamento($entity);
+
+            return;
+        }
+
         $this->applyAccrualDates($entity);
         $this->applyScostamento($entity);
-        $this->applyLegacyQuoteCalculation($entity);
+    }
+
+    private function ensurePlaceholderName(Entity $entity): void
+    {
+        if ($entity->get('name')) {
+            return;
+        }
+
+        $tipo = $entity->get('tipo') ?: 'Provvigione Base';
+
+        if ($entity->get('contrattoId')) {
+            $quote = $this->entityManager->getEntityById('Quote', $entity->get('contrattoId'));
+
+            if ($quote) {
+                $ref = $quote->get('number') ?: $quote->getId();
+                $entity->set('name', $ref . ' — ' . $tipo);
+
+                return;
+            }
+        }
+
+        $entity->set('name', 'PROVV-' . $tipo);
     }
 
     private function applyAccrualDates(Entity $entity): void
@@ -85,67 +116,6 @@ class AccrualAndAmount implements BeforeSave
                 'scostamentoImporto',
                 (float) $consolidato - (float) $previsto
             );
-        }
-    }
-
-    private function applyLegacyQuoteCalculation(Entity $entity): void
-    {
-        if (!$entity->get('contrattoId')) {
-            return;
-        }
-
-        if ($entity->get('statoProvvigione') === 'Prevista') {
-            return;
-        }
-
-        $quote = $this->entityManager
-            ->getRDBRepository('Quote')
-            ->where(['id' => $entity->get('contrattoId')])
-            ->findOne();
-
-        if (!$quote) {
-            return;
-        }
-
-        $tipo = $entity->get('tipo');
-        $tasso = (float) $entity->get('tassoProvvigioni');
-
-        $base = 0.0;
-
-        if ($tipo === 'Provvigione Base') {
-            $base = (float) $quote->get('amount');
-        } elseif ($tipo === 'Plus Provvigionale' || $tipo === 'Minus Provvigionale') {
-            $base = (float) $quote->get('minusPlus');
-        } elseif ($tipo === 'Bonus (Sabato-Domenica)') {
-            $date = $quote->get('dateQuoted');
-
-            if ($date) {
-                $day = date('N', strtotime($date));
-
-                if ($day >= 6) {
-                    $base = (float) $quote->get('amount');
-                }
-            }
-        } elseif ($tipo && strpos($tipo, 'Gara') !== false) {
-            $amount = (float) $quote->get('amount');
-
-            if (strpos($tipo, '2.5') !== false && $amount > 2500) {
-                $base = $amount;
-            }
-
-            if (strpos($tipo, '3.5') !== false && $amount > 3500) {
-                $base = $amount;
-            }
-
-            if (strpos($tipo, '5') !== false && $amount > 5000) {
-                $base = $amount;
-            }
-        }
-
-        if ($base > 0 && $tasso > 0) {
-            $importo = ($base * $tasso) / 100;
-            $entity->set('importo', $importo);
-            $entity->set('importoConsolidato', $importo);
         }
     }
 }

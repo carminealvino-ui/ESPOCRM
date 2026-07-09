@@ -110,7 +110,7 @@ class ProvvigioneManager
             $appuntamento
         );
 
-        $this->entityManager->saveEntity($provvigione, ['silent' => true]);
+        $this->saveProvvigioneEntity($provvigione);
 
         return $provvigione;
     }
@@ -206,6 +206,102 @@ class ProvvigioneManager
             'silent' => true,
             'skipFormula' => true,
         ]);
+    }
+
+    /**
+     * Ricalcola tutte le provvigioni consolidate del contratto tramite regole.
+     *
+     * @return array{created: int, updated: int, purged: int}
+     */
+    public function recalculateAllForQuote(Entity $quote): array
+    {
+        $opportunity = $this->resolveOpportunityForQuote($quote, null);
+
+        if (!$opportunity) {
+            return ['created' => 0, 'updated' => 0, 'purged' => 0];
+        }
+
+        $purged = $this->purgeProvvigioniForQuote($quote->getId());
+        $this->syncQuotePricingFields($quote, $opportunity);
+
+        $this->createConsolidataForQuote($opportunity, $quote);
+        $this->refreshQuoteTotaleProvvigioni($quote);
+
+        $count = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quote->getId()])
+            ->count();
+
+        return [
+            'created' => $count,
+            'updated' => 0,
+            'purged' => $purged,
+        ];
+    }
+
+    private function saveProvvigioneEntity(Entity $provvigione): void
+    {
+        $this->entityManager->saveEntity($provvigione, [
+            'skipHooks' => true,
+            'silent' => true,
+            'skipFormula' => true,
+        ]);
+    }
+
+    private function purgeProvvigioniForQuote(string $quoteId): int
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quoteId])
+            ->find();
+
+        $count = 0;
+
+        foreach ($collection as $provvigione) {
+            $this->entityManager->removeEntity($provvigione);
+            $count++;
+        }
+
+        return $count;
+    }
+
+    private function syncQuotePricingFields(Entity $quote, Entity $opportunity): void
+    {
+        $this->quotePricingCalculator->syncOnBeforeSave($quote);
+
+        $imponibile = $this->resolveQuoteImponibile($quote, $opportunity);
+        $prezzoCodice = $this->floatField($quote, 'prezzoCodiceIvaEsclusa')
+            ?? $this->floatField($opportunity, 'prezzoCodiceIvaEsclusa');
+        $prezzoListino = $this->floatField($quote, 'prezzoListinoIvaEsclusa')
+            ?? $this->floatField($opportunity, 'prezzoListinoIvaEsclusa');
+
+        if ($imponibile !== null && $prezzoCodice !== null) {
+            $quote->set('minusPlus', round($imponibile - $prezzoCodice, 2));
+        }
+
+        if ($imponibile !== null && $prezzoListino !== null && $prezzoListino > 0) {
+            $quote->set(
+                'margineSuListino',
+                round((($imponibile - $prezzoListino) / $prezzoListino) * 100, 2)
+            );
+        }
+
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+            'silent' => true,
+            'skipFormula' => true,
+        ]);
+    }
+
+    private function resolveOpportunityForQuote(Entity $quote, ?Entity $provvigione): ?Entity
+    {
+        $opportunityId = $quote->get('opportunityId') ?: $provvigione?->get('opportunitaId');
+
+        if (!$opportunityId) {
+            return null;
+        }
+
+        return $this->entityManager->getEntityById('Opportunity', $opportunityId);
     }
 
     /**
@@ -340,7 +436,7 @@ class ProvvigioneManager
             }
         }
 
-        $this->entityManager->saveEntity($provvigione, ['silent' => true]);
+        $this->saveProvvigioneEntity($provvigione);
 
         return $provvigione;
     }
@@ -526,7 +622,7 @@ class ProvvigioneManager
             'name' => 'PLUS-CP5-' . ($quote->get('number') ?? $quote->getId()),
         ]);
 
-        $this->entityManager->saveEntity($plus, ['silent' => true]);
+        $this->saveProvvigioneEntity($plus);
     }
 
     private function resolvePrezzoListino(?Entity $source, ?Entity $opportunity): ?float

@@ -38,6 +38,7 @@ fetch custom/Espo/Custom/Tools/Quote/Api/PostGetItemCatalogPrices.php
 fetch custom/Espo/Custom/Services/QuotePricingCalculator.php
 fetch custom/Espo/Custom/Services/QuoteProvvigioniSync.php
 fetch custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
+fetch custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php
 fetch custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php
 fetch custom/Espo/Custom/Hooks/Quote/SetPresentedWhenNumeroContratto.php
 fetch custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
@@ -60,6 +61,7 @@ fetch client/custom/src/views/quote/record/item.js
 fetch custom/Espo/Custom/Resources/client/custom/src/handlers/quote/catalog-prices.js
 fetch custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
 fetch custom/Espo/Custom/Resources/client/custom/src/views/quote/record/item.js
+fetch tools/migrate-ricalcola-provvigioni-contratti.php
 
 php clear_cache.php
 php rebuild.php
@@ -70,3 +72,7 @@ if grep -qE '(^|[^a-zA-Z_])empty\(' custom/Espo/Custom/Resources/metadata/formul
 fi
 
 echo "=== Fatto: deploy createContratto + articoli Quote completato ==="
+echo ""
+echo "Per aggiornare TUTTI i contratti (provvigioni + stato):"
+echo "  php tools/migrate-ricalcola-provvigioni-contratti.php"
+echo "  php tools/migrate-ricalcola-provvigioni-contratti.php --dry-run"
