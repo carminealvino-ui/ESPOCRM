@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
-# Deploy fix contratto (Quote): ordinamento, finanziamento sotto articoli, provvigioni corrette.
-set -euo pipefail
+# PR #90 — Deploy Contratto: stato, finanziamento, layout, pannelli.
+# NON include fix provvigioni imponibile netto (deployare dopo PR #99).
+#
+# Ordine consigliato in produzione:
+#   1. questo script (PR #90)
+#   2. deploy-provvigioni-imponibile-netto.sh (PR #99)
+#   3. deploy-doppio-crea-prodotto.sh (PR #9)
+#
+# Uso:
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-quote-9999/tools/deploy-fix-contratto-quote-9999.sh?t=$(date +%s)" | bash
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 BRANCH="${BRANCH:-cursor/fix-contratto-quote-9999}"
@@ -197,4 +205,10 @@ php tools/verify-contratto-quote-deploy.php
 
 echo ""
 echo "Fatto. Ctrl+Shift+R nel browser."
-echo "Atteso: Articoli → Finanziamento → Provvigioni; totale = somma importo consolidato."
+echo "Atteso: Stato Contratto / Finanziamento valorizzati; pannelli Articoli → Finanziamento → Provvigioni."
+echo ""
+echo "Prossimo passo (PR #99 — provvigioni su imponibile netto):"
+echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-stato-provvigioni-9999/tools/deploy-provvigioni-imponibile-netto.sh?t=\$(date +%s)\" | bash"
+echo ""
+echo "Poi (PR #9 — un solo pulsante Crea prodotto):"
+echo "  curl -fsSL \"https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-doppio-crea-prodotto-9999/tools/deploy-doppio-crea-prodotto.sh?t=\$(date +%s)\" | bash"
