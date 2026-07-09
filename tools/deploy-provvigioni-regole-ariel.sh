@@ -43,17 +43,33 @@ php rebuild.php
 
 echo ""
 echo "=== Seed regole provvigionali ==="
-DB_HOST=$(php -r '$c=include "data/config.php"; echo $c["database"]["host"] ?? "localhost";')
-DB_NAME=$(php -r '$c=include "data/config.php"; echo $c["database"]["dbname"];')
-DB_USER=$(php -r '$c=include "data/config.php"; echo $c["database"]["user"];')
-DB_PASS=$(php -r '$c=include "data/config.php"; echo $c["database"]["password"];')
+DB_PASS="$(sed -n "s/.*'password' => '\([^']*\)'.*/\1/p" data/config-internal.php | head -1)"
+DB_USER="$(sed -n "s/.*'user' => '\([^']*\)'.*/\1/p" data/config-internal.php | head -1)"
+DB_NAME="$(sed -n "s/.*'dbname' => '\([^']*\)'.*/\1/p" data/config-internal.php | head -1)"
+DB_HOST="$(sed -n "s/.*'host' => '\([^']*\)'.*/\1/p" data/config-internal.php | head -1)"
+DB_NAME="${DB_NAME:-telcalli_espo}"
+DB_HOST="${DB_HOST:-localhost}"
+
+if [[ -z "${DB_USER}" || -z "${DB_PASS}" ]]; then
+  echo "ERRORE: credenziali DB non lette da data/config-internal.php" >&2
+  exit 1
+fi
+
+CNF="$(mktemp)"
+chmod 600 "${CNF}"
+trap 'rm -f "${CNF}"' EXIT
+printf '[client]\nhost=%s\nuser=%s\npassword=%s\ndatabase=%s\n' \
+  "${DB_HOST}" "${DB_USER}" "${DB_PASS}" "${DB_NAME}" > "${CNF}"
+
+MYSQL_BIN="mariadb"
+command -v mariadb >/dev/null 2>&1 || MYSQL_BIN="mysql"
 
 for sql in \
   database/2026-05-26-gdl-ariel-2026-regole-provvigioni-seed.sql \
   database/2026-07-06-bonus-weekend-regola-provvigioni-seed.sql \
   database/2026-07-09-referenza-personale-regola-provvigioni-seed.sql
 do
-  mysql -h "${DB_HOST}" -u "${DB_USER}" -p"${DB_PASS}" "${DB_NAME}" < "${sql}"
+  "${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" < "${sql}"
   echo "OK ${sql}"
 done
 
