@@ -4,8 +4,5 @@
     },
     "InvitoAFatturare": {
         "generaDaProvvigioni": "Espo\\Custom\\Actions\\InvitoAFatturare\\GeneraDaProvvigioni"
-    },
-    "Quote": {
-        "ricalcolaProvvigioni": "Espo\\Custom\\Actions\\Quote\\RicalcolaProvvigioni"
     }
 }

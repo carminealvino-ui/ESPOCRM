@@ -47,9 +47,7 @@
         },
         "numberA": {
             "prefix": "Contratto_",
-            "nextNumber": 143,
-            "readOnly": true,
-            "isCustom": true
+            "nextNumber": 2
         },
         "totalPrezzoCodice": {
             "type": "currency",
@@ -116,10 +114,6 @@
             "type": "currency",
             "isCustom": true
         },
-        "prezzoCodiceIvaInclusa": {
-            "type": "currency",
-            "isCustom": true
-        },
         "margineSuListino": {
             "type": "float",
             "decimalPlaces": 2,
@@ -140,128 +134,6 @@
             "type": "bool",
             "default": false,
             "isCustom": true
-        },
-        "codiceContratto": {
-            "type": "varchar",
-            "maxLength": 100,
-            "options": [],
-            "isCustom": true
-        },
-        "numeroContratto": {
-            "type": "varchar",
-            "maxLength": 100,
-            "options": [],
-            "isCustom": true
-        },
-        "venditaAbbinataAdAltroProdotto": {
-            "type": "bool",
-            "default": false,
-            "isCustom": true
-        },
-        "scontoVenditaAbbinata": {
-            "notNull": false,
-            "type": "float",
-            "isCustom": true
-        },
-        "finanziamento": {
-            "type": "bool",
-            "default": false,
-            "isCustom": true
-        },
-        "statoFinanziamento": {
-            "type": "enum",
-            "options": [
-                "",
-                "In lavorazione",
-                "In rivalutazione",
-                "In Attesa Documentazione",
-                "Approvato",
-                "Respinto",
-                "Annullato"
-            ],
-            "style": {
-                "": null,
-                "In lavorazione": null,
-                "In rivalutazione": null,
-                "In Attesa Documentazione": null,
-                "Approvato": null,
-                "Respinto": null,
-                "Annullato": null
-            },
-            "default": null,
-            "isCustom": true
-        },
-        "importoCaparra": {
-            "type": "currency",
-            "isCustom": true
-        },
-        "importoFinanziato": {
-            "type": "currency",
-            "isCustom": true
-        },
-        "nrRate": {
-            "type": "int",
-            "isCustom": true
-        },
-        "tassoZero": {
-            "type": "bool",
-            "default": false,
-            "isCustom": true
-        },
-        "rataPrestito": {
-            "type": "currency",
-            "isCustom": true
-        },
-        "importoSaldo": {
-            "type": "currency",
-            "isCustom": true
-        },
-        "statoContratto": {
-            "type": "enum",
-            "options": [
-                "",
-                "Inserito",
-                "In lavorazione",
-                "Appuntamento Fissato",
-                "Installato",
-                "Sospeso",
-                "Annullato",
-                "Recesso"
-            ],
-            "style": {
-                "": null,
-                "Inserito": null,
-                "In lavorazione": null,
-                "Appuntamento Fissato": null,
-                "Installato": null,
-                "Sospeso": null,
-                "Annullato": null,
-                "Recesso": null
-            },
-            "default": "Inserito",
-            "isCustom": true
-        },
-        "status": {
-            "options": [
-                "Draft",
-                "Presented",
-                "In lavorazione",
-                "Approved",
-                "Installato",
-                "Recesso",
-                "Finanziamento Rifiutato",
-                "Canceled"
-            ],
-            "style": {
-                "Draft": null,
-                "Presented": "primary",
-                "In lavorazione": "primary",
-                "Approved": "info",
-                "Installato": "success",
-                "Recesso": "danger",
-                "Finanziamento Rifiutato": "warning",
-                "Canceled": "info"
-            }
         }
     },
     "links": {
@@ -310,7 +182,7 @@
         }
     },
     "collection": {
-        "orderBy": "dateQuoted",
+        "orderBy": "createdAt",
         "order": "desc",
         "textFilterFields": [
             "name",

@@ -9,25 +9,11 @@ use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Ricalcola provvigioni consolidate ad ogni salvataggio contratto.
+ * Ricalcola provvigione consolidata quando cambiano importi o date attivazione.
  */
 class ProvvigioneConsolidata implements AfterSave
 {
     public static int $order = 15;
-
-    /** @var list<string> */
-    private const PRICING_FIELDS = [
-        'itemList',
-        'amount',
-        'taxAmount',
-        'grandTotalAmount',
-        'totalPrezzoCodice',
-        'prezzoCodiceIvaEsclusa',
-        'prezzoCodiceIvaInclusa',
-        'minusPlus',
-        'importoContratto',
-        'isTaxInclusive',
-    ];
 
     public function __construct(
         private EntityManager $entityManager,
@@ -40,35 +26,50 @@ class ProvvigioneConsolidata implements AfterSave
             return;
         }
 
-        if (!$entity->getId()) {
+        if (!$entity->get('opportunityId')) {
             return;
         }
 
-        if (!$this->shouldRecalculate($entity)) {
-            return;
-        }
+        $watch = [
+            'amount',
+            'taxAmount',
+            'grandTotalAmount',
+            'importoContratto',
+            'numeroContratto',
+            'number',
+            'dataAttivazione',
+            'dataInstallazione',
+            'productCategoryId',
+            'minusPlus',
+            'prezzoListinoIvaEsclusa',
+            'prezzoCodiceIvaEsclusa',
+            'margineSuListino',
+            'contattoPersonaleArquati',
+            'isTaxInclusive',
+        ];
 
-        $quote = $this->entityManager->getEntityById('Quote', $entity->getId());
+        $changed = false;
 
-        if (!$quote || !$quote->get('opportunityId')) {
-            return;
-        }
-
-        $this->provvigioneManager->recalculateAllForQuote($quote);
-    }
-
-    private function shouldRecalculate(Entity $entity): bool
-    {
-        if ($entity->isNew()) {
-            return (bool) $entity->get('opportunityId');
-        }
-
-        foreach (self::PRICING_FIELDS as $field) {
+        foreach ($watch as $field) {
             if ($entity->isAttributeChanged($field)) {
-                return true;
+                $changed = true;
+                break;
             }
         }
 
-        return false;
+        if (!$changed && !$entity->isNew()) {
+            return;
+        }
+
+        $opportunity = $this->entityManager->getEntityById(
+            'Opportunity',
+            $entity->get('opportunityId')
+        );
+
+        if (!$opportunity) {
+            return;
+        }
+
+        $this->provvigioneManager->createConsolidataForQuote($opportunity, $entity);
     }
 }
