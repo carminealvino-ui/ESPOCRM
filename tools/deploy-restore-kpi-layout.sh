@@ -5,8 +5,9 @@
 # Uso:
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-contratto-stato-provvigioni-9999/tools/deploy-restore-kpi-layout.sh" | bash
 #
-# Deploy completo KPI v2 (template, JS, service):
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-dashlet-v2-9999/tools/deploy-crm-kpi-v2-hotfix.sh" | bash
+# Deploy completo KPI v2 (template, JS, service) — ATTENZIONE:
+# NON usare deploy-crm-kpi-v2-hotfix.sh da solo: sovrascrive Appuntamento.php con getContainer() (Espo 10 500).
+# Usare prima restore-stato-noto-buono.sh oppure deploy-kpi-fix-500.sh dopo il v2.
 
 set -euo pipefail
 
@@ -33,6 +34,5 @@ php clear_cache.php
 php rebuild.php
 
 echo "=== Fatto: layout KPI ripristinato (branch ${BRANCH}) ==="
-echo "Controller Appuntamento/CrmKpi aggiornati (fix getContainer Espo 10)."
-echo "Se il layout non torna corretto, esegui anche deploy-crm-kpi-v2-hotfix.sh dalla stessa branch."
-echo "Solo errore 500 API: tools/deploy-kpi-fix-500.sh"
+echo "Controller Appuntamento/CrmKpi: usare branch fix-contratto-stato-provvigioni-9999 (deploy-kpi-fix-500.sh)."
+echo "Restore completo noto-buono: tools/restore-stato-noto-buono.sh"
