@@ -156,7 +156,56 @@ class ProvvigioneManager
 
         $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
 
+        $this->refreshQuoteTotaleProvvigioni($quote);
+
         return $provvigione;
+    }
+
+    public function resolveTotaleProvvigioniForQuoteId(string $quoteId): ?float
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quoteId])
+            ->find();
+
+        $totale = 0.0;
+
+        foreach ($collection as $provvigione) {
+            if ($provvigione->get('statoProvvigione') === 'Stornata') {
+                continue;
+            }
+
+            if ($provvigione->get('statoProvvigione') === 'Prevista') {
+                continue;
+            }
+
+            $importo = $provvigione->get('importoConsolidato');
+
+            if ($importo === null || $importo === '') {
+                continue;
+            }
+
+            $totale += (float) $importo;
+        }
+
+        return $totale > 0 ? round($totale, 2) : null;
+    }
+
+    public function refreshQuoteTotaleProvvigioni(Entity $quote): void
+    {
+        if (!$quote->getId()) {
+            return;
+        }
+
+        $totale = $this->resolveTotaleProvvigioniForQuoteId($quote->getId());
+
+        $quote->set('totaleProvvigioni', $totale);
+
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+            'silent' => true,
+            'skipFormula' => true,
+        ]);
     }
 
     /**
@@ -233,6 +282,8 @@ class ProvvigioneManager
                 }
             }
         }
+
+        $this->refreshQuoteTotaleProvvigioni($quote);
 
         return $base;
     }

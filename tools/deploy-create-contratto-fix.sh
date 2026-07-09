@@ -38,6 +38,7 @@ fetch custom/Espo/Custom/Tools/Quote/Api/PostGetItemCatalogPrices.php
 fetch custom/Espo/Custom/Services/QuotePricingCalculator.php
 fetch custom/Espo/Custom/Services/QuoteProvvigioniSync.php
 fetch custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
+fetch custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php
 fetch custom/Espo/Custom/Hooks/Quote/SetPresentedWhenNumeroContratto.php
 fetch custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
 fetch custom/Espo/Custom/Services/ProvvigioneManager.php
