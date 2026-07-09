@@ -434,15 +434,6 @@ class ProvvigioneManager
             $provvigione->set('name', $nameSuffix);
         }
 
-        if ($tipo === 'Provvigione Base') {
-            $prevista = $this->findProvvigione('Prevista', opportunitaId: $opportunity->getId())
-                ?? $this->findProvvigione('Prevista', appuntamentoId: $opportunity->get('appuntamentoId'));
-
-            if ($prevista) {
-                $provvigione->set('importoPrevisto', $prevista->get('importoPrevisto') ?? $prevista->get('importo'));
-            }
-        }
-
         $this->saveProvvigioneEntity($provvigione);
 
         return $provvigione;
@@ -485,12 +476,12 @@ class ProvvigioneManager
         $eventDate = $this->accrual->resolveEventDate($dataAttivazione, $dataInstallazione);
 
         $giorni = $rule?->get('giorniLiquidazione') ?? $this->accrual->getLiquidationDays($regime);
+        $tipoRecord = $rule?->get('tipoProvvigioneRecord') ?? 'Provvigione Base';
 
         $provvigione->set([
-            'name' => ($stato === 'Prevista' ? 'PREV-' : 'CONS-') . ($parent->get('name') ?? $parent->getId()),
             'statoProvvigione' => $stato,
             'regimeProvvigione' => $regime,
-            'tipo' => $rule?->get('tipoProvvigioneRecord') ?? 'Provvigione Base',
+            'tipo' => $tipoRecord,
             'productCategoryId' => $category?->getId(),
             'productCategoryName' => $category?->get('name') ?? $parent->get('productCategoryName'),
             'fornitorePartnerId' => $parent->get('fornitorePartnerId'),
@@ -506,17 +497,14 @@ class ProvvigioneManager
         ]);
 
         if ($rule) {
+            $baseCalcolo = $this->resolveBaseCalcolo($rule, $context);
+
             $provvigione->set([
                 'regolaProvvigionaleId' => $rule->getId(),
                 'regolaProvvigionaleName' => $rule->get('name'),
-                'tassoProvvigioni' => $rule->get('percentuale') ?? $rule->get('coefficiente'),
-            ]);
-        }
-
-        if (isset($context['imponibile']) && $provvigione->hasAttribute('importoBaseCalcolo')) {
-            $provvigione->set([
-                'baseCalcolo' => 'ImponibileContratto',
-                'importoBaseCalcolo' => round((float) $context['imponibile'], 2),
+                'tassoProvvigioni' => $this->resolveDisplayTasso($rule),
+                'baseCalcolo' => $baseCalcolo['baseCalcolo'],
+                'importoBaseCalcolo' => $baseCalcolo['importoBaseCalcolo'],
             ]);
         }
 
@@ -536,10 +524,23 @@ class ProvvigioneManager
                 'importoConsolidato' => null,
             ]);
         } else {
+            $importoRounded = $importo !== null ? round((float) $importo, 2) : null;
+
             $provvigione->set([
-                'importoConsolidato' => $importo,
-                'importo' => $importo,
+                'importoConsolidato' => $importoRounded,
+                'importo' => $importoRounded,
             ]);
+        }
+
+        if (
+            $dateSource->getEntityType() === 'Quote'
+            && $importo !== null
+            && $importo > 0
+        ) {
+            $provvigione->set(
+                'name',
+                $this->buildProvvigioneDisplayName($dateSource, $tipoRecord, (float) $importo)
+            );
         }
     }
 
@@ -723,5 +724,79 @@ class ProvvigioneManager
         }
 
         return (float) $value;
+    }
+
+    /**
+     * @param array<string, mixed>|null $context
+     * @return array{baseCalcolo: string, importoBaseCalcolo: float|null}
+     */
+    private function resolveBaseCalcolo(?Entity $rule, ?array $context): array
+    {
+        $tipo = $rule?->get('tipoCalcolo') ?? 'PercentualeImponibile';
+
+        return match ($tipo) {
+            'PercentualePlusvalenza' => [
+                'baseCalcolo' => 'Plusvalenza',
+                'importoBaseCalcolo' => isset($context['plusvalenza'])
+                    ? round((float) $context['plusvalenza'], 2)
+                    : null,
+            ],
+            'PercentualeMargine' => [
+                'baseCalcolo' => 'MargineSuListino',
+                'importoBaseCalcolo' => isset($context['imponibile'])
+                    ? round((float) $context['imponibile'], 2)
+                    : null,
+            ],
+            'CoefficienteCanone' => [
+                'baseCalcolo' => 'CanoneMensile',
+                'importoBaseCalcolo' => isset($context['canoneMensile'])
+                    ? round((float) $context['canoneMensile'], 2)
+                    : null,
+            ],
+            'GettoneFisso' => [
+                'baseCalcolo' => 'GettoneFisso',
+                'importoBaseCalcolo' => $this->floatField($rule, 'gettoneImporto'),
+            ],
+            'ImportoFissoPod' => [
+                'baseCalcolo' => 'NumeroPod',
+                'importoBaseCalcolo' => isset($context['numeroPod'])
+                    ? (float) (int) $context['numeroPod']
+                    : null,
+            ],
+            default => [
+                'baseCalcolo' => 'ImponibileContratto',
+                'importoBaseCalcolo' => isset($context['imponibile'])
+                    ? round((float) $context['imponibile'], 2)
+                    : null,
+            ],
+        };
+    }
+
+    private function resolveDisplayTasso(?Entity $rule): ?float
+    {
+        if (!$rule) {
+            return null;
+        }
+
+        $percent = $this->floatField($rule, 'percentuale');
+        $add = $this->floatField($rule, 'percentualeAddizionale');
+
+        if ($rule->get('tipoCalcolo') === 'PercentualeImponibileAddizionale' && $percent !== null && $add !== null) {
+            return round($percent + $add, 2);
+        }
+
+        return $percent ?? $this->floatField($rule, 'coefficiente');
+    }
+
+    private function buildProvvigioneDisplayName(Entity $quote, string $tipo, float $importo): string
+    {
+        $cliente = strtoupper(trim((string) ($quote->get('accountName') ?? 'Cliente')));
+
+        return sprintf(
+            '%s - %s - €. %s',
+            $cliente,
+            strtoupper($tipo),
+            number_format($importo, 2, '.', '')
+        );
     }
 }

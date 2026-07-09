@@ -40,6 +40,8 @@ for rel in "${FILES[@]}"; do
   fetch "${rel}"
 done
 
+rm -f custom/Espo/Custom/Hooks/Provvigione/BeforeSaveLegacy.php
+
 php clear_cache.php
 php rebuild.php
 
