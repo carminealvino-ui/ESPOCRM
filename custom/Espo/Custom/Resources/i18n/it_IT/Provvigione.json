@@ -1,18 +1,18 @@
 {
     "fields": {
+        "tipo": "Tipo provvigione",
+        "cliente": "Cliente",
+        "contratto": "Contratto",
+        "importo": "Importo",
+        "tassoProvvigioni": "Tasso / coefficiente %",
+        "baseCalcolo": "Base del calcolo",
+        "importoBaseCalcolo": "Importo base",
         "statoProvvigione": "Stato provvigione",
         "regimeProvvigione": "Regime provvigionale",
-        "dataInstallazione": "Data installazione",
-        "dataAttivazione": "Data attivazione servizio",
-        "dataCompetenza": "Data competenza",
-        "dataLiquidazionePrevista": "Liquidazione prevista",
-        "dataLiquidazioneEffettiva": "Liquidazione effettiva",
-        "importoPrevisto": "Importo previsto",
+        "regolaProvvigionale": "Regola provvigionale",
         "importoConsolidato": "Importo consolidato",
-        "scostamentoImporto": "Scostamento",
-        "giorniLiquidazioneDaAttivazione": "Giorni liquidazione da attivazione",
         "appuntamento": "Appuntamento",
-        "opportunita": "Opportunita",
+        "opportunita": "Opportunità",
         "productCategory": "Categoria prodotto",
         "invitoAFatturare": "Invito a fatturare",
         "fornitorePartner": "Fornitore / Partner",
@@ -25,6 +25,15 @@
             "InInvito": "In invito a fatturare",
             "Fatturata": "Fatturata",
             "Stornata": "Stornata"
+        },
+        "baseCalcolo": {
+            "ImponibileContratto": "Imponibile contratto (IVA esclusa)",
+            "Plusvalenza": "Plusvalenza (imponibile − codice)",
+            "Minusvalenza": "Minusvalenza",
+            "MargineSuListino": "Margine su listino",
+            "CanoneMensile": "Canone mensile",
+            "GettoneFisso": "Gettone fisso",
+            "NumeroPod": "Numero POD"
         }
     }
 }
