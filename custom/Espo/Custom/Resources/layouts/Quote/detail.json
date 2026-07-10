@@ -130,13 +130,20 @@
             ],
             [
                 {
+                    "name": "shippingCost",
+                    "customLabel": "Costi aggiuntivi"
+                },
+                {
                     "name": "minusPlus",
                     "customLabel": "Plusvalenza / Minusvalenza (€)"
-                },
+                }
+            ],
+            [
                 {
                     "name": "ordineIncompletoAriel",
                     "customLabel": "Ordine incompleto Ariel (−5% provv.)"
-                }
+                },
+                false
             ]
         ],
         "style": "default",
