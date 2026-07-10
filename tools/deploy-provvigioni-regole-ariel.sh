@@ -33,8 +33,10 @@ FILES=(
   custom/Espo/Custom/Resources/metadata/entityDefs/RegolaProvvigionale.json
   database/2026-05-26-gdl-ariel-2026-regole-provvigioni-seed.sql
   database/2026-07-06-bonus-weekend-regola-provvigioni-seed.sql
+  database/2026-07-09-referenza-personale-regola-provvigioni-seed.sql
   tools/seed-regole-provvigioni-ariel.php
   tools/migrate-ricalcola-provvigioni-contratti.php
+)
 
 for rel in "${FILES[@]}"; do
   fetch "${rel}"
@@ -104,3 +106,6 @@ echo "Atteso: appuntamento tipo Referenza Personale → regola Referenza Persona
 echo ""
 echo "Solo anteprima ricalcolo:"
 echo "  php tools/migrate-ricalcola-provvigioni-contratti.php --dry-run"
+echo ""
+echo "Ricalcolo con dettaglio righe:"
+echo "  php tools/migrate-ricalcola-provvigioni-contratti.php --codice=Contratto_00101 --verbose"
