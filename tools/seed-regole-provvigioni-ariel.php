@@ -51,8 +51,12 @@ function seedRegoleProvvigioniAriel(EntityManager $em): void
 
     foreach ($rules as $data) {
         $id = $data['id'];
-        $entity = $em->getEntityById('RegolaProvvigionale', $id)
-            ?? $em->getNewEntity('RegolaProvvigionale');
+        $entity = $em->getEntityById('RegolaProvvigionale', $id);
+
+        if (!$entity) {
+            $entity = $em->createEntity('RegolaProvvigionale');
+            $entity->set('id', $id);
+        }
 
         $entity->set(array_merge($data, [
             'deleted' => false,

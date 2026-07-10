@@ -94,7 +94,11 @@ php clear_cache.php
 echo ""
 echo "=== Ricalcolo provvigioni su tutti i contratti ==="
 fetch tools/migrate-ricalcola-provvigioni-contratti.php
-php tools/migrate-ricalcola-provvigioni-contratti.php
+if ! php tools/migrate-ricalcola-provvigioni-contratti.php 2>&1; then
+  echo "ERRORE durante il ricalcolo — prova manualmente:" >&2
+  echo "  php tools/migrate-ricalcola-provvigioni-contratti.php --codice=Contratto_00101 --verbose" >&2
+  exit 1
+fi
 
 php clear_cache.php
 
