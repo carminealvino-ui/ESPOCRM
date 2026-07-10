@@ -20,7 +20,10 @@ require_once $crmRoot . '/bootstrap.php';
 
 use Espo\Core\Application;
 use Espo\Custom\Services\ProvvigioneManager;
+use Espo\Custom\Services\QuotePricingCalculator;
 use Espo\ORM\EntityManager;
+
+require_once __DIR__ . '/seed-regole-provvigioni-ariel.php';
 
 $dryRun = in_array('--dry-run', $argv ?? [], true);
 $onlyId = null;
@@ -43,6 +46,17 @@ $em = $app->getContainer()->getByClass(EntityManager::class);
 
 /** @var ProvvigioneManager $provvigioneManager */
 $provvigioneManager = $app->getContainer()->getByClass(ProvvigioneManager::class);
+
+/** @var QuotePricingCalculator $quotePricingCalculator */
+$quotePricingCalculator = $app->getContainer()->getByClass(QuotePricingCalculator::class);
+
+$verbose = in_array('--verbose', $argv ?? [], true);
+
+if (!$dryRun) {
+    echo "=== Seed regole provvigionali ===\n";
+    seedRegoleProvvigioniAriel($em);
+    echo "OK regole arielMinus35, bonusWeekendSd, referenzaPersonale\n\n";
+}
 
 $where = [];
 
@@ -133,6 +147,30 @@ foreach ($collection as $quote) {
         $newTotale = $quote?->get('totaleProvvigioni');
         $newFormatted = $newTotale !== null && $newTotale !== '' ? number_format((float) $newTotale, 2, '.', '') : '—';
 
+        $detail = '';
+
+        if ($verbose && $quote) {
+            $net = $quotePricingCalculator->resolveImponibileNetto($quote);
+            $minusPlus = $quotePricingCalculator->resolveMinusPlusForQuote($quote);
+            $netFmt = $net !== null ? number_format($net, 2, '.', '') : '—';
+            $mpFmt = $minusPlus !== null ? number_format($minusPlus, 2, '.', '') : '—';
+
+            $provvigioni = $em
+                ->getRDBRepository('Provvigione')
+                ->where(['contrattoId' => $quote->getId()])
+                ->find();
+
+            $righe = [];
+
+            foreach ($provvigioni as $p) {
+                $righe[] = ($p->get('tipo') ?: '?')
+                    . ' €'
+                    . number_format((float) ($p->get('importoConsolidato') ?? 0), 2, '.', '');
+            }
+
+            $detail = " | net €{$netFmt} mp €{$mpFmt} | " . ($righe ? implode(', ', $righe) : 'nessuna riga');
+        }
+
         $delta = '';
 
         if ($oldFormatted !== '—' && $newFormatted !== '—' && $oldFormatted !== $newFormatted) {
@@ -144,7 +182,7 @@ foreach ($collection as $quote) {
             $changed++;
         }
 
-        echo "[{$index}/{$total}] [OK] {$label} — totale: €{$newFormatted}{$delta}"
+        echo "[{$index}/{$total}] [OK] {$label} — totale: €{$newFormatted}{$delta}{$detail}"
             . " | provvigioni: {$result['created']}, purge: {$result['purged']}\n";
         $processed++;
     } catch (Throwable $e) {

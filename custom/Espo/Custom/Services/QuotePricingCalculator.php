@@ -789,15 +789,36 @@ class QuotePricingCalculator
      */
     private function resolveQuoteAmountNet(Entity $quote): ?float
     {
+        $gross = $this->floatOrNull($quote->get('grandTotalAmount'))
+            ?? $this->floatOrNull($quote->get('importoContratto'));
+        $taxAmount = $this->floatOrNull($quote->get('taxAmount'));
+
+        if ($gross !== null && $gross > 0 && $taxAmount !== null && $taxAmount > 0) {
+            $fromGross = round($gross - $taxAmount, 2);
+
+            if ($fromGross > 0) {
+                return $fromGross;
+            }
+        }
+
+        $itemList = $quote->get('itemList');
+
+        if (is_array($itemList) && $itemList !== []) {
+            $lineTotals = $this->sumTotalsFromItemList(
+                $itemList,
+                $this->isQuotePricesTaxInclusive($quote)
+            );
+
+            if ($lineTotals['net'] > 0) {
+                return $lineTotals['net'];
+            }
+        }
+
         $amount = $this->floatOrNull($quote->get('amount'));
 
         if ($amount === null || $amount <= 0) {
             return null;
         }
-
-        $gross = $this->floatOrNull($quote->get('grandTotalAmount'))
-            ?? $this->floatOrNull($quote->get('importoContratto'));
-        $taxAmount = $this->floatOrNull($quote->get('taxAmount'));
 
         if ($gross !== null && abs($amount - $gross) < 0.02) {
             if ($taxAmount !== null && $taxAmount > 0) {

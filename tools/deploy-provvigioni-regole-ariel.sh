@@ -33,8 +33,8 @@ FILES=(
   custom/Espo/Custom/Resources/metadata/entityDefs/RegolaProvvigionale.json
   database/2026-05-26-gdl-ariel-2026-regole-provvigioni-seed.sql
   database/2026-07-06-bonus-weekend-regola-provvigioni-seed.sql
-  database/2026-07-09-referenza-personale-regola-provvigioni-seed.sql
-)
+  tools/seed-regole-provvigioni-ariel.php
+  tools/migrate-ricalcola-provvigioni-contratti.php
 
 for rel in "${FILES[@]}"; do
   fetch "${rel}"
@@ -75,15 +75,17 @@ do
   echo "OK ${sql}"
 done
 
-php clear_cache.php
-
 echo ""
-echo "=== Verifica regole in DB ==="
+echo "=== Seed regole (ORM, senza mysql) ==="
+fetch tools/seed-regole-provvigioni-ariel.php
+php tools/seed-regole-provvigioni-ariel.php
+
+php clear_cache.php
 "${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" -N -e "
 SELECT id, name, percentuale, tipo_provvigione_record
 FROM regola_provvigionale
 WHERE id IN ('arielMinus35', 'bonusWeekendSd', 'referenzaPersonale') AND deleted = 0;
-"
+" || true
 
 php clear_cache.php
 
