@@ -23,7 +23,7 @@ class AccrualAndAmount implements BeforeSave
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
-        $this->ensurePlaceholderName($entity);
+        $this->ensureDisplayName($entity);
 
         if ($options->get('skipHooks') || $options->get('skipRules')) {
             $this->applyAccrualDates($entity);
@@ -36,26 +36,99 @@ class AccrualAndAmount implements BeforeSave
         $this->applyScostamento($entity);
     }
 
-    private function ensurePlaceholderName(Entity $entity): void
+    private function ensureDisplayName(Entity $entity): void
     {
-        if ($entity->get('name')) {
+        $name = trim((string) ($entity->get('name') ?? ''));
+        $needsRebuild = $name === '' || str_starts_with($name, 'PROVV-');
+
+        if (!$needsRebuild) {
             return;
         }
 
-        $tipo = $entity->get('tipo') ?: 'Provvigione Base';
+        $quote = $this->resolveQuoteForProvvigione($entity);
 
+        if (!$quote) {
+            if ($name === '') {
+                $entity->set('name', 'PROVV-' . ($entity->get('tipo') ?: 'Provvigione Base'));
+            }
+
+            return;
+        }
+
+        $this->backfillQuoteLinks($entity, $quote);
+
+        $tipo = (string) ($entity->get('tipo') ?: 'Provvigione Base');
+        $importo = $entity->get('importoConsolidato') ?? $entity->get('importo');
+        $codice = $this->resolveQuoteCodice($quote);
+        $cliente = strtoupper(trim((string) (
+            $quote->get('accountName')
+            ?? $entity->get('clienteName')
+            ?? 'Cliente'
+        )));
+
+        if ($importo !== null && $importo !== '' && (float) $importo !== 0.0) {
+            $entity->set(
+                'name',
+                sprintf(
+                    '%s - %s - %s - €. %s',
+                    $codice,
+                    $cliente,
+                    strtoupper($tipo),
+                    number_format((float) $importo, 2, '.', '')
+                )
+            );
+
+            return;
+        }
+
+        $entity->set('name', $codice . ' - ' . strtoupper($tipo));
+    }
+
+    private function resolveQuoteForProvvigione(Entity $entity): ?Entity
+    {
         if ($entity->get('contrattoId')) {
-            $quote = $this->entityManager->getEntityById('Quote', $entity->get('contrattoId'));
+            return $this->entityManager->getEntityById('Quote', $entity->get('contrattoId'));
+        }
 
-            if ($quote) {
-                $ref = $quote->get('number') ?: $quote->getId();
-                $entity->set('name', $ref . ' — ' . $tipo);
+        if (!$entity->get('opportunitaId')) {
+            return null;
+        }
 
-                return;
+        return $this->entityManager
+            ->getRDBRepository('Quote')
+            ->where(['opportunityId' => $entity->get('opportunitaId')])
+            ->order('createdAt', 'DESC')
+            ->findOne();
+    }
+
+    private function backfillQuoteLinks(Entity $entity, Entity $quote): void
+    {
+        if (!$entity->get('contrattoId')) {
+            $entity->set([
+                'contrattoId' => $quote->getId(),
+                'contrattoName' => $quote->get('name'),
+            ]);
+        }
+
+        if (!$entity->get('clienteId') && $quote->get('accountId')) {
+            $entity->set([
+                'clienteId' => $quote->get('accountId'),
+                'clienteName' => $quote->get('accountName'),
+            ]);
+        }
+    }
+
+    private function resolveQuoteCodice(Entity $quote): string
+    {
+        foreach (['numberA', 'number', 'numeroContratto'] as $field) {
+            $value = trim((string) ($quote->get($field) ?? ''));
+
+            if ($value !== '') {
+                return $value;
             }
         }
 
-        $entity->set('name', 'PROVV-' . $tipo);
+        return (string) $quote->getId();
     }
 
     private function applyAccrualDates(Entity $entity): void

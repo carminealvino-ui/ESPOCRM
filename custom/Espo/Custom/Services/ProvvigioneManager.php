@@ -1084,13 +1084,28 @@ class ProvvigioneManager
 
     private function buildProvvigioneDisplayName(Entity $quote, string $tipo, float $importo): string
     {
+        $codice = $this->resolveQuoteCodice($quote);
         $cliente = strtoupper(trim((string) ($quote->get('accountName') ?? 'Cliente')));
 
         return sprintf(
-            '%s - %s - €. %s',
+            '%s - %s - %s - €. %s',
+            $codice,
             $cliente,
             strtoupper($tipo),
             number_format($importo, 2, '.', '')
         );
+    }
+
+    private function resolveQuoteCodice(Entity $quote): string
+    {
+        foreach (['numberA', 'number', 'numeroContratto'] as $field) {
+            $value = trim((string) ($quote->get($field) ?? ''));
+
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return (string) $quote->getId();
     }
 }

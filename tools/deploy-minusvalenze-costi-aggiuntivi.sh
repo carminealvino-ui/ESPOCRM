@@ -27,6 +27,7 @@ fetch() {
 FILES=(
   custom/Espo/Custom/Services/QuotePricingCalculator.php
   custom/Espo/Custom/Services/ProvvigioneManager.php
+  custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php
   custom/Espo/Custom/Resources/metadata/entityDefs/Provvigione.json
   custom/Espo/Custom/Resources/metadata/clientDefs/Provvigione.json
   custom/Espo/Custom/Resources/metadata/scopes/Provvigione.json
@@ -50,6 +51,7 @@ FILES=(
   custom/Espo/Custom/Resources/client/custom/src/views/provvigione/record/detail.js
   custom/Espo/Custom/Resources/client/custom/src/views/provvigione/record/edit.js
   tools/migrate-ricalcola-provvigioni-contratti.php
+  tools/backfill-provvigioni-nomi.php
 )
 
 for rel in "${FILES[@]}"; do
@@ -63,6 +65,10 @@ php clear_cache.php
 echo ""
 echo "=== Ricalcolo provvigioni (ripopola nome, tipo, base, tasso) ==="
 php tools/migrate-ricalcola-provvigioni-contratti.php --verbose 2>&1 | tail -40
+
+echo ""
+echo "=== Ripristino nomi con codice contratto ==="
+php tools/backfill-provvigioni-nomi.php 2>&1 | tail -20
 
 echo ""
 echo "=== Verifica singolo contratto ==="
