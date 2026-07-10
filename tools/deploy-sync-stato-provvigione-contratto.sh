@@ -27,6 +27,7 @@ FILES=(
   custom/Espo/Custom/Services/ProvvigioneContractStatusSync.php
   custom/Espo/Custom/Services/ProvvigioneManager.php
   custom/Espo/Custom/Hooks/Quote/SyncProvvigioniStatoFromContratto.php
+  custom/Espo/Custom/Hooks/Opportunity/SyncProvvigioniStatoFromOpportunita.php
   custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
   tools/backfill-provvigioni-stato-da-contratto.php
 )
@@ -45,8 +46,8 @@ php tools/backfill-provvigioni-stato-da-contratto.php 2>&1 | tail -20
 
 echo ""
 echo "=== Mappatura ==="
-echo "  Presentato / In lavorazione → Prevista (forecast)"
-echo "  Approvato → Consolidata"
-echo "  Installato → In invito a fatturare"
-echo "  Recesso / Finanziamento rifiutato / Annullato → provvigioni rimosse"
+echo "  Opportunity.statoContratto: Inserito / In lavorazione → Prevista"
+echo "  Opportunity.statoContratto: Installato → In invito a fatturare"
+echo "  Quote.status / finanziamento Approvato → Consolidata"
+echo "  Recesso / Finanziamento respinto / Annullato → provvigioni rimosse"
 echo "=== Fine ==="

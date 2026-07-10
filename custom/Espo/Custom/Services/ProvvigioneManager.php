@@ -296,6 +296,8 @@ class ProvvigioneManager
             return;
         }
 
+        $quote = $this->entityManager->getEntityById('Quote', $quote->getId()) ?? $quote;
+
         $collection = $this->entityManager
             ->getRDBRepository('Provvigione')
             ->where(['contrattoId' => $quote->getId()])
