@@ -17,6 +17,7 @@
                 "Stornata": "danger"
             },
             "default": "Consolidata",
+            "massUpdate": true,
             "isCustom": true
         },
         "regimeProvvigione": {

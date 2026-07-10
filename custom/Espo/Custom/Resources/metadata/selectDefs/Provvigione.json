@@ -1,0 +1,9 @@
+{
+    "primaryFilterClassNameMap": {
+        "consolidata": "Espo\\Custom\\Classes\\Select\\Provvigione\\PrimaryFilters\\Consolidata",
+        "prevista": "Espo\\Custom\\Classes\\Select\\Provvigione\\PrimaryFilters\\Prevista",
+        "inInvito": "Espo\\Custom\\Classes\\Select\\Provvigione\\PrimaryFilters\\InInvito",
+        "fatturata": "Espo\\Custom\\Classes\\Select\\Provvigione\\PrimaryFilters\\Fatturata",
+        "stornata": "Espo\\Custom\\Classes\\Select\\Provvigione\\PrimaryFilters\\Stornata"
+    }
+}

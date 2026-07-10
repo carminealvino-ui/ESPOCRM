@@ -1,0 +1,31 @@
+{
+    "entity": true,
+    "layouts": true,
+    "tab": true,
+    "acl": true,
+    "aclPortal": true,
+    "aclPortalLevelList": [
+        "all",
+        "account",
+        "contact",
+        "own",
+        "no"
+    ],
+    "customizable": true,
+    "importable": true,
+    "massUpdate": true,
+    "notifications": true,
+    "stream": false,
+    "disabled": false,
+    "type": "BasePlus",
+    "module": "Custom",
+    "object": true,
+    "isCustom": true,
+    "statusField": "statoProvvigione",
+    "kanbanStatusIgnoreList": null,
+    "stars": false,
+    "preserveAuditLog": false,
+    "duplicateCheckFieldList": [],
+    "collaborators": false,
+    "assignedUsers": false
+}

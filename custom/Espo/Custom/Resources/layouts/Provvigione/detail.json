@@ -1,0 +1,70 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "cliente"
+                },
+                {
+                    "name": "contratto"
+                }
+            ],
+            [
+                {
+                    "name": "opportunita"
+                },
+                {
+                    "name": "fornitorePartner"
+                }
+            ],
+            [
+                {
+                    "name": "productBrand"
+                },
+                {
+                    "name": "statoProvvigione"
+                }
+            ],
+            [
+                {
+                    "name": "tipo"
+                },
+                {
+                    "name": "regolaProvvigionale"
+                }
+            ],
+            [
+                {
+                    "name": "importo"
+                },
+                {
+                    "name": "importoConsolidato"
+                }
+            ]
+        ],
+        "style": "default",
+        "label": "Panoramica"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "baseCalcolo",
+                    "customLabel": "Base del calcolo"
+                },
+                {
+                    "name": "importoBaseCalcolo",
+                    "customLabel": "Importo base"
+                }
+            ],
+            [
+                {
+                    "name": "tassoProvvigioni"
+                },
+                false
+            ]
+        ],
+        "style": "default",
+        "label": "Calcolo provvigionale"
+    }
+]
