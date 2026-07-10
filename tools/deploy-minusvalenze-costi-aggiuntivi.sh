@@ -58,6 +58,7 @@ done
 
 php clear_cache.php
 php rebuild.php
+php clear_cache.php
 
 echo ""
 echo "=== Ricalcolo provvigioni (ripopola nome, tipo, base, tasso) ==="

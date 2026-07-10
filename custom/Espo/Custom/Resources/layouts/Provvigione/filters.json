@@ -1,23 +1,9 @@
 [
-    {
-        "name": "statoProvvigione"
-    },
-    {
-        "name": "tipo"
-    },
-    {
-        "name": "assignedUser"
-    },
-    {
-        "name": "cliente"
-    },
-    {
-        "name": "contratto"
-    },
-    {
-        "name": "fornitorePartner"
-    },
-    {
-        "name": "productBrand"
-    }
+    "statoProvvigione",
+    "tipo",
+    "assignedUser",
+    "cliente",
+    "contratto",
+    "fornitorePartner",
+    "productBrand"
 ]

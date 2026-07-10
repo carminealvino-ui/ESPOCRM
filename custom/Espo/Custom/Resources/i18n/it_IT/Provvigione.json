@@ -18,6 +18,10 @@
         "fornitorePartner": "Fornitore / Partner",
         "productBrand": "Brand"
     },
+    "labels": {
+        "Create Provvigione": "Crea Provvigione",
+        "Provvigioni": "Provvigioni"
+    },
     "options": {
         "statoProvvigione": {
             "Prevista": "Prevista (forecast)",
@@ -35,5 +39,12 @@
             "GettoneFisso": "Gettone fisso",
             "NumeroPod": "Numero POD"
         }
+    },
+    "presetFilters": {
+        "consolidata": "Consolidate",
+        "prevista": "Previste",
+        "inInvito": "In invito a fatturare",
+        "fatturata": "Fatturate",
+        "stornata": "Stornate"
     }
 }
