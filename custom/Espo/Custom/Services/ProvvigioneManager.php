@@ -117,9 +117,16 @@ class ProvvigioneManager
 
     public function createConsolidataForQuote(Entity $opportunity, Entity $quote): ?Entity
     {
+        $this->quotePricingCalculator->syncOnBeforeSave($quote);
+
         $category = $this->resolveProductCategory($quote, $opportunity);
 
         $imponibile = $this->resolveQuoteImponibile($quote, $opportunity);
+        $minusPlus = $this->quotePricingCalculator->resolveMinusPlusForQuote($quote);
+
+        if ($minusPlus !== null) {
+            $quote->set('minusPlus', $minusPlus);
+        }
 
         $context = $this->buildContextFromEntities($category, $quote, $imponibile, $opportunity);
         $context['imponibile'] = $imponibile;
@@ -132,7 +139,13 @@ class ProvvigioneManager
             return null;
         }
 
-        $context['plusvalenza'] = $this->floatField($quote, 'minusPlus') ?? $context['plusvalenza'];
+        $context['plusvalenza'] = ($minusPlus !== null && $minusPlus > 0)
+            ? $minusPlus
+            : (($minusPlus !== null && $minusPlus < 0) ? null : ($context['plusvalenza'] ?? null));
+
+        if ($minusPlus !== null && $minusPlus < 0) {
+            $context['minusvalenza'] = $minusPlus;
+        }
 
         if ($context['marginePercentuale'] !== null && !$quote->get('margineSuListino')) {
             $quote->set('margineSuListino', $context['marginePercentuale']);
@@ -279,14 +292,14 @@ class ProvvigioneManager
     {
         $this->quotePricingCalculator->syncOnBeforeSave($quote);
 
-        $imponibile = $this->resolveQuoteImponibile($quote, $opportunity);
-        $prezzoCodice = $this->floatField($quote, 'prezzoCodiceIvaEsclusa')
-            ?? $this->floatField($opportunity, 'prezzoCodiceIvaEsclusa');
+        $imponibile = $this->quotePricingCalculator->resolveImponibileNetto($quote)
+            ?? $this->resolveQuoteImponibile($quote, $opportunity);
+        $minusPlus = $this->quotePricingCalculator->resolveMinusPlusForQuote($quote);
         $prezzoListino = $this->floatField($quote, 'prezzoListinoIvaEsclusa')
             ?? $this->floatField($opportunity, 'prezzoListinoIvaEsclusa');
 
-        if ($imponibile !== null && $prezzoCodice !== null) {
-            $quote->set('minusPlus', round($imponibile - $prezzoCodice, 2));
+        if ($minusPlus !== null) {
+            $quote->set('minusPlus', $minusPlus);
         }
 
         if ($imponibile !== null && $prezzoListino !== null && $prezzoListino > 0) {
@@ -331,6 +344,9 @@ class ProvvigioneManager
         }
 
         $minusPlus = $this->resolveMinusPlusValue($quote, $opportunity, $imponibile);
+
+        $imponibile = $this->resolveQuoteImponibile($quote, $opportunity) ?? $imponibile;
+        $context['imponibile'] = $imponibile;
 
         $quote->set([
             'minusPlus' => $minusPlus,
@@ -495,7 +511,10 @@ class ProvvigioneManager
     {
         $candidates = [
             $quote->get('dateQuoted'),
+            $this->parseDateFromContractLabel($quote->get('name')),
+            $opportunity?->get('closeDate'),
             $opportunity?->get('dataOpportunit'),
+            $quote->get('createdAt'),
         ];
 
         if ($opportunity?->get('appuntamentoId')) {
@@ -515,6 +534,23 @@ class ProvvigioneManager
             if ($normalized !== null) {
                 return $normalized;
             }
+        }
+
+        return null;
+    }
+
+    private function parseDateFromContractLabel(?string $name): ?string
+    {
+        if ($name === null || $name === '') {
+            return null;
+        }
+
+        if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $name, $m)) {
+            return $m[1];
+        }
+
+        if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})/', $name, $m)) {
+            return sprintf('%s-%s-%s', $m[3], $m[2], $m[1]);
         }
 
         return null;
@@ -890,19 +926,27 @@ class ProvvigioneManager
         Entity $opportunity,
         ?float $imponibile
     ): ?float {
+        $fromCalculator = $this->quotePricingCalculator->resolveMinusPlusForQuote($quote);
+
+        if ($fromCalculator !== null) {
+            return $fromCalculator;
+        }
+
         $stored = $this->floatField($quote, 'minusPlus') ?? $this->floatField($opportunity, 'minusPlus');
 
         if ($stored !== null) {
             return round($stored, 2);
         }
 
-        $prezzoCodice = $this->resolvePrezzoCodice($quote, $opportunity);
+        $prezzoCodice = $this->quotePricingCalculator->resolvePrezzoCodiceNetForMinusPlus($quote, $opportunity)
+            ?? $this->resolvePrezzoCodice($quote, $opportunity);
+        $imponibileNet = $this->quotePricingCalculator->resolveImponibileNetto($quote) ?? $imponibile;
 
-        if ($imponibile === null || $prezzoCodice === null) {
+        if ($imponibileNet === null || $prezzoCodice === null) {
             return null;
         }
 
-        return round($imponibile - $prezzoCodice, 2);
+        return round($imponibileNet - $prezzoCodice, 2);
     }
 
     private function resolveQuoteImponibile(Entity $quote, ?Entity $opportunity = null): ?float
@@ -954,7 +998,9 @@ class ProvvigioneManager
 
         return match ($tipo) {
             'PercentualePlusvalenza' => [
-                'baseCalcolo' => 'Plusvalenza',
+                'baseCalcolo' => isset($context['plusvalenza']) && (float) $context['plusvalenza'] < 0
+                    ? 'Minusvalenza'
+                    : 'Plusvalenza',
                 'importoBaseCalcolo' => isset($context['plusvalenza'])
                     ? round((float) $context['plusvalenza'], 2)
                     : null,

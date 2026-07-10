@@ -63,6 +63,7 @@ class ProvvigioneConsolidata implements AfterSave
             'number',
             'dataAttivazione',
             'dataInstallazione',
+            'dateQuoted',
             'productCategoryId',
             'prezzoListinoIvaEsclusa',
             'margineSuListino',

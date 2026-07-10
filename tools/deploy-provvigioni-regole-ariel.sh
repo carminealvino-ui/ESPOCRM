@@ -28,6 +28,8 @@ fetch() {
 FILES=(
   custom/Espo/Custom/Services/ProvvigioneManager.php
   custom/Espo/Custom/Services/RegolaProvvigionaleCalculator.php
+  custom/Espo/Custom/Services/QuotePricingCalculator.php
+  custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
   custom/Espo/Custom/Resources/metadata/entityDefs/RegolaProvvigionale.json
   database/2026-05-26-gdl-ariel-2026-regole-provvigioni-seed.sql
   database/2026-07-06-bonus-weekend-regola-provvigioni-seed.sql
@@ -72,6 +74,16 @@ do
   "${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" < "${sql}"
   echo "OK ${sql}"
 done
+
+php clear_cache.php
+
+echo ""
+echo "=== Verifica regole in DB ==="
+"${MYSQL_BIN}" --defaults-extra-file="${CNF}" "${DB_NAME}" -N -e "
+SELECT id, name, percentuale, tipo_provvigione_record
+FROM regola_provvigionale
+WHERE id IN ('arielMinus35', 'bonusWeekendSd', 'referenzaPersonale') AND deleted = 0;
+"
 
 php clear_cache.php
 
