@@ -685,6 +685,7 @@ class ProvvigioneManager
             $provvigione->set([
                 'importo' => $importoRounded,
                 'importoConsolidato' => $importoRounded,
+                'name' => $this->buildProvvigioneDisplayName($quote, $tipo, $importoRounded),
             ]);
         }
 
@@ -759,6 +760,12 @@ class ProvvigioneManager
                 'tassoProvvigioni' => $this->resolveDisplayTasso($rule),
                 'baseCalcolo' => $baseCalcolo['baseCalcolo'],
                 'importoBaseCalcolo' => $baseCalcolo['importoBaseCalcolo'],
+            ]);
+        } elseif ($context !== null) {
+            $fallbackBase = $this->resolveFallbackBaseCalcolo($tipoRecord, $context);
+            $provvigione->set([
+                'baseCalcolo' => $fallbackBase['baseCalcolo'],
+                'importoBaseCalcolo' => $fallbackBase['importoBaseCalcolo'],
             ]);
         }
 
@@ -986,6 +993,29 @@ class ProvvigioneManager
         }
 
         return (float) $value;
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     * @return array{baseCalcolo: string, importoBaseCalcolo: float|null}
+     */
+    private function resolveFallbackBaseCalcolo(string $tipoRecord, array $context): array
+    {
+        if (in_array($tipoRecord, ['Minus Provvigionale', 'Plus Provvigionale'], true)) {
+            return [
+                'baseCalcolo' => $tipoRecord === 'Minus Provvigionale' ? 'Minusvalenza' : 'Plusvalenza',
+                'importoBaseCalcolo' => isset($context['plusvalenza'])
+                    ? round((float) $context['plusvalenza'], 2)
+                    : null,
+            ];
+        }
+
+        return [
+            'baseCalcolo' => 'ImponibileContratto',
+            'importoBaseCalcolo' => isset($context['imponibile'])
+                ? round((float) $context['imponibile'], 2)
+                : null,
+        ];
     }
 
     /**

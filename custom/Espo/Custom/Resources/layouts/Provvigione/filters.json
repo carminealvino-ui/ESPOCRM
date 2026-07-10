@@ -1,0 +1,23 @@
+[
+    {
+        "name": "statoProvvigione"
+    },
+    {
+        "name": "tipo"
+    },
+    {
+        "name": "assignedUser"
+    },
+    {
+        "name": "cliente"
+    },
+    {
+        "name": "contratto"
+    },
+    {
+        "name": "fornitorePartner"
+    },
+    {
+        "name": "productBrand"
+    }
+]

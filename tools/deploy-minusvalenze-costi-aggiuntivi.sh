@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Fix minus/plus: costi aggiuntivi (tasso zero €250 net, accessori Ariel legacy).
-# Richiede PR provvigioni-regole-ariel già deployato.
+# Ripristina metadata Provvigione (tipo, base, tasso, nome) + costi aggiuntivi minus/plus.
 #
 # Uso:
 #   cd ~/public_html/crm/mec-group
@@ -14,7 +13,7 @@ TS="$(date +%s)"
 
 cd "${CRM_ROOT}" || exit 1
 
-echo "=== Minus/plus: costi aggiuntivi (tasso zero + accessori Ariel) ==="
+echo "=== Ripristino provvigioni + costi aggiuntivi minus/plus ==="
 echo "=== CRM: ${CRM_ROOT} ==="
 
 fetch() {
@@ -27,8 +26,29 @@ fetch() {
 
 FILES=(
   custom/Espo/Custom/Services/QuotePricingCalculator.php
+  custom/Espo/Custom/Services/ProvvigioneManager.php
+  custom/Espo/Custom/Resources/metadata/entityDefs/Provvigione.json
+  custom/Espo/Custom/Resources/metadata/clientDefs/Provvigione.json
+  custom/Espo/Custom/Resources/metadata/scopes/Provvigione.json
+  custom/Espo/Custom/Resources/metadata/selectDefs/Provvigione.json
   custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
+  custom/Espo/Custom/Resources/i18n/it_IT/Provvigione.json
   custom/Espo/Custom/Resources/layouts/Quote/detail.json
+  custom/Espo/Custom/Resources/layouts/Provvigione/list.json
+  custom/Espo/Custom/Resources/layouts/Provvigione/detail.json
+  custom/Espo/Custom/Resources/layouts/Provvigione/edit.json
+  custom/Espo/Custom/Resources/layouts/Provvigione/filters.json
+  custom/Espo/Custom/Resources/layouts/Provvigione/massUpdate.json
+  custom/Espo/Custom/Resources/layouts/Quote/relationships/provvigioni.json
+  custom/Espo/Custom/Classes/Select/Provvigione/PrimaryFilters/Consolidata.php
+  custom/Espo/Custom/Classes/Select/Provvigione/PrimaryFilters/Fatturata.php
+  custom/Espo/Custom/Classes/Select/Provvigione/PrimaryFilters/InInvito.php
+  custom/Espo/Custom/Classes/Select/Provvigione/PrimaryFilters/Prevista.php
+  custom/Espo/Custom/Classes/Select/Provvigione/PrimaryFilters/Stornata.php
+  client/custom/src/views/provvigione/record/detail.js
+  client/custom/src/views/provvigione/record/edit.js
+  custom/Espo/Custom/Resources/client/custom/src/views/provvigione/record/detail.js
+  custom/Espo/Custom/Resources/client/custom/src/views/provvigione/record/edit.js
   tools/migrate-ricalcola-provvigioni-contratti.php
 )
 
@@ -40,10 +60,10 @@ php clear_cache.php
 php rebuild.php
 
 echo ""
-echo "=== Ricalcolo provvigioni (minus/plus aggiornato) ==="
-php tools/migrate-ricalcola-provvigioni-contratti.php --verbose 2>&1 | tail -30
+echo "=== Ricalcolo provvigioni (ripopola nome, tipo, base, tasso) ==="
+php tools/migrate-ricalcola-provvigioni-contratti.php --verbose 2>&1 | tail -40
 
 echo ""
-echo "=== Verifica singolo contratto (es. FILIPPETTI) ==="
+echo "=== Verifica singolo contratto ==="
 echo "  php tools/migrate-ricalcola-provvigioni-contratti.php --codice=Contratto_00101 --verbose"
-echo "=== Fine deploy costi aggiuntivi ==="
+echo "=== Fine deploy ==="
