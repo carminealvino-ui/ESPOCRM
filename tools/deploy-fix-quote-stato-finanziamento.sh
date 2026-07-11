@@ -32,6 +32,9 @@ FILES=(
   custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json
   custom/Espo/Custom/Resources/metadata/formula/Quote.json
   custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
+  custom/Espo/Custom/Resources/metadata/entityDefs/Opportunity.json
+  custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
+  custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json
   tools/diagnose-quote-save.php
 )
 
@@ -50,6 +53,7 @@ echo "  - Errori hook loggati senza bloccare il salvataggio"
 echo "  - statoFinanziamento Respinto/Annullato → provvigioni Inesigibile"
 echo "  - Formula Quote semplificata (niente ricalcolo nome per CreateContratto)"
 echo "  - optimisticConcurrencyControl disattivato su Quote"
+echo "  - enum statoFinanziamento: valori legacy ripristinati (In valutazione, In attesa di OTP, ...)"
 echo ""
 echo "Se ancora errore, diagnostica da SSH:"
 echo "  php tools/diagnose-quote-save.php 6a462adfd3eedc239 \"Approvato\""

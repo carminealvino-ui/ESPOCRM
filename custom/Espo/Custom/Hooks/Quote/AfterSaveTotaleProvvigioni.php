@@ -38,8 +38,6 @@ class AfterSaveTotaleProvvigioni implements AfterSave
         'taxRate',
         'aliquotaIVA',
         'statoContratto',
-        'finanziamento',
-        'statoFinanziamento',
     ];
 
     public function __construct(
