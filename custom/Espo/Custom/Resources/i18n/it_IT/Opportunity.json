@@ -123,6 +123,8 @@
             "": "",
             "Sospeso": "Sospeso",
             "Inserito": "Inserito",
+            "Appuntamento fissato": "Appuntamento fissato",
+            "Chiuso": "Chiuso",
             "Recesso": "Recesso"
         },
         "lineaProdotto": {

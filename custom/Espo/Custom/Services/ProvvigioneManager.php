@@ -6,7 +6,8 @@ use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
 /**
- * Creazione e aggiornamento provvigioni (prevista / consolidata) tramite regole.
+ * Creazione e aggiornamento provvigioni tramite regole.
+ * Stato: Forecast / In pagamento / Pagato / Inesigibile (da stato contratto).
  */
 class ProvvigioneManager
 {
@@ -14,7 +15,8 @@ class ProvvigioneManager
         private EntityManager $entityManager,
         private RegolaProvvigionaleCalculator $calculator,
         private ProvvigioneAccrual $accrual,
-        private QuotePricingCalculator $quotePricingCalculator
+        private QuotePricingCalculator $quotePricingCalculator,
+        private ProvvigioneStatusSync $statusSync
     ) {}
 
     /**
@@ -95,17 +97,15 @@ class ProvvigioneManager
         $context = $this->buildContextFromEntities($category, $appuntamento, $imponibile);
         $result = $this->calculator->calculateBest($context);
 
-        $provvigione = $this->findProvvigione(
-            'Prevista',
-            appuntamentoId: $appuntamento->getId()
-        ) ?? $this->entityManager->createEntity('Provvigione');
+        $provvigione = $this->findProvvigioneByAppuntamento($appuntamento->getId())
+            ?? $this->entityManager->createEntity('Provvigione');
 
         $this->applyProvvigioneFromCalculation(
             $provvigione,
             $appuntamento,
             $category,
             $result,
-            'Prevista',
+            ProvvigioneStatusSync::FORECAST,
             $context,
             $appuntamento
         );
@@ -170,6 +170,7 @@ class ProvvigioneManager
         $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
+        $this->statusSync->syncProvvigioniForQuote($quote, $opportunity);
         $this->refreshQuoteTotaleProvvigioni($quote);
 
         return $provvigione;
@@ -186,15 +187,11 @@ class ProvvigioneManager
         $counted = 0;
 
         foreach ($collection as $provvigione) {
-            if ($provvigione->get('statoProvvigione') === 'Stornata') {
+            if (!$this->statusSync->shouldCountInTotale((string) $provvigione->get('statoProvvigione'))) {
                 continue;
             }
 
-            if ($provvigione->get('statoProvvigione') === 'Prevista') {
-                continue;
-            }
-
-            $importo = $provvigione->get('importoConsolidato');
+            $importo = $provvigione->get('importoConsolidato') ?? $provvigione->get('importo');
 
             if ($importo === null || $importo === '') {
                 continue;
@@ -237,7 +234,7 @@ class ProvvigioneManager
             return ['created' => 0, 'updated' => 0, 'purged' => 0];
         }
 
-        $purged = $this->purgeProvvigioniForQuote($quote->getId());
+        $purged = $this->purgeRecalculableProvvigioniForQuote($quote->getId());
         $this->syncQuotePricingFields($quote, $opportunity);
 
         $quoteId = $quote->getId();
@@ -269,6 +266,27 @@ class ProvvigioneManager
             'silent' => true,
             'skipFormula' => true,
         ]);
+    }
+
+    private function purgeRecalculableProvvigioniForQuote(string $quoteId): int
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quoteId])
+            ->find();
+
+        $count = 0;
+
+        foreach ($collection as $provvigione) {
+            if (!$this->statusSync->canRecalculate($provvigione)) {
+                continue;
+            }
+
+            $this->entityManager->removeEntity($provvigione);
+            $count++;
+        }
+
+        return $count;
     }
 
     private function purgeProvvigioniForQuote(string $quoteId): int
@@ -401,6 +419,7 @@ class ProvvigioneManager
 
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
+        $this->statusSync->syncProvvigioniForQuote($quote, $opportunity);
         $this->refreshQuoteTotaleProvvigioni($quote);
 
         return $base;
@@ -659,18 +678,17 @@ class ProvvigioneManager
         string $tipo,
         ?string $nameSuffix = null
     ): ?Entity {
-        $provvigione = $this->findProvvigione(
-            'Consolidata',
-            contrattoId: $quote->getId(),
-            tipo: $tipo
-        ) ?? $this->entityManager->createEntity('Provvigione');
+        $provvigione = $this->findProvvigioneByContrattoAndTipo($quote->getId(), $tipo)
+            ?? $this->entityManager->createEntity('Provvigione');
+
+        $stato = $this->statusSync->resolveStatoFromOpportunity($opportunity);
 
         $this->applyProvvigioneFromCalculation(
             $provvigione,
             $opportunity,
             $category,
             $result,
-            'Consolidata',
+            $stato,
             $context,
             $quote
         );
@@ -779,16 +797,27 @@ class ProvvigioneManager
             ]);
         }
 
-        if ($giorni > 0 && $eventDate) {
-            $provvigione->set(
-                'dataLiquidazionePrevista',
-                $this->accrual->calculateLiquidationDate($regime, $dataAttivazione, $dataInstallazione)
-                    ?? (new \DateTimeImmutable($eventDate))->modify('last day of this month')
-                        ->modify('+' . $giorni . ' days')->format('Y-m-d')
-            );
+        if ($giorni > 0 && $eventDate && $stato !== ProvvigioneStatusSync::FORECAST) {
+            $opportunity = $dateSource->getEntityType() === 'Quote'
+                ? $this->resolveOpportunityForQuote($dateSource, null)
+                : ($dateSource->getEntityType() === 'Opportunity' ? $dateSource : null);
+            $quote = $dateSource->getEntityType() === 'Quote' ? $dateSource : null;
+
+            $dataPagamento = $this->statusSync->resolveDataPagamento($quote, $opportunity);
+
+            if ($dataPagamento !== null) {
+                $provvigione->set('dataLiquidazionePrevista', $dataPagamento);
+            } else {
+                $provvigione->set(
+                    'dataLiquidazionePrevista',
+                    $this->accrual->calculateLiquidationDate($regime, $dataAttivazione, $dataInstallazione)
+                        ?? (new \DateTimeImmutable($eventDate))->modify('last day of this month')
+                            ->modify('+' . $giorni . ' days')->format('Y-m-d')
+                );
+            }
         }
 
-        if ($stato === 'Prevista') {
+        if ($stato === ProvvigioneStatusSync::FORECAST) {
             $provvigione->set([
                 'importoPrevisto' => $importo,
                 'importo' => $importo,
@@ -813,6 +842,25 @@ class ProvvigioneManager
                 $this->buildProvvigioneDisplayName($dateSource, $tipoRecord, (float) $importo)
             );
         }
+    }
+
+    private function findProvvigioneByAppuntamento(string $appuntamentoId): ?Entity
+    {
+        return $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['appuntamentoId' => $appuntamentoId])
+            ->findOne();
+    }
+
+    private function findProvvigioneByContrattoAndTipo(string $contrattoId, string $tipo): ?Entity
+    {
+        return $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where([
+                'contrattoId' => $contrattoId,
+                'tipo' => $tipo,
+            ])
+            ->findOne();
     }
 
     private function findProvvigione(
@@ -874,18 +922,17 @@ class ProvvigioneManager
 
         $importo = round($imponibile * 5 / 100, 2);
 
-        $plus = $this->findProvvigione(
-            'Consolidata',
-            contrattoId: $quote->getId(),
-            tipo: 'Plus Provvigionale'
-        ) ?? $this->entityManager->createEntity('Provvigione');
+        $plus = $this->findProvvigioneByContrattoAndTipo($quote->getId(), 'Plus Provvigionale')
+            ?? $this->entityManager->createEntity('Provvigione');
+
+        $stato = $this->statusSync->resolveStatoFromOpportunity($opportunity);
 
         $this->applyProvvigioneFromCalculation(
             $plus,
             $opportunity,
             $category,
             ['importo' => $importo, 'regola' => $rule],
-            'Consolidata',
+            $stato,
             $context,
             $quote
         );

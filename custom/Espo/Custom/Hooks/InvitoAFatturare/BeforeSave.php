@@ -8,7 +8,7 @@ use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Totali amministrativi e allineamento stato provvigioni incluse.
+ * Totali amministrativi invito a fatturare. Lo stato provvigione è guidato dallo stato contratto.
  */
 class BeforeSave implements BeforeSave
 {
@@ -20,6 +20,11 @@ class BeforeSave implements BeforeSave
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
+        if ($entity->isNew() && $entity->get('meseCompetenza') && !$entity->get('dataScadenzaFatturazione')) {
+            $mese = date('Y-m-01', strtotime((string) $entity->get('meseCompetenza')));
+            $entity->set('dataScadenzaFatturazione', date('Y-m-15', strtotime($mese)));
+        }
+
         if (!$entity->isNew() && !$entity->isAttributeChanged('stato')) {
             $this->recalculateTotals($entity);
 
@@ -34,12 +39,8 @@ class BeforeSave implements BeforeSave
             $entity->set('dataInvito', date('Y-m-d'));
         }
 
-        if ($stato === 'Emesso') {
-            $this->markLinkedProvvigioniInInvito($entity);
-        }
-
-        if ($stato === 'Fatturato') {
-            $this->markLinkedProvvigioniFatturata($entity);
+        if ($stato === 'Annullato') {
+            $this->unlinkProvvigioni($entity);
         }
     }
 
@@ -56,42 +57,20 @@ class BeforeSave implements BeforeSave
             ])
             ->find();
 
-        $consolidato = 0.0;
-        $previsto = 0.0;
+        $totale = 0.0;
 
         foreach ($collection as $provvigione) {
-            $consolidato += (float) ($provvigione->get('importoConsolidato')
+            $totale += (float) ($provvigione->get('importoConsolidato')
                 ?? $provvigione->get('importo')
                 ?? 0);
-            $previsto += (float) ($provvigione->get('importoPrevisto') ?? 0);
         }
 
-        $entity->set('importoTotaleConsolidato', $consolidato);
-        $entity->set('importoTotalePrevisto', $previsto);
-        $entity->set('scostamentoTotale', $consolidato - $previsto);
+        $entity->set('importoTotaleConsolidato', $totale);
+        $entity->set('importoTotalePrevisto', $totale);
+        $entity->set('scostamentoTotale', 0.0);
     }
 
-    private function markLinkedProvvigioniInInvito(Entity $entity): void
-    {
-        if (!$entity->getId()) {
-            return;
-        }
-
-        $collection = $this->entityManager
-            ->getRDBRepository('Provvigione')
-            ->where([
-                'invitoAFatturareId' => $entity->getId(),
-                'statoProvvigione' => 'Consolidata',
-            ])
-            ->find();
-
-        foreach ($collection as $provvigione) {
-            $provvigione->set('statoProvvigione', 'InInvito');
-            $this->entityManager->saveEntity($provvigione, ['silent' => true]);
-        }
-    }
-
-    private function markLinkedProvvigioniFatturata(Entity $entity): void
+    private function unlinkProvvigioni(Entity $entity): void
     {
         if (!$entity->getId()) {
             return;
@@ -105,11 +84,11 @@ class BeforeSave implements BeforeSave
             ->find();
 
         foreach ($collection as $provvigione) {
-            $provvigione->set('statoProvvigione', 'Fatturata');
-            $provvigione->set(
-                'dataLiquidazioneEffettiva',
-                $provvigione->get('dataLiquidazioneEffettiva') ?: date('Y-m-d')
-            );
+            $provvigione->set([
+                'invitoAFatturareId' => null,
+                'invitoAFatturareName' => null,
+            ]);
+
             $this->entityManager->saveEntity($provvigione, ['silent' => true]);
         }
     }

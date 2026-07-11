@@ -6,12 +6,13 @@ use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
 /**
- * Generazione inviti a fatturare da provvigioni consolidate eleggibili.
+ * Generazione inviti a fatturare da provvigioni in pagamento con maturazione al giorno 15.
  */
 class InvitoAFatturareManager
 {
     public function __construct(
-        private EntityManager $entityManager
+        private EntityManager $entityManager,
+        private ProvvigioneStatusSync $statusSync
     ) {}
 
     /**
@@ -25,10 +26,10 @@ class InvitoAFatturareManager
         ?string $invitoId = null
     ): array {
         $meseStart = date('Y-m-01', strtotime($meseCompetenza));
-        $meseEnd = date('Y-m-t', strtotime($meseStart));
+        $dataPagamento = date('Y-m-15', strtotime($meseStart));
 
         $where = [
-            'statoProvvigione' => 'Consolidata',
+            'statoProvvigione' => ProvvigioneStatusSync::IN_PAGAMENTO,
             'invitoAFatturareId' => null,
             'assignedUserId' => $consulenteUserId,
         ];
@@ -49,24 +50,21 @@ class InvitoAFatturareManager
         $eligible = [];
 
         foreach ($collection as $provvigione) {
-            $competenza = $provvigione->get('dataCompetenza');
-            $liquidazione = $provvigione->get('dataLiquidazionePrevista');
-
-            $refDate = $liquidazione ?: $competenza;
-
-            if (!$refDate) {
-                $eligible[] = $provvigione;
+            if (!$this->statusSync->isEligibleForInvito($provvigione)) {
                 continue;
             }
 
-            if ($refDate >= $meseStart && $refDate <= $meseEnd) {
-                $eligible[] = $provvigione;
+            if (!$this->statusSync->matchesInvitoMeseCompetenza($provvigione, $meseStart)) {
+                continue;
             }
+
+            $eligible[] = $provvigione;
         }
 
         if ($eligible === []) {
             throw new \RuntimeException(
-                'Nessuna provvigione consolidata eleggibile per il periodo selezionato.'
+                'Nessuna provvigione in pagamento eleggibile per il mese ' . date('m/Y', strtotime($meseStart))
+                . ' (pagamento previsto il ' . date('d/m/Y', strtotime($dataPagamento)) . ').'
             );
         }
 
@@ -108,6 +106,7 @@ class InvitoAFatturareManager
                 'name' => 'INV-' . date('Ym', strtotime($meseStart)) . '-' . substr($consulenteUserId, 0, 6),
                 'stato' => 'Bozza',
                 'meseCompetenza' => $meseStart,
+                'dataScadenzaFatturazione' => $dataPagamento,
                 'consulenteId' => $consulenteUserId,
                 'fornitorePartnerId' => $fornitorePartnerId,
                 'productBrandId' => $productBrandId,
@@ -117,8 +116,7 @@ class InvitoAFatturareManager
             $this->entityManager->saveEntity($invito);
         }
 
-        $consolidato = 0.0;
-        $previsto = 0.0;
+        $totale = 0.0;
 
         foreach ($eligible as $provvigione) {
             $provvigione->set([
@@ -128,16 +126,16 @@ class InvitoAFatturareManager
 
             $this->entityManager->saveEntity($provvigione, ['silent' => true]);
 
-            $consolidato += (float) ($provvigione->get('importoConsolidato')
+            $totale += (float) ($provvigione->get('importoConsolidato')
                 ?? $provvigione->get('importo')
                 ?? 0);
-            $previsto += (float) ($provvigione->get('importoPrevisto') ?? 0);
         }
 
         $invito->set([
-            'importoTotaleConsolidato' => $consolidato,
-            'importoTotalePrevisto' => $previsto,
-            'scostamentoTotale' => $consolidato - $previsto,
+            'importoTotaleConsolidato' => $totale,
+            'importoTotalePrevisto' => $totale,
+            'scostamentoTotale' => 0.0,
+            'dataScadenzaFatturazione' => $dataPagamento,
         ]);
 
         $this->entityManager->saveEntity($invito);

@@ -1,36 +1,32 @@
 {
-    "controller": "controllers/record",
-    "recordViews": {
-        "detail": "custom:views/provvigione/record/detail",
-        "edit": "custom:views/provvigione/record/edit"
-    },
+    "filterList": [
+        {
+            "name": "forecast",
+            "style": "info"
+        },
+        {
+            "name": "inPagamento",
+            "style": "warning"
+        },
+        {
+            "name": "pagato",
+            "style": "success"
+        },
+        {
+            "name": "inesigibile",
+            "style": "danger"
+        }
+    ],
     "massUpdate": true,
     "massUpdateFieldList": [
         "statoProvvigione",
         "assignedUser"
     ],
-    "filterList": [
-        {
-            "name": "consolidata",
-            "style": "primary"
-        },
-        {
-            "name": "prevista",
-            "style": "info"
-        },
-        {
-            "name": "inInvito",
-            "style": "warning"
-        },
-        {
-            "name": "fatturata",
-            "style": "success"
-        },
-        {
-            "name": "stornata",
-            "style": "danger"
-        }
-    ],
+    "controller": "controllers/record",
+    "recordViews": {
+        "detail": "custom:views/provvigione/record/detail",
+        "edit": "custom:views/provvigione/record/edit"
+    },
     "relationshipPanels": {
         "provvigioni": {
             "createDisabled": true,

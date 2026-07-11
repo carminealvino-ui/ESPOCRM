@@ -24,11 +24,10 @@
     },
     "options": {
         "statoProvvigione": {
-            "Prevista": "Prevista (forecast)",
-            "Consolidata": "Consolidata",
-            "InInvito": "In invito a fatturare",
-            "Fatturata": "Fatturata",
-            "Stornata": "Stornata"
+            "Forecast": "Forecast",
+            "In pagamento": "In pagamento",
+            "Pagato": "Pagato",
+            "Inesigibile": "Inesigibile"
         },
         "baseCalcolo": {
             "ImponibileContratto": "Imponibile contratto (IVA esclusa)",

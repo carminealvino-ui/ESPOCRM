@@ -162,6 +162,10 @@
             "type": "currency",
             "isCustom": true
         },
+        "importoCaparra": {
+            "type": "currency",
+            "isCustom": true
+        },
         "amount": {
             "required": false
         },
@@ -254,7 +258,9 @@
                 "",
                 "In lavorazione",
                 "Inserito",
+                "Appuntamento fissato",
                 "Installato",
+                "Chiuso",
                 "Sospeso",
                 "Annullato",
                 "Recesso"
@@ -263,7 +269,9 @@
                 "": null,
                 "In lavorazione": null,
                 "Inserito": null,
+                "Appuntamento fissato": null,
                 "Installato": null,
+                "Chiuso": "success",
                 "Sospeso": null,
                 "Annullato": null,
                 "Recesso": null

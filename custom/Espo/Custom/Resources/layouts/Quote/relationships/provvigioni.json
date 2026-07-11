@@ -24,6 +24,14 @@
         "align": "right"
     },
     {
+        "name": "statoProvvigione",
+        "width": 12
+    },
+    {
+        "name": "dataLiquidazionePrevista",
+        "width": 12
+    },
+    {
         "name": "importoConsolidato",
         "width": 12,
         "align": "right"
