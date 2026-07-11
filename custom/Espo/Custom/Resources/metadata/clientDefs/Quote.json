@@ -151,6 +151,10 @@
             "label": "Sospesi finanziamento"
         },
         {
+            "name": "contrattiSospesiOrdini",
+            "label": "Sospesi ordini"
+        },
+        {
             "name": "contrattiInLavorazione",
             "label": "In lavorazione"
         }

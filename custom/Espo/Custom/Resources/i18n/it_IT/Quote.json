@@ -119,7 +119,8 @@
             "Sospeso": "Sospeso",
             "Inserito": "Inserito",
             "Recesso": "Recesso",
-            "Appuntamento Fissato": "Appuntamento Fissato"
+            "Appuntamento Fissato": "Appuntamento Fissato",
+            "Chiuso": "Chiuso"
         },
         "status": {
             "Draft": "Bozza",

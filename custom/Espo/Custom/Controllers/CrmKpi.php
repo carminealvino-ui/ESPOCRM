@@ -4,20 +4,17 @@ namespace Espo\Custom\Controllers;
 
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
-use Espo\Core\ApplicationUser;
 use Espo\Core\Exceptions\Forbidden;
 use Espo\Core\InjectableFactory;
 use Espo\Custom\Services\CrmKpi\CrmKpiService;
 use Espo\Custom\Tools\CrmKpi\DateRange;
+use Espo\Entities\User;
 
-/**
- * Alias retrocompatibilità (CrmKpi/action/getSummary).
- */
 class CrmKpi
 {
     public function __construct(
         private InjectableFactory $injectableFactory,
-        private ApplicationUser $applicationUser,
+        private User $user,
     ) {}
 
     public function getActionGetSummary(Request $request, Response $response): object
@@ -37,9 +34,7 @@ class CrmKpi
 
     private function buildSummary(Request $request): object
     {
-        $user = $this->applicationUser->getUser();
-
-        if (!$user) {
+        if (!$this->user->getId()) {
             throw new Forbidden();
         }
 
@@ -49,6 +44,6 @@ class CrmKpi
 
         $service = $this->injectableFactory->create(CrmKpiService::class);
 
-        return $service->getSummary($user, $period, $productBrandId);
+        return $service->getSummary($this->user, $period, $productBrandId);
     }
 }

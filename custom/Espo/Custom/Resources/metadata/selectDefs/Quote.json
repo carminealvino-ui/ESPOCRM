@@ -1,0 +1,5 @@
+{
+    "primaryFilters": {
+        "contrattiSospesiOrdini": "Espo\\Custom\\Classes\\Select\\Quote\\PrimaryFilters\\ContrattiSospesiOrdini"
+    }
+}
