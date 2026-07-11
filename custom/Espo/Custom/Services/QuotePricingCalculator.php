@@ -546,6 +546,11 @@ class QuotePricingCalculator
 
             $this->syncPrezzoCodiceIvaInclusa($entity);
         }
+
+        if ($isQuote) {
+            $this->applyCostiAggiuntiviToTotalPrezzoCodice($entity, $taxInclusiveQuote);
+        }
+
         $this->syncListinoFromProducts($entity);
 
         if ($isQuote) {
@@ -1651,8 +1656,36 @@ class QuotePricingCalculator
     }
 
     /**
-     * Imposta shippingCost (costi aggiuntivi) con almeno €250 netti se tasso zero.
+     * Costi aggiuntivi (shippingCost) si sommano al Prezzo Codice Totale in UI.
      */
+    private function applyCostiAggiuntiviToTotalPrezzoCodice(Entity $quote, bool $taxInclusiveQuote): void
+    {
+        $costi = $this->floatOrNull($quote->get('shippingCost')) ?? 0.0;
+
+        if ($costi <= 0) {
+            return;
+        }
+
+        $total = $this->floatOrNull($quote->get('totalPrezzoCodice')) ?? 0.0;
+
+        if ($total <= 0) {
+            return;
+        }
+
+        $quote->set('totalPrezzoCodice', round($total + $costi, 2));
+
+        if (!$taxInclusiveQuote) {
+            $net = $this->floatOrNull($quote->get('prezzoCodiceIvaEsclusa')) ?? 0.0;
+
+            if ($net > 0) {
+                $quote->set('prezzoCodiceIvaEsclusa', round($net + $costi, 2));
+            }
+        }
+    }
+
+    /**
+     * Imposta shippingCost (costi aggiuntivi) con almeno €250 netti se tasso zero.
+     */ */
     private function syncCostiAggiuntiviOnQuote(Entity $quote): void
     {
         if ($quote->getEntityType() !== 'Quote' || !$this->resolveTassoZero($quote)) {

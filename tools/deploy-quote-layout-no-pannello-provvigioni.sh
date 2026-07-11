@@ -26,6 +26,7 @@ fetch() {
 FILES=(
   custom/Espo/Custom/Resources/layouts/Quote/detail.json
   custom/Espo/Custom/Resources/layouts/Quote/detailBottom.json
+  custom/Espo/Custom/Resources/layouts/Quote/detailBottomTotal.json
   custom/Espo/Custom/Resources/layouts/Quote/finanziamento.json
   custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json
   custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
@@ -35,8 +36,11 @@ FILES=(
   custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
   custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
   client/custom/src/views/quote/record/detail.js
+  client/custom/src/views/quote/record/item.js
   client/custom/src/views/quote/record/panels/items.js
   client/custom/src/views/quote/record/panels/finanziamento.js
+  client/custom/src/views/quote/fields/item-list.js
+  client/custom/src/handlers/quote/catalog-prices.js
   client/custom/src/handlers/quote/crea-prodotto-articoli.js
   client/custom/src/handlers/quote/ricalcola-provvigioni.js
 )
@@ -52,5 +56,5 @@ php clear_cache.php
 echo ""
 echo "=== Fine ==="
 echo "  - Pannello «Provvigioni (calcolo)» rimosso"
-echo "  - Costi aggiuntivi nel pannello Finanziamento (accanto a Tasso Zero)"
-echo "  - Tasso zero: auto €250 IVA escl. / €300 IVA incl. al salvataggio"
+echo "  - Costi aggiuntivi sotto Articoli (ex Spese di Installazione), non in Finanziamento"
+echo "  - Prezzo Codice Totale include costi aggiuntivi / tasso zero"

@@ -9,7 +9,6 @@ define('custom:views/quote/record/panels/finanziamento', ['views/record/panels/b
                 'importoCaparra',
                 'importoSaldo',
                 'tassoZero',
-                'shippingCost',
                 'importoFinanziato',
                 'rataPrestito',
                 'nrRate',

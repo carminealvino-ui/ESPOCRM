@@ -38,6 +38,14 @@
         }
     },
     "additionalLayouts": {
+        "detailBottomTotal": {
+            "type": "list",
+            "dataAttributeList": [
+                "name",
+                "view",
+                "customLabel"
+            ]
+        },
         "listForProduct": {
             "type": "list"
         }
