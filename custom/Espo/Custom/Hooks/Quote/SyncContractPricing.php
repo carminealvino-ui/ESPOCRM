@@ -96,7 +96,6 @@ class SyncContractPricing implements BeforeSave
     {
         /** @var string[] */
         $strictTriggers = [
-            'itemList',
             'amount',
             'taxAmount',
             'importoContratto',
@@ -113,7 +112,94 @@ class SyncContractPricing implements BeforeSave
             }
         }
 
-        return false;
+        return $this->isItemListSemanticallyChanged($entity);
+    }
+
+    private function isItemListSemanticallyChanged(Entity $entity): bool
+    {
+        if (!$entity->isAttributeChanged('itemList')) {
+            return false;
+        }
+
+        $current = $this->normalizeItemList($entity->get('itemList'));
+        $fetched = $this->normalizeItemList($entity->getFetched('itemList'));
+
+        return json_encode($current) !== json_encode($fetched);
+    }
+
+    /**
+     * @return list<array<string, float|int|string>>
+     */
+    private function normalizeItemList(mixed $itemList): array
+    {
+        if (!is_array($itemList)) {
+            return [];
+        }
+
+        $numericKeys = [
+            'quantity',
+            'unitPrice',
+            'listPrice',
+            'amount',
+            'taxAmount',
+            'prezzoCodice',
+            'discount',
+            'order',
+        ];
+        $normalized = [];
+
+        foreach ($itemList as $item) {
+            $row = [];
+
+            foreach ([
+                'id',
+                'productId',
+                'name',
+                'quantity',
+                'unitPrice',
+                'listPrice',
+                'amount',
+                'taxAmount',
+                'prezzoCodice',
+                'discount',
+                'order',
+            ] as $key) {
+                $value = $this->itemValue($item, $key);
+
+                if ($value === null || $value === '') {
+                    continue;
+                }
+
+                if (in_array($key, $numericKeys, true)) {
+                    $row[$key] = round((float) $value, 2);
+                } else {
+                    $row[$key] = (string) $value;
+                }
+            }
+
+            ksort($row);
+            $normalized[] = $row;
+        }
+
+        usort(
+            $normalized,
+            static fn (array $a, array $b): int => ((int) ($a['order'] ?? 0)) <=> ((int) ($b['order'] ?? 0))
+        );
+
+        return $normalized;
+    }
+
+    private function itemValue(mixed $item, string $key): mixed
+    {
+        if (is_object($item)) {
+            return $item->$key ?? null;
+        }
+
+        if (is_array($item)) {
+            return $item[$key] ?? null;
+        }
+
+        return null;
     }
 
     private function isFieldReallyChanged(Entity $entity, string $field): bool
@@ -126,6 +212,6 @@ class SyncContractPricing implements BeforeSave
             return true;
         }
 
-        return json_encode($entity->get($field)) !== json_encode($entity->getFetched($field));
+        return $this->isItemListSemanticallyChanged($entity);
     }
 }

@@ -6,7 +6,7 @@
  * Uso:
  *   php tools/bonifica-stato-finanziamento-legacy.php --dry-run
  *   php tools/bonifica-stato-finanziamento-legacy.php --apply
- *   php tools/bonifica-stato-finanziamento-legacy.php --apply --quote-id=6a462adfd3eedc239
+ *   php tools/bonifica-stato-finanziamento-legacy.php --sql --quote-id=6a462adfd3eedc239
  */
 declare(strict_types=1);
 
@@ -24,6 +24,7 @@ use Espo\ORM\EntityManager;
 
 $dryRun = in_array('--dry-run', $argv, true);
 $apply = in_array('--apply', $argv, true);
+$sql = in_array('--sql', $argv, true);
 $quoteId = null;
 
 foreach ($argv as $arg) {
@@ -32,8 +33,8 @@ foreach ($argv as $arg) {
     }
 }
 
-if (!$dryRun && !$apply) {
-    fwrite(STDERR, "Specificare --dry-run oppure --apply\n");
+if (!$dryRun && !$apply && !$sql) {
+    fwrite(STDERR, "Specificare --dry-run, --apply oppure --sql\n");
     exit(1);
 }
 
@@ -111,13 +112,25 @@ foreach ($entities as $entityType) {
             ]);
         }
 
+        if ($sql && $entityType === 'Quote') {
+            $pdo = $em->getPDO();
+            $stmt = $pdo->prepare(
+                'UPDATE `quote` SET `stato_finanziamento` = :target WHERE `id` = :id AND `deleted` = 0'
+            );
+            $stmt->execute([
+                'target' => $target,
+                'id' => $entity->getId(),
+            ]);
+            echo "  → SQL UPDATE eseguito\n";
+        }
+
         $updated++;
     }
 }
 
-$mode = $apply ? 'APPLY' : 'DRY-RUN';
-echo "\n{$mode}: {$updated} record da aggiornare su {$scanned} scansionati.\n";
+$mode = $sql ? 'SQL' : ($apply ? 'APPLY' : 'DRY-RUN');
+echo "\n{$mode}: {$updated} record aggiornati su {$scanned} scansionati.\n";
 
 if ($dryRun && $updated > 0) {
-    echo "Eseguire con --apply per applicare.\n";
+    echo "Eseguire con --apply o --sql per applicare.\n";
 }

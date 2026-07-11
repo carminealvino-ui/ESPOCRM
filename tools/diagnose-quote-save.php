@@ -18,6 +18,7 @@ require_once $crmRoot . '/bootstrap.php';
 
 use Espo\Core\Application;
 use Espo\Core\Utils\Metadata;
+use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
 $quoteId = $argv[1] ?? null;
@@ -63,11 +64,12 @@ $em = $app->getContainer()->get('entityManager');
 /** @var Metadata $metadata */
 $metadata = $app->getContainer()->get('metadata');
 
-$quote = $em->getEntityById('Quote', $quoteId);
+$entityDefsFile = $crmRoot . '/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json';
+$fileEnumOptions = [];
 
-if (!$quote) {
-    fwrite(STDERR, "Quote non trovato: {$quoteId}\n");
-    exit(1);
+if (is_readable($entityDefsFile)) {
+    $raw = json_decode((string) file_get_contents($entityDefsFile), true);
+    $fileEnumOptions = $raw['fields']['statoFinanziamento']['options'] ?? [];
 }
 
 $enumOptions = $metadata->get(['entityDefs', 'Quote', 'fields', 'statoFinanziamento', 'options']) ?? [];
@@ -79,40 +81,142 @@ if ($hookSrc !== '' && !str_contains($hookSrc, 'shouldRunFullPricingSync')) {
     $out('ATTENZIONE: SyncContractPricing senza whitelist — eseguire deploy-fix-quote-stato-finanziamento.sh');
 }
 
+$quote = $em->getEntityById('Quote', $quoteId);
+
+if (!$quote) {
+    fwrite(STDERR, "Quote non trovato: {$quoteId}\n");
+    exit(1);
+}
+
 $out('Quote: ' . (string) $quote->get('name'));
 $out('hookVersion: ' . (string) ($quote->get('hookVersion') ?? '(vuoto)'));
 $out('statoFinanziamento attuale: ' . (string) ($quote->get('statoFinanziamento') ?? '(vuoto)'));
 $out('statoContratto: ' . (string) ($quote->get('statoContratto') ?? '(vuoto)'));
+$out('finanziamento: ' . ((bool) $quote->get('finanziamento') ? 'true' : 'false'));
 
 $currentStato = trim((string) ($quote->get('statoFinanziamento') ?? ''));
 
+if ($fileEnumOptions !== []) {
+    $out('enum su file: ' . implode(', ', array_filter($fileEnumOptions, static fn ($v) => $v !== '')));
+}
+
+if ($enumOptions !== []) {
+    $out('enum in cache metadata: ' . implode(', ', array_filter($enumOptions, static fn ($v) => $v !== '')));
+}
+
+if ($fileEnumOptions !== $enumOptions) {
+    $out('ATTENZIONE: enum file ≠ cache metadata → eseguire php clear_cache.php && php rebuild.php');
+}
+
 if ($currentStato !== '' && $enumOptions !== [] && !in_array($currentStato, $enumOptions, true)) {
-    $out('ATTENZIONE: valore attuale NON presente in enum entityDefs → deploy enum legacy richiesto');
+    $out('ATTENZIONE: valore attuale NON presente in enum cache');
 }
 
 if ($enumOptions !== [] && !in_array($newStato, $enumOptions, true)) {
     $out('ERRORE: stato richiesto "' . $newStato . '" non è in enum entityDefs');
-    $out('Opzioni: ' . implode(', ', array_filter($enumOptions, static fn ($v) => $v !== '')));
     exit(3);
 }
 
-$out('Provo save con statoFinanziamento = ' . $newStato);
+$trySave = static function (
+    EntityManager $em,
+    Entity $entity,
+    array $options,
+    string $label
+) use ($out): bool {
+    $clone = $em->getEntityById('Quote', $entity->getId());
+
+    if (!$clone) {
+        $out("  {$label}: impossibile ricaricare entità");
+        return false;
+    }
+
+    $clone->set('statoFinanziamento', $entity->get('statoFinanziamento'));
+
+    try {
+        $startedAt = microtime(true);
+        $em->saveEntity($clone, $options);
+        $elapsedMs = (int) round((microtime(true) - $startedAt) * 1000);
+        $out("  {$label}: OK ({$elapsedMs} ms)");
+
+        return true;
+    } catch (\Throwable $e) {
+        $out("  {$label}: ERRORE — " . $e->getMessage());
+        return false;
+    }
+};
+
+$out('');
+$out('=== Test salvataggio a strati (statoFinanziamento = ' . $newStato . ') ===');
 
 $quote->set('statoFinanziamento', $newStato);
 
-try {
-    $startedAt = microtime(true);
-    $em->saveEntity($quote);
-    $elapsedMs = (int) round((microtime(true) - $startedAt) * 1000);
+$trySave($em, $quote, [
+    'skipHooks' => true,
+    'skipFormula' => true,
+    'silent' => true,
+], '1) skipHooks + skipFormula');
 
+$trySave($em, $quote, [
+    'skipFormula' => true,
+], '2) skipFormula (hook attivi)');
+
+$fullOk = $trySave($em, $quote, [], '3) save completo (come UI)');
+
+if ($fullOk) {
     $saved = $em->getEntityById('Quote', $quoteId);
     $savedStato = $saved ? (string) ($saved->get('statoFinanziamento') ?? '(vuoto)') : '(non ricaricato)';
-
-    $out('OK: salvataggio riuscito (' . $elapsedMs . ' ms)');
-    $out('statoFinanziamento dopo save: ' . $savedStato);
-} catch (\Throwable $e) {
-    $out('ERRORE: ' . $e->getMessage());
     $out('');
-    $out($e->getTraceAsString());
+    $out('statoFinanziamento dopo save: ' . $savedStato);
+} else {
+    $out('');
+    $out('Se 1) OK ma 3) fallisce → problema in formula o hook.');
+    $out('Se 1) fallisce → enum/DB/validazione core.');
+}
+
+$logDir = $crmRoot . '/data/logs';
+$logCandidates = [
+    $logDir . '/espo-' . date('Y-m-d') . '.log',
+    $logDir . '/espo-' . date('Y-m-d', strtotime('-1 day')) . '.log',
+    $logDir . '/espocrm.log',
+];
+
+$out('');
+$out('=== Ultimi errori log (Quote / statoFinanziamento) ===');
+
+foreach ($logCandidates as $logFile) {
+    if (!is_readable($logFile)) {
+        continue;
+    }
+
+    $lines = file($logFile, FILE_IGNORE_NEW_LINES);
+
+    if ($lines === false) {
+        continue;
+    }
+
+    $matches = array_values(array_filter(
+        $lines,
+        static fn (string $line): bool => stripos($line, 'quote') !== false
+            || stripos($line, 'statoFinanziamento') !== false
+            || stripos($line, 'SyncContractPricing') !== false
+            || stripos($line, 'ERRORE') !== false
+            || stripos($line, 'ERROR') !== false
+            || stripos($line, 'CRITICAL') !== false
+    ));
+
+    $tail = array_slice($matches, -8);
+
+    if ($tail === []) {
+        continue;
+    }
+
+    $out('--- ' . basename($logFile) . ' ---');
+
+    foreach ($tail as $line) {
+        $out($line);
+    }
+}
+
+if (!$fullOk) {
     exit(2);
 }
