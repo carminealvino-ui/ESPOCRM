@@ -73,13 +73,12 @@ foreach ($entities as $entityType) {
     ]) ?? [];
 
     $repo = $em->getRDBRepository($entityType);
-    $query = $repo->createBuilder()->build();
 
     if ($quoteId !== null && $entityType === 'Quote') {
-        $query = $repo->where(['id' => $quoteId])->createBuilder()->build();
+        $collection = $repo->where(['id' => $quoteId])->find();
+    } else {
+        $collection = $repo->find();
     }
-
-    $collection = $repo->clone($query)->find();
 
     foreach ($collection as $entity) {
         $scanned++;

@@ -44,6 +44,17 @@ for rel in "${FILES[@]}"; do
   fetch "${rel}"
 done
 
+ORPHAN_HOOKS=(
+  custom/Espo/Custom/Hooks/Quote/SyncProvvigioniStatoFromContratto.php
+)
+
+for rel in "${ORPHAN_HOOKS[@]}"; do
+  if [[ -f "${rel}" ]]; then
+    rm -f "${rel}"
+    echo "RIMOSSO hook obsoleto ${rel}"
+  fi
+done
+
 php clear_cache.php
 php rebuild.php
 php clear_cache.php
@@ -56,6 +67,7 @@ echo "  - statoFinanziamento Respinto/Annullato → provvigioni Inesigibile"
 echo "  - Formula Quote semplificata (niente ricalcolo nome per CreateContratto)"
 echo "  - optimisticConcurrencyControl disattivato su Quote"
 echo "  - enum statoFinanziamento: valori legacy ripristinati (In valutazione, In attesa di OTP, ...)"
+echo "  - rimosso hook obsoleto SyncProvvigioniStatoFromContratto (causa 500)"
 echo ""
 echo "=== Prossimi passi (copia tutto il blocco) ==="
 echo "cd \"${CRM_ROOT}\""
