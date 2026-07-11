@@ -22,6 +22,12 @@
                     "name": "tassoZero"
                 },
                 {
+                    "name": "shippingCost",
+                    "customLabel": "Costi aggiuntivi"
+                }
+            ],
+            [
+                {
                     "name": "importoFinanziato"
                 },
                 {

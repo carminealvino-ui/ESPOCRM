@@ -30,6 +30,10 @@ FILES=(
   custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json
   custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
   custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
+  custom/Espo/Custom/Services/QuotePricingCalculator.php
+  custom/Espo/Custom/Services/QuoteProvvigioniSync.php
+  custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
+  custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
 )
 
 for rel in "${FILES[@]}"; do
@@ -41,4 +45,7 @@ php rebuild.php
 php clear_cache.php
 
 echo ""
-echo "=== Fine: pannello «Provvigioni (calcolo)» rimosso; Finanziamento sotto Articoli ==="
+echo "=== Fine ==="
+echo "  - Pannello «Provvigioni (calcolo)» rimosso"
+echo "  - Costi aggiuntivi nel pannello Finanziamento (accanto a Tasso Zero)"
+echo "  - Tasso zero: auto €250 IVA escl. / €300 IVA incl. al salvataggio"

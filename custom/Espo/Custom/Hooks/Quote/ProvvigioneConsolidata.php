@@ -37,6 +37,8 @@ class ProvvigioneConsolidata implements AfterSave
             'dataInstallazione',
             'productCategoryId',
             'minusPlus',
+            'shippingCost',
+            'tassoZero',
             'prezzoListinoIvaEsclusa',
             'prezzoCodiceIvaEsclusa',
             'margineSuListino',
