@@ -72,6 +72,13 @@ if (!$quote) {
 
 $enumOptions = $metadata->get(['entityDefs', 'Quote', 'fields', 'statoFinanziamento', 'options']) ?? [];
 
+$hookFile = $crmRoot . '/custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php';
+$hookSrc = is_readable($hookFile) ? (string) file_get_contents($hookFile) : '';
+
+if ($hookSrc !== '' && !str_contains($hookSrc, 'shouldRunFullPricingSync')) {
+    $out('ATTENZIONE: SyncContractPricing senza whitelist — eseguire deploy-fix-quote-stato-finanziamento.sh');
+}
+
 $out('Quote: ' . (string) $quote->get('name'));
 $out('hookVersion: ' . (string) ($quote->get('hookVersion') ?? '(vuoto)'));
 $out('statoFinanziamento attuale: ' . (string) ($quote->get('statoFinanziamento') ?? '(vuoto)'));

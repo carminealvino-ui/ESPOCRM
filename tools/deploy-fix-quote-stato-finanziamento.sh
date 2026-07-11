@@ -36,6 +36,7 @@ FILES=(
   custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
   custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json
   tools/diagnose-quote-save.php
+  tools/bonifica-stato-finanziamento-legacy.php
 )
 
 for rel in "${FILES[@]}"; do
@@ -55,5 +56,9 @@ echo "  - Formula Quote semplificata (niente ricalcolo nome per CreateContratto)
 echo "  - optimisticConcurrencyControl disattivato su Quote"
 echo "  - enum statoFinanziamento: valori legacy ripristinati (In valutazione, In attesa di OTP, ...)"
 echo ""
-echo "Se ancora errore, diagnostica da SSH:"
+echo "Verifica deploy:"
 echo "  php tools/diagnose-quote-save.php 6a462adfd3eedc239 \"Approvato\""
+echo ""
+echo "Se compare ATTENZIONE enum, oppure per normalizzare i dati legacy:"
+echo "  php tools/bonifica-stato-finanziamento-legacy.php --dry-run"
+echo "  php tools/bonifica-stato-finanziamento-legacy.php --apply --quote-id=6a462adfd3eedc239"
