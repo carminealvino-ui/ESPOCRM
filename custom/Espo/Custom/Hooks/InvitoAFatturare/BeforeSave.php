@@ -2,7 +2,7 @@
 
 namespace Espo\Custom\Hooks\InvitoAFatturare;
 
-use Espo\Core\Hook\Hook\BeforeSave;
+use Espo\Core\Hook\Hook\BeforeSave as BeforeSaveHook;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
@@ -10,7 +10,7 @@ use Espo\ORM\Repository\Option\SaveOptions;
 /**
  * Totali amministrativi invito a fatturare. Lo stato provvigione è guidato dallo stato contratto.
  */
-class BeforeSave implements BeforeSave
+class BeforeSave implements BeforeSaveHook
 {
     public static int $order = 9;
 

@@ -18,11 +18,17 @@ require_once $crmRoot . '/bootstrap.php';
 
 use Espo\Core\Application;
 use Espo\Core\Utils\Metadata;
-use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
 $quoteId = $argv[1] ?? null;
 $newStato = $argv[2] ?? 'Approvato';
+$mode = null;
+
+foreach ($argv as $arg) {
+    if (str_starts_with($arg, '--mode=')) {
+        $mode = substr($arg, strlen('--mode='));
+    }
+}
 
 if (!$quoteId) {
     fwrite(STDERR, "Uso: php tools/diagnose-quote-save.php <quoteId> [statoFinanziamento]\n");
@@ -38,6 +44,45 @@ $out = static function (string $message): void {
 
     flush();
 };
+
+if ($mode !== null) {
+    $app = new Application();
+    $app->setupSystemUser();
+
+    /** @var EntityManager $em */
+    $em = $app->getContainer()->get('entityManager');
+    $quote = $em->getEntityById('Quote', $quoteId);
+
+    if (!$quote) {
+        fwrite(STDERR, "Quote non trovato: {$quoteId}\n");
+        exit(1);
+    }
+
+    $quote->set('statoFinanziamento', $newStato);
+
+    $options = match ($mode) {
+        'db' => ['skipHooks' => true, 'skipFormula' => true, 'silent' => true],
+        'hooks' => ['skipFormula' => true],
+        'full' => [],
+        default => null,
+    };
+
+    if ($options === null) {
+        fwrite(STDERR, "Mode non valida: {$mode}\n");
+        exit(1);
+    }
+
+    try {
+        $startedAt = microtime(true);
+        $em->saveEntity($quote, $options);
+        $elapsedMs = (int) round((microtime(true) - $startedAt) * 1000);
+        $out("OK ({$elapsedMs} ms)");
+        exit(0);
+    } catch (\Throwable $e) {
+        $out('ERRORE: ' . $e->getMessage());
+        exit(2);
+    }
+}
 
 register_shutdown_function(static function () use ($out): void {
     $error = error_get_last();
@@ -117,50 +162,32 @@ if ($enumOptions !== [] && !in_array($newStato, $enumOptions, true)) {
     exit(3);
 }
 
-$trySave = static function (
-    EntityManager $em,
-    Entity $entity,
-    array $options,
-    string $label
-) use ($out): bool {
-    $clone = $em->getEntityById('Quote', $entity->getId());
+$runIsolated = static function (string $label, string $testMode) use ($crmRoot, $quoteId, $newStato, $out): bool {
+    $php = PHP_BINARY;
+    $script = __FILE__;
+    $cmd = sprintf(
+        '%s %s %s %s --mode=%s 2>&1',
+        escapeshellarg($php),
+        escapeshellarg($script),
+        escapeshellarg($quoteId),
+        escapeshellarg($newStato),
+        escapeshellarg($testMode)
+    );
 
-    if (!$clone) {
-        $out("  {$label}: impossibile ricaricare entità");
-        return false;
-    }
+    $output = [];
+    exec($cmd, $output, $exitCode);
+    $line = trim(implode(' | ', $output));
+    $out("  {$label}: " . ($exitCode === 0 ? $line : 'ERRORE — ' . $line));
 
-    $clone->set('statoFinanziamento', $entity->get('statoFinanziamento'));
-
-    try {
-        $startedAt = microtime(true);
-        $em->saveEntity($clone, $options);
-        $elapsedMs = (int) round((microtime(true) - $startedAt) * 1000);
-        $out("  {$label}: OK ({$elapsedMs} ms)");
-
-        return true;
-    } catch (\Throwable $e) {
-        $out("  {$label}: ERRORE — " . $e->getMessage());
-        return false;
-    }
+    return $exitCode === 0;
 };
 
 $out('');
 $out('=== Test salvataggio a strati (statoFinanziamento = ' . $newStato . ') ===');
 
-$quote->set('statoFinanziamento', $newStato);
-
-$trySave($em, $quote, [
-    'skipHooks' => true,
-    'skipFormula' => true,
-    'silent' => true,
-], '1) skipHooks + skipFormula');
-
-$trySave($em, $quote, [
-    'skipFormula' => true,
-], '2) skipFormula (hook attivi)');
-
-$fullOk = $trySave($em, $quote, [], '3) save completo (come UI)');
+$runIsolated('1) skipHooks + skipFormula', 'db');
+$runIsolated('2) skipFormula (hook attivi)', 'hooks');
+$fullOk = $runIsolated('3) save completo (come UI)', 'full');
 
 if ($fullOk) {
     $saved = $em->getEntityById('Quote', $quoteId);
@@ -199,6 +226,7 @@ foreach ($logCandidates as $logFile) {
         static fn (string $line): bool => stripos($line, 'quote') !== false
             || stripos($line, 'statoFinanziamento') !== false
             || stripos($line, 'SyncContractPricing') !== false
+            || stripos($line, 'InvitoAFatturare') !== false
             || stripos($line, 'ERRORE') !== false
             || stripos($line, 'ERROR') !== false
             || stripos($line, 'CRITICAL') !== false

@@ -23,6 +23,7 @@ fetch() {
 }
 
 FILES=(
+  custom/Espo/Custom/Hooks/InvitoAFatturare/BeforeSave.php
   custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
   custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php
   custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php

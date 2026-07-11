@@ -38,6 +38,11 @@ if (!$dryRun && !$apply && !$sql) {
     exit(1);
 }
 
+echo "=== Bonifica statoFinanziamento legacy ===\n";
+if ($sql) {
+    echo "Modalità: SQL diretto su tabella quote\n";
+}
+
 /** @var array<string, string> */
 const LEGACY_MAP = [
     'In valutazione' => 'In lavorazione',
