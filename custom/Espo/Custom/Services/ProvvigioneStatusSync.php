@@ -42,7 +42,7 @@ class ProvvigioneStatusSync
 
         return match ($stato) {
             'Inserito', 'In lavorazione' => self::FORECAST,
-            'Appuntamento fissato', 'Installato' => self::IN_PAGAMENTO,
+            'Appuntamento Fissato', 'Appuntamento fissato', 'Installato' => self::IN_PAGAMENTO,
             'Chiuso' => self::PAGATO,
             'Sospeso', 'Annullato', 'Recesso' => self::INESIGIBILE,
             default => self::FORECAST,
@@ -197,7 +197,7 @@ class ProvvigioneStatusSync
     {
         $stato = trim((string) ($quote->get('statoContratto') ?? ''));
 
-        return in_array($stato, ['Installato', 'Appuntamento fissato', 'Chiuso'], true);
+        return in_array($stato, ['Installato', 'Appuntamento Fissato', 'Appuntamento fissato', 'Chiuso'], true);
     }
 
     private function hasCaparraOltreSoglia(Entity $quote): bool
