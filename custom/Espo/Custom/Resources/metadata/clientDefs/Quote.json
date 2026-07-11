@@ -1,0 +1,122 @@
+{
+    "controller": "controllers/record",
+    "recordViews": {
+        "detail": "custom:views/quote/record/detail"
+    },
+    "viewSetupHandlers": {
+        "record/detail": [
+            "__APPEND__",
+            "custom:handlers/quote/crea-prodotto-articoli"
+        ],
+        "record/edit": [
+            "__APPEND__",
+            "custom:handlers/quote/crea-prodotto-articoli"
+        ]
+    },
+    "iconClass": "fas fa-file-contract",
+    "buttonList": [
+        {
+            "name": "ricalcolaProvvigioni",
+            "label": "Ricalcola provvigioni",
+            "style": "primary",
+            "action": "ricalcolaProvvigioni",
+            "handler": "custom:handlers/quote/ricalcola-provvigioni",
+            "acl": "edit"
+        }
+    ],
+    "relationshipPanels": {
+        "fornitorePartner": {
+            "layout": null,
+            "selectPrimaryFilterName": null
+        },
+        "provvigioni": {
+            "createDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": false,
+            "order": 20,
+            "layout": "listSmall"
+        }
+    },
+    "additionalLayouts": {
+        "listForProduct": {
+            "type": "list"
+        }
+    },
+    "bottomPanels": {
+        "detail": [
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "custom:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true,
+                "order": 0
+            }
+        ],
+        "edit": [
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "custom:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true,
+                "order": 0
+            }
+        ],
+        "detailSmall": [
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "custom:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true,
+                "order": 0
+            }
+        ],
+        "editSmall": [
+            {
+                "name": "items",
+                "label": "Items",
+                "view": "custom:views/quote/record/panels/items",
+                "notRefreshable": true,
+                "sticked": true,
+                "isForm": true,
+                "order": 0
+            }
+        ]
+    },
+    "kanbanViewMode": false,
+    "color": null,
+    "defaultSortBy": "dateQuoted",
+    "defaultOrder": "desc",
+    "filterList": [
+        "__APPEND__",
+        {
+            "name": "meseCorrente",
+            "label": "Mese corrente"
+        },
+        {
+            "name": "dataInstallazionePeriodo",
+            "label": "Data installazione nel periodo"
+        },
+        {
+            "name": "dataInstallazioneMesePrecedente",
+            "label": "Data installazione mese precedente"
+        },
+        {
+            "name": "contrattiBacklog",
+            "label": "Contratti in backlog"
+        },
+        {
+            "name": "contrattiSospesiFinanziamento",
+            "label": "Sospesi finanziamento"
+        },
+        {
+            "name": "contrattiInLavorazione",
+            "label": "In lavorazione"
+        }
+    ]
+}

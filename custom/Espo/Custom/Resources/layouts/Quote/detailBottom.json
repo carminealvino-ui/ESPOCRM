@@ -1,0 +1,15 @@
+[
+    {
+        "name": "finanziamento",
+        "label": "Finanziamento",
+        "view": "views/record/panels/bottom",
+        "layout": "finanziamento",
+        "order": 10
+    },
+    {
+        "name": "provvigioni",
+        "label": "Provvigioni",
+        "view": "views/record/panels/relationship",
+        "order": 20
+    }
+]
