@@ -128,6 +128,7 @@ class CrmKpiService
 
     private function getAppuntamentiTile(KpiContext $ctx): object
     {
+        $pianificati = $this->countAppuntamentiPianificati($ctx);
         $lordi = $this->countAppuntamentiLordi($ctx);
         $ingestibili = $this->countAppuntamentiIngestibili($ctx);
         $netti = $this->countAppuntamentiNetti($ctx);
@@ -138,6 +139,7 @@ class CrmKpiService
 
         return (object) [
             'lordi' => $lordi,
+            'pianificati' => $pianificati,
             'annullati' => $annullati,
             'totali' => $totali,
             'ingestibili' => $ingestibili,
@@ -220,7 +222,21 @@ class CrmKpiService
     {
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where($ctx->appuntamentoWhere())
+            ->where(array_merge(
+                $ctx->appuntamentoWhere(),
+                $this->notPianificatoWhere()
+            ))
+            ->count();
+    }
+
+    private function countAppuntamentiPianificati(KpiContext $ctx): int
+    {
+        return (int) $this->entityManager
+            ->getRDBRepository('Appuntamento')
+            ->where(array_merge(
+                $ctx->appuntamentoWhere(),
+                ['status' => 'Planned']
+            ))
             ->count();
     }
 
@@ -247,6 +263,14 @@ class CrmKpiService
                 ['status' => 'Held']
             ))
             ->count();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function notPianificatoWhere(): array
+    {
+        return ['status!=' => 'Planned'];
     }
 
     /**
@@ -839,14 +863,18 @@ class CrmKpiService
             $weekday = (int) (new \DateTimeImmutable($date))->format('N');
             $weekIndex = WeekOfMonth::resolveIndexForDate($date);
 
-            $weekdayBuckets[$weekday]['appuntamentiLordi']++;
+            if (!$this->isAppuntamentoPianificato($appuntamento)) {
+                $weekdayBuckets[$weekday]['appuntamentiLordi']++;
+            }
 
             if ($this->isAppuntamentoNetto($appuntamento)) {
                 $weekdayBuckets[$weekday]['appuntamentiNetti']++;
             }
 
             if ($weekIndex !== null && isset($weekBuckets[$weekIndex])) {
-                $weekBuckets[$weekIndex]['appuntamentiLordi']++;
+                if (!$this->isAppuntamentoPianificato($appuntamento)) {
+                    $weekBuckets[$weekIndex]['appuntamentiLordi']++;
+                }
 
                 if ($this->isAppuntamentoNetto($appuntamento)) {
                     $weekBuckets[$weekIndex]['appuntamentiNetti']++;
@@ -1049,6 +1077,11 @@ class CrmKpiService
         }
 
         return substr((string) $dateStart, 0, 10);
+    }
+
+    private function isAppuntamentoPianificato(Entity $appuntamento): bool
+    {
+        return $appuntamento->get('status') === 'Planned';
     }
 
     private function isAppuntamentoNetto(Entity $appuntamento): bool

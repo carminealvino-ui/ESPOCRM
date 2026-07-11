@@ -388,6 +388,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         mapAppuntamentiTile: function (tile) {
             return this.mapMetricTile(tile, [
                 {key: 'lordi', label: 'Lordi'},
+                {key: 'pianificati', label: 'Pianificati'},
                 {key: 'annullati', label: 'Annullati'},
                 {key: 'totali', label: 'Totali'},
                 {key: 'ingestibili', label: 'Ingestibili'},
@@ -454,15 +455,20 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         mapMetricTile: function (tile, rows, formatValue) {
             const source = tile || {};
             const baseLordi = Number(source.lordi || 0);
+            const basePianificati = Number(source.pianificati || 0);
             const baseTotali = Number(source.totali || 0);
+            const baseLordiConPianificati = baseLordi + basePianificati;
 
             return rows.map(def => {
                 const raw = Number(source[def.key] || 0);
                 let value = formatValue.call(this, raw);
                 const percentLordi = this.formatPercentOf(raw, baseLordi);
+                const percentLordiConPianificati = this.formatPercentOf(raw, baseLordiConPianificati);
 
                 if (def.key === 'lordi') {
                     value += ' · ' + percentLordi;
+                } else if (def.key === 'pianificati') {
+                    value += ' · ' + percentLordiConPianificati;
                 } else if (
                     def.key === 'annullati'
                     || def.key === 'recessi'
