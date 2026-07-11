@@ -34,6 +34,11 @@ FILES=(
   custom/Espo/Custom/Services/QuoteProvvigioniSync.php
   custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
   custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
+  client/custom/src/views/quote/record/detail.js
+  client/custom/src/views/quote/record/panels/items.js
+  client/custom/src/views/quote/record/panels/finanziamento.js
+  client/custom/src/handlers/quote/crea-prodotto-articoli.js
+  client/custom/src/handlers/quote/ricalcola-provvigioni.js
 )
 
 for rel in "${FILES[@]}"; do

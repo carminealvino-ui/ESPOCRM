@@ -52,6 +52,13 @@
                 "sticked": true,
                 "isForm": true,
                 "order": 0
+            },
+            {
+                "name": "finanziamento",
+                "label": "Finanziamento",
+                "view": "custom:views/quote/record/panels/finanziamento",
+                "isForm": true,
+                "order": 10
             }
         ],
         "edit": [
@@ -63,6 +70,13 @@
                 "sticked": true,
                 "isForm": true,
                 "order": 0
+            },
+            {
+                "name": "finanziamento",
+                "label": "Finanziamento",
+                "view": "custom:views/quote/record/panels/finanziamento",
+                "isForm": true,
+                "order": 10
             }
         ],
         "detailSmall": [
@@ -74,6 +88,13 @@
                 "sticked": true,
                 "isForm": true,
                 "order": 0
+            },
+            {
+                "name": "finanziamento",
+                "label": "Finanziamento",
+                "view": "custom:views/quote/record/panels/finanziamento",
+                "isForm": true,
+                "order": 10
             }
         ],
         "editSmall": [
@@ -85,6 +106,13 @@
                 "sticked": true,
                 "isForm": true,
                 "order": 0
+            },
+            {
+                "name": "finanziamento",
+                "label": "Finanziamento",
+                "view": "custom:views/quote/record/panels/finanziamento",
+                "isForm": true,
+                "order": 10
             }
         ]
     },
