@@ -54,7 +54,13 @@
         "prezzoCodiceIvaEsclusa": "Prezzo a codice (IVA escl.)",
         "contattoPersonaleArquati": "Contatto personale ARQUATI (+5%)",
         "integrazionePncPercentuale": "Integrazione PNC %",
-        "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)"
+        "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)",
+        "statoContratto": "Stato Contratto",
+        "finanziamento": "Finanziamento",
+        "statoFinanziamento": "Stato Finanziamento",
+        "importoCaparra": "Importo Caparra",
+        "dataInstallazione": "Data Installazione",
+        "dataAttivazione": "Data Attivazione"
     },
     "links": {
         "cAP": "CAP",
@@ -73,6 +79,26 @@
         "Shipping Providers": "Installatore"
     },
     "options": {
+        "statoContratto": {
+            "In lavorazione": "In lavorazione",
+            "Inserito": "Inserito",
+            "Appuntamento fissato": "Appuntamento fissato",
+            "Installato": "Installato",
+            "Chiuso": "Chiuso",
+            "Sospeso": "Sospeso",
+            "Annullato": "Annullato",
+            "Recesso": "Recesso",
+            "": ""
+        },
+        "statoFinanziamento": {
+            "In lavorazione": "In lavorazione",
+            "In rivalutazione": "In rivalutazione",
+            "In Attesa Documentazione": "In Attesa Documentazione",
+            "Approvato": "Approvato",
+            "Respinto": "Respinto",
+            "Annullato": "Annullato",
+            "": ""
+        },
         "inventoryStatus": {
             "Available": "Disponibile",
             "Not Available": "Non Disponibile"

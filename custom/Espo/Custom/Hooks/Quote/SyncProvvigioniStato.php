@@ -1,22 +1,20 @@
 <?php
 
-namespace Espo\Custom\Hooks\Opportunity;
+namespace Espo\Custom\Hooks\Quote;
 
 use Espo\Core\Hook\Hook\AfterSave;
 use Espo\Custom\Services\ProvvigioneStatusSync;
 use Espo\ORM\Entity;
-use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Allinea stato provvigioni e date pagamento al variare dello stato contratto.
+ * Allinea stato provvigioni al variare dello stato contratto (Quote).
  */
 class SyncProvvigioniStato implements AfterSave
 {
-    public static int $order = 20;
+    public static int $order = 18;
 
     public function __construct(
-        private EntityManager $entityManager,
         private ProvvigioneStatusSync $statusSync
     ) {}
 
@@ -32,11 +30,13 @@ class SyncProvvigioniStato implements AfterSave
 
         $watch = [
             'statoContratto',
-            'installazione',
+            'dataInstallazione',
+            'dataAttivazione',
             'importoCaparra',
-            'importoOpportunit',
+            'importoContratto',
             'amount',
-            'closeDate',
+            'dateOrdered',
+            'dateQuoted',
         ];
 
         $changed = $entity->isNew();
@@ -52,13 +52,6 @@ class SyncProvvigioniStato implements AfterSave
             return;
         }
 
-        $quotes = $this->entityManager
-            ->getRDBRepository('Quote')
-            ->where(['opportunityId' => $entity->getId()])
-            ->find();
-
-        foreach ($quotes as $quote) {
-            $this->statusSync->syncProvvigioniForQuote($quote, $entity);
-        }
+        $this->statusSync->syncProvvigioniForQuote($entity);
     }
 }

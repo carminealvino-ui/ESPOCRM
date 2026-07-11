@@ -38,6 +38,9 @@
                     "name": "status"
                 },
                 {
+                    "name": "statoContratto"
+                },
+                {
                     "name": "importoContratto"
                 }
             ],

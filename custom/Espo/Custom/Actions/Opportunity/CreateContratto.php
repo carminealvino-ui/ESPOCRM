@@ -682,6 +682,25 @@ class CreateContratto
             'ordineIncompletoAriel' =>
                 (bool) $opportunity->get('ordineIncompletoAriel'),
 
+            // =================================================
+            // STATO CONTRATTO (driver provvigioni)
+            // =================================================
+
+            'statoContratto' =>
+                $opportunity->get('statoContratto') ?: 'In lavorazione',
+
+            'finanziamento' =>
+                (bool) $opportunity->get('finanziamento'),
+
+            'statoFinanziamento' =>
+                $opportunity->get('statoFinanziamento'),
+
+            'importoCaparra' =>
+                $opportunity->get('importoCaparra'),
+
+            'dataInstallazione' =>
+                $opportunity->get('installazione'),
+
             'minusPlus' =>
                 $this->resolveMinusPlusForQuote($opportunity, $amount),
 

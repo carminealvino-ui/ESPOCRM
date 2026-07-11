@@ -170,7 +170,7 @@ class ProvvigioneManager
         $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
-        $this->statusSync->syncProvvigioniForQuote($quote, $opportunity);
+        $this->statusSync->syncProvvigioniForQuote($quote);
         $this->refreshQuoteTotaleProvvigioni($quote);
 
         return $provvigione;
@@ -419,7 +419,7 @@ class ProvvigioneManager
 
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
-        $this->statusSync->syncProvvigioniForQuote($quote, $opportunity);
+        $this->statusSync->syncProvvigioniForQuote($quote);
         $this->refreshQuoteTotaleProvvigioni($quote);
 
         return $base;
@@ -681,7 +681,7 @@ class ProvvigioneManager
         $provvigione = $this->findProvvigioneByContrattoAndTipo($quote->getId(), $tipo)
             ?? $this->entityManager->createEntity('Provvigione');
 
-        $stato = $this->statusSync->resolveStatoFromOpportunity($opportunity);
+        $stato = $this->statusSync->resolveStatoFromQuote($quote);
 
         $this->applyProvvigioneFromCalculation(
             $provvigione,
@@ -798,12 +798,8 @@ class ProvvigioneManager
         }
 
         if ($giorni > 0 && $eventDate && $stato !== ProvvigioneStatusSync::FORECAST) {
-            $opportunity = $dateSource->getEntityType() === 'Quote'
-                ? $this->resolveOpportunityForQuote($dateSource, null)
-                : ($dateSource->getEntityType() === 'Opportunity' ? $dateSource : null);
             $quote = $dateSource->getEntityType() === 'Quote' ? $dateSource : null;
-
-            $dataPagamento = $this->statusSync->resolveDataPagamento($quote, $opportunity);
+            $dataPagamento = $quote ? $this->statusSync->resolveDataPagamento($quote) : null;
 
             if ($dataPagamento !== null) {
                 $provvigione->set('dataLiquidazionePrevista', $dataPagamento);
@@ -925,7 +921,7 @@ class ProvvigioneManager
         $plus = $this->findProvvigioneByContrattoAndTipo($quote->getId(), 'Plus Provvigionale')
             ?? $this->entityManager->createEntity('Provvigione');
 
-        $stato = $this->statusSync->resolveStatoFromOpportunity($opportunity);
+        $stato = $this->statusSync->resolveStatoFromQuote($quote);
 
         $this->applyProvvigioneFromCalculation(
             $plus,

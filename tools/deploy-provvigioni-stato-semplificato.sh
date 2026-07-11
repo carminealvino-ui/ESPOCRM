@@ -26,7 +26,8 @@ FILES=(
   custom/Espo/Custom/Services/ProvvigioneStatusSync.php
   custom/Espo/Custom/Services/ProvvigioneManager.php
   custom/Espo/Custom/Services/InvitoAFatturareManager.php
-  custom/Espo/Custom/Hooks/Opportunity/SyncProvvigioniStato.php
+  custom/Espo/Custom/Hooks/Quote/SyncProvvigioniStato.php
+  custom/Espo/Custom/Actions/Opportunity/CreateContratto.php
   custom/Espo/Custom/Hooks/InvitoAFatturare/BeforeSave.php
   custom/Espo/Custom/Classes/Select/Provvigione/PrimaryFilters/Forecast.php
   custom/Espo/Custom/Classes/Select/Provvigione/PrimaryFilters/InPagamento.php
@@ -34,10 +35,13 @@ FILES=(
   custom/Espo/Custom/Classes/Select/Provvigione/PrimaryFilters/Inesigibile.php
   custom/Espo/Custom/Resources/metadata/entityDefs/Provvigione.json
   custom/Espo/Custom/Resources/metadata/entityDefs/Opportunity.json
+  custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
   custom/Espo/Custom/Resources/metadata/selectDefs/Provvigione.json
   custom/Espo/Custom/Resources/metadata/clientDefs/Provvigione.json
   custom/Espo/Custom/Resources/i18n/it_IT/Provvigione.json
   custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json
+  custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
+  custom/Espo/Custom/Resources/layouts/Quote/detail.json
   custom/Espo/Custom/Resources/layouts/Quote/relationships/provvigioni.json
   tools/migrate-provvigioni-stato-semplificato.php
 )
@@ -58,4 +62,5 @@ php clear_cache.php
 echo ""
 echo "=== Fatto ==="
 echo "Stati: Forecast | In pagamento | Pagato | Inesigibile"
+echo "Driver: Quote.statoContratto (non più Opportunity)"
 echo "Pagamento: giorno 15 del mese successivo a installazione o caparra > 15%"

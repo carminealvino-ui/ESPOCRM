@@ -7,7 +7,7 @@ use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
 /**
- * Stato provvigione derivato dallo stato contratto (Opportunity.statoContratto).
+ * Stato provvigione derivato dallo stato contratto (Quote.statoContratto).
  *
  * Forecast        ← Inserito, In lavorazione
  * In pagamento    ← Appuntamento fissato, Installato
@@ -32,13 +32,13 @@ class ProvvigioneStatusSync
         private EntityManager $entityManager
     ) {}
 
-    public function resolveStatoFromOpportunity(?Entity $opportunity): string
+    public function resolveStatoFromQuote(?Entity $quote): string
     {
-        if (!$opportunity) {
+        if (!$quote) {
             return self::FORECAST;
         }
 
-        $stato = trim((string) ($opportunity->get('statoContratto') ?? ''));
+        $stato = trim((string) ($quote->get('statoContratto') ?? ''));
 
         return match ($stato) {
             'Inserito', 'In lavorazione' => self::FORECAST,
@@ -52,9 +52,9 @@ class ProvvigioneStatusSync
     /**
      * Data pagamento prevista: giorno 15 del mese successivo all'evento di maturazione.
      */
-    public function resolveDataPagamento(?Entity $quote, ?Entity $opportunity): ?string
+    public function resolveDataPagamento(?Entity $quote): ?string
     {
-        $eventDate = $this->resolveMaturityEventDate($quote, $opportunity);
+        $eventDate = $this->resolveMaturityEventDate($quote);
 
         if ($eventDate === null) {
             return null;
@@ -66,9 +66,9 @@ class ProvvigioneStatusSync
     /**
      * Primo giorno del mese di competenza (mese evento maturazione).
      */
-    public function resolveMeseCompetenza(?Entity $quote, ?Entity $opportunity): ?string
+    public function resolveMeseCompetenza(?Entity $quote): ?string
     {
-        $eventDate = $this->resolveMaturityEventDate($quote, $opportunity);
+        $eventDate = $this->resolveMaturityEventDate($quote);
 
         if ($eventDate === null) {
             return null;
@@ -77,16 +77,15 @@ class ProvvigioneStatusSync
         return (new DateTimeImmutable($eventDate))->modify('first day of this month')->format('Y-m-d');
     }
 
-    public function syncProvvigioniForQuote(Entity $quote, ?Entity $opportunity = null): void
+    public function syncProvvigioniForQuote(Entity $quote): void
     {
         if (!$quote->getId()) {
             return;
         }
 
-        $opportunity ??= $this->resolveOpportunity($quote);
-        $targetStato = $this->resolveStatoFromOpportunity($opportunity);
-        $dataPagamento = $this->resolveDataPagamento($quote, $opportunity);
-        $meseCompetenza = $this->resolveMeseCompetenza($quote, $opportunity);
+        $targetStato = $this->resolveStatoFromQuote($quote);
+        $dataPagamento = $this->resolveDataPagamento($quote);
+        $meseCompetenza = $this->resolveMeseCompetenza($quote);
 
         $collection = $this->entityManager
             ->getRDBRepository('Provvigione')
@@ -152,47 +151,61 @@ class ProvvigioneStatusSync
         return in_array($stato, [self::FORECAST, self::IN_PAGAMENTO, null, ''], true);
     }
 
-    private function resolveMaturityEventDate(?Entity $quote, ?Entity $opportunity): ?string
+    /**
+     * Copia stato contratto e finanziamento da opportunità al contratto (migrazione / creazione).
+     */
+    public function copyContractFieldsFromOpportunity(Entity $quote, Entity $opportunity): void
     {
+        $quote->set([
+            'statoContratto' => $opportunity->get('statoContratto') ?: 'In lavorazione',
+            'finanziamento' => (bool) $opportunity->get('finanziamento'),
+            'statoFinanziamento' => $opportunity->get('statoFinanziamento'),
+            'importoCaparra' => $opportunity->get('importoCaparra'),
+        ]);
+
+        if (!$quote->get('dataInstallazione') && $opportunity->get('installazione')) {
+            $quote->set('dataInstallazione', $opportunity->get('installazione'));
+        }
+    }
+
+    private function resolveMaturityEventDate(?Entity $quote): ?string
+    {
+        if (!$quote) {
+            return null;
+        }
+
         $installDate = $this->normalizeDate(
-            $opportunity?->get('installazione')
-                ?? $quote?->get('dataInstallazione')
-                ?? $quote?->get('dataAttivazione')
+            $quote->get('dataInstallazione') ?? $quote->get('dataAttivazione')
         );
 
-        if ($installDate !== null && $this->isInstallatoState($opportunity)) {
+        if ($installDate !== null && $this->isInstallatoState($quote)) {
             return $installDate;
         }
 
-        if ($opportunity && $this->hasCaparraOltreSoglia($opportunity)) {
+        if ($this->hasCaparraOltreSoglia($quote)) {
             return $this->normalizeDate(
-                $opportunity->get('closeDate')
-                    ?? $opportunity->get('dataOpportunit')
-                    ?? $quote?->get('dateOrdered')
-                    ?? $quote?->get('createdAt')
+                $quote->get('dateOrdered')
+                    ?? $quote->get('dateQuoted')
+                    ?? $quote->get('createdAt')
             );
         }
 
         return null;
     }
 
-    private function isInstallatoState(?Entity $opportunity): bool
+    private function isInstallatoState(Entity $quote): bool
     {
-        if (!$opportunity) {
-            return false;
-        }
-
-        $stato = trim((string) ($opportunity->get('statoContratto') ?? ''));
+        $stato = trim((string) ($quote->get('statoContratto') ?? ''));
 
         return in_array($stato, ['Installato', 'Appuntamento fissato', 'Chiuso'], true);
     }
 
-    private function hasCaparraOltreSoglia(Entity $opportunity): bool
+    private function hasCaparraOltreSoglia(Entity $quote): bool
     {
-        $caparra = $this->floatField($opportunity, 'importoCaparra');
-        $totale = $this->floatField($opportunity, 'importoOpportunit')
-            ?? $this->floatField($opportunity, 'amount')
-            ?? $this->floatField($opportunity, 'importoOffertaIvaEsclusa');
+        $caparra = $this->floatField($quote, 'importoCaparra');
+        $totale = $this->floatField($quote, 'importoContratto')
+            ?? $this->floatField($quote, 'amount')
+            ?? $this->floatField($quote, 'grandTotalAmount');
 
         if ($caparra === null || $totale === null || $totale <= 0) {
             return false;
@@ -222,15 +235,6 @@ class ProvvigioneStatusSync
         }
 
         return $date->format('Y-m-d');
-    }
-
-    private function resolveOpportunity(Entity $quote): ?Entity
-    {
-        if (!$quote->get('opportunityId')) {
-            return null;
-        }
-
-        return $this->entityManager->getEntityById('Opportunity', $quote->get('opportunityId'));
     }
 
     private function floatField(Entity $entity, string $field): ?float

@@ -1,6 +1,7 @@
 <?php
 /**
- * Migra stati provvigione legacy → modello semplificato e ricalcola date pagamento.
+ * Migra stati provvigione legacy → modello semplificato.
+ * Copia stato contratto da Opportunity → Quote, poi sincronizza provvigioni.
  *
  *   php tools/migrate-provvigioni-stato-semplificato.php
  *   php tools/migrate-provvigioni-stato-semplificato.php --dry-run
@@ -43,7 +44,7 @@ $injectableFactory = $app->getContainer()->get('injectableFactory');
 /** @var ProvvigioneStatusSync $statusSync */
 $statusSync = $injectableFactory->create(ProvvigioneStatusSync::class);
 
-echo "=== Migrazione stati provvigione ===\n";
+echo "=== Migrazione stati provvigione (driver: Contratto) ===\n";
 
 $provvigioni = $em->getRDBRepository('Provvigione')->find();
 $updated = 0;
@@ -64,10 +65,32 @@ foreach ($provvigioni as $provvigione) {
 }
 
 $quotes = $em->getRDBRepository('Quote')->where(['opportunityId!=' => null])->find();
+$copied = 0;
 $synced = 0;
 
 foreach ($quotes as $quote) {
+    $opportunity = $em->getEntityById('Opportunity', $quote->get('opportunityId'));
+
+    if (!$opportunity) {
+        continue;
+    }
+
+    $needsCopy = !$quote->get('statoContratto')
+        || trim((string) $quote->get('statoContratto')) === '';
+
+    if ($needsCopy) {
+        echo "Quote {$quote->getId()}: copia stato da opportunità\n";
+
+        if (!$dryRun) {
+            $statusSync->copyContractFieldsFromOpportunity($quote, $opportunity);
+            $em->saveEntity($quote, ['skipHooks' => true, 'silent' => true]);
+        }
+
+        $copied++;
+    }
+
     if (!$dryRun) {
+        $quote = $em->getEntityById('Quote', $quote->getId()) ?? $quote;
         $statusSync->syncProvvigioniForQuote($quote);
     }
 
@@ -75,5 +98,6 @@ foreach ($quotes as $quote) {
 }
 
 echo "Stati migrati: {$updated}\n";
+echo "Contratti con stato copiato da opportunità: {$copied}\n";
 echo "Contratti sincronizzati: {$synced}\n";
 echo $dryRun ? "DRY RUN — nessuna modifica salvata\n" : "=== Fatto ===\n";
