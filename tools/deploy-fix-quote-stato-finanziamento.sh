@@ -30,6 +30,9 @@ FILES=(
   custom/Espo/Custom/Services/QuotePricingCalculator.php
   custom/Espo/Custom/Services/ProvvigioneStatusSync.php
   custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json
+  custom/Espo/Custom/Resources/metadata/formula/Quote.json
+  custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
+  tools/diagnose-quote-save.php
 )
 
 for rel in "${FILES[@]}"; do
@@ -45,4 +48,8 @@ echo "=== Fatto ==="
 echo "  - Ricalcolo prezzi solo se cambiano importi/articoli (non stato/finanziamento)"
 echo "  - Errori hook loggati senza bloccare il salvataggio"
 echo "  - statoFinanziamento Respinto/Annullato → provvigioni Inesigibile"
-echo "  - Ctrl+Shift+R e riprova cambio Stato Finanziamento"
+echo "  - Formula Quote semplificata (niente ricalcolo nome per CreateContratto)"
+echo "  - optimisticConcurrencyControl disattivato su Quote"
+echo ""
+echo "Se ancora errore, diagnostica da SSH:"
+echo "  php tools/diagnose-quote-save.php 6a462adfd3eedc239 \"Approvato\""

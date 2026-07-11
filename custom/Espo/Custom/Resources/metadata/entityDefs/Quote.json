@@ -315,5 +315,5 @@
         "fullTextSearch": false,
         "countDisabled": false
     },
-    "optimisticConcurrencyControl": true
+    "optimisticConcurrencyControl": false
 }

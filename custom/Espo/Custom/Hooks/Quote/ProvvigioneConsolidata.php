@@ -75,11 +75,28 @@ class ProvvigioneConsolidata implements AfterSave
         ];
 
         foreach ($watch as $field) {
+            if ($field === 'itemList') {
+                if ($this->isItemListReallyChanged($entity)) {
+                    return true;
+                }
+
+                continue;
+            }
+
             if ($entity->isAttributeChanged($field)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private function isItemListReallyChanged(Entity $entity): bool
+    {
+        if (!$entity->isAttributeChanged('itemList')) {
+            return false;
+        }
+
+        return json_encode($entity->get('itemList')) !== json_encode($entity->getFetched('itemList'));
     }
 }
