@@ -14,24 +14,8 @@ class AfterSaveTotaleProvvigioni implements AfterSave
 {
     public static int $order = 20;
 
-    public function __construct(
-        private ProvvigioneManager $provvigioneManager
-    ) {}
-
     /** @var string[] */
-    private const FINANCING_FIELDS = [
-        'finanziamento',
-        'statoFinanziamento',
-        'importoCaparra',
-        'importoSaldo',
-        'importoFinanziato',
-        'rataPrestito',
-        'nrRate',
-        'tassoZero',
-    ];
-
-    /** @var string[] */
-    private const PRICING_FIELDS = [
+    private const PRICING_TRIGGER_FIELDS = [
         'itemList',
         'amount',
         'taxAmount',
@@ -54,7 +38,13 @@ class AfterSaveTotaleProvvigioni implements AfterSave
         'taxRate',
         'aliquotaIVA',
         'statoContratto',
+        'finanziamento',
+        'statoFinanziamento',
     ];
+
+    public function __construct(
+        private ProvvigioneManager $provvigioneManager
+    ) {}
 
     public function afterSave(Entity $entity, SaveOptions $options): void
     {
@@ -62,38 +52,29 @@ class AfterSaveTotaleProvvigioni implements AfterSave
             return;
         }
 
-        if ($this->isFinancingOnlyChange($entity)) {
+        if (!$this->shouldRefreshTotale($entity)) {
             return;
         }
 
-        $this->provvigioneManager->refreshQuoteTotaleProvvigioni($entity);
+        try {
+            $this->provvigioneManager->refreshQuoteTotaleProvvigioni($entity);
+        } catch (\Throwable $e) {
+            error_log('AfterSaveTotaleProvvigioni [' . $entity->getId() . ']: ' . $e->getMessage());
+        }
     }
 
-    private function isFinancingOnlyChange(Entity $entity): bool
+    private function shouldRefreshTotale(Entity $entity): bool
     {
         if ($entity->isNew()) {
-            return false;
+            return true;
         }
 
-        $changedFinancing = false;
-
-        foreach (self::FINANCING_FIELDS as $field) {
+        foreach (self::PRICING_TRIGGER_FIELDS as $field) {
             if ($entity->isAttributeChanged($field)) {
-                $changedFinancing = true;
-                break;
+                return true;
             }
         }
 
-        if (!$changedFinancing) {
-            return false;
-        }
-
-        foreach (self::PRICING_FIELDS as $field) {
-            if ($entity->isAttributeChanged($field)) {
-                return false;
-            }
-        }
-
-        return true;
+        return false;
     }
 }

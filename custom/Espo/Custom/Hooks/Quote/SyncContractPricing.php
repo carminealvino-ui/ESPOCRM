@@ -9,26 +9,14 @@ use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
  * Contratto: prezzi riga IVA inclusa se flag attivo; importo/minus-plus da importoContratto.
- * Salto ricalcolo completo se cambiano solo campi finanziamento (pannello Finanziamento).
+ * Ricalcolo completo solo se cambiano campi che impattano importi/articoli (whitelist).
  */
 class SyncContractPricing implements BeforeSave
 {
     public static int $order = 999;
 
     /** @var string[] */
-    private const FINANCING_FIELDS = [
-        'finanziamento',
-        'statoFinanziamento',
-        'importoCaparra',
-        'importoSaldo',
-        'importoFinanziato',
-        'rataPrestito',
-        'nrRate',
-        'tassoZero',
-    ];
-
-    /** @var string[] */
-    private const PRICING_FIELDS = [
+    private const FULL_PRICING_TRIGGER_FIELDS = [
         'itemList',
         'amount',
         'taxAmount',
@@ -50,7 +38,8 @@ class SyncContractPricing implements BeforeSave
         'shippingCost',
         'taxRate',
         'aliquotaIVA',
-        'statoContratto',
+        'priceBookId',
+        'taxId',
     ];
 
     public function __construct(
@@ -63,7 +52,7 @@ class SyncContractPricing implements BeforeSave
             return;
         }
 
-        if ($this->isFinancingOnlyChange($entity)) {
+        if (!$this->shouldRunFullPricingSync($entity)) {
             if ($entity->isAttributeChanged('tassoZero')) {
                 $this->pricingCalculator->syncFinancingFieldsOnBeforeSave($entity);
             }
@@ -71,34 +60,25 @@ class SyncContractPricing implements BeforeSave
             return;
         }
 
-        $this->pricingCalculator->syncOnBeforeSave($entity);
+        try {
+            $this->pricingCalculator->syncOnBeforeSave($entity);
+        } catch (\Throwable $e) {
+            error_log('SyncContractPricing [' . ($entity->getId() ?? 'new') . ']: ' . $e->getMessage());
+        }
     }
 
-    private function isFinancingOnlyChange(Entity $entity): bool
+    private function shouldRunFullPricingSync(Entity $entity): bool
     {
         if ($entity->isNew()) {
-            return false;
+            return true;
         }
 
-        $changedFinancing = false;
-
-        foreach (self::FINANCING_FIELDS as $field) {
+        foreach (self::FULL_PRICING_TRIGGER_FIELDS as $field) {
             if ($entity->isAttributeChanged($field)) {
-                $changedFinancing = true;
-                break;
+                return true;
             }
         }
 
-        if (!$changedFinancing) {
-            return false;
-        }
-
-        foreach (self::PRICING_FIELDS as $field) {
-            if ($entity->isAttributeChanged($field)) {
-                return false;
-            }
-        }
-
-        return true;
+        return false;
     }
 }

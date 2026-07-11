@@ -40,7 +40,11 @@ class ProvvigioneConsolidata implements AfterSave
             return;
         }
 
-        $this->provvigioneManager->recalculateAllForQuote($quote);
+        try {
+            $this->provvigioneManager->recalculateAllForQuote($quote);
+        } catch (\Throwable $e) {
+            error_log('ProvvigioneConsolidata [' . $entity->getId() . ']: ' . $e->getMessage());
+        }
     }
 
     private function shouldRecalculate(Entity $entity): bool

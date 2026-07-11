@@ -25,6 +25,7 @@ fetch() {
 FILES=(
   custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
   custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php
+  custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
   custom/Espo/Custom/Hooks/Quote/SyncProvvigioniStato.php
   custom/Espo/Custom/Services/QuotePricingCalculator.php
   custom/Espo/Custom/Services/ProvvigioneStatusSync.php
@@ -41,6 +42,7 @@ php clear_cache.php
 
 echo ""
 echo "=== Fatto ==="
-echo "  - Salvataggio solo campi Finanziamento: niente ricalcolo articoli/prezzi"
+echo "  - Ricalcolo prezzi solo se cambiano importi/articoli (non stato/finanziamento)"
+echo "  - Errori hook loggati senza bloccare il salvataggio"
 echo "  - statoFinanziamento Respinto/Annullato → provvigioni Inesigibile"
 echo "  - Ctrl+Shift+R e riprova cambio Stato Finanziamento"
