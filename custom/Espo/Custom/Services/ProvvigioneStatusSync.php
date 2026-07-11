@@ -28,6 +28,12 @@ class ProvvigioneStatusSync
 
     private const CAPARRA_SOGLIA_PERCENT = 15.0;
 
+    /** @var string[] */
+    private const FINANCING_REJECTED_STATES = [
+        'Respinto',
+        'Annullato',
+    ];
+
     public function __construct(
         private EntityManager $entityManager
     ) {}
@@ -36,6 +42,10 @@ class ProvvigioneStatusSync
     {
         if (!$quote) {
             return self::FORECAST;
+        }
+
+        if ($this->isFinancingRejected($quote)) {
+            return self::INESIGIBILE;
         }
 
         $stato = trim((string) ($quote->get('statoContratto') ?? ''));
@@ -166,6 +176,18 @@ class ProvvigioneStatusSync
         if (!$quote->get('dataInstallazione') && $opportunity->get('installazione')) {
             $quote->set('dataInstallazione', $opportunity->get('installazione'));
         }
+    }
+
+    private function isFinancingRejected(?Entity $quote): bool
+    {
+        if (!$quote || !(bool) $quote->get('finanziamento')) {
+            return false;
+        }
+
+        $statoFinanziamento = trim((string) ($quote->get('statoFinanziamento') ?? ''));
+
+        return $statoFinanziamento !== ''
+            && in_array($statoFinanziamento, self::FINANCING_REJECTED_STATES, true);
     }
 
     private function resolveMaturityEventDate(?Entity $quote): ?string

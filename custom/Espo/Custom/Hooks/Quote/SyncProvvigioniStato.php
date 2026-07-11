@@ -30,6 +30,8 @@ class SyncProvvigioniStato implements AfterSave
 
         $watch = [
             'statoContratto',
+            'finanziamento',
+            'statoFinanziamento',
             'dataInstallazione',
             'dataAttivazione',
             'importoCaparra',
@@ -52,6 +54,10 @@ class SyncProvvigioniStato implements AfterSave
             return;
         }
 
-        $this->statusSync->syncProvvigioniForQuote($entity);
+        try {
+            $this->statusSync->syncProvvigioniForQuote($entity);
+        } catch (\Throwable $e) {
+            error_log('SyncProvvigioniStato [' . $entity->getId() . ']: ' . $e->getMessage());
+        }
     }
 }

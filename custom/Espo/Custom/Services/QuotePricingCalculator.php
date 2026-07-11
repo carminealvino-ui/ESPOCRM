@@ -43,6 +43,19 @@ class QuotePricingCalculator
     }
 
     /**
+     * Solo campi finanziamento (es. statoFinanziamento): aggiorna costi tasso zero senza
+     * ricalcolare articoli/importi (evita errori 500 su salvataggio pannello Finanziamento).
+     */
+    public function syncFinancingFieldsOnBeforeSave(Entity $quote): void
+    {
+        if ($quote->getEntityType() !== 'Quote') {
+            return;
+        }
+
+        $this->syncCostiAggiuntiviOnQuote($quote);
+    }
+
+    /**
      * Importo venduto B2C: campo importoContratto, opportunità o nome contratto (es. «€. 4.500»).
      */
     public function resolveImportoContrattoForQuote(Entity $quote): ?float
