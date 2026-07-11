@@ -328,7 +328,7 @@ class ProvvigioneManager
     }
 
     /**
-     * GDL / Ariel 2026: base/referenza + plus/minus + bonus weekend.
+     * GDL / Ariel 2026: provvigione base + referenza personale (additiva) + plus/minus + bonus weekend.
      *
      * @param array<string, mixed> $context
      */
@@ -363,14 +363,8 @@ class ProvvigioneManager
 
         $context['plusvalenza'] = ($minusPlus !== null && $minusPlus > 0) ? $minusPlus : null;
 
-        if ($this->isReferenzaPersonaleOpportunity($opportunity)) {
-            $baseResult = $this->resultFromRuleId('referenzaPersonale', $context);
-            $baseTipo = 'Referenza Personale';
-        } else {
-            $ruleId = !empty($context['ordineIncompletoAriel']) ? 'arielBase10' : 'arielBase105';
-            $baseResult = $this->resultFromRuleId($ruleId, $context);
-            $baseTipo = 'Provvigione Base';
-        }
+        $ruleId = !empty($context['ordineIncompletoAriel']) ? 'arielBase10' : 'arielBase105';
+        $baseResult = $this->resultFromRuleId($ruleId, $context);
 
         $base = $this->saveConsolidataProvvigione(
             $opportunity,
@@ -378,9 +372,25 @@ class ProvvigioneManager
             $category,
             $baseResult,
             $context,
-            $baseTipo,
+            'Provvigione Base',
             null
         );
+
+        if ($this->isReferenzaPersonaleOpportunity($opportunity)) {
+            $refResult = $this->resultFromRuleId('referenzaPersonale', $context);
+
+            if ($refResult !== null) {
+                $this->saveConsolidataProvvigione(
+                    $opportunity,
+                    $quote,
+                    $category,
+                    $refResult,
+                    $context,
+                    'Referenza Personale',
+                    null
+                );
+            }
+        }
 
         if ($context['plusvalenza'] !== null && $context['plusvalenza'] > 0) {
             $this->ensureArielPlusProvvigione($opportunity, $quote, $category, $context);
