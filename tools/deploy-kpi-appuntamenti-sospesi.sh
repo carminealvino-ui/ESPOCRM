@@ -40,6 +40,7 @@ php clear_cache.php
 
 echo ""
 echo "=== Fatto ==="
+echo "  - Appuntamenti Lordi = tutti nel periodo (incluso Pianificato)"
 echo "  - Appuntamenti Totali = Netti (solo Held svolti)"
 echo "  - Annullati = Lordi - Netti"
 echo "  - Sospesi ordini = statoContratto Sospeso (non In lavorazione)"
