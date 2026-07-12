@@ -95,9 +95,9 @@ class CrmKpiService
                 'provvigioni' => $provvigioni,
             ],
             'salesPipeline' => FunnelBuilder::buildSalesPipeline(
+                (float) $appuntamenti->totali,
                 (float) $appuntamenti->lordi,
                 (float) $appuntamenti->netti,
-                (float) $opportunita->totali,
                 (float) $contratti->lordi,
                 (float) $contratti->netti
             ),
@@ -129,18 +129,20 @@ class CrmKpiService
     private function getAppuntamentiTile(KpiContext $ctx): object
     {
         $pianificati = $this->countAppuntamentiPianificati($ctx);
-        $lordi = $this->countAppuntamentiLordi($ctx);
+        // Totali = periodo meno pianificati
         $totali = $this->countAppuntamentiTotali($ctx);
+        // Lordi = totali meno annullati
+        $lordi = $this->countAppuntamentiLordi($ctx);
+        $annullati = max($totali - $lordi, 0);
         $ingestibili = $this->countAppuntamentiIngestibili($ctx);
+        // Netti = lordi meno ingestibili (= opportunità)
         $netti = $this->countAppuntamentiNetti($ctx);
-        // Annullati / non gestiti (lordi meno gestiti; ingestibile resta nei totali)
-        $annullati = max($lordi - $totali, 0);
 
         return (object) [
-            'lordi' => $lordi,
+            'totali' => $totali,
             'pianificati' => $pianificati,
             'annullati' => $annullati,
-            'totali' => $totali,
+            'lordi' => $lordi,
             'ingestibili' => $ingestibili,
             'netti' => $netti,
         ];
@@ -148,7 +150,8 @@ class CrmKpiService
 
     private function getOpportunitaTile(KpiContext $ctx): object
     {
-        $totali = $this->countOpportunities($ctx);
+        // Netti appuntamenti = opportunità (conteggio equivalente)
+        $totali = $this->countAppuntamentiNetti($ctx);
         $concluse = $this->countOpportunities($ctx, won: true);
         $pending = $this->countOpportunities($ctx, pending: true);
         $perse = $this->countOpportunities($ctx, lost: true);
@@ -218,8 +221,7 @@ class CrmKpiService
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
-                $this->notPianificatoWhere(),
-                $this->notAnnullatoWhere()
+                $this->notPianificatoWhere()
             ))
             ->count();
     }
@@ -230,7 +232,8 @@ class CrmKpiService
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
-                $this->notPianificatoWhere()
+                $this->notPianificatoWhere(),
+                $this->notAnnullatoWhere()
             ))
             ->count();
     }
@@ -252,6 +255,7 @@ class CrmKpiService
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
+                $this->notPianificatoWhere(),
                 $this->notAnnullatoWhere(),
                 ['status' => 'Ingestibile']
             ))
@@ -264,9 +268,9 @@ class CrmKpiService
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
+                $this->notPianificatoWhere(),
                 $this->notAnnullatoWhere(),
-                ['status!=' => 'Ingestibile'],
-                ['status' => 'Held']
+                ['status!=' => 'Ingestibile']
             ))
             ->count();
     }
@@ -305,7 +309,7 @@ class CrmKpiService
     }
 
     /**
-     * Appuntamenti netti (svolti, non ingestibili) per opportunità e pipeline.
+     * Appuntamenti netti (= opportunità): lordi meno ingestibili.
      *
      * @return string[]
      */
@@ -318,9 +322,9 @@ class CrmKpiService
             ->select(['id'])
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
+                $this->notPianificatoWhere(),
                 $this->notAnnullatoWhere(),
-                ['status!=' => 'Ingestibile'],
-                ['status' => 'Held']
+                ['status!=' => 'Ingestibile']
             ))
             ->find();
 
@@ -848,8 +852,6 @@ class CrmKpiService
             $weekBuckets[$weekIndex] = YieldBuilder::emptyMetrics();
         }
 
-        $appuntamentoIdsForOpportunita = [];
-
         $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->where($ctx->appuntamentoWhere())
@@ -862,14 +864,14 @@ class CrmKpiService
                 continue;
             }
 
-            if ($this->isAppuntamentoNetto($appuntamento)) {
-                $appuntamentoIdsForOpportunita[] = $appuntamento->getId();
-            }
-
             $weekday = (int) (new \DateTimeImmutable($date))->format('N');
             $weekIndex = WeekOfMonth::resolveIndexForDate($date);
 
             if (!$this->isAppuntamentoPianificato($appuntamento)) {
+                $weekdayBuckets[$weekday]['appuntamentiTotali']++;
+            }
+
+            if ($this->isAppuntamentoLordo($appuntamento)) {
                 $weekdayBuckets[$weekday]['appuntamentiLordi']++;
             }
 
@@ -879,25 +881,16 @@ class CrmKpiService
 
             if ($weekIndex !== null && isset($weekBuckets[$weekIndex])) {
                 if (!$this->isAppuntamentoPianificato($appuntamento)) {
+                    $weekBuckets[$weekIndex]['appuntamentiTotali']++;
+                }
+
+                if ($this->isAppuntamentoLordo($appuntamento)) {
                     $weekBuckets[$weekIndex]['appuntamentiLordi']++;
                 }
 
                 if ($this->isAppuntamentoNetto($appuntamento)) {
                     $weekBuckets[$weekIndex]['appuntamentiNetti']++;
                 }
-            }
-        }
-
-        if ($appuntamentoIdsForOpportunita !== []) {
-            try {
-                $this->aggregateOpportunitiesByAppuntamento(
-                    $ctx,
-                    $appuntamentoIdsForOpportunita,
-                    $weekdayBuckets,
-                    $weekBuckets
-                );
-            } catch (\Throwable $e) {
-                $this->logYieldError('opportunities', $e);
             }
         }
 
@@ -1090,17 +1083,22 @@ class CrmKpiService
         return $appuntamento->get('status') === 'Planned';
     }
 
+    private function isAppuntamentoLordo(Entity $appuntamento): bool
+    {
+        if ($this->isAppuntamentoPianificato($appuntamento)) {
+            return false;
+        }
+
+        return $this->isAppuntamentoNotAnnullato($appuntamento);
+    }
+
     private function isAppuntamentoNetto(Entity $appuntamento): bool
     {
-        if (!$this->isAppuntamentoNotAnnullato($appuntamento)) {
+        if (!$this->isAppuntamentoLordo($appuntamento)) {
             return false;
         }
 
-        if ($appuntamento->get('status') === 'Ingestibile') {
-            return false;
-        }
-
-        return $appuntamento->get('status') === 'Held';
+        return $appuntamento->get('status') !== 'Ingestibile';
     }
 
     private function isAppuntamentoNotAnnullato(Entity $appuntamento): bool

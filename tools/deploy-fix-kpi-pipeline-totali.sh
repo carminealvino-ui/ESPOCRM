@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fix pipeline KPI: Totali appuntamenti ≠ Netti, Contr. lordi da contratti lordi
+# Fix pipeline KPI: gerarchia totali → lordi → netti (= opportunità)
 #
 # Uso:
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-kpi-pipeline-totali-9999/tools/deploy-fix-kpi-pipeline-totali.sh?t=$(date +%s)" | bash
@@ -12,7 +12,7 @@ TS="$(date +%s)"
 
 cd "${CRM_ROOT}" || exit 1
 
-echo "=== Fix pipeline KPI (totali / contratti lordi) ==="
+echo "=== Fix pipeline KPI (gerarchia totali/lordi/netti) ==="
 
 fetch() {
   local path="$1"
@@ -24,7 +24,10 @@ fetch() {
 
 FILES=(
   custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php
+  custom/Espo/Custom/Tools/CrmKpi/FunnelBuilder.php
+  custom/Espo/Custom/Tools/CrmKpi/YieldBuilder.php
   client/custom/src/views/dashlets/crm-kpi.js
+  client/custom/res/templates/dashlets/crm-kpi.tpl
 )
 
 for rel in "${FILES[@]}"; do
@@ -37,8 +40,9 @@ php clear_cache.php
 
 echo ""
 echo "=== Fatto ==="
-echo "  - Totali appuntamenti = non annullati (Held + Not Held + Ingestibili), non più = netti"
-echo "  - Annullati = lordi - totali"
-echo "  - Pipeline contratti: valore lordi (non totali esclusi recesso)"
+echo "  - Totali = periodo meno pianificati"
+echo "  - Lordi = totali meno annullati"
+echo "  - Netti = lordi meno ingestibili (= opportunità)"
+echo "  - Contratti lordi/netti: % su appuntamenti lordi e netti"
 echo ""
 echo "Ricarica la dashboard con Ctrl+F5."

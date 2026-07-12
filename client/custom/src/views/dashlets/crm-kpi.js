@@ -1,6 +1,6 @@
 define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!espo-funnel-chart'], function (Dep) {
 
-    // kpi-tile-labels-v6: totali appuntamenti distinti da netti, contratti lordi in pipeline
+    // kpi-tile-labels-v7: gerarchia totali→lordi→netti, contratti % su app. lordi/netti
 
     return Dep.extend({
 
@@ -118,23 +118,22 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
             const tile = appuntamentiTile || {};
             const contratti = contrattiTile || {};
+            const baseTotali = Number(tile.totali ?? valueByKey.appuntamentiTotali ?? 0);
             const baseLordi = Number(tile.lordi ?? valueByKey.appuntamentiLordi ?? 0);
-            const baseTotali = Number(tile.totali ?? 0);
             const baseNetti = Number(tile.netti ?? valueByKey.appuntamentiNetti ?? 0);
-            const baseOpportunita = Number(valueByKey.opportunita ?? 0);
             const baseContratti = Number(contratti.lordi ?? valueByKey.contratti ?? 0);
             const baseContrattiNetti = Number(contratti.netti ?? valueByKey.contrattiNetti ?? 0);
 
             return [
                 {
-                    label: 'Lordi',
-                    value: this.formatNumber(baseLordi),
-                    detail: this.formatPercentOf(baseLordi, baseLordi),
-                },
-                {
                     label: 'Totali',
                     value: this.formatNumber(baseTotali),
-                    detail: this.formatPercentOf(baseTotali, baseLordi),
+                    detail: this.formatPercentOf(baseTotali, baseTotali),
+                },
+                {
+                    label: 'Lordi',
+                    value: this.formatNumber(baseLordi),
+                    detail: this.formatPercentOf(baseLordi, baseTotali),
                 },
                 {
                     label: 'Netti',
@@ -149,7 +148,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     value: this.formatNumber(baseContratti),
                     detail: this.joinPercentDetails([
                         this.formatPercentOf(baseContratti, baseLordi),
-                        this.formatPercentOf(baseContratti, baseOpportunita),
+                        this.formatPercentOf(baseContratti, baseNetti),
                     ]),
                 },
                 {
@@ -157,7 +156,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     value: this.formatNumber(baseContrattiNetti),
                     detail: this.joinPercentDetails([
                         this.formatPercentOf(baseContrattiNetti, baseLordi),
-                        this.formatPercentOf(baseContrattiNetti, baseOpportunita),
+                        this.formatPercentOf(baseContrattiNetti, baseNetti),
                     ]),
                 },
             ];
@@ -180,9 +179,9 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
         getDefaultYieldColumns: function () {
             return [
+                {key: 'appuntamentiTotali', label: 'Totali'},
                 {key: 'appuntamentiLordi', label: 'Lordi'},
                 {key: 'appuntamentiNetti', label: 'Netti'},
-                {key: 'opportunita', label: 'Opp.'},
                 {key: 'contratti', label: 'Contr.'},
                 {key: 'contrattiNetti', label: 'C. netti'},
             ];
@@ -287,8 +286,9 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 value: Number(step.value || 0),
                 stage: step.key,
                 color: this.getPipelineColor(index, steps.length),
+                percentOfTotali: step.percentOfTotali,
+                percentOfLordi: step.percentOfLordi,
                 percentOfNetti: step.percentOfNetti,
-                percentOfOpportunita: step.percentOfOpportunita,
                 percentOfPrevious: step.percentOfPrevious,
             }));
 
@@ -317,20 +317,28 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
             const parts = [];
 
-            if (item.stage === 'appuntamentiNetti' && item.percentOfPrevious != null) {
-                parts.push(item.percentOfPrevious + '% su lordi');
+            if (item.stage === 'appuntamentiLordi' && item.percentOfTotali != null) {
+                parts.push(item.percentOfTotali + '% su totali');
             }
 
-            if (item.percentOfNetti != null) {
-                parts.push(item.percentOfNetti + '% su app. netti');
+            if (item.stage === 'appuntamentiNetti') {
+                if (item.percentOfLordi != null) {
+                    parts.push(item.percentOfLordi + '% su lordi');
+                }
+
+                if (item.percentOfTotali != null) {
+                    parts.push(item.percentOfTotali + '% su totali');
+                }
             }
 
-            if (item.percentOfOpportunita != null) {
-                parts.push(item.percentOfOpportunita + '% su opp.');
-            }
+            if (item.stage === 'contratti' || item.stage === 'contrattiNetti') {
+                if (item.percentOfLordi != null) {
+                    parts.push(item.percentOfLordi + '% su app. lordi');
+                }
 
-            if (item.stage === 'contrattiNetti' && item.percentOfPrevious != null) {
-                parts.push(item.percentOfPrevious + '% prec');
+                if (item.percentOfNetti != null) {
+                    parts.push(item.percentOfNetti + '% su app. netti');
+                }
             }
 
             return parts.join(' · ');
@@ -391,14 +399,43 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         mapAppuntamentiTile: function (tile) {
-            return this.mapMetricTile(tile, [
-                {key: 'lordi', label: 'Lordi'},
+            const source = tile || {};
+            const baseTotali = Number(source.totali || 0);
+            const baseLordi = Number(source.lordi || 0);
+            const basePianificati = Number(source.pianificati || 0);
+            const basePeriodo = baseTotali + basePianificati;
+
+            return [
+                {key: 'totali', label: 'Totali'},
                 {key: 'pianificati', label: 'Pianificati'},
                 {key: 'annullati', label: 'Annullati'},
-                {key: 'totali', label: 'Totali'},
+                {key: 'lordi', label: 'Lordi'},
                 {key: 'ingestibili', label: 'Ingestibili'},
                 {key: 'netti', label: 'Netti'},
-            ], this.formatNumber);
+            ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                let value = this.formatNumber(raw);
+
+                if (def.key === 'totali') {
+                    value += ' · ' + this.formatPercentOf(raw, baseTotali);
+                } else if (def.key === 'pianificati') {
+                    value += ' · ' + this.formatPercentOf(raw, basePeriodo);
+                } else if (def.key === 'annullati' || def.key === 'lordi') {
+                    value += ' · ' + this.formatPercentOf(raw, baseTotali);
+                } else if (def.key === 'ingestibili') {
+                    value += ' · ' + this.formatPercentOf(raw, baseLordi);
+                } else if (def.key === 'netti') {
+                    value += ' · ' + this.joinPercentDetails([
+                        this.formatPercentOf(raw, baseLordi),
+                        this.formatPercentOf(raw, baseTotali),
+                    ]);
+                }
+
+                return {
+                    label: def.label,
+                    value: value,
+                };
+            });
         },
 
         mapOpportunitaTile: function (tile) {

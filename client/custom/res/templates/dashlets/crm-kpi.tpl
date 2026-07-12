@@ -76,7 +76,7 @@
                             <div class="crm-kpi-pipeline-chart" data-name="pipeline-chart"></div>
                         </div>
                         <div class="crm-kpi-pipeline-results">
-                            <div class="crm-kpi-pipeline-results-note">Percentuali su lordi · su totali (netti) o su opportunità (contratti)</div>
+                            <div class="crm-kpi-pipeline-results-note">Totali → Lordi → Netti (= Opportunità) · Contratti % su app. lordi/netti</div>
                             <div class="crm-kpi-pipeline-results-grid">
                                 <div class="crm-kpi-pipeline-results-head">
                                     <span>Risultato</span>
