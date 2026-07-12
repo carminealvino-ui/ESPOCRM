@@ -36,6 +36,12 @@
                 }
             ],
             [
+                {
+                    "name": "importoCaparra"
+                },
+                false
+            ],
+            [
                 false,
                 {
                     "name": "motivoDecisione"
@@ -73,12 +79,6 @@
                 false,
                 {
                     "name": "amount"
-                }
-            ],
-            [
-                false,
-                {
-                    "name": "importoCaparra"
                 }
             ],
             [

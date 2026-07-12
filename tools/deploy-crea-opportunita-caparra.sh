@@ -39,6 +39,7 @@ fetch() {
 }
 
 fetch custom/Espo/Custom/Resources/layouts/Opportunity/detailSmall.json
+fetch custom/Espo/Custom/Resources/layouts/Opportunity/detail.json
 
 "${PHP_BIN}" clear_cache.php
 "${PHP_BIN}" rebuild.php
