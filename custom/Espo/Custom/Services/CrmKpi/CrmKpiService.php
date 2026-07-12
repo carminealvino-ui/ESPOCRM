@@ -76,7 +76,7 @@ class CrmKpiService
         $ctx = new KpiContext($from, $to, $this->normalizeBrandId($productBrandId));
 
         $appuntamenti = $this->getAppuntamentiTile($ctx);
-        $opportunita = $this->getOpportunitaTile($ctx);
+        $opportunita = $this->getOpportunitaTile($ctx, (int) $appuntamenti->netti);
         $contratti = $this->getContrattiTile($ctx);
         $valore = $this->getValoreProduzioneTile($ctx);
         $provvigioni = $this->getProvvigioniTile($ctx);
@@ -129,14 +129,15 @@ class CrmKpiService
     private function getAppuntamentiTile(KpiContext $ctx): object
     {
         $pianificati = $this->countAppuntamentiPianificati($ctx);
-        // Totali = periodo meno pianificati
-        $totali = $this->countAppuntamentiTotali($ctx);
+        $nelPeriodo = $this->countAppuntamentiNelPeriodo($ctx);
+        // Totali = appuntamenti del periodo meno i pianificati
+        $totali = max($nelPeriodo - $pianificati, 0);
+        $annullati = $this->countAppuntamentiAnnullati($ctx);
         // Lordi = totali meno annullati
-        $lordi = $this->countAppuntamentiLordi($ctx);
-        $annullati = max($totali - $lordi, 0);
+        $lordi = max($totali - $annullati, 0);
         $ingestibili = $this->countAppuntamentiIngestibili($ctx);
         // Netti = lordi meno ingestibili (= opportunità)
-        $netti = $this->countAppuntamentiNetti($ctx);
+        $netti = max($lordi - $ingestibili, 0);
 
         return (object) [
             'totali' => $totali,
@@ -148,10 +149,10 @@ class CrmKpiService
         ];
     }
 
-    private function getOpportunitaTile(KpiContext $ctx): object
+    private function getOpportunitaTile(KpiContext $ctx, int $nettiAppuntamenti): object
     {
         // Netti appuntamenti = opportunità (conteggio equivalente)
-        $totali = $this->countAppuntamentiNetti($ctx);
+        $totali = $nettiAppuntamenti;
         $concluse = $this->countOpportunities($ctx, won: true);
         $pending = $this->countOpportunities($ctx, pending: true);
         $perse = $this->countOpportunities($ctx, lost: true);
@@ -215,25 +216,22 @@ class CrmKpiService
         ];
     }
 
-    private function countAppuntamentiTotali(KpiContext $ctx): int
+    private function countAppuntamentiNelPeriodo(KpiContext $ctx): int
     {
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where(array_merge(
-                $ctx->appuntamentoWhere(),
-                $this->notPianificatoWhere()
-            ))
+            ->where($ctx->appuntamentoWhere())
             ->count();
     }
 
-    private function countAppuntamentiLordi(KpiContext $ctx): int
+    private function countAppuntamentiAnnullati(KpiContext $ctx): int
     {
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
                 $this->notPianificatoWhere(),
-                $this->notAnnullatoWhere()
+                $this->annullatoWhere()
             ))
             ->count();
     }
@@ -262,17 +260,17 @@ class CrmKpiService
             ->count();
     }
 
-    private function countAppuntamentiNetti(KpiContext $ctx): int
+    /**
+     * @return array<string, mixed>
+     */
+    private function annullatoWhere(): array
     {
-        return (int) $this->entityManager
-            ->getRDBRepository('Appuntamento')
-            ->where(array_merge(
-                $ctx->appuntamentoWhere(),
-                $this->notPianificatoWhere(),
-                $this->notAnnullatoWhere(),
-                ['status!=' => 'Ingestibile']
-            ))
-            ->count();
+        return [
+            'OR' => [
+                ['sottostato' => 'Annullato'],
+                ['esito' => self::ESITI_ANNULLATI],
+            ],
+        ];
     }
 
     /**

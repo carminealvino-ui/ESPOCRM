@@ -1,6 +1,6 @@
 define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!espo-funnel-chart'], function (Dep) {
 
-    // kpi-tile-labels-v7: gerarchia totali→lordi→netti, contratti % su app. lordi/netti
+    // kpi-tile-labels-v8: totali=periodo-pianificati, netti=lordi-ingestibili (derivati)
 
     return Dep.extend({
 
