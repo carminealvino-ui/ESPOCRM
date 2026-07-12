@@ -2,6 +2,10 @@
     "fields": {
         "name": {
             "required": false
+        },
+        "prezzoCodice": {
+            "type": "currency",
+            "isCustom": true
         }
     }
 }

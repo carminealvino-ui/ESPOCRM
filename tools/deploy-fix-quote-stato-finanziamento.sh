@@ -25,6 +25,7 @@ fetch() {
 FILES=(
   custom/Espo/Custom/Hooks/InvitoAFatturare/BeforeSave.php
   custom/Espo/Custom/Hooks/Quote/SanitizeOrphanQuoteItemProducts.php
+  custom/Espo/Custom/Hooks/Quote/SyncQuoteItemPrezzoCodice.php
   custom/Espo/Custom/Hooks/Quote/EnsureQuoteItemListNames.php
   custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
   custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php
@@ -82,6 +83,7 @@ echo "  - enum status: valori legacy ripristinati (Invalido, Bozza, Appuntamento
 echo "  - Voce articoli: commento sotto prodotto opzionale (QuoteItem.name non required)"
 echo "  - Salvataggio: se commento vuoto, name compilato server-side da prodotto"
 echo "  - Riga articolo con prodotto cancellato: link rimosso (niente Bad request)"
+echo "  - Prezzo Codice su ogni riga articolo: sync ad ogni salvataggio + caricamento UI"
 echo ""
 echo "=== Prossimi passi (copia tutto il blocco) ==="
 echo "cd \"${CRM_ROOT}\""

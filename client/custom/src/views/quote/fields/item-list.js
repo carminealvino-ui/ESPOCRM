@@ -304,6 +304,7 @@ define('custom:views/quote/fields/item-list', [
 
             setTimeout(function () {
                 this.ensureItemListHooks();
+                this.applyCatalogPricesToItemList();
             }.bind(this), 200);
         },
 

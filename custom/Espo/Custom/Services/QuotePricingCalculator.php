@@ -404,7 +404,7 @@ class QuotePricingCalculator
         $this->syncTotalsAndDerivedFields($opportunity, false);
     }
 
-    private function syncItemListPrezzoCodice(Entity $entity): void
+    public function syncItemListPrezzoCodice(Entity $entity): void
     {
         $itemList = $entity->get('itemList');
 
