@@ -24,6 +24,7 @@ fetch() {
 
 FILES=(
   custom/Espo/Custom/Hooks/InvitoAFatturare/BeforeSave.php
+  custom/Espo/Custom/Hooks/Quote/SanitizeOrphanQuoteItemProducts.php
   custom/Espo/Custom/Hooks/Quote/EnsureQuoteItemListNames.php
   custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
   custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php
@@ -33,6 +34,7 @@ FILES=(
   custom/Espo/Custom/Services/ProvvigioneStatusSync.php
   custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json
   custom/Espo/Custom/Resources/metadata/formula/Quote.json
+  custom/Espo/Custom/Resources/metadata/formula/QuoteItem.json
   custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
   custom/Espo/Custom/Resources/metadata/entityDefs/QuoteItem.json
   custom/Espo/Custom/Resources/metadata/entityDefs/Opportunity.json
@@ -76,6 +78,7 @@ echo "  - rimosso hook obsoleto SyncProvvigioniStatoFromContratto (causa 500)"
 echo "  - enum status: valori legacy ripristinati (Invalido, Bozza, Appuntamento fissato)"
 echo "  - Voce articoli: commento sotto prodotto opzionale (QuoteItem.name non required)"
 echo "  - Salvataggio: se commento vuoto, name compilato server-side da prodotto"
+echo "  - Riga articolo con prodotto cancellato: link rimosso (niente Bad request)"
 echo ""
 echo "=== Prossimi passi (copia tutto il blocco) ==="
 echo "cd \"${CRM_ROOT}\""

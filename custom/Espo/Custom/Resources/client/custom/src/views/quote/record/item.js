@@ -1,4 +1,4 @@
-// VERSIONE: 1.5.0 — prezzi listino/codice; Voce/commento sotto prodotto opzionale
+// VERSIONE: 1.5.1 — prezzi listino/codice; Voce opzionale; prodotto orfano
 
 define('custom:views/quote/record/item', [
     'sales:views/quote/record/item',
@@ -17,6 +17,33 @@ define('custom:views/quote/record/item', [
             if (this.model) {
                 this.model.setFieldParam('name', 'required', false);
             }
+
+            this.verifyProductLink();
+        },
+
+        verifyProductLink: function () {
+            var productId = this.model.get('productId');
+
+            if (!productId || this._verifyProductLinkPending === productId) {
+                return;
+            }
+
+            this._verifyProductLinkPending = productId;
+
+            Espo.Ajax.getRequest('Product/' + productId, {select: 'id'})
+                .catch(function () {
+                    this.model.set({
+                        productId: null,
+                        productName: null,
+                    }, {ui: true});
+
+                    Espo.Ui.warning('Prodotto collegato non più disponibile: la riga resta come voce manuale.');
+                }.bind(this))
+                .always(function () {
+                    if (this._verifyProductLinkPending === productId) {
+                        this._verifyProductLinkPending = null;
+                    }
+                }.bind(this));
         },
 
         async selectProduct(product) {
