@@ -1,6 +1,6 @@
 define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!espo-funnel-chart'], function (Dep) {
 
-    // kpi-tile-labels-v5: pipeline results % contratti su opportunità, tabella full-width
+    // kpi-tile-labels-v6: totali appuntamenti distinti da netti, contratti lordi in pipeline
 
     return Dep.extend({
 
@@ -96,11 +96,15 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 yieldsByWeekday: this.mapYieldRows(summary.yieldsByWeekday),
                 yieldsByWeek: this.mapYieldRows(summary.yieldsByWeek),
                 yieldColumns: summary.yieldColumns || this.getDefaultYieldColumns(),
-                pipelineResultsRows: this.mapPipelineResultsRows(pipeline, tiles.appuntamenti || {}),
+                pipelineResultsRows: this.mapPipelineResultsRows(
+                    pipeline,
+                    tiles.appuntamenti || {},
+                    tiles.contratti || {}
+                ),
             };
         },
 
-        mapPipelineResultsRows: function (pipeline, appuntamentiTile) {
+        mapPipelineResultsRows: function (pipeline, appuntamentiTile, contrattiTile) {
             const steps = pipeline || [];
 
             if (!steps.length) {
@@ -113,12 +117,13 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             });
 
             const tile = appuntamentiTile || {};
+            const contratti = contrattiTile || {};
             const baseLordi = Number(tile.lordi ?? valueByKey.appuntamentiLordi ?? 0);
             const baseTotali = Number(tile.totali ?? 0);
             const baseNetti = Number(tile.netti ?? valueByKey.appuntamentiNetti ?? 0);
             const baseOpportunita = Number(valueByKey.opportunita ?? 0);
-            const baseContratti = Number(valueByKey.contratti ?? 0);
-            const baseContrattiNetti = Number(valueByKey.contrattiNetti ?? 0);
+            const baseContratti = Number(contratti.lordi ?? valueByKey.contratti ?? 0);
+            const baseContrattiNetti = Number(contratti.netti ?? valueByKey.contrattiNetti ?? 0);
 
             return [
                 {

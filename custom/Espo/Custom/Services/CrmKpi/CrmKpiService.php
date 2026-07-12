@@ -98,7 +98,7 @@ class CrmKpiService
                 (float) $appuntamenti->lordi,
                 (float) $appuntamenti->netti,
                 (float) $opportunita->totali,
-                (float) $contratti->totali,
+                (float) $contratti->lordi,
                 (float) $contratti->netti
             ),
             'yieldsByWeekday' => $this->buildYieldsByWeekday($ctx),
@@ -130,12 +130,11 @@ class CrmKpiService
     {
         $pianificati = $this->countAppuntamentiPianificati($ctx);
         $lordi = $this->countAppuntamentiLordi($ctx);
+        $totali = $this->countAppuntamentiTotali($ctx);
         $ingestibili = $this->countAppuntamentiIngestibili($ctx);
         $netti = $this->countAppuntamentiNetti($ctx);
-        // Totali = appuntamenti svolti (Held), esclusi annullati/ingestibili/non gestiti
-        $totali = $netti;
-        // Annullati / non gestiti / non svolti (lordi meno i netti; ingestibile è sottoinsieme)
-        $annullati = max($lordi - $netti, 0);
+        // Annullati / non gestiti (lordi meno gestiti; ingestibile resta nei totali)
+        $annullati = max($lordi - $totali, 0);
 
         return (object) [
             'lordi' => $lordi,
@@ -215,7 +214,14 @@ class CrmKpiService
 
     private function countAppuntamentiTotali(KpiContext $ctx): int
     {
-        return $this->countAppuntamentiNetti($ctx);
+        return (int) $this->entityManager
+            ->getRDBRepository('Appuntamento')
+            ->where(array_merge(
+                $ctx->appuntamentoWhere(),
+                $this->notPianificatoWhere(),
+                $this->notAnnullatoWhere()
+            ))
+            ->count();
     }
 
     private function countAppuntamentiLordi(KpiContext $ctx): int
