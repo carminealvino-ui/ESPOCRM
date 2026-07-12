@@ -132,10 +132,9 @@ class CrmKpiService
         $nelPeriodo = $this->countAppuntamentiNelPeriodo($ctx);
         // Totali = appuntamenti del periodo meno i pianificati
         $totali = max($nelPeriodo - $pianificati, 0);
-        // Lordi = non pianificati e non annullati (query affidabile)
-        $lordi = $this->countAppuntamentiLordi($ctx);
-        // Annullati = differenza, mai oltre i totali (evita conteggi OR esito fuori scala)
-        $annullati = max(min($totali - $lordi, $totali), 0);
+        $annullati = $this->countAppuntamentiAnnullati($ctx);
+        // Lordi = totali - pianificati - annullati (es. 33 - 3 - 9 = 21)
+        $lordi = max($totali - $pianificati - $annullati, 0);
         $ingestibili = min($this->countAppuntamentiIngestibili($ctx), $lordi);
         // Netti = lordi meno ingestibili (= opportunità)
         $netti = max($lordi - $ingestibili, 0);
@@ -225,14 +224,20 @@ class CrmKpiService
             ->count();
     }
 
-    private function countAppuntamentiLordi(KpiContext $ctx): int
+    private function countAppuntamentiAnnullati(KpiContext $ctx): int
     {
+        $or = [['sottostato' => 'Annullato']];
+
+        foreach (self::ESITI_ANNULLATI as $esito) {
+            $or[] = ['esito' => $esito];
+        }
+
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
                 $this->notPianificatoWhere(),
-                $this->notAnnullatoWhere()
+                ['OR' => $or]
             ))
             ->count();
     }
