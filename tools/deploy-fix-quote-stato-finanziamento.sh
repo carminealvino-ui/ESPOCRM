@@ -68,6 +68,7 @@ echo "  - Formula Quote semplificata (niente ricalcolo nome per CreateContratto)
 echo "  - optimisticConcurrencyControl disattivato su Quote"
 echo "  - enum statoFinanziamento: valori legacy ripristinati (In valutazione, In attesa di OTP, ...)"
 echo "  - rimosso hook obsoleto SyncProvvigioniStatoFromContratto (causa 500)"
+echo "  - enum status: valori legacy ripristinati (Invalido, Bozza, Appuntamento fissato)"
 echo ""
 echo "=== Prossimi passi (copia tutto il blocco) ==="
 echo "cd \"${CRM_ROOT}\""

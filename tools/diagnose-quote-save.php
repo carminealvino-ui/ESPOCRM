@@ -137,7 +137,15 @@ $out('Quote: ' . (string) $quote->get('name'));
 $out('hookVersion: ' . (string) ($quote->get('hookVersion') ?? '(vuoto)'));
 $out('statoFinanziamento attuale: ' . (string) ($quote->get('statoFinanziamento') ?? '(vuoto)'));
 $out('statoContratto: ' . (string) ($quote->get('statoContratto') ?? '(vuoto)'));
+$out('status: ' . (string) ($quote->get('status') ?? '(vuoto)'));
 $out('finanziamento: ' . ((bool) $quote->get('finanziamento') ? 'true' : 'false'));
+
+$statusOptions = $metadata->get(['entityDefs', 'Quote', 'fields', 'status', 'options']) ?? [];
+$currentStatus = trim((string) ($quote->get('status') ?? ''));
+
+if ($currentStatus !== '' && $statusOptions !== [] && !in_array($currentStatus, $statusOptions, true)) {
+    $out('ATTENZIONE: status attuale NON presente in enum entityDefs');
+}
 
 $currentStato = trim((string) ($quote->get('statoFinanziamento') ?? ''));
 

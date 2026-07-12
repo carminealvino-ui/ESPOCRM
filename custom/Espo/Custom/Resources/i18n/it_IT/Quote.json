@@ -128,12 +128,15 @@
         "status": {
             "Draft": "Bozza",
             "Presented": "Presentato",
+            "Bozza": "Bozza",
             "Approved": "In Pagamento",
             "Installato": "Installato",
             "Recesso": "Recesso",
             "Finanziamento Rifiutato": "Finanziamento Rifiutato",
+            "Invalido": "Invalido",
             "Canceled": "Annullato",
-            "In lavorazione": "In lavorazione"
+            "In lavorazione": "In lavorazione",
+            "Appuntamento fissato": "Appuntamento fissato"
         }
     }
 }

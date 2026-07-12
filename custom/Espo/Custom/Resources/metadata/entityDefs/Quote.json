@@ -247,21 +247,27 @@
             "options": [
                 "Draft",
                 "Presented",
+                "Bozza",
                 "In lavorazione",
+                "Appuntamento fissato",
                 "Approved",
                 "Installato",
                 "Recesso",
                 "Finanziamento Rifiutato",
+                "Invalido",
                 "Canceled"
             ],
             "style": {
                 "Draft": null,
                 "Presented": "primary",
+                "Bozza": "default",
                 "In lavorazione": "primary",
+                "Appuntamento fissato": "info",
                 "Approved": "info",
                 "Installato": "success",
                 "Recesso": "danger",
                 "Finanziamento Rifiutato": "warning",
+                "Invalido": "danger",
                 "Canceled": "info"
             }
         }
