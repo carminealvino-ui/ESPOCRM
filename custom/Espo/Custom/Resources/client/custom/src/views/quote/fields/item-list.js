@@ -164,6 +164,10 @@ define('custom:views/quote/fields/item-list', [
                         this.applyCatalogPricesToItemRow(itemView);
                     }.bind(this), 80);
                 });
+
+                this.listenTo(itemView.model, 'change:prezzoCodice', function () {
+                    this.syncItemListFromViews();
+                });
             }.bind(this));
         },
 
@@ -304,7 +308,6 @@ define('custom:views/quote/fields/item-list', [
 
             setTimeout(function () {
                 this.ensureItemListHooks();
-                this.applyCatalogPricesToItemList();
             }.bind(this), 200);
         },
 

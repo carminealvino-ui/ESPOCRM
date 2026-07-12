@@ -112,12 +112,14 @@ define('custom:handlers/quote/catalog-prices', [], function () {
     var patchFromRow = function (item, row, currency, quoteModel) {
         var patch = {};
 
-        if (row.listPrice != null && row.listPrice > 0) {
+        if (row.listPrice != null && row.listPrice > 0
+            && (item.listPrice == null || item.listPrice <= 0)) {
             patch.listPrice = row.listPrice;
             patch.listPriceCurrency = item.listPriceCurrency || currency;
         }
 
-        if (row.prezzoCodice != null && row.prezzoCodice > 0) {
+        if (row.prezzoCodice != null && row.prezzoCodice > 0
+            && (item.prezzoCodice == null || item.prezzoCodice <= 0)) {
             patch.prezzoCodice = row.prezzoCodice;
             patch.prezzoCodiceCurrency = item.prezzoCodiceCurrency || currency;
         }

@@ -5,7 +5,8 @@
         },
         "prezzoCodice": {
             "type": "currency",
-            "isCustom": true
+            "isCustom": true,
+            "readOnly": false
         }
     }
 }

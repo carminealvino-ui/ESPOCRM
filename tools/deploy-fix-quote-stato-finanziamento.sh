@@ -45,6 +45,7 @@ FILES=(
   custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
   custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json
   custom/Espo/Custom/Resources/client/custom/src/handlers/quote/sanitize-articoli-before-save.js
+  custom/Espo/Custom/Resources/client/custom/src/handlers/quote/catalog-prices.js
   tools/bonifica-quote-item-product-orphan.php
   tools/diagnose-quote-save.php
   tools/bonifica-stato-finanziamento-legacy.php
@@ -83,7 +84,7 @@ echo "  - enum status: valori legacy ripristinati (Invalido, Bozza, Appuntamento
 echo "  - Voce articoli: commento sotto prodotto opzionale (QuoteItem.name non required)"
 echo "  - Salvataggio: se commento vuoto, name compilato server-side da prodotto"
 echo "  - Riga articolo con prodotto cancellato: link rimosso (niente Bad request)"
-echo "  - Prezzo Codice su ogni riga articolo: sync ad ogni salvataggio + caricamento UI"
+echo "  - Prezzo Codice su ogni riga: modificabile, totali dalla somma righe (non catalogo)"
 echo ""
 echo "=== Prossimi passi (copia tutto il blocco) ==="
 echo "cd \"${CRM_ROOT}\""

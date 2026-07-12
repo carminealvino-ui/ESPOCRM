@@ -8,7 +8,7 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Ogni salvataggio: prezzo codice su ogni riga articolo da prodotto/listino.
+ * Solo righe senza prezzo codice: suggerimento da prodotto/listino (non sovrascrive modifiche utente).
  */
 class SyncQuoteItemPrezzoCodice implements BeforeSave
 {
