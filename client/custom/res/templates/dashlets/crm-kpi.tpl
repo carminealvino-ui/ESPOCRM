@@ -76,20 +76,26 @@
                             <div class="crm-kpi-pipeline-chart" data-name="pipeline-chart"></div>
                         </div>
                         <div class="crm-kpi-pipeline-results">
-                            <div class="crm-kpi-pipeline-results-note">Totali → Lordi → Netti (= Opportunità) · Contratti % su app. lordi/netti</div>
-                            <div class="crm-kpi-pipeline-results-grid">
-                                <div class="crm-kpi-pipeline-results-head">
-                                    <span>Risultato</span>
-                                    <span>Valore</span>
-                                    <span>Percentuali</span>
-                                </div>
-                                {{#each pipelineResultsRows}}
-                                    <div class="crm-kpi-pipeline-results-row">
-                                        <span class="crm-kpi-pipeline-results-label">{{label}}</span>
-                                        <span class="crm-kpi-pipeline-results-value">{{value}}</span>
-                                        <span class="crm-kpi-pipeline-results-detail">{{detail}}</span>
-                                    </div>
-                                {{/each}}
+                            <div class="crm-kpi-panel-note text-muted small">Totali → Lordi → Netti (= Opportunità) · Contratti % su app. lordi/netti</div>
+                            <div class="crm-kpi-yields-table-wrap">
+                                <table class="crm-kpi-yields-table crm-kpi-pipeline-results-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Risultato</th>
+                                            <th>Valore</th>
+                                            <th>Percentuali</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{#each pipelineResultsRows}}
+                                            <tr>
+                                                <th class="crm-kpi-yields-row-label">{{label}}</th>
+                                                <td>{{value}}</td>
+                                                <td>{{detail}}</td>
+                                            </tr>
+                                        {{/each}}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     {{else}}
