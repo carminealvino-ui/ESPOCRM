@@ -6,7 +6,6 @@ define('custom:views/quote/record/panels/finanziamento', ['views/record/panels/b
             this.fieldList = [
                 'finanziamento',
                 'statoFinanziamento',
-                'importoCaparra',
                 'importoSaldo',
                 'tassoZero',
                 'importoFinanziato',

@@ -11,11 +11,9 @@
             ],
             [
                 {
-                    "name": "importoCaparra"
-                },
-                {
                     "name": "importoSaldo"
-                }
+                },
+                false
             ],
             [
                 {

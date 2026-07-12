@@ -193,6 +193,7 @@
         },
         "importoCaparra": {
             "type": "currency",
+            "readOnly": false,
             "isCustom": true
         },
         "importoFinanziato": {
