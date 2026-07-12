@@ -36,9 +36,7 @@
                 }
             ],
             [
-                {
-                    "name": "statoContratto"
-                },
+                false,
                 {
                     "name": "motivoDecisione"
                 }
@@ -75,6 +73,12 @@
                 false,
                 {
                     "name": "amount"
+                }
+            ],
+            [
+                false,
+                {
+                    "name": "importoCaparra"
                 }
             ],
             [
