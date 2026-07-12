@@ -158,7 +158,11 @@ class ProvvigioneStatusSync
     {
         $stato = $provvigione->get('statoProvvigione');
 
-        return in_array($stato, [self::FORECAST, self::IN_PAGAMENTO, null, ''], true);
+        if ($stato === self::PAGATO) {
+            return false;
+        }
+
+        return in_array($stato, [self::FORECAST, self::IN_PAGAMENTO, self::INESIGIBILE, null, ''], true);
     }
 
     /**

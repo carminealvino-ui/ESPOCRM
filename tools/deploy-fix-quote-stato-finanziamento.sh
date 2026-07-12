@@ -33,6 +33,7 @@ FILES=(
   custom/Espo/Custom/Hooks/Quote/SyncProvvigioniStato.php
   custom/Espo/Custom/Services/QuotePricingCalculator.php
   custom/Espo/Custom/Services/ProvvigioneStatusSync.php
+  custom/Espo/Custom/Services/ProvvigioneManager.php
   custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json
   custom/Espo/Custom/Resources/metadata/formula/Quote.json
   custom/Espo/Custom/Resources/metadata/formula/QuoteItem.json
@@ -42,6 +43,7 @@ FILES=(
   custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
   custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json
   custom/Espo/Custom/Resources/client/custom/src/views/quote/record/item.js
+  custom/Espo/Custom/Resources/client/custom/src/views/quote/record/detail.js
   custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
   custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json
   custom/Espo/Custom/Resources/client/custom/src/handlers/quote/sanitize-articoli-before-save.js

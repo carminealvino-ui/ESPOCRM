@@ -22,6 +22,7 @@ class AfterSaveTotaleProvvigioni implements AfterSave
         'grandTotalAmount',
         'totalPrezzoCodice',
         'prezzoCodiceIvaEsclusa',
+        'prezzoCodiceIvaInclusa',
         'minusPlus',
         'importoContratto',
         'isTaxInclusive',

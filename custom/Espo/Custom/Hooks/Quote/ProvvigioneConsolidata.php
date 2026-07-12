@@ -60,6 +60,7 @@ class ProvvigioneConsolidata implements AfterSave
             'grandTotalAmount',
             'totalPrezzoCodice',
             'prezzoCodiceIvaEsclusa',
+            'prezzoCodiceIvaInclusa',
             'minusPlus',
             'importoContratto',
             'isTaxInclusive',
@@ -72,11 +73,15 @@ class ProvvigioneConsolidata implements AfterSave
             'prezzoListinoIvaEsclusa',
             'margineSuListino',
             'contattoPersonaleArquati',
+            'priceBookId',
+            'finanziamento',
+            'statoFinanziamento',
+            'statoContratto',
         ];
 
         foreach ($watch as $field) {
             if ($field === 'itemList') {
-                if ($this->isItemListReallyChanged($entity)) {
+                if ($this->isItemListReallyChanged($entity) || $this->hasItemListPrezzoCodiceChanged($entity)) {
                     return true;
                 }
 
@@ -98,5 +103,56 @@ class ProvvigioneConsolidata implements AfterSave
         }
 
         return json_encode($entity->get('itemList')) !== json_encode($entity->getFetched('itemList'));
+    }
+
+    private function hasItemListPrezzoCodiceChanged(Entity $entity): bool
+    {
+        if (!$entity->isAttributeChanged('itemList')) {
+            return false;
+        }
+
+        $current = $this->extractItemListPrezzoCodice($entity->get('itemList'));
+        $fetched = $this->extractItemListPrezzoCodice($entity->getFetched('itemList'));
+
+        return json_encode($current) !== json_encode($fetched);
+    }
+
+    /**
+     * @return list<array{productId: string, prezzoCodice: float|null}>
+     */
+    private function extractItemListPrezzoCodice(mixed $itemList): array
+    {
+        if (!is_array($itemList)) {
+            return [];
+        }
+
+        $rows = [];
+
+        foreach ($itemList as $item) {
+            $productId = (string) ($this->itemValue($item, 'productId') ?? '');
+            $prezzoCodice = $this->itemValue($item, 'prezzoCodice');
+
+            $rows[] = [
+                'productId' => $productId,
+                'prezzoCodice' => $prezzoCodice === null || $prezzoCodice === ''
+                    ? null
+                    : round((float) $prezzoCodice, 2),
+            ];
+        }
+
+        return $rows;
+    }
+
+    private function itemValue(mixed $item, string $key): mixed
+    {
+        if (is_object($item)) {
+            return $item->$key ?? null;
+        }
+
+        if (is_array($item)) {
+            return $item[$key] ?? null;
+        }
+
+        return null;
     }
 }

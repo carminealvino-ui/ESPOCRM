@@ -187,10 +187,6 @@ class ProvvigioneManager
         $counted = 0;
 
         foreach ($collection as $provvigione) {
-            if (!$this->statusSync->shouldCountInTotale((string) $provvigione->get('statoProvvigione'))) {
-                continue;
-            }
-
             $importo = $provvigione->get('importoConsolidato') ?? $provvigione->get('importo');
 
             if ($importo === null || $importo === '') {
@@ -411,10 +407,15 @@ class ProvvigioneManager
         }
 
         if ($context['plusvalenza'] !== null && $context['plusvalenza'] > 0) {
+            $this->removeProvvigioneByContrattoAndTipo($quote->getId(), 'Minus Provvigionale');
             $this->ensureArielPlusProvvigione($opportunity, $quote, $category, $context);
         } elseif ($minusPlus !== null && $minusPlus < 0) {
+            $this->removeProvvigioneByContrattoAndTipo($quote->getId(), 'Plus Provvigionale');
             $context['plusvalenza'] = $minusPlus;
             $this->ensureArielMinusProvvigione($opportunity, $quote, $category, $context);
+        } else {
+            $this->removeProvvigioneByContrattoAndTipo($quote->getId(), 'Minus Provvigionale');
+            $this->removeProvvigioneByContrattoAndTipo($quote->getId(), 'Plus Provvigionale');
         }
 
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
@@ -720,6 +721,15 @@ class ProvvigioneManager
         $this->saveProvvigioneEntity($provvigione);
 
         return $provvigione;
+    }
+
+    private function removeProvvigioneByContrattoAndTipo(string $quoteId, string $tipo): void
+    {
+        $provvigione = $this->findProvvigioneByContrattoAndTipo($quoteId, $tipo);
+
+        if ($provvigione) {
+            $this->entityManager->removeEntity($provvigione);
+        }
     }
 
     private function resolveProductCategory(Entity $quote, Entity $opportunity): ?Entity

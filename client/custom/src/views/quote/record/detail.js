@@ -7,10 +7,10 @@ define('custom:views/quote/record/detail', ['sales:views/quote/record/detail'], 
 
             this.listenTo(this.model, 'after:save', () => {
                 setTimeout(() => {
-                    if (this.getView('bottomPanels')) {
-                        this.getView('bottomPanels').reRender();
-                    }
-                }, 500);
+                    this.model.fetch().then(() => {
+                        this.reRender();
+                    });
+                }, 600);
             });
         },
 
