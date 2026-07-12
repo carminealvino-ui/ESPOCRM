@@ -41,7 +41,7 @@ php clear_cache.php
 echo ""
 echo "=== Fatto ==="
 echo "  - Totali = tutti nel periodo meno pianificati (conteggio coerente)"
-echo "  - Lordi = totali - annullati; Netti = lordi - ingestibili (mai > lordi)"
+echo "  - Annullati = totali - lordi (non più query OR esito che gonfiava a 344)"
 echo "  - Contratti lordi/netti: % su appuntamenti lordi e netti"
 echo ""
 echo "Ricarica la dashboard con Ctrl+F5."
