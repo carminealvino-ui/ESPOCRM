@@ -76,6 +76,27 @@ define('custom:views/quote/fields/item-list', [
 
         },
 
+        fetch: function () {
+            this.ensureItemNamesOnViews();
+            this.syncItemListFromViews();
+
+            return Dep.prototype.fetch.call(this);
+        },
+
+        ensureItemNamesOnViews: function () {
+            var itemListView = this.getItemListView && this.getItemListView();
+
+            if (!itemListView || typeof itemListView.getItemListViews !== 'function') {
+                return;
+            }
+
+            itemListView.getItemListViews().forEach(function (itemView) {
+                if (itemView && typeof itemView.ensureItemName === 'function') {
+                    itemView.ensureItemName();
+                }
+            });
+        },
+
         getLiveItemList: function () {
             var itemListView = this.getItemListView && this.getItemListView();
 
@@ -83,11 +104,33 @@ define('custom:views/quote/fields/item-list', [
                 var fetched = itemListView.fetch();
 
                 if (fetched && fetched.itemList) {
-                    return Espo.Utils.cloneDeep(fetched.itemList);
+                    return this.ensureItemNames(Espo.Utils.cloneDeep(fetched.itemList));
                 }
             }
 
-            return Espo.Utils.cloneDeep(this.model.get(this.name) || []);
+            return this.ensureItemNames(Espo.Utils.cloneDeep(this.model.get(this.name) || []));
+        },
+
+        ensureItemNames: function (itemList) {
+            (itemList || []).forEach(function (item) {
+                if (!item) {
+                    return;
+                }
+
+                var name = String(item.name || '').trim();
+
+                if (name) {
+                    return;
+                }
+
+                var fromProduct = String(item.productName || '').trim();
+
+                if (fromProduct) {
+                    item.name = fromProduct;
+                }
+            });
+
+            return itemList;
         },
 
         syncItemListFromViews: function () {
@@ -123,6 +166,8 @@ define('custom:views/quote/fields/item-list', [
             }
 
             this._itemListHooksReady = true;
+
+            this.ensureItemNamesOnViews();
 
             this.listenTo(itemListView, 'change', function (data) {
                 if (data && data.itemField === 'product') {
@@ -304,6 +349,8 @@ define('custom:views/quote/fields/item-list', [
 
             setTimeout(function () {
                 this.ensureItemListHooks();
+                this.ensureItemNamesOnViews();
+                this.syncItemListFromViews();
             }.bind(this), 200);
         },
 

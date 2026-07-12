@@ -24,6 +24,7 @@ fetch() {
 
 FILES=(
   custom/Espo/Custom/Hooks/InvitoAFatturare/BeforeSave.php
+  custom/Espo/Custom/Hooks/Quote/EnsureQuoteItemListNames.php
   custom/Espo/Custom/Hooks/Quote/SyncContractPricing.php
   custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php
   custom/Espo/Custom/Hooks/Quote/ProvvigioneConsolidata.php
@@ -36,6 +37,8 @@ FILES=(
   custom/Espo/Custom/Resources/metadata/entityDefs/Opportunity.json
   custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
   custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json
+  custom/Espo/Custom/Resources/client/custom/src/views/quote/record/item.js
+  custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
   tools/diagnose-quote-save.php
   tools/bonifica-stato-finanziamento-legacy.php
   tools/bonifica-quote-status-legacy.php
@@ -70,6 +73,7 @@ echo "  - optimisticConcurrencyControl disattivato su Quote"
 echo "  - enum statoFinanziamento: valori legacy ripristinati (In valutazione, In attesa di OTP, ...)"
 echo "  - rimosso hook obsoleto SyncProvvigioniStatoFromContratto (causa 500)"
 echo "  - enum status: valori legacy ripristinati (Invalido, Bozza, Appuntamento fissato)"
+echo "  - Voce articoli: name compilato da productName/prodotto (client + hook BeforeSave)"
 echo ""
 echo "=== Prossimi passi (copia tutto il blocco) ==="
 echo "cd \"${CRM_ROOT}\""
