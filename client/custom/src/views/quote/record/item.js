@@ -1,4 +1,4 @@
-// VERSIONE: 1.4.0 — prezzi listino/codice + Voce (name) da prodotto
+// VERSIONE: 1.5.0 — prezzi listino/codice; Voce/commento sotto prodotto opzionale
 
 define('custom:views/quote/record/item', [
     'sales:views/quote/record/item',
@@ -14,47 +14,9 @@ define('custom:views/quote/record/item', [
                 return;
             }
 
-            this.listenTo(this, 'after:render', this.ensureItemName, this);
-            this.listenTo(this.model, 'change:productId', this.ensureItemName, this);
-            this.listenTo(this.model, 'change:productName', this.ensureItemName, this);
-        },
-
-        ensureItemName: function () {
-            var name = String(this.model.get('name') || '').trim();
-
-            if (name) {
-                return;
+            if (this.model) {
+                this.model.setFieldParam('name', 'required', false);
             }
-
-            var fromProduct = String(this.model.get('productName') || '').trim();
-
-            if (fromProduct) {
-                this.model.set('name', fromProduct, {ui: true});
-
-                return;
-            }
-
-            var productId = this.model.get('productId');
-
-            if (!productId || this._ensureItemNamePending === productId) {
-                return;
-            }
-
-            this._ensureItemNamePending = productId;
-
-            Espo.Ajax.getRequest('Product/' + productId, {select: 'name'})
-                .then(function (response) {
-                    var productName = String((response && response.name) || '').trim();
-
-                    if (productName && !String(this.model.get('name') || '').trim()) {
-                        this.model.set('name', productName, {ui: true});
-                    }
-                }.bind(this))
-                .always(function () {
-                    if (this._ensureItemNamePending === productId) {
-                        this._ensureItemNamePending = null;
-                    }
-                }.bind(this));
         },
 
         async selectProduct(product) {
@@ -64,7 +26,6 @@ define('custom:views/quote/record/item', [
                 return;
             }
 
-            this.ensureItemName();
             await this.applyCatalogPrices(product);
         },
 
@@ -99,7 +60,6 @@ define('custom:views/quote/record/item', [
             }
 
             this.model.set(patch);
-            this.ensureItemName();
             this.calculationHandler.calculateItem(this.model);
             this.model.trigger('after-product-select');
         },

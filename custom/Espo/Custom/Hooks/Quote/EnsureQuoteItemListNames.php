@@ -8,7 +8,8 @@ use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Riga articolo: Voce (name) obbligatoria. Se vuota, copia da productName o Product.
+ * Riga articolo: il commento sotto il prodotto (name/Voce) è opzionale in UI.
+ * Se vuoto al salvataggio, copia silenziosamente da productName o Product.
  */
 class EnsureQuoteItemListNames implements BeforeSave
 {

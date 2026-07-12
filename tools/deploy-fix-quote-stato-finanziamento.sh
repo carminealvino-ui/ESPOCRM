@@ -34,6 +34,7 @@ FILES=(
   custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json
   custom/Espo/Custom/Resources/metadata/formula/Quote.json
   custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
+  custom/Espo/Custom/Resources/metadata/entityDefs/QuoteItem.json
   custom/Espo/Custom/Resources/metadata/entityDefs/Opportunity.json
   custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
   custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json
@@ -73,7 +74,8 @@ echo "  - optimisticConcurrencyControl disattivato su Quote"
 echo "  - enum statoFinanziamento: valori legacy ripristinati (In valutazione, In attesa di OTP, ...)"
 echo "  - rimosso hook obsoleto SyncProvvigioniStatoFromContratto (causa 500)"
 echo "  - enum status: valori legacy ripristinati (Invalido, Bozza, Appuntamento fissato)"
-echo "  - Voce articoli: name compilato da productName/prodotto (client + hook BeforeSave)"
+echo "  - Voce articoli: commento sotto prodotto opzionale (QuoteItem.name non required)"
+echo "  - Salvataggio: se commento vuoto, name compilato server-side da prodotto"
 echo ""
 echo "=== Prossimi passi (copia tutto il blocco) ==="
 echo "cd \"${CRM_ROOT}\""
