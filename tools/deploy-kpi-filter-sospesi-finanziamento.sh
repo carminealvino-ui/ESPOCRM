@@ -24,7 +24,9 @@ fetch() {
 
 FILES=(
   custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiSospesiFinanziamento.php
+  custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiSospesiOrdini.php
   custom/Espo/Custom/Resources/metadata/selectDefs/Quote.json
+  custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
 )
 
 for rel in "${FILES[@]}"; do
@@ -37,7 +39,7 @@ php clear_cache.php
 
 echo ""
 echo "=== Fatto ==="
-echo "  - Registrato primaryFilter contrattiSospesiFinanziamento su Quote"
+echo "  - Registrato primaryFilterClassNameMap contrattiSospesiFinanziamento su Quote"
 echo "  - Criteri: finanziamento=true, stato In rivalutazione / In Attesa Documentazione"
 echo ""
 echo "Verifica: aprire link KPI o #Quote/list/primaryFilter=contrattiSospesiFinanziamento"

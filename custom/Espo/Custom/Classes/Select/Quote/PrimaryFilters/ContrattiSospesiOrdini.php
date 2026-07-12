@@ -3,14 +3,14 @@
 namespace Espo\Custom\Classes\Select\Quote\PrimaryFilters;
 
 use Espo\Core\Select\Primary\Filter;
-use Espo\ORM\Query\Part\Condition\Cond;
+use Espo\ORM\Query\SelectBuilder;
 
 class ContrattiSospesiOrdini implements Filter
 {
-    public function apply(Cond $condition): Cond
+    public function apply(SelectBuilder $queryBuilder): void
     {
-        return $condition->and(
-            Cond::equal('statoContratto', 'Sospeso')
-        );
+        $queryBuilder->where([
+            'statoContratto' => 'Sospeso',
+        ]);
     }
 }

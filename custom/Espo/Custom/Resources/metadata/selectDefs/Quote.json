@@ -1,5 +1,5 @@
 {
-    "primaryFilters": {
+    "primaryFilterClassNameMap": {
         "contrattiSospesiFinanziamento": "Espo\\Custom\\Classes\\Select\\Quote\\PrimaryFilters\\ContrattiSospesiFinanziamento",
         "contrattiSospesiOrdini": "Espo\\Custom\\Classes\\Select\\Quote\\PrimaryFilters\\ContrattiSospesiOrdini"
     }

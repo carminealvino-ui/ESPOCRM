@@ -135,5 +135,9 @@
             "Canceled": "Annullato",
             "In lavorazione": "In lavorazione"
         }
+    },
+    "presetFilters": {
+        "contrattiSospesiFinanziamento": "Sospesi finanziamento",
+        "contrattiSospesiOrdini": "Sospesi ordini"
     }
 }
