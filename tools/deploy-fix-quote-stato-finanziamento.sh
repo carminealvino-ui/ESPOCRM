@@ -42,6 +42,9 @@ FILES=(
   custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json
   custom/Espo/Custom/Resources/client/custom/src/views/quote/record/item.js
   custom/Espo/Custom/Resources/client/custom/src/views/quote/fields/item-list.js
+  custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json
+  custom/Espo/Custom/Resources/client/custom/src/handlers/quote/sanitize-articoli-before-save.js
+  tools/bonifica-quote-item-product-orphan.php
   tools/diagnose-quote-save.php
   tools/bonifica-stato-finanziamento-legacy.php
   tools/bonifica-quote-status-legacy.php
@@ -82,6 +85,8 @@ echo "  - Riga articolo con prodotto cancellato: link rimosso (niente Bad reques
 echo ""
 echo "=== Prossimi passi (copia tutto il blocco) ==="
 echo "cd \"${CRM_ROOT}\""
+echo "php tools/bonifica-quote-item-product-orphan.php --dry-run --quote-id=6a36664f86ef51ce7"
+echo "php tools/bonifica-quote-item-product-orphan.php --quote-id=6a36664f86ef51ce7"
 echo "php tools/bonifica-quote-status-legacy.php --dry-run --quote-id=6a36664f86ef51ce7"
 echo "php clear_cache.php"
 echo ""

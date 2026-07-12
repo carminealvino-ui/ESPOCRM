@@ -10,7 +10,8 @@
         ],
         "record/edit": [
             "__APPEND__",
-            "custom:handlers/quote/crea-prodotto-articoli"
+            "custom:handlers/quote/crea-prodotto-articoli",
+            "custom:handlers/quote/sanitize-articoli-before-save"
         ]
     },
     "iconClass": "fas fa-file-contract",
