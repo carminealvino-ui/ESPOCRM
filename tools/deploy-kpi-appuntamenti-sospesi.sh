@@ -31,6 +31,7 @@ FILES=(
   custom/Espo/Custom/Classes/Select/Appuntamento/PrimaryFilters/Ingestibile.php
   custom/Espo/Custom/Resources/metadata/selectDefs/Appuntamento.json
   custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiSospesiOrdini.php
+  custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiSospesiFinanziamento.php
   custom/Espo/Custom/Resources/metadata/selectDefs/Quote.json
   custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json
   tools/bonifica-data-appuntamento.php
