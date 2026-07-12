@@ -38,6 +38,7 @@ FILES=(
   custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json
   tools/diagnose-quote-save.php
   tools/bonifica-stato-finanziamento-legacy.php
+  tools/bonifica-quote-status-legacy.php
 )
 
 for rel in "${FILES[@]}"; do
@@ -72,7 +73,8 @@ echo "  - enum status: valori legacy ripristinati (Invalido, Bozza, Appuntamento
 echo ""
 echo "=== Prossimi passi (copia tutto il blocco) ==="
 echo "cd \"${CRM_ROOT}\""
-echo "php tools/bonifica-stato-finanziamento-legacy.php --sql --quote-id=6a462adfd3eedc239"
-echo "php tools/diagnose-quote-save.php 6a462adfd3eedc239 \"Approvato\""
+echo "php tools/bonifica-quote-status-legacy.php --dry-run --quote-id=6a36664f86ef51ce7"
+echo "php clear_cache.php"
 echo ""
-echo "Se diagnose mostra 3) save completo: OK → riprova Salva da browser."
+echo "Poi ricarica la pagina con Ctrl+F5 (svuota cache browser)."
+echo "Il campo Stato non deve più apparire rosso 'non valido'."
