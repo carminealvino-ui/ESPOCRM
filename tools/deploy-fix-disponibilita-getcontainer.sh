@@ -41,11 +41,14 @@ fetch() {
 FILES=(
   custom/Espo/Custom/Controllers/Disponibilita.php
   custom/Espo/Custom/Controllers/WorkingTimeCalendar.php
+  custom/Espo/Custom/Actions/Disponibilita/GeneraDisponibilitaRicorrenti.php
   custom/Espo/Custom/Hooks/Disponibilita/SetName.php
   custom/Espo/Custom/Services/WorkingTimeCalendarDisponibilitaGenerator.php
   custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
   custom/Espo/Custom/Resources/metadata/app/calendar.json
   custom/Espo/Custom/Resources/metadata/scopes/Disponibilita.json
+  tools/fix-disponibilita-calendario-display.php
+  tools/diagnose-disponibilita-range.php
 )
 
 for rel in "${FILES[@]}"; do
@@ -55,6 +58,12 @@ done
 "${PHP_BIN}" clear_cache.php
 "${PHP_BIN}" rebuild.php
 "${PHP_BIN}" clear_cache.php
+
+echo ""
+echo "=== Diagnostica (opzionale) ==="
+if [[ -f tools/diagnose-disponibilita-range.php ]]; then
+  echo "  php tools/diagnose-disponibilita-range.php --from=2026-07-27 --to=2026-08-02"
+fi
 
 echo ""
 echo "=== Ripara record già generati (opzionale) ==="
