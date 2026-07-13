@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * Verifica che il fix annullato→admin sia installato (hook 1.7.10).
+ * Verifica che il fix annullato→admin sia installato (hook 1.7.11).
  */
 declare(strict_types=1);
 
@@ -23,8 +23,8 @@ foreach ([$globalLogic, $hooksJson, $afterSave, $sync] as $path) {
 if (is_file($globalLogic)) {
     $content = file_get_contents($globalLogic);
 
-    if ($content !== false && !str_contains($content, '1.7.10')) {
-        $errors[] = 'GlobalLogic.php non contiene hookVersion 1.7.10 (deploy non applicato?)';
+    if ($content !== false && !str_contains($content, '1.7.11')) {
+        $errors[] = 'GlobalLogic.php non contiene hookVersion 1.7.11 (deploy non applicato?)';
     }
 }
 
@@ -43,8 +43,8 @@ if (is_file($sync)) {
         $errors[] = 'AppuntamentoGoogleSync.php senza resolvePrimarySystemAdminUserId';
     }
 
-    if ($content !== false && str_contains($content, 'Query\\Part\\UpdateBuilder')) {
-        $errors[] = 'AppuntamentoGoogleSync.php usa UpdateBuilder namespace errato (fatal Espo 10)';
+    if ($content !== false && str_contains($content, 'UpdateBuilder')) {
+        $errors[] = 'AppuntamentoGoogleSync.php usa ancora UpdateBuilder (usa PDO diretto)';
     }
 }
 
@@ -58,4 +58,4 @@ if ($errors !== []) {
     exit(1);
 }
 
-fwrite(STDOUT, "OK fix annullato→admin installato (hook 1.7.10)\n");
+fwrite(STDOUT, "OK fix annullato→admin installato (hook 1.7.11)\n");

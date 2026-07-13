@@ -8,7 +8,6 @@ use Espo\Modules\Google\Core\Google\Actions\Event as GoogleEventAction;
 use Espo\Modules\Google\Repositories\GoogleCalendar as GoogleCalendarRepository;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
-use Espo\ORM\Query\UpdateBuilder;
 
 /**
  * Sync Appuntamento ↔ Google Calendar (rimozione su Not Held / delete / cambio consulente).
@@ -208,13 +207,28 @@ class AppuntamentoGoogleSync
             $relation->relateById($adminId);
         }
 
-        $this->entityManager->getQueryExecutor()->execute(
-            UpdateBuilder::create()
-                ->in(self::ENTITY_TYPE)
-                ->set(['assignedUserId' => $adminId])
-                ->where(['id' => $entityId])
-                ->build()
-        );
+        $this->updateAssignedUserIdDirect($entityId, $adminId);
+    }
+
+    private function updateAssignedUserIdDirect(string $entityId, string $userId): void
+    {
+        $pdo = $this->entityManager->getPDO();
+
+        if ($pdo instanceof \PDO) {
+            $stmt = $pdo->prepare(
+                'UPDATE appuntamento SET assigned_user_id = ? WHERE id = ? AND deleted = 0'
+            );
+            $stmt->execute([$userId, $entityId]);
+
+            return;
+        }
+
+        $entity = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+
+        if ($entity) {
+            $entity->set('assignedUserId', $userId);
+            $this->entityManager->saveEntity($entity, ['skipHooks' => true, 'silent' => true]);
+        }
     }
 
     /**
@@ -1782,14 +1796,7 @@ class AppuntamentoGoogleSync
         }
 
         // UPDATE diretto: evita hook Google (dummy "APPUNTAMENTO SENZA PROSPECT").
-        $this->entityManager->getQueryExecutor()->execute(
-            UpdateBuilder::create()
-                ->in(self::ENTITY_TYPE)
-                ->set(['assignedUserId' => $userId])
-                ->where(['id' => $entityId])
-                ->build()
-        );
-
+        $this->updateAssignedUserIdDirect($entityId, $userId);
         $entity->set('assignedUserId', $userId);
 
         return true;
