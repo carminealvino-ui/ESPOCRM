@@ -165,7 +165,7 @@ class AppuntamentoGoogleSync
         }
 
         $adminId = $this->resolvePrimarySystemAdminUserId();
-        $this->replaceAssignedUsersWithAdmin($entityId, $adminId);
+        $oldUserIds = $this->replaceAssignedUsersWithAdmin($entityId, $adminId);
 
         if ($entity->get('status') !== 'Not Held') {
             $this->entityManager->getQueryExecutor()->execute(
@@ -181,14 +181,347 @@ class AppuntamentoGoogleSync
     }
 
     /**
-     * Scrive assigned_user_id e entity_user senza passare da saveEntity (più affidabile su Espo 10).
+     * Bonifica: forza riassegnazione + rimozione evento Google sul vecchio consulente.
+     *
+     * @return 'assigned'|'skipped'|'failed'
      */
-    private function replaceAssignedUsersWithAdmin(string $entityId, string $adminId): void
+    public function forceCancelledAdminAssignee(string $entityId, bool $withGoogleCleanup = true): string
     {
         $entity = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
 
+        if (!$entity || !$this->isCancelledAppointment($entity)) {
+            return 'skipped';
+        }
+
+        $adminId = $this->resolvePrimarySystemAdminUserId();
+        [, $beforeUsers] = $this->fetchAssigneeStateFromDb($entityId);
+        $beforeUserId = (string) ($entity->get('assignedUserId') ?: '');
+
+        $alreadyOk = $beforeUsers === [$adminId] && $beforeUserId === $adminId;
+
+        $oldConsultantIds = array_values(array_unique(array_filter(
+            array_merge($beforeUsers, $beforeUserId !== '' ? [$beforeUserId] : []),
+            static fn (string $userId) => $userId !== '' && $userId !== $adminId
+        )));
+
+        if (!$alreadyOk) {
+            $this->replaceAssignedUsersWithAdmin($entityId, $adminId);
+
+            if ($entity->get('status') !== 'Not Held') {
+                $this->entityManager->getQueryExecutor()->execute(
+                    UpdateBuilder::create()
+                        ->in(self::ENTITY_TYPE)
+                        ->set(['status' => 'Not Held'])
+                        ->where(['id' => $entityId])
+                        ->build()
+                );
+            }
+        }
+
+        if ($withGoogleCleanup) {
+            $entity = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+
+            if ($entity) {
+                $this->cleanupGoogleAfterNotHeldAdminAssign($entity, $oldConsultantIds);
+            }
+        }
+
+        if (!$alreadyOk) {
+            return 'assigned';
+        }
+
+        return $withGoogleCleanup ? 'google' : 'skipped';
+    }
+
+    /**
+     * @return string[]
+     */
+    public function listCancelledAppointmentIdsNeedingAdminFix(?string $nameSearch = null): array
+    {
+        $pdo = $this->entityManager->getPDO();
+
+        if (!$pdo instanceof \PDO) {
+            return $this->listCancelledAppointmentIdsNeedingAdminFixViaOrm($nameSearch);
+        }
+
+        $adminId = $this->resolvePrimarySystemAdminUserId();
+        $params = [
+            'Not Held',
+            'Annullato',
+            'Annullato%',
+            $adminId,
+            self::ENTITY_TYPE,
+            $adminId,
+            self::ENTITY_TYPE,
+            $adminId,
+        ];
+        $nameFilter = '';
+
+        if ($nameSearch !== null && $nameSearch !== '') {
+            $nameFilter = ' AND a.name LIKE ?';
+            $params[] = '%' . $nameSearch . '%';
+        }
+
+        $sql = 'SELECT a.id
+            FROM appuntamento a
+            WHERE a.deleted = 0
+            AND (
+                a.status = ?
+                OR a.sottostato = ?
+                OR a.esito LIKE ?
+            )
+            AND (
+                IFNULL(a.assigned_user_id, \'\') != ?
+                OR NOT EXISTS (
+                    SELECT 1 FROM entity_user eu
+                    WHERE eu.entity_id = a.id
+                    AND eu.entity_type = ?
+                    AND eu.deleted = 0
+                    AND eu.user_id = ?
+                )
+                OR EXISTS (
+                    SELECT 1 FROM entity_user eu
+                    WHERE eu.entity_id = a.id
+                    AND eu.entity_type = ?
+                    AND eu.deleted = 0
+                    AND eu.user_id != ?
+                )
+            )' . $nameFilter . '
+            ORDER BY a.date_start DESC';
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+
+        $ids = [];
+
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            $id = (string) ($row['id'] ?? '');
+
+            if ($id !== '') {
+                $ids[] = $id;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Annullati con link Google ancora attivo (evento visibile sul calendario consulente).
+     *
+     * @return string[]
+     */
+    public function listCancelledAppointmentIdsWithGoogleLink(?string $nameSearch = null): array
+    {
+        $pdo = $this->entityManager->getPDO();
+
+        if (!$pdo instanceof \PDO) {
+            return [];
+        }
+
+        $params = [
+            self::ENTITY_TYPE,
+            'Not Held',
+            'Annullato',
+            'Annullato%',
+        ];
+        $nameFilter = '';
+
+        if ($nameSearch !== null && $nameSearch !== '') {
+            $nameFilter = ' AND a.name LIKE ?';
+            $params[] = '%' . $nameSearch . '%';
+        }
+
+        $sql = 'SELECT DISTINCT a.id
+            FROM appuntamento a
+            INNER JOIN google_calendar_event g
+                ON g.entity_id = a.id
+                AND g.entity_type = ?
+                AND g.deleted = 0
+            WHERE a.deleted = 0
+            AND (
+                a.status = ?
+                OR a.sottostato = ?
+                OR a.esito LIKE ?
+            )
+            AND IFNULL(g.google_calendar_event_id, \'\') NOT IN (\'\', \'FAIL\')' . $nameFilter;
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+
+        $ids = [];
+
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+            $id = (string) ($row['id'] ?? '');
+
+            if ($id !== '') {
+                $ids[] = $id;
+            }
+        }
+
+        return $ids;
+    }
+
+    public function countCancelledAppointments(?string $nameSearch = null): int
+    {
+        $pdo = $this->entityManager->getPDO();
+
+        if (!$pdo instanceof \PDO) {
+            return count($this->listCancelledAppointmentIdsNeedingAdminFixViaOrm($nameSearch, true));
+        }
+
+        $params = ['Not Held', 'Annullato', 'Annullato%'];
+        $nameFilter = '';
+
+        if ($nameSearch !== null && $nameSearch !== '') {
+            $nameFilter = ' AND name LIKE ?';
+            $params[] = '%' . $nameSearch . '%';
+        }
+
+        $stmt = $pdo->prepare(
+            'SELECT COUNT(*) FROM appuntamento
+             WHERE deleted = 0
+             AND (status = ? OR sottostato = ? OR esito LIKE ?)' . $nameFilter
+        );
+        $stmt->execute($params);
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * @return string[]
+     */
+    private function listCancelledAppointmentIdsNeedingAdminFixViaOrm(
+        ?string $nameSearch = null,
+        bool $allCancelled = false
+    ): array {
+        $where = [
+            'OR' => [
+                ['status' => 'Not Held'],
+                ['sottostato' => 'Annullato'],
+            ],
+        ];
+
+        if ($nameSearch !== null && $nameSearch !== '') {
+            $where['name*'] = '%' . $nameSearch . '%';
+        }
+
+        $ids = [];
+
+        foreach (
+            $this->entityManager->getRDBRepository(self::ENTITY_TYPE)->where($where)->find() as $entity
+        ) {
+            if ($allCancelled || $this->needsNotHeldAdminAssigneeFix($entity)) {
+                $id = $entity->getId();
+
+                if ($id) {
+                    $ids[] = $id;
+                }
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @param string[] $oldConsultantIds
+     */
+    private function cleanupGoogleAfterNotHeldAdminAssign(Entity $entity, array $oldConsultantIds): void
+    {
+        $adminId = $this->resolvePrimarySystemAdminUserId();
+        $entityId = $entity->getId();
+
+        if ($entityId) {
+            $googleData = $this->getGoogleRepository()->getEventEntityGoogleData(self::ENTITY_TYPE, $entityId);
+
+            if (is_array($googleData)) {
+                $ownerId = $this->resolveCalendarOwnerUserId($googleData);
+
+                if (is_string($ownerId) && $ownerId !== '' && $ownerId !== $adminId) {
+                    $oldConsultantIds[] = $ownerId;
+                }
+            }
+        }
+
+        $tried = [];
+
+        foreach ($oldConsultantIds as $userId) {
+            if ($userId === '' || $userId === $adminId || isset($tried[$userId])) {
+                continue;
+            }
+
+            $tried[$userId] = true;
+
+            if ($this->isGoogleCalendarApiAvailableForUser($userId)) {
+                $this->bonificaForceRemoveGoogleLink($entity, $userId);
+            }
+        }
+
+        $calendarUserId = $this->resolveGoogleCalendarUserIdForEntity($entity, true);
+
+        if (
+            $calendarUserId !== null
+            && $calendarUserId !== $adminId
+            && !isset($tried[$calendarUserId])
+            && $this->isGoogleCalendarApiAvailableForUser($calendarUserId)
+        ) {
+            $this->bonificaForceRemoveGoogleLink($entity, $calendarUserId);
+        }
+
+        $this->handleNotHeldStatus($entity);
+    }
+
+    /**
+     * @return string[] utenti rimossi da entity_user
+     */
+    private function replaceAssignedUsersWithAdmin(string $entityId, string $adminId): array
+    {
+        [, $beforeUsers] = $this->fetchAssigneeStateFromDb($entityId);
+        $removed = array_values(array_filter(
+            $beforeUsers,
+            static fn (string $userId) => $userId !== '' && $userId !== $adminId
+        ));
+
+        $pdo = $this->entityManager->getPDO();
+
+        if ($pdo instanceof \PDO) {
+            $stmt = $pdo->prepare(
+                'UPDATE entity_user
+                 SET deleted = 1
+                 WHERE entity_id = ? AND entity_type = ? AND deleted = 0'
+            );
+            $stmt->execute([$entityId, self::ENTITY_TYPE]);
+
+            $stmt = $pdo->prepare(
+                'SELECT id FROM entity_user
+                 WHERE entity_id = ? AND entity_type = ? AND user_id = ?
+                 LIMIT 1'
+            );
+            $stmt->execute([$entityId, self::ENTITY_TYPE, $adminId]);
+            $existing = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+            if (is_array($existing) && isset($existing['id'])) {
+                $upd = $pdo->prepare('UPDATE entity_user SET deleted = 0 WHERE id = ?');
+                $upd->execute([$existing['id']]);
+            } else {
+                $ins = $pdo->prepare(
+                    'INSERT INTO entity_user (entity_id, user_id, entity_type, deleted)
+                     VALUES (?, ?, ?, 0)'
+                );
+                $ins->execute([$entityId, $adminId, self::ENTITY_TYPE]);
+            }
+
+            $updApp = $pdo->prepare(
+                'UPDATE appuntamento SET assigned_user_id = ? WHERE id = ? AND deleted = 0'
+            );
+            $updApp->execute([$adminId, $entityId]);
+
+            return $removed;
+        }
+
+        $entity = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+
         if (!$entity) {
-            return;
+            return $removed;
         }
 
         $entity->loadLinkMultipleField('assignedUsers');
@@ -216,6 +549,8 @@ class AppuntamentoGoogleSync
                 ->where(['id' => $entityId])
                 ->build()
         );
+
+        return $removed;
     }
 
     /**

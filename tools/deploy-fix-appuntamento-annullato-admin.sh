@@ -65,7 +65,7 @@ echo "=== Bonifica massiva appuntamenti annullati (dry-run) ==="
 if [[ -f tools/bonifica-appuntamento-not-held-admin.php ]]; then
   "${PHP_BIN}" tools/bonifica-appuntamento-not-held-admin.php --dry-run
   echo ""
-  echo "Per aggiornare TUTTI i vecchi annullati:"
+  echo "Per aggiornare TUTTI i vecchi annullati (DB + Google Calendar):"
   echo "  php tools/bonifica-appuntamento-not-held-admin.php --apply --quiet"
 fi
 
