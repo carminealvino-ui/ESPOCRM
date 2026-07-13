@@ -2,13 +2,12 @@
 
 namespace Espo\Custom\Actions\WorkingTimeCalendar;
 
-use Espo\Custom\Services\WorkingTimeCalendarDisponibilitaGenerator;
-use Espo\ORM\Entity;
+use Espo\Custom\Actions\Disponibilita\GeneraDisponibilitaRicorrenti;
 use Espo\ORM\EntityManager;
 
 /**
- * v1 — generazione da dettaglio calendario (sostituita da Disponibilita/GeneraDisponibilitaRicorrenti).
- * Mantenuta per compatibilità API; usa utenti collegati al calendario.
+ * Generazione da dettaglio calendario (pulsante «Genera Disponibilità»).
+ * Delega a GeneraDisponibilitaRicorrenti con calendarId = id.
  */
 class GeneraDisponibilita
 {
@@ -16,38 +15,20 @@ class GeneraDisponibilita
         private EntityManager $entityManager
     ) {}
 
-    public function run(Entity $calendar): object
+    public function run(object $data): object
     {
-        $calendarId = $calendar->getId();
+        $id = $data->id ?? null;
 
-        if ($calendarId) {
-            $fresh = $this->entityManager->getEntityById('WorkingTimeCalendar', $calendarId);
-
-            if ($fresh) {
-                $calendar = $fresh;
-            }
+        if (!$id) {
+            throw new \Exception('ID mancante');
         }
 
-        $generator = new WorkingTimeCalendarDisponibilitaGenerator($this->entityManager);
-        $result = $generator->generateFromCalendar($calendar);
+        $payload = (object) array_merge((array) $data, [
+            'calendarId' => $id,
+        ]);
 
-        $dateFrom = substr((string) ($calendar->get('dataInizioGenerazione') ?? ''), 0, 10);
-        $dateTo = substr((string) ($calendar->get('dataFineGenerazione') ?? ''), 0, 10);
-        $diagnosis = $generator->diagnoseSlots($calendar, $dateFrom, $dateTo);
+        $action = new GeneraDisponibilitaRicorrenti($this->entityManager);
 
-        return (object) [
-            'created' => $result['created'],
-            'skipped' => $result['skipped'],
-            'errors' => $result['errors'],
-            'userCount' => $result['userCount'],
-            'daysBlocked' => $result['daysBlocked'] ?? 0,
-            'daysWeekdayOff' => $result['daysWeekdayOff'] ?? 0,
-            'daysNoSlots' => $result['daysNoSlots'] ?? 0,
-            'daysWithSlots' => $result['daysWithSlots'] ?? 0,
-            'blockingExceptions' => $diagnosis['blockingExceptions'],
-            'dateFrom' => $dateFrom,
-            'dateTo' => $dateTo,
-            'message' => $generator->formatGenerationMessage($result, $dateFrom, $dateTo),
-        ];
+        return $action->run($payload);
     }
 }
