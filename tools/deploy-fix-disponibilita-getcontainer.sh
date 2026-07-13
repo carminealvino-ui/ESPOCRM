@@ -56,6 +56,7 @@ FILES=(
   client/custom/src/views/modals/disponibilita-ricorrenti.js
   tools/fix-disponibilita-calendario-display.php
   tools/diagnose-disponibilita-range.php
+  tools/diagnose-calendario-generazione.php
 )
 
 for rel in "${FILES[@]}"; do
@@ -69,7 +70,10 @@ done
 echo ""
 echo "=== Diagnostica (opzionale) ==="
 if [[ -f tools/diagnose-disponibilita-range.php ]]; then
-  echo "  php tools/diagnose-disponibilita-range.php --from=2026-07-27 --to=2026-08-02"
+  echo "  php tools/diagnose-disponibilita-range.php --from=2026-07-20 --to=2026-08-02"
+fi
+if [[ -f tools/diagnose-calendario-generazione.php ]]; then
+  echo "  php tools/diagnose-calendario-generazione.php --calendar=CALENDAR_ID --from=2026-07-20 --to=2026-08-02"
 fi
 
 echo ""

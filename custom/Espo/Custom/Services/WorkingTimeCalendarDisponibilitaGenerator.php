@@ -168,13 +168,28 @@ class WorkingTimeCalendarDisponibilitaGenerator
         $created = 0;
         $skipped = 0;
         $errors = [];
+        $daysBlocked = 0;
+        $daysWeekdayOff = 0;
+        $daysNoSlots = 0;
+        $daysWithSlots = 0;
 
         $current = new \DateTimeImmutable($dateFrom, new \DateTimeZone(self::TIMEZONE));
         $end = new \DateTimeImmutable($dateTo, new \DateTimeZone(self::TIMEZONE));
 
         while ($current <= $end) {
             $dateStr = $current->format('Y-m-d');
-            $slots = $this->resolveTimeSlotsForDate($calendar, $dateStr);
+            $analysis = $this->analyzeSlotsForDate($calendar, $dateStr);
+            $slots = $analysis['slots'];
+
+            if ($analysis['reason'] === 'exception_non_working') {
+                $daysBlocked++;
+            } elseif ($analysis['reason'] === 'weekday_off') {
+                $daysWeekdayOff++;
+            } elseif ($slots === []) {
+                $daysNoSlots++;
+            } else {
+                $daysWithSlots++;
+            }
 
             foreach ($slots as $slot) {
                 if ($this->existsDisponibilita(
@@ -218,7 +233,196 @@ class WorkingTimeCalendarDisponibilitaGenerator
             'created' => $created,
             'skipped' => $skipped,
             'errors' => $errors,
+            'daysBlocked' => $daysBlocked,
+            'daysWeekdayOff' => $daysWeekdayOff,
+            'daysNoSlots' => $daysNoSlots,
+            'daysWithSlots' => $daysWithSlots,
         ];
+    }
+
+    /**
+     * Diagnostica giorno per giorno (CLI / supporto).
+     *
+     * @return array{
+     *   days: array<int, array{date: string, reason: string, slots: int, detail?: string}>,
+     *   blockingExceptions: array<int, array{name: string, dateStart: string, dateEnd: string, type: string}>
+     * }
+     */
+    public function diagnoseSlots(Entity $calendar, string $dateFrom, string $dateTo): array
+    {
+        $dateFrom = $this->normalizeDate($dateFrom);
+        $dateTo = $this->normalizeDate($dateTo);
+
+        if ($dateFrom === null || $dateTo === null) {
+            throw new \InvalidArgumentException('Intervallo date non valido.');
+        }
+
+        $days = [];
+        $current = new \DateTimeImmutable($dateFrom, new \DateTimeZone(self::TIMEZONE));
+        $end = new \DateTimeImmutable($dateTo, new \DateTimeZone(self::TIMEZONE));
+
+        while ($current <= $end) {
+            $dateStr = $current->format('Y-m-d');
+            $analysis = $this->analyzeSlotsForDate($calendar, $dateStr);
+
+            $days[] = [
+                'date' => $dateStr,
+                'reason' => $analysis['reason'],
+                'slots' => count($analysis['slots']),
+                'detail' => $analysis['detail'] ?? null,
+            ];
+
+            $current = $current->modify('+1 day');
+        }
+
+        return [
+            'days' => $days,
+            'blockingExceptions' => $this->findBlockingExceptions($calendar, $dateFrom, $dateTo),
+        ];
+    }
+
+    /**
+     * @return array{slots: array<int, array{start: string, end: string}>, reason: string, detail?: string}
+     */
+    private function analyzeSlotsForDate(Entity $calendar, string $dateStr): array
+    {
+        $exceptionSlots = $this->resolveExceptionSlots($calendar, $dateStr);
+
+        if ($exceptionSlots === false) {
+            $detail = $this->describeBlockingException($calendar, $dateStr);
+
+            return [
+                'slots' => [],
+                'reason' => 'exception_non_working',
+                'detail' => $detail,
+            ];
+        }
+
+        if ($exceptionSlots !== null) {
+            return [
+                'slots' => $exceptionSlots,
+                'reason' => 'exception_working',
+            ];
+        }
+
+        $weekday = (int) (new \DateTimeImmutable($dateStr))->format('w');
+        $weekdayField = 'weekday' . $weekday;
+
+        if (!$calendar->get($weekdayField)) {
+            return [
+                'slots' => [],
+                'reason' => 'weekday_off',
+                'detail' => 'Giorno settimana disabilitato (' . $weekdayField . ')',
+            ];
+        }
+
+        $slots = $this->resolveTimeSlotsForDate($calendar, $dateStr);
+
+        if ($slots === []) {
+            return [
+                'slots' => [],
+                'reason' => 'no_time_ranges',
+                'detail' => 'Nessuna fascia oraria (timeRanges / weekday' . $weekday . 'TimeRanges)',
+            ];
+        }
+
+        return [
+            'slots' => $slots,
+            'reason' => 'schedule',
+        ];
+    }
+
+    /**
+     * @return array<int, array{name: string, dateStart: string, dateEnd: string, type: string}>
+     */
+    private function findBlockingExceptions(Entity $calendar, string $dateFrom, string $dateTo): array
+    {
+        $ranges = $this->entityManager
+            ->getRDBRepository('WorkingTimeCalendar')
+            ->getRelation($calendar, 'ranges')
+            ->where([
+                'dateStart<=' => $dateTo,
+                'dateEnd>=' => $dateFrom,
+            ])
+            ->find();
+
+        $list = [];
+
+        foreach ($ranges as $range) {
+            $type = (string) ($range->get('type') ?: 'Non-working');
+
+            if (!$this->isNonWorkingType($type)) {
+                continue;
+            }
+
+            $list[] = [
+                'name' => (string) ($range->get('name') ?: ''),
+                'dateStart' => (string) ($range->get('dateStart') ?: ''),
+                'dateEnd' => (string) ($range->get('dateEnd') ?: ''),
+                'type' => $type,
+            ];
+        }
+
+        return $list;
+    }
+
+    private function describeBlockingException(Entity $calendar, string $dateStr): string
+    {
+        foreach ($this->findBlockingExceptions($calendar, $dateStr, $dateStr) as $range) {
+            $label = $range['name'] !== '' ? $range['name'] : 'Eccezione non lavorativa';
+
+            return $label . ' (' . $range['dateStart'] . ' → ' . $range['dateEnd'] . ')';
+        }
+
+        return 'Eccezione non lavorativa';
+    }
+
+    /**
+     * @param array{
+     *   created: int,
+     *   skipped: int,
+     *   errors: string[],
+     *   userCount?: int,
+     *   daysBlocked?: int,
+     *   daysWeekdayOff?: int,
+     *   daysNoSlots?: int,
+     *   daysWithSlots?: int
+     * } $result
+     */
+    public function formatGenerationMessage(
+        array $result,
+        ?string $dateFrom = null,
+        ?string $dateTo = null
+    ): string {
+        $parts = [];
+
+        if ($dateFrom && $dateTo) {
+            $parts[] = sprintf('Periodo %s → %s', $dateFrom, $dateTo);
+        }
+
+        $parts[] = sprintf(
+            'create %d, %d già presenti',
+            $result['created'],
+            $result['skipped']
+        );
+
+        if (($result['daysBlocked'] ?? 0) > 0) {
+            $parts[] = ($result['daysBlocked'] ?? 0) . ' giorni esclusi (eccezione non lavorativa nel calendario)';
+        }
+
+        if (($result['daysWeekdayOff'] ?? 0) > 0) {
+            $parts[] = ($result['daysWeekdayOff'] ?? 0) . ' giorni con settimana disabilitata';
+        }
+
+        if (($result['daysNoSlots'] ?? 0) > 0) {
+            $parts[] = ($result['daysNoSlots'] ?? 0) . ' giorni senza fascia oraria';
+        }
+
+        if ($result['errors'] !== []) {
+            $parts[] = count($result['errors']) . ' errori';
+        }
+
+        return implode(' · ', $parts) . '.';
     }
 
     /**
@@ -243,10 +447,10 @@ class WorkingTimeCalendarDisponibilitaGenerator
             return [];
         }
 
-        $weekdayRanges = $calendar->get('weekday' . $weekday . 'TimeRanges');
-        $globalRanges = $calendar->get('timeRanges');
+        $weekdayRanges = $this->decodeRanges($calendar->get('weekday' . $weekday . 'TimeRanges'));
+        $globalRanges = $this->decodeRanges($calendar->get('timeRanges'));
 
-        if ($this->hasCustomWeekdayRanges($weekdayRanges)) {
+        if ($weekdayRanges !== []) {
             $slots = $this->parseTimeRanges($weekdayRanges, $dateStr);
 
             if ($slots !== []) {
@@ -258,11 +462,16 @@ class WorkingTimeCalendarDisponibilitaGenerator
     }
 
     /**
-     * Allineato a Espo\Core: orario per giorno solo se valorizzato esplicitamente.
+     * @return array<int, mixed>
      */
-    private function hasCustomWeekdayRanges(mixed $ranges): bool
+    private function decodeRanges(mixed $ranges): array
     {
-        return is_array($ranges) && $ranges !== [];
+        if (is_string($ranges) && $ranges !== '') {
+            $decoded = json_decode($ranges, true);
+            $ranges = is_array($decoded) ? $decoded : [];
+        }
+
+        return is_array($ranges) ? $ranges : [];
     }
 
     /**
@@ -311,24 +520,19 @@ class WorkingTimeCalendarDisponibilitaGenerator
      */
     private function parseTimeRanges(mixed $ranges, string $dateStr): array
     {
-        if (is_string($ranges) && $ranges !== '') {
-            $decoded = json_decode($ranges, true);
-            $ranges = is_array($decoded) ? $decoded : [];
-        }
-
-        if (!is_array($ranges)) {
-            return [];
-        }
+        $ranges = $this->decodeRanges($ranges);
 
         $slots = [];
 
         foreach ($ranges as $range) {
-            if (!is_array($range) || count($range) < 2) {
+            [$startRaw, $endRaw] = $this->extractRangeBounds($range);
+
+            if ($startRaw === null || $endRaw === null) {
                 continue;
             }
 
-            $start = $this->normalizeTime((string) $range[0]);
-            $end = $this->normalizeTime((string) $range[1]);
+            $start = $this->normalizeTime($startRaw);
+            $end = $this->normalizeTime($endRaw);
 
             if ($start === null || $end === null || $start >= $end) {
                 continue;
@@ -341,6 +545,28 @@ class WorkingTimeCalendarDisponibilitaGenerator
         }
 
         return $slots;
+    }
+
+    /**
+     * @return array{0: ?string, 1: ?string}
+     */
+    private function extractRangeBounds(mixed $range): array
+    {
+        if (!is_array($range)) {
+            return [null, null];
+        }
+
+        if (isset($range[0], $range[1])) {
+            return [(string) $range[0], (string) $range[1]];
+        }
+
+        foreach ([['from', 'to'], ['start', 'end']] as [$startKey, $endKey]) {
+            if (isset($range[$startKey], $range[$endKey])) {
+                return [(string) $range[$startKey], (string) $range[$endKey]];
+            }
+        }
+
+        return [null, null];
     }
 
     /**
@@ -362,7 +588,10 @@ class WorkingTimeCalendarDisponibilitaGenerator
         $collection = $this->entityManager
             ->getRDBRepository('Disponibilita')
             ->where([
-                'dateStartDate' => $dateStr,
+                'OR' => [
+                    ['dateStartDate' => $dateStr],
+                    ['datadisponibilita' => $dateStr],
+                ],
             ])
             ->find();
 

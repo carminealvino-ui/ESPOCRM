@@ -51,28 +51,36 @@ class GeneraDisponibilitaRicorrenti
             ]);
         }
 
+        $calendarId = $calendar->getId();
+
+        if ($calendarId) {
+            $calendar = $this->entityManager->getEntityById('WorkingTimeCalendar', $calendarId);
+
+            if (!$calendar) {
+                throw new \Exception('Calendario lavorativo non trovato dopo il salvataggio.');
+            }
+        }
+
         $generator = new WorkingTimeCalendarDisponibilitaGenerator($this->entityManager);
         $result = $generator->generateFromCalendar($calendar);
 
         $dateFrom = substr((string) ($calendar->get('dataInizioGenerazione') ?? ''), 0, 10);
         $dateTo = substr((string) ($calendar->get('dataFineGenerazione') ?? ''), 0, 10);
+        $diagnosis = $generator->diagnoseSlots($calendar, $dateFrom, $dateTo);
 
         return (object) [
             'created' => $result['created'],
             'skipped' => $result['skipped'],
             'errors' => $result['errors'],
             'userCount' => $result['userCount'],
+            'daysBlocked' => $result['daysBlocked'] ?? 0,
+            'daysWeekdayOff' => $result['daysWeekdayOff'] ?? 0,
+            'daysNoSlots' => $result['daysNoSlots'] ?? 0,
+            'daysWithSlots' => $result['daysWithSlots'] ?? 0,
+            'blockingExceptions' => $diagnosis['blockingExceptions'],
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
-            'message' => sprintf(
-                'Periodo %s → %s: create %d disponibilità per %d utenti, %d già presenti%s.',
-                $dateFrom ?: '?',
-                $dateTo ?: '?',
-                $result['created'],
-                $result['userCount'],
-                $result['skipped'],
-                $result['errors'] !== [] ? ', ' . count($result['errors']) . ' errori' : ''
-            ),
+            'message' => $generator->formatGenerationMessage($result, $dateFrom, $dateTo),
         ];
     }
 }
