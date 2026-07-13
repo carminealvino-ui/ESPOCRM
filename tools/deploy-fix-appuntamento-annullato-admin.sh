@@ -61,18 +61,13 @@ if [[ -f custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json ]]; then
 fi
 
 echo ""
-echo "=== Bonifica appuntamenti già annullati ==="
+echo "=== Bonifica massiva appuntamenti annullati (dry-run) ==="
 if [[ -f tools/bonifica-appuntamento-not-held-admin.php ]]; then
   "${PHP_BIN}" tools/bonifica-appuntamento-not-held-admin.php --dry-run
   echo ""
-  echo "  php tools/bonifica-appuntamento-not-held-admin.php --apply"
+  echo "Per aggiornare TUTTI i vecchi annullati:"
+  echo "  php tools/bonifica-appuntamento-not-held-admin.php --apply --quiet"
 fi
 
 echo ""
-echo "=== Diagnostica (es. Panci) ==="
-if [[ -f tools/diagnose-appuntamento-assegnazione.php ]]; then
-  "${PHP_BIN}" tools/diagnose-appuntamento-assegnazione.php --search=Panci || true
-fi
-
-echo ""
-echo "Fatto. Esegui --apply sulla bonifica (es. --search=Panci per un singolo caso)."
+echo "Fatto."

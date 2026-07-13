@@ -55,7 +55,7 @@ class AppuntamentoGoogleSync
     }
 
     /**
-     * True se Not Held ma «Utenti assegnati» non è l'admin di sistema (userName admin / id 1).
+     * True se Not Held / annullato ma «Utenti assegnati» non è l'admin di sistema.
      */
     public function needsNotHeldAdminAssigneeFix(Entity $entity): bool
     {
@@ -63,7 +63,7 @@ class AppuntamentoGoogleSync
             return false;
         }
 
-        if ($entity->get('status') !== 'Not Held') {
+        if (!$this->isCancelledAppointment($entity)) {
             return false;
         }
 
@@ -73,13 +73,28 @@ class AppuntamentoGoogleSync
             return false;
         }
 
-        $fresh = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+        return !$this->isAssignedToPrimarySystemAdmin($entity);
+    }
 
-        if (!$fresh) {
+    public function isCancelledAppointment(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE) {
             return false;
         }
 
-        return !$this->isAssignedToPrimarySystemAdmin($fresh);
+        $status = (string) ($entity->get('status') ?? '');
+
+        if ($status === 'Not Held') {
+            return true;
+        }
+
+        if ((string) ($entity->get('sottostato') ?? '') === 'Annullato') {
+            return true;
+        }
+
+        $esito = $entity->get('esito');
+
+        return is_string($esito) && str_starts_with($esito, 'Annullato');
     }
 
     /**
@@ -129,7 +144,7 @@ class AppuntamentoGoogleSync
             return false;
         }
 
-        if ($entity->get('status') !== 'Not Held') {
+        if (!$this->isCancelledAppointment($entity)) {
             return false;
         }
 
@@ -151,6 +166,16 @@ class AppuntamentoGoogleSync
 
         $adminId = $this->resolvePrimarySystemAdminUserId();
         $this->replaceAssignedUsersWithAdmin($entityId, $adminId);
+
+        if ($entity->get('status') !== 'Not Held') {
+            $this->entityManager->getQueryExecutor()->execute(
+                UpdateBuilder::create()
+                    ->in(self::ENTITY_TYPE)
+                    ->set(['status' => 'Not Held'])
+                    ->where(['id' => $entityId])
+                    ->build()
+            );
+        }
 
         return true;
     }
