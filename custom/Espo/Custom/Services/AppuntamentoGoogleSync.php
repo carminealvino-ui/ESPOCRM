@@ -57,6 +57,49 @@ class AppuntamentoGoogleSync
     }
 
     /**
+     * True se Not Held ma «Utenti assegnati» non è solo admin (come in UI).
+     */
+    public function needsNotHeldAdminAssigneeFix(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE) {
+            return false;
+        }
+
+        if ($entity->get('status') !== 'Not Held') {
+            return false;
+        }
+
+        $entityId = $entity->getId();
+
+        if (!$entityId) {
+            return false;
+        }
+
+        $fresh = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+
+        if (!$fresh) {
+            return false;
+        }
+
+        $adminIds = $this->resolveAdminUserIds();
+        $fresh->loadLinkMultipleField('assignedUsers');
+
+        foreach ($fresh->getLinkMultipleIdList('assignedUsers') as $userId) {
+            if (!in_array((string) $userId, $adminIds, true)) {
+                return true;
+            }
+        }
+
+        $assignedUserId = (string) ($fresh->get('assignedUserId') ?: '');
+
+        if ($assignedUserId !== '' && !in_array($assignedUserId, $adminIds, true)) {
+            return true;
+        }
+
+        return $fresh->getLinkMultipleIdList('assignedUsers') === [];
+    }
+
+    /**
      * Bonifica / afterSave: allinea link multiple assignedUsers ad admin.
      */
     public function persistNotHeldAdminAssignees(Entity $entity): bool
@@ -69,22 +112,24 @@ class AppuntamentoGoogleSync
             return false;
         }
 
-        $adminIds = $this->resolveAdminUserIds();
-        $adminId = $adminIds[0] ?? '1';
+        $entityId = $entity->getId();
 
-        $this->loadAssignedUsersIds($entity);
-        $currentIds = $entity->getLinkMultipleIdList('assignedUsers');
-        sort($currentIds);
-
-        $targetIds = [$adminId];
-        sort($targetIds);
-
-        $needsSave = $currentIds !== $targetIds
-            || (string) $entity->get('assignedUserId') !== $adminId;
-
-        if (!$needsSave) {
+        if (!$entityId) {
             return false;
         }
+
+        $entity = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+
+        if (!$entity) {
+            return false;
+        }
+
+        if (!$this->needsNotHeldAdminAssigneeFix($entity)) {
+            return false;
+        }
+
+        $adminIds = $this->resolveAdminUserIds();
+        $adminId = $adminIds[0] ?? '1';
 
         $entity->setLinkMultipleIdList('assignedUsers', [$adminId]);
         $entity->set([

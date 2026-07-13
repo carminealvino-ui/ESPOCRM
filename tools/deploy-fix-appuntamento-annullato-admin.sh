@@ -10,6 +10,7 @@ CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
 BRANCH="cursor/fix-appuntamento-annullato-admin-9999"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 TS="$(date +%s)"
+LEGACY_HOOKS="custom/Espo/Custom/Resources/metadata/Appuntamento/hooks.json"
 
 if [[ ! -d "${CRM_ROOT}" ]]; then
   echo "ERRORE: cartella CRM non trovata: ${CRM_ROOT}" >&2
@@ -31,6 +32,8 @@ fetch() {
 FILES=(
   custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php
   custom/Espo/Custom/Hooks/Appuntamento/NotHeldAdminAssignAfterSave.php
+  custom/Espo/Custom/Hooks/Appuntamento/GoogleCalendarSync.php
+  custom/Espo/Custom/Hooks/Appuntamento/GoogleCalendarSyncAfterGlobal.php
   custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json
   custom/Espo/Custom/Services/AppuntamentoGoogleSync.php
   tools/bonifica-appuntamento-not-held-admin.php
@@ -40,16 +43,29 @@ for rel in "${FILES[@]}"; do
   fetch "${rel}"
 done
 
+if [[ -f "${LEGACY_HOOKS}" ]]; then
+  rm -f "${LEGACY_HOOKS}"
+  echo "RIMOSSO ${LEGACY_HOOKS} (puntava a Common\\GlobalLogic inesistente)"
+fi
+
 "${PHP_BIN}" clear_cache.php
 "${PHP_BIN}" rebuild.php
 "${PHP_BIN}" clear_cache.php
 
 echo ""
-echo "=== Bonifica appuntamenti già annullati (opzionale) ==="
+echo "=== Verifica hook registrati ==="
+if [[ -f custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json ]]; then
+  grep -E 'NotHeldAdminAssign|GlobalLogic|GoogleCalendarSyncAfterGlobal' \
+    custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json || true
+fi
+
+echo ""
+echo "=== Bonifica appuntamenti già annullati ==="
 if [[ -f tools/bonifica-appuntamento-not-held-admin.php ]]; then
   "${PHP_BIN}" tools/bonifica-appuntamento-not-held-admin.php --dry-run
+  echo ""
   echo "  php tools/bonifica-appuntamento-not-held-admin.php --apply"
 fi
 
 echo ""
-echo "Fatto. Salva di nuovo l'appuntamento annullato oppure esegui la bonifica."
+echo "Fatto. Esegui --apply sulla bonifica per sistemare Panci (00196)."

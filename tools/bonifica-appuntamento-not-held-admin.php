@@ -41,7 +41,7 @@ $fixed = 0;
 $skipped = 0;
 
 foreach ($collection as $appointment) {
-    if ($sync->isAssignedToAdmin($appointment)) {
+    if (!$sync->needsNotHeldAdminAssigneeFix($appointment)) {
         $skipped++;
         continue;
     }
