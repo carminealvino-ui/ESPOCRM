@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// VERSIONE: 1.7.4
+// VERSIONE: 1.7.3
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
@@ -49,7 +49,7 @@
 // ✔ NON sovrascrive dati manuali gia' presenti
 //
 // ROLLBACK:
-// backup_dev/
+// backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.0-prospect-lead-stabile.php
 //
 // 1.6.2
@@ -66,7 +66,7 @@
 // - altri sottostati Held -> In Process
 //
 // ROLLBACK:
-// backup_dev/
+// backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.1-held-lead-stabile.php
 //
 // 1.6.3
@@ -77,7 +77,7 @@
 // ✔ Campo UI: Descrizione Attività
 //
 // ROLLBACK:
-// backup_dev/
+// backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.2-description-prospect-stabile.php
 //
 // 1.6.4
@@ -90,7 +90,7 @@
 // ✔ NON sovrascrive dati manuali gia' presenti sul Lead
 //
 // ROLLBACK:
-// backup_dev/
+// backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.3-brand-partner-sync-stabile.php
 //
 // 1.6.5
@@ -101,7 +101,7 @@
 // ✔ Compila anche fornitorePartner dal brand
 //
 // ROLLBACK:
-// backup_dev/
+// backup/hooks_cleanup/
 // backup-appuntamento-globallogic-1.6.4-brand-fallback-stabile.php
 //
 // 1.7.1
@@ -117,11 +117,6 @@
 // ----------------------------------------
 // ✔ Nuovo appuntamento: dateEnd = dateStart + 1h30 (5400 sec)
 //    (calendario / dettaglio piccolo; backup server-side)
-//
-// 1.7.5 (13-07-2026)
-// ----------------------------------------
-// ✔ Not Held / sottostato Annullato / esito Annullato* → admin
-// ✔ assignedUserId sincronizzato (non solo assignedUsersIds)
 //
 // 1.7.0 (25-05-2026)
 // -----------------------------------------------------
@@ -146,13 +141,17 @@
 
 namespace Espo\Custom\Hooks\Appuntamento;
 
+use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\Core\ORM\EntityManager;
 use Espo\Custom\Services\LeadProspectSync;
 use Espo\Custom\Services\LineaProdottoCategorySync;
 use Espo\ORM\Entity;
+use Espo\ORM\Repository\Option\SaveOptions;
 
-class GlobalLogic
+class GlobalLogic implements BeforeSave
 {
+    public static int $order = 5;
+
     private EntityManager $entityManager;
 
     private static bool $processing = false;
@@ -162,8 +161,12 @@ class GlobalLogic
         $this->entityManager = $entityManager;
     }
 
-    public function beforeSave(Entity $entity, array $options = [])
+    public function beforeSave(Entity $entity, SaveOptions $options): void
     {
+        if ($options->get('skipHooks')) {
+            return;
+        }
+
         if (self::$processing) {
             return;
         }
@@ -178,8 +181,20 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.7.5'
+                '1.7.8'
             );
+
+            if ($entity->hasAttribute('zTL') && $entity->get('zTL') === null) {
+                $entity->set('zTL', false);
+            }
+
+            if ($entity->hasAttribute('videoCallTelefonico') && $entity->get('videoCallTelefonico') === null) {
+                $entity->set('videoCallTelefonico', false);
+            }
+
+            if ($entity->hasAttribute('syncConGoogle') && $entity->get('syncConGoogle') === null) {
+                $entity->set('syncConGoogle', false);
+            }
 
             $this->applyDefaultDurationOnCreate($entity);
             $this->syncDataAppuntamentoFromDateStart($entity);
@@ -191,7 +206,6 @@ class GlobalLogic
             $status = $entity->get('status');
 
             $sottostato = $entity->get('sottostato');
-            $esito = $entity->get('esito');
 
             // ========================================
             // RECUPERO PROSPECT
@@ -206,9 +220,9 @@ class GlobalLogic
 
             ) {
 
-                $prospect = $this->entityManager->getEntity(
+                $prospect = $this->entityManager->getEntityById(
                     'Prospect',
-                    $entity->get('parentId')
+                    (string) $entity->get('parentId')
                 );
             }
 
@@ -219,9 +233,9 @@ class GlobalLogic
 
             ) {
 
-                $prospect = $this->entityManager->getEntity(
+                $prospect = $this->entityManager->getEntityById(
                     'Prospect',
-                    $entity->get('prospectId')
+                    (string) $entity->get('prospectId')
                 );
             }
 
@@ -238,9 +252,9 @@ class GlobalLogic
 
             ) {
 
-                $lead = $this->entityManager->getEntity(
+                $lead = $this->entityManager->getEntityById(
                     'Lead',
-                    $entity->get('parentId')
+                    (string) $entity->get('parentId')
                 );
             }
 
@@ -632,25 +646,29 @@ class GlobalLogic
 
             // ========================================
             // FIX ASSEGNAZIONE ADMIN (Non Svolto / annullati)
-            // Ingestibile resta sul consulente (visita effettuata, infattibile).
-            // Il pannello UI «Esito» usa status + sottostato (non il campo esito).
+            // Solo assignedUserId in beforeSave: assignedUsersIds qui
+            // può causare fatal su Espo 10. Link multiple → afterSave.
             // ========================================
 
             if ($this->shouldReassignToAdmin($status, $sottostato, $esito)) {
                 if ($status !== 'Not Held') {
                     $entity->set('status', 'Not Held');
-                    $status = 'Not Held';
                 }
 
-                $this->reassignToAdmin($entity);
-            } elseif ($status !== 'Not Held') {
-                $assignedUsersIds = $entity->get('assignedUsersIds') ?: [];
+                $adminId = $this->resolveAdminUserId();
 
-                if ($assignedUsersIds !== []) {
-                    $entity->set('assignedUserId', $assignedUsersIds[0]);
+                if ($adminId) {
+                    $entity->set('assignedUserId', $adminId);
                 }
             }
 
+        } catch (\Throwable $e) {
+            error_log(
+                '[Appuntamento GlobalLogic] ' . $e->getMessage() . ' in ' .
+                $e->getFile() . ':' . $e->getLine()
+            );
+
+            throw $e;
         } finally {
 
             self::$processing = false;
@@ -698,34 +716,11 @@ class GlobalLogic
                 continue;
             }
 
-            $this->setEntityFieldIfEmpty(
-                $entity,
+            $entity->set(
                 $field,
                 $source->get($field)
             );
         }
-    }
-
-    private function setEntityFieldIfEmpty(
-        Entity $entity,
-        string $field,
-        mixed $value
-    ): void {
-        if ($value === null || $value === '') {
-            return;
-        }
-
-        if (!$entity->hasAttribute($field)) {
-            return;
-        }
-
-        $current = $entity->get($field);
-
-        if ($current !== null && $current !== '') {
-            return;
-        }
-
-        $entity->set($field, $value);
     }
 
     // ========================================
@@ -945,6 +940,24 @@ class GlobalLogic
         }
     }
 
+    private function resolveAdminUserId(): ?string
+    {
+        static $adminId = null;
+
+        if ($adminId !== null) {
+            return $adminId !== '' ? $adminId : null;
+        }
+
+        $admin = $this->entityManager
+            ->getRDBRepository('User')
+            ->where(['userName' => 'admin', 'isActive' => true])
+            ->findOne();
+
+        $adminId = $admin?->getId() ?? '1';
+
+        return $adminId !== '' ? $adminId : null;
+    }
+
     private function shouldReassignToAdmin(
         ?string $status,
         ?string $sottostato,
@@ -963,43 +976,6 @@ class GlobalLogic
         }
 
         return false;
-    }
-
-    private function reassignToAdmin(Entity $entity): void
-    {
-        $adminId = $this->resolvePrimaryAdminUserId();
-
-        $entity->setLinkMultipleIdList('assignedUsers', [$adminId]);
-        $entity->set([
-            'assignedUsersIds' => [$adminId],
-            'assignedUserId' => $adminId,
-        ]);
-    }
-
-    private function resolvePrimaryAdminUserId(): string
-    {
-        static $cached = null;
-
-        if ($cached !== null) {
-            return $cached;
-        }
-
-        $admin = $this->entityManager
-            ->getRDBRepository('User')
-            ->where([
-                'isActive' => true,
-                'OR' => [
-                    ['userName' => 'admin'],
-                    ['userName' => 'Admin'],
-                    ['type' => 'admin'],
-                ],
-            ])
-            ->order('id')
-            ->findOne();
-
-        $cached = $admin ? (string) $admin->getId() : '1';
-
-        return $cached;
     }
 
 }

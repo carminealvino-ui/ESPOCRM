@@ -47,7 +47,7 @@ foreach ($collection as $appointment) {
     }
 
     fwrite(STDOUT, sprintf(
-        "FIX %s | %s | assegnato: %s\n",
+        "FIX %s | %s | %s → admin\n",
         $appointment->getId(),
         $appointment->get('name'),
         $sync->describeAssignee($appointment)
@@ -58,9 +58,9 @@ foreach ($collection as $appointment) {
         continue;
     }
 
-    $sync->ensureNotHeldAssignedToAdmin($appointment);
-    $entityManager->saveEntity($appointment);
-    $fixed++;
+    if ($sync->persistNotHeldAdminAssignees($appointment)) {
+        $fixed++;
+    }
 }
 
 fwrite(STDOUT, sprintf("\nRiassegnati: %d | Già admin: %d%s\n", $fixed, $skipped, $dryRun ? ' (dry-run)' : ''));

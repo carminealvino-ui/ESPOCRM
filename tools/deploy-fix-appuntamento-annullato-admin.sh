@@ -30,6 +30,8 @@ fetch() {
 
 FILES=(
   custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php
+  custom/Espo/Custom/Hooks/Appuntamento/NotHeldAdminAssignAfterSave.php
+  custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json
   custom/Espo/Custom/Services/AppuntamentoGoogleSync.php
   tools/bonifica-appuntamento-not-held-admin.php
 )

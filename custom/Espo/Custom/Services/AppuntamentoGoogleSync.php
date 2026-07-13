@@ -31,7 +31,13 @@ class AppuntamentoGoogleSync
             return;
         }
 
-        $this->ensureNotHeldAssignedToAdmin($entity);
+        if ($entity->get('status') === 'Not Held') {
+            $adminIds = $this->resolveAdminUserIds();
+            $adminId = $adminIds[0] ?? '1';
+            $entity->set('assignedUserId', $adminId);
+
+            return;
+        }
 
         $ids = $entity->get('assignedUsersIds');
 
@@ -51,7 +57,51 @@ class AppuntamentoGoogleSync
     }
 
     /**
-     * Rete di sicurezza: Not Held deve essere assegnato ad admin (non al consulente).
+     * Bonifica / afterSave: allinea link multiple assignedUsers ad admin.
+     */
+    public function persistNotHeldAdminAssignees(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE) {
+            return false;
+        }
+
+        if ($entity->get('status') !== 'Not Held') {
+            return false;
+        }
+
+        $adminIds = $this->resolveAdminUserIds();
+        $adminId = $adminIds[0] ?? '1';
+
+        $this->loadAssignedUsersIds($entity);
+        $currentIds = $entity->getLinkMultipleIdList('assignedUsers');
+        sort($currentIds);
+
+        $targetIds = [$adminId];
+        sort($targetIds);
+
+        $needsSave = $currentIds !== $targetIds
+            || (string) $entity->get('assignedUserId') !== $adminId;
+
+        if (!$needsSave) {
+            return false;
+        }
+
+        $entity->setLinkMultipleIdList('assignedUsers', [$adminId]);
+        $entity->set([
+            'assignedUsersIds' => [$adminId],
+            'assignedUserId' => $adminId,
+        ]);
+
+        $this->entityManager->saveEntity($entity, [
+            'skipHooks' => true,
+            'silent' => true,
+        ]);
+
+        return true;
+    }
+
+    /**
+     * @deprecated Usare persistNotHeldAdminAssignees in afterSave.
      */
     public function ensureNotHeldAssignedToAdmin(Entity $entity): void
     {
@@ -63,18 +113,9 @@ class AppuntamentoGoogleSync
             return;
         }
 
-        if ($this->isAssignedToAdmin($entity)) {
-            return;
-        }
-
         $adminIds = $this->resolveAdminUserIds();
         $adminId = $adminIds[0] ?? '1';
-
-        $entity->setLinkMultipleIdList('assignedUsers', [$adminId]);
-        $entity->set([
-            'assignedUsersIds' => [$adminId],
-            'assignedUserId' => $adminId,
-        ]);
+        $entity->set('assignedUserId', $adminId);
     }
 
     public function handleConsultantChange(Entity $entity): void
