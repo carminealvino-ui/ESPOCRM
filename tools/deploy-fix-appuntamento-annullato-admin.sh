@@ -61,12 +61,12 @@ if [[ -f custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json ]]; then
 fi
 
 echo ""
-echo "=== Bonifica massiva appuntamenti annullati (dry-run) ==="
+echo "=== Bonifica assegnazione admin (dry-run) ==="
 if [[ -f tools/bonifica-appuntamento-not-held-admin.php ]]; then
   "${PHP_BIN}" tools/bonifica-appuntamento-not-held-admin.php --dry-run
   echo ""
-  echo "Per aggiornare TUTTI i vecchi annullati (DB + Google Calendar):"
-  echo "  php tools/bonifica-appuntamento-not-held-admin.php --apply --quiet"
+  echo "Singolo: php tools/bonifica-appuntamento-not-held-admin.php --apply --search=Nome"
+  echo "Tutti:    php tools/bonifica-appuntamento-not-held-admin.php --apply"
 fi
 
 echo ""

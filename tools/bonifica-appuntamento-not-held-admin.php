@@ -1,13 +1,11 @@
 #!/usr/bin/env php
 <?php
 /**
- * Bonifica massiva appuntamenti annullati:
- * - riassegna ad admin di sistema (entity_user + assigned_user_id)
- * - rimuove evento da Google Calendar del consulente
+ * Riassegna ad admin gli appuntamenti Not Held ancora sul consulente.
  *
  * Uso:
  *   php tools/bonifica-appuntamento-not-held-admin.php --dry-run
- *   php tools/bonifica-appuntamento-not-held-admin.php --apply --quiet
+ *   php tools/bonifica-appuntamento-not-held-admin.php --apply
  *   php tools/bonifica-appuntamento-not-held-admin.php --dry-run --search=Panci
  */
 declare(strict_types=1);
@@ -21,7 +19,6 @@ use Espo\Custom\Services\AppuntamentoGoogleSync;
 
 $apply = in_array('--apply', $argv, true);
 $dryRun = !$apply;
-$quiet = in_array('--quiet', $argv, true);
 $search = null;
 
 foreach ($argv as $arg) {
@@ -31,9 +28,8 @@ foreach ($argv as $arg) {
 }
 
 if ($dryRun) {
-    fwrite(STDOUT, "MODALITÀ dry-run (usa --apply per salvare)\n\n");
-} elseif ($quiet) {
-    fwrite(STDOUT, "MODALITÀ apply\n\n");
+    fwrite(STDOUT, "MODALITÀ dry-run (usa --apply per salvare)\n");
+    fwrite(STDOUT, "Target: utente admin di sistema (userName admin), non ogni type=admin\n\n");
 }
 
 $application = new Application();
@@ -45,96 +41,51 @@ $sync = $container->get('injectableFactory')->create(AppuntamentoGoogleSync::cla
 
 fwrite(STDOUT, 'Admin di sistema: ' . $sync->describePrimarySystemAdmin() . "\n\n");
 
-$totalCancelled = $sync->countCancelledAppointments($search);
-$assignIds = $sync->listCancelledAppointmentIdsNeedingAdminFix($search);
-$googleIds = $sync->listCancelledAppointmentIdsWithGoogleLink($search);
-$allIds = array_values(array_unique(array_merge($assignIds, $googleIds)));
+$where = ['status' => 'Not Held'];
 
-fwrite(STDOUT, "Annullati totali: {$totalCancelled}\n");
-fwrite(STDOUT, 'Da riassegnare (DB): ' . count($assignIds) . "\n");
-fwrite(STDOUT, 'Con link Google da pulire: ' . count($googleIds) . "\n");
-fwrite(STDOUT, 'Da elaborare: ' . count($allIds) . "\n\n");
-
-if ($allIds === []) {
-    fwrite(STDOUT, "Nessun record da aggiornare.\n");
-    exit(0);
+if ($search !== null && $search !== '') {
+    $where['name*'] = '%' . $search . '%';
 }
 
-$assigned = 0;
-$google = 0;
+$collection = $entityManager
+    ->getRDBRepository('Appuntamento')
+    ->where($where)
+    ->find();
+
+$fixed = 0;
 $skipped = 0;
-$failed = 0;
-$processed = 0;
 
-foreach ($allIds as $entityId) {
-    $processed++;
-    $appointment = $entityManager->getEntityById('Appuntamento', $entityId);
-
-    if (!$appointment) {
-        $failed++;
+foreach ($collection as $appointment) {
+    if (!$sync->needsNotHeldAdminAssigneeFix($appointment)) {
+        $skipped++;
         continue;
     }
 
-    $needsAssign = in_array($entityId, $assignIds, true);
-    $needsGoogle = in_array($entityId, $googleIds, true);
-    $label = sprintf(
-        '%s | %s | %s',
-        $entityId,
+    fwrite(STDOUT, sprintf(
+        "FIX %s | %s | %s → admin\n",
+        $appointment->getId(),
         $appointment->get('name'),
         $sync->describeAssignee($appointment)
-    );
-
-    if (!$quiet) {
-        fwrite(STDOUT, sprintf(
-            "FIX %s | assegnazione=%s google=%s\n",
-            $label,
-            $needsAssign ? 'SI' : 'no',
-            $needsGoogle ? 'SI' : 'no'
-        ));
-    } elseif ($processed % 25 === 0) {
-        fwrite(STDOUT, "  ... {$processed}/" . count($allIds) . "\n");
-    }
+    ));
 
     if ($dryRun) {
-        if ($needsAssign) {
-            $assigned++;
-        }
-        if ($needsGoogle) {
-            $google++;
-        }
+        $fixed++;
         continue;
     }
 
-    $result = $sync->forceCancelledAdminAssignee($entityId, true);
+    if ($sync->persistNotHeldAdminAssignees($appointment)) {
+        $fixed++;
+        $fresh = $entityManager->getEntityById('Appuntamento', $appointment->getId());
 
-    if ($result === 'assigned') {
-        $assigned++;
-        if ($needsGoogle) {
-            $google++;
+        if ($fresh) {
+            $sync->handleNotHeldStatus($fresh);
         }
-    } elseif ($result === 'google') {
-        $google++;
-    } elseif ($result === 'skipped') {
-        $skipped++;
-    } else {
-        $failed++;
     }
 }
 
 fwrite(STDOUT, sprintf(
-    "\nElaborati: %d\nRiassegnati DB: %d | Google puliti: %d | Saltati: %d",
-    count($allIds),
-    $assigned,
-    $google,
-    $skipped
+    "\nRiassegnati: %d | Già su admin di sistema: %d%s\n",
+    $fixed,
+    $skipped,
+    $dryRun ? ' (dry-run)' : ''
 ));
-
-if ($failed > 0) {
-    fwrite(STDOUT, " | Errori: {$failed}";
-}
-
-fwrite(STDOUT, $dryRun ? " (dry-run)\n" : "\n");
-
-if ($dryRun) {
-    fwrite(STDOUT, "\nApplica: php tools/bonifica-appuntamento-not-held-admin.php --apply --quiet\n");
-}
