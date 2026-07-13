@@ -31,6 +31,8 @@ class AppuntamentoGoogleSync
             return;
         }
 
+        $this->ensureNotHeldAssignedToAdmin($entity);
+
         $ids = $entity->get('assignedUsersIds');
 
         if (!is_array($ids) || $ids === []) {
@@ -46,6 +48,33 @@ class AppuntamentoGoogleSync
         if ($entity->get('assignedUserId') !== $primaryUserId) {
             $entity->set('assignedUserId', $primaryUserId);
         }
+    }
+
+    /**
+     * Rete di sicurezza: Not Held deve essere assegnato ad admin (non al consulente).
+     */
+    public function ensureNotHeldAssignedToAdmin(Entity $entity): void
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE) {
+            return;
+        }
+
+        if ($entity->get('status') !== 'Not Held') {
+            return;
+        }
+
+        if ($this->isAssignedToAdmin($entity)) {
+            return;
+        }
+
+        $adminIds = $this->resolveAdminUserIds();
+        $adminId = $adminIds[0] ?? '1';
+
+        $entity->setLinkMultipleIdList('assignedUsers', [$adminId]);
+        $entity->set([
+            'assignedUsersIds' => [$adminId],
+            'assignedUserId' => $adminId,
+        ]);
     }
 
     public function handleConsultantChange(Entity $entity): void

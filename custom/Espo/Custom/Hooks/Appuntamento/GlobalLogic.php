@@ -118,10 +118,10 @@
 // ✔ Nuovo appuntamento: dateEnd = dateStart + 1h30 (5400 sec)
 //    (calendario / dettaglio piccolo; backup server-side)
 //
-// 1.7.4 (01-06-2026)
+// 1.7.5 (13-07-2026)
 // ----------------------------------------
-// ✔ FIX: in aggiornamento non sovrascrivere fornitore/brand/categoria
-//    gia impostati su Appuntamento (sync da Lead/Prospect solo se vuoti)
+// ✔ Not Held / sottostato Annullato / esito Annullato* → admin
+// ✔ assignedUserId sincronizzato (non solo assignedUsersIds)
 //
 // 1.7.0 (25-05-2026)
 // -----------------------------------------------------
@@ -178,7 +178,7 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.7.4'
+                '1.7.5'
             );
 
             $this->applyDefaultDurationOnCreate($entity);
@@ -191,6 +191,7 @@ class GlobalLogic
             $status = $entity->get('status');
 
             $sottostato = $entity->get('sottostato');
+            $esito = $entity->get('esito');
 
             // ========================================
             // RECUPERO PROSPECT
@@ -630,33 +631,24 @@ class GlobalLogic
             }
 
             // ========================================
-            // SYNC assignedUserId ← assignedUsers (Google Calendar richiede assignedUserId)
+            // FIX ASSEGNAZIONE ADMIN (Non Svolto / annullati)
+            // Ingestibile resta sul consulente (visita effettuata, infattibile).
+            // Il pannello UI «Esito» usa status + sottostato (non il campo esito).
             // ========================================
 
-            if ($status !== 'Not Held') {
+            if ($this->shouldReassignToAdmin($status, $sottostato, $esito)) {
+                if ($status !== 'Not Held') {
+                    $entity->set('status', 'Not Held');
+                    $status = 'Not Held';
+                }
+
+                $this->reassignToAdmin($entity);
+            } elseif ($status !== 'Not Held') {
                 $assignedUsersIds = $entity->get('assignedUsersIds') ?: [];
 
                 if ($assignedUsersIds !== []) {
                     $entity->set('assignedUserId', $assignedUsersIds[0]);
                 }
-            }
-
-            // ========================================
-            // FIX ASSEGNAZIONE ADMIN (solo Non Svolto / annullati)
-            // Ingestibile resta sul consulente (visita effettuata, infattibile).
-            // ========================================
-
-            if ($status === 'Not Held') {
-
-                $entity->set(
-                    'assignedUsersIds',
-                    []
-                );
-
-                $entity->set(
-                    'assignedUsersIds',
-                    ['1']
-                );
             }
 
         } finally {
@@ -951,6 +943,63 @@ class GlobalLogic
                 $category->get('productBrandName')
             );
         }
+    }
+
+    private function shouldReassignToAdmin(
+        ?string $status,
+        ?string $sottostato,
+        mixed $esito
+    ): bool {
+        if ($status === 'Not Held') {
+            return true;
+        }
+
+        if ($sottostato === 'Annullato') {
+            return true;
+        }
+
+        if (is_string($esito) && str_starts_with($esito, 'Annullato')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function reassignToAdmin(Entity $entity): void
+    {
+        $adminId = $this->resolvePrimaryAdminUserId();
+
+        $entity->setLinkMultipleIdList('assignedUsers', [$adminId]);
+        $entity->set([
+            'assignedUsersIds' => [$adminId],
+            'assignedUserId' => $adminId,
+        ]);
+    }
+
+    private function resolvePrimaryAdminUserId(): string
+    {
+        static $cached = null;
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $admin = $this->entityManager
+            ->getRDBRepository('User')
+            ->where([
+                'isActive' => true,
+                'OR' => [
+                    ['userName' => 'admin'],
+                    ['userName' => 'Admin'],
+                    ['type' => 'admin'],
+                ],
+            ])
+            ->order('id')
+            ->findOne();
+
+        $cached = $admin ? (string) $admin->getId() : '1';
+
+        return $cached;
     }
 
 }
