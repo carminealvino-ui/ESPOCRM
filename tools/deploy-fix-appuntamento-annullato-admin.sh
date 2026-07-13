@@ -57,7 +57,7 @@ fi
 "${PHP_BIN}" clear_cache.php
 
 echo ""
-echo "=== Verifica installazione (hook 1.7.9) ==="
+echo "=== Verifica installazione (hook 1.7.10) ==="
 "${PHP_BIN}" tools/verify-appuntamento-annullato-admin-fix.php
 
 echo ""
@@ -73,4 +73,4 @@ echo ""
 echo "Applica su tutti i Non Svolto:"
 echo "  php tools/bonifica-appuntamento-not-held-admin.php --apply --force"
 echo ""
-echo "Dopo il save, HookVersion in UI deve essere 1.7.9 (non 1.7.7)."
+echo "Dopo il save, HookVersion in UI deve essere 1.7.10 (non 1.7.7)."

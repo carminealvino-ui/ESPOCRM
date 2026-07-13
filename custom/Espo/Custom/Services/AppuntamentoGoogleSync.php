@@ -8,7 +8,7 @@ use Espo\Modules\Google\Core\Google\Actions\Event as GoogleEventAction;
 use Espo\Modules\Google\Repositories\GoogleCalendar as GoogleCalendarRepository;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
-use Espo\ORM\Query\Part\UpdateBuilder;
+use Espo\ORM\Query\UpdateBuilder;
 
 /**
  * Sync Appuntamento ↔ Google Calendar (rimozione su Not Held / delete / cambio consulente).

@@ -181,7 +181,7 @@ class GlobalLogic implements BeforeSave
 
             $entity->set(
                 'hookVersion',
-                '1.7.9'
+                '1.7.10'
             );
 
             if ($entity->hasAttribute('zTL') && $entity->get('zTL') === null) {
@@ -206,6 +206,8 @@ class GlobalLogic implements BeforeSave
             $status = $entity->get('status');
 
             $sottostato = $entity->get('sottostato');
+
+            $esito = $entity->get('esito');
 
             // ========================================
             // RECUPERO PROSPECT
