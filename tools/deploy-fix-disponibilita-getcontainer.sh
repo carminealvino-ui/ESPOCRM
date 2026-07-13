@@ -49,6 +49,9 @@ FILES=(
   custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
   custom/Espo/Custom/Resources/metadata/app/calendar.json
   custom/Espo/Custom/Resources/metadata/scopes/Disponibilita.json
+  custom/Espo/Custom/Resources/metadata/app/actions.json
+  custom/Espo/Custom/Resources/metadata/formula/Disponibilita.json
+  custom/Espo/Custom/Resources/metadata/hooks/Disponibilita.json
   client/custom/src/views/working-time-calendar/record/detail.js
   client/custom/src/views/modals/disponibilita-ricorrenti.js
   tools/fix-disponibilita-calendario-display.php

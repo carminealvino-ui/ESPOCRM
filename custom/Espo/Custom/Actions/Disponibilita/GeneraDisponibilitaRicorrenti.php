@@ -62,11 +62,17 @@ class GeneraDisponibilitaRicorrenti
             'skipped' => $result['skipped'],
             'errors' => $result['errors'],
             'userCount' => $result['userCount'],
-            'daysBlocked' => $result['daysBlocked'] ?? 0,
-            'daysNoSlots' => $result['daysNoSlots'] ?? 0,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
-            'message' => $generator->formatGenerationMessage($result, $dateFrom, $dateTo),
+            'message' => sprintf(
+                'Periodo %s → %s: create %d disponibilità per %d utenti, %d già presenti%s.',
+                $dateFrom ?: '?',
+                $dateTo ?: '?',
+                $result['created'],
+                $result['userCount'],
+                $result['skipped'],
+                $result['errors'] !== [] ? ', ' . count($result['errors']) . ' errori' : ''
+            ),
         ];
     }
 }

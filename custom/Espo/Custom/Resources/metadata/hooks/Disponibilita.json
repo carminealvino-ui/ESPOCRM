@@ -1,8 +1,5 @@
 {
     "beforeSave": [
-        {
-            "className": "Espo\\Custom\\Hooks\\Disponibilita\\SetName",
-            "order": 999
-        }
+        "Espo\\Custom\\Hooks\\Disponibilita\\SetName"
     ]
 }
