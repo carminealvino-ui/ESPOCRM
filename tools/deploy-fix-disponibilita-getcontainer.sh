@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fix 500 su Genera Disponibilità Ricorrenti (getContainer non esiste in Espo 10).
+# Fix Disponibilità Ricorrenti + visualizzazione in calendario (Espo 10).
 #
 # Uso:
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-disponibilita-getcontainer-9999/tools/deploy-fix-disponibilita-getcontainer.sh?t=$(date +%s)" | bash
@@ -24,7 +24,7 @@ if ! command -v "${PHP_BIN}" >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "=== Fix Disponibilita getContainer (Espo 10) ==="
+echo "=== Fix Disponibilita (genera + calendario) ==="
 echo "CRM_ROOT=${CRM_ROOT}"
 
 fetch() {
@@ -38,12 +38,37 @@ fetch() {
   echo "OK ${path}"
 }
 
-fetch custom/Espo/Custom/Controllers/Disponibilita.php
+FILES=(
+  custom/Espo/Custom/Controllers/Disponibilita.php
+  custom/Espo/Custom/Controllers/WorkingTimeCalendar.php
+  custom/Espo/Custom/Hooks/Disponibilita/SetName.php
+  custom/Espo/Custom/Services/WorkingTimeCalendarDisponibilitaGenerator.php
+  custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
+  custom/Espo/Custom/Resources/metadata/app/calendar.json
+  custom/Espo/Custom/Resources/metadata/scopes/Disponibilita.json
+)
+
+for rel in "${FILES[@]}"; do
+  fetch "${rel}"
+done
 
 "${PHP_BIN}" clear_cache.php
 "${PHP_BIN}" rebuild.php
 "${PHP_BIN}" clear_cache.php
 
 echo ""
+echo "=== Ripara record già generati (opzionale) ==="
+if [[ -f tools/fix-disponibilita-calendario-display.php ]]; then
+  "${PHP_BIN}" tools/fix-disponibilita-calendario-display.php || true
+  "${PHP_BIN}" clear_cache.php
+else
+  echo "Script fix non presente: rigenera le disponibilità o copia tools/fix-disponibilita-calendario-display.php"
+fi
+
+echo ""
 echo "=== Fatto ==="
-echo "Riprova Disponibilità → Disponibilità Ricorrenti → Genera."
+echo "  - Disponibilita aggiunta al calendario"
+echo "  - Orari fascia (orarioInizio/Fine) usati in agenda"
+echo "  - assignedUserId sincronizzato per filtro utente"
+echo ""
+echo "Ricarica calendario con Ctrl+F5."

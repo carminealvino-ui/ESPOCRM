@@ -460,6 +460,7 @@ class WorkingTimeCalendarDisponibilitaGenerator
             'status' => $status,
             'area' => $area,
             'assignedUsersIds' => $assignedUserIds,
+            'assignedUserId' => $assignedUserIds[0] ?? null,
             'collaboratorsIds' => $collaboratorIds,
         ]);
 

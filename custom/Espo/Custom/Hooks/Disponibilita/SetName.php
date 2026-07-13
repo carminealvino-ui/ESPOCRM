@@ -48,10 +48,16 @@ class SetName implements BeforeSave
             'datadisponibilita' => $data,
             'dateStartDate' => $data,
             'dateEndDate' => $data,
-            'isAllDay' => true,
-            'dateStart' => $data . ' 00:00:00',
-            'dateEnd' => $data . ' 23:59:59',
+            'isAllDay' => false,
+            'dateStart' => $inizio ?? ($data . ' 00:00:00'),
+            'dateEnd' => $fine ?? ($data . ' 23:59:59'),
         ]);
+
+        $assignedUsersIds = $entity->getLinkMultipleIdList('assignedUsers');
+
+        if ($assignedUsersIds !== []) {
+            $entity->set('assignedUserId', $assignedUsersIds[0]);
+        }
 
         $oraInizio = $this->formatLocalTime($inizio);
         $oraFine = $this->formatLocalTime($fine);
