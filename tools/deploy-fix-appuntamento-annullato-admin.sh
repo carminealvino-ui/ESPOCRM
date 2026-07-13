@@ -68,4 +68,4 @@ if [[ -f tools/bonifica-appuntamento-not-held-admin.php ]]; then
 fi
 
 echo ""
-echo "Fatto. Esegui --apply sulla bonifica per sistemare Panci (00196)."
+echo "Fatto. Esegui --apply sulla bonifica (es. --search=Panci per un singolo caso)."

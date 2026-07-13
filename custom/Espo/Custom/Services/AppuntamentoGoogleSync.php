@@ -32,9 +32,7 @@ class AppuntamentoGoogleSync
         }
 
         if ($entity->get('status') === 'Not Held') {
-            $adminIds = $this->resolveAdminUserIds();
-            $adminId = $adminIds[0] ?? '1';
-            $entity->set('assignedUserId', $adminId);
+            $entity->set('assignedUserId', $this->resolvePrimarySystemAdminUserId());
 
             return;
         }
@@ -57,7 +55,7 @@ class AppuntamentoGoogleSync
     }
 
     /**
-     * True se Not Held ma «Utenti assegnati» non è solo admin (come in UI).
+     * True se Not Held ma «Utenti assegnati» non è l'admin di sistema (userName admin / id 1).
      */
     public function needsNotHeldAdminAssigneeFix(Entity $entity): bool
     {
@@ -81,22 +79,29 @@ class AppuntamentoGoogleSync
             return false;
         }
 
-        $adminIds = $this->resolveAdminUserIds();
-        $fresh->loadLinkMultipleField('assignedUsers');
+        return !$this->isAssignedToPrimarySystemAdmin($fresh);
+    }
 
-        foreach ($fresh->getLinkMultipleIdList('assignedUsers') as $userId) {
-            if (!in_array((string) $userId, $adminIds, true)) {
-                return true;
-            }
+    /**
+     * Solo l'utente admin di sistema (come GlobalLogic), non ogni utente con type=admin.
+     */
+    public function isAssignedToPrimarySystemAdmin(Entity $entity): bool
+    {
+        $adminId = $this->resolvePrimarySystemAdminUserId();
+        $entity->loadLinkMultipleField('assignedUsers');
+
+        $assignedIds = array_map(
+            static fn ($userId) => (string) $userId,
+            $entity->getLinkMultipleIdList('assignedUsers')
+        );
+
+        if ($assignedIds !== [$adminId]) {
+            return false;
         }
 
-        $assignedUserId = (string) ($fresh->get('assignedUserId') ?: '');
+        $assignedUserId = (string) ($entity->get('assignedUserId') ?: '');
 
-        if ($assignedUserId !== '' && !in_array($assignedUserId, $adminIds, true)) {
-            return true;
-        }
-
-        return $fresh->getLinkMultipleIdList('assignedUsers') === [];
+        return $assignedUserId === $adminId;
     }
 
     /**
@@ -128,8 +133,7 @@ class AppuntamentoGoogleSync
             return false;
         }
 
-        $adminIds = $this->resolveAdminUserIds();
-        $adminId = $adminIds[0] ?? '1';
+        $adminId = $this->resolvePrimarySystemAdminUserId();
 
         $entity->setLinkMultipleIdList('assignedUsers', [$adminId]);
         $entity->set([
@@ -158,9 +162,7 @@ class AppuntamentoGoogleSync
             return;
         }
 
-        $adminIds = $this->resolveAdminUserIds();
-        $adminId = $adminIds[0] ?? '1';
-        $entity->set('assignedUserId', $adminId);
+        $entity->set('assignedUserId', $this->resolvePrimarySystemAdminUserId());
     }
 
     public function handleConsultantChange(Entity $entity): void
@@ -1454,6 +1456,24 @@ class AppuntamentoGoogleSync
     public function bonificaFixIngestibileConsultant(Entity $entity, string $consultantUserId): bool
     {
         return $this->bonificaReassignAdminOnlyToConsultant($entity, $consultantUserId);
+    }
+
+    public function resolvePrimarySystemAdminUserId(): string
+    {
+        static $cache = null;
+
+        if ($cache !== null) {
+            return $cache;
+        }
+
+        $admin = $this->entityManager
+            ->getRDBRepository('User')
+            ->where(['userName' => 'admin', 'isActive' => true])
+            ->findOne();
+
+        $cache = (string) ($admin?->getId() ?? '1');
+
+        return $cache;
     }
 
     /**
