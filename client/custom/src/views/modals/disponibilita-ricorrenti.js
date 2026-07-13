@@ -265,7 +265,7 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
                 Espo.Ajax.postRequest('Disponibilita/action/generaDisponibilitaRicorrenti', payload)
                     .then((result) => {
                         this.enableButton('generate');
-                        Espo.Ui.success(result && result.message ? result.message : 'Disponibilità generate.');
+                        this.showGenerationResult(result);
                         this.trigger('after:generate');
                         this.close();
 
@@ -307,6 +307,23 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
 
             this.refreshAssignedUserCount();
             runGenerate();
+        },
+
+        showGenerationResult: function (result) {
+            const message = result && result.message
+                ? result.message
+                : 'Disponibilità generate.';
+            const created = Number(result && result.created || 0);
+
+            if (created <= 0) {
+                Espo.Ui.warning(
+                    message + ' Nessuna nuova disponibilità creata: verificare date, eccezioni calendario e fasce orarie.'
+                );
+
+                return;
+            }
+
+            Espo.Ui.success(message);
         },
     });
 });

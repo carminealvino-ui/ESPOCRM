@@ -70,10 +70,17 @@ define('custom:views/working-time-calendar/record/detail', ['views/record/detail
 
                     Espo.Ajax.postRequest('WorkingTimeCalendar/action/generaDisponibilita', {
                         id: this.model.id,
+                        dataInizioGenerazione: dateFrom,
+                        dataFineGenerazione: dateTo,
+                        generazioneProductBrandId: this.model.get('generazioneProductBrandId'),
+                        generazioneProductBrandName: this.model.get('generazioneProductBrandName'),
+                        generazioneStatus: this.model.get('generazioneStatus'),
+                        generazioneArea: area,
+                        generazioneCollaboratorsIds: this.model.get('generazioneCollaboratorsIds') || [],
                     })
                         .then(result => {
                             this.enableActionItem('generaDisponibilita');
-                            Espo.Ui.success(result && result.message ? result.message : 'Disponibilità generate.');
+                            this.showGenerationResult(result);
                         })
                         .catch(e => {
                             this.enableActionItem('generaDisponibilita');
@@ -91,6 +98,23 @@ define('custom:views/working-time-calendar/record/detail', ['views/record/detail
             }
 
             runGeneration();
+        },
+
+        showGenerationResult: function (result) {
+            const message = result && result.message
+                ? result.message
+                : 'Disponibilità generate.';
+            const created = Number(result && result.created || 0);
+
+            if (created <= 0) {
+                Espo.Ui.warning(
+                    message + ' Nessuna nuova disponibilità creata: verificare date, eccezioni calendario e fasce orarie.'
+                );
+
+                return;
+            }
+
+            Espo.Ui.success(message);
         },
     });
 });

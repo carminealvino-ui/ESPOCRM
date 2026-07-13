@@ -46,7 +46,9 @@ class GeneraDisponibilitaRicorrenti
 
         if ($patch !== []) {
             $calendar->set($patch);
-            $this->entityManager->saveEntity($calendar);
+            $this->entityManager->saveEntity($calendar, [
+                'skipAutoGeneraDisponibilita' => true,
+            ]);
         }
 
         $generator = new WorkingTimeCalendarDisponibilitaGenerator($this->entityManager);
@@ -60,17 +62,11 @@ class GeneraDisponibilitaRicorrenti
             'skipped' => $result['skipped'],
             'errors' => $result['errors'],
             'userCount' => $result['userCount'],
+            'daysBlocked' => $result['daysBlocked'] ?? 0,
+            'daysNoSlots' => $result['daysNoSlots'] ?? 0,
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
-            'message' => sprintf(
-                'Periodo %s → %s: create %d disponibilità per %d utenti, %d già presenti%s.',
-                $dateFrom ?: '?',
-                $dateTo ?: '?',
-                $result['created'],
-                $result['userCount'],
-                $result['skipped'],
-                $result['errors'] !== [] ? ', ' . count($result['errors']) . ' errori' : ''
-            ),
+            'message' => $generator->formatGenerationMessage($result, $dateFrom, $dateTo),
         ];
     }
 }

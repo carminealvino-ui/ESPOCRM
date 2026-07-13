@@ -21,18 +21,19 @@ class GeneraDisponibilita
         $generator = new WorkingTimeCalendarDisponibilitaGenerator($this->entityManager);
         $result = $generator->generateFromCalendar($calendar);
 
+        $dateFrom = substr((string) ($calendar->get('dataInizioGenerazione') ?? ''), 0, 10);
+        $dateTo = substr((string) ($calendar->get('dataFineGenerazione') ?? ''), 0, 10);
+
         return (object) [
             'created' => $result['created'],
             'skipped' => $result['skipped'],
             'errors' => $result['errors'],
             'userCount' => $result['userCount'],
-            'message' => sprintf(
-                'Create %d disponibilità per %d utenti del calendario, %d già presenti%s.',
-                $result['created'],
-                $result['userCount'],
-                $result['skipped'],
-                $result['errors'] !== [] ? ', ' . count($result['errors']) . ' errori' : ''
-            ),
+            'daysBlocked' => $result['daysBlocked'] ?? 0,
+            'daysNoSlots' => $result['daysNoSlots'] ?? 0,
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'message' => $generator->formatGenerationMessage($result, $dateFrom, $dateTo),
         ];
     }
 }

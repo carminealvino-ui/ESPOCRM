@@ -11,13 +11,37 @@ use Espo\ORM\EntityManager;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Alla creazione di una Disponibilità Ricorrente, genera le disponibilità giornaliere
- * se il pannello «Generazione Disponibilità» è compilato.
+ * Alla creazione o aggiornamento di una Disponibilità Ricorrente, genera le
+ * disponibilità giornaliere se il pannello «Generazione Disponibilità» è compilato.
  */
 class AutoGeneraDisponibilita implements BeforeSave, AfterSave
 {
     /** @var array<int, true> */
     private array $pending = [];
+
+    /** @var string[] */
+    private const GENERATION_FIELDS = [
+        'dataInizioGenerazione',
+        'dataFineGenerazione',
+        'generazioneProductBrandId',
+        'generazioneStatus',
+        'generazioneArea',
+        'timeRanges',
+        'weekday0',
+        'weekday1',
+        'weekday2',
+        'weekday3',
+        'weekday4',
+        'weekday5',
+        'weekday6',
+        'weekday0TimeRanges',
+        'weekday1TimeRanges',
+        'weekday2TimeRanges',
+        'weekday3TimeRanges',
+        'weekday4TimeRanges',
+        'weekday5TimeRanges',
+        'weekday6TimeRanges',
+    ];
 
     public function __construct(
         private EntityManager $entityManager,
@@ -30,11 +54,13 @@ class AutoGeneraDisponibilita implements BeforeSave, AfterSave
             return;
         }
 
-        if (!$entity->isNew() || !$this->canAutoGenerate($entity)) {
+        if (!$this->canAutoGenerate($entity)) {
             return;
         }
 
-        $this->pending[spl_object_id($entity)] = true;
+        if ($entity->isNew() || $this->hasGenerationSettingsChanged($entity)) {
+            $this->pending[spl_object_id($entity)] = true;
+        }
     }
 
     public function afterSave(Entity $entity, SaveOptions $options): void
@@ -84,5 +110,16 @@ class AutoGeneraDisponibilita implements BeforeSave, AfterSave
         $generator = new WorkingTimeCalendarDisponibilitaGenerator($this->entityManager);
 
         return $generator->resolveAssignedUserIds($entity) !== [];
+    }
+
+    private function hasGenerationSettingsChanged(Entity $entity): bool
+    {
+        foreach (self::GENERATION_FIELDS as $field) {
+            if ($entity->isAttributeChanged($field)) {
+                return true;
+            }
+        }
+
+        return $entity->isAttributeChanged('generazioneCollaboratorsIds');
     }
 }

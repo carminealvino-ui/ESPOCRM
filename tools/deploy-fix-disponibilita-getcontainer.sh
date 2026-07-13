@@ -42,11 +42,15 @@ FILES=(
   custom/Espo/Custom/Controllers/Disponibilita.php
   custom/Espo/Custom/Controllers/WorkingTimeCalendar.php
   custom/Espo/Custom/Actions/Disponibilita/GeneraDisponibilitaRicorrenti.php
+  custom/Espo/Custom/Actions/WorkingTimeCalendar/GeneraDisponibilita.php
   custom/Espo/Custom/Hooks/Disponibilita/SetName.php
+  custom/Espo/Custom/Hooks/WorkingTimeCalendar/AutoGeneraDisponibilita.php
   custom/Espo/Custom/Services/WorkingTimeCalendarDisponibilitaGenerator.php
   custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
   custom/Espo/Custom/Resources/metadata/app/calendar.json
   custom/Espo/Custom/Resources/metadata/scopes/Disponibilita.json
+  client/custom/src/views/working-time-calendar/record/detail.js
+  client/custom/src/views/modals/disponibilita-ricorrenti.js
   tools/fix-disponibilita-calendario-display.php
   tools/diagnose-disponibilita-range.php
 )

@@ -22,7 +22,14 @@ class WorkingTimeCalendarDisponibilitaGenerator
     ) {}
 
     /**
-     * @return array{created: int, skipped: int, errors: string[], userCount: int}
+     * @return array{
+     *   created: int,
+     *   skipped: int,
+     *   errors: string[],
+     *   userCount?: int,
+     *   daysBlocked: int,
+     *   daysNoSlots: int
+     * }
      */
     public function generateFromCalendar(Entity $calendar, bool $dryRun = false): array
     {
@@ -161,6 +168,8 @@ class WorkingTimeCalendarDisponibilitaGenerator
         $created = 0;
         $skipped = 0;
         $errors = [];
+        $daysBlocked = 0;
+        $daysNoSlots = 0;
 
         $current = new \DateTimeImmutable($dateFrom, new \DateTimeZone(self::TIMEZONE));
         $end = new \DateTimeImmutable($dateTo, new \DateTimeZone(self::TIMEZONE));
@@ -168,6 +177,18 @@ class WorkingTimeCalendarDisponibilitaGenerator
         while ($current <= $end) {
             $dateStr = $current->format('Y-m-d');
             $slots = $this->resolveTimeSlotsForDate($calendar, $dateStr);
+
+            if ($slots === false) {
+                $daysBlocked++;
+                $current = $current->modify('+1 day');
+                continue;
+            }
+
+            if ($slots === []) {
+                $daysNoSlots++;
+                $current = $current->modify('+1 day');
+                continue;
+            }
 
             foreach ($slots as $slot) {
                 if ($this->existsDisponibilita(
@@ -211,18 +232,20 @@ class WorkingTimeCalendarDisponibilitaGenerator
             'created' => $created,
             'skipped' => $skipped,
             'errors' => $errors,
+            'daysBlocked' => $daysBlocked,
+            'daysNoSlots' => $daysNoSlots,
         ];
     }
 
     /**
-     * @return array<int, array{start: string, end: string}>
+     * @return array<int, array{start: string, end: string}>|false
      */
-    private function resolveTimeSlotsForDate(Entity $calendar, string $dateStr): array
+    private function resolveTimeSlotsForDate(Entity $calendar, string $dateStr): array|false
     {
         $exceptionSlots = $this->resolveExceptionSlots($calendar, $dateStr);
 
         if ($exceptionSlots === false) {
-            return [];
+            return false;
         }
 
         if ($exceptionSlots !== null) {
@@ -519,5 +542,47 @@ class WorkingTimeCalendarDisponibilitaGenerator
         }
 
         return null;
+    }
+
+    /**
+     * @param array{
+     *   created: int,
+     *   skipped: int,
+     *   errors: string[],
+     *   userCount?: int,
+     *   daysBlocked?: int,
+     *   daysNoSlots?: int
+     * } $result
+     */
+    public function formatGenerationMessage(
+        array $result,
+        ?string $dateFrom = null,
+        ?string $dateTo = null
+    ): string {
+        $parts = [];
+
+        if ($dateFrom && $dateTo) {
+            $parts[] = sprintf('Periodo %s → %s', $dateFrom, $dateTo);
+        }
+
+        $parts[] = sprintf(
+            'create %d, %d già presenti',
+            $result['created'],
+            $result['skipped']
+        );
+
+        if (($result['daysBlocked'] ?? 0) > 0) {
+            $parts[] = ($result['daysBlocked'] ?? 0) . ' giorni esclusi (eccezione non lavorativa)';
+        }
+
+        if (($result['daysNoSlots'] ?? 0) > 0) {
+            $parts[] = ($result['daysNoSlots'] ?? 0) . ' giorni senza fascia oraria';
+        }
+
+        if ($result['errors'] !== []) {
+            $parts[] = count($result['errors']) . ' errori';
+        }
+
+        return implode(' · ', $parts) . '.';
     }
 }
