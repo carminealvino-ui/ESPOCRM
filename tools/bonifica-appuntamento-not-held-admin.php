@@ -38,9 +38,8 @@ $application->setupSystemUser();
 $container = $application->getContainer();
 $entityManager = $container->get('entityManager');
 $sync = $container->get('injectableFactory')->create(AppuntamentoGoogleSync::class);
-$systemAdminId = $sync->resolvePrimarySystemAdminUserId();
 
-fwrite(STDOUT, "Admin di sistema: {$systemAdminId}\n\n");
+fwrite(STDOUT, 'Admin di sistema: ' . $sync->describePrimarySystemAdmin() . "\n\n");
 
 $where = ['status' => 'Not Held'];
 

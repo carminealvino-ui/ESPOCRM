@@ -37,6 +37,7 @@ FILES=(
   custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json
   custom/Espo/Custom/Services/AppuntamentoGoogleSync.php
   tools/bonifica-appuntamento-not-held-admin.php
+  tools/diagnose-appuntamento-assegnazione.php
 )
 
 for rel in "${FILES[@]}"; do
@@ -65,6 +66,12 @@ if [[ -f tools/bonifica-appuntamento-not-held-admin.php ]]; then
   "${PHP_BIN}" tools/bonifica-appuntamento-not-held-admin.php --dry-run
   echo ""
   echo "  php tools/bonifica-appuntamento-not-held-admin.php --apply"
+fi
+
+echo ""
+echo "=== Diagnostica (es. Panci) ==="
+if [[ -f tools/diagnose-appuntamento-assegnazione.php ]]; then
+  "${PHP_BIN}" tools/diagnose-appuntamento-assegnazione.php --search=Panci || true
 fi
 
 echo ""

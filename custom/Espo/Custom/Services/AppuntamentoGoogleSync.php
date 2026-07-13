@@ -87,21 +87,37 @@ class AppuntamentoGoogleSync
      */
     public function isAssignedToPrimarySystemAdmin(Entity $entity): bool
     {
-        $adminId = $this->resolvePrimarySystemAdminUserId();
-        $entity->loadLinkMultipleField('assignedUsers');
+        $entityId = $entity->getId();
 
-        $assignedIds = array_map(
-            static fn ($userId) => (string) $userId,
-            $entity->getLinkMultipleIdList('assignedUsers')
-        );
-
-        if ($assignedIds !== [$adminId]) {
+        if (!$entityId) {
             return false;
         }
 
-        $assignedUserId = (string) ($entity->get('assignedUserId') ?: '');
+        [$assignedUserId, $assignedUsersIds] = $this->fetchAssigneeStateFromDb($entityId);
+        $adminId = $this->resolvePrimarySystemAdminUserId();
+
+        if ($assignedUsersIds !== [$adminId]) {
+            return false;
+        }
 
         return $assignedUserId === $adminId;
+    }
+
+    public function describePrimarySystemAdmin(): string
+    {
+        $adminId = $this->resolvePrimarySystemAdminUserId();
+        $user = $this->entityManager->getEntityById('User', $adminId);
+
+        if (!$user) {
+            return $adminId . ' (utente non trovato)';
+        }
+
+        return sprintf(
+            '%s (%s, userName=%s)',
+            trim(($user->get('firstName') ?: '') . ' ' . ($user->get('lastName') ?: '')),
+            $adminId,
+            (string) ($user->get('userName') ?? '')
+        );
     }
 
     /**
@@ -134,19 +150,95 @@ class AppuntamentoGoogleSync
         }
 
         $adminId = $this->resolvePrimarySystemAdminUserId();
-
-        $entity->setLinkMultipleIdList('assignedUsers', [$adminId]);
-        $entity->set([
-            'assignedUsersIds' => [$adminId],
-            'assignedUserId' => $adminId,
-        ]);
-
-        $this->entityManager->saveEntity($entity, [
-            'skipHooks' => true,
-            'silent' => true,
-        ]);
+        $this->replaceAssignedUsersWithAdmin($entityId, $adminId);
 
         return true;
+    }
+
+    /**
+     * Scrive assigned_user_id e entity_user senza passare da saveEntity (più affidabile su Espo 10).
+     */
+    private function replaceAssignedUsersWithAdmin(string $entityId, string $adminId): void
+    {
+        $entity = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+
+        if (!$entity) {
+            return;
+        }
+
+        $entity->loadLinkMultipleField('assignedUsers');
+        $relation = $this->entityManager->getRelation($entity, 'assignedUsers');
+
+        foreach ($entity->getLinkMultipleIdList('assignedUsers') as $userId) {
+            if ((string) $userId !== $adminId) {
+                $relation->unrelateById($userId);
+            }
+        }
+
+        $currentIds = array_map(
+            static fn ($userId) => (string) $userId,
+            $entity->getLinkMultipleIdList('assignedUsers')
+        );
+
+        if (!in_array($adminId, $currentIds, true)) {
+            $relation->relateById($adminId);
+        }
+
+        $this->entityManager->getQueryExecutor()->execute(
+            UpdateBuilder::create()
+                ->in(self::ENTITY_TYPE)
+                ->set(['assignedUserId' => $adminId])
+                ->where(['id' => $entityId])
+                ->build()
+        );
+    }
+
+    /**
+     * @return array{0: string, 1: string[]}
+     */
+    public function fetchAssigneeStateFromDb(string $entityId): array
+    {
+        $assignedUserId = '';
+        $assignedUsersIds = [];
+
+        $pdo = $this->entityManager->getPDO();
+
+        if ($pdo instanceof \PDO) {
+            $stmt = $pdo->prepare(
+                'SELECT assigned_user_id FROM appuntamento WHERE id = ? AND deleted = 0 LIMIT 1'
+            );
+            $stmt->execute([$entityId]);
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $assignedUserId = (string) ($row['assigned_user_id'] ?? '');
+
+            $stmt = $pdo->prepare(
+                'SELECT user_id FROM entity_user
+                 WHERE entity_id = ? AND entity_type = ? AND deleted = 0
+                 ORDER BY user_id'
+            );
+            $stmt->execute([$entityId, self::ENTITY_TYPE]);
+
+            while ($linkRow = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+                $assignedUsersIds[] = (string) ($linkRow['user_id'] ?? '');
+            }
+
+            return [$assignedUserId, $assignedUsersIds];
+        }
+
+        $entity = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+
+        if (!$entity) {
+            return ['', []];
+        }
+
+        $entity->loadLinkMultipleField('assignedUsers');
+        $assignedUsersIds = array_map(
+            static fn ($userId) => (string) $userId,
+            $entity->getLinkMultipleIdList('assignedUsers')
+        );
+        sort($assignedUsersIds);
+
+        return [(string) ($entity->get('assignedUserId') ?: ''), $assignedUsersIds];
     }
 
     /**
