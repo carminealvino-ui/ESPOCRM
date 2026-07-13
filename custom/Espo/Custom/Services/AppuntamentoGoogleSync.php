@@ -156,6 +156,30 @@ class AppuntamentoGoogleSync
     }
 
     /**
+     * Bonifica --force: riassegna senza controlli (tutti i Not Held sul consulente).
+     */
+    public function forceNotHeldAdminAssignees(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE) {
+            return false;
+        }
+
+        if ($entity->get('status') !== 'Not Held') {
+            return false;
+        }
+
+        $entityId = $entity->getId();
+
+        if (!$entityId) {
+            return false;
+        }
+
+        $this->replaceAssignedUsersWithAdmin($entityId, $this->resolvePrimarySystemAdminUserId());
+
+        return true;
+    }
+
+    /**
      * Scrive assigned_user_id e entity_user senza passare da saveEntity (più affidabile su Espo 10).
      */
     private function replaceAssignedUsersWithAdmin(string $entityId, string $adminId): void

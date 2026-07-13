@@ -6,7 +6,8 @@
  * Uso:
  *   php tools/bonifica-appuntamento-not-held-admin.php --dry-run
  *   php tools/bonifica-appuntamento-not-held-admin.php --apply
- *   php tools/bonifica-appuntamento-not-held-admin.php --dry-run --search=Panci
+ *   php tools/bonifica-appuntamento-not-held-admin.php --apply --force
+ *   php tools/bonifica-appuntamento-not-held-admin.php --apply --search=MACESEANU
  */
 declare(strict_types=1);
 
@@ -18,6 +19,7 @@ use Espo\Core\Application;
 use Espo\Custom\Services\AppuntamentoGoogleSync;
 
 $apply = in_array('--apply', $argv, true);
+$force = in_array('--force', $argv, true);
 $dryRun = !$apply;
 $search = null;
 
@@ -29,7 +31,13 @@ foreach ($argv as $arg) {
 
 if ($dryRun) {
     fwrite(STDOUT, "MODALITÀ dry-run (usa --apply per salvare)\n");
-    fwrite(STDOUT, "Target: utente admin di sistema (userName admin), non ogni type=admin\n\n");
+    fwrite(STDOUT, "Target: admin di sistema (userName admin), non ogni type=admin\n");
+
+    if ($force) {
+        fwrite(STDOUT, "Flag --force: riassegna TUTTI i Not Held\n");
+    }
+
+    fwrite(STDOUT, "\n");
 }
 
 $application = new Application();
@@ -56,7 +64,9 @@ $fixed = 0;
 $skipped = 0;
 
 foreach ($collection as $appointment) {
-    if (!$sync->needsNotHeldAdminAssigneeFix($appointment)) {
+    $needsFix = $force || $sync->needsNotHeldAdminAssigneeFix($appointment);
+
+    if (!$needsFix) {
         $skipped++;
         continue;
     }
@@ -73,7 +83,11 @@ foreach ($collection as $appointment) {
         continue;
     }
 
-    if ($sync->persistNotHeldAdminAssignees($appointment)) {
+    $ok = $force
+        ? $sync->forceNotHeldAdminAssignees($appointment)
+        : $sync->persistNotHeldAdminAssignees($appointment);
+
+    if ($ok) {
         $fixed++;
         $fresh = $entityManager->getEntityById('Appuntamento', $appointment->getId());
 
@@ -89,3 +103,7 @@ fwrite(STDOUT, sprintf(
     $skipped,
     $dryRun ? ' (dry-run)' : ''
 ));
+
+if ($dryRun && $fixed === 0 && !$force) {
+    fwrite(STDOUT, "Prova: php tools/bonifica-appuntamento-not-held-admin.php --dry-run --force\n");
+}

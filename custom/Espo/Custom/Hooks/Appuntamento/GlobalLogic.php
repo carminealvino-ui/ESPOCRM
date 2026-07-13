@@ -181,7 +181,7 @@ class GlobalLogic implements BeforeSave
 
             $entity->set(
                 'hookVersion',
-                '1.7.8'
+                '1.7.9'
             );
 
             if ($entity->hasAttribute('zTL') && $entity->get('zTL') === null) {

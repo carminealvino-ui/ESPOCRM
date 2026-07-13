@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Fix riassegnazione admin su appuntamento annullato (Not Held).
+# Verifica hook 1.7.9 dopo installazione.
 #
 # Uso:
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-appuntamento-annullato-admin-9999/tools/deploy-fix-appuntamento-annullato-admin.sh?t=$(date +%s)" | bash
@@ -33,11 +34,13 @@ FILES=(
   custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php
   custom/Espo/Custom/Hooks/Appuntamento/NotHeldAdminAssignAfterSave.php
   custom/Espo/Custom/Hooks/Appuntamento/GoogleCalendarSync.php
+  custom/Espo/Custom/Hooks/Appuntamento/GoogleCalendarSyncBeforeGlobal.php
   custom/Espo/Custom/Hooks/Appuntamento/GoogleCalendarSyncAfterGlobal.php
   custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json
   custom/Espo/Custom/Services/AppuntamentoGoogleSync.php
   tools/bonifica-appuntamento-not-held-admin.php
   tools/diagnose-appuntamento-assegnazione.php
+  tools/verify-appuntamento-annullato-admin-fix.php
 )
 
 for rel in "${FILES[@]}"; do
@@ -54,20 +57,20 @@ fi
 "${PHP_BIN}" clear_cache.php
 
 echo ""
-echo "=== Verifica hook registrati ==="
-if [[ -f custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json ]]; then
-  grep -E 'NotHeldAdminAssign|GlobalLogic|GoogleCalendarSyncAfterGlobal' \
-    custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json || true
-fi
+echo "=== Verifica installazione (hook 1.7.9) ==="
+"${PHP_BIN}" tools/verify-appuntamento-annullato-admin-fix.php
 
 echo ""
-echo "=== Bonifica assegnazione admin (dry-run) ==="
-if [[ -f tools/bonifica-appuntamento-not-held-admin.php ]]; then
-  "${PHP_BIN}" tools/bonifica-appuntamento-not-held-admin.php --dry-run
-  echo ""
-  echo "Singolo: php tools/bonifica-appuntamento-not-held-admin.php --apply --search=Nome"
-  echo "Tutti:    php tools/bonifica-appuntamento-not-held-admin.php --apply"
-fi
+echo "=== Hook registrati ==="
+grep -E 'NotHeldAdminAssign|GlobalLogic|GoogleCalendarSyncAfterGlobal' \
+  custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json || true
 
 echo ""
-echo "Fatto."
+echo "=== Bonifica (dry-run) ==="
+"${PHP_BIN}" tools/bonifica-appuntamento-not-held-admin.php --dry-run --force | tail -5
+
+echo ""
+echo "Applica su tutti i Non Svolto:"
+echo "  php tools/bonifica-appuntamento-not-held-admin.php --apply --force"
+echo ""
+echo "Dopo il save, HookVersion in UI deve essere 1.7.9 (non 1.7.7)."
