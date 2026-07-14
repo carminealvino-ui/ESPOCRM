@@ -414,32 +414,34 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         mapContrattiTile: function (tile) {
+            // kpi-provvigioni-ordine-sospesi-v2
             return this.mapMetricTile(tile, [
-                {key: 'lordi', label: 'Lordi'},
-                {key: 'recessi', label: 'Recessi'},
                 {key: 'totali', label: 'Totali'},
-                {key: 'finanziamentiRifiutati', label: 'Finanziamenti rifiutati'},
+                {key: 'recessi', label: 'Recessi'},
+                {key: 'lordi', label: 'Lordi'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamenti KO'},
+                {key: 'sospesi', label: 'Sospesi'},
                 {key: 'netti', label: 'Netti'},
             ], this.formatNumber);
         },
 
         mapValoreProduzioneTile: function (tile) {
             return this.mapMetricTile(tile, [
-                {key: 'lordi', label: 'Lordo'},
+                {key: 'totali', label: 'Totali'},
                 {key: 'recessi', label: 'Recessi'},
-                {key: 'totali', label: 'Totale'},
-                {key: 'finanziamentiRifiutati', label: 'Finanziamenti rifiutati'},
-                {key: 'netti', label: 'Netto'},
+                {key: 'lordi', label: 'Lorde'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamenti KO'},
+                {key: 'sospesi', label: 'Sospesi'},
+                {key: 'netti', label: 'Nette'},
             ], this.formatCurrency);
         },
 
         mapProvvigioniTile: function (tile) {
-            // kpi-provvigioni-ordine-sospesi-v1
             return this.mapMetricTile(tile, [
                 {key: 'totali', label: 'Totali'},
                 {key: 'recessi', label: 'Recessi'},
                 {key: 'lordi', label: 'Lorde'},
-                {key: 'finanziamentiRifiutati', label: 'Finanziamento'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamenti KO'},
                 {key: 'sospesi', label: 'Sospesi'},
                 {key: 'netti', label: 'Nette'},
             ], this.formatCurrency);

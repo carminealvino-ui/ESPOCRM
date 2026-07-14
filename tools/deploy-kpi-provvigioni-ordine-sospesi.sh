@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# KPI Provvigioni: ordine Totali → Recessi → Lorde → Finanziamento → Sospesi → Nette.
+# KPI Contratti / Valore / Provvigioni:
+# ordine Totali → Recessi → Lorde → Finanziamenti KO → Sospesi → Nette.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-kpi-provvigioni-ordine-sospesi-9999/tools/deploy-kpi-provvigioni-ordine-sospesi.sh?t=$(date +%s)" | bash
@@ -46,7 +47,7 @@ done
 echo "=== Fine. Esegui: php clear_cache.php && php rebuild.php (poi Ctrl+Shift+R) ==="
 
 JS="${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js"
-if [[ -f "${JS}" ]] && grep -q "kpi-provvigioni-ordine-sospesi-v1" "${JS}"; then
+if [[ -f "${JS}" ]] && grep -q "kpi-provvigioni-ordine-sospesi-v2" "${JS}"; then
   echo "VERIFICA OK: ${JS}"
 else
   echo "ATTENZIONE: verifica manuale ${JS}"

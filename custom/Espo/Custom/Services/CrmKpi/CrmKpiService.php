@@ -165,13 +165,20 @@ class CrmKpiService
         $lordi = $this->countQuotes($ctx);
         $recessi = $this->countQuotes($ctx, onlyRecesso: true);
         $finanziamentiRifiutati = $this->countQuotes($ctx, onlyFinancingKo: true);
+        $sospesi = $this->countQuotes($ctx, onlySospesi: true);
         $totali = $this->countQuotes($ctx, excludeRecesso: true);
-        $netti = $this->countQuotes($ctx, excludeFinancingKo: true, excludeRecesso: true);
+        $netti = $this->countQuotes(
+            $ctx,
+            excludeFinancingKo: true,
+            excludeRecesso: true,
+            excludeSospesi: true
+        );
 
         return (object) [
             'lordi' => $lordi,
             'recessi' => $recessi,
             'finanziamentiRifiutati' => $finanziamentiRifiutati,
+            'sospesi' => $sospesi,
             'totali' => $totali,
             'netti' => $netti,
         ];
@@ -182,13 +189,20 @@ class CrmKpiService
         $lordi = $this->sumQuoteAmount($ctx);
         $recessi = $this->sumQuoteAmount($ctx, onlyRecesso: true);
         $finanziamentiRifiutati = $this->sumQuoteAmount($ctx, onlyFinancingKo: true);
+        $sospesi = $this->sumQuoteAmount($ctx, onlySospesi: true);
         $totali = $this->sumQuoteAmount($ctx, excludeRecesso: true);
-        $netti = $this->sumQuoteAmount($ctx, excludeFinancingKo: true, excludeRecesso: true);
+        $netti = $this->sumQuoteAmount(
+            $ctx,
+            excludeFinancingKo: true,
+            excludeRecesso: true,
+            excludeSospesi: true
+        );
 
         return (object) [
             'lordi' => round($lordi, 2),
             'recessi' => round($recessi, 2),
             'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
+            'sospesi' => round($sospesi, 2),
             'totali' => round($totali, 2),
             'netti' => round($netti, 2),
         ];
