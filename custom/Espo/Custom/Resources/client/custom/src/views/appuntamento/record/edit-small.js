@@ -1,14 +1,16 @@
 /* global define */
 
 define('custom:views/appuntamento/record/edit-small', [
-    'views/record/edit-small',
+    'crm:views/meeting/record/edit-small',
     'custom:helpers/appuntamento-duration',
-], function (Dep, Helper) {
+], function (MeetingEditSmallModule, Helper) {
 
-    return Dep.extend({
+    const Parent = MeetingEditSmallModule.default || MeetingEditSmallModule;
 
-        setup: function () {
-            Dep.prototype.setup.call(this);
+    return class AppuntamentoEditSmallView extends Parent {
+
+        setup() {
+            super.setup();
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
@@ -21,18 +23,17 @@ define('custom:views/appuntamento/record/edit-small', [
             this.once('after:render', () => {
                 this.applyDefaultDuration();
             });
-        },
+        }
 
-        getDefaultDurationSeconds: function () {
+        getDefaultDurationSeconds() {
             const fromField = this.model.getFieldParam('duration', 'default');
 
             if (fromField !== null && fromField !== undefined && fromField !== '') {
                 return parseInt(fromField, 10);
             }
 
-            const entityType = this.model.entityType || this.model.name;
             const fromMeta = this.getMetadata().get(
-                ['entityDefs', entityType, 'fields', 'duration', 'default']
+                ['entityDefs', 'Appuntamento', 'fields', 'duration', 'default']
             );
 
             if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
@@ -40,9 +41,9 @@ define('custom:views/appuntamento/record/edit-small', [
             }
 
             return Helper.FALLBACK_DURATION_SECONDS;
-        },
+        }
 
-        applyDefaultDuration: function () {
+        applyDefaultDuration() {
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
             }
@@ -60,13 +61,13 @@ define('custom:views/appuntamento/record/edit-small', [
                 seconds
             );
 
-            if (!dateEnd) {
+            if (!dateEnd || dateEnd === this.model.get('dateEnd')) {
                 return;
             }
 
             this.model.set({
                 dateEnd: dateEnd,
             }, {updatedByDuration: true, ui: true});
-        },
-    });
+        }
+    };
 });

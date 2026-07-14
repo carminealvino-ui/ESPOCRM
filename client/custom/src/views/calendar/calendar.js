@@ -1,8 +1,8 @@
 /* global define */
 
 /**
- * Non usare come calendarView: rompe il caricamento su Espo 9.
- * Il fix durata e' in custom:handlers/calendar-default-duration.
+ * Pass-through: non patchare la view calendario (storicamente rompeva Espo).
+ * La durata 1h30 corretta e' in edit-small + campo duration custom (UTC).
  */
 define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], function (CalendarViewModule) {
 

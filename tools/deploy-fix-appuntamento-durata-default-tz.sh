@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Fix durata default appuntamento da calendario (1h30 mostrava Date End +2h = 3h30).
+# Fix durata default appuntamento da calendario (1h30 → Date End +2h = 3h30).
+# Scrive in client/custom/src (path effettivamente caricato dal browser).
 #
 # Uso:
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-appuntamento-durata-default-tz-9999/tools/deploy-fix-appuntamento-durata-default-tz.sh?t=$(date +%s)" | bash
@@ -28,11 +29,21 @@ fetch() {
   echo "OK ${path}"
 }
 
+# Path LIVE (caricati dal browser) + copie in custom/Espo per sync repo
 FILES=(
   custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php
   custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json
   custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json
   custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
+
+  client/custom/src/helpers/appuntamento-duration.js
+  client/custom/src/views/fields/appuntamento-duration.js
+  client/custom/src/views/appuntamento/record/edit-small.js
+  client/custom/src/views/appuntamento/record/edit.js
+  client/custom/src/views/appuntamento/modals/detail.js
+  client/custom/src/views/calendar/calendar.js
+  client/custom/src/views/calendar/modals/edit.js
+
   custom/Espo/Custom/client/custom/src/helpers/appuntamento-duration.js
   custom/Espo/Custom/client/custom/src/views/fields/appuntamento-duration.js
   custom/Espo/Custom/client/custom/src/views/appuntamento/record/edit-small.js
@@ -40,6 +51,7 @@ FILES=(
   custom/Espo/Custom/client/custom/src/views/appuntamento/modals/detail.js
   custom/Espo/Custom/client/custom/src/views/calendar/calendar.js
   custom/Espo/Custom/client/custom/src/views/calendar/modals/edit.js
+
   custom/Espo/Custom/Resources/client/custom/src/helpers/appuntamento-duration.js
   custom/Espo/Custom/Resources/client/custom/src/views/fields/appuntamento-duration.js
   custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/record/edit-small.js
@@ -53,17 +65,27 @@ for rel in "${FILES[@]}"; do
   fetch "${rel}"
 done
 
-# Cache client / metadata
 rm -rf data/cache/* 2>/dev/null || true
 "${PHP_BIN}" clear_cache.php
 "${PHP_BIN}" rebuild.php
 "${PHP_BIN}" clear_cache.php
 
 echo ""
-echo "=== Verifica helper UTC ==="
-grep -n 'moment.utc' custom/Espo/Custom/client/custom/src/helpers/appuntamento-duration.js || true
-grep -n 'appuntamento-duration' custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json || true
+echo "=== Verifica file LIVE (client/custom) ==="
+if grep -q 'moment.utc' client/custom/src/helpers/appuntamento-duration.js \
+  && grep -q 'appuntamento-duration' custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json \
+  && grep -q 'custom:helpers/appuntamento-duration' client/custom/src/views/appuntamento/record/edit-small.js; then
+  echo "OK: helper UTC + edit-small aggiornati in client/custom"
+else
+  echo "ERRORE: file client/custom non aggiornati correttamente" >&2
+  exit 1
+fi
+
+# Controlla che NON resti il vecchio toMoment+.format senza helper
+if grep -n "toMoment(dateStart)" client/custom/src/views/appuntamento/record/edit-small.js | grep -v helpers; then
+  echo "ATTENZIONE: edit-small potrebbe ancora usare toMoment" >&2
+fi
 
 echo ""
-echo "Fatto. OBBLIGATORIO: Ctrl+Shift+R (hard refresh) oppure finestra anonima."
-echo "Crea da calendario: 10:30 + 1h30 → Date End deve essere 12:00 (non 14:00)."
+echo "Fatto. OBBLIGATORIO hard refresh: Ctrl+Shift+R (o finestra anonima)."
+echo "Test: crea da calendario alle 07:00 → Date End deve essere 08:30 (non 10:30)."

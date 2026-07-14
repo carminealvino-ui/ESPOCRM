@@ -1,15 +1,11 @@
 /* global define */
 
-/**
- * NON registrare in clientDefs finche' non serve.
- * Uso: recordViews.editSmall in Appuntamento.json
- *
- * Applica durata 1h30 solo se diversa da quella attuale (evita loop UI).
- */
-define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record/edit-small'], function (MeetingEditSmallModule) {
+define('custom:views/appuntamento/record/edit-small', [
+    'crm:views/meeting/record/edit-small',
+    'custom:helpers/appuntamento-duration',
+], function (MeetingEditSmallModule, Helper) {
 
     const Parent = MeetingEditSmallModule.default || MeetingEditSmallModule;
-    const DEFAULT_DURATION_SECONDS = 5400;
 
     return class AppuntamentoEditSmallView extends Parent {
 
@@ -20,16 +16,34 @@ define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record
                 return;
             }
 
+            this.listenTo(this.model, 'change:dateStart', () => {
+                this.applyDefaultDuration();
+            });
+
             this.once('after:render', () => {
-                this.applyDefaultDurationOnce();
+                this.applyDefaultDuration();
             });
         }
 
-        applyDefaultDurationOnce() {
-            if (this._defaultDurationApplied) {
-                return;
+        getDefaultDurationSeconds() {
+            const fromField = this.model.getFieldParam('duration', 'default');
+
+            if (fromField !== null && fromField !== undefined && fromField !== '') {
+                return parseInt(fromField, 10);
             }
 
+            const fromMeta = this.getMetadata().get(
+                ['entityDefs', 'Appuntamento', 'fields', 'duration', 'default']
+            );
+
+            if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
+                return parseInt(fromMeta, 10);
+            }
+
+            return Helper.FALLBACK_DURATION_SECONDS;
+        }
+
+        applyDefaultDuration() {
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
             }
@@ -40,27 +54,20 @@ define('custom:views/appuntamento/record/edit-small', ['crm:views/meeting/record
                 return;
             }
 
-            const dateEnd = this.getExpectedDateEnd(dateStart);
-            const currentEnd = this.model.get('dateEnd');
+            const seconds = this.getDefaultDurationSeconds();
+            const dateEnd = Helper.addSecondsToSystemDateTime(
+                this.getDateTime(),
+                dateStart,
+                seconds
+            );
 
-            if (currentEnd === dateEnd) {
-                this._defaultDurationApplied = true;
-
+            if (!dateEnd || dateEnd === this.model.get('dateEnd')) {
                 return;
             }
 
-            this._defaultDurationApplied = true;
-
             this.model.set({
                 dateEnd: dateEnd,
-            }, {updatedByDuration: true});
-        }
-
-        getExpectedDateEnd(dateStart) {
-            return this.getDateTime()
-                .toMoment(dateStart)
-                .add(DEFAULT_DURATION_SECONDS, 'seconds')
-                .format(this.getDateTime().internalDateTimeFormat);
+            }, {updatedByDuration: true, ui: true});
         }
     };
 });

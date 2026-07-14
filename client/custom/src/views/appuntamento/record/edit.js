@@ -1,9 +1,11 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit', ['crm:views/meeting/record/edit'], function (MeetingEditModule) {
+define('custom:views/appuntamento/record/edit', [
+    'crm:views/meeting/record/edit',
+    'custom:helpers/appuntamento-duration',
+], function (MeetingEditModule, Helper) {
 
     const Parent = MeetingEditModule.default || MeetingEditModule;
-    const DEFAULT_DURATION_SECONDS = 5400;
 
     return class AppuntamentoEditView extends Parent {
 
@@ -20,9 +22,25 @@ define('custom:views/appuntamento/record/edit', ['crm:views/meeting/record/edit'
 
             this.once('after:render', () => {
                 this.applyDefaultDuration();
-                setTimeout(() => this.applyDefaultDuration(), 0);
-                setTimeout(() => this.applyDefaultDuration(), 150);
             });
+        }
+
+        getDefaultDurationSeconds() {
+            const fromField = this.model.getFieldParam('duration', 'default');
+
+            if (fromField !== null && fromField !== undefined && fromField !== '') {
+                return parseInt(fromField, 10);
+            }
+
+            const fromMeta = this.getMetadata().get(
+                ['entityDefs', 'Appuntamento', 'fields', 'duration', 'default']
+            );
+
+            if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
+                return parseInt(fromMeta, 10);
+            }
+
+            return Helper.FALLBACK_DURATION_SECONDS;
         }
 
         applyDefaultDuration() {
@@ -36,14 +54,20 @@ define('custom:views/appuntamento/record/edit', ['crm:views/meeting/record/edit'
                 return;
             }
 
-            const dateEnd = this.getDateTime()
-                .toMoment(dateStart)
-                .add(DEFAULT_DURATION_SECONDS, 'seconds')
-                .format(this.getDateTime().internalDateTimeFormat);
+            const seconds = this.getDefaultDurationSeconds();
+            const dateEnd = Helper.addSecondsToSystemDateTime(
+                this.getDateTime(),
+                dateStart,
+                seconds
+            );
+
+            if (!dateEnd || dateEnd === this.model.get('dateEnd')) {
+                return;
+            }
 
             this.model.set({
                 dateEnd: dateEnd,
-            }, {updatedByDuration: true});
+            }, {updatedByDuration: true, ui: true});
         }
     };
 });
