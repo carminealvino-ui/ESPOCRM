@@ -434,11 +434,13 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         mapProvvigioniTile: function (tile) {
+            // kpi-provvigioni-ordine-sospesi-v1
             return this.mapMetricTile(tile, [
-                {key: 'lordi', label: 'Lordi'},
-                {key: 'recessi', label: 'Recessi'},
                 {key: 'totali', label: 'Totali'},
-                {key: 'finanziamentiRifiutati', label: 'Finanziamenti rifiutati'},
+                {key: 'recessi', label: 'Recessi'},
+                {key: 'lordi', label: 'Lorde'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamento'},
+                {key: 'sospesi', label: 'Sospesi'},
                 {key: 'netti', label: 'Nette'},
             ], this.formatCurrency);
         },
@@ -470,6 +472,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 } else if (
                     def.key === 'ingestibili'
                     || def.key === 'finanziamentiRifiutati'
+                    || def.key === 'sospesi'
                     || def.key === 'netti'
                 ) {
                     const percentTotali = this.formatPercentOf(raw, baseTotali);

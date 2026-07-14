@@ -47,6 +47,8 @@ class CrmKpiService
 
     private const CONTRACT_RECESSO = 'Recesso';
 
+    private const CONTRACT_SOSPESO = 'Sospeso';
+
     public function __construct(
         private EntityManager $entityManager,
     ) {}
@@ -197,13 +199,20 @@ class CrmKpiService
         $lordi = $this->sumQuoteProvvigioni($ctx);
         $recessi = $this->sumQuoteProvvigioni($ctx, onlyRecesso: true);
         $finanziamentiRifiutati = $this->sumQuoteProvvigioni($ctx, onlyFinancingKo: true);
+        $sospesi = $this->sumQuoteProvvigioni($ctx, onlySospesi: true);
         $totali = $this->sumQuoteProvvigioni($ctx, excludeRecesso: true);
-        $netti = $this->sumQuoteProvvigioni($ctx, excludeFinancingKo: true, excludeRecesso: true);
+        $netti = $this->sumQuoteProvvigioni(
+            $ctx,
+            excludeFinancingKo: true,
+            excludeRecesso: true,
+            excludeSospesi: true
+        );
 
         return (object) [
             'lordi' => round($lordi, 2),
             'recessi' => round($recessi, 2),
             'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
+            'sospesi' => round($sospesi, 2),
             'totali' => round($totali, 2),
             'netti' => round($netti, 2),
         ];
@@ -395,15 +404,40 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): int {
-        if ($onlyFinancingKo || $excludeFinancingKo || $onlyRecesso || $excludeRecesso) {
-            return $this->countQuotesResolved($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso);
+        if (
+            $onlyFinancingKo
+            || $excludeFinancingKo
+            || $onlyRecesso
+            || $excludeRecesso
+            || $onlySospesi
+            || $excludeSospesi
+        ) {
+            return $this->countQuotesResolved(
+                $ctx,
+                $excludeFinancingKo,
+                $excludeRecesso,
+                $onlyFinancingKo,
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
+            );
         }
 
         return (int) $this->entityManager
             ->getRDBRepository('Quote')
-            ->where($this->quoteFilterWhere($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso))
+            ->where($this->quoteFilterWhere(
+                $ctx,
+                $excludeFinancingKo,
+                $excludeRecesso,
+                $onlyFinancingKo,
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
+            ))
             ->count();
     }
 
@@ -412,22 +446,41 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): float {
-        if ($onlyFinancingKo || $excludeFinancingKo || $onlyRecesso || $excludeRecesso) {
+        if (
+            $onlyFinancingKo
+            || $excludeFinancingKo
+            || $onlyRecesso
+            || $excludeRecesso
+            || $onlySospesi
+            || $excludeSospesi
+        ) {
             return $this->sumQuoteFieldResolved(
                 $ctx,
                 ['importoContratto', 'amount', 'grandTotalAmount'],
                 $excludeFinancingKo,
                 $excludeRecesso,
                 $onlyFinancingKo,
-                $onlyRecesso
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
             );
         }
 
         return $this->safeSum(
             'Quote',
-            $this->quoteFilterWhere($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso),
+            $this->quoteFilterWhere(
+                $ctx,
+                $excludeFinancingKo,
+                $excludeRecesso,
+                $onlyFinancingKo,
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
+            ),
             ['importoContratto', 'amount', 'grandTotalAmount']
         );
     }
@@ -437,22 +490,41 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): float {
-        if ($onlyFinancingKo || $excludeFinancingKo || $onlyRecesso || $excludeRecesso) {
+        if (
+            $onlyFinancingKo
+            || $excludeFinancingKo
+            || $onlyRecesso
+            || $excludeRecesso
+            || $onlySospesi
+            || $excludeSospesi
+        ) {
             return $this->sumQuoteFieldResolved(
                 $ctx,
                 ['totaleProvvigioni'],
                 $excludeFinancingKo,
                 $excludeRecesso,
                 $onlyFinancingKo,
-                $onlyRecesso
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
             );
         }
 
         return $this->safeSum(
             'Quote',
-            $this->quoteFilterWhere($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso),
+            $this->quoteFilterWhere(
+                $ctx,
+                $excludeFinancingKo,
+                $excludeRecesso,
+                $onlyFinancingKo,
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
+            ),
             ['totaleProvvigioni']
         );
     }
@@ -462,9 +534,19 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): int {
-        return count($this->filterQuotesForTile($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso));
+        return count($this->filterQuotesForTile(
+            $ctx,
+            $excludeFinancingKo,
+            $excludeRecesso,
+            $onlyFinancingKo,
+            $onlyRecesso,
+            $onlySospesi,
+            $excludeSospesi
+        ));
     }
 
     /**
@@ -476,9 +558,19 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): float {
-        $quotes = $this->filterQuotesForTile($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso);
+        $quotes = $this->filterQuotesForTile(
+            $ctx,
+            $excludeFinancingKo,
+            $excludeRecesso,
+            $onlyFinancingKo,
+            $onlyRecesso,
+            $onlySospesi,
+            $excludeSospesi
+        );
         $sum = 0.0;
 
         foreach ($quotes as $quote) {
@@ -503,7 +595,9 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): array {
         $collection = $this->entityManager
             ->getRDBRepository('Quote')
@@ -530,7 +624,9 @@ class CrmKpiService
                 $excludeFinancingKo,
                 $excludeRecesso,
                 $onlyFinancingKo,
-                $onlyRecesso
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
             )) {
                 $matched[] = $quote;
             }
@@ -549,9 +645,12 @@ class CrmKpiService
         bool $excludeRecesso,
         bool $onlyFinancingKo,
         bool $onlyRecesso,
+        bool $onlySospesi,
+        bool $excludeSospesi,
     ): bool {
         $isRecesso = $this->isQuoteRecesso($quote);
         $isFinancingRejected = $this->isQuoteFinancingRejected($quote, $opportunityRejectedMap);
+        $isSospeso = $this->isQuoteSospeso($quote);
 
         if ($onlyRecesso) {
             return $isRecesso;
@@ -561,11 +660,19 @@ class CrmKpiService
             return $isFinancingRejected;
         }
 
+        if ($onlySospesi) {
+            return $isSospeso;
+        }
+
         if ($excludeRecesso && $isRecesso) {
             return false;
         }
 
         if ($excludeFinancingKo && $isFinancingRejected) {
+            return false;
+        }
+
+        if ($excludeSospesi && $isSospeso) {
             return false;
         }
 
@@ -580,7 +687,9 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): array {
         $where = $ctx->quoteWhere();
 
@@ -592,8 +701,22 @@ class CrmKpiService
             return array_merge($where, $this->financingRejectedWhere());
         }
 
+        if ($onlySospesi) {
+            return array_merge($where, ['statoContratto' => self::CONTRACT_SOSPESO]);
+        }
+
+        $excludedStates = [];
+
         if ($excludeRecesso) {
-            $where['statoContratto!='] = self::CONTRACT_RECESSO;
+            $excludedStates[] = self::CONTRACT_RECESSO;
+        }
+
+        if ($excludeSospesi) {
+            $excludedStates[] = self::CONTRACT_SOSPESO;
+        }
+
+        if ($excludedStates !== []) {
+            $where['statoContratto!='] = $excludedStates;
         }
 
         if ($excludeFinancingKo) {
@@ -661,6 +784,33 @@ class CrmKpiService
 
         return $linkedOpportunity
             && $linkedOpportunity->get('statoContratto') === self::CONTRACT_RECESSO;
+    }
+
+    private function isQuoteSospeso(Entity $quote, ?Entity $opportunity = null): bool
+    {
+        if ($this->isQuoteRecesso($quote, $opportunity)) {
+            return false;
+        }
+
+        if ($quote->get('statoContratto') === self::CONTRACT_SOSPESO) {
+            return true;
+        }
+
+        if ($opportunity !== null) {
+            return $opportunity->get('statoContratto') === self::CONTRACT_SOSPESO;
+        }
+
+        $opportunityId = $quote->get('opportunitaId');
+
+        if (!$opportunityId) {
+            return false;
+        }
+
+        $linkedOpportunity = $this->entityManager->getEntityById('Opportunity', $opportunityId);
+
+        return $linkedOpportunity
+            && !$this->isQuoteRecesso($quote, $linkedOpportunity)
+            && $linkedOpportunity->get('statoContratto') === self::CONTRACT_SOSPESO;
     }
 
     /**
