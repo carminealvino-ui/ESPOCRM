@@ -35,6 +35,7 @@ FILES=(
   custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json
   custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
 
+  client/custom/src/views/appuntamento/record/detail.js
   client/custom/src/views/appuntamento/record/edit-small.js
   client/custom/src/views/appuntamento/record/edit.js
   client/custom/src/views/appuntamento/modals/detail.js
@@ -42,6 +43,7 @@ FILES=(
   client/custom/src/views/calendar/calendar.js
   client/custom/src/views/calendar/modals/edit.js
 
+  custom/Espo/Custom/client/custom/src/views/appuntamento/record/detail.js
   custom/Espo/Custom/client/custom/src/views/appuntamento/record/edit-small.js
   custom/Espo/Custom/client/custom/src/views/appuntamento/record/edit.js
   custom/Espo/Custom/client/custom/src/views/appuntamento/modals/detail.js
@@ -49,6 +51,7 @@ FILES=(
   custom/Espo/Custom/client/custom/src/views/calendar/calendar.js
   custom/Espo/Custom/client/custom/src/views/calendar/modals/edit.js
 
+  custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/record/detail.js
   custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/record/edit-small.js
   custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/record/edit.js
   custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/modals/detail.js
@@ -86,7 +89,7 @@ else
 fi
 
 echo ""
-echo "Fatto. Hard refresh OBBLIGATORIO: Ctrl+Shift+R oppure finestra anonima."
-echo "Test: crea alle 11:30 → Date End 13:00 (non 12:00), Durata 1h 30m."
-echo ""
-echo "Se in console vedi errori rossi sulla view appuntamento, incolla i messaggi."
+echo "Fatto. Hard refresh: Ctrl+Shift+R."
+echo "Durata: 11:30 → Date End 13:00."
+echo "I 62 errori console erano tipicamente 404 su crm:views/meeting/* (rimossi)."
+echo "Dopo deploy i rossi in Console dovrebbero scendere molto."
