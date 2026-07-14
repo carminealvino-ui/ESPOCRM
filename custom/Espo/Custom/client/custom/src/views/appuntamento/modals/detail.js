@@ -2,8 +2,11 @@
 
 define('custom:views/appuntamento/modals/detail', [
     'crm:views/meeting/modals/detail',
-    'custom:helpers/appuntamento-duration',
-], function (Dep, Helper) {
+    'moment',
+], function (Dep, moment) {
+
+    const DEFAULT_DURATION_SECONDS = 5400;
+    const FULL_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
     return Dep.extend({
 
@@ -30,15 +33,17 @@ define('custom:views/appuntamento/modals/detail', [
                 return;
             }
 
-            const dateEnd = Helper.addSecondsToSystemDateTime(
-                this.getDateTime(),
-                dateStart,
-                Helper.FALLBACK_DURATION_SECONDS
-            );
+            let m = moment.utc(dateStart, FULL_FORMAT, true);
 
-            if (!dateEnd) {
+            if (!m.isValid()) {
+                m = moment.utc(dateStart);
+            }
+
+            if (!m.isValid()) {
                 return;
             }
+
+            const dateEnd = m.add(DEFAULT_DURATION_SECONDS, 'seconds').format(FULL_FORMAT);
 
             this.model.set({
                 dateEnd: dateEnd,
