@@ -1,6 +1,9 @@
 /* global define */
 
-define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], function (CalendarViewModule) {
+define('custom:views/calendar/calendar', [
+    'crm:views/calendar/calendar',
+    'custom:helpers/appuntamento-duration',
+], function (CalendarViewModule, Helper) {
 
     const CalendarView = CalendarViewModule.default || CalendarViewModule;
     const APPUNTAMENTO_SCOPE = 'Appuntamento';
@@ -16,21 +19,15 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
                 return parseInt(fromMeta, 10);
             }
 
-            return 5400;
+            return Helper.FALLBACK_DURATION_SECONDS;
         }
 
-        /**
-         * toMoment() → fuso utente; storage Espo = UTC.
-         * Senza .utc() Date End +offset (1h30 → 3h30 estate Roma).
-         */
         getDefaultDateEnd(dateStart) {
-            const dateTime = this.getDateTime();
-            const endMoment = dateTime
-                .toMoment(dateStart)
-                .clone()
-                .add(this.getDefaultDurationSeconds(), 'seconds');
-
-            return endMoment.clone().utc().format(dateTime.internalDateTimeFullFormat);
+            return Helper.addSecondsToSystemDateTime(
+                this.getDateTime(),
+                dateStart,
+                this.getDefaultDurationSeconds()
+            );
         }
 
         normalizeCreateEventValues(values) {
@@ -38,9 +35,15 @@ define('custom:views/calendar/calendar', ['crm:views/calendar/calendar'], functi
                 return values;
             }
 
+            const dateEnd = this.getDefaultDateEnd(values.dateStart);
+
+            if (!dateEnd) {
+                return values;
+            }
+
             return {
                 ...values,
-                dateEnd: this.getDefaultDateEnd(values.dateStart),
+                dateEnd: dateEnd,
             };
         }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fix durata default appuntamento da calendario (1h30 → mostrava 3h30 per timezone).
+# Fix durata default appuntamento da calendario (1h30 mostrava Date End +2h = 3h30).
 #
 # Uso:
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-appuntamento-durata-default-tz-9999/tools/deploy-fix-appuntamento-durata-default-tz.sh?t=$(date +%s)" | bash
@@ -30,14 +30,21 @@ fetch() {
 
 FILES=(
   custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php
+  custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json
   custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json
   custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
+  custom/Espo/Custom/client/custom/src/helpers/appuntamento-duration.js
+  custom/Espo/Custom/client/custom/src/views/fields/appuntamento-duration.js
   custom/Espo/Custom/client/custom/src/views/appuntamento/record/edit-small.js
   custom/Espo/Custom/client/custom/src/views/appuntamento/record/edit.js
+  custom/Espo/Custom/client/custom/src/views/appuntamento/modals/detail.js
   custom/Espo/Custom/client/custom/src/views/calendar/calendar.js
   custom/Espo/Custom/client/custom/src/views/calendar/modals/edit.js
+  custom/Espo/Custom/Resources/client/custom/src/helpers/appuntamento-duration.js
+  custom/Espo/Custom/Resources/client/custom/src/views/fields/appuntamento-duration.js
   custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/record/edit-small.js
   custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/record/edit.js
+  custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/modals/detail.js
   custom/Espo/Custom/Resources/client/custom/src/views/calendar/calendar.js
   custom/Espo/Custom/Resources/client/custom/src/views/calendar/modals/edit.js
 )
@@ -46,15 +53,17 @@ for rel in "${FILES[@]}"; do
   fetch "${rel}"
 done
 
+# Cache client / metadata
+rm -rf data/cache/* 2>/dev/null || true
 "${PHP_BIN}" clear_cache.php
 "${PHP_BIN}" rebuild.php
 "${PHP_BIN}" clear_cache.php
 
 echo ""
-echo "Verifica fix timezone in edit-small:"
-grep -n 'utc()' custom/Espo/Custom/client/custom/src/views/appuntamento/record/edit-small.js || true
-grep -n 'utc()' custom/Espo/Custom/client/custom/src/views/calendar/calendar.js || true
+echo "=== Verifica helper UTC ==="
+grep -n 'moment.utc' custom/Espo/Custom/client/custom/src/helpers/appuntamento-duration.js || true
+grep -n 'appuntamento-duration' custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json || true
 
 echo ""
-echo "Fatto. Hard-refresh browser (Ctrl+Shift+R), poi crea un appuntamento dal calendario:"
-echo "  Data 15:30 + durata 1h30 → Date End deve essere 17:00 (non 19:00)."
+echo "Fatto. OBBLIGATORIO: Ctrl+Shift+R (hard refresh) oppure finestra anonima."
+echo "Crea da calendario: 10:30 + 1h30 → Date End deve essere 12:00 (non 14:00)."

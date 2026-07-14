@@ -1,10 +1,12 @@
 /* global define */
 
-define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], function (CalendarEditModalModule) {
+define('custom:views/calendar/modals/edit', [
+    'crm:views/calendar/modals/edit',
+    'custom:helpers/appuntamento-duration',
+], function (CalendarEditModalModule, Helper) {
 
     const CalendarEditModalView = CalendarEditModalModule.default || CalendarEditModalModule;
     const APPUNTAMENTO_SCOPE = 'Appuntamento';
-    const FALLBACK_DURATION_SECONDS = 5400;
 
     return class CustomCalendarEditModalView extends CalendarEditModalView {
 
@@ -22,18 +24,11 @@ define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], 
                 return parseInt(fromMeta, 10);
             }
 
-            return FALLBACK_DURATION_SECONDS;
+            return Helper.FALLBACK_DURATION_SECONDS;
         }
 
-        /**
-         * toMoment() → fuso utente; storage Espo = UTC.
-         * Senza .utc() Date End +offset (1h30 → 3h30 estate Roma).
-         */
         computeDateEnd(dateStart, seconds) {
-            const dateTime = this.getDateTime();
-            const endMoment = dateTime.toMoment(dateStart).clone().add(seconds, 'seconds');
-
-            return endMoment.clone().utc().format(dateTime.internalDateTimeFullFormat);
+            return Helper.addSecondsToSystemDateTime(this.getDateTime(), dateStart, seconds);
         }
 
         getActiveScope() {
@@ -52,10 +47,14 @@ define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], 
                 return;
             }
 
-            this.options.dateEnd = this.computeDateEnd(
+            const dateEnd = this.computeDateEnd(
                 this.options.dateStart,
                 this.getDefaultDurationSeconds()
             );
+
+            if (dateEnd) {
+                this.options.dateEnd = dateEnd;
+            }
         }
 
         createRecordView(model, callback) {

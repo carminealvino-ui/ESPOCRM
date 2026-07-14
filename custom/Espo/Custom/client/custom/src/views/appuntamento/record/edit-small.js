@@ -1,8 +1,9 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'], function (Dep) {
-
-    const FALLBACK_DURATION_SECONDS = 5400;
+define('custom:views/appuntamento/record/edit-small', [
+    'views/record/edit-small',
+    'custom:helpers/appuntamento-duration',
+], function (Dep, Helper) {
 
     return Dep.extend({
 
@@ -38,18 +39,7 @@ define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'
                 return parseInt(fromMeta, 10);
             }
 
-            return FALLBACK_DURATION_SECONDS;
-        },
-
-        /**
-         * toMoment() → fuso utente; lo storage Espo è UTC.
-         * Senza .utc() Date End risultava +offset (es. 1h30 → 3h30 in estate Roma).
-         */
-        computeDateEndFromStart: function (dateStart, seconds) {
-            const dateTime = this.getDateTime();
-            const endMoment = dateTime.toMoment(dateStart).clone().add(seconds, 'seconds');
-
-            return endMoment.clone().utc().format(dateTime.internalDateTimeFullFormat);
+            return Helper.FALLBACK_DURATION_SECONDS;
         },
 
         applyDefaultDuration: function () {
@@ -64,11 +54,19 @@ define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'
             }
 
             const seconds = this.getDefaultDurationSeconds();
+            const dateEnd = Helper.addSecondsToSystemDateTime(
+                this.getDateTime(),
+                dateStart,
+                seconds
+            );
+
+            if (!dateEnd) {
+                return;
+            }
 
             this.model.set({
-                dateEnd: this.computeDateEndFromStart(dateStart, seconds),
-                duration: seconds,
-            }, {ui: true});
+                dateEnd: dateEnd,
+            }, {updatedByDuration: true, ui: true});
         },
     });
 });
