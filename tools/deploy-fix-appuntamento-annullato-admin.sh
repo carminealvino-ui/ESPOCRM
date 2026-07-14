@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Fix riassegnazione admin su appuntamento annullato (Not Held).
-# Verifica hook 1.7.9 dopo installazione.
+# Fix riassegnazione admin su appuntamento annullato (Not Held) + bonifica massiva agenda.
 #
 # Uso:
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-appuntamento-annullato-admin-9999/tools/deploy-fix-appuntamento-annullato-admin.sh?t=$(date +%s)" | bash
@@ -39,6 +38,7 @@ FILES=(
   custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json
   custom/Espo/Custom/Services/AppuntamentoGoogleSync.php
   tools/bonifica-appuntamento-not-held-admin.php
+  tools/bonifica-annullati-in-agenda.sh
   tools/diagnose-appuntamento-assegnazione.php
   tools/verify-appuntamento-annullato-admin-fix.php
 )
@@ -52,6 +52,8 @@ if [[ -f "${LEGACY_HOOKS}" ]]; then
   echo "RIMOSSO ${LEGACY_HOOKS} (puntava a Common\\GlobalLogic inesistente)"
 fi
 
+chmod +x tools/bonifica-annullati-in-agenda.sh || true
+
 "${PHP_BIN}" clear_cache.php
 "${PHP_BIN}" rebuild.php
 "${PHP_BIN}" clear_cache.php
@@ -61,16 +63,12 @@ echo "=== Verifica installazione (hook 1.7.11) ==="
 "${PHP_BIN}" tools/verify-appuntamento-annullato-admin-fix.php
 
 echo ""
-echo "=== Hook registrati ==="
-grep -E 'NotHeldAdminAssign|GlobalLogic|GoogleCalendarSyncAfterGlobal' \
-  custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json || true
+echo "=== Anteprima bonifica massiva (dry-run, solo conteggi) ==="
+"${PHP_BIN}" tools/bonifica-appuntamento-not-held-admin.php --dry-run --force | tail -8
 
 echo ""
-echo "=== Bonifica (dry-run) ==="
-"${PHP_BIN}" tools/bonifica-appuntamento-not-held-admin.php --dry-run --force | tail -5
-
+echo "Per aggiornare TUTTI gli annullati ancora in agenda:"
+echo "  bash tools/bonifica-annullati-in-agenda.sh"
 echo ""
-echo "Applica su tutti i Non Svolto:"
-echo "  php tools/bonifica-appuntamento-not-held-admin.php --apply --force"
-echo ""
-echo "Dopo il save, HookVersion in UI deve essere 1.7.11."
+echo "Oppure solo anteprima:"
+echo "  bash tools/bonifica-annullati-in-agenda.sh --dry-run"

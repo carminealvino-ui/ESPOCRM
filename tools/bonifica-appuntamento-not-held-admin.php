@@ -1,13 +1,12 @@
 #!/usr/bin/env php
 <?php
 /**
- * Riassegna ad admin gli appuntamenti Not Held ancora sul consulente.
+ * Riassegna ad admin TUTTI gli appuntamenti Non Svolto (annullati) ancora in agenda.
  *
  * Uso:
- *   php tools/bonifica-appuntamento-not-held-admin.php --dry-run
- *   php tools/bonifica-appuntamento-not-held-admin.php --apply
- *   php tools/bonifica-appuntamento-not-held-admin.php --apply --force
- *   php tools/bonifica-appuntamento-not-held-admin.php --apply --search=MACESEANU
+ *   php tools/bonifica-appuntamento-not-held-admin.php --dry-run --force
+ *   php tools/bonifica-appuntamento-not-held-admin.php --apply --force --quiet
+ *   php tools/bonifica-appuntamento-not-held-admin.php --apply --force --search=YEBISOM
  */
 declare(strict_types=1);
 
@@ -20,6 +19,7 @@ use Espo\Custom\Services\AppuntamentoGoogleSync;
 
 $apply = in_array('--apply', $argv, true);
 $force = in_array('--force', $argv, true);
+$quiet = in_array('--quiet', $argv, true);
 $dryRun = !$apply;
 $search = null;
 
@@ -31,10 +31,10 @@ foreach ($argv as $arg) {
 
 if ($dryRun) {
     fwrite(STDOUT, "MODALITÀ dry-run (usa --apply per salvare)\n");
-    fwrite(STDOUT, "Target: admin di sistema (userName admin), non ogni type=admin\n");
+    fwrite(STDOUT, "Target: admin di sistema (userName admin)\n");
 
     if ($force) {
-        fwrite(STDOUT, "Flag --force: riassegna TUTTI i Not Held\n");
+        fwrite(STDOUT, "Flag --force: tutti i Non Svolto ancora non su admin di sistema\n");
     }
 
     fwrite(STDOUT, "\n");
@@ -60,23 +60,35 @@ $collection = $entityManager
     ->where($where)
     ->find();
 
+$total = count($collection);
 $fixed = 0;
 $skipped = 0;
+$googleCleaned = 0;
+$processed = 0;
+
+fwrite(STDOUT, "Non Svolto da analizzare: {$total}\n\n");
 
 foreach ($collection as $appointment) {
-    $needsFix = $force || $sync->needsNotHeldAdminAssigneeFix($appointment);
+    $processed++;
+    $needsFix = $force
+        ? !$sync->isAssignedToPrimarySystemAdmin($appointment)
+        : $sync->needsNotHeldAdminAssigneeFix($appointment);
 
     if (!$needsFix) {
         $skipped++;
         continue;
     }
 
-    fwrite(STDOUT, sprintf(
-        "FIX %s | %s | %s → admin\n",
-        $appointment->getId(),
-        $appointment->get('name'),
-        $sync->describeAssignee($appointment)
-    ));
+    if (!$quiet) {
+        fwrite(STDOUT, sprintf(
+            "FIX %s | %s | %s → admin\n",
+            $appointment->getId(),
+            $appointment->get('name'),
+            $sync->describeAssignee($appointment)
+        ));
+    } elseif ($fixed === 0 || ($fixed + 1) % 50 === 0) {
+        fwrite(STDOUT, "  ... riassegnazione in corso ({$processed}/{$total})\n");
+    }
 
     if ($dryRun) {
         $fixed++;
@@ -87,23 +99,33 @@ foreach ($collection as $appointment) {
         ? $sync->forceNotHeldAdminAssignees($appointment)
         : $sync->persistNotHeldAdminAssignees($appointment);
 
-    if ($ok) {
-        $fixed++;
-        $fresh = $entityManager->getEntityById('Appuntamento', $appointment->getId());
+    if (!$ok) {
+        continue;
+    }
 
-        if ($fresh) {
-            $sync->handleNotHeldStatus($fresh);
-        }
+    $fixed++;
+    $fresh = $entityManager->getEntityById('Appuntamento', $appointment->getId());
+
+    if ($fresh) {
+        $sync->handleNotHeldStatus($fresh);
+        $googleCleaned++;
     }
 }
 
 fwrite(STDOUT, sprintf(
-    "\nRiassegnati: %d | Già su admin di sistema: %d%s\n",
+    "\nTotale Non Svolto: %d\nRiassegnati ad admin: %d | Già ok: %d",
+    $total,
     $fixed,
-    $skipped,
-    $dryRun ? ' (dry-run)' : ''
+    $skipped
 ));
 
-if ($dryRun && $fixed === 0 && !$force) {
-    fwrite(STDOUT, "Prova: php tools/bonifica-appuntamento-not-held-admin.php --dry-run --force\n");
+if (!$dryRun) {
+    fwrite(STDOUT, " | Google/unlink tentati: {$googleCleaned}");
+}
+
+fwrite(STDOUT, $dryRun ? " (dry-run)\n" : "\n");
+
+if ($dryRun && $fixed > 0) {
+    fwrite(STDOUT, "\nApplica: php tools/bonifica-appuntamento-not-held-admin.php --apply --force --quiet\n");
+    fwrite(STDOUT, "Poi pulisci Google: php tools/bonifica-appuntamento-google-calendar.php --apply --only-not-held\n");
 }
