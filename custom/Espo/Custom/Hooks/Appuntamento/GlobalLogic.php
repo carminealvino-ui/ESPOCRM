@@ -141,13 +141,17 @@
 
 namespace Espo\Custom\Hooks\Appuntamento;
 
+use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\Core\ORM\EntityManager;
 use Espo\Custom\Services\LeadProspectSync;
 use Espo\Custom\Services\LineaProdottoCategorySync;
 use Espo\ORM\Entity;
+use Espo\ORM\Repository\Option\SaveOptions;
 
-class GlobalLogic
+class GlobalLogic implements BeforeSave
 {
+    public static int $order = 5;
+
     private EntityManager $entityManager;
 
     private static bool $processing = false;
@@ -157,8 +161,12 @@ class GlobalLogic
         $this->entityManager = $entityManager;
     }
 
-    public function beforeSave(Entity $entity, array $options = [])
+    public function beforeSave(Entity $entity, SaveOptions $options): void
     {
+        if ($options->get('skipHooks')) {
+            return;
+        }
+
         if (self::$processing) {
             return;
         }
@@ -173,8 +181,20 @@ class GlobalLogic
 
             $entity->set(
                 'hookVersion',
-                '1.7.3'
+                '1.7.12'
             );
+
+            if ($entity->hasAttribute('zTL') && $entity->get('zTL') === null) {
+                $entity->set('zTL', false);
+            }
+
+            if ($entity->hasAttribute('videoCallTelefonico') && $entity->get('videoCallTelefonico') === null) {
+                $entity->set('videoCallTelefonico', false);
+            }
+
+            if ($entity->hasAttribute('syncConGoogle') && $entity->get('syncConGoogle') === null) {
+                $entity->set('syncConGoogle', false);
+            }
 
             $this->applyDefaultDurationOnCreate($entity);
             $this->syncDataAppuntamentoFromDateStart($entity);
@@ -186,6 +206,8 @@ class GlobalLogic
             $status = $entity->get('status');
 
             $sottostato = $entity->get('sottostato');
+
+            $esito = $entity->get('esito');
 
             // ========================================
             // RECUPERO PROSPECT
@@ -200,9 +222,9 @@ class GlobalLogic
 
             ) {
 
-                $prospect = $this->entityManager->getEntity(
+                $prospect = $this->entityManager->getEntityById(
                     'Prospect',
-                    $entity->get('parentId')
+                    (string) $entity->get('parentId')
                 );
             }
 
@@ -213,9 +235,9 @@ class GlobalLogic
 
             ) {
 
-                $prospect = $this->entityManager->getEntity(
+                $prospect = $this->entityManager->getEntityById(
                     'Prospect',
-                    $entity->get('prospectId')
+                    (string) $entity->get('prospectId')
                 );
             }
 
@@ -232,9 +254,9 @@ class GlobalLogic
 
             ) {
 
-                $lead = $this->entityManager->getEntity(
+                $lead = $this->entityManager->getEntityById(
                     'Lead',
-                    $entity->get('parentId')
+                    (string) $entity->get('parentId')
                 );
             }
 
@@ -625,36 +647,30 @@ class GlobalLogic
             }
 
             // ========================================
-            // FIX ASSEGNAZIONE ADMIN
+            // FIX ASSEGNAZIONE ADMIN (Non Svolto / annullati)
+            // Solo assignedUserId in beforeSave: assignedUsersIds qui
+            // può causare fatal su Espo 10. Link multiple → afterSave.
             // ========================================
 
-            if (
+            if ($this->shouldReassignToAdmin($status, $sottostato, $esito)) {
+                if ($status !== 'Not Held') {
+                    $entity->set('status', 'Not Held');
+                }
 
-                $status === 'Not Held' ||
-                $status === 'Ingestibile'
+                $adminId = $this->resolveAdminUserId();
 
-            ) {
-
-                // ========================================
-                // RESET UTENTI ASSEGNATI
-                // ========================================
-
-                $entity->set(
-                    'assignedUsersIds',
-                    []
-                );
-
-                // ========================================
-                // ASSEGNA SOLO ADMIN
-                // USER ID = 1
-                // ========================================
-
-                $entity->set(
-                    'assignedUsersIds',
-                    ['1']
-                );
+                if ($adminId) {
+                    $entity->set('assignedUserId', $adminId);
+                }
             }
 
+        } catch (\Throwable $e) {
+            error_log(
+                '[Appuntamento GlobalLogic] ' . $e->getMessage() . ' in ' .
+                $e->getFile() . ':' . $e->getLine()
+            );
+
+            throw $e;
         } finally {
 
             self::$processing = false;
@@ -822,7 +838,9 @@ class GlobalLogic
     private function addSecondsToDateTimeString(string $dateTime, int $seconds): ?string
     {
         try {
-            $dt = new \DateTimeImmutable($dateTime);
+            // Espo memorizza datetime in UTC: senza timezone esplicita
+            // Date End poteva risultare spostato del fuso server.
+            $dt = new \DateTimeImmutable($dateTime, new \DateTimeZone('UTC'));
         } catch (\Exception) {
             return null;
         }
@@ -924,6 +942,44 @@ class GlobalLogic
                 $category->get('productBrandName')
             );
         }
+    }
+
+    private function resolveAdminUserId(): ?string
+    {
+        static $adminId = null;
+
+        if ($adminId !== null) {
+            return $adminId !== '' ? $adminId : null;
+        }
+
+        $admin = $this->entityManager
+            ->getRDBRepository('User')
+            ->where(['userName' => 'admin', 'isActive' => true])
+            ->findOne();
+
+        $adminId = $admin?->getId() ?? '1';
+
+        return $adminId !== '' ? $adminId : null;
+    }
+
+    private function shouldReassignToAdmin(
+        ?string $status,
+        ?string $sottostato,
+        mixed $esito
+    ): bool {
+        if ($status === 'Not Held') {
+            return true;
+        }
+
+        if ($sottostato === 'Annullato') {
+            return true;
+        }
+
+        if (is_string($esito) && str_starts_with($esito, 'Annullato')) {
+            return true;
+        }
+
+        return false;
     }
 
 }
