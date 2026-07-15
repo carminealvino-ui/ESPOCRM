@@ -5,6 +5,36 @@
 
 .crm-kpi-period {
     margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+}
+
+.crm-kpi-period-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-weight: normal;
+}
+
+.crm-kpi-period-filter-label {
+    color: inherit;
+    white-space: nowrap;
+}
+
+.crm-kpi-period-select {
+    width: auto;
+    min-width: 210px;
+    display: inline-block;
+    height: 28px;
+    padding: 2px 8px;
+    font-size: 12px;
+}
+
+.crm-kpi-period-meta {
+    color: inherit;
 }
 
 .crm-kpi-tiles {
