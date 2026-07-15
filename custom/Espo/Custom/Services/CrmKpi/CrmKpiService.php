@@ -130,9 +130,10 @@ class CrmKpiService
 
     private function getAppuntamentiTile(KpiContext $ctx): object
     {
-        // Totali = periodo esclusi Rifissati
+        // Totali = periodo esclusi Pianificati e Rifissati
+        // (i Rifissati sono i sostituiti; i Pianificati non entrano nella base)
         $totali = $this->countAppuntamentiTotali($ctx);
-        // Lordi = Totali - Annullati (non annullati tra i totali)
+        // Lordi = Totali - Annullati
         $lordi = $this->countAppuntamentiLordi($ctx);
         $annullati = max($totali - $lordi, 0);
         $ingestibili = min($this->countAppuntamentiIngestibili($ctx), $lordi);
@@ -238,11 +239,12 @@ class CrmKpiService
 
     private function countAppuntamentiTotali(KpiContext $ctx): int
     {
-        // Totali = tutti del periodo esclusi Rifissati
+        // Totali = periodo esclusi Pianificati e Rifissati
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
+                $this->notPianificatoWhere(),
                 $this->notRifissatoWhere()
             ))
             ->count();
@@ -255,6 +257,7 @@ class CrmKpiService
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
+                $this->notPianificatoWhere(),
                 $this->notRifissatoWhere(),
                 $this->notAnnullatoWhere()
             ))
@@ -267,6 +270,7 @@ class CrmKpiService
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
+                $this->notPianificatoWhere(),
                 $this->notRifissatoWhere(),
                 $this->notAnnullatoWhere(),
                 ['status' => 'Ingestibile']
@@ -281,11 +285,20 @@ class CrmKpiService
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
+                $this->notPianificatoWhere(),
                 $this->notRifissatoWhere(),
                 $this->notAnnullatoWhere(),
                 ['status!=' => 'Ingestibile']
             ))
             ->count();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function notPianificatoWhere(): array
+    {
+        return ['status!=' => 'Planned'];
     }
 
     /**
@@ -341,6 +354,7 @@ class CrmKpiService
             ->select(['id'])
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
+                $this->notPianificatoWhere(),
                 $this->notRifissatoWhere(),
                 $this->notAnnullatoWhere(),
                 ['status!=' => 'Ingestibile']
@@ -1027,7 +1041,10 @@ class CrmKpiService
             $weekday = (int) (new \DateTimeImmutable($date))->format('N');
             $weekIndex = WeekOfMonth::resolveIndexForDate($date);
 
-            if (!$this->isAppuntamentoPianificato($appuntamento) && !$this->isAppuntamentoRifissato($appuntamento)) {
+            if (
+                !$this->isAppuntamentoPianificato($appuntamento)
+                && !$this->isAppuntamentoRifissato($appuntamento)
+            ) {
                 $weekdayBuckets[$weekday]['appuntamentiTotali']++;
             }
 
@@ -1040,7 +1057,10 @@ class CrmKpiService
             }
 
             if ($weekIndex !== null && isset($weekBuckets[$weekIndex])) {
-                if (!$this->isAppuntamentoPianificato($appuntamento) && !$this->isAppuntamentoRifissato($appuntamento)) {
+                if (
+                    !$this->isAppuntamentoPianificato($appuntamento)
+                    && !$this->isAppuntamentoRifissato($appuntamento)
+                ) {
                     $weekBuckets[$weekIndex]['appuntamentiTotali']++;
                 }
 
@@ -1254,7 +1274,7 @@ class CrmKpiService
 
     private function isAppuntamentoLordo(Entity $appuntamento): bool
     {
-        if ($this->isAppuntamentoRifissato($appuntamento)) {
+        if ($this->isAppuntamentoPianificato($appuntamento) || $this->isAppuntamentoRifissato($appuntamento)) {
             return false;
         }
 

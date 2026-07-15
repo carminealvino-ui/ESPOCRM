@@ -51,11 +51,19 @@ echo "=== Fine. Esegui: php clear_cache.php && php rebuild.php (poi Ctrl+Shift+R
 
 JS="${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js"
 TPL="${CRM_ROOT}/client/custom/res/templates/dashlets/crm-kpi.tpl"
-if [[ -f "${JS}" ]] && grep -q "kpi-pipeline-labels-v3" "${JS}" \
-  && grep -q "kpi-appuntamenti-gerarchia-v1" "${JS}" \
+if [[ -f "${JS}" ]] && grep -q "kpi-appuntamenti-gerarchia-v2" "${JS}" \
+  && grep -q "kpi-pipeline-labels-v3" "${JS}" \
   && [[ -f "${TPL}" ]] && grep -q "crm-kpi-pipeline-results-grid" "${TPL}" \
   && ! grep -q "changePeriod" "${TPL}"; then
-  echo "VERIFICA OK: Periodo solo in Opzioni dashlet (niente select duplicata)"
+  echo "VERIFICA OK: Totali esclusi Pianificati+Rifissati, Periodo solo in Opzioni"
 else
   echo "ATTENZIONE: verifica manuale JS/TPL"
+fi
+SVC="${CRM_ROOT}/custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
+CTX="${CRM_ROOT}/custom/Espo/Custom/Tools/CrmKpi/KpiContext.php"
+if [[ -f "${SVC}" ]] && grep -q "notPianificatoWhere" "${SVC}" && grep -q "notRifissatoWhere" "${SVC}"; then
+  echo "VERIFICA OK: ${SVC}"
+fi
+if [[ -f "${CTX}" ]] && grep -q "appuntamentoDateWhere" "${CTX}" && grep -q "dateStart>=" "${CTX}"; then
+  echo "VERIFICA OK: ${CTX} (dataAppuntamento + fallback dateStart)"
 fi
