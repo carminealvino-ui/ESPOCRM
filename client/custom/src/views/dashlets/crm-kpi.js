@@ -454,7 +454,8 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         mapContrattiTile: function (tile) {
-            // kpi-provvigioni-ordine-sospesi-v2
+            // kpi-quote-gerarchia-v1: Totali → Recessi → Lordi → Fin.KO → Sospesi → Netti
+            // come Appuntamenti (Totali base 100%, Lordi = Totali − Recessi)
             return this.mapMetricTile(tile, [
                 {key: 'totali', label: 'Totali'},
                 {key: 'recessi', label: 'Recessi'},
@@ -488,40 +489,36 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         /**
-         * Tile metriche gerarchiche: lordi 100% · annullati/recessi/totali % lordi ·
-         * ingestibili/fin./netti % lordi e % totali.
+         * Tile metriche gerarchiche (come Appuntamenti):
+         * totali 100% · recessi/lordi % totali · fin./sospesi/netti % lordi e % totali.
          *
          * @param {Function} formatValue
          */
         mapMetricTile: function (tile, rows, formatValue) {
             const source = tile || {};
-            const baseLordi = Number(source.lordi || 0);
             const baseTotali = Number(source.totali || 0);
+            const baseLordi = Number(source.lordi || 0);
 
             return rows.map(def => {
                 const raw = Number(source[def.key] || 0);
                 let value = formatValue.call(this, raw);
-                const percentLordi = this.formatPercentOf(raw, baseLordi);
 
-                if (def.key === 'lordi') {
-                    value += ' · ' + percentLordi;
-                } else if (
-                    def.key === 'annullati'
+                if (
+                    def.key === 'totali'
+                    || def.key === 'annullati'
                     || def.key === 'recessi'
-                    || def.key === 'totali'
+                    || def.key === 'lordi'
                 ) {
-                    value += ' · ' + percentLordi;
+                    value += ' · ' + this.formatPercentOf(raw, baseTotali);
                 } else if (
                     def.key === 'ingestibili'
                     || def.key === 'finanziamentiRifiutati'
                     || def.key === 'sospesi'
                     || def.key === 'netti'
                 ) {
-                    const percentTotali = this.formatPercentOf(raw, baseTotali);
-
                     value += ' · ' + this.joinPercentDetails([
-                        percentLordi,
-                        percentTotali,
+                        this.formatPercentOf(raw, baseLordi),
+                        this.formatPercentOf(raw, baseTotali),
                     ]);
                 }
 

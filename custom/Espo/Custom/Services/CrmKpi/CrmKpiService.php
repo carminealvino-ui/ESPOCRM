@@ -168,11 +168,12 @@ class CrmKpiService
 
     private function getContrattiTile(KpiContext $ctx): object
     {
-        $lordi = $this->countQuotes($ctx);
+        // Allineato ad Appuntamenti: Totali → Recessi → Lordi=Totali−Recessi → … → Netti
+        $totali = $this->countQuotes($ctx);
         $recessi = $this->countQuotes($ctx, onlyRecesso: true);
-        $finanziamentiRifiutati = $this->countQuotes($ctx, onlyFinancingKo: true);
-        $sospesi = $this->countQuotes($ctx, onlySospesi: true);
-        $totali = $this->countQuotes($ctx, excludeRecesso: true);
+        $lordi = $this->countQuotes($ctx, excludeRecesso: true);
+        $finanziamentiRifiutati = $this->countQuotes($ctx, onlyFinancingKo: true, excludeRecesso: true);
+        $sospesi = $this->countQuotes($ctx, onlySospesi: true, excludeRecesso: true);
         $netti = $this->countQuotes(
             $ctx,
             excludeFinancingKo: true,
@@ -181,22 +182,22 @@ class CrmKpiService
         );
 
         return (object) [
-            'lordi' => $lordi,
+            'totali' => $totali,
             'recessi' => $recessi,
+            'lordi' => $lordi,
             'finanziamentiRifiutati' => $finanziamentiRifiutati,
             'sospesi' => $sospesi,
-            'totali' => $totali,
             'netti' => $netti,
         ];
     }
 
     private function getValoreProduzioneTile(KpiContext $ctx): object
     {
-        $lordi = $this->sumQuoteAmount($ctx);
+        $totali = $this->sumQuoteAmount($ctx);
         $recessi = $this->sumQuoteAmount($ctx, onlyRecesso: true);
-        $finanziamentiRifiutati = $this->sumQuoteAmount($ctx, onlyFinancingKo: true);
-        $sospesi = $this->sumQuoteAmount($ctx, onlySospesi: true);
-        $totali = $this->sumQuoteAmount($ctx, excludeRecesso: true);
+        $lordi = $this->sumQuoteAmount($ctx, excludeRecesso: true);
+        $finanziamentiRifiutati = $this->sumQuoteAmount($ctx, onlyFinancingKo: true, excludeRecesso: true);
+        $sospesi = $this->sumQuoteAmount($ctx, onlySospesi: true, excludeRecesso: true);
         $netti = $this->sumQuoteAmount(
             $ctx,
             excludeFinancingKo: true,
@@ -205,22 +206,22 @@ class CrmKpiService
         );
 
         return (object) [
-            'lordi' => round($lordi, 2),
+            'totali' => round($totali, 2),
             'recessi' => round($recessi, 2),
+            'lordi' => round($lordi, 2),
             'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
             'sospesi' => round($sospesi, 2),
-            'totali' => round($totali, 2),
             'netti' => round($netti, 2),
         ];
     }
 
     private function getProvvigioniTile(KpiContext $ctx): object
     {
-        $lordi = $this->sumQuoteProvvigioni($ctx);
+        $totali = $this->sumQuoteProvvigioni($ctx);
         $recessi = $this->sumQuoteProvvigioni($ctx, onlyRecesso: true);
-        $finanziamentiRifiutati = $this->sumQuoteProvvigioni($ctx, onlyFinancingKo: true);
-        $sospesi = $this->sumQuoteProvvigioni($ctx, onlySospesi: true);
-        $totali = $this->sumQuoteProvvigioni($ctx, excludeRecesso: true);
+        $lordi = $this->sumQuoteProvvigioni($ctx, excludeRecesso: true);
+        $finanziamentiRifiutati = $this->sumQuoteProvvigioni($ctx, onlyFinancingKo: true, excludeRecesso: true);
+        $sospesi = $this->sumQuoteProvvigioni($ctx, onlySospesi: true, excludeRecesso: true);
         $netti = $this->sumQuoteProvvigioni(
             $ctx,
             excludeFinancingKo: true,
@@ -229,11 +230,11 @@ class CrmKpiService
         );
 
         return (object) [
-            'lordi' => round($lordi, 2),
+            'totali' => round($totali, 2),
             'recessi' => round($recessi, 2),
+            'lordi' => round($lordi, 2),
             'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
             'sospesi' => round($sospesi, 2),
-            'totali' => round($totali, 2),
             'netti' => round($netti, 2),
         ];
     }
@@ -744,16 +745,16 @@ class CrmKpiService
             return $isRecesso;
         }
 
+        if ($excludeRecesso && $isRecesso) {
+            return false;
+        }
+
         if ($onlyFinancingKo) {
             return $isFinancingRejected;
         }
 
         if ($onlySospesi) {
             return $isSospeso;
-        }
-
-        if ($excludeRecesso && $isRecesso) {
-            return false;
         }
 
         if ($excludeFinancingKo && $isFinancingRejected) {

@@ -53,19 +53,21 @@ echo "=== Fine. Esegui: php clear_cache.php && php rebuild.php (poi Ctrl+Shift+R
 JS="${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js"
 TPL="${CRM_ROOT}/client/custom/res/templates/dashlets/crm-kpi.tpl"
 if [[ -f "${JS}" ]] && grep -q "kpi-periodo-andwhere-v1" "${JS}" \
+  && grep -q "kpi-quote-gerarchia-v1" "${JS}" \
   && grep -q "kpi-pipeline-labels-v3" "${JS}" \
   && [[ -f "${TPL}" ]] && grep -q "crm-kpi-pipeline-results-grid" "${TPL}" \
   && ! grep -q "changePeriod" "${TPL}"; then
-  echo "VERIFICA OK: periodo AND-where + pipeline grid + Periodo solo in Opzioni"
+  echo "VERIFICA OK: periodo AND-where + quote Totali→Lordi + Periodo solo in Opzioni"
 else
   echo "ATTENZIONE: verifica manuale JS/TPL"
 fi
 SVC="${CRM_ROOT}/custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
 CTX="${CRM_ROOT}/custom/Espo/Custom/Tools/CrmKpi/KpiContext.php"
-if [[ -f "${SVC}" ]] && grep -q "function combineWhere" "${SVC}" && grep -q "kpi-periodo-andwhere-v1" "${SVC}"; then
-  echo "VERIFICA OK: ${SVC} (combineWhere tiene il filtro periodo)"
+if [[ -f "${SVC}" ]] && grep -q "function combineWhere" "${SVC}" \
+  && grep -q "Allineato ad Appuntamenti" "${SVC}"; then
+  echo "VERIFICA OK: ${SVC} (periodo + gerarchia Totali/Lordi quote)"
 else
-  echo "ATTENZIONE: manca combineWhere in ${SVC}"
+  echo "ATTENZIONE: manca fix gerarchia quote in ${SVC}"
 fi
 if [[ -f "${CTX}" ]] && grep -q "appuntamentoDateWhere" "${CTX}" && grep -q "dateStart>=" "${CTX}"; then
   echo "VERIFICA OK: ${CTX} (dataAppuntamento + fallback dateStart)"
