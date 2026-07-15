@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# KPI: tile Provvigioni/Contratti/Valore + pipeline etichette Totali→Lordi→Netti.
+# KPI: Appuntamenti Totali→Annullati→Lordi→Ingestibili→Netti + pipeline + tile KO/Sospesi.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-kpi-provvigioni-ordine-sospesi-9999/tools/deploy-kpi-provvigioni-ordine-sospesi.sh?t=$(date +%s)" | bash
@@ -50,9 +50,9 @@ echo "=== Fine. Esegui: php clear_cache.php && php rebuild.php (poi Ctrl+Shift+R
 
 JS="${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js"
 TPL="${CRM_ROOT}/client/custom/res/templates/dashlets/crm-kpi.tpl"
-if [[ -f "${JS}" ]] && grep -q "kpi-pipeline-labels-v2" "${JS}" \
-  && [[ -f "${TPL}" ]] && grep -q "Percentuali su lordi - su totali" "${TPL}"; then
-  echo "VERIFICA OK: pipeline etichette Totali→Lordi"
+if [[ -f "${JS}" ]] && grep -q "kpi-appuntamenti-gerarchia-v1" "${JS}" \
+  && [[ -f "${TPL}" ]] && grep -q "Percentuali su lordi · su totali" "${TPL}"; then
+  echo "VERIFICA OK: Appuntamenti Totali→Annullati→Lordi + pipeline"
 else
   echo "ATTENZIONE: verifica manuale JS/TPL"
 fi

@@ -78,7 +78,7 @@ class CrmKpiService
         $ctx = new KpiContext($from, $to, $this->normalizeBrandId($productBrandId));
 
         $appuntamenti = $this->getAppuntamentiTile($ctx);
-        $opportunita = $this->getOpportunitaTile($ctx);
+        $opportunita = $this->getOpportunitaTile($ctx, (int) $appuntamenti->netti);
         $contratti = $this->getContrattiTile($ctx);
         $valore = $this->getValoreProduzioneTile($ctx);
         $provvigioni = $this->getProvvigioniTile($ctx);
@@ -130,24 +130,28 @@ class CrmKpiService
 
     private function getAppuntamentiTile(KpiContext $ctx): object
     {
-        $lordi = $this->countAppuntamentiLordi($ctx);
+        // Totali = periodo esclusi Rifissati
         $totali = $this->countAppuntamentiTotali($ctx);
-        $annullati = max($lordi - $totali, 0);
-        $ingestibili = $this->countAppuntamentiIngestibili($ctx);
-        $netti = $this->countAppuntamentiNetti($ctx);
+        // Lordi = Totali - Annullati (non annullati tra i totali)
+        $lordi = $this->countAppuntamentiLordi($ctx);
+        $annullati = max($totali - $lordi, 0);
+        $ingestibili = min($this->countAppuntamentiIngestibili($ctx), $lordi);
+        // Netti = Lordi - Ingestibili
+        $netti = max($lordi - $ingestibili, 0);
 
         return (object) [
-            'lordi' => $lordi,
-            'annullati' => $annullati,
             'totali' => $totali,
+            'annullati' => $annullati,
+            'lordi' => $lordi,
             'ingestibili' => $ingestibili,
             'netti' => $netti,
         ];
     }
 
-    private function getOpportunitaTile(KpiContext $ctx): object
+    private function getOpportunitaTile(KpiContext $ctx, int $nettiAppuntamenti): object
     {
-        $totali = $this->countOpportunities($ctx);
+        // Netti appuntamenti = base opportunità
+        $totali = $nettiAppuntamenti;
         $concluse = $this->countOpportunities($ctx, won: true);
         $pending = $this->countOpportunities($ctx, pending: true);
         $perse = $this->countOpportunities($ctx, lost: true);
@@ -234,20 +238,26 @@ class CrmKpiService
 
     private function countAppuntamentiTotali(KpiContext $ctx): int
     {
+        // Totali = tutti del periodo esclusi Rifissati
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
-                $this->notAnnullatoWhere()
+                $this->notRifissatoWhere()
             ))
             ->count();
     }
 
     private function countAppuntamentiLordi(KpiContext $ctx): int
     {
+        // Lordi = Totali - Annullati
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where($ctx->appuntamentoWhere())
+            ->where(array_merge(
+                $ctx->appuntamentoWhere(),
+                $this->notRifissatoWhere(),
+                $this->notAnnullatoWhere()
+            ))
             ->count();
     }
 
@@ -257,6 +267,7 @@ class CrmKpiService
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
+                $this->notRifissatoWhere(),
                 $this->notAnnullatoWhere(),
                 ['status' => 'Ingestibile']
             ))
@@ -265,15 +276,30 @@ class CrmKpiService
 
     private function countAppuntamentiNetti(KpiContext $ctx): int
     {
+        // Derivato in getAppuntamentiTile; tenuto per aggregazioni
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
+                $this->notRifissatoWhere(),
                 $this->notAnnullatoWhere(),
-                ['status!=' => 'Ingestibile'],
-                ['status' => 'Held']
+                ['status!=' => 'Ingestibile']
             ))
             ->count();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function notRifissatoWhere(): array
+    {
+        return [
+            'OR' => [
+                ['sottostato!=' => 'Rifissato'],
+                ['sottostato' => null],
+                ['sottostato' => ''],
+            ],
+        ];
     }
 
     /**
@@ -302,7 +328,7 @@ class CrmKpiService
     }
 
     /**
-     * Appuntamenti netti (svolti, non ingestibili) per opportunità e pipeline.
+     * Appuntamenti netti = lordi - ingestibili (esclusi Rifissati e Annullati).
      *
      * @return string[]
      */
@@ -315,9 +341,9 @@ class CrmKpiService
             ->select(['id'])
             ->where(array_merge(
                 $ctx->appuntamentoWhere(),
+                $this->notRifissatoWhere(),
                 $this->notAnnullatoWhere(),
-                ['status!=' => 'Ingestibile'],
-                ['status' => 'Held']
+                ['status!=' => 'Ingestibile']
             ))
             ->find();
 
@@ -1001,7 +1027,7 @@ class CrmKpiService
             $weekday = (int) (new \DateTimeImmutable($date))->format('N');
             $weekIndex = WeekOfMonth::resolveIndexForDate($date);
 
-            if (!$this->isAppuntamentoPianificato($appuntamento)) {
+            if (!$this->isAppuntamentoPianificato($appuntamento) && !$this->isAppuntamentoRifissato($appuntamento)) {
                 $weekdayBuckets[$weekday]['appuntamentiTotali']++;
             }
 
@@ -1014,7 +1040,7 @@ class CrmKpiService
             }
 
             if ($weekIndex !== null && isset($weekBuckets[$weekIndex])) {
-                if (!$this->isAppuntamentoPianificato($appuntamento)) {
+                if (!$this->isAppuntamentoPianificato($appuntamento) && !$this->isAppuntamentoRifissato($appuntamento)) {
                     $weekBuckets[$weekIndex]['appuntamentiTotali']++;
                 }
 
@@ -1221,9 +1247,14 @@ class CrmKpiService
         return $appuntamento->get('status') === 'Planned';
     }
 
+    private function isAppuntamentoRifissato(Entity $appuntamento): bool
+    {
+        return $appuntamento->get('sottostato') === 'Rifissato';
+    }
+
     private function isAppuntamentoLordo(Entity $appuntamento): bool
     {
-        if ($this->isAppuntamentoPianificato($appuntamento)) {
+        if ($this->isAppuntamentoRifissato($appuntamento)) {
             return false;
         }
 

@@ -400,13 +400,36 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         mapAppuntamentiTile: function (tile) {
-            return this.mapMetricTile(tile, [
-                {key: 'lordi', label: 'Lordi'},
-                {key: 'annullati', label: 'Annullati'},
+            // kpi-appuntamenti-gerarchia-v1:
+            // Totali (esclusi Rifissati) → Annullati → Lordi=Totali-Annullati → Ingestibili → Netti=Lordi-Ingestibili
+            const source = tile || {};
+            const baseTotali = Number(source.totali || 0);
+            const baseLordi = Number(source.lordi || 0);
+
+            return [
                 {key: 'totali', label: 'Totali'},
+                {key: 'annullati', label: 'Annullati'},
+                {key: 'lordi', label: 'Lordi'},
                 {key: 'ingestibili', label: 'Ingestibili'},
                 {key: 'netti', label: 'Netti'},
-            ], this.formatNumber);
+            ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                let value = this.formatNumber(raw);
+
+                if (def.key === 'totali' || def.key === 'annullati' || def.key === 'lordi') {
+                    value += ' · ' + this.formatPercentOf(raw, baseTotali);
+                } else if (def.key === 'ingestibili' || def.key === 'netti') {
+                    value += ' · ' + this.joinPercentDetails([
+                        this.formatPercentOf(raw, baseLordi),
+                        this.formatPercentOf(raw, baseTotali),
+                    ]);
+                }
+
+                return {
+                    label: def.label,
+                    value: value,
+                };
+            });
         },
 
         mapOpportunitaTile: function (tile) {
