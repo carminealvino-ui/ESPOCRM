@@ -34,5 +34,8 @@
             "label": "Ingestibile",
             "style": "warning"
         }
-    ]
+    ],
+    "fieldViews": {
+        "parent": "custom:views/fields/appuntamento-parent"
+    }
 }

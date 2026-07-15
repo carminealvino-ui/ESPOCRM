@@ -3,7 +3,8 @@
 define('custom:views/appuntamento/record/edit-small', [
     'views/record/edit-small',
     'moment',
-], function (Dep, moment) {
+    'custom:helpers/appuntamento-prospect-sync',
+], function (Dep, moment, ProspectSync) {
 
     const DEFAULT_DURATION_SECONDS = 5400;
     const FULL_FORMAT = 'YYYY-MM-DD HH:mm:ss';
@@ -35,6 +36,9 @@ define('custom:views/appuntamento/record/edit-small', [
 
         setup: function () {
             Dep.prototype.setup.call(this);
+
+            // Prefill Fornitore / Brand / Categoria dal Prospect (Relazionato a)
+            ProspectSync.setupProspectSync(this);
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
