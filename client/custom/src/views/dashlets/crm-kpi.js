@@ -96,11 +96,15 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 yieldsByWeekday: this.mapYieldRows(summary.yieldsByWeekday),
                 yieldsByWeek: this.mapYieldRows(summary.yieldsByWeek),
                 yieldColumns: summary.yieldColumns || this.getDefaultYieldColumns(),
-                pipelineResultsRows: this.mapPipelineResultsRows(pipeline, tiles.appuntamenti || {}),
+                pipelineResultsRows: this.mapPipelineResultsRows(
+                    pipeline,
+                    tiles.appuntamenti || {},
+                    tiles.contratti || {}
+                ),
             };
         },
 
-        mapPipelineResultsRows: function (pipeline, appuntamentiTile) {
+        mapPipelineResultsRows: function (pipeline, appuntamentiTile, contrattiTile) {
             const steps = pipeline || [];
 
             if (!steps.length) {
@@ -112,22 +116,25 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 valueByKey[step.key] = Number(step.value || 0);
             });
 
-            const baseLordi = valueByKey.appuntamentiLordi || 0;
-            const baseTotali = Number(appuntamentiTile.totali || 0);
-            const baseNetti = valueByKey.appuntamentiNetti || 0;
-            const baseContrattiLordi = valueByKey.contratti || 0;
-            const baseContrattiNetti = valueByKey.contrattiNetti || 0;
+            const tile = appuntamentiTile || {};
+            const contratti = contrattiTile || {};
+            // kpi-pipeline-labels-v2: Totali → Lordi → Netti → Contr. lordi → Contr. netti
+            const baseTotali = Number(tile.totali ?? valueByKey.appuntamentiTotali ?? 0);
+            const baseLordi = Number(tile.lordi ?? valueByKey.appuntamentiLordi ?? 0);
+            const baseNetti = Number(tile.netti ?? valueByKey.appuntamentiNetti ?? 0);
+            const baseContratti = Number(contratti.lordi ?? valueByKey.contratti ?? 0);
+            const baseContrattiNetti = Number(contratti.netti ?? valueByKey.contrattiNetti ?? 0);
 
             return [
                 {
-                    label: 'Lordi',
-                    value: this.formatNumber(baseLordi),
-                    detail: this.formatPercentOf(baseLordi, baseLordi),
-                },
-                {
                     label: 'Totali',
                     value: this.formatNumber(baseTotali),
-                    detail: this.formatPercentOf(baseTotali, baseLordi),
+                    detail: this.formatPercentOf(baseTotali, baseTotali),
+                },
+                {
+                    label: 'Lordi',
+                    value: this.formatNumber(baseLordi),
+                    detail: this.formatPercentOf(baseLordi, baseTotali),
                 },
                 {
                     label: 'Netti',
@@ -139,10 +146,10 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 },
                 {
                     label: 'Contr. lordi',
-                    value: this.formatNumber(baseContrattiLordi),
+                    value: this.formatNumber(baseContratti),
                     detail: this.joinPercentDetails([
-                        this.formatPercentOf(baseContrattiLordi, baseLordi),
-                        this.formatPercentOf(baseContrattiLordi, baseTotali),
+                        this.formatPercentOf(baseContratti, baseLordi),
+                        this.formatPercentOf(baseContratti, baseNetti),
                     ]),
                 },
                 {
@@ -150,7 +157,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     value: this.formatNumber(baseContrattiNetti),
                     detail: this.joinPercentDetails([
                         this.formatPercentOf(baseContrattiNetti, baseLordi),
-                        this.formatPercentOf(baseContrattiNetti, baseTotali),
+                        this.formatPercentOf(baseContrattiNetti, baseNetti),
                     ]),
                 },
             ];
@@ -173,9 +180,9 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
         getDefaultYieldColumns: function () {
             return [
+                {key: 'appuntamentiTotali', label: 'Totali'},
                 {key: 'appuntamentiLordi', label: 'Lordi'},
                 {key: 'appuntamentiNetti', label: 'Netti'},
-                {key: 'opportunita', label: 'Opp.'},
                 {key: 'contratti', label: 'Contr.'},
                 {key: 'contrattiNetti', label: 'C. netti'},
             ];
@@ -280,8 +287,9 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 value: Number(step.value || 0),
                 stage: step.key,
                 color: this.getPipelineColor(index, steps.length),
+                percentOfTotali: step.percentOfTotali,
+                percentOfLordi: step.percentOfLordi,
                 percentOfNetti: step.percentOfNetti,
-                percentOfOpportunita: step.percentOfOpportunita,
                 percentOfPrevious: step.percentOfPrevious,
             }));
 
@@ -310,20 +318,28 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
             const parts = [];
 
-            if (item.stage === 'appuntamentiNetti' && item.percentOfPrevious != null) {
-                parts.push(item.percentOfPrevious + '% su lordi');
+            if (item.stage === 'appuntamentiLordi' && item.percentOfTotali != null) {
+                parts.push(item.percentOfTotali + '% su totali');
             }
 
-            if (item.percentOfNetti != null) {
-                parts.push(item.percentOfNetti + '% su app. netti');
+            if (item.stage === 'appuntamentiNetti') {
+                if (item.percentOfLordi != null) {
+                    parts.push(item.percentOfLordi + '% su lordi');
+                }
+
+                if (item.percentOfTotali != null) {
+                    parts.push(item.percentOfTotali + '% su totali');
+                }
             }
 
-            if (item.percentOfOpportunita != null) {
-                parts.push(item.percentOfOpportunita + '% su opp.');
-            }
+            if (item.stage === 'contratti' || item.stage === 'contrattiNetti') {
+                if (item.percentOfLordi != null) {
+                    parts.push(item.percentOfLordi + '% su app. lordi');
+                }
 
-            if (item.stage === 'contrattiNetti' && item.percentOfPrevious != null) {
-                parts.push(item.percentOfPrevious + '% prec');
+                if (item.percentOfNetti != null) {
+                    parts.push(item.percentOfNetti + '% su app. netti');
+                }
             }
 
             return parts.join(' · ');

@@ -97,10 +97,10 @@ class CrmKpiService
                 'provvigioni' => $provvigioni,
             ],
             'salesPipeline' => FunnelBuilder::buildSalesPipeline(
+                (float) $appuntamenti->totali,
                 (float) $appuntamenti->lordi,
                 (float) $appuntamenti->netti,
-                (float) $opportunita->totali,
-                (float) $contratti->totali,
+                (float) $contratti->lordi,
                 (float) $contratti->netti
             ),
             'yieldsByWeekday' => $this->buildYieldsByWeekday($ctx),
@@ -986,8 +986,6 @@ class CrmKpiService
             $weekBuckets[$weekIndex] = YieldBuilder::emptyMetrics();
         }
 
-        $appuntamentoIdsForOpportunita = [];
-
         $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->where($ctx->appuntamentoWhere())
@@ -1000,38 +998,33 @@ class CrmKpiService
                 continue;
             }
 
-            if ($this->isAppuntamentoNetto($appuntamento)) {
-                $appuntamentoIdsForOpportunita[] = $appuntamento->getId();
-            }
-
             $weekday = (int) (new \DateTimeImmutable($date))->format('N');
             $weekIndex = WeekOfMonth::resolveIndexForDate($date);
 
-            $weekdayBuckets[$weekday]['appuntamentiLordi']++;
+            if (!$this->isAppuntamentoPianificato($appuntamento)) {
+                $weekdayBuckets[$weekday]['appuntamentiTotali']++;
+            }
+
+            if ($this->isAppuntamentoLordo($appuntamento)) {
+                $weekdayBuckets[$weekday]['appuntamentiLordi']++;
+            }
 
             if ($this->isAppuntamentoNetto($appuntamento)) {
                 $weekdayBuckets[$weekday]['appuntamentiNetti']++;
             }
 
             if ($weekIndex !== null && isset($weekBuckets[$weekIndex])) {
-                $weekBuckets[$weekIndex]['appuntamentiLordi']++;
+                if (!$this->isAppuntamentoPianificato($appuntamento)) {
+                    $weekBuckets[$weekIndex]['appuntamentiTotali']++;
+                }
+
+                if ($this->isAppuntamentoLordo($appuntamento)) {
+                    $weekBuckets[$weekIndex]['appuntamentiLordi']++;
+                }
 
                 if ($this->isAppuntamentoNetto($appuntamento)) {
                     $weekBuckets[$weekIndex]['appuntamentiNetti']++;
                 }
-            }
-        }
-
-        if ($appuntamentoIdsForOpportunita !== []) {
-            try {
-                $this->aggregateOpportunitiesByAppuntamento(
-                    $ctx,
-                    $appuntamentoIdsForOpportunita,
-                    $weekdayBuckets,
-                    $weekBuckets
-                );
-            } catch (\Throwable $e) {
-                $this->logYieldError('opportunities', $e);
             }
         }
 
@@ -1199,6 +1192,10 @@ class CrmKpiService
             return false;
         }
 
+        if ($this->isQuoteSospeso($quote)) {
+            return false;
+        }
+
         return true;
     }
 
@@ -1219,17 +1216,27 @@ class CrmKpiService
         return substr((string) $dateStart, 0, 10);
     }
 
+    private function isAppuntamentoPianificato(Entity $appuntamento): bool
+    {
+        return $appuntamento->get('status') === 'Planned';
+    }
+
+    private function isAppuntamentoLordo(Entity $appuntamento): bool
+    {
+        if ($this->isAppuntamentoPianificato($appuntamento)) {
+            return false;
+        }
+
+        return $this->isAppuntamentoNotAnnullato($appuntamento);
+    }
+
     private function isAppuntamentoNetto(Entity $appuntamento): bool
     {
-        if (!$this->isAppuntamentoNotAnnullato($appuntamento)) {
+        if (!$this->isAppuntamentoLordo($appuntamento)) {
             return false;
         }
 
-        if ($appuntamento->get('status') === 'Ingestibile') {
-            return false;
-        }
-
-        return $appuntamento->get('status') === 'Held';
+        return $appuntamento->get('status') !== 'Ingestibile';
     }
 
     private function isAppuntamentoNotAnnullato(Entity $appuntamento): bool

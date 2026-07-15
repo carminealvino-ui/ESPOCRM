@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# KPI Contratti / Valore / Provvigioni:
-# ordine Totali → Recessi → Lorde → Finanziamenti KO → Sospesi → Nette.
+# KPI: tile Provvigioni/Contratti/Valore + pipeline etichette Totali→Lordi→Netti.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-kpi-provvigioni-ordine-sospesi-9999/tools/deploy-kpi-provvigioni-ordine-sospesi.sh?t=$(date +%s)" | bash
@@ -30,7 +29,10 @@ backup_if_exists() {
 
 FILES=(
   "client/custom/src/views/dashlets/crm-kpi.js"
+  "client/custom/res/templates/dashlets/crm-kpi.tpl"
   "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
+  "custom/Espo/Custom/Tools/CrmKpi/FunnelBuilder.php"
+  "custom/Espo/Custom/Tools/CrmKpi/YieldBuilder.php"
 )
 
 for rel in "${FILES[@]}"; do
@@ -47,8 +49,10 @@ done
 echo "=== Fine. Esegui: php clear_cache.php && php rebuild.php (poi Ctrl+Shift+R) ==="
 
 JS="${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js"
-if [[ -f "${JS}" ]] && grep -q "kpi-provvigioni-ordine-sospesi-v2" "${JS}"; then
-  echo "VERIFICA OK: ${JS}"
+TPL="${CRM_ROOT}/client/custom/res/templates/dashlets/crm-kpi.tpl"
+if [[ -f "${JS}" ]] && grep -q "kpi-pipeline-labels-v2" "${JS}" \
+  && [[ -f "${TPL}" ]] && grep -q "Percentuali su lordi - su totali" "${TPL}"; then
+  echo "VERIFICA OK: pipeline etichette Totali→Lordi"
 else
-  echo "ATTENZIONE: verifica manuale ${JS}"
+  echo "ATTENZIONE: verifica manuale JS/TPL"
 fi

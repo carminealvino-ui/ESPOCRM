@@ -76,7 +76,7 @@
                             <div class="crm-kpi-pipeline-chart" data-name="pipeline-chart"></div>
                         </div>
                         <div class="crm-kpi-pipeline-results">
-                            <div class="crm-kpi-panel-note text-muted small">Risultati: percentuali relative ai riferimenti principali</div>
+                            <div class="crm-kpi-panel-note text-muted small">Percentuali su lordi - su totali (netti) o su opportunità (contratti)</div>
                             <div class="crm-kpi-yields-table-wrap">
                                 <table class="crm-kpi-yields-table crm-kpi-pipeline-results-table">
                                     <thead>

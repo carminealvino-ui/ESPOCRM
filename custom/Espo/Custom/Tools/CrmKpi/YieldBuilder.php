@@ -26,9 +26,9 @@ class YieldBuilder
 
     /** @var array<int, array{key: string, label: string}> */
     private const PIPELINE_COLUMNS = [
+        ['key' => 'appuntamentiTotali', 'label' => 'Totali'],
         ['key' => 'appuntamentiLordi', 'label' => 'Lordi'],
         ['key' => 'appuntamentiNetti', 'label' => 'Netti'],
-        ['key' => 'opportunita', 'label' => 'Opp.'],
         ['key' => 'contratti', 'label' => 'Contr.'],
         ['key' => 'contrattiNetti', 'label' => 'C. netti'],
     ];
@@ -108,9 +108,9 @@ class YieldBuilder
     public static function emptyMetrics(): array
     {
         return [
+            'appuntamentiTotali' => 0,
             'appuntamentiLordi' => 0,
             'appuntamentiNetti' => 0,
-            'opportunita' => 0,
             'contratti' => 0,
             'contrattiNetti' => 0,
         ];
@@ -122,9 +122,9 @@ class YieldBuilder
     private static function buildPeriodRow(string $label, array $metrics, ?string $shortLabel = null): object
     {
         $pipeline = FunnelBuilder::buildSalesPipeline(
+            (float) $metrics['appuntamentiTotali'],
             (float) $metrics['appuntamentiLordi'],
             (float) $metrics['appuntamentiNetti'],
-            (float) $metrics['opportunita'],
             (float) $metrics['contratti'],
             (float) $metrics['contrattiNetti'],
         );
@@ -205,16 +205,28 @@ class YieldBuilder
     {
         $parts = [];
 
-        if ($step->key === 'appuntamentiNetti' && $step->percentOfPrevious !== null) {
-            $parts[] = $step->percentOfPrevious . '% su lordi';
+        if ($step->key === 'appuntamentiLordi' && $step->percentOfTotali !== null) {
+            $parts[] = $step->percentOfTotali . '% su totali';
         }
 
-        if ($step->percentOfNetti !== null) {
-            $parts[] = $step->percentOfNetti . '% su app. netti';
+        if ($step->key === 'appuntamentiNetti') {
+            if ($step->percentOfLordi !== null) {
+                $parts[] = $step->percentOfLordi . '% su lordi';
+            }
+
+            if ($step->percentOfTotali !== null) {
+                $parts[] = $step->percentOfTotali . '% su totali';
+            }
         }
 
-        if ($step->percentOfOpportunita !== null) {
-            $parts[] = $step->percentOfOpportunita . '% su opp.';
+        if (in_array($step->key, ['contratti', 'contrattiNetti'], true)) {
+            if ($step->percentOfLordi !== null) {
+                $parts[] = $step->percentOfLordi . '% su app. lordi';
+            }
+
+            if ($step->percentOfNetti !== null) {
+                $parts[] = $step->percentOfNetti . '% su app. netti';
+            }
         }
 
         return implode(' · ', $parts);
