@@ -27,6 +27,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             this.summary = null;
             this.loadError = null;
             this.pipelineChart = null;
+            this.selectedPeriod = this.getOption('period') || 'currentMonth';
 
             Dep.prototype.setup.call(this);
 
@@ -40,7 +41,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
         actionChangePeriod: function (period) {
             period = period || 'currentMonth';
-
+            this.selectedPeriod = period;
             this.setOption('period', period);
             this.persistPeriodOption(period);
             this.loadSummary();
@@ -98,7 +99,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             }
 
             const params = {
-                period: this.getOption('period') || 'currentMonth',
+                period: this.selectedPeriod || this.getOption('period') || 'currentMonth',
             };
 
             const productBrandId = this.getOption('productBrandId')
@@ -172,7 +173,8 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
             const tile = appuntamentiTile || {};
             const contratti = contrattiTile || {};
-            // kpi-pipeline-labels-v2: Totali → Lordi → Netti → Contr. lordi → Contr. netti
+            // kpi-pipeline-labels-v3: etichette ripristinate come layout stabile
+            // Totali → Lordi → Netti → Contr. lordi → Contr. netti
             const baseTotali = Number(tile.totali ?? valueByKey.appuntamentiTotali ?? 0);
             const baseLordi = Number(tile.lordi ?? valueByKey.appuntamentiLordi ?? 0);
             const baseNetti = Number(tile.netti ?? valueByKey.appuntamentiNetti ?? 0);
@@ -601,7 +603,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         getPeriodLabel: function () {
-            const period = this.getOption('period') || 'currentMonth';
+            const period = this.selectedPeriod || this.getOption('period') || 'currentMonth';
             const translated = this.translate(period, 'options', 'CrmKpi', 'period');
 
             if (translated && translated !== period) {
@@ -626,7 +628,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         getPeriodOptions: function () {
-            const current = this.getOption('period') || 'currentMonth';
+            const current = this.selectedPeriod || this.getOption('period') || 'currentMonth';
             const labels = this.getPeriodLabelMap();
 
             return Object.keys(labels).map(value => {
