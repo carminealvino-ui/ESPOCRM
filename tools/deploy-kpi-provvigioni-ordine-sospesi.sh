@@ -53,8 +53,9 @@ JS="${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js"
 TPL="${CRM_ROOT}/client/custom/res/templates/dashlets/crm-kpi.tpl"
 if [[ -f "${JS}" ]] && grep -q "kpi-pipeline-labels-v3" "${JS}" \
   && grep -q "kpi-appuntamenti-gerarchia-v1" "${JS}" \
-  && [[ -f "${TPL}" ]] && grep -q "crm-kpi-pipeline-results-grid" "${TPL}"; then
-  echo "VERIFICA OK: pipeline etichette ripristinate (grid) + Appuntamenti"
+  && [[ -f "${TPL}" ]] && grep -q "crm-kpi-pipeline-results-grid" "${TPL}" \
+  && ! grep -q "changePeriod" "${TPL}"; then
+  echo "VERIFICA OK: Periodo solo in Opzioni dashlet (niente select duplicata)"
 else
   echo "ATTENZIONE: verifica manuale JS/TPL"
 fi

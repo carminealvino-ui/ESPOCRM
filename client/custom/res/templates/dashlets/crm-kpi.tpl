@@ -3,20 +3,7 @@
         <div class="alert alert-danger">{{loadError}}</div>
     {{else}}
         <div class="crm-kpi-period text-muted small margin-bottom">
-            <label class="crm-kpi-period-filter">
-                <span class="crm-kpi-period-filter-label">Periodo</span>
-                <select class="form-control input-sm crm-kpi-period-select" data-action="changePeriod">
-                    {{#each periodOptions}}
-                        <option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>
-                    {{/each}}
-                </select>
-            </label>
-            {{#if brandLabel}}
-                <span class="crm-kpi-period-meta"> · {{brandLabel}}</span>
-            {{/if}}
-            {{#if showDateRange}}
-                <span class="crm-kpi-period-meta"> · {{from}} → {{to}}</span>
-            {{/if}}
+            {{periodLabel}}{{#if brandLabel}} · {{brandLabel}}{{/if}}{{#if showDateRange}} · {{from}} → {{to}}{{/if}}
             <a role="button" class="pull-right" data-action="refresh" title="Aggiorna">
                 <span class="fas fa-sync-alt"></span>
             </a>

@@ -14,9 +14,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             'click [data-action="refresh"]': function () {
                 this.actionRefresh();
             },
-            'change [data-action="changePeriod"]': function (e) {
-                this.actionChangePeriod($(e.currentTarget).val());
-            },
             'click [data-action="openAlert"]': function (e) {
                 const key = $(e.currentTarget).data('key');
                 this.actionOpenAlert({key: key});
@@ -27,7 +24,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             this.summary = null;
             this.loadError = null;
             this.pipelineChart = null;
-            this.selectedPeriod = this.getOption('period') || 'currentMonth';
 
             Dep.prototype.setup.call(this);
 
@@ -37,56 +33,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
         actionRefresh: function () {
             this.loadSummary();
-        },
-
-        actionChangePeriod: function (period) {
-            period = period || 'currentMonth';
-            this.selectedPeriod = period;
-            this.setOption('period', period);
-            this.persistPeriodOption(period);
-            this.loadSummary();
-        },
-
-        persistPeriodOption: function (period) {
-            // kpi-period-filter-v1: salva nelle preferenze dashlet utente
-            const parentView = this.getParentView && this.getParentView();
-
-            if (parentView && typeof parentView.setOption === 'function') {
-                parentView.setOption('period', period);
-            }
-
-            if (parentView && typeof parentView.saveOptions === 'function') {
-                parentView.saveOptions();
-
-                return;
-            }
-
-            if (typeof this.saveOptions === 'function') {
-                this.saveOptions();
-
-                return;
-            }
-
-            // Fallback Espo: aggiorna Preferences.dashletsOptions[id]
-            try {
-                const id = this.getOption('id') || this.id || (parentView && parentView.id);
-                const preferences = this.getPreferences && this.getPreferences();
-
-                if (!id || !preferences) {
-                    return;
-                }
-
-                const dashletsOptions = Espo.Utils.cloneDeep(preferences.get('dashletsOptions') || {});
-
-                dashletsOptions[id] = dashletsOptions[id] || {};
-                dashletsOptions[id].period = period;
-
-                preferences.save({
-                    dashletsOptions: dashletsOptions,
-                });
-            } catch (e) {
-                console.warn('[crm-kpi] impossibile salvare periodo', e);
-            }
         },
 
         autoRefresh: function () {
@@ -99,7 +45,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             }
 
             const params = {
-                period: this.selectedPeriod || this.getOption('period') || 'currentMonth',
+                period: this.getOption('period') || 'currentMonth',
             };
 
             const productBrandId = this.getOption('productBrandId')
@@ -134,7 +80,6 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             return {
                 loadError: this.loadError,
                 periodLabel: this.getPeriodLabel(),
-                periodOptions: this.getPeriodOptions(),
                 brandLabel: summary.productBrandName || null,
                 from: summary.from,
                 to: summary.to,
@@ -603,20 +548,14 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         getPeriodLabel: function () {
-            const period = this.selectedPeriod || this.getOption('period') || 'currentMonth';
+            const period = this.getOption('period') || 'currentMonth';
             const translated = this.translate(period, 'options', 'CrmKpi', 'period');
 
             if (translated && translated !== period) {
                 return translated;
             }
 
-            const labels = this.getPeriodLabelMap();
-
-            return labels[period] || labels.currentMonth;
-        },
-
-        getPeriodLabelMap: function () {
-            return {
+            const labels = {
                 totals: 'Totali',
                 currentYear: 'Totali Anno in Corso',
                 previousYear: 'Totali Anno Precedente',
@@ -625,21 +564,8 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 currentMonth: 'Totali Mese in Corso',
                 previousMonth: 'Totali Mese Precedente',
             };
-        },
 
-        getPeriodOptions: function () {
-            const current = this.selectedPeriod || this.getOption('period') || 'currentMonth';
-            const labels = this.getPeriodLabelMap();
-
-            return Object.keys(labels).map(value => {
-                const translated = this.translate(value, 'options', 'CrmKpi', 'period');
-
-                return {
-                    value: value,
-                    label: translated && translated !== value ? translated : labels[value],
-                    selected: value === current,
-                };
-            });
+            return labels[period] || labels.currentMonth;
         },
 
         formatNumber: function (value) {
