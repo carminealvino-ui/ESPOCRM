@@ -130,8 +130,9 @@ class CrmKpiService
 
     private function getAppuntamentiTile(KpiContext $ctx): object
     {
-        // Totali = periodo esclusi Pianificati e Rifissati
-        // (i Rifissati sono i sostituiti; i Pianificati non entrano nella base)
+        // kpi-periodo-andwhere-v1:
+        // Totali = SOLO nel periodo dashlet (mese/trimestre/…), esclusi Pianificati e Rifissati.
+        // Non usare array_merge su WHERE con chiavi 'OR': cancella il filtro date.
         $totali = $this->countAppuntamentiTotali($ctx);
         // Lordi = Totali - Annullati
         $lordi = $this->countAppuntamentiLordi($ctx);
@@ -239,14 +240,11 @@ class CrmKpiService
 
     private function countAppuntamentiTotali(KpiContext $ctx): int
     {
-        // Totali = periodo esclusi Pianificati e Rifissati
+        // Totali = SOLO periodo selezionato, esclusi Pianificati e Rifissati.
+        // Usa combineWhere: array_merge su due 'OR' cancellava il filtro date.
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where(array_merge(
-                $ctx->appuntamentoWhere(),
-                $this->notPianificatoWhere(),
-                $this->notRifissatoWhere()
-            ))
+            ->where($this->appuntamentiBaseWhere($ctx))
             ->count();
     }
 
@@ -255,10 +253,8 @@ class CrmKpiService
         // Lordi = Totali - Annullati
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where(array_merge(
-                $ctx->appuntamentoWhere(),
-                $this->notPianificatoWhere(),
-                $this->notRifissatoWhere(),
+            ->where($this->combineWhere(
+                $this->appuntamentiBaseWhere($ctx),
                 $this->notAnnullatoWhere()
             ))
             ->count();
@@ -268,10 +264,8 @@ class CrmKpiService
     {
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where(array_merge(
-                $ctx->appuntamentoWhere(),
-                $this->notPianificatoWhere(),
-                $this->notRifissatoWhere(),
+            ->where($this->combineWhere(
+                $this->appuntamentiBaseWhere($ctx),
                 $this->notAnnullatoWhere(),
                 ['status' => 'Ingestibile']
             ))
@@ -283,14 +277,56 @@ class CrmKpiService
         // Derivato in getAppuntamentiTile; tenuto per aggregazioni
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where(array_merge(
-                $ctx->appuntamentoWhere(),
-                $this->notPianificatoWhere(),
-                $this->notRifissatoWhere(),
+            ->where($this->combineWhere(
+                $this->appuntamentiBaseWhere($ctx),
                 $this->notAnnullatoWhere(),
                 ['status!=' => 'Ingestibile']
             ))
             ->count();
+    }
+
+    /**
+     * Base comune tile Appuntamenti: periodo + esclusione Pianificati/Rifissati.
+     *
+     * @return array<string, mixed>
+     */
+    private function appuntamentiBaseWhere(KpiContext $ctx): array
+    {
+        return $this->combineWhere(
+            $ctx->appuntamentoWhere(),
+            $this->notPianificatoWhere(),
+            $this->notRifissatoWhere()
+        );
+    }
+
+    /**
+     * Compone clausole WHERE senza array_merge: due chiavi 'OR'/'AND' in merge
+     * sovrascrivono il filtro periodo e contano TUTTA la storia.
+     *
+     * @param array<string, mixed> ...$parts
+     * @return array<string, mixed>
+     */
+    private function combineWhere(array ...$parts): array
+    {
+        $clauses = [];
+
+        foreach ($parts as $part) {
+            if ($part === []) {
+                continue;
+            }
+
+            $clauses[] = $part;
+        }
+
+        if ($clauses === []) {
+            return [];
+        }
+
+        if (count($clauses) === 1) {
+            return $clauses[0];
+        }
+
+        return ['AND' => $clauses];
     }
 
     /**
@@ -352,10 +388,8 @@ class CrmKpiService
         $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->select(['id'])
-            ->where(array_merge(
-                $ctx->appuntamentoWhere(),
-                $this->notPianificatoWhere(),
-                $this->notRifissatoWhere(),
+            ->where($this->combineWhere(
+                $this->appuntamentiBaseWhere($ctx),
                 $this->notAnnullatoWhere(),
                 ['status!=' => 'Ingestibile']
             ))
@@ -1034,7 +1068,7 @@ class CrmKpiService
         foreach ($collection as $appuntamento) {
             $date = $this->resolveAppuntamentoDate($appuntamento);
 
-            if (!$date) {
+            if (!$date || !$this->isDateInPeriod($date, $ctx)) {
                 continue;
             }
 
@@ -1260,6 +1294,22 @@ class CrmKpiService
         }
 
         return substr((string) $dateStart, 0, 10);
+    }
+
+    /**
+     * Sicurezza: anche se la WHERE SQL perde il periodo, le rese restano nel range.
+     */
+    private function isDateInPeriod(string $date, KpiContext $ctx): bool
+    {
+        if ($ctx->from !== null && $date < $ctx->from) {
+            return false;
+        }
+
+        if ($ctx->to !== null && $date > $ctx->to) {
+            return false;
+        }
+
+        return true;
     }
 
     private function isAppuntamentoPianificato(Entity $appuntamento): bool

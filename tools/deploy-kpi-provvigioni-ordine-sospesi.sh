@@ -32,6 +32,7 @@ FILES=(
   "client/custom/res/templates/dashlets/crm-kpi.tpl"
   "client/custom/css/crm-kpi-dashlet.css"
   "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
+  "custom/Espo/Custom/Tools/CrmKpi/KpiContext.php"
   "custom/Espo/Custom/Tools/CrmKpi/FunnelBuilder.php"
   "custom/Espo/Custom/Tools/CrmKpi/YieldBuilder.php"
 )
@@ -51,19 +52,23 @@ echo "=== Fine. Esegui: php clear_cache.php && php rebuild.php (poi Ctrl+Shift+R
 
 JS="${CRM_ROOT}/client/custom/src/views/dashlets/crm-kpi.js"
 TPL="${CRM_ROOT}/client/custom/res/templates/dashlets/crm-kpi.tpl"
-if [[ -f "${JS}" ]] && grep -q "kpi-appuntamenti-gerarchia-v2" "${JS}" \
+if [[ -f "${JS}" ]] && grep -q "kpi-periodo-andwhere-v1" "${JS}" \
   && grep -q "kpi-pipeline-labels-v3" "${JS}" \
   && [[ -f "${TPL}" ]] && grep -q "crm-kpi-pipeline-results-grid" "${TPL}" \
   && ! grep -q "changePeriod" "${TPL}"; then
-  echo "VERIFICA OK: Totali esclusi Pianificati+Rifissati, Periodo solo in Opzioni"
+  echo "VERIFICA OK: periodo AND-where + pipeline grid + Periodo solo in Opzioni"
 else
   echo "ATTENZIONE: verifica manuale JS/TPL"
 fi
 SVC="${CRM_ROOT}/custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
 CTX="${CRM_ROOT}/custom/Espo/Custom/Tools/CrmKpi/KpiContext.php"
-if [[ -f "${SVC}" ]] && grep -q "notPianificatoWhere" "${SVC}" && grep -q "notRifissatoWhere" "${SVC}"; then
-  echo "VERIFICA OK: ${SVC}"
+if [[ -f "${SVC}" ]] && grep -q "function combineWhere" "${SVC}" && grep -q "kpi-periodo-andwhere-v1" "${SVC}"; then
+  echo "VERIFICA OK: ${SVC} (combineWhere tiene il filtro periodo)"
+else
+  echo "ATTENZIONE: manca combineWhere in ${SVC}"
 fi
 if [[ -f "${CTX}" ]] && grep -q "appuntamentoDateWhere" "${CTX}" && grep -q "dateStart>=" "${CTX}"; then
   echo "VERIFICA OK: ${CTX} (dataAppuntamento + fallback dateStart)"
+else
+  echo "ATTENZIONE: ${CTX} non aggiornato"
 fi

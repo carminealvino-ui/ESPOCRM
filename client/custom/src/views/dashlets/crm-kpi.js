@@ -401,8 +401,8 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         mapAppuntamentiTile: function (tile) {
-            // kpi-appuntamenti-gerarchia-v2:
-            // Totali (esclusi Pianificati+Rifissati) → Annullati → Lordi → Ingestibili → Netti
+            // kpi-appuntamenti-gerarchia-v3 / kpi-periodo-andwhere-v1:
+            // Totali del PERIODO selezionato (non tutta la storia)
             const source = tile || {};
             const baseTotali = Number(source.totali || 0);
             const baseLordi = Number(source.lordi || 0);
