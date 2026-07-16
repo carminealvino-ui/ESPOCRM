@@ -47,18 +47,18 @@ cd "${CRM_ROOT}"
 php clear_cache.php
 php rebuild.php
 
-echo "=== Backfill nomi ==="
-php tools/backfill-provvigioni-nomi.php
+echo "=== Backfill nomi (--force: riscrive tutti) ==="
+php tools/backfill-provvigioni-nomi.php --force
 
 php clear_cache.php
 
 HOOK="${CRM_ROOT}/custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php"
-MGR="${CRM_ROOT}/custom/Espo/Custom/Services/ProvvigioneManager.php"
+BF="${CRM_ROOT}/tools/backfill-provvigioni-nomi.php"
 if grep -q 'codice contratto - nome cliente - tipo provvigione - importo' "${HOOK}" \
-  && grep -q 'codice contratto - nome cliente - tipo provvigione - importo' "${MGR}"; then
-  echo "VERIFICA OK: formato nome con codice + importo"
+  && grep -q 'skipHooks' "${BF}"; then
+  echo "VERIFICA OK: hook + backfill diretto"
 else
-  echo "ATTENZIONE: verifica manuale hook/manager"
+  echo "ATTENZIONE: verifica manuale file deployati"
 fi
 
 echo "=== Fine. Ctrl+Shift+R in browser ==="

@@ -133,8 +133,9 @@ class AccrualAndAmount implements BeforeSave
     {
         $quoteName = trim((string) ($quote->get('name') ?? ''));
 
-        if ($quoteName !== '' && preg_match('/^Contratto[_ ]/i', $quoteName)) {
-            return $quoteName;
+        // Solo il token codice, non tutto il nome contratto lungo.
+        if ($quoteName !== '' && preg_match('/^(Contratto[_\s][^\s\-]+)/i', $quoteName, $m)) {
+            return str_replace(' ', '_', $m[1]);
         }
 
         foreach (['numberA', 'number', 'numeroContratto'] as $field) {
@@ -144,15 +145,15 @@ class AccrualAndAmount implements BeforeSave
                 continue;
             }
 
-            if (preg_match('/^Contratto[_ ]/i', $value)) {
+            if (preg_match('/^(Contratto[_\s][^\s\-]+)/i', $value, $m)) {
+                return str_replace(' ', '_', $m[1]);
+            }
+
+            if (preg_match('/^Contratto/i', $value)) {
                 return $value;
             }
 
             return 'Contratto_' . ltrim($value, '_');
-        }
-
-        if ($quoteName !== '') {
-            return $quoteName;
         }
 
         return 'Contratto_' . $quote->getId();
