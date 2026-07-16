@@ -16,5 +16,15 @@
             "name": "inesigibile",
             "style": "danger"
         }
-    ]
+    ],
+    "massUpdate": true,
+    "massUpdateFieldList": [
+        "statoProvvigione",
+        "assignedUser"
+    ],
+    "controller": "controllers/record",
+    "recordViews": {
+        "detail": "custom:views/provvigione/record/detail",
+        "edit": "custom:views/provvigione/record/edit"
+    }
 }
