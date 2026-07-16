@@ -20,11 +20,21 @@
     },
     "options": {
         "statoProvvigione": {
+            "Forecast": "Forecast",
+            "In pagamento": "In pagamento",
+            "Pagato": "Pagato",
+            "Inesigibile": "Inesigibile",
             "Prevista": "Prevista (forecast)",
             "Consolidata": "Consolidata",
             "InInvito": "In invito a fatturare",
             "Fatturata": "Fatturata",
             "Stornata": "Stornata"
         }
+    },
+    "presetFilters": {
+        "forecast": "Forecast",
+        "inPagamento": "In pagamento",
+        "pagato": "Pagato",
+        "inesigibile": "Inesigibile"
     }
 }

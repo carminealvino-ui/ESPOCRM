@@ -1,0 +1,20 @@
+{
+    "filterList": [
+        {
+            "name": "forecast",
+            "style": "info"
+        },
+        {
+            "name": "inPagamento",
+            "style": "warning"
+        },
+        {
+            "name": "pagato",
+            "style": "success"
+        },
+        {
+            "name": "inesigibile",
+            "style": "danger"
+        }
+    ]
+}
