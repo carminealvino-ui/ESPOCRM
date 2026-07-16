@@ -1,8 +1,7 @@
 <?php
 /**
- * Allinea i nomi Provvigione al formato stabile:
- *   Contratto_XXXX - CLIENTE - TIPO
- * (senza importo: evita che il nome cambi a ogni ricalcolo)
+ * Allinea i nomi Provvigione al formato:
+ *   codice contratto - nome cliente - tipo - importo
  *
  *   php tools/backfill-provvigioni-nomi.php
  *   php tools/backfill-provvigioni-nomi.php --dry-run
@@ -37,10 +36,14 @@ $skipped = 0;
 
 foreach ($collection as $provvigione) {
     $name = trim((string) ($provvigione->get('name') ?? ''));
+    $hasContractPrefix = (bool) preg_match('/^Contratto[_ ]/i', $name);
+    $hasAmount = str_contains($name, '€');
+    $parts = array_map('trim', explode(' - ', $name));
     $needsFix = $name === ''
         || str_starts_with($name, 'PROVV-')
-        || str_contains($name, '€')
-        || !preg_match('/^Contratto[_ ]/i', $name)
+        || !$hasContractPrefix
+        || !$hasAmount
+        || count($parts) < 4
         || !$provvigione->get('contrattoId');
 
     if (!$needsFix) {
@@ -54,7 +57,7 @@ foreach ($collection as $provvigione) {
         continue;
     }
 
-    // Forza rebuild: svuota nome così ensureDisplayName ricostruisce.
+    // Forza rebuild via hook ensureDisplayName.
     $provvigione->set('name', '');
     $em->saveEntity($provvigione);
     $fresh = $em->getEntityById('Provvigione', $provvigione->getId());

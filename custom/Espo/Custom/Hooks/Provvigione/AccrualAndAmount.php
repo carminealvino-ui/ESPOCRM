@@ -38,31 +38,29 @@ class AccrualAndAmount implements BeforeSave
 
     private function ensureDisplayName(Entity $entity): void
     {
-        $name = trim((string) ($entity->get('name') ?? ''));
-        // Nome stabile: Contratto_XXXX - CLIENTE - TIPO (senza importo).
-        // Si ricostruisce se vuoto, legacy PROVV-*, con € nel nome, o senza prefisso contratto.
-        $needsRebuild = $name === ''
-            || str_starts_with($name, 'PROVV-')
-            || str_contains($name, '€')
-            || !preg_match('/^Contratto[_ ]/i', $name);
-
-        if (!$needsRebuild) {
-            return;
-        }
-
+        // Formato obbligatorio:
+        // codice contratto - nome cliente - tipo provvigione - importo provvigione
         $quote = $this->resolveQuoteForProvvigione($entity);
+        $tipo = (string) ($entity->get('tipo') ?: 'Provvigione Base');
+        $importo = $entity->get('importoConsolidato') ?? $entity->get('importo');
 
         if (!$quote) {
-            if ($name === '') {
-                $entity->set('name', 'PROVV-' . ($entity->get('tipo') ?: 'Provvigione Base'));
-            }
+            $cliente = strtoupper(trim((string) ($entity->get('clienteName') ?? 'Cliente')));
+            $entity->set(
+                'name',
+                $this->formatProvvigioneDisplayName(
+                    'SENZA-CONTRATTO',
+                    $cliente,
+                    $tipo,
+                    $importo
+                )
+            );
 
             return;
         }
 
         $this->backfillQuoteLinks($entity, $quote);
 
-        $tipo = (string) ($entity->get('tipo') ?: 'Provvigione Base');
         $codice = $this->resolveQuoteCodice($quote);
         $cliente = strtoupper(trim((string) (
             $quote->get('accountName')
@@ -72,7 +70,28 @@ class AccrualAndAmount implements BeforeSave
 
         $entity->set(
             'name',
-            sprintf('%s - %s - %s', $codice, $cliente, strtoupper($tipo))
+            $this->formatProvvigioneDisplayName($codice, $cliente, $tipo, $importo)
+        );
+    }
+
+    private function formatProvvigioneDisplayName(
+        string $codice,
+        string $cliente,
+        string $tipo,
+        mixed $importo
+    ): string {
+        $importoLabel = '€. 0.00';
+
+        if ($importo !== null && $importo !== '') {
+            $importoLabel = '€. ' . number_format((float) $importo, 2, '.', '');
+        }
+
+        return sprintf(
+            '%s - %s - %s - %s',
+            $codice,
+            $cliente !== '' ? $cliente : 'CLIENTE',
+            strtoupper($tipo),
+            $importoLabel
         );
     }
 

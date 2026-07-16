@@ -1137,15 +1137,16 @@ class ProvvigioneManager
 
     private function buildProvvigioneDisplayName(Entity $quote, string $tipo, float $importo): string
     {
-        // $importo ignorato di proposito: se finisce nel nome, cambia a ogni ricalcolo.
+        // codice contratto - nome cliente - tipo provvigione - importo provvigione
         $codice = $this->resolveQuoteCodice($quote);
         $cliente = strtoupper(trim((string) ($quote->get('accountName') ?? 'Cliente')));
 
         return sprintf(
-            '%s - %s - %s',
+            '%s - %s - %s - €. %s',
             $codice,
-            $cliente,
-            strtoupper($tipo)
+            $cliente !== '' ? $cliente : 'CLIENTE',
+            strtoupper($tipo),
+            number_format($importo, 2, '.', '')
         );
     }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Nome Provvigione stabile (senza importo) + prefisso Contratto_
+# Nome Provvigione: codice contratto - cliente - tipo - importo
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-provvigione-nome-stabile-9999/tools/deploy-fix-provvigione-nome-stabile.sh?t=$(date +%s)" | bash
@@ -47,15 +47,16 @@ cd "${CRM_ROOT}"
 php clear_cache.php
 php rebuild.php
 
-echo "=== Backfill nomi (formato stabile) ==="
+echo "=== Backfill nomi ==="
 php tools/backfill-provvigioni-nomi.php
 
 php clear_cache.php
 
 HOOK="${CRM_ROOT}/custom/Espo/Custom/Hooks/Provvigione/AccrualAndAmount.php"
 MGR="${CRM_ROOT}/custom/Espo/Custom/Services/ProvvigioneManager.php"
-if grep -q 'senza importo' "${HOOK}" && grep -q 'importo ignorato di proposito' "${MGR}"; then
-  echo "VERIFICA OK: nome senza importo + prefisso Contratto_"
+if grep -q 'codice contratto - nome cliente - tipo provvigione - importo' "${HOOK}" \
+  && grep -q 'codice contratto - nome cliente - tipo provvigione - importo' "${MGR}"; then
+  echo "VERIFICA OK: formato nome con codice + importo"
 else
   echo "ATTENZIONE: verifica manuale hook/manager"
 fi
