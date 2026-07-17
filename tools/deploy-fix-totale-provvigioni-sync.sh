@@ -23,7 +23,13 @@ FILES=(
   "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
   "custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json"
   "custom/Espo/Custom/Resources/layouts/Quote/detail.json"
+  "custom/Espo/Custom/Resources/layouts/Quote/detailBottom.json"
+  "custom/Espo/Custom/Resources/layouts/Quote/detailBottomTotal.json"
+  "custom/Espo/Custom/Resources/layouts/Quote/finanziamento.json"
+  "custom/Espo/Custom/Resources/layouts/Quote/relationships/provvigioni.json"
+  "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
+  "tools/deploy-fix-quote-layout-hotfix.sh"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Provvigione.json"
   "custom/Espo/Custom/Resources/metadata/logicDefs/Provvigione.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Provvigione.json"
@@ -67,7 +73,8 @@ php tools/backfill-totale-provvigioni.php
 
 php clear_cache.php
 
-if grep -q 'BeforeSaveTotaleProvvigioni' custom/Espo/Custom/Hooks/Quote/BeforeSaveTotaleProvvigioni.php \
+if ! grep -q 'Provvigioni (calcolo)' custom/Espo/Custom/Resources/layouts/Quote/detail.json \
+  && grep -q 'BeforeSaveTotaleProvvigioni' custom/Espo/Custom/Hooks/Quote/BeforeSaveTotaleProvvigioni.php \
   && grep -q 'SyncProvvigioniStato' custom/Espo/Custom/Hooks/Quote/SyncProvvigioniStato.php \
   && grep -q 'In pagamento' custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json \
   && grep -q 'updateQuoteTotaleProvvigioniInDatabase' custom/Espo/Custom/Services/ProvvigioneManager.php \

@@ -1,0 +1,30 @@
+[
+    {
+        "name": "grandTotalAmount",
+        "customLabel": "Importo totale"
+    },
+    {
+        "name": "totalPrezzoCodice",
+        "customLabel": "Prezzo Codice Totale"
+    },
+    {
+        "name": "aliquotaIVA",
+        "customLabel": "Aliquota IVA"
+    },
+    {
+        "name": "amount",
+        "customLabel": "Importo"
+    },
+    {
+        "name": "prezzoCodiceIvaEsclusa",
+        "customLabel": "Prezzo a codice (IVA escl.)"
+    },
+    {
+        "name": "minusPlus",
+        "customLabel": "Minus/Plus"
+    },
+    {
+        "name": "totaleProvvigioni",
+        "customLabel": "Provvigioni Totali"
+    }
+]
