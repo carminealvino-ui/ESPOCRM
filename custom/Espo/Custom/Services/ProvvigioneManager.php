@@ -238,6 +238,8 @@ class ProvvigioneManager
             }
         }
 
+        $this->refreshQuoteTotaleProvvigioni($quote);
+
         return $base;
     }
 
@@ -596,10 +598,32 @@ class ProvvigioneManager
         $totale = $this->resolveTotaleProvvigioniForQuoteId($quote->getId());
         $quote->set('totaleProvvigioni', $totale);
 
+        if ($this->updateQuoteTotaleProvvigioniInDatabase($quote->getId(), $totale)) {
+            return;
+        }
+
         $this->entityManager->saveEntity($quote, [
             'skipHooks' => true,
             'silent' => true,
             'skipFormula' => true,
         ]);
+    }
+
+    /**
+     * UPDATE diretto: evita formula legacy e hook che ricalcolano 15%+35% sull'imponibile.
+     */
+    public function updateQuoteTotaleProvvigioniInDatabase(string $quoteId, ?float $totale): bool
+    {
+        try {
+            $query = $this->entityManager->getQuery()->update();
+            $query->in('Quote');
+            $query->set(['totaleProvvigioni' => $totale]);
+            $query->where(['id' => $quoteId]);
+            $query->execute();
+
+            return true;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }

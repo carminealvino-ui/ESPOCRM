@@ -13,9 +13,11 @@ BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 
 FILES=(
   "custom/Espo/Custom/Hooks/Quote/BeforeSave.php"
+  "custom/Espo/Custom/Hooks/Quote/BeforeSaveTotaleProvvigioni.php"
   "custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php"
   "custom/Espo/Custom/Hooks/Provvigione/AfterSaveRefreshQuoteTotale.php"
   "custom/Espo/Custom/Services/ProvvigioneManager.php"
+  "custom/Espo/Custom/Resources/metadata/formula/Provvigione.json"
   "tools/backfill-totale-provvigioni.php"
 )
 
@@ -27,20 +29,35 @@ for rel in "${FILES[@]}"; do
 done
 
 cd "${CRM_ROOT}"
+
+if grep -q 'public function afterSave' custom/Espo/Custom/Hooks/Quote/BeforeSave.php 2>/dev/null; then
+  echo "ERRORE: BeforeSave.php contiene ancora afterSave legacy — deploy incompleto"
+  exit 1
+fi
+
 php clear_cache.php
 php rebuild.php
 
-echo "=== Backfill Quote.totaleProvvigioni ==="
+echo ""
+echo "=== Dry-run backfill ==="
+php tools/backfill-totale-provvigioni.php --dry-run || true
+
+echo ""
+echo "=== Backfill Quote.totaleProvvigioni (SQL diretto) ==="
 php tools/backfill-totale-provvigioni.php
 
 php clear_cache.php
 
-if grep -q 'AfterSaveTotaleProvvigioni' custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php \
+if grep -q 'BeforeSaveTotaleProvvigioni' custom/Espo/Custom/Hooks/Quote/BeforeSaveTotaleProvvigioni.php \
+  && grep -q 'updateQuoteTotaleProvvigioniInDatabase' custom/Espo/Custom/Services/ProvvigioneManager.php \
   && ! grep -q 'public function afterSave' custom/Espo/Custom/Hooks/Quote/BeforeSave.php; then
-  echo "VERIFICA OK: legacy afterSave rimosso + sync somma consolidati"
+  echo ""
+  echo "VERIFICA OK: BeforeSaveTotaleProvvigioni + UPDATE SQL + legacy afterSave rimosso"
 else
-  echo "ATTENZIONE: verifica manuale hook Quote"
+  echo ""
+  echo "ATTENZIONE: verifica manuale file deployati"
 fi
 
-echo "=== Fine. Ctrl+Shift+R ==="
+echo ""
+echo "=== Fine. Ctrl+Shift+R nel browser ==="
 echo "Atteso es. Contratto_00152: 654.54 + 95.46 = 750.00 (non 2181.82)"
