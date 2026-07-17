@@ -158,6 +158,8 @@ class ProvvigioneManager
 
         $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
 
+        $this->refreshQuoteTotaleProvvigioni($quote);
+
         return $provvigione;
     }
 
@@ -545,5 +547,59 @@ class ProvvigioneManager
         }
 
         return (float) $value;
+    }
+
+    /**
+     * Somma importoConsolidato (fallback importo) delle Provvigioni del contratto.
+     * Esclude stato Inesigibile. Non applica 15%+35% sull'imponibile.
+     */
+    public function resolveTotaleProvvigioniForQuoteId(string $quoteId): ?float
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quoteId])
+            ->find();
+
+        $totale = 0.0;
+        $counted = 0;
+
+        foreach ($collection as $provvigione) {
+            $stato = (string) ($provvigione->get('statoProvvigione') ?? '');
+
+            if ($stato === 'Inesigibile') {
+                continue;
+            }
+
+            $importo = $provvigione->get('importoConsolidato');
+
+            if ($importo === null || $importo === '') {
+                $importo = $provvigione->get('importo');
+            }
+
+            if ($importo === null || $importo === '') {
+                continue;
+            }
+
+            $totale += (float) $importo;
+            $counted++;
+        }
+
+        return $counted > 0 ? round($totale, 2) : null;
+    }
+
+    public function refreshQuoteTotaleProvvigioni(Entity $quote): void
+    {
+        if (!$quote->getId()) {
+            return;
+        }
+
+        $totale = $this->resolveTotaleProvvigioniForQuoteId($quote->getId());
+        $quote->set('totaleProvvigioni', $totale);
+
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+            'silent' => true,
+            'skipFormula' => true,
+        ]);
     }
 }
