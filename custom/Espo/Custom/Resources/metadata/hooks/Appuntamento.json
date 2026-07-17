@@ -18,13 +18,13 @@
         }
     },
     "afterSave": {
-        "autoCreatePendingCall": {
-            "className": "Espo\\Custom\\Hooks\\Appuntamento\\AutoCreatePendingCall",
-            "order": 5
-        },
         "googleCalendarSync": {
             "className": "Espo\\Custom\\Hooks\\Appuntamento\\GoogleCalendarSync",
             "order": 6
+        },
+        "notHeldAdminAssign": {
+            "className": "Espo\\Custom\\Hooks\\Appuntamento\\NotHeldAdminAssignAfterSave",
+            "order": 11
         }
     },
     "afterRemove": {

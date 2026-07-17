@@ -1,0 +1,5 @@
+# Disponibilità calendario — backup obbligatorio (Passo 0)
+custom/Espo/Custom/Hooks/Disponibilita/SetName.php
+custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json
+client/custom/src/views/calendar/calendar.js
+tools/data/brand-calendar-colors.json

@@ -2,7 +2,7 @@
     <span data-role="inventory-quantity">{{{inventoryQuantity}}}</span>
     <a
         href="#Product/view/{{productId}}"
-        {{#if viewOnClick}} class="text-default"{{/if}}
+        class=" {{#if viewOnClick}} text-default {{/if}} text-record"
     >{{value}}</a>
 {{else}}
     {{value}}

@@ -5,32 +5,22 @@ namespace Espo\Custom\Controllers;
 use Espo\Core\Api\Request;
 use Espo\Core\Api\Response;
 use Espo\Core\Controllers\Record;
+use Espo\Custom\Actions\WorkingTimeCalendar\GeneraDisponibilita;
 
 class WorkingTimeCalendar extends Record
 {
     public function postActionGeneraDisponibilita(
         Request $request,
         Response $response
-    ) {
+    ): object {
         $data = $request->getParsedBody();
-        $id = $data->id ?? null;
 
-        if (!$id) {
-            throw new \Exception('ID mancante');
+        if (!$data) {
+            throw new \Exception('Dati mancanti');
         }
 
-        $entityManager = $this->getContainer()->get('entityManager');
+        $action = $this->injectableFactory->create(GeneraDisponibilita::class);
 
-        $calendar = $entityManager->getEntityById('WorkingTimeCalendar', $id);
-
-        if (!$calendar) {
-            throw new \Exception('Calendario lavorativo non trovato');
-        }
-
-        $action = new \Espo\Custom\Actions\WorkingTimeCalendar\GeneraDisponibilita(
-            $entityManager
-        );
-
-        return $action->run($calendar);
+        return $action->run($data);
     }
 }

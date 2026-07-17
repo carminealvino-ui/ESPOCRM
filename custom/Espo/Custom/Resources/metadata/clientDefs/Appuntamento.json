@@ -1,8 +1,8 @@
 {
     "controller": "controllers/record",
+    "acl": "crm:acl/meeting",
     "views": {
-        "detail": "views/detail",
-        "list": "views/list"
+        "detail": "views/detail"
     },
     "recordViews": {
         "list": "views/record/list",
@@ -35,7 +35,7 @@
             "style": "warning"
         }
     ],
-    "kanbanViewMode": false,
-    "color": null,
-    "iconClass": "fas fa-table-list"
+    "fieldViews": {
+        "parent": "custom:views/fields/appuntamento-parent"
+    }
 }

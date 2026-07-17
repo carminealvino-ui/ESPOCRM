@@ -38,10 +38,7 @@ class OwnershipChecker implements OwnershipAccountChecker, OwnershipContactCheck
             return false;
         }
 
-        return in_array(
-            $entity->getSubscription()->getAccount()?->getId(),
-            $user->getAccounts()->getIdList()
-        );
+        return in_array($accountId, $user->getAccounts()->getIdList());
     }
 
     public function checkContact(User $user, Entity $entity): bool

@@ -425,6 +425,10 @@ class BrandCalendarColorBackfill
             $targetColor = $this->resolveColorFromMap($displayName, $colorMap);
 
             if ($targetColor === null) {
+                $targetColor = AppuntamentoCalendarColor::resolveColorForBrandKey($displayName);
+            }
+
+            if ($targetColor === null) {
                 if ($this->verbose) {
                     $this->logLine("Brand saltato (no colore in JSON): {$displayName}");
                 }
@@ -573,26 +577,21 @@ class BrandCalendarColorBackfill
                 continue;
             }
 
-            $brand = $this->resolveDisponibilitaBrand($entity);
-
-            if (!$brand) {
-                $skipped++;
-                continue;
-            }
-
-            if (!$entity->get('productBrandId')) {
-                $entity->set([
-                    'productBrandId' => $brand->getId(),
-                    'productBrandName' => $brand->get('name'),
-                ]);
-            }
-
             $colorResolver = new AppuntamentoCalendarColor($this->entityManager);
             $targetColor = $colorResolver->resolveDisponibilitaColor($entity);
 
             if ($targetColor === null || $targetColor === '') {
                 $skipped++;
                 continue;
+            }
+
+            $brand = $this->resolveDisponibilitaBrand($entity);
+
+            if ($brand && !$entity->get('productBrandId')) {
+                $entity->set([
+                    'productBrandId' => $brand->getId(),
+                    'productBrandName' => $brand->get('name'),
+                ]);
             }
 
             if ($dryRun) {
@@ -613,28 +612,18 @@ class BrandCalendarColorBackfill
 
     private function shouldUpdateDisponibilita(Entity $entity, bool $forceColor): bool
     {
-        $brand = $this->resolveDisponibilitaBrand($entity, true);
+        $colorResolver = new AppuntamentoCalendarColor($this->entityManager);
+        $targetColor = $colorResolver->resolveDisponibilitaColor($entity);
 
-        if (!$brand) {
+        if ($targetColor === null || $targetColor === '') {
             if ($this->verbose) {
                 $this->logLine(
-                    'Disponibilità saltata (brand non trovato): '
+                    'Disponibilità saltata (colore non risolvibile): '
                     . ($entity->get('name') ?: $entity->getId())
                 );
             }
 
             return false;
-        }
-
-        $colorResolver = new AppuntamentoCalendarColor($this->entityManager);
-        $targetColor = $colorResolver->resolveDisponibilitaColor($entity);
-
-        if ($targetColor === null || $targetColor === '') {
-            return false;
-        }
-
-        if (!$entity->get('productBrandId')) {
-            return true;
         }
 
         if ($forceColor) {

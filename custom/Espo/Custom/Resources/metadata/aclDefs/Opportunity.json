@@ -1,0 +1,6 @@
+{
+    "linkCheckerClassNameMap": {
+        "pipeline": "Espo\\Classes\\Acl\\Common\\Pipeline\\PipelineLinkChecker",
+        "pipelineStage": "Espo\\Classes\\Acl\\Common\\Pipeline\\PipelineStageLinkChecker"
+    }
+}

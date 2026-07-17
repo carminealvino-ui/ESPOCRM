@@ -461,11 +461,15 @@
         },
         "createdBy": {
             "type": "link",
-            "readOnly": true
+            "readOnly": true,
+            "view": "views/fields/user",
+            "fieldManagerParamList": []
         },
         "modifiedBy": {
             "type": "link",
-            "readOnly": true
+            "readOnly": true,
+            "view": "views/fields/user",
+            "fieldManagerParamList": []
         },
         "assignedUser": {
             "type": "link",

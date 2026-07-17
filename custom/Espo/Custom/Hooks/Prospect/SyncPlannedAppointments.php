@@ -2,14 +2,16 @@
 
 namespace Espo\Custom\Hooks\Prospect;
 
-use Espo\Core\Hooks\Base;
+use Espo\Core\Hook\Hook\AfterSave;
 use Espo\ORM\Entity;
+use Espo\ORM\EntityManager;
+use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
  * Aggiorna gli Appuntamenti pianificati collegati al Prospect quando
  * cambiano dati anagrafici (es. indirizzo, telefono, nome).
  */
-class SyncPlannedAppointments extends Base
+class SyncPlannedAppointments implements AfterSave
 {
     /**
      * Solo questi cambi devono propagarsi agli appuntamenti.
@@ -29,9 +31,13 @@ class SyncPlannedAppointments extends Base
         'addressCountry',
     ];
 
-    public function afterSave(Entity $entity, array $options): void
+    public function __construct(
+        private EntityManager $entityManager
+    ) {}
+
+    public function afterSave(Entity $entity, SaveOptions $options): void
     {
-        if (!empty($options['skipHooks'])) {
+        if ($options->get('skipHooks')) {
             return;
         }
 
@@ -54,9 +60,7 @@ class SyncPlannedAppointments extends Base
             }
         }
 
-        $entityManager = $this->getEntityManager();
-
-        $appointments = $entityManager
+        $appointments = $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->where([
                 'status' => 'Planned',
@@ -66,7 +70,7 @@ class SyncPlannedAppointments extends Base
             ->find();
 
         if (count($appointments) === 0) {
-            $appointments = $entityManager
+            $appointments = $this->entityManager
                 ->getRDBRepository('Appuntamento')
                 ->where([
                     'status' => 'Planned',
@@ -111,7 +115,7 @@ class SyncPlannedAppointments extends Base
                 $appointment->set('location', $location);
             }
 
-            $entityManager->saveEntity($appointment, ['skipHooks' => true, 'silent' => true]);
+            $this->entityManager->saveEntity($appointment, ['skipHooks' => true, 'silent' => true]);
         }
     }
 

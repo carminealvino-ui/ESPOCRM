@@ -10,16 +10,43 @@
         ],
         "record/edit": [
             "__APPEND__",
-            "custom:handlers/quote/crea-prodotto-articoli"
+            "custom:handlers/quote/crea-prodotto-articoli",
+            "custom:handlers/quote/sanitize-articoli-before-save"
         ]
     },
+    "iconClass": "fas fa-file-contract",
+    "buttonList": [
+        {
+            "name": "ricalcolaProvvigioni",
+            "label": "Ricalcola provvigioni",
+            "style": "primary",
+            "action": "ricalcolaProvvigioni",
+            "handler": "custom:handlers/quote/ricalcola-provvigioni",
+            "acl": "edit"
+        }
+    ],
     "relationshipPanels": {
         "fornitorePartner": {
             "layout": null,
             "selectPrimaryFilterName": null
+        },
+        "provvigioni": {
+            "createDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": false,
+            "order": 20,
+            "layout": "listSmall"
         }
     },
     "additionalLayouts": {
+        "detailBottomTotal": {
+            "type": "list",
+            "dataAttributeList": [
+                "name",
+                "view",
+                "customLabel"
+            ]
+        },
         "listForProduct": {
             "type": "list"
         }
@@ -32,7 +59,15 @@
                 "view": "custom:views/quote/record/panels/items",
                 "notRefreshable": true,
                 "sticked": true,
-                "isForm": true
+                "isForm": true,
+                "order": 0
+            },
+            {
+                "name": "finanziamento",
+                "label": "Finanziamento",
+                "view": "custom:views/quote/record/panels/finanziamento",
+                "isForm": true,
+                "order": 10
             }
         ],
         "edit": [
@@ -42,7 +77,15 @@
                 "view": "custom:views/quote/record/panels/items",
                 "notRefreshable": true,
                 "sticked": true,
-                "isForm": true
+                "isForm": true,
+                "order": 0
+            },
+            {
+                "name": "finanziamento",
+                "label": "Finanziamento",
+                "view": "custom:views/quote/record/panels/finanziamento",
+                "isForm": true,
+                "order": 10
             }
         ],
         "detailSmall": [
@@ -52,7 +95,15 @@
                 "view": "custom:views/quote/record/panels/items",
                 "notRefreshable": true,
                 "sticked": true,
-                "isForm": true
+                "isForm": true,
+                "order": 0
+            },
+            {
+                "name": "finanziamento",
+                "label": "Finanziamento",
+                "view": "custom:views/quote/record/panels/finanziamento",
+                "isForm": true,
+                "order": 10
             }
         ],
         "editSmall": [
@@ -62,13 +113,22 @@
                 "view": "custom:views/quote/record/panels/items",
                 "notRefreshable": true,
                 "sticked": true,
-                "isForm": true
+                "isForm": true,
+                "order": 0
+            },
+            {
+                "name": "finanziamento",
+                "label": "Finanziamento",
+                "view": "custom:views/quote/record/panels/finanziamento",
+                "isForm": true,
+                "order": 10
             }
         ]
     },
     "kanbanViewMode": false,
     "color": null,
-    "iconClass": "fas fa-file-lines",
+    "defaultSortBy": "dateQuoted",
+    "defaultOrder": "desc",
     "filterList": [
         "__APPEND__",
         {
@@ -90,6 +150,10 @@
         {
             "name": "contrattiSospesiFinanziamento",
             "label": "Sospesi finanziamento"
+        },
+        {
+            "name": "contrattiSospesiOrdini",
+            "label": "Sospesi ordini"
         },
         {
             "name": "contrattiInLavorazione",

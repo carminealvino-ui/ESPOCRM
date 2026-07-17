@@ -3,12 +3,11 @@
 namespace Espo\Custom\Hooks\Call;
 
 use Espo\Core\Hook\Hook\BeforeSave;
-use Espo\Custom\Tools\DateTime\BusinessDateTime;
 use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Data Riscontro: vuota in Pianificato, valorizzata al passaggio a Svolto/Non svolto.
+ * Data Riscontro: vuota in Pianificato. Non valorizzare automaticamente a Svolto/Non svolto.
  */
 class SetDataRiscontroOnComplete implements BeforeSave
 {
@@ -24,27 +23,18 @@ class SetDataRiscontroOnComplete implements BeforeSave
             return;
         }
 
-        $status = (string) $entity->get('status');
-
-        if ($status === 'Planned') {
-            if ($entity->get('data') !== null && $entity->get('data') !== '') {
-                $entity->set('data', null);
-            }
-
+        if ((string) $entity->get('status') !== 'Planned') {
             return;
         }
 
-        if (!in_array($status, ['Held', 'Not Held'], true)) {
-            return;
+        if ($entity->get('data') !== null && $entity->get('data') !== '') {
+            $entity->set('data', null);
         }
 
-        if ($entity->get('data')) {
-            return;
+        if ($entity->hasAttribute('dataRiscontro')
+            && $entity->get('dataRiscontro') !== null
+            && $entity->get('dataRiscontro') !== '') {
+            $entity->set('dataRiscontro', null);
         }
-
-        $today = (new \DateTimeImmutable('now', new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE)))
-            ->format('Y-m-d');
-
-        $entity->set('data', $today);
     }
 }

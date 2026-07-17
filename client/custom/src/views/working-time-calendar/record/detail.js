@@ -70,10 +70,17 @@ define('custom:views/working-time-calendar/record/detail', ['views/record/detail
 
                     Espo.Ajax.postRequest('WorkingTimeCalendar/action/generaDisponibilita', {
                         id: this.model.id,
+                        dataInizioGenerazione: dateFrom,
+                        dataFineGenerazione: dateTo,
+                        generazioneProductBrandId: this.model.get('generazioneProductBrandId'),
+                        generazioneProductBrandName: this.model.get('generazioneProductBrandName'),
+                        generazioneStatus: this.model.get('generazioneStatus'),
+                        generazioneArea: area,
+                        generazioneCollaboratorsIds: this.model.get('generazioneCollaboratorsIds') || [],
                     })
                         .then(result => {
                             this.enableActionItem('generaDisponibilita');
-                            Espo.Ui.success(result && result.message ? result.message : 'Disponibilità generate.');
+                            this.showGenerationResult(result);
                         })
                         .catch(e => {
                             this.enableActionItem('generaDisponibilita');
@@ -91,6 +98,41 @@ define('custom:views/working-time-calendar/record/detail', ['views/record/detail
             }
 
             runGeneration();
+        },
+
+        showGenerationResult: function (result) {
+            const message = result && result.message
+                ? result.message
+                : 'Disponibilità generate.';
+            const created = Number(result && result.created || 0);
+
+            if (created <= 0) {
+                let hint = message + ' Nessuna nuova disponibilità creata.';
+
+                if (result && result.daysBlocked > 0) {
+                    hint += ' Verificare le Eccezioni orario lavorativo del calendario';
+                    const exceptions = result.blockingExceptions || [];
+
+                    if (exceptions.length) {
+                        const first = exceptions[0];
+                        hint += ' (es. ' + (first.name || 'non lavorativo') + ' ' + first.dateStart + '→' + first.dateEnd + ')';
+                    }
+
+                    hint += '.';
+                } else if (result && result.daysNoSlots > 0) {
+                    hint += ' Configurare le fasce orarie (timeRanges) nel calendario ricorrente.';
+                } else if (result && result.daysWeekdayOff > 0) {
+                    hint += ' Abilitare i giorni della settimana nel calendario ricorrente.';
+                } else {
+                    hint += ' Verificare date, eccezioni calendario e fasce orarie.';
+                }
+
+                Espo.Ui.warning(hint);
+
+                return;
+            }
+
+            Espo.Ui.success(message);
         },
     });
 });

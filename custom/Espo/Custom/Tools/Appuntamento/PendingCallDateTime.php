@@ -6,7 +6,7 @@ use Espo\Custom\Tools\DateTime\BusinessDateTime;
 
 /**
  * Calcola data/ora richiamo Call per Appuntamento Pending:
- * +2 giorni dalla data appuntamento, ore 9:30 (Europe/Rome).
+ * +2 giorni dalla data appuntamento, ore 9:00 (Europe/Rome).
  * Se il risultato cade sabato o domenica, slitta al lunedì successivo.
  */
 class PendingCallDateTime
@@ -14,7 +14,7 @@ class PendingCallDateTime
     public const POPUP_DELAY_HOURS = 12;
 
     private const CALL_HOUR = 9;
-    private const CALL_MINUTE = 30;
+    private const CALL_MINUTE = 0;
     private const DAYS_OFFSET = 2;
 
     /** Appuntamenti con dateStart precedente non generano Call automatiche. */
@@ -96,6 +96,20 @@ class PendingCallDateTime
         return (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
             ->modify('-' . self::POPUP_DELAY_HOURS . ' hours')
             ->format('Y-m-d H:i:s');
+    }
+
+    /** Data/ora default rinvio richiamo: giorno successivo alle 09:00 (Europe/Rome). */
+    public static function defaultRinvioInstant(?\DateTimeImmutable $from = null): \DateTimeImmutable
+    {
+        $timezone = new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE);
+        $base = ($from ?? new \DateTimeImmutable('now', $timezone))->setTimezone($timezone);
+
+        return $base->modify('+1 day')->setTime(9, 0, 0);
+    }
+
+    public static function defaultRinvioDateTimeUtc(): string
+    {
+        return BusinessDateTime::businessToStorage(self::defaultRinvioInstant());
     }
 
     private static function adjustWeekendToMonday(\DateTimeImmutable $date): \DateTimeImmutable

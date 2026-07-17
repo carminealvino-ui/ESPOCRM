@@ -13,6 +13,16 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         whatsapp: 'WhatsApp',
     };
 
+    const getDaRichiamareLabel = function (status) {
+        status = normalize(status);
+
+        if (status === 'Held' || status === 'Not Held') {
+            return 'Crea nuova chiamata';
+        }
+
+        return 'Rinvia richiamo';
+    };
+
     const normalize = function (value) {
         return (value || '').toString().trim();
     };
@@ -30,6 +40,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         const popupName = normalize(notificationName);
 
         return nota.indexOf(AUTO_PENDING_NOTA_PREFIX) !== -1
+            || tipologia === TIPOLOGIA_RICHIAMO_OPPORTUNITA
             || tipologia === LEGACY_TIPOLOGIA
             || containsLegacyTipologia(name)
             || containsLegacyTipologia(popupName);
@@ -37,6 +48,42 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
 
     const isAutoPendingDescription = function (value) {
         return normalize(value).indexOf(AUTO_PENDING_DESCRIPTION_PREFIX) !== -1;
+    };
+
+    const extractTelefonoFromName = function (name) {
+        const parts = normalize(name).split(' - ');
+
+        if (parts.length < 4) {
+            return null;
+        }
+
+        return normalize(parts[parts.length - 1]);
+    };
+
+    const ensureContactFields = function (model) {
+        if (!model) {
+            return false;
+        }
+
+        let telefono = normalize(model.get('telefono'));
+
+        if (!telefono) {
+            telefono = extractTelefonoFromName(model.get('name')) || '';
+
+            if (telefono) {
+                model.set('telefono', telefono);
+            }
+        }
+
+        if (!normalize(model.get('whatsAppNumero')) && telefono) {
+            const digits = telefono.replace(/\D+/g, '');
+
+            if (digits) {
+                model.set('whatsAppNumero', 'https://wa.me/+39' + digits);
+            }
+        }
+
+        return Boolean(telefono);
     };
 
     const buildUpdatedName = function (model) {
@@ -87,6 +134,106 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         return changed;
     };
 
+    const resolveDateTime = function (view, dateTime) {
+        if (dateTime && typeof dateTime.getNowMoment === 'function') {
+            return dateTime;
+        }
+
+        let current = view;
+
+        while (current) {
+            if (typeof current.getDateTime === 'function') {
+                const resolved = current.getDateTime();
+
+                if (resolved && typeof resolved.getNowMoment === 'function') {
+                    return resolved;
+                }
+            }
+
+            current = current.getParentView && current.getParentView();
+        }
+
+        return null;
+    };
+
+    const buildDefaultDataRichiamo = function (dateTime) {
+        if (!dateTime || typeof dateTime.getNowMoment !== 'function') {
+            const d = new Date();
+
+            d.setDate(d.getDate() + 1);
+            d.setHours(9, 0, 0, 0);
+
+            const pad = (value) => String(value).padStart(2, '0');
+
+            return d.getFullYear() + '-'
+                + pad(d.getMonth() + 1) + '-'
+                + pad(d.getDate()) + ' '
+                + pad(d.getHours()) + ':'
+                + pad(d.getMinutes()) + ':00';
+        }
+
+        const moment = dateTime.getNowMoment().clone().add(1, 'days').hours(9).minutes(0).seconds(0);
+
+        if (typeof dateTime.toUtc === 'function') {
+            return dateTime.toUtc(moment);
+        }
+
+        if (typeof dateTime.toUtcDateTime === 'function') {
+            return dateTime.toUtcDateTime(moment);
+        }
+
+        const format = dateTime.internalDateTimeFormat || 'YYYY-MM-DD HH:mm:ss';
+
+        return moment.format(format);
+    };
+
+    const applyRinvioDefaults = function (model, dateTime, view) {
+        if (!model) {
+            return false;
+        }
+
+        let changed = false;
+        const tipologia = normalize(model.get('tipologia'));
+
+        if (!model.get('daRichiamare')) {
+            return false;
+        }
+
+        if (tipologia && !normalize(model.get('richiamo'))) {
+            model.set('richiamo', tipologia);
+            changed = true;
+        }
+
+        if (!model.get('dataRichiamo')) {
+            const resolvedDateTime = resolveDateTime(view, dateTime);
+
+            model.set('dataRichiamo', buildDefaultDataRichiamo(resolvedDateTime));
+            changed = true;
+        }
+
+        return changed;
+    };
+
+    const setupRinvioFieldListeners = function (recordView, model, dateTime, rootView) {
+        if (!recordView || !model) {
+            return;
+        }
+
+        const dateTimeView = rootView || recordView;
+
+        const apply = () => {
+            applyRinvioDefaults(model, dateTime, dateTimeView);
+            refreshRecordFields(recordView, ['richiamo', 'dataRichiamo', 'daRichiamare']);
+        };
+
+        recordView.listenTo(model, 'change:daRichiamare', apply);
+        recordView.listenTo(model, 'change:status', () => {
+            refreshRecordFields(recordView, ['daRichiamare']);
+            apply();
+        });
+        apply();
+    };
+
     const getDefaultAttributes = function (model, notificationName) {
         if (!isAutoPendingCall(model, notificationName)) {
             return null;
@@ -113,6 +260,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
 
     const applyDefaults = function (model, notificationName) {
         normalizeMisplacedFields(model);
+        ensureContactFields(model);
 
         const attributes = getDefaultAttributes(model, notificationName);
 
@@ -185,7 +333,7 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
             return false;
         }
 
-        refreshRecordFields(recordView, ['tipologia', 'direction', 'testo']);
+        refreshRecordFields(recordView, ['tipologia', 'direction', 'testo', 'telefono', 'whatsAppNumero']);
         forceDomValues(recordView);
 
         return true;
@@ -197,7 +345,9 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
         }
 
         normalizeMisplacedFields(model);
+        ensureContactFields(model);
         applyDefaults(model, notificationName);
+        applyRinvioDefaults(model, null, null);
 
         const canale = model.get('canaleContatto');
 
@@ -244,6 +394,9 @@ define('custom:helpers/call-esito-popup-defaults', [], function () {
 
     return {
         applyDefaults: applyDefaults,
+        applyRinvioDefaults: applyRinvioDefaults,
+        setupRinvioFieldListeners: setupRinvioFieldListeners,
+        getDaRichiamareLabel: getDaRichiamareLabel,
         applyWhatsAppTesto: applyWhatsAppTesto,
         applyWhatsAppDescription: applyWhatsAppTesto,
         normalizeMisplacedFields: normalizeMisplacedFields,

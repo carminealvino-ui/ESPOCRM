@@ -25,6 +25,7 @@ class CrmKpiService
         'Annullato dal Consulente',
         'Annullato Azienda',
         'Annullato Call Center',
+        'Appuntamento non in agenda',
     ];
 
     /** @var string[] */
@@ -45,6 +46,8 @@ class CrmKpiService
     ];
 
     private const CONTRACT_RECESSO = 'Recesso';
+
+    private const CONTRACT_SOSPESO = 'Sospeso';
 
     public function __construct(
         private EntityManager $entityManager,
@@ -75,7 +78,7 @@ class CrmKpiService
         $ctx = new KpiContext($from, $to, $this->normalizeBrandId($productBrandId));
 
         $appuntamenti = $this->getAppuntamentiTile($ctx);
-        $opportunita = $this->getOpportunitaTile($ctx);
+        $opportunita = $this->getOpportunitaTile($ctx, (int) $appuntamenti->netti);
         $contratti = $this->getContrattiTile($ctx);
         $valore = $this->getValoreProduzioneTile($ctx);
         $provvigioni = $this->getProvvigioniTile($ctx);
@@ -94,10 +97,10 @@ class CrmKpiService
                 'provvigioni' => $provvigioni,
             ],
             'salesPipeline' => FunnelBuilder::buildSalesPipeline(
+                (float) $appuntamenti->totali,
                 (float) $appuntamenti->lordi,
                 (float) $appuntamenti->netti,
-                (float) $opportunita->totali,
-                (float) $contratti->totali,
+                (float) $contratti->lordi,
                 (float) $contratti->netti
             ),
             'yieldsByWeekday' => $this->buildYieldsByWeekday($ctx),
@@ -127,24 +130,30 @@ class CrmKpiService
 
     private function getAppuntamentiTile(KpiContext $ctx): object
     {
-        $lordi = $this->countAppuntamentiLordi($ctx);
+        // kpi-periodo-andwhere-v1:
+        // Totali = SOLO nel periodo dashlet (mese/trimestre/…), esclusi Pianificati e Rifissati.
+        // Non usare array_merge su WHERE con chiavi 'OR': cancella il filtro date.
         $totali = $this->countAppuntamentiTotali($ctx);
-        $annullati = max($lordi - $totali, 0);
-        $ingestibili = $this->countAppuntamentiIngestibili($ctx);
-        $netti = $this->countAppuntamentiNetti($ctx);
+        // Lordi = Totali - Annullati
+        $lordi = $this->countAppuntamentiLordi($ctx);
+        $annullati = max($totali - $lordi, 0);
+        $ingestibili = min($this->countAppuntamentiIngestibili($ctx), $lordi);
+        // Netti = Lordi - Ingestibili
+        $netti = max($lordi - $ingestibili, 0);
 
         return (object) [
-            'lordi' => $lordi,
-            'annullati' => $annullati,
             'totali' => $totali,
+            'annullati' => $annullati,
+            'lordi' => $lordi,
             'ingestibili' => $ingestibili,
             'netti' => $netti,
         ];
     }
 
-    private function getOpportunitaTile(KpiContext $ctx): object
+    private function getOpportunitaTile(KpiContext $ctx, int $nettiAppuntamenti): object
     {
-        $totali = $this->countOpportunities($ctx);
+        // Netti appuntamenti = base opportunità
+        $totali = $nettiAppuntamenti;
         $concluse = $this->countOpportunities($ctx, won: true);
         $pending = $this->countOpportunities($ctx, pending: true);
         $perse = $this->countOpportunities($ctx, lost: true);
@@ -159,17 +168,25 @@ class CrmKpiService
 
     private function getContrattiTile(KpiContext $ctx): object
     {
+        // Allineato ad Appuntamenti: Totali → Recessi → Lordi=Totali−Recessi → … → Netti
         $totali = $this->countQuotes($ctx);
-        $finanziamentiRifiutati = $this->countQuotes($ctx, onlyFinancingKo: true);
-        $lordi = $this->countQuotes($ctx, excludeRecesso: true);
         $recessi = $this->countQuotes($ctx, onlyRecesso: true);
-        $netti = $this->countQuotes($ctx, excludeFinancingKo: true, excludeRecesso: true);
+        $lordi = $this->countQuotes($ctx, excludeRecesso: true);
+        $finanziamentiRifiutati = $this->countQuotes($ctx, onlyFinancingKo: true, excludeRecesso: true);
+        $sospesi = $this->countQuotes($ctx, onlySospesi: true, excludeRecesso: true);
+        $netti = $this->countQuotes(
+            $ctx,
+            excludeFinancingKo: true,
+            excludeRecesso: true,
+            excludeSospesi: true
+        );
 
         return (object) [
             'totali' => $totali,
-            'finanziamentiRifiutati' => $finanziamentiRifiutati,
-            'lordi' => $lordi,
             'recessi' => $recessi,
+            'lordi' => $lordi,
+            'finanziamentiRifiutati' => $finanziamentiRifiutati,
+            'sospesi' => $sospesi,
             'netti' => $netti,
         ];
     }
@@ -177,16 +194,23 @@ class CrmKpiService
     private function getValoreProduzioneTile(KpiContext $ctx): object
     {
         $totali = $this->sumQuoteAmount($ctx);
-        $finanziamentiRifiutati = $this->sumQuoteAmount($ctx, onlyFinancingKo: true);
-        $lordi = $this->sumQuoteAmount($ctx, excludeRecesso: true);
         $recessi = $this->sumQuoteAmount($ctx, onlyRecesso: true);
-        $netti = $this->sumQuoteAmount($ctx, excludeFinancingKo: true, excludeRecesso: true);
+        $lordi = $this->sumQuoteAmount($ctx, excludeRecesso: true);
+        $finanziamentiRifiutati = $this->sumQuoteAmount($ctx, onlyFinancingKo: true, excludeRecesso: true);
+        $sospesi = $this->sumQuoteAmount($ctx, onlySospesi: true, excludeRecesso: true);
+        $netti = $this->sumQuoteAmount(
+            $ctx,
+            excludeFinancingKo: true,
+            excludeRecesso: true,
+            excludeSospesi: true
+        );
 
         return (object) [
             'totali' => round($totali, 2),
-            'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
-            'lordi' => round($lordi, 2),
             'recessi' => round($recessi, 2),
+            'lordi' => round($lordi, 2),
+            'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
+            'sospesi' => round($sospesi, 2),
             'netti' => round($netti, 2),
         ];
     }
@@ -194,36 +218,46 @@ class CrmKpiService
     private function getProvvigioniTile(KpiContext $ctx): object
     {
         $totali = $this->sumQuoteProvvigioni($ctx);
-        $finanziamentiRifiutati = $this->sumQuoteProvvigioni($ctx, onlyFinancingKo: true);
-        $lordi = $this->sumQuoteProvvigioni($ctx, excludeRecesso: true);
         $recessi = $this->sumQuoteProvvigioni($ctx, onlyRecesso: true);
-        $netti = $this->sumQuoteProvvigioni($ctx, excludeFinancingKo: true, excludeRecesso: true);
+        $lordi = $this->sumQuoteProvvigioni($ctx, excludeRecesso: true);
+        $finanziamentiRifiutati = $this->sumQuoteProvvigioni($ctx, onlyFinancingKo: true, excludeRecesso: true);
+        $sospesi = $this->sumQuoteProvvigioni($ctx, onlySospesi: true, excludeRecesso: true);
+        $netti = $this->sumQuoteProvvigioni(
+            $ctx,
+            excludeFinancingKo: true,
+            excludeRecesso: true,
+            excludeSospesi: true
+        );
 
         return (object) [
             'totali' => round($totali, 2),
-            'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
-            'lordi' => round($lordi, 2),
             'recessi' => round($recessi, 2),
+            'lordi' => round($lordi, 2),
+            'finanziamentiRifiutati' => round($finanziamentiRifiutati, 2),
+            'sospesi' => round($sospesi, 2),
             'netti' => round($netti, 2),
         ];
     }
 
     private function countAppuntamentiTotali(KpiContext $ctx): int
     {
+        // Totali = SOLO periodo selezionato, esclusi Pianificati e Rifissati.
+        // Usa combineWhere: array_merge su due 'OR' cancellava il filtro date.
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where(array_merge(
-                $ctx->appuntamentoWhere(),
-                $this->notAnnullatoWhere()
-            ))
+            ->where($this->appuntamentiBaseWhere($ctx))
             ->count();
     }
 
     private function countAppuntamentiLordi(KpiContext $ctx): int
     {
+        // Lordi = Totali - Annullati
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where($ctx->appuntamentoWhere())
+            ->where($this->combineWhere(
+                $this->appuntamentiBaseWhere($ctx),
+                $this->notAnnullatoWhere()
+            ))
             ->count();
     }
 
@@ -231,8 +265,8 @@ class CrmKpiService
     {
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where(array_merge(
-                $ctx->appuntamentoWhere(),
+            ->where($this->combineWhere(
+                $this->appuntamentiBaseWhere($ctx),
                 $this->notAnnullatoWhere(),
                 ['status' => 'Ingestibile']
             ))
@@ -241,15 +275,81 @@ class CrmKpiService
 
     private function countAppuntamentiNetti(KpiContext $ctx): int
     {
+        // Derivato in getAppuntamentiTile; tenuto per aggregazioni
         return (int) $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->where(array_merge(
-                $ctx->appuntamentoWhere(),
+            ->where($this->combineWhere(
+                $this->appuntamentiBaseWhere($ctx),
                 $this->notAnnullatoWhere(),
-                ['status!=' => 'Ingestibile'],
-                ['status' => 'Held']
+                ['status!=' => 'Ingestibile']
             ))
             ->count();
+    }
+
+    /**
+     * Base comune tile Appuntamenti: periodo + esclusione Pianificati/Rifissati.
+     *
+     * @return array<string, mixed>
+     */
+    private function appuntamentiBaseWhere(KpiContext $ctx): array
+    {
+        return $this->combineWhere(
+            $ctx->appuntamentoWhere(),
+            $this->notPianificatoWhere(),
+            $this->notRifissatoWhere()
+        );
+    }
+
+    /**
+     * Compone clausole WHERE senza array_merge: due chiavi 'OR'/'AND' in merge
+     * sovrascrivono il filtro periodo e contano TUTTA la storia.
+     *
+     * @param array<string, mixed> ...$parts
+     * @return array<string, mixed>
+     */
+    private function combineWhere(array ...$parts): array
+    {
+        $clauses = [];
+
+        foreach ($parts as $part) {
+            if ($part === []) {
+                continue;
+            }
+
+            $clauses[] = $part;
+        }
+
+        if ($clauses === []) {
+            return [];
+        }
+
+        if (count($clauses) === 1) {
+            return $clauses[0];
+        }
+
+        return ['AND' => $clauses];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function notPianificatoWhere(): array
+    {
+        return ['status!=' => 'Planned'];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function notRifissatoWhere(): array
+    {
+        return [
+            'OR' => [
+                ['sottostato!=' => 'Rifissato'],
+                ['sottostato' => null],
+                ['sottostato' => ''],
+            ],
+        ];
     }
 
     /**
@@ -278,18 +378,21 @@ class CrmKpiService
     }
 
     /**
+     * Appuntamenti netti = lordi - ingestibili (esclusi Rifissati e Annullati).
+     *
      * @return string[]
      */
-    private function getAppuntamentoIds(KpiContext $ctx): array
+    private function getNetAppuntamentoIds(KpiContext $ctx): array
     {
         $ids = [];
 
         $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->select(['id'])
-            ->where(array_merge(
-                $ctx->appuntamentoWhere(),
-                $this->notAnnullatoWhere()
+            ->where($this->combineWhere(
+                $this->appuntamentiBaseWhere($ctx),
+                $this->notAnnullatoWhere(),
+                ['status!=' => 'Ingestibile']
             ))
             ->find();
 
@@ -307,10 +410,10 @@ class CrmKpiService
         bool $lost = false
     ): int {
         if ($pending) {
-            return $this->countOpportunitiesPending($this->getAppuntamentoIds($ctx), $ctx);
+            return $this->countOpportunitiesPending($this->getNetAppuntamentoIds($ctx), $ctx);
         }
 
-        $appuntamentoIds = $this->getAppuntamentoIds($ctx);
+        $appuntamentoIds = $this->getNetAppuntamentoIds($ctx);
 
         if ($appuntamentoIds === []) {
             return 0;
@@ -390,15 +493,40 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): int {
-        if ($onlyFinancingKo || $excludeFinancingKo) {
-            return $this->countQuotesResolved($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso);
+        if (
+            $onlyFinancingKo
+            || $excludeFinancingKo
+            || $onlyRecesso
+            || $excludeRecesso
+            || $onlySospesi
+            || $excludeSospesi
+        ) {
+            return $this->countQuotesResolved(
+                $ctx,
+                $excludeFinancingKo,
+                $excludeRecesso,
+                $onlyFinancingKo,
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
+            );
         }
 
         return (int) $this->entityManager
             ->getRDBRepository('Quote')
-            ->where($this->quoteFilterWhere($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso))
+            ->where($this->quoteFilterWhere(
+                $ctx,
+                $excludeFinancingKo,
+                $excludeRecesso,
+                $onlyFinancingKo,
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
+            ))
             ->count();
     }
 
@@ -407,22 +535,41 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): float {
-        if ($onlyFinancingKo || $excludeFinancingKo) {
+        if (
+            $onlyFinancingKo
+            || $excludeFinancingKo
+            || $onlyRecesso
+            || $excludeRecesso
+            || $onlySospesi
+            || $excludeSospesi
+        ) {
             return $this->sumQuoteFieldResolved(
                 $ctx,
                 ['importoContratto', 'amount', 'grandTotalAmount'],
                 $excludeFinancingKo,
                 $excludeRecesso,
                 $onlyFinancingKo,
-                $onlyRecesso
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
             );
         }
 
         return $this->safeSum(
             'Quote',
-            $this->quoteFilterWhere($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso),
+            $this->quoteFilterWhere(
+                $ctx,
+                $excludeFinancingKo,
+                $excludeRecesso,
+                $onlyFinancingKo,
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
+            ),
             ['importoContratto', 'amount', 'grandTotalAmount']
         );
     }
@@ -432,22 +579,41 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): float {
-        if ($onlyFinancingKo || $excludeFinancingKo) {
+        if (
+            $onlyFinancingKo
+            || $excludeFinancingKo
+            || $onlyRecesso
+            || $excludeRecesso
+            || $onlySospesi
+            || $excludeSospesi
+        ) {
             return $this->sumQuoteFieldResolved(
                 $ctx,
                 ['totaleProvvigioni'],
                 $excludeFinancingKo,
                 $excludeRecesso,
                 $onlyFinancingKo,
-                $onlyRecesso
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
             );
         }
 
         return $this->safeSum(
             'Quote',
-            $this->quoteFilterWhere($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso),
+            $this->quoteFilterWhere(
+                $ctx,
+                $excludeFinancingKo,
+                $excludeRecesso,
+                $onlyFinancingKo,
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
+            ),
             ['totaleProvvigioni']
         );
     }
@@ -457,9 +623,19 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): int {
-        return count($this->filterQuotesForTile($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso));
+        return count($this->filterQuotesForTile(
+            $ctx,
+            $excludeFinancingKo,
+            $excludeRecesso,
+            $onlyFinancingKo,
+            $onlyRecesso,
+            $onlySospesi,
+            $excludeSospesi
+        ));
     }
 
     /**
@@ -471,9 +647,19 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): float {
-        $quotes = $this->filterQuotesForTile($ctx, $excludeFinancingKo, $excludeRecesso, $onlyFinancingKo, $onlyRecesso);
+        $quotes = $this->filterQuotesForTile(
+            $ctx,
+            $excludeFinancingKo,
+            $excludeRecesso,
+            $onlyFinancingKo,
+            $onlyRecesso,
+            $onlySospesi,
+            $excludeSospesi
+        );
         $sum = 0.0;
 
         foreach ($quotes as $quote) {
@@ -498,7 +684,9 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): array {
         $collection = $this->entityManager
             ->getRDBRepository('Quote')
@@ -525,7 +713,9 @@ class CrmKpiService
                 $excludeFinancingKo,
                 $excludeRecesso,
                 $onlyFinancingKo,
-                $onlyRecesso
+                $onlyRecesso,
+                $onlySospesi,
+                $excludeSospesi
             )) {
                 $matched[] = $quote;
             }
@@ -544,23 +734,34 @@ class CrmKpiService
         bool $excludeRecesso,
         bool $onlyFinancingKo,
         bool $onlyRecesso,
+        bool $onlySospesi,
+        bool $excludeSospesi,
     ): bool {
-        $isRecesso = $quote->get('statoContratto') === self::CONTRACT_RECESSO;
+        $isRecesso = $this->isQuoteRecesso($quote);
         $isFinancingRejected = $this->isQuoteFinancingRejected($quote, $opportunityRejectedMap);
+        $isSospeso = $this->isQuoteSospeso($quote);
 
         if ($onlyRecesso) {
             return $isRecesso;
-        }
-
-        if ($onlyFinancingKo) {
-            return $isFinancingRejected;
         }
 
         if ($excludeRecesso && $isRecesso) {
             return false;
         }
 
+        if ($onlyFinancingKo) {
+            return $isFinancingRejected;
+        }
+
+        if ($onlySospesi) {
+            return $isSospeso;
+        }
+
         if ($excludeFinancingKo && $isFinancingRejected) {
+            return false;
+        }
+
+        if ($excludeSospesi && $isSospeso) {
             return false;
         }
 
@@ -575,7 +776,9 @@ class CrmKpiService
         bool $excludeFinancingKo = false,
         bool $excludeRecesso = false,
         bool $onlyFinancingKo = false,
-        bool $onlyRecesso = false
+        bool $onlyRecesso = false,
+        bool $onlySospesi = false,
+        bool $excludeSospesi = false
     ): array {
         $where = $ctx->quoteWhere();
 
@@ -587,8 +790,22 @@ class CrmKpiService
             return array_merge($where, $this->financingRejectedWhere());
         }
 
+        if ($onlySospesi) {
+            return array_merge($where, ['statoContratto' => self::CONTRACT_SOSPESO]);
+        }
+
+        $excludedStates = [];
+
         if ($excludeRecesso) {
-            $where['statoContratto!='] = self::CONTRACT_RECESSO;
+            $excludedStates[] = self::CONTRACT_RECESSO;
+        }
+
+        if ($excludeSospesi) {
+            $excludedStates[] = self::CONTRACT_SOSPESO;
+        }
+
+        if ($excludedStates !== []) {
+            $where['statoContratto!='] = $excludedStates;
         }
 
         if ($excludeFinancingKo) {
@@ -656,6 +873,33 @@ class CrmKpiService
 
         return $linkedOpportunity
             && $linkedOpportunity->get('statoContratto') === self::CONTRACT_RECESSO;
+    }
+
+    private function isQuoteSospeso(Entity $quote, ?Entity $opportunity = null): bool
+    {
+        if ($this->isQuoteRecesso($quote, $opportunity)) {
+            return false;
+        }
+
+        if ($quote->get('statoContratto') === self::CONTRACT_SOSPESO) {
+            return true;
+        }
+
+        if ($opportunity !== null) {
+            return $opportunity->get('statoContratto') === self::CONTRACT_SOSPESO;
+        }
+
+        $opportunityId = $quote->get('opportunitaId');
+
+        if (!$opportunityId) {
+            return false;
+        }
+
+        $linkedOpportunity = $this->entityManager->getEntityById('Opportunity', $opportunityId);
+
+        return $linkedOpportunity
+            && !$this->isQuoteRecesso($quote, $linkedOpportunity)
+            && $linkedOpportunity->get('statoContratto') === self::CONTRACT_SOSPESO;
     }
 
     /**
@@ -817,8 +1061,6 @@ class CrmKpiService
             $weekBuckets[$weekIndex] = YieldBuilder::emptyMetrics();
         }
 
-        $appuntamentoIds = [];
-
         $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
             ->where($ctx->appuntamentoWhere())
@@ -827,39 +1069,43 @@ class CrmKpiService
         foreach ($collection as $appuntamento) {
             $date = $this->resolveAppuntamentoDate($appuntamento);
 
-            if (!$date) {
+            if (!$date || !$this->isDateInPeriod($date, $ctx)) {
                 continue;
             }
 
-            $appuntamentoIds[] = $appuntamento->getId();
             $weekday = (int) (new \DateTimeImmutable($date))->format('N');
             $weekIndex = WeekOfMonth::resolveIndexForDate($date);
 
-            $weekdayBuckets[$weekday]['appuntamentiLordi']++;
+            if (
+                !$this->isAppuntamentoPianificato($appuntamento)
+                && !$this->isAppuntamentoRifissato($appuntamento)
+            ) {
+                $weekdayBuckets[$weekday]['appuntamentiTotali']++;
+            }
+
+            if ($this->isAppuntamentoLordo($appuntamento)) {
+                $weekdayBuckets[$weekday]['appuntamentiLordi']++;
+            }
 
             if ($this->isAppuntamentoNetto($appuntamento)) {
                 $weekdayBuckets[$weekday]['appuntamentiNetti']++;
             }
 
             if ($weekIndex !== null && isset($weekBuckets[$weekIndex])) {
-                $weekBuckets[$weekIndex]['appuntamentiLordi']++;
+                if (
+                    !$this->isAppuntamentoPianificato($appuntamento)
+                    && !$this->isAppuntamentoRifissato($appuntamento)
+                ) {
+                    $weekBuckets[$weekIndex]['appuntamentiTotali']++;
+                }
+
+                if ($this->isAppuntamentoLordo($appuntamento)) {
+                    $weekBuckets[$weekIndex]['appuntamentiLordi']++;
+                }
 
                 if ($this->isAppuntamentoNetto($appuntamento)) {
                     $weekBuckets[$weekIndex]['appuntamentiNetti']++;
                 }
-            }
-        }
-
-        if ($appuntamentoIds !== []) {
-            try {
-                $this->aggregateOpportunitiesByAppuntamento(
-                    $ctx,
-                    $appuntamentoIds,
-                    $weekdayBuckets,
-                    $weekBuckets
-                );
-            } catch (\Throwable $e) {
-                $this->logYieldError('opportunities', $e);
             }
         }
 
@@ -1019,11 +1265,15 @@ class CrmKpiService
      */
     private function isQuoteNetto(Entity $quote, ?array $opportunityRejectedMap = null): bool
     {
-        if ($quote->get('statoContratto') === self::CONTRACT_RECESSO) {
+        if ($this->isQuoteRecesso($quote)) {
             return false;
         }
 
         if ($this->isQuoteFinancingRejected($quote, $opportunityRejectedMap)) {
+            return false;
+        }
+
+        if ($this->isQuoteSospeso($quote)) {
             return false;
         }
 
@@ -1047,17 +1297,48 @@ class CrmKpiService
         return substr((string) $dateStart, 0, 10);
     }
 
+    /**
+     * Sicurezza: anche se la WHERE SQL perde il periodo, le rese restano nel range.
+     */
+    private function isDateInPeriod(string $date, KpiContext $ctx): bool
+    {
+        if ($ctx->from !== null && $date < $ctx->from) {
+            return false;
+        }
+
+        if ($ctx->to !== null && $date > $ctx->to) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function isAppuntamentoPianificato(Entity $appuntamento): bool
+    {
+        return $appuntamento->get('status') === 'Planned';
+    }
+
+    private function isAppuntamentoRifissato(Entity $appuntamento): bool
+    {
+        return $appuntamento->get('sottostato') === 'Rifissato';
+    }
+
+    private function isAppuntamentoLordo(Entity $appuntamento): bool
+    {
+        if ($this->isAppuntamentoPianificato($appuntamento) || $this->isAppuntamentoRifissato($appuntamento)) {
+            return false;
+        }
+
+        return $this->isAppuntamentoNotAnnullato($appuntamento);
+    }
+
     private function isAppuntamentoNetto(Entity $appuntamento): bool
     {
-        if (!$this->isAppuntamentoNotAnnullato($appuntamento)) {
+        if (!$this->isAppuntamentoLordo($appuntamento)) {
             return false;
         }
 
-        if ($appuntamento->get('status') === 'Ingestibile') {
-            return false;
-        }
-
-        return $appuntamento->get('status') === 'Held';
+        return $appuntamento->get('status') !== 'Ingestibile';
     }
 
     private function isAppuntamentoNotAnnullato(Entity $appuntamento): bool
@@ -1083,7 +1364,9 @@ class CrmKpiService
     private function getAlertsSafe(?string $from, ?string $to, ?string $productBrandId): array
     {
         try {
-            return (new Alerts($this->entityManager))->build($from, $to, $productBrandId);
+            $built = (new Alerts($this->entityManager))->build($from, $to, $productBrandId);
+
+            return $built->criticita ?? [];
         } catch (\Throwable) {
             return [];
         }

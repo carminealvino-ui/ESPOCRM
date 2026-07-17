@@ -7,16 +7,12 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Numero contratto valorizzato → stato Bozza (Draft) diventa Presentato (Presented).
- *
- * @implements BeforeSave<Entity>
+ * Numero contratto valorizzato → stato Bozza diventa In lavorazione (schema semplificato)
+ * oppure Draft diventa Presented (schema legacy Espo).
  */
 class SetPresentedWhenNumeroContratto implements BeforeSave
 {
     public static int $order = 12;
-
-    private const STATUS_DRAFT = 'Draft';
-    private const STATUS_PRESENTED = 'Presented';
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
@@ -24,7 +20,7 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
             return;
         }
 
-        if ($options->has('silent') || $options->has('skipHooks')) {
+        if ($options->get('silent') || $options->get('skipHooks')) {
             return;
         }
 
@@ -32,21 +28,30 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
             return;
         }
 
-        if ($entity->get('status') !== self::STATUS_DRAFT) {
+        $status = $entity->get('status');
+        $nextStatus = match ($status) {
+            'Bozza' => 'In lavorazione',
+            'Draft' => 'Presented',
+            default => null,
+        };
+
+        if ($nextStatus === null) {
             return;
         }
 
-        $entity->set('status', self::STATUS_PRESENTED);
+        $entity->set('status', $nextStatus);
     }
 
     private function hasNumeroContratto(Entity $entity): bool
     {
-        $value = $entity->get('numeroContratto');
+        foreach (['numeroContratto', 'number'] as $field) {
+            $value = $entity->get($field);
 
-        if ($value === null) {
-            return false;
+            if ($value !== null && trim((string) $value) !== '') {
+                return true;
+            }
         }
 
-        return trim((string) $value) !== '';
+        return false;
     }
 }

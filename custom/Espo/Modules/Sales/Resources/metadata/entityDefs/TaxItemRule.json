@@ -64,11 +64,13 @@
         },
         "createdBy": {
             "type": "link",
-            "readOnly": true
+            "readOnly": true,
+            "view": "views/fields/user"
         },
         "modifiedBy": {
             "type": "link",
-            "readOnly": true
+            "readOnly": true,
+            "view": "views/fields/user"
         },
         "taxDisplay": {
             "type": "base",

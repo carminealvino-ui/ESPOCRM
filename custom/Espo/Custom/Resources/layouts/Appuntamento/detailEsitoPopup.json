@@ -12,7 +12,8 @@
                     "name": "status"
                 },
                 {
-                    "name": "sottostato"
+                    "name": "sottostato",
+                    "view": "custom:views/fields/appuntamento-sottostato-popup"
                 }
             ],
             [

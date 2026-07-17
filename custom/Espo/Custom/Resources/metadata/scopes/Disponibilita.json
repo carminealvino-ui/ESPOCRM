@@ -17,11 +17,13 @@
     "activity": true,
     "notifications": true,
     "activityStatusList": [
-        "Planned"
+        "Presente",
+        "Ferie",
+        "Malattia",
+        "Auto"
     ],
     "historyStatusList": [
-        "Held",
-        "Not Held"
+        "Indisponibile"
     ],
     "statusField": "status",
     "stream": false,
@@ -30,11 +32,9 @@
     "module": "Custom",
     "object": true,
     "isCustom": true,
-    "completedStatusList": [
-        "Held"
-    ],
+    "completedStatusList": [],
     "canceledStatusList": [
-        "Not Held"
+        "Indisponibile"
     ],
     "kanbanStatusIgnoreList": null,
     "stars": false,

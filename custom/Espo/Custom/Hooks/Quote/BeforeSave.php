@@ -2,16 +2,19 @@
 
 namespace Espo\Custom\Hooks\Quote;
 
-use Espo\Core\Hooks\Base;
+use Espo\Core\Hook\Hook\BeforeSave as BeforeSaveHook;
 use Espo\ORM\Entity;
+use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
  * Prezzi codice / totali: SyncContractPricing + QuotePricingCalculator (order 999).
  */
-class BeforeSave extends Base
+class BeforeSave implements BeforeSaveHook
 {
-    public function beforeSave(Entity $entity, array $options): void
+    public static int $order = 5;
+
+    public function beforeSave(Entity $entity, SaveOptions $options): void
     {
-        // Intenzionalmente vuoto: evita conflitto con QuotePricingCalculator.
+        // Intenzionalmente vuoto: evita conflitto con QuotePricingCalculator (SyncContractPricing).
     }
 }

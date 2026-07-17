@@ -1,4 +1,4 @@
-// VERSIONE: 1.4.1 — prezzi listino/codice; niente inject DOM su righe (solo menu …)
+// VERSIONE: 1.5.0 — prezzi listino/codice; Voce/commento opzionale
 
 define('custom:views/quote/fields/item-list', [
     'sales:views/quote/fields/item-list',
@@ -163,6 +163,10 @@ define('custom:views/quote/fields/item-list', [
                     setTimeout(function () {
                         this.applyCatalogPricesToItemRow(itemView);
                     }.bind(this), 80);
+                });
+
+                this.listenTo(itemView.model, 'change:prezzoCodice', function () {
+                    this.syncItemListFromViews();
                 });
             }.bind(this));
         },

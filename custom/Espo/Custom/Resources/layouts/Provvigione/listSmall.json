@@ -1,18 +1,27 @@
 [
     {
         "name": "name",
-        "width": 50,
         "link": true,
-        "align": "left"
+        "customLabel": "Descrizione"
+    },
+    {
+        "name": "tipo",
+        "width": 12
+    },
+    {
+        "name": "baseCalcolo",
+        "width": 14
+    },
+    {
+        "name": "importoBaseCalcolo",
+        "width": 12
     },
     {
         "name": "tassoProvvigioni",
-        "width": 15,
-        "align": "right"
+        "width": 8
     },
     {
-        "name": "importo",
-        "width": 20,
-        "align": "right"
+        "name": "importoConsolidato",
+        "width": 11
     }
 ]

@@ -3,20 +3,31 @@
 namespace Espo\Custom\Classes\Select\Appuntamento\PrimaryFilters;
 
 use Espo\Core\Select\Primary\Filter;
-use Espo\Custom\Tools\CrmKpi\MonthRange;
+use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 use Espo\ORM\Query\SelectBuilder;
 
+/**
+ * Stessa logica di CrmKpi\Alerts::countAppuntamentiConPiuOpportunita.
+ */
 class AppuntamentiConPiuOpportunita implements Filter
 {
+    /** @var string[] */
+    private const ESITI_ANNULLATI = [
+        'Annullato dal Potenziale',
+        'Annullato dal Consulente',
+        'Annullato Azienda',
+        'Annullato Call Center',
+        'Appuntamento non in agenda',
+    ];
+
     public function __construct(
         private EntityManager $entityManager,
     ) {}
 
     public function apply(SelectBuilder $queryBuilder): void
     {
-        [$from, $to] = MonthRange::bounds('currentMonth');
-        $ids = $this->resolveAppuntamentoIds($from, $to);
+        $ids = $this->resolveAppuntamentoIds();
 
         if ($ids === []) {
             $queryBuilder->where(['id' => null]);
@@ -30,28 +41,20 @@ class AppuntamentiConPiuOpportunita implements Filter
     /**
      * @return string[]
      */
-    private function resolveAppuntamentoIds(?string $from, ?string $to): array
+    private function resolveAppuntamentoIds(): array
     {
-        $where = ['status' => 'Held'];
-
-        if ($from !== null) {
-            $where['dataAppuntamento>='] = $from;
-        }
-
-        if ($to !== null) {
-            $where['dataAppuntamento<='] = $to;
-        }
-
         $heldIds = [];
 
         $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->select(['id'])
-            ->where($where)
+            ->select(['id', 'esito', 'sottostato'])
+            ->where(['status' => 'Held'])
             ->find();
 
         foreach ($collection as $appuntamento) {
-            $heldIds[] = $appuntamento->getId();
+            if ($this->isAppuntamentoNotAnnullato($appuntamento)) {
+                $heldIds[] = $appuntamento->getId();
+            }
         }
 
         if ($heldIds === []) {
@@ -60,20 +63,22 @@ class AppuntamentiConPiuOpportunita implements Filter
 
         $counts = [];
 
-        $opportunities = $this->entityManager
-            ->getRDBRepository('Opportunity')
-            ->select(['appuntamentoId'])
-            ->where(['appuntamentoId' => $heldIds])
-            ->find();
+        foreach (array_chunk($heldIds, 500) as $chunk) {
+            $opportunities = $this->entityManager
+                ->getRDBRepository('Opportunity')
+                ->select(['appuntamentoId'])
+                ->where(['appuntamentoId' => $chunk])
+                ->find();
 
-        foreach ($opportunities as $opportunity) {
-            $appuntamentoId = $opportunity->get('appuntamentoId');
+            foreach ($opportunities as $opportunity) {
+                $appuntamentoId = $opportunity->get('appuntamentoId');
 
-            if (!$appuntamentoId) {
-                continue;
+                if (!$appuntamentoId) {
+                    continue;
+                }
+
+                $counts[$appuntamentoId] = ($counts[$appuntamentoId] ?? 0) + 1;
             }
-
-            $counts[$appuntamentoId] = ($counts[$appuntamentoId] ?? 0) + 1;
         }
 
         $ids = [];
@@ -85,5 +90,16 @@ class AppuntamentiConPiuOpportunita implements Filter
         }
 
         return $ids;
+    }
+
+    private function isAppuntamentoNotAnnullato(Entity $appuntamento): bool
+    {
+        if ($appuntamento->get('sottostato') === 'Annullato') {
+            return false;
+        }
+
+        $esito = $appuntamento->get('esito');
+
+        return !($esito && in_array($esito, self::ESITI_ANNULLATI, true));
     }
 }

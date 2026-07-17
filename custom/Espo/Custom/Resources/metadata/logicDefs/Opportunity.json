@@ -12,7 +12,20 @@
             }
         },
         "motivoDecisione": {
-            "visible": null
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Won"
+                    },
+                    {
+                        "type": "equals",
+                        "attribute": "stage",
+                        "value": "Closed Lost"
+                    }
+                ]
+            }
         },
         "installazione": {
             "visible": {
@@ -46,6 +59,46 @@
                 ]
             }
         },
+        "importoFinanziato": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "nrRate": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "tassoZero": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
+        "importoRata": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "finanziamento"
+                    }
+                ]
+            }
+        },
         "statoContratto": {
             "visible": {
                 "conditionGroup": [
@@ -58,15 +111,7 @@
             }
         },
         "finanziamento": {
-            "visible": {
-                "conditionGroup": [
-                    {
-                        "type": "equals",
-                        "attribute": "stage",
-                        "value": "Closed Won"
-                    }
-                ]
-            }
+            "visible": null
         },
         "originalLead": {
             "visible": {
@@ -113,18 +158,7 @@
             }
         },
         "itemList": {
-            "visible": {
-                "conditionGroup": [
-                    {
-                        "type": "notIn",
-                        "attribute": "stage",
-                        "value": [
-                            "Closed Won",
-                            "Chiuso Positivamente"
-                        ]
-                    }
-                ]
-            }
+            "visible": null
         },
         "productCategory": {
             "readOnly": {

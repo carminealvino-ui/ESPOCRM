@@ -43,15 +43,11 @@
                 "Bonus (Sabato-Domenica)",
                 "Plus Provvigionale",
                 "Minus Provvigionale",
+                "Gara (Soglia >2.5k)",
+                "Gara (Soglia >3.5)",
+                "Gara (Soglia >5k)",
                 "Referenza Personale"
             ],
-            "style": {
-                "Provvigione Base": null,
-                "Bonus (Sabato-Domenica)": null,
-                "Plus Provvigionale": null,
-                "Minus Provvigionale": null,
-                "Referenza Personale": null
-            },
             "default": "Provvigione Base",
             "maxLength": 100,
             "isCustom": true
@@ -69,6 +65,24 @@
         "tassoProvvigioni": {
             "notNull": false,
             "type": "float",
+            "decimalPlaces": 2,
+            "isCustom": true
+        },
+        "baseCalcolo": {
+            "type": "enum",
+            "options": [
+                "ImponibileContratto",
+                "Plusvalenza",
+                "Minusvalenza",
+                "MargineSuListino",
+                "CanoneMensile",
+                "GettoneFisso",
+                "NumeroPod"
+            ],
+            "isCustom": true
+        },
+        "importoBaseCalcolo": {
+            "type": "currency",
             "isCustom": true
         },
         "contrattoArticoli": {
@@ -78,6 +92,111 @@
             "type": "varchar",
             "maxLength": 100,
             "options": [],
+            "isCustom": true
+        },
+        "statoProvvigione": {
+            "type": "enum",
+            "options": [
+                "Forecast",
+                "In pagamento",
+                "Pagato",
+                "Inesigibile"
+            ],
+            "style": {
+                "Forecast": "info",
+                "In pagamento": "warning",
+                "Pagato": "success",
+                "Inesigibile": "danger"
+            },
+            "default": "Forecast",
+            "massUpdate": true,
+            "isCustom": true
+        },
+        "regimeProvvigione": {
+            "type": "enum",
+            "options": [
+                "",
+                "ARQUATI_PNC",
+                "ARIEL_2026",
+                "GFB_VODAFONE_COEFF",
+                "GFB_FASTWEB_POD",
+                "GFB_RS_BIMESTRE",
+                "SOLUTION_ENEL_GETTONE",
+                "GENERICO"
+            ],
+            "isCustom": true
+        },
+        "dataInstallazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataAttivazione": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataCompetenza": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataLiquidazionePrevista": {
+            "type": "date",
+            "readOnly": true,
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "dataLiquidazioneEffettiva": {
+            "type": "date",
+            "useNumericFormat": true,
+            "isCustom": true
+        },
+        "importoPrevisto": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "importoConsolidato": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "scostamentoImporto": {
+            "type": "currency",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "giorniLiquidazioneDaAttivazione": {
+            "type": "int",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "appuntamento": {
+            "type": "link",
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "link",
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "link",
+            "isCustom": true
+        },
+        "invitoAFatturare": {
+            "type": "link",
+            "isCustom": true
+        },
+        "fornitorePartner": {
+            "type": "link",
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "link",
+            "isCustom": true
+        },
+        "regolaProvvigionale": {
+            "type": "link",
+            "readOnly": true,
             "isCustom": true
         }
     },
@@ -140,6 +259,48 @@
             "foreign": "provvigioni",
             "entity": "QuoteItem",
             "audited": false,
+            "isCustom": true
+        },
+        "appuntamento": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "Appuntamento",
+            "isCustom": true
+        },
+        "opportunita": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "Opportunity",
+            "isCustom": true
+        },
+        "productCategory": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "ProductCategory",
+            "isCustom": true
+        },
+        "invitoAFatturare": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "InvitoAFatturare",
+            "isCustom": true
+        },
+        "fornitorePartner": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "FornitorePartner",
+            "isCustom": true
+        },
+        "productBrand": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "ProductBrand",
+            "isCustom": true
+        },
+        "regolaProvvigionale": {
+            "type": "belongsTo",
+            "foreign": "provvigioni",
+            "entity": "RegolaProvvigionale",
             "isCustom": true
         }
     },

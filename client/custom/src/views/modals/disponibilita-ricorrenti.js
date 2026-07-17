@@ -265,7 +265,7 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
                 Espo.Ajax.postRequest('Disponibilita/action/generaDisponibilitaRicorrenti', payload)
                     .then((result) => {
                         this.enableButton('generate');
-                        Espo.Ui.success(result && result.message ? result.message : 'Disponibilità generate.');
+                        this.showGenerationResult(result);
                         this.trigger('after:generate');
                         this.close();
 
@@ -307,6 +307,41 @@ define('custom:views/modals/disponibilita-ricorrenti', ['views/modal'], function
 
             this.refreshAssignedUserCount();
             runGenerate();
+        },
+
+        showGenerationResult: function (result) {
+            const message = result && result.message
+                ? result.message
+                : 'Disponibilità generate.';
+            const created = Number(result && result.created || 0);
+
+            if (created <= 0) {
+                let hint = message + ' Nessuna nuova disponibilità creata.';
+
+                if (result && result.daysBlocked > 0) {
+                    hint += ' Verificare le Eccezioni orario lavorativo del calendario';
+                    const exceptions = result.blockingExceptions || [];
+
+                    if (exceptions.length) {
+                        const first = exceptions[0];
+                        hint += ' (es. ' + (first.name || 'non lavorativo') + ' ' + first.dateStart + '→' + first.dateEnd + ')';
+                    }
+
+                    hint += '.';
+                } else if (result && result.daysNoSlots > 0) {
+                    hint += ' Configurare le fasce orarie (timeRanges) nel calendario ricorrente.';
+                } else if (result && result.daysWeekdayOff > 0) {
+                    hint += ' Abilitare i giorni della settimana nel calendario ricorrente.';
+                } else {
+                    hint += ' Verificare date, eccezioni calendario e fasce orarie.';
+                }
+
+                Espo.Ui.warning(hint);
+
+                return;
+            }
+
+            Espo.Ui.success(message);
         },
     });
 });

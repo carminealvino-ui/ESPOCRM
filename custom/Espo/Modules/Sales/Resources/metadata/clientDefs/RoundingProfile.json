@@ -18,12 +18,14 @@
         "moveUp": {
             "labelTranslation": "ProductAttribute.labels.Move Up",
             "handler": "modules/sales/handlers/tax-rule/move",
-            "acl": "edit"
+            "acl": "edit",
+            "iconClass": "fas fa-arrow-up"
         },
         "moveDown": {
             "labelTranslation": "ProductAttribute.labels.Move Down",
             "handler": "modules/sales/handlers/tax-rule/move",
-            "acl": "edit"
+            "acl": "edit",
+            "iconClass": "fas fa-arrow-down"
         },
         "moveToBottom": {
             "labelTranslation": "ProductAttribute.labels.Move to Bottom",

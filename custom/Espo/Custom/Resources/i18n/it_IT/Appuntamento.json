@@ -10,7 +10,12 @@
         "productBrand": "Brand",
         "cAPCodice": "CAP Codice",
         "indirizzoCity": "Indirizzo Città",
-        "opportunita": "Opportunità"
+        "opportunita": "Opportunità",
+        "daRichiamare": "Rinvia richiamo",
+        "dataRichiamo": "Data Richiamo",
+        "richiamo": "Richiamo",
+        "noteEsito": "Note Esito",
+        "esito": "Esito"
     },
     "labels": {
         "Create Appuntamento": "Crea Appuntamento",

@@ -11,7 +11,9 @@ use Espo\ORM\EntityManager;
  * Contratto (Quote):
  * - prezzoCodiceIvaInclusa / totalPrezzoCodice UI: 4.400 (IVI al 10%)
  * - prezzoCodiceIvaEsclusa: 4.000
- * - minusPlus = imponibile − codice net (es. 4.090,91 − 4.000 = +90,91)
+ * - minusPlus = imponibile − codice net − costi aggiuntivi (IVA escl.)
+ * - costi aggiuntivi: campo shippingCost (UI «Costi aggiuntivi»), €250 net se tasso zero,
+ *   accessori Ariel su contratti fino al 24/01/2026
  * - provvigioni: % sull'imponibile; totale = somma subpanel
  *
  * Opportunity: minusPlus = imponibile netto − prezzo codice netto (IVA escl.).
@@ -19,6 +21,12 @@ use Espo\ORM\EntityManager;
 class QuotePricingCalculator
 {
     private const DEFAULT_ALIQUOTA_IVA = 10.0;
+
+    /** Tasso zero finanziamento: €300 IVA incl. / €250 IVA escl. nei costi aggiuntivi. */
+    private const TASSO_ZERO_COSTI_NET = 250.0;
+
+    /** Regola Ariel: accessori nel calcolo costi aggiuntivi fino a questa data (inclusa). */
+    private const ARIEL_ACCESSORIES_IN_COSTI_CUTOFF = '2026-01-24';
 
     public function __construct(
         private EntityManager $entityManager,
@@ -30,7 +38,21 @@ class QuotePricingCalculator
         $this->ensureImportoContrattoOnQuote($quote);
         $this->syncItemListLinePricingFromImportoContratto($quote);
         $this->syncItemListPrezzoCodice($quote);
+        $this->syncCostiAggiuntiviOnQuote($quote);
         $this->syncTotalsAndDerivedFields($quote, true);
+    }
+
+    /**
+     * Solo campi finanziamento (es. statoFinanziamento): aggiorna costi tasso zero senza
+     * ricalcolare articoli/importi (evita errori 500 su salvataggio pannello Finanziamento).
+     */
+    public function syncFinancingFieldsOnBeforeSave(Entity $quote): void
+    {
+        if ($quote->getEntityType() !== 'Quote') {
+            return;
+        }
+
+        $this->syncCostiAggiuntiviOnQuote($quote);
     }
 
     /**
@@ -270,11 +292,12 @@ class QuotePricingCalculator
                 $item = $this->itemSet($item, 'listPrice', $listCatalog);
             }
 
-            $existingCodice = $this->floatOrNull($this->itemValue($item, 'prezzoCodice'));
+            if ($codiceLine !== null && $codiceLine > 0) {
+                $existingCodice = $this->floatOrNull($this->itemValue($item, 'prezzoCodice'));
 
-            if ($codiceLine !== null && $codiceLine > 0
-                && ($existingCodice === null || $existingCodice <= 0)) {
-                $item = $this->itemSet($item, 'prezzoCodice', $codiceLine);
+                if ($existingCodice === null || $existingCodice <= 0) {
+                    $item = $this->itemSet($item, 'prezzoCodice', $codiceLine);
+                }
             }
 
             $listForWeight = $this->floatOrNull($this->itemValue($item, 'listPrice')) ?? $listCatalog ?? 0.0;
@@ -385,7 +408,7 @@ class QuotePricingCalculator
         $this->syncTotalsAndDerivedFields($opportunity, false);
     }
 
-    private function syncItemListPrezzoCodice(Entity $entity): void
+    public function syncItemListPrezzoCodice(Entity $entity): void
     {
         $itemList = $entity->get('itemList');
 
@@ -423,7 +446,6 @@ class QuotePricingCalculator
 
             $lineCodice = $this->floatOrNull($this->itemValue($item, 'prezzoCodice'));
 
-            // Valore inserito manualmente in compilazione contratto: non sovrascrivere.
             if ($lineCodice !== null && $lineCodice > 0) {
                 continue;
             }
@@ -452,35 +474,34 @@ class QuotePricingCalculator
     private function syncTotalsAndDerivedFields(Entity $entity, bool $isQuote): void
     {
         $taxInclusiveQuote = $isQuote && $this->isQuotePricesTaxInclusive($entity);
-        $codiceNetFromItems = $this->sumPrezzoCodiceNetFromItems($entity);
         $codiceIviFromItems = $this->sumPrezzoCodiceIvaInclusaFromItems($entity);
+        $codiceNetFromItems = $this->sumPrezzoCodiceNetFromItems($entity);
         $codiceNetFromProducts = $this->sumPrezzoCodiceNetFromProductsOnItems($entity);
         $codiceIviFromProducts = $this->sumPrezzoCodiceIvaInclusaFromProductsOnItems($entity);
+        $totalPrezzoCodice = $this->floatOrNull($entity->get('totalPrezzoCodice')) ?? 0.0;
 
         if ($taxInclusiveQuote) {
             if ($codiceIviFromItems > 0) {
+                $totalPrezzoCodice = round($codiceIviFromItems, 2);
                 $entity->set([
-                    'prezzoCodiceIvaInclusa' => round($codiceIviFromItems, 2),
-                    'totalPrezzoCodice' => round($codiceIviFromItems, 2),
+                    'prezzoCodiceIvaInclusa' => $totalPrezzoCodice,
+                    'totalPrezzoCodice' => $totalPrezzoCodice,
                 ]);
+
+                if ($codiceNetFromItems > 0) {
+                    $entity->set('prezzoCodiceIvaEsclusa', round($codiceNetFromItems, 2));
+                }
             } elseif ($codiceIviFromProducts > 0) {
+                $totalPrezzoCodice = round($codiceIviFromProducts, 2);
                 $entity->set([
-                    'prezzoCodiceIvaInclusa' => round($codiceIviFromProducts, 2),
-                    'totalPrezzoCodice' => round($codiceIviFromProducts, 2),
+                    'prezzoCodiceIvaInclusa' => $totalPrezzoCodice,
+                    'totalPrezzoCodice' => $totalPrezzoCodice,
                 ]);
             }
 
-            if ($codiceNetFromItems > 0) {
-                $entity->set('prezzoCodiceIvaEsclusa', round($codiceNetFromItems, 2));
-            } elseif ($codiceNetFromProducts > 0) {
+            if ($codiceNetFromItems <= 0 && $codiceNetFromProducts > 0) {
                 $entity->set('prezzoCodiceIvaEsclusa', round($codiceNetFromProducts, 2));
-            } elseif ($codiceNetFromItems <= 0 && $codiceIviFromItems > 0) {
-                $aliquota = $this->resolveAliquotaIva($entity);
-                $entity->set(
-                    'prezzoCodiceIvaEsclusa',
-                    round($codiceIviFromItems / (1 + $aliquota / 100), 2)
-                );
-            } elseif ($codiceNetFromProducts <= 0 && $codiceIviFromProducts > 0) {
+            } elseif ($codiceNetFromItems <= 0 && $codiceNetFromProducts <= 0 && $codiceIviFromProducts > 0) {
                 $aliquota = $this->resolveAliquotaIva($entity);
                 $entity->set(
                     'prezzoCodiceIvaEsclusa',
@@ -499,6 +520,10 @@ class QuotePricingCalculator
             }
 
             if ($totalPrezzoCodice <= 0) {
+                $totalPrezzoCodice = $codiceNetFromProducts;
+            }
+
+            if ($codiceNetFromProducts > 0) {
                 $totalPrezzoCodice = $codiceNetFromProducts;
             }
 
@@ -725,10 +750,10 @@ class QuotePricingCalculator
     public function resolveImponibileNetto(Entity $entity): ?float
     {
         if ($entity->getEntityType() === 'Quote') {
-            $amount = $this->floatOrNull($entity->get('amount'));
+            $net = $this->resolveQuoteAmountNet($entity);
 
-            if ($amount !== null && $amount > 0) {
-                return $amount;
+            if ($net !== null && $net > 0) {
+                return $net;
             }
         }
 
@@ -748,12 +773,6 @@ class QuotePricingCalculator
             return null;
         }
 
-        $amount = $this->floatOrNull($entity->get('amount'));
-
-        if ($amount !== null && $amount > 0) {
-            return $amount;
-        }
-
         $taxAmount = $this->floatOrNull($entity->get('taxAmount')) ?? 0.0;
         $grandTotal = $this->floatOrNull($entity->get('grandTotalAmount'));
 
@@ -762,6 +781,57 @@ class QuotePricingCalculator
         }
 
         return null;
+    }
+
+    /**
+     * Imponibile netto da amount: se coincide col lordo (IVA inclusa), scorpora IVA.
+     */
+    private function resolveQuoteAmountNet(Entity $quote): ?float
+    {
+        $gross = $this->floatOrNull($quote->get('grandTotalAmount'))
+            ?? $this->floatOrNull($quote->get('importoContratto'));
+        $taxAmount = $this->floatOrNull($quote->get('taxAmount'));
+
+        if ($gross !== null && $gross > 0 && $taxAmount !== null && $taxAmount > 0) {
+            $fromGross = round($gross - $taxAmount, 2);
+
+            if ($fromGross > 0) {
+                return $fromGross;
+            }
+        }
+
+        $itemList = $quote->get('itemList');
+
+        if (is_array($itemList) && $itemList !== []) {
+            $lineTotals = $this->sumTotalsFromItemList(
+                $itemList,
+                $this->isQuotePricesTaxInclusive($quote)
+            );
+
+            if ($lineTotals['net'] > 0) {
+                return $lineTotals['net'];
+            }
+        }
+
+        $amount = $this->floatOrNull($quote->get('amount'));
+
+        if ($amount === null || $amount <= 0) {
+            return null;
+        }
+
+        if ($gross !== null && abs($amount - $gross) < 0.02) {
+            if ($taxAmount !== null && $taxAmount > 0) {
+                return round($amount - $taxAmount, 2);
+            }
+
+            if ($this->isQuotePricesTaxInclusive($quote)) {
+                $aliquota = $this->resolveAliquotaIva($quote);
+
+                return $this->splitImportoContratto($gross, $aliquota, true)['net'];
+            }
+        }
+
+        return $amount;
     }
 
     public function resolveMinusPlus(Entity $entity): ?float
@@ -789,27 +859,42 @@ class QuotePricingCalculator
     }
 
     /**
-     * Contratto: imponibile − prezzo codice netto (IVA esclusa).
+     * Contratto: imponibile − prezzo codice netto − costi aggiuntivi (IVA esclusa).
      */
     public function resolveMinusPlusForQuote(Entity $quote): ?float
     {
         $importoNet = $this->resolveImponibileNetto($quote);
-        $prezzoCodiceNet = $this->floatOrNull($quote->get('prezzoCodiceIvaEsclusa'));
-
-        if ($prezzoCodiceNet === null || $prezzoCodiceNet <= 0) {
-            $prezzoCodiceNet = $this->sumPrezzoCodiceNetFromProductsOnItems($quote);
-        }
-
-        if ($prezzoCodiceNet === null || $prezzoCodiceNet <= 0) {
-            $prezzoCodiceNet = $this->resolvePrezzoCodiceNetForMinusPlus($quote, null);
-        }
+        $prezzoCodiceNet = $this->resolvePrezzoCodiceNetForMinusPlus($quote, null);
+        $costiAggiuntivi = $this->resolveCostiAggiuntiviNet($quote);
 
         if ($prezzoCodiceNet === null || $prezzoCodiceNet <= 0
             || $importoNet === null || $importoNet <= 0) {
             return null;
         }
 
-        return round($importoNet - $prezzoCodiceNet, 2);
+        return round($importoNet - $prezzoCodiceNet - $costiAggiuntivi, 2);
+    }
+
+    /**
+     * Costi aggiuntivi netti per Minus/Plus: shippingCost + tasso zero + accessori Ariel (legacy).
+     */
+    public function resolveCostiAggiuntiviNet(Entity $quote): float
+    {
+        if ($quote->getEntityType() !== 'Quote') {
+            return 0.0;
+        }
+
+        $sum = $this->resolveShippingCostNet($quote);
+
+        if ($this->resolveTassoZero($quote)) {
+            $sum = max($sum, self::TASSO_ZERO_COSTI_NET);
+        }
+
+        if ($this->shouldIncludeAccessoriesInCostiAggiuntivi($quote)) {
+            $sum += $this->sumAccessoryPrezzoCodiceNetFromItems($quote);
+        }
+
+        return round($sum, 2);
     }
 
     /**
@@ -818,16 +903,25 @@ class QuotePricingCalculator
     public function resolvePrezzoCodiceNetForMinusPlus(Entity $entity, ?Entity $opportunity = null): ?float
     {
         $aliquota = $this->resolveAliquotaIva($entity);
+
+        if ($entity->getEntityType() === 'Quote' && $this->shouldIncludeAccessoriesInCostiAggiuntivi($entity)) {
+            $mainOnly = $this->sumMainProductPrezzoCodiceNetFromItems($entity);
+
+            if ($mainOnly > 0) {
+                return round($mainOnly, 2);
+            }
+        }
+
         $fromItems = $this->sumPrezzoCodiceNetFromItems($entity);
 
         if ($fromItems > 0) {
-            return $fromItems;
+            return round($fromItems, 2);
         }
 
         $fromProducts = $this->sumPrezzoCodiceNetFromProductsOnItems($entity);
 
         if ($fromProducts > 0) {
-            return $fromProducts;
+            return round($fromProducts, 2);
         }
 
         $net = $this->floatOrNull($entity->get('prezzoCodiceIvaEsclusa'))
@@ -1326,41 +1420,6 @@ class QuotePricingCalculator
         return $sum;
     }
 
-    private function sumPrezzoCodiceNetFromItems(Entity $entity): float
-    {
-        $itemList = $entity->get('itemList');
-
-        if (!is_array($itemList)) {
-            return 0.0;
-        }
-
-        $aliquota = $this->resolveAliquotaIva($entity);
-        $taxInclusive = $entity->getEntityType() === 'Quote' && $this->isQuotePricesTaxInclusive($entity);
-        $sum = 0.0;
-
-        foreach ($itemList as $item) {
-            $lineCodice = $this->floatOrNull($this->itemValue($item, 'prezzoCodice'));
-
-            if ($lineCodice === null || $lineCodice <= 0) {
-                continue;
-            }
-
-            $qty = (float) ($this->itemValue($item, 'quantity') ?? 1);
-
-            if ($qty <= 0) {
-                continue;
-            }
-
-            $net = $taxInclusive
-                ? round($lineCodice / (1 + $aliquota / 100), 2)
-                : $lineCodice;
-
-            $sum += $net * $qty;
-        }
-
-        return $sum;
-    }
-
     private function sumPrezzoCodiceIvaInclusaFromItems(Entity $entity): float
     {
         $itemList = $entity->get('itemList');
@@ -1383,7 +1442,7 @@ class QuotePricingCalculator
             $lineCodice = $this->floatOrNull($this->itemValue($item, 'prezzoCodice'));
 
             if ($lineCodice !== null && $lineCodice > 0) {
-                if ($taxInclusive) {
+                if ($entity->getEntityType() === 'Quote' && $this->isQuotePricesTaxInclusive($entity)) {
                     $sum += $lineCodice * $qty;
                 } else {
                     $sum += round($lineCodice * (1 + $aliquota / 100), 2) * $qty;
@@ -1420,8 +1479,66 @@ class QuotePricingCalculator
         return $sum;
     }
 
-    private function sumPrezzoCodiceNetFromProductsOnItems(Entity $entity): float
+    private function sumPrezzoCodiceNetFromItems(Entity $entity): float
     {
+        $itemList = $entity->get('itemList');
+
+        if (!is_array($itemList) || $itemList === []) {
+            return 0.0;
+        }
+
+        $aliquota = $this->resolveAliquotaIva($entity);
+        $taxInclusive = $entity->getEntityType() === 'Quote' && $this->isQuotePricesTaxInclusive($entity);
+        $sum = 0.0;
+
+        foreach ($itemList as $item) {
+            $qty = (float) ($this->itemValue($item, 'quantity') ?? 1);
+
+            if ($qty <= 0) {
+                continue;
+            }
+
+            $lineCodice = $this->floatOrNull($this->itemValue($item, 'prezzoCodice'));
+
+            if ($lineCodice !== null && $lineCodice > 0) {
+                if ($taxInclusive) {
+                    $sum += round($lineCodice / (1 + $aliquota / 100), 2) * $qty;
+                } else {
+                    $sum += $lineCodice * $qty;
+                }
+
+                continue;
+            }
+
+            $productId = $this->itemValue($item, 'productId');
+
+            if (!$productId) {
+                continue;
+            }
+
+            $product = $this->entityManager->getEntityById('Product', $productId);
+
+            if (!$product) {
+                continue;
+            }
+
+            $productPrice = $entity->getEntityType() === 'Quote'
+                ? $this->findActiveProductPrice($product, $entity)
+                : null;
+            $net = $this->resolveProductPrezzoCodiceNet($product, $aliquota, $productPrice, $taxInclusive);
+
+            if ($net !== null && $net > 0) {
+                $sum += $net * $qty;
+            }
+        }
+
+        return $sum;
+    }
+
+    private function sumPrezzoCodiceNetFromProductsOnItems(
+        Entity $entity,
+        ?bool $accessoriesOnly = null
+    ): float {
         $itemList = $entity->get('itemList');
 
         if (!is_array($itemList)) {
@@ -1442,6 +1559,16 @@ class QuotePricingCalculator
             $product = $this->entityManager->getEntityById('Product', $productId);
 
             if (!$product) {
+                continue;
+            }
+
+            $isAccessory = $this->isAccessoryLineItem($product, $item);
+
+            if ($accessoriesOnly === true && !$isAccessory) {
+                continue;
+            }
+
+            if ($accessoriesOnly === false && $isAccessory) {
                 continue;
             }
 
@@ -1575,6 +1702,163 @@ class QuotePricingCalculator
         }
 
         return $sum;
+    }
+
+    /**
+     * Imposta shippingCost (costi aggiuntivi) con almeno €250 netti se tasso zero.
+     */
+    private function syncCostiAggiuntiviOnQuote(Entity $quote): void
+    {
+        if ($quote->getEntityType() !== 'Quote' || !$this->resolveTassoZero($quote)) {
+            return;
+        }
+
+        $aliquota = $this->resolveAliquotaIva($quote);
+        $taxInclusive = $this->isQuotePricesTaxInclusive($quote);
+        $existingNet = $this->resolveShippingCostNet($quote);
+        $targetNet = max($existingNet, self::TASSO_ZERO_COSTI_NET);
+
+        if ($targetNet <= 0) {
+            return;
+        }
+
+        $newValue = $taxInclusive
+            ? round($targetNet * (1 + $aliquota / 100), 2)
+            : round($targetNet, 2);
+
+        $current = $this->floatOrNull($quote->get('shippingCost')) ?? 0.0;
+
+        if (abs($current - $newValue) > 0.02) {
+            $quote->set('shippingCost', $newValue);
+        }
+    }
+
+    private function resolveShippingCostNet(Entity $quote): float
+    {
+        $cost = $this->floatOrNull($quote->get('shippingCost'));
+
+        if ($cost === null || $cost <= 0) {
+            return 0.0;
+        }
+
+        if ($quote->getEntityType() === 'Quote' && $this->isQuotePricesTaxInclusive($quote)) {
+            $aliquota = $this->resolveAliquotaIva($quote);
+
+            return round($cost / (1 + $aliquota / 100), 2);
+        }
+
+        return $cost;
+    }
+
+    private function resolveTassoZero(Entity $entity): bool
+    {
+        if ((bool) $entity->get('tassoZero')) {
+            return true;
+        }
+
+        if ($entity->getEntityType() === 'Opportunity') {
+            return false;
+        }
+
+        $opportunityId = $entity->get('opportunityId');
+
+        if (!$opportunityId) {
+            return false;
+        }
+
+        $opportunity = $this->entityManager->getEntityById('Opportunity', $opportunityId);
+
+        return $opportunity && (bool) $opportunity->get('tassoZero');
+    }
+
+    private function shouldIncludeAccessoriesInCostiAggiuntivi(Entity $quote): bool
+    {
+        if ($quote->getEntityType() !== 'Quote' || !$this->isArielContract($quote)) {
+            return false;
+        }
+
+        $date = $quote->get('dateQuoted') ?: $quote->get('createdAt');
+
+        if (!$date) {
+            return false;
+        }
+
+        return substr((string) $date, 0, 10) <= self::ARIEL_ACCESSORIES_IN_COSTI_CUTOFF;
+    }
+
+    private function isArielContract(Entity $quote): bool
+    {
+        $brand = strtolower((string) ($quote->get('productBrandName') ?? ''));
+
+        if (str_contains($brand, 'ariel')) {
+            return true;
+        }
+
+        $partner = strtolower((string) ($quote->get('fornitorePartnerName') ?? ''));
+
+        if (str_contains($partner, 'gdl')) {
+            return true;
+        }
+
+        if ($quote->get('productBrandId')) {
+            $brandEntity = $this->entityManager->getEntityById('ProductBrand', $quote->get('productBrandId'));
+
+            if ($brandEntity && stripos((string) $brandEntity->get('name'), 'ariel') !== false) {
+                return true;
+            }
+        }
+
+        if ($quote->get('fornitorePartnerId')) {
+            $partnerEntity = $this->entityManager->getEntityById(
+                'FornitorePartner',
+                $quote->get('fornitorePartnerId')
+            );
+
+            if ($partnerEntity && stripos((string) $partnerEntity->get('name'), 'gdl') !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function sumMainProductPrezzoCodiceNetFromItems(Entity $entity): float
+    {
+        return $this->sumPrezzoCodiceNetFromProductsOnItems($entity, false);
+    }
+
+    private function sumAccessoryPrezzoCodiceNetFromItems(Entity $entity): float
+    {
+        return $this->sumPrezzoCodiceNetFromProductsOnItems($entity, true);
+    }
+
+    private function isAccessoryLineItem(?Entity $product, mixed $item): bool
+    {
+        $name = strtolower(trim((string) (
+            $this->itemValue($item, 'name')
+            ?? $product?->get('name')
+            ?? ''
+        )));
+
+        if ($name === '') {
+            return false;
+        }
+
+        if (preg_match('/\bmp\.ext\b|accessori|\baccessorio\b/i', $name)) {
+            return true;
+        }
+
+        if (preg_match('/\b00\.\d{2}\.\d{2}\.\d\b/', $name)) {
+            return true;
+        }
+
+        $sku = strtolower(trim((string) ($product?->get('sku') ?? $product?->get('partNumber') ?? '')));
+
+        if ($sku !== '' && preg_match('/^mp\.|^00\./i', $sku)) {
+            return true;
+        }
+
+        return false;
     }
 
     private function itemValue(mixed $item, string $key): mixed

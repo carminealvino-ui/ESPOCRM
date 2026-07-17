@@ -11,9 +11,17 @@ class RichiamiPianificati implements Filter
     {
         $queryBuilder->where([
             'status' => 'Planned',
-            'AND' => [
-                ['richiamo!=' => ''],
-                ['richiamo!=' => null],
+            'OR' => [
+                'AND' => [
+                    ['richiamo!=' => ''],
+                    ['richiamo!=' => null],
+                ],
+                'tipologia' => [
+                    'Richiamo su Opportunità Generata',
+                    'Richiamo per Nuovo Appuntamento',
+                    'Richiamo per Informazioni Aggiuntive',
+                    'Contatto dopo Prima Visita',
+                ],
             ],
         ]);
     }

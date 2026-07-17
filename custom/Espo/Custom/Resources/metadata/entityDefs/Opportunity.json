@@ -45,7 +45,9 @@
                 "Confronto con Marito-Moglie/Socio",
                 "Tempistica Decisione",
                 "Modalità di Pagamento",
-                "Detrazione non Possibile"
+                "Detrazione non Possibile",
+                "Infattibilità Tecnica",
+                "Permessi"
             ],
             "style": {
                 "": null,
@@ -60,9 +62,11 @@
                 "Confronto con Marito-Moglie/Socio": null,
                 "Tempistica Decisione": null,
                 "Modalità di Pagamento": null,
-                "Detrazione non Possibile": null
+                "Detrazione non Possibile": null,
+                "Infattibilità Tecnica": null,
+                "Permessi": null
             },
-            "default": null,
+            "default": "",
             "isCustom": true
         },
         "name": {
@@ -80,7 +84,6 @@
             "autocompleteOnEmpty": true
         },
         "telefono": {
-            "readOnly": true,
             "type": "foreign",
             "link": "prospect",
             "field": "phoneNumber",
@@ -159,6 +162,10 @@
             "type": "currency",
             "isCustom": true
         },
+        "importoCaparra": {
+            "type": "currency",
+            "isCustom": true
+        },
         "amount": {
             "required": false
         },
@@ -168,6 +175,8 @@
             "type": "jsonArray",
             "notStorable": true,
             "view": "sales:views/opportunity/fields/item-list",
+            "layoutDetailDisabled": true,
+            "layoutEditDisabled": true,
             "layoutFiltersDisabled": true,
             "layoutListDisabled": true,
             "reportDisabled": true,
@@ -207,6 +216,9 @@
             "type": "enum",
             "options": [
                 "",
+                "In attesa di OTP",
+                "In valutazione",
+                "In attesa documentazione",
                 "In lavorazione",
                 "In rivalutazione",
                 "In Attesa Documentazione",
@@ -216,14 +228,34 @@
             ],
             "style": {
                 "": null,
+                "In attesa di OTP": "info",
+                "In valutazione": "primary",
+                "In attesa documentazione": "warning",
                 "In lavorazione": null,
                 "In rivalutazione": null,
-                "In Attesa Documentazione": null,
-                "Approvato": null,
-                "Respinto": null,
+                "In Attesa Documentazione": "warning",
+                "Approvato": "success",
+                "Respinto": "danger",
                 "Annullato": null
             },
             "default": null,
+            "isCustom": true
+        },
+        "importoFinanziato": {
+            "type": "currency",
+            "isCustom": true
+        },
+        "nrRate": {
+            "type": "int",
+            "isCustom": true
+        },
+        "tassoZero": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
+        "importoRata": {
+            "type": "currency",
             "isCustom": true
         },
         "statoContratto": {
@@ -232,7 +264,9 @@
                 "",
                 "In lavorazione",
                 "Inserito",
+                "Appuntamento fissato",
                 "Installato",
+                "Chiuso",
                 "Sospeso",
                 "Annullato",
                 "Recesso"
@@ -241,7 +275,9 @@
                 "": null,
                 "In lavorazione": null,
                 "Inserito": null,
+                "Appuntamento fissato": null,
                 "Installato": null,
+                "Chiuso": "success",
                 "Sospeso": null,
                 "Annullato": null,
                 "Recesso": null
@@ -276,6 +312,11 @@
             "type": "currency",
             "isCustom": true,
             "conversionDisabled": true
+        },
+        "ordineIncompletoAriel": {
+            "type": "bool",
+            "default": false,
+            "isCustom": true
         },
         "azienda": {
             "type": "enum",
@@ -335,6 +376,11 @@
         "productCategory": {
             "type": "link",
             "view": "custom:views/fields/product-category-by-brand",
+            "isCustom": true
+        },
+        "dataAttivazione": {
+            "type": "date",
+            "useNumericFormat": true,
             "isCustom": true
         }
     },

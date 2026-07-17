@@ -1,53 +1,30 @@
 {
-    "controller": "controllers/record",
-    "boolFilterList": [
-        "onlyMy"
-    ],
-    "sidePanels": {
-        "detail": [
-            {
-                "name": "activities",
-                "reference": "activities"
-            },
-            {
-                "name": "history",
-                "reference": "history"
-            },
-            {
-                "name": "tasks",
-                "reference": "tasks"
-            }
-        ]
-    },
-    "bottomPanels": {
-        "detail": [
-            {
-                "name": "activities",
-                "reference": "activities",
-                "disabled": true
-            },
-            {
-                "name": "history",
-                "reference": "history",
-                "disabled": true
-            }
-        ]
-    },
-    "iconClass": "fas fa-file-invoice-dollar",
-    "relationshipPanels": {
-        "cliente": {
-            "layout": null,
-            "selectPrimaryFilterName": null
+    "filterList": [
+        {
+            "name": "forecast",
+            "style": "info"
         },
-        "contratto": {
-            "layout": null,
-            "selectPrimaryFilterName": null
+        {
+            "name": "inPagamento",
+            "style": "warning"
         },
-        "contrattoArticoli": {
-            "layout": null,
-            "selectPrimaryFilterName": null
+        {
+            "name": "pagato",
+            "style": "success"
+        },
+        {
+            "name": "inesigibile",
+            "style": "danger"
         }
-    },
-    "kanbanViewMode": false,
-    "color": null
+    ],
+    "massUpdate": true,
+    "massUpdateFieldList": [
+        "statoProvvigione",
+        "assignedUser"
+    ],
+    "controller": "controllers/record",
+    "recordViews": {
+        "detail": "custom:views/provvigione/record/detail",
+        "edit": "custom:views/provvigione/record/edit"
+    }
 }

@@ -1,0 +1,101 @@
+[
+    {
+        "rows": [
+            [
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "attiva"
+                },
+                {
+                    "name": "priorita"
+                }
+            ],
+            [
+                {
+                    "name": "regimeProvvigione"
+                },
+                {
+                    "name": "tipoCalcolo"
+                },
+                {
+                    "name": "tipoProvvigioneRecord"
+                }
+            ],
+            [
+                {
+                    "name": "fornitorePartner"
+                },
+                {
+                    "name": "productBrand"
+                },
+                {
+                    "name": "productCategory"
+                }
+            ],
+            [
+                {
+                    "name": "gruppoProvvigione"
+                },
+                {
+                    "name": "giorniLiquidazione"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "percentuale"
+                },
+                {
+                    "name": "percentualeAddizionale"
+                },
+                {
+                    "name": "coefficiente"
+                }
+            ],
+            [
+                {
+                    "name": "gettoneImporto"
+                },
+                {
+                    "name": "importoFissoPod"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "margineMin"
+                },
+                {
+                    "name": "margineMax"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "inflowMin"
+                },
+                {
+                    "name": "inflowMax"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "podMin"
+                },
+                {
+                    "name": "podMax"
+                },
+                false
+            ],
+            [
+                {
+                    "name": "description",
+                    "fullWidth": true
+                }
+            ]
+        ]
+    }
+]

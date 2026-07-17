@@ -200,6 +200,7 @@
         "createdBy": {
             "type": "link",
             "readOnly": true,
+            "view": "views/fields/user",
             "fieldManagerParamList": [
                 "tooltipText"
             ],
@@ -208,6 +209,7 @@
         "modifiedBy": {
             "type": "link",
             "readOnly": true,
+            "view": "views/fields/user",
             "fieldManagerParamList": [
                 "tooltipText"
             ],

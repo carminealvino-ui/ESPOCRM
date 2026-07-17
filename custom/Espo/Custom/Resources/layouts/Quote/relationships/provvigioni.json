@@ -1,0 +1,39 @@
+[
+    {
+        "name": "name",
+        "link": true,
+        "customLabel": "Descrizione"
+    },
+    {
+        "name": "tipo",
+        "width": 14
+    },
+    {
+        "name": "baseCalcolo",
+        "width": 16,
+        "customLabel": "Base del calcolo"
+    },
+    {
+        "name": "importoBaseCalcolo",
+        "width": 12,
+        "align": "right"
+    },
+    {
+        "name": "tassoProvvigioni",
+        "width": 10,
+        "align": "right"
+    },
+    {
+        "name": "statoProvvigione",
+        "width": 12
+    },
+    {
+        "name": "dataLiquidazionePrevista",
+        "width": 12
+    },
+    {
+        "name": "importoConsolidato",
+        "width": 12,
+        "align": "right"
+    }
+]

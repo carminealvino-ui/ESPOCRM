@@ -46,24 +46,41 @@ class GeneraDisponibilitaRicorrenti
 
         if ($patch !== []) {
             $calendar->set($patch);
-            $this->entityManager->saveEntity($calendar);
+            $this->entityManager->saveEntity($calendar, [
+                'skipAutoGeneraDisponibilita' => true,
+            ]);
+        }
+
+        $calendarId = $calendar->getId();
+
+        if ($calendarId) {
+            $calendar = $this->entityManager->getEntityById('WorkingTimeCalendar', $calendarId);
+
+            if (!$calendar) {
+                throw new \Exception('Calendario lavorativo non trovato dopo il salvataggio.');
+            }
         }
 
         $generator = new WorkingTimeCalendarDisponibilitaGenerator($this->entityManager);
         $result = $generator->generateFromCalendar($calendar);
+
+        $dateFrom = substr((string) ($calendar->get('dataInizioGenerazione') ?? ''), 0, 10);
+        $dateTo = substr((string) ($calendar->get('dataFineGenerazione') ?? ''), 0, 10);
+        $diagnosis = $generator->diagnoseSlots($calendar, $dateFrom, $dateTo);
 
         return (object) [
             'created' => $result['created'],
             'skipped' => $result['skipped'],
             'errors' => $result['errors'],
             'userCount' => $result['userCount'],
-            'message' => sprintf(
-                'Create %d disponibilità per %d utenti del calendario, %d già presenti%s.',
-                $result['created'],
-                $result['userCount'],
-                $result['skipped'],
-                $result['errors'] !== [] ? ', ' . count($result['errors']) . ' errori' : ''
-            ),
+            'daysBlocked' => $result['daysBlocked'] ?? 0,
+            'daysWeekdayOff' => $result['daysWeekdayOff'] ?? 0,
+            'daysNoSlots' => $result['daysNoSlots'] ?? 0,
+            'daysWithSlots' => $result['daysWithSlots'] ?? 0,
+            'blockingExceptions' => $diagnosis['blockingExceptions'],
+            'dateFrom' => $dateFrom,
+            'dateTo' => $dateTo,
+            'message' => $generator->formatGenerationMessage($result, $dateFrom, $dateTo),
         ];
     }
 }

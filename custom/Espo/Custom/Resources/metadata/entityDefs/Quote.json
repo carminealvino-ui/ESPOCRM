@@ -148,8 +148,8 @@
             "isCustom": true
         },
         "venditaAbbinataAdAltroProdotto": {
-            "notNull": true,
             "type": "bool",
+            "default": false,
             "isCustom": true
         },
         "scontoVenditaAbbinata": {
@@ -158,8 +158,8 @@
             "isCustom": true
         },
         "finanziamento": {
-            "notNull": true,
             "type": "bool",
+            "default": false,
             "isCustom": true
         },
         "statoFinanziamento": {
@@ -169,22 +169,31 @@
                 "In attesa di OTP",
                 "In valutazione",
                 "In attesa documentazione",
+                "In lavorazione",
+                "In rivalutazione",
+                "In Attesa Documentazione",
                 "Approvato",
-                "Respinto"
+                "Respinto",
+                "Annullato"
             ],
             "style": {
                 "": null,
                 "In attesa di OTP": "info",
                 "In valutazione": "primary",
                 "In attesa documentazione": "warning",
+                "In lavorazione": null,
+                "In rivalutazione": null,
+                "In Attesa Documentazione": "warning",
                 "Approvato": "success",
-                "Respinto": "danger"
+                "Respinto": "danger",
+                "Annullato": null
             },
             "default": null,
             "isCustom": true
         },
         "importoCaparra": {
             "type": "currency",
+            "readOnly": false,
             "isCustom": true
         },
         "importoFinanziato": {
@@ -196,8 +205,8 @@
             "isCustom": true
         },
         "tassoZero": {
-            "notNull": true,
             "type": "bool",
+            "default": false,
             "isCustom": true
         },
         "rataPrestito": {
@@ -213,38 +222,55 @@
             "options": [
                 "",
                 "Inserito",
+                "In lavorazione",
+                "Appuntamento Fissato",
+                "Installato",
                 "Chiuso",
                 "Sospeso",
-                "Recesso",
-                "Annullato"
+                "Annullato",
+                "Recesso"
             ],
             "style": {
                 "": null,
-                "Inserito": "info",
+                "Inserito": null,
+                "In lavorazione": null,
+                "Appuntamento Fissato": null,
+                "Installato": null,
                 "Chiuso": "success",
-                "Sospeso": "warning",
-                "Recesso": "default",
-                "Annullato": "danger"
+                "Sospeso": null,
+                "Annullato": null,
+                "Recesso": null
             },
             "default": "Inserito",
             "isCustom": true
         },
         "status": {
             "options": [
+                "Draft",
+                "Presented",
                 "Bozza",
                 "In lavorazione",
                 "Appuntamento fissato",
+                "Approved",
                 "Installato",
-                "Invalido"
+                "Recesso",
+                "Finanziamento Rifiutato",
+                "Invalido",
+                "Canceled"
             ],
             "style": {
+                "Draft": null,
+                "Presented": "primary",
                 "Bozza": "default",
                 "In lavorazione": "primary",
                 "Appuntamento fissato": "info",
+                "Approved": "info",
                 "Installato": "success",
-                "Invalido": "danger"
-            },
-            "default": "Bozza"
+                "Recesso": "danger",
+                "Finanziamento Rifiutato": "warning",
+                "Invalido": "danger",
+                "Canceled": "info"
+            }
         }
     },
     "links": {
@@ -293,7 +319,7 @@
         }
     },
     "collection": {
-        "orderBy": "createdAt",
+        "orderBy": "dateQuoted",
         "order": "desc",
         "textFilterFields": [
             "name",
@@ -302,5 +328,5 @@
         "fullTextSearch": false,
         "countDisabled": false
     },
-    "optimisticConcurrencyControl": true
+    "optimisticConcurrencyControl": false
 }

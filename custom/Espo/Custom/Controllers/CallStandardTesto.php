@@ -3,21 +3,18 @@
 namespace Espo\Custom\Controllers;
 
 use Espo\Core\Api\Request;
-use Espo\Core\Controllers\Base;
+use Espo\Core\Api\Response;
 use Espo\Custom\Services\CallStandardTesto as CallStandardTestoService;
 
-class CallStandardTesto extends Base
+class CallStandardTesto
 {
     public function __construct(
         private CallStandardTestoService $service
     ) {}
 
-    /**
-     * @return array{testo: string}
-     */
-    public function getActionRead(Request $request): array
+    public function getActionRead(Request $request, Response $response): object
     {
-        return [
+        return (object) [
             'testo' => $this->service->get(),
         ];
     }

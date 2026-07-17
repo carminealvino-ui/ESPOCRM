@@ -32,23 +32,19 @@
                     "name": "stage"
                 },
                 {
-                    "name": "closeDate"
+                    "name": "finanziamento"
                 }
             ],
             [
                 {
-                    "name": "statoContratto"
+                    "name": "importoCaparra"
                 },
+                false
+            ],
+            [
+                false,
                 {
                     "name": "motivoDecisione"
-                }
-            ],
-            [
-                {
-                    "name": "finanziamento"
-                },
-                {
-                    "name": "statoFinanziamento"
                 }
             ]
         ],
@@ -95,5 +91,35 @@
         "style": "default",
         "hidden": false,
         "customLabel": "Formulazione Offerta"
+    },
+    {
+        "rows": [
+            [
+                {
+                    "name": "tassoZero"
+                },
+                {
+                    "name": "importoFinanziato"
+                }
+            ],
+            [
+                {
+                    "name": "nrRate"
+                },
+                {
+                    "name": "importoRata"
+                }
+            ]
+        ],
+        "dynamicLogicVisible": {
+            "conditionGroup": [
+                {
+                    "type": "isTrue",
+                    "attribute": "finanziamento"
+                }
+            ]
+        },
+        "style": "default",
+        "label": "Finanziamento"
     }
 ]

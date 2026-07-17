@@ -1,0 +1,8 @@
+{
+    "primaryFilterClassNameMap": {
+        "forecast": "Espo\\Custom\\Classes\\Select\\Provvigione\\PrimaryFilters\\Forecast",
+        "inPagamento": "Espo\\Custom\\Classes\\Select\\Provvigione\\PrimaryFilters\\InPagamento",
+        "pagato": "Espo\\Custom\\Classes\\Select\\Provvigione\\PrimaryFilters\\Pagato",
+        "inesigibile": "Espo\\Custom\\Classes\\Select\\Provvigione\\PrimaryFilters\\Inesigibile"
+    }
+}

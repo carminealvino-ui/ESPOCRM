@@ -8,7 +8,6 @@ use Espo\Modules\Google\Core\Google\Actions\Event as GoogleEventAction;
 use Espo\Modules\Google\Repositories\GoogleCalendar as GoogleCalendarRepository;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
-use Espo\ORM\Query\Part\UpdateBuilder;
 
 /**
  * Sync Appuntamento ↔ Google Calendar (rimozione su Not Held / delete / cambio consulente).
@@ -31,6 +30,12 @@ class AppuntamentoGoogleSync
             return;
         }
 
+        if ($entity->get('status') === 'Not Held') {
+            $entity->set('assignedUserId', $this->resolvePrimarySystemAdminUserId());
+
+            return;
+        }
+
         $ids = $entity->get('assignedUsersIds');
 
         if (!is_array($ids) || $ids === []) {
@@ -46,6 +51,248 @@ class AppuntamentoGoogleSync
         if ($entity->get('assignedUserId') !== $primaryUserId) {
             $entity->set('assignedUserId', $primaryUserId);
         }
+    }
+
+    /**
+     * True se Not Held ma «Utenti assegnati» non è l'admin di sistema (userName admin / id 1).
+     */
+    public function needsNotHeldAdminAssigneeFix(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE) {
+            return false;
+        }
+
+        if ($entity->get('status') !== 'Not Held') {
+            return false;
+        }
+
+        $entityId = $entity->getId();
+
+        if (!$entityId) {
+            return false;
+        }
+
+        $fresh = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+
+        if (!$fresh) {
+            return false;
+        }
+
+        return !$this->isAssignedToPrimarySystemAdmin($fresh);
+    }
+
+    /**
+     * Solo l'utente admin di sistema (come GlobalLogic), non ogni utente con type=admin.
+     */
+    public function isAssignedToPrimarySystemAdmin(Entity $entity): bool
+    {
+        $entityId = $entity->getId();
+
+        if (!$entityId) {
+            return false;
+        }
+
+        [$assignedUserId, $assignedUsersIds] = $this->fetchAssigneeStateFromDb($entityId);
+        $adminId = $this->resolvePrimarySystemAdminUserId();
+
+        if ($assignedUsersIds !== [$adminId]) {
+            return false;
+        }
+
+        return $assignedUserId === $adminId;
+    }
+
+    public function describePrimarySystemAdmin(): string
+    {
+        $adminId = $this->resolvePrimarySystemAdminUserId();
+        $user = $this->entityManager->getEntityById('User', $adminId);
+
+        if (!$user) {
+            return $adminId . ' (utente non trovato)';
+        }
+
+        return sprintf(
+            '%s (%s, userName=%s)',
+            trim(($user->get('firstName') ?: '') . ' ' . ($user->get('lastName') ?: '')),
+            $adminId,
+            (string) ($user->get('userName') ?? '')
+        );
+    }
+
+    /**
+     * Bonifica / afterSave: allinea link multiple assignedUsers ad admin.
+     */
+    public function persistNotHeldAdminAssignees(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE) {
+            return false;
+        }
+
+        if ($entity->get('status') !== 'Not Held') {
+            return false;
+        }
+
+        $entityId = $entity->getId();
+
+        if (!$entityId) {
+            return false;
+        }
+
+        $entity = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+
+        if (!$entity) {
+            return false;
+        }
+
+        if (!$this->needsNotHeldAdminAssigneeFix($entity)) {
+            return false;
+        }
+
+        $adminId = $this->resolvePrimarySystemAdminUserId();
+        $this->replaceAssignedUsersWithAdmin($entityId, $adminId);
+
+        return true;
+    }
+
+    /**
+     * Bonifica --force: riassegna senza controlli (tutti i Not Held sul consulente).
+     */
+    public function forceNotHeldAdminAssignees(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE) {
+            return false;
+        }
+
+        if ($entity->get('status') !== 'Not Held') {
+            return false;
+        }
+
+        $entityId = $entity->getId();
+
+        if (!$entityId) {
+            return false;
+        }
+
+        $this->replaceAssignedUsersWithAdmin($entityId, $this->resolvePrimarySystemAdminUserId());
+
+        return true;
+    }
+
+    /**
+     * Scrive assigned_user_id e entity_user senza passare da saveEntity (più affidabile su Espo 10).
+     */
+    private function replaceAssignedUsersWithAdmin(string $entityId, string $adminId): void
+    {
+        $entity = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+
+        if (!$entity) {
+            return;
+        }
+
+        $entity->loadLinkMultipleField('assignedUsers');
+        $relation = $this->entityManager->getRelation($entity, 'assignedUsers');
+
+        foreach ($entity->getLinkMultipleIdList('assignedUsers') as $userId) {
+            if ((string) $userId !== $adminId) {
+                $relation->unrelateById($userId);
+            }
+        }
+
+        $currentIds = array_map(
+            static fn ($userId) => (string) $userId,
+            $entity->getLinkMultipleIdList('assignedUsers')
+        );
+
+        if (!in_array($adminId, $currentIds, true)) {
+            $relation->relateById($adminId);
+        }
+
+        $this->updateAssignedUserIdDirect($entityId, $adminId);
+    }
+
+    private function updateAssignedUserIdDirect(string $entityId, string $userId): void
+    {
+        $pdo = $this->entityManager->getPDO();
+
+        if ($pdo instanceof \PDO) {
+            $stmt = $pdo->prepare(
+                'UPDATE appuntamento SET assigned_user_id = ? WHERE id = ? AND deleted = 0'
+            );
+            $stmt->execute([$userId, $entityId]);
+
+            return;
+        }
+
+        $entity = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+
+        if ($entity) {
+            $entity->set('assignedUserId', $userId);
+            $this->entityManager->saveEntity($entity, ['skipHooks' => true, 'silent' => true]);
+        }
+    }
+
+    /**
+     * @return array{0: string, 1: string[]}
+     */
+    public function fetchAssigneeStateFromDb(string $entityId): array
+    {
+        $assignedUserId = '';
+        $assignedUsersIds = [];
+
+        $pdo = $this->entityManager->getPDO();
+
+        if ($pdo instanceof \PDO) {
+            $stmt = $pdo->prepare(
+                'SELECT assigned_user_id FROM appuntamento WHERE id = ? AND deleted = 0 LIMIT 1'
+            );
+            $stmt->execute([$entityId]);
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $assignedUserId = (string) ($row['assigned_user_id'] ?? '');
+
+            $stmt = $pdo->prepare(
+                'SELECT user_id FROM entity_user
+                 WHERE entity_id = ? AND entity_type = ? AND deleted = 0
+                 ORDER BY user_id'
+            );
+            $stmt->execute([$entityId, self::ENTITY_TYPE]);
+
+            while ($linkRow = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+                $assignedUsersIds[] = (string) ($linkRow['user_id'] ?? '');
+            }
+
+            return [$assignedUserId, $assignedUsersIds];
+        }
+
+        $entity = $this->entityManager->getEntityById(self::ENTITY_TYPE, $entityId);
+
+        if (!$entity) {
+            return ['', []];
+        }
+
+        $entity->loadLinkMultipleField('assignedUsers');
+        $assignedUsersIds = array_map(
+            static fn ($userId) => (string) $userId,
+            $entity->getLinkMultipleIdList('assignedUsers')
+        );
+        sort($assignedUsersIds);
+
+        return [(string) ($entity->get('assignedUserId') ?: ''), $assignedUsersIds];
+    }
+
+    /**
+     * @deprecated Usare persistNotHeldAdminAssignees in afterSave.
+     */
+    public function ensureNotHeldAssignedToAdmin(Entity $entity): void
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE) {
+            return;
+        }
+
+        if ($entity->get('status') !== 'Not Held') {
+            return;
+        }
+
+        $entity->set('assignedUserId', $this->resolvePrimarySystemAdminUserId());
     }
 
     public function handleConsultantChange(Entity $entity): void
@@ -1341,6 +1588,24 @@ class AppuntamentoGoogleSync
         return $this->bonificaReassignAdminOnlyToConsultant($entity, $consultantUserId);
     }
 
+    public function resolvePrimarySystemAdminUserId(): string
+    {
+        static $cache = null;
+
+        if ($cache !== null) {
+            return $cache;
+        }
+
+        $admin = $this->entityManager
+            ->getRDBRepository('User')
+            ->where(['userName' => 'admin', 'isActive' => true])
+            ->findOne();
+
+        $cache = (string) ($admin?->getId() ?? '1');
+
+        return $cache;
+    }
+
     /**
      * @return string[]
      */
@@ -1531,14 +1796,7 @@ class AppuntamentoGoogleSync
         }
 
         // UPDATE diretto: evita hook Google (dummy "APPUNTAMENTO SENZA PROSPECT").
-        $this->entityManager->getQueryExecutor()->execute(
-            UpdateBuilder::create()
-                ->in(self::ENTITY_TYPE)
-                ->set(['assignedUserId' => $userId])
-                ->where(['id' => $entityId])
-                ->build()
-        );
-
+        $this->updateAssignedUserIdDirect($entityId, $userId);
         $entity->set('assignedUserId', $userId);
 
         return true;

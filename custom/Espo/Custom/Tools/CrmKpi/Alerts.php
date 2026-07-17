@@ -13,6 +13,7 @@ class Alerts
         'Annullato dal Consulente',
         'Annullato Azienda',
         'Annullato Call Center',
+        'Appuntamento non in agenda',
     ];
 
     /** @var string[] */
@@ -34,64 +35,94 @@ class Alerts
     /**
      * @return object[]
      */
-    public function build(?string $from, ?string $to, ?string $productBrandId = null): array
+    public function build(?string $from, ?string $to, ?string $productBrandId = null): object
+    {
+        unset($from, $to);
+
+        return (object) [
+            'criticita' => $this->buildCriticita($productBrandId),
+        ];
+    }
+
+    /**
+     * Criticità operative per entità (valori totali, non filtrati per periodo KPI).
+     *
+     * @return object[]
+     */
+    private function buildCriticita(?string $productBrandId): array
     {
         return [
             $this->alert(
                 'appuntamentiSenzaOpportunita',
-                'Appuntamenti senza opportunità',
-                $this->countAppuntamentiSenzaOpportunita($from, $to, $productBrandId),
+                'Senza opportunità',
+                $this->countAppuntamentiSenzaOpportunita($productBrandId),
                 '#Appuntamento/list/primaryFilter=appuntamentiSenzaOpportunita',
                 null,
-                'avvisi'
+                'criticita',
+                'appuntamenti'
             ),
             $this->alert(
                 'appuntamentiConPiuOpportunita',
-                'Appuntamenti con più opportunità',
-                $this->countAppuntamentiConPiuOpportunita($from, $to, $productBrandId),
+                'Con più opportunità',
+                $this->countAppuntamentiConPiuOpportunita($productBrandId),
                 '#Appuntamento/list/primaryFilter=appuntamentiConPiuOpportunita',
                 null,
-                'avvisi'
+                'criticita',
+                'appuntamenti'
             ),
             $this->alert(
                 'opportunityWithoutWhatsapp',
-                'Opportunità senza invio WhatsApp',
-                $this->countOpportunitiesWithoutWhatsapp($from, $to, $productBrandId),
+                'Senza invio WhatsApp',
+                $this->countOpportunitiesWithoutWhatsapp($productBrandId),
                 '#Opportunity/list/primaryFilter=senzaInvioWhatsapp',
                 null,
-                'avvisi'
+                'criticita',
+                'opportunita'
             ),
             $this->alert(
                 'opportunityWithoutPhoneFollowUp',
-                'Opportunità senza Riscontro',
-                $this->countOpportunitiesWithoutPhoneFollowUp($from, $to, $productBrandId),
-                '#Opportunity/list/primaryFilter=senzaRiscontroPeriodo',
+                'Senza riscontro telefonico',
+                $this->countOpportunitiesWithoutPhoneFollowUp($productBrandId),
+                '#Opportunity/list/primaryFilter=senzaRiscontroTelefonico',
                 null,
-                'avvisi'
-            ),
-            $this->alert(
-                'richiamiPianificati',
-                'Richiami Pianificati',
-                $this->countRichiamiPianificati(),
-                '#Call/list/primaryFilter=richiamiPianificati',
-                null,
-                'avvisi'
+                'criticita',
+                'opportunita'
             ),
             $this->alert(
                 'contractsSuspendedFinancing',
-                'Contratti Sospesi Finanziamento',
+                'Sospesi finanziamento',
                 $this->countContractsSuspendedFinancing($productBrandId),
                 '#Quote/list/primaryFilter=contrattiSospesiFinanziamento',
                 null,
-                'criticita'
+                'criticita',
+                'contratti'
             ),
             $this->alert(
                 'contractsSuspendedOrders',
-                'Contratti Sospesi Ordini',
+                'Sospesi ordini',
                 $this->countContractsSuspendedOrders($productBrandId),
-                '#Quote/list/primaryFilter=contrattiInLavorazione',
+                '#Quote/list/primaryFilter=contrattiSospesiOrdini',
                 null,
-                'criticita'
+                'criticita',
+                'contratti'
+            ),
+            $this->alert(
+                'richiamiPianificati',
+                'Richiami pianificati',
+                $this->countRichiamiPianificati(),
+                '#Call/list/primaryFilter=richiamiPianificati',
+                null,
+                'criticita',
+                'chiamate'
+            ),
+            $this->alert(
+                'chiamateScadute',
+                'Chiamate scadute',
+                $this->countChiamateScadute(),
+                '#Call/list/primaryFilter=chiamateScadute',
+                null,
+                'criticita',
+                'chiamate'
             ),
         ];
     }
@@ -102,7 +133,8 @@ class Alerts
         int $value,
         string $link,
         ?string $meta = null,
-        string $group = 'avvisi'
+        string $group = 'criticita',
+        string $entity = 'appuntamenti'
     ): object {
         $item = (object) [
             'key' => $key,
@@ -110,6 +142,7 @@ class Alerts
             'value' => $value,
             'link' => $link,
             'group' => $group,
+            'entity' => $entity,
         ];
 
         if ($meta !== null && $meta !== '') {
@@ -119,12 +152,9 @@ class Alerts
         return $item;
     }
 
-    private function countAppuntamentiSenzaOpportunita(
-        ?string $from,
-        ?string $to,
-        ?string $productBrandId = null
-    ): int {
-        $heldIds = $this->getHeldAppuntamentoIdsInPeriod($from, $to, $productBrandId);
+    private function countAppuntamentiSenzaOpportunita(?string $productBrandId = null): int
+    {
+        $heldIds = $this->getHeldAppuntamentoIds($productBrandId);
 
         if ($heldIds === []) {
             return 0;
@@ -143,12 +173,9 @@ class Alerts
         return $count;
     }
 
-    private function countAppuntamentiConPiuOpportunita(
-        ?string $from,
-        ?string $to,
-        ?string $productBrandId = null
-    ): int {
-        $heldIds = $this->getHeldAppuntamentoIdsInPeriod($from, $to, $productBrandId);
+    private function countAppuntamentiConPiuOpportunita(?string $productBrandId = null): int
+    {
+        $heldIds = $this->getHeldAppuntamentoIds($productBrandId);
 
         if ($heldIds === []) {
             return 0;
@@ -167,22 +194,14 @@ class Alerts
         return $count;
     }
 
-    private function countOpportunitiesWithoutWhatsapp(
-        ?string $from,
-        ?string $to,
-        ?string $productBrandId = null
-    ): int {
-        $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to, $productBrandId);
-
-        if ($appuntamentoIds === []) {
-            return 0;
-        }
-
+    private function countOpportunitiesWithoutWhatsapp(?string $productBrandId = null): int
+    {
         $where = [
             'AND' => [
                 ['stage!=' => 'Closed Won'],
                 ['stage!=' => 'Closed Lost'],
-                ['appuntamentoId' => $appuntamentoIds],
+                ['appuntamentoId!=' => null],
+                ['appuntamentoId!=' => ''],
             ],
         ];
 
@@ -207,22 +226,12 @@ class Alerts
         return $count;
     }
 
-    private function countOpportunitiesWithoutPhoneFollowUp(
-        ?string $from,
-        ?string $to,
-        ?string $productBrandId = null
-    ): int {
-        $appuntamentoIds = $this->getAppuntamentoIdsInPeriod($from, $to, $productBrandId);
-
-        if ($appuntamentoIds === []) {
-            return 0;
-        }
-
+    private function countOpportunitiesWithoutPhoneFollowUp(?string $productBrandId = null): int
+    {
         $where = [
             'AND' => [
                 ['stage!=' => 'Closed Won'],
                 ['stage!=' => 'Closed Lost'],
-                ['appuntamentoId' => $appuntamentoIds],
             ],
         ];
 
@@ -261,6 +270,17 @@ class Alerts
             ->count();
     }
 
+    private function countChiamateScadute(): int
+    {
+        return (int) $this->entityManager
+            ->getRDBRepository('Call')
+            ->where([
+                'status' => 'Planned',
+                'dateStart<' => date('Y-m-d H:i:s'),
+            ])
+            ->count();
+    }
+
     private function countContractsSuspendedFinancing(?string $productBrandId = null): int
     {
         $where = [
@@ -282,7 +302,7 @@ class Alerts
     private function countContractsSuspendedOrders(?string $productBrandId = null): int
     {
         $where = [
-            'statoContratto' => 'In lavorazione',
+            'statoContratto' => 'Sospeso',
         ];
 
         if ($productBrandId) {
@@ -298,20 +318,13 @@ class Alerts
     /**
      * @return string[]
      */
-    private function getHeldAppuntamentoIdsInPeriod(
-        ?string $from,
-        ?string $to,
-        ?string $productBrandId = null
-    ): array {
+    private function getHeldAppuntamentoIds(?string $productBrandId = null): array
+    {
         $ids = [];
 
-        $where = array_merge(
-            [
-                'status' => 'Held',
-                'sottostato!=' => self::ESITI_ANNULLATI,
-            ],
-            $this->dateWhere('dataAppuntamento', $from, $to)
-        );
+        $where = [
+            'status' => 'Held',
+        ];
 
         if ($productBrandId) {
             $where['productBrandId'] = $productBrandId;
@@ -319,7 +332,7 @@ class Alerts
 
         $collection = $this->entityManager
             ->getRDBRepository('Appuntamento')
-            ->select(['id', 'esito'])
+            ->select(['id', 'esito', 'sottostato'])
             ->where($where)
             ->find();
 
@@ -327,35 +340,6 @@ class Alerts
             if ($this->isAppuntamentoNotAnnullato($appuntamento)) {
                 $ids[] = $appuntamento->getId();
             }
-        }
-
-        return $ids;
-    }
-
-    /**
-     * @return string[]
-     */
-    private function getAppuntamentoIdsInPeriod(
-        ?string $from,
-        ?string $to,
-        ?string $productBrandId = null
-    ): array {
-        $ids = [];
-
-        $where = $this->dateWhere('dataAppuntamento', $from, $to);
-
-        if ($productBrandId) {
-            $where['productBrandId'] = $productBrandId;
-        }
-
-        $collection = $this->entityManager
-            ->getRDBRepository('Appuntamento')
-            ->select(['id'])
-            ->where($where)
-            ->find();
-
-        foreach ($collection as $appuntamento) {
-            $ids[] = $appuntamento->getId();
         }
 
         return $ids;
@@ -465,32 +449,12 @@ class Alerts
 
     private function isAppuntamentoNotAnnullato(Entity $appuntamento): bool
     {
-        $sottostato = $appuntamento->get('sottostato');
-
-        if ($sottostato && in_array($sottostato, self::ESITI_ANNULLATI, true)) {
+        if ($appuntamento->get('sottostato') === 'Annullato') {
             return false;
         }
 
         $esito = $appuntamento->get('esito');
 
         return !($esito && in_array($esito, self::ESITI_ANNULLATI, true));
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function dateWhere(string $field, ?string $from, ?string $to): array
-    {
-        $where = [];
-
-        if ($from !== null) {
-            $where[$field . '>='] = $from;
-        }
-
-        if ($to !== null) {
-            $where[$field . '<='] = $to;
-        }
-
-        return $where;
     }
 }

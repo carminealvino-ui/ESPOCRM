@@ -74,7 +74,23 @@
                     {{#if hasPipeline}}
                         <div class="crm-kpi-pipeline">
                             <div class="crm-kpi-pipeline-chart" data-name="pipeline-chart"></div>
-                            <div class="crm-kpi-pipeline-legend legend-container"></div>
+                        </div>
+                        <div class="crm-kpi-pipeline-results">
+                            <div class="crm-kpi-pipeline-results-note">Percentuali su lordi · su totali (netti) o su opportunità (contratti)</div>
+                            <div class="crm-kpi-pipeline-results-grid">
+                                <div class="crm-kpi-pipeline-results-head">
+                                    <span>Risultato</span>
+                                    <span>Valore</span>
+                                    <span>Percentuali</span>
+                                </div>
+                                {{#each pipelineResultsRows}}
+                                    <div class="crm-kpi-pipeline-results-row">
+                                        <span class="crm-kpi-pipeline-results-label">{{label}}</span>
+                                        <span class="crm-kpi-pipeline-results-value">{{value}}</span>
+                                        <span class="crm-kpi-pipeline-results-detail">{{detail}}</span>
+                                    </div>
+                                {{/each}}
+                            </div>
                         </div>
                     {{else}}
                         <div class="text-muted small">Nessun dato nel periodo selezionato.</div>
@@ -144,35 +160,32 @@
                         </div>
                     </div>
                 </div>
-                <div class="crm-kpi-alerts-row">
-                    <div class="crm-kpi-panel crm-kpi-panel-alerts crm-kpi-panel-alerts-avvisi">
-                        <div class="crm-kpi-panel-title">Avvisi</div>
-                        <div class="crm-kpi-alerts">
-                            {{#each alertsAvvisi}}
-                                <div class="crm-kpi-alert{{#if value}} crm-kpi-alert-warn{{/if}}" data-action="openAlert" data-key="{{key}}">
-                                    <span class="crm-kpi-alert-value">{{value}}</span>
-                                    <span class="crm-kpi-alert-body">
-                                        <span class="crm-kpi-alert-label">{{label}}</span>
-                                        {{#if meta}}
-                                            <span class="crm-kpi-alert-meta">{{meta}}</span>
-                                        {{/if}}
-                                    </span>
-                                </div>
-                            {{/each}}
-                        </div>
-                    </div>
+                <div class="crm-kpi-criticita-section">
                     <div class="crm-kpi-panel crm-kpi-panel-alerts crm-kpi-panel-alerts-criticita">
                         <div class="crm-kpi-panel-title">Criticità</div>
-                        <div class="crm-kpi-alerts">
-                            {{#each alertsCriticita}}
-                                <div class="crm-kpi-alert{{#if value}} crm-kpi-alert-warn{{/if}}" data-action="openAlert" data-key="{{key}}">
-                                    <span class="crm-kpi-alert-value">{{value}}</span>
-                                    <span class="crm-kpi-alert-body">
-                                        <span class="crm-kpi-alert-label">{{label}}</span>
-                                        {{#if meta}}
-                                            <span class="crm-kpi-alert-meta">{{meta}}</span>
+                        <div class="crm-kpi-panel-note text-muted small">Valori totali (non filtrati per periodo) · 0 = nessuna criticità</div>
+                        <div class="crm-kpi-criticita-row">
+                            {{#each criticitaBoxes}}
+                                <div class="crm-kpi-panel crm-kpi-panel-criticita-entity">
+                                    <div class="crm-kpi-panel-subtitle">{{title}}</div>
+                                    <div class="crm-kpi-alerts">
+                                        {{#each alerts}}
+                                            {{#if value}}
+                                                <div class="crm-kpi-alert crm-kpi-alert-criticita crm-kpi-alert-criticita-active" data-action="openAlert" data-key="{{key}}">
+                                                    <span class="crm-kpi-alert-value">{{value}}</span>
+                                                    <span class="crm-kpi-alert-body">
+                                                        <span class="crm-kpi-alert-label">{{label}}</span>
+                                                        {{#if meta}}
+                                                            <span class="crm-kpi-alert-meta">{{meta}}</span>
+                                                        {{/if}}
+                                                    </span>
+                                                </div>
+                                            {{/if}}
+                                        {{/each}}
+                                        {{#if showEmpty}}
+                                            <div class="crm-kpi-criticita-empty text-muted small">Nessuna criticità</div>
                                         {{/if}}
-                                    </span>
+                                    </div>
                                 </div>
                             {{/each}}
                         </div>

@@ -1,10 +1,6 @@
 {
     "primaryFilterClassNameMap": {
-        "meseCorrente": "Espo\\Custom\\Classes\\Select\\Quote\\PrimaryFilters\\MeseCorrente",
-        "dataInstallazionePeriodo": "Espo\\Custom\\Classes\\Select\\Quote\\PrimaryFilters\\DataInstallazionePeriodo",
-        "dataInstallazioneMesePrecedente": "Espo\\Custom\\Classes\\Select\\Quote\\PrimaryFilters\\DataInstallazioneMesePrecedente",
-        "contrattiBacklog": "Espo\\Custom\\Classes\\Select\\Quote\\PrimaryFilters\\ContrattiBacklog",
-        "contrattiInLavorazione": "Espo\\Custom\\Classes\\Select\\Quote\\PrimaryFilters\\ContrattiInLavorazione",
-        "contrattiSospesiFinanziamento": "Espo\\Custom\\Classes\\Select\\Quote\\PrimaryFilters\\ContrattiSospesiFinanziamento"
+        "contrattiSospesiFinanziamento": "Espo\\Custom\\Classes\\Select\\Quote\\PrimaryFilters\\ContrattiSospesiFinanziamento",
+        "contrattiSospesiOrdini": "Espo\\Custom\\Classes\\Select\\Quote\\PrimaryFilters\\ContrattiSospesiOrdini"
     }
 }

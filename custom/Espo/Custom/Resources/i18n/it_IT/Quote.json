@@ -3,14 +3,16 @@
         "cAP": "CAP",
         "numberA": "Codice Contratto",
         "shippingProvider": "Installatore",
-        "shippingCostCurrency": "Spese di Installazione (valuta)",
+        "shippingCostCurrency": "Costi aggiuntivi (valuta)",
         "preDiscountedAmountCurrency": "Importo pre-sconto (valuta)",
         "number": "Numero Contratto",
         "name": "Contratto",
-        "grandTotalAmountCurrency": "Importo totale complessivo (valuta)",
+        "grandTotalAmount": "Importo totale",
+        "grandTotalAmountCurrency": "Importo totale (valuta)",
         "discountAmountCurrency": "Importo Sconto (valuta)",
         "discountAmountConverted": "Importo Sconto (convertito)",
         "dateQuoted": "Data Contratto",
+        "amount": "Importo",
         "amountCurrency": "Importo (valuta)",
         "taxAmountCurrency": "Imposta (valuta)",
         "taxAmount": "Importo Imposta",
@@ -23,8 +25,8 @@
         "shippingAddressState": "Stato (Installazione)",
         "shippingAddressStreet": "Via (Installazione)",
         "shippingContact": "Contatto Installazione",
-        "shippingCost": "Spese di Installazione",
-        "shippingCostConverted": "Spese di Installazione (convertito)",
+        "shippingCost": "Costi aggiuntivi",
+        "shippingCostConverted": "Costi aggiuntivi (convertito)",
         "prodotti": "Prodotti",
         "provvigioni": "Provvigioni",
         "prezzoCodice": "Prezzo Codice",
@@ -104,24 +106,37 @@
             "In attesa di OTP": "In attesa di OTP",
             "In valutazione": "In valutazione",
             "In attesa documentazione": "In attesa documentazione",
+            "In lavorazione": "In lavorazione",
+            "In rivalutazione": "In rivalutazione",
+            "In Attesa Documentazione": "In Attesa Documentazione",
             "Approvato": "Approvato",
             "Respinto": "Respinto",
-            "": ""
-        },
-        "statoContratto": {
-            "Inserito": "Inserito",
-            "Chiuso": "Chiuso",
-            "Sospeso": "Sospeso",
-            "Recesso": "Recesso",
             "Annullato": "Annullato",
             "": ""
         },
-        "status": {
-            "Bozza": "Bozza",
+        "statoContratto": {
             "In lavorazione": "In lavorazione",
-            "Appuntamento fissato": "Appuntamento fissato",
             "Installato": "Installato",
-            "Invalido": "Invalido"
+            "Annullato": "Annullato",
+            "": "",
+            "Sospeso": "Sospeso",
+            "Inserito": "Inserito",
+            "Recesso": "Recesso",
+            "Appuntamento Fissato": "Appuntamento Fissato",
+            "Chiuso": "Chiuso"
+        },
+        "status": {
+            "Draft": "Bozza",
+            "Presented": "Presentato",
+            "Bozza": "Bozza",
+            "Approved": "In Pagamento",
+            "Installato": "Installato",
+            "Recesso": "Recesso",
+            "Finanziamento Rifiutato": "Finanziamento Rifiutato",
+            "Invalido": "Invalido",
+            "Canceled": "Annullato",
+            "In lavorazione": "In lavorazione",
+            "Appuntamento fissato": "Appuntamento fissato"
         }
     }
 }

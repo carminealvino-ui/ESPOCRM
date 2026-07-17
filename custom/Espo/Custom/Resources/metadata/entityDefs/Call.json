@@ -84,7 +84,7 @@
                 "In Trattativa": "warning",
                 "Opportunità Accettata": "success"
             },
-            "default": null,
+            "default": "",
             "isCustom": true
         },
         "vocale": {
@@ -101,11 +101,7 @@
             "default": "call",
             "notStorable": true,
             "view": "custom:views/fields/call-canale-contatto",
-            "isCustom": true,
-            "style": {
-                "call": null,
-                "whatsapp": null
-            }
+            "isCustom": true
         },
         "whatsAppNumero": {
             "type": "url",
@@ -138,7 +134,7 @@
         "dataRichiamo": {
             "notNull": false,
             "type": "datetime",
-            "default": "javascript: return this.dateTime.getDateTimeShiftedFromNow(1, 'week', 15);",
+            "default": "javascript: return this.dateTime.toUtc(this.dateTime.getNowMoment().add(1, 'days').hours(9).minutes(0).seconds(0));",
             "useNumericFormat": true,
             "minuteStep": 30,
             "isCustom": true
@@ -163,6 +159,7 @@
         "daRichiamare": {
             "notNull": true,
             "type": "bool",
+            "view": "custom:views/fields/call-da-richiamare",
             "isCustom": true
         },
         "duration": {
@@ -181,12 +178,6 @@
         },
         "prospect": {
             "type": "link"
-        },
-        "dataRiscontro": {
-            "notNull": false,
-            "type": "date",
-            "useNumericFormat": true,
-            "isCustom": true
         }
     },
     "links": {

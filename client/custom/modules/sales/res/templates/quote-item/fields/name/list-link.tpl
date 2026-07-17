@@ -1,1 +1,1 @@
-<a href="#{{model.entityType}}/view/{{model.id}}">{{value}}</a>
+<a href="#{{model.entityType}}/view/{{model.id}}" class="text-record">{{value}}</a>

@@ -1,23 +1,30 @@
 [
     {
-        "name": "grandTotalAmount"
+        "name": "grandTotalAmount",
+        "customLabel": "Importo totale"
     },
     {
-        "name": "totalPrezzoCodice"
+        "name": "totalPrezzoCodice",
+        "customLabel": "Prezzo Codice Totale"
     },
     {
-        "name": "aliquotaIVA"
+        "name": "aliquotaIVA",
+        "customLabel": "Aliquota IVA"
     },
     {
-        "name": "amount"
+        "name": "amount",
+        "customLabel": "Importo"
     },
     {
-        "name": "prezzoCodiceIvaEsclusa"
+        "name": "prezzoCodiceIvaEsclusa",
+        "customLabel": "Prezzo a codice (IVA escl.)"
     },
     {
-        "name": "minusPlus"
+        "name": "minusPlus",
+        "customLabel": "Minus/Plus"
     },
     {
-        "name": "totaleProvvigioni"
+        "name": "totaleProvvigioni",
+        "customLabel": "Provvigioni Totali"
     }
 ]

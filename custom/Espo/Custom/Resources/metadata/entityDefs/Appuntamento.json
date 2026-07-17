@@ -52,7 +52,7 @@
         },
         "duration": {
             "type": "duration",
-            "view": "custom:views/appuntamento/fields/duration",
+            "view": "custom:views/fields/appuntamento-duration",
             "start": "dateStart",
             "end": "dateEnd",
             "options": [
@@ -96,11 +96,7 @@
         "reminders": {
             "type": "jsonArray",
             "notStorable": true,
-            "view": "custom:views/fields/reminders-disabled",
-            "layoutListDisabled": true,
-            "layoutDetailDisabled": true,
-            "layoutDetailSmallDisabled": true,
-            "layoutMassUpdateDisabled": true
+            "layoutListDisabled": true
         },
         "createdAt": {
             "notNull": false,
@@ -180,11 +176,11 @@
                 "Fuori Target",
                 "In ristrutturazione/In costruzione/Cantiere",
                 "In Trattativa",
-                "Infattibilità Tecnica",
-                "Modalità di pagamento",
+                "Infattibilit\u00e0 Tecnica",
+                "Modalit\u00e0 di pagamento",
                 "Marito/Moglie Assente",
                 "No Caparra",
-                "Non detraibile per età",
+                "Non detraibile per et\u00e0",
                 "Non detraibile per prodotto",
                 "Non detraibile per esposizione",
                 "Non Finanziabile",
@@ -216,11 +212,11 @@
                 "Fuori Target": null,
                 "In ristrutturazione/In costruzione/Cantiere": null,
                 "In Trattativa": null,
-                "Infattibilità Tecnica": null,
-                "Modalità di pagamento": null,
+                "Infattibilit\u00e0 Tecnica": null,
+                "Modalit\u00e0 di pagamento": null,
                 "Marito/Moglie Assente": null,
                 "No Caparra": null,
-                "Non detraibile per età": null,
+                "Non detraibile per et\u00e0": null,
                 "Non detraibile per prodotto": null,
                 "Non detraibile per esposizione": null,
                 "Non Finanziabile": null,
@@ -267,7 +263,7 @@
                 "Non Confermato",
                 "Solo Informazioni",
                 "Non Ricevuto",
-                "Infattibilità Tecnica",
+                "Infattibilit\u00e0 Tecnica",
                 "Non Gestito",
                 "Annullato",
                 "Prodotto non Conforme",
@@ -283,7 +279,7 @@
                 "Non Confermato": "primary",
                 "Solo Informazioni": "primary",
                 "Non Ricevuto": "warning",
-                "Infattibilità Tecnica": "warning",
+                "Infattibilit\u00e0 Tecnica": "warning",
                 "Non Gestito": "info",
                 "Annullato": "primary",
                 "Prodotto non Conforme": "warning",
@@ -452,11 +448,17 @@
         "impegno": {
             "type": "link"
         },
+        "meetingRef": {
+            "type": "varchar",
+            "maxLength": 100,
+            "options": [],
+            "isCustom": true
+        },
         "syncConGoogle": {
             "notNull": true,
             "type": "bool",
             "isCustom": true,
-            "default": true
+            "default": false
         },
         "noteCallCenter": {
             "type": "text",

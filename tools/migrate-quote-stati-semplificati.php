@@ -2,7 +2,6 @@
 /**
  * Migra i valori enum legacy dei Contratti al nuovo schema semplificato.
  *
- *   cd ~/public_html/crm/mec-group
  *   php tools/migrate-quote-stati-semplificati.php
  *   php tools/migrate-quote-stati-semplificati.php --dry-run
  */
@@ -119,7 +118,7 @@ foreach ($collection as $quote) {
 
         if ($entity) {
             $entity->set($changes);
-            $em->saveEntity($entity);
+            $em->saveEntity($entity, ['skipHooks' => true, 'silent' => true]);
         }
     }
 

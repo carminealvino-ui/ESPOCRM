@@ -8,10 +8,26 @@
                         "attribute": "daRichiamare"
                     }
                 ]
+            },
+            "required": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "daRichiamare"
+                    }
+                ]
             }
         },
         "richiamo": {
             "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "daRichiamare"
+                    }
+                ]
+            },
+            "required": {
                 "conditionGroup": [
                     {
                         "type": "isTrue",

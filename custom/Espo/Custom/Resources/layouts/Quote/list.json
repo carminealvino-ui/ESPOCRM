@@ -1,61 +1,61 @@
 [
     {
-        "name": "number",
-        "width": 16,
+        "name": "numberA",
+        "width": 14,
         "link": true,
         "align": "left"
     },
     {
         "name": "numeroContratto",
-        "width": 16
+        "width": 14
     },
     {
         "name": "account",
-        "width": 23,
+        "width": 20,
         "align": "left"
     },
     {
         "name": "status",
-        "width": 12,
+        "width": 10,
         "align": "left"
     },
     {
         "name": "statoContratto",
-        "width": 12,
+        "width": 10,
         "align": "left"
     },
     {
         "name": "statoFinanziamento",
-        "width": 12,
+        "width": 10,
         "align": "left"
     },
     {
         "name": "dateQuoted",
-        "width": 8,
+        "width": 10,
         "align": "left"
     },
     {
         "name": "dataInstallazione",
-        "width": 16
+        "width": 12
     },
     {
         "name": "importoContratto",
-        "width": 12,
+        "width": 10,
         "align": "left"
     },
     {
         "name": "minusPlus",
-        "width": 12,
+        "width": 10,
         "align": "left"
     },
     {
         "name": "amount",
-        "width": 12,
+        "width": 10,
         "align": "right"
     },
     {
         "name": "totaleProvvigioni",
-        "width": 12,
+        "width": 10,
         "align": "right"
     }
 ]

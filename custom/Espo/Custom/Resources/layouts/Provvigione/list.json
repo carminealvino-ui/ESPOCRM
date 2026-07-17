@@ -1,28 +1,35 @@
 [
     {
-        "name": "contratto",
-        "width": 35,
-        "align": "left"
+        "name": "name",
+        "link": true,
+        "width": 22
     },
     {
-        "name": "name",
-        "width": 35,
-        "link": true,
-        "align": "left"
+        "name": "statoProvvigione",
+        "width": 14
     },
     {
         "name": "tipo",
+        "width": 14
+    },
+    {
+        "name": "baseCalcolo",
+        "width": 14,
+        "customLabel": "Base del calcolo"
+    },
+    {
+        "name": "importoBaseCalcolo",
         "width": 12,
-        "align": "left"
+        "align": "right"
     },
     {
         "name": "tassoProvvigioni",
-        "width": 12,
-        "align": "left"
+        "width": 10,
+        "align": "right"
     },
     {
-        "name": "importo",
+        "name": "importoConsolidato",
         "width": 12,
-        "align": "left"
+        "align": "right"
     }
 ]

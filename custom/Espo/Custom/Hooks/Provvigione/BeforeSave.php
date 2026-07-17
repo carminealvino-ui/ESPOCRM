@@ -2,16 +2,23 @@
 
 namespace Espo\Custom\Hooks\Provvigione;
 
-use Espo\Core\Hooks\Base;
+use Espo\Core\Hook\Hook\BeforeSave as BeforeSaveHook;
 use Espo\ORM\Entity;
+use Espo\ORM\EntityManager;
+use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
  * Provvigione manuale: importo = tassoProvvigioni % × imponibile contratto.
- * Nessuna regola provvigionale. Hook Base (compatibilità Espo produzione).
  */
-class BeforeSave extends Base
+class BeforeSave implements BeforeSaveHook
 {
-    public function beforeSave(Entity $entity, array $options): void
+    public static int $order = 5;
+
+    public function __construct(
+        private EntityManager $entityManager
+    ) {}
+
+    public function beforeSave(Entity $entity, SaveOptions $options): void
     {
         $quoteId = $entity->get('contrattoId');
 
@@ -19,8 +26,7 @@ class BeforeSave extends Base
             return;
         }
 
-        $em = $this->getEntityManager();
-        $quote = $em->getEntityById('Quote', $quoteId);
+        $quote = $this->entityManager->getEntityById('Quote', $quoteId);
 
         if (!$quote) {
             return;

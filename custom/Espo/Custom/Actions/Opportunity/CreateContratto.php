@@ -116,10 +116,6 @@
 // - hookVersion quote sempre CreateContratto-* (non copiare 2.1.5 da opportunità)
 // - Nome impostato in PHP prima e dopo save (formula non sovrascrive)
 // - billingContactName da accountName se referente assente
-//
-// 1.12.1
-// -----------------------------------------------------
-// - getNewEntity + saveEntity (non createEntity: salvava Quote vuoto → formula /0)
 // -----------------------------------------------------
 // - importoOpportunit (nome campo corretto)
 // - Cliente da Prospect.cliente / creazione Account
@@ -173,8 +169,19 @@ class CreateContratto
     // RUN
     // =====================================================
 
-    public function run($opportunity)
+    public function run($opportunityOrId)
     {
+        $opportunity = $opportunityOrId;
+
+        if (!is_object($opportunityOrId)) {
+            $id = is_scalar($opportunityOrId) ? (string) $opportunityOrId : null;
+
+            if (!$id) {
+                throw new \Exception('ID opportunità mancante');
+            }
+
+            $opportunity = $this->entityManager->getEntityById('Opportunity', $id);
+        }
 
         // =====================================================
         // VALIDAZIONE
@@ -569,7 +576,7 @@ class CreateContratto
         $productCategoryName = $partnerData['productCategoryName'];
 
         // Non usare hookVersion opportunità (es. 2.1.5): la formula Quote lo interpreta e ricalcola il nome.
-        $hookVersion = 'CreateContratto-1.12.1';
+        $hookVersion = 'CreateContratto-1.12.0';
         $installatoreId = $opportunity->get('installatoreId');
 
         $contractDisplayName = $this->buildContractDisplayName(
@@ -584,9 +591,7 @@ class CreateContratto
         // CREAZIONE CONTRATTO
         // =====================================================
 
-        $quote = $this->entityManager->getNewEntity('Quote');
-
-        $quote->set([
+        $quoteData = [
 
             // =================================================
             // BASE
@@ -625,15 +630,6 @@ class CreateContratto
             'hookVersion' =>
                 $hookVersion,
 
-            'finanziamento' =>
-                (bool) $opportunity->get('finanziamento'),
-
-            'statoContratto' =>
-                $opportunity->get('statoContratto'),
-
-            'statoFinanziamento' =>
-                $opportunity->get('statoFinanziamento'),
-
             'fornitorePartnerId' =>
                 $fornitorePartnerId,
 
@@ -668,6 +664,46 @@ class CreateContratto
             'importoContratto' =>
                 $amount,
 
+            'prezzoListinoIvaEsclusa' =>
+                $opportunity->get('prezzoListinoIvaEsclusa'),
+
+            'prezzoCodiceIvaEsclusa' =>
+                $opportunity->get('prezzoCodiceIvaEsclusa'),
+
+            'margineSuListino' =>
+                $this->resolveMargineSuListino($opportunity, $amount),
+
+            'contattoPersonaleArquati' =>
+                (bool) $opportunity->get('contattoPersonaleArquati'),
+
+            'integrazionePncPercentuale' =>
+                $opportunity->get('integrazionePncPercentuale'),
+
+            'ordineIncompletoAriel' =>
+                (bool) $opportunity->get('ordineIncompletoAriel'),
+
+            // =================================================
+            // STATO CONTRATTO (driver provvigioni)
+            // =================================================
+
+            'statoContratto' =>
+                $opportunity->get('statoContratto') ?: 'In lavorazione',
+
+            'finanziamento' =>
+                (bool) $opportunity->get('finanziamento'),
+
+            'statoFinanziamento' =>
+                $opportunity->get('statoFinanziamento'),
+
+            'importoCaparra' =>
+                $opportunity->get('importoCaparra'),
+
+            'dataInstallazione' =>
+                $opportunity->get('installazione'),
+
+            'minusPlus' =>
+                $this->resolveMinusPlusForQuote($opportunity, $amount),
+
             // =================================================
             // DATA
             // =================================================
@@ -691,6 +727,9 @@ class CreateContratto
 
             'taxCodeId' =>
                 $taxCodeId,
+
+            // Forza base neutra per evitare taxRate=-1 durante formula su record appena creato.
+            'taxAmount' => 0,
 
             'isTaxInclusive' => true,
 
@@ -754,30 +793,9 @@ class CreateContratto
 
             'teamsIds' =>
                 $teamsIds
-        ]);
+        ];
 
-        // IVA esplicita: evita che la formula ricalcoli taxRate con amount/taxAmount incoerenti.
-        if ($amount !== null && $amount !== '' && $taxRate !== null && $taxRate !== '') {
-            $taxRateFloat = (float) $taxRate;
-            $grandTotal = (float) $amount;
-
-            if ($grandTotal > 0 && (1 + $taxRateFloat) != 0.0) {
-                $net = $grandTotal / (1 + $taxRateFloat);
-                $quote->set([
-                    'grandTotalAmount' => round($grandTotal, 2),
-                    'taxAmount' => round($grandTotal - $net, 2),
-                    'aliquotaIVA' => round($taxRateFloat * 100, 2),
-                ]);
-            }
-        }
-
-        // =====================================================
-        // SAVE CONTRATTO
-        // =====================================================
-
-        $this->entityManager->saveEntity($quote, [
-            'skipHooks' => true,
-        ]);
+        $quote = $this->entityManager->createEntity('Quote', $quoteData);
 
         $this->refreshQuoteAfterCreate(
             $quote,
@@ -1321,7 +1339,7 @@ class CreateContratto
                 $importo
             ),
             'itemList' => [],
-            'hookVersion' => 'CreateContratto-1.12.1',
+            'hookVersion' => 'CreateContratto-1.12.0',
         ];
 
         foreach ([
@@ -1359,6 +1377,40 @@ class CreateContratto
         $this->entityManager->saveEntity($fresh, [
             'skipHooks' => true,
         ]);
+    }
+
+    private function resolveMinusPlusForQuote($opportunity, $amount): ?float
+    {
+        $stored = $opportunity->get('minusPlus');
+
+        if ($stored !== null && $stored !== '') {
+            return round((float) $stored, 2);
+        }
+
+        $codice = $opportunity->get('prezzoCodiceIvaEsclusa');
+
+        if (!$amount || !$codice) {
+            return null;
+        }
+
+        return round((float) $amount - (float) $codice, 2);
+    }
+
+    private function resolveMargineSuListino($opportunity, $amount): ?float
+    {
+        $stored = $opportunity->get('suPrezzoCodice');
+
+        if ($stored !== null && $stored !== '') {
+            return round((float) $stored, 2);
+        }
+
+        $listino = $opportunity->get('prezzoListinoIvaEsclusa');
+
+        if (!$amount || !$listino || (float) $listino <= 0) {
+            return null;
+        }
+
+        return round((((float) $amount - (float) $listino) / (float) $listino) * 100, 2);
     }
 
     private function buildContractDisplayName(

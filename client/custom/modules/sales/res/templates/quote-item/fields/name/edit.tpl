@@ -6,7 +6,7 @@
             <span data-role="inventory-quantity">{{{inventoryQuantity}}}</span>
             <a
                 href="{{productUrl}}"
-                class="text-default"
+                class="text-default text-record"
                 data-scope="Product"
                 data-id="{{productId}}"
                 title="{{value}}"

@@ -66,7 +66,10 @@ foreach ($rows as $row) {
         continue;
     }
 
-    if ($current === $target) {
+    $orarioOk = orarioDateMatchesTarget($row['orario_inizio'] ?? null, $target, $timezone)
+        && orarioDateMatchesTarget($row['orario_fine'] ?? null, $target, $timezone);
+
+    if ($current === $target && $orarioOk) {
         $skipped++;
         continue;
     }
@@ -114,6 +117,13 @@ foreach ($rows as $row) {
         'id' => $row['id'],
     ]);
 
+    $entity = $entityManager->getEntityById('Disponibilita', $row['id']);
+
+    if ($entity) {
+        $entity->set('datadisponibilita', $target);
+        $entityManager->saveEntity($entity);
+    }
+
     $updated++;
 }
 
@@ -159,7 +169,12 @@ function rebuildOrarioDateTime(?string $value, string $targetDate, DateTimeZone 
         return null;
     }
 
-    return $targetDate . ' ' . extractTimeUtcToRome($value, $timezone);
+    $local = new DateTimeImmutable(
+        $targetDate . ' ' . extractTimeUtcToRome($value, $timezone),
+        $timezone
+    );
+
+    return $local->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d H:i:s');
 }
 
 /**
@@ -167,7 +182,7 @@ function rebuildOrarioDateTime(?string $value, string $targetDate, DateTimeZone 
  */
 function resolveTargetDate(array $row, DateTimeZone $timezone): ?string
 {
-    foreach (['orario_inizio', 'date_start', 'date_start_date'] as $field) {
+    foreach (['datadisponibilita', 'date_start_date', 'date_start'] as $field) {
         $value = $row[$field] ?? null;
 
         if (!is_string($value) || $value === '') {
@@ -181,5 +196,39 @@ function resolveTargetDate(array $row, DateTimeZone $timezone): ?string
         }
     }
 
+    foreach (['orario_inizio', 'orario_fine'] as $field) {
+        $value = $row[$field] ?? null;
+
+        if (!is_string($value) || $value === '') {
+            continue;
+        }
+
+        try {
+            return extractDateUtcToRome($value, $timezone);
+        } catch (\Throwable) {
+            $date = normalizeDate($value);
+
+            if ($date !== null) {
+                return $date;
+            }
+        }
+    }
+
     return null;
+}
+
+function orarioDateMatchesTarget(?string $orario, string $targetDate, DateTimeZone $timezone): bool
+{
+    if (!is_string($orario) || $orario === '') {
+        return true;
+    }
+
+    try {
+        $dt = new DateTime($orario, new DateTimeZone('UTC'));
+        $dt->setTimezone($timezone);
+
+        return $dt->format('Y-m-d') === $targetDate;
+    } catch (\Throwable) {
+        return normalizeDate($orario) === $targetDate;
+    }
 }

@@ -8,15 +8,11 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Hook Disponibilita: nome, date calendario (dateStartDate + isAllDay), colore da ProductBrand.
- *
- * Il calendario Espo per eventi all-day usa dateStartDate; senza allineamento il record
- * può sparire dalla vista settimana dopo una modifica manuale degli orari.
+ * Hook Disponibilita: nome, date calendario, colore da ProductBrand.
+ * Logica allineata alla versione produzione stabile (isAllDay + fascia nel nome).
  */
 class SetName implements BeforeSave
 {
-    private const TIMEZONE = 'Europe/Rome';
-
     public function __construct(
         private EntityManager $entityManager
     ) {}
@@ -27,34 +23,52 @@ class SetName implements BeforeSave
             return;
         }
 
-        $data = $this->resolveDataDisponibilita($entity);
+        $data = $entity->get('datadisponibilita');
+        $inizio = $entity->get('orarioInizio');
+        $fine = $entity->get('orarioFine');
 
-        if ($data === null) {
+        if (empty($data)) {
+            $data = $entity->get('dateStartDate');
+
+            if (empty($data) && !empty($entity->get('dateStart'))) {
+                $data = substr((string) $entity->get('dateStart'), 0, 10);
+            }
+
+            if (!empty($data)) {
+                $entity->set('datadisponibilita', $data);
+            }
+        }
+
+        if (empty($data)) {
             return;
         }
 
-        $inizio = $this->realignOrario($entity->get('orarioInizio'), $data);
-        $fine = $this->realignOrario($entity->get('orarioFine'), $data);
+        $entity->set('isAllDay', true);
+        $entity->set('dateStartDate', $data);
+        $entity->set('dateEndDate', $data);
+        $entity->set('dateStart', $data . ' 00:00:00');
+        $entity->set('dateEnd', $data . ' 23:59:59');
 
-        if ($inizio !== null) {
-            $entity->set('orarioInizio', $inizio);
+        $oraInizio = '';
+        $oraFine = '';
+
+        if (!empty($inizio)) {
+            $dtStart = new \DateTime((string) $inizio, new \DateTimeZone('UTC'));
+            $dtStart->setTimezone(new \DateTimeZone('Europe/Rome'));
+            $oraInizio = $dtStart->format('H:i');
         }
 
-        if ($fine !== null) {
-            $entity->set('orarioFine', $fine);
+        if (!empty($fine)) {
+            $dtEnd = new \DateTime((string) $fine, new \DateTimeZone('UTC'));
+            $dtEnd->setTimezone(new \DateTimeZone('Europe/Rome'));
+            $oraFine = $dtEnd->format('H:i');
         }
 
-        $entity->set([
-            'datadisponibilita' => $data,
-            'dateStartDate' => $data,
-            'dateEndDate' => $data,
-            'isAllDay' => true,
-            'dateStart' => $data . ' 00:00:00',
-            'dateEnd' => $data . ' 23:59:59',
-        ]);
+        $assignedUsersIds = $entity->getLinkMultipleIdList('assignedUsers');
 
-        $oraInizio = $this->formatLocalTime($inizio);
-        $oraFine = $this->formatLocalTime($fine);
+        if ($assignedUsersIds !== []) {
+            $entity->set('assignedUserId', $assignedUsersIds[0]);
+        }
 
         $brand = $this->resolveProductBrand($entity);
         $brandName = $brand ? (string) $brand->get('name') : '';
@@ -82,84 +96,6 @@ class SetName implements BeforeSave
         if ($colore !== '') {
             $entity->set('color', $colore);
         }
-    }
-
-    private function resolveDataDisponibilita(Entity $entity): ?string
-    {
-        $data = $this->normalizeDate($entity->get('datadisponibilita'));
-
-        if ($data !== null) {
-            return $data;
-        }
-
-        $data = $this->normalizeDate($entity->get('dateStartDate'));
-
-        if ($data !== null) {
-            return $data;
-        }
-
-        if ($entity->get('orarioInizio')) {
-            return $this->extractDateFromOrario((string) $entity->get('orarioInizio'));
-        }
-
-        return $this->normalizeDate($entity->get('dateStart'));
-    }
-
-    private function realignOrario(mixed $value, string $data): ?string
-    {
-        if (!is_string($value) || $value === '') {
-            return null;
-        }
-
-        try {
-            $local = (new \DateTimeImmutable($value, new \DateTimeZone('UTC')))
-                ->setTimezone(new \DateTimeZone(self::TIMEZONE));
-            $time = $local->format('H:i:s');
-            $rebuilt = new \DateTimeImmutable($data . ' ' . $time, new \DateTimeZone(self::TIMEZONE));
-
-            return $rebuilt->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s');
-        } catch (\Throwable) {
-            return null;
-        }
-    }
-
-    private function extractDateFromOrario(string $value): ?string
-    {
-        try {
-            return (new \DateTimeImmutable($value, new \DateTimeZone('UTC')))
-                ->setTimezone(new \DateTimeZone(self::TIMEZONE))
-                ->format('Y-m-d');
-        } catch (\Throwable) {
-            return $this->normalizeDate($value);
-        }
-    }
-
-    private function formatLocalTime(?string $value): string
-    {
-        if ($value === null || $value === '') {
-            return '';
-        }
-
-        try {
-            return (new \DateTimeImmutable($value, new \DateTimeZone('UTC')))
-                ->setTimezone(new \DateTimeZone(self::TIMEZONE))
-                ->format('H:i');
-        } catch (\Throwable) {
-            return '';
-        }
-    }
-
-    private function normalizeDate(mixed $value): ?string
-    {
-        if (!is_string($value) || $value === '') {
-            return null;
-        }
-
-        if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $value, $matches)) {
-            return $matches[1];
-        }
-
-        return null;
     }
 
     private function resolveProductBrand(Entity $entity): ?Entity

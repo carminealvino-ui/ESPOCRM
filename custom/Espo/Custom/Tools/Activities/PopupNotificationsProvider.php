@@ -9,6 +9,7 @@ use Espo\Core\Utils\Config;
 use Espo\Core\Utils\DateTime as DateTimeUtil;
 use Espo\Core\Utils\Log;
 use Espo\Entities\User;
+use Espo\Custom\Services\AppuntamentoPendingCallCreator;
 use Espo\Custom\Tools\Appuntamento\PendingCallDateTime;
 use Espo\Modules\Crm\Entities\Meeting;
 use Espo\Modules\Crm\Entities\Reminder;
@@ -23,6 +24,15 @@ use Throwable;
 class PopupNotificationsProvider extends BasePopupNotificationsProvider
 {
     /**
+     * Entità escluse dai popup promemoria.
+     *
+     * @var string[]
+     */
+    private const BLOCKED_POPUP_ENTITY_TYPES = [
+        'Disponibilita',
+    ];
+
+    /**
      * @var array<string, string[]>
      */
     private const PLANNED_STATUS_BY_ENTITY_TYPE = [
@@ -36,6 +46,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         private Config $config,
         private EntityManager $entityManager,
         private Log $log,
+        private AppuntamentoPendingCallCreator $callCreator,
     ) {
         parent::__construct($config, $entityManager);
     }
@@ -48,11 +59,12 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
     {
         $items = array_values(array_filter(
             parent::get($user),
-            fn (Item $item): bool => $this->isItemPopupEligible($item)
+            fn (Item $item): bool => $this->isItemVisible($item)
         ));
 
         $seenReminderIds = [];
         $seenEntityKeys = [];
+        $seenCallSignatures = [];
 
         foreach ($items as $item) {
             $reminderId = $item->getId();
@@ -66,6 +78,8 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             if ($entityKey) {
                 $seenEntityKeys[$entityKey] = true;
             }
+
+            $this->rememberCallSignature($item, $seenCallSignatures);
         }
 
         foreach ($this->findPlannedReminderItems($user) as $item) {
@@ -81,6 +95,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
                 continue;
             }
 
+            if ($this->isDuplicateCallSignature($item, $seenCallSignatures)) {
+                continue;
+            }
+
             $items[] = $item;
 
             if ($reminderId) {
@@ -90,9 +108,11 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             if ($entityKey) {
                 $seenEntityKeys[$entityKey] = true;
             }
+
+            $this->rememberCallSignature($item, $seenCallSignatures);
         }
 
-        foreach ($this->findPastPlannedActivityEntityItems($user, $seenEntityKeys) as $item) {
+        foreach ($this->findPastPlannedActivityEntityItems($user, $seenEntityKeys, $seenCallSignatures) as $item) {
             $items[] = $item;
         }
 
@@ -100,7 +120,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             return $this->compareItems($a, $b);
         });
 
-        return $items;
+        return array_values(array_filter(
+            $items,
+            fn (Item $item): bool => $this->isItemVisible($item)
+        ));
     }
 
     /**
@@ -145,8 +168,11 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
      * @param array<string, bool> $seenEntityKeys
      * @return Item[]
      */
-    private function findPastPlannedActivityEntityItems(User $user, array $seenEntityKeys): array
-    {
+    private function findPastPlannedActivityEntityItems(
+        User $user,
+        array $seenEntityKeys,
+        array &$seenCallSignatures
+    ): array {
         $resultList = [];
         $now = (new DateTime())->format(DateTimeUtil::SYSTEM_DATE_TIME_FORMAT);
 
@@ -157,7 +183,8 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
                     $entityType,
                     $statusList,
                     $now,
-                    $seenEntityKeys
+                    $seenEntityKeys,
+                    $seenCallSignatures
                 );
             } catch (Throwable $e) {
                 $this->log->error('PopupNotificationsProvider past planned query failed for ' . $entityType, [
@@ -185,7 +212,8 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         string $entityType,
         array $statusList,
         string $now,
-        array &$seenEntityKeys
+        array &$seenEntityKeys,
+        array &$seenCallSignatures
     ): array {
         if (!$this->entityManager->hasRepository($entityType)) {
             return [];
@@ -193,7 +221,9 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
         $userId = $user->getId();
         $dateField = $entityType === Task::ENTITY_TYPE ? 'dateEnd' : 'dateStart';
-        $popupCutoff = PendingCallDateTime::popupEligibilityCutoff();
+        $popupCutoff = $entityType === 'Appuntamento'
+            ? PendingCallDateTime::popupEligibilityCutoff()
+            : $now;
         $resultList = [];
 
         $collection = $this->entityManager
@@ -204,12 +234,12 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
                 'assignedUserId' => $userId,
                 $dateField . '<=' => $popupCutoff,
             ])
-            ->order($dateField, 'ASC')
+            ->order($dateField, 'DESC')
             ->limit(0, 50)
             ->find();
 
         foreach ($collection as $entity) {
-            $item = $this->buildEntityItemIfNew($entity, $seenEntityKeys);
+            $item = $this->buildEntityItemIfNew($entity, $seenEntityKeys, $seenCallSignatures);
 
             if ($item !== null) {
                 $resultList[] = $item;
@@ -229,6 +259,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             return null;
         }
 
+        if (in_array($entityType, self::BLOCKED_POPUP_ENTITY_TYPES, true)) {
+            return null;
+        }
+
         $entity = $this->entityManager->getEntityById($entityType, $entityId);
 
         if (!$entity || !$this->isPlannedActivity($entity) || !$this->userCanSeeActivity($entity, $userId)) {
@@ -236,6 +270,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         if (!$this->isPopupEligible($entity)) {
+            return null;
+        }
+
+        if (!$this->isCallPopupVisible($entity)) {
             return null;
         }
 
@@ -257,8 +295,11 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
     /**
      * @param array<string, bool> $seenEntityKeys
      */
-    private function buildEntityItemIfNew(Entity $entity, array &$seenEntityKeys): ?Item
-    {
+    private function buildEntityItemIfNew(
+        Entity $entity,
+        array &$seenEntityKeys,
+        array &$seenCallSignatures
+    ): ?Item {
         $entityKey = $this->getEntityKey($entity->getEntityType(), $entity->getId());
 
         if (!$entityKey || isset($seenEntityKeys[$entityKey])) {
@@ -273,7 +314,21 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             return null;
         }
 
+        if (!$this->isCallPopupVisible($entity)) {
+            return null;
+        }
+
+        $signature = $this->getCallSignatureForEntity($entity);
+
+        if ($signature && isset($seenCallSignatures[$signature])) {
+            return null;
+        }
+
         $seenEntityKeys[$entityKey] = true;
+
+        if ($signature) {
+            $seenCallSignatures[$signature] = true;
+        }
 
         return new Item(
             $this->buildPastPlannedItemId($entity->getEntityType(), $entity->getId()),
@@ -315,6 +370,15 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         return in_array($entity->get('status'), $statusList, true);
     }
 
+    private function isCallPopupVisible(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== 'Call') {
+            return true;
+        }
+
+        return $this->callCreator->shouldShowAutoPendingCallInPopup($entity);
+    }
+
     private function isPopupEligible(Entity $entity): bool
     {
         $entityType = $entity->getEntityType();
@@ -330,6 +394,82 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         return $dateStart <= PendingCallDateTime::popupEligibilityCutoff();
+    }
+
+    private function isItemVisible(Item $item): bool
+    {
+        $data = $item->getData();
+
+        if (!is_object($data)) {
+            return true;
+        }
+
+        $entityType = $data->entityType ?? null;
+        $entityId = $data->id ?? null;
+
+        if ($entityType && in_array($entityType, self::BLOCKED_POPUP_ENTITY_TYPES, true)) {
+            return false;
+        }
+
+        if ($entityType === 'Call' && $entityId) {
+            $entity = $this->entityManager->getEntityById('Call', $entityId);
+
+            if (!$entity) {
+                return false;
+            }
+
+            return $this->isCallPopupVisible($entity);
+        }
+
+        return $this->isItemPopupEligible($item);
+    }
+
+    /**
+     * @param array<string, bool> $seenCallSignatures
+     */
+    private function rememberCallSignature(Item $item, array &$seenCallSignatures): void
+    {
+        $signature = $this->getCallSignatureForItem($item);
+
+        if ($signature) {
+            $seenCallSignatures[$signature] = true;
+        }
+    }
+
+    /**
+     * @param array<string, bool> $seenCallSignatures
+     */
+    private function isDuplicateCallSignature(Item $item, array $seenCallSignatures): bool
+    {
+        $signature = $this->getCallSignatureForItem($item);
+
+        return $signature !== null && isset($seenCallSignatures[$signature]);
+    }
+
+    private function getCallSignatureForItem(Item $item): ?string
+    {
+        $data = $item->getData();
+
+        if (!is_object($data) || ($data->entityType ?? null) !== 'Call' || !($data->id ?? null)) {
+            return null;
+        }
+
+        $entity = $this->entityManager->getEntityById('Call', (string) $data->id);
+
+        return $entity ? $this->getCallSignatureForEntity($entity) : null;
+    }
+
+    private function getCallSignatureForEntity(Entity $entity): ?string
+    {
+        if ($entity->getEntityType() !== 'Call') {
+            return null;
+        }
+
+        if (!$this->callCreator->isAutoManagedRichiamoCall($entity)) {
+            return null;
+        }
+
+        return $this->callCreator->buildCallAppointmentSignature($entity);
     }
 
     private function isItemPopupEligible(Item $item): bool
@@ -403,7 +543,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
     private function compareItems(Item $a, Item $b): int
     {
-        $dateCompare = $this->getItemSortTimestamp($a) <=> $this->getItemSortTimestamp($b);
+        $dateCompare = $this->getItemSortTimestamp($b) <=> $this->getItemSortTimestamp($a);
 
         if ($dateCompare !== 0) {
             return $dateCompare;
@@ -414,17 +554,48 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
 
     private function getItemSortTimestamp(Item $item): int
     {
+        $data = $item->getData();
+        $entityType = $data->entityType ?? null;
+
+        if ($entityType === 'Call') {
+            $name = (string) ($data->name ?? '');
+            $timestamp = $this->parseItalianDateTimeFromCallName($name);
+
+            if ($timestamp !== null) {
+                return $timestamp;
+            }
+        }
+
         $date = $this->getItemSortDate($item);
 
         if ($date === '') {
-            return PHP_INT_MAX;
+            return 0;
         }
 
         try {
             return (new DateTime($date))->getTimestamp();
         } catch (\Throwable) {
-            return PHP_INT_MAX;
+            return 0;
         }
+    }
+
+    private function parseItalianDateTimeFromCallName(string $name): ?int
+    {
+        if (!preg_match('/^(\d{2}\/\d{2}\/\d{4})\s+(\d{2}:\d{2})/', $name, $matches)) {
+            return null;
+        }
+
+        $parsed = \DateTimeImmutable::createFromFormat(
+            'd/m/Y H:i',
+            $matches[1] . ' ' . $matches[2],
+            new \DateTimeZone('Europe/Rome')
+        );
+
+        if (!$parsed) {
+            return null;
+        }
+
+        return $parsed->getTimestamp();
     }
 
     /**

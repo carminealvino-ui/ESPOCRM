@@ -8,9 +8,6 @@
             ],
             [
                 {
-                    "name": "data"
-                },
-                {
                     "name": "telefono"
                 },
                 {
@@ -77,15 +74,18 @@
         "rows": [
             [
                 {
-                    "name": "dataRiscontro"
-                },
+                    "name": "data"
+                }
+            ],
+            [
                 {
                     "name": "esito"
                 }
             ],
             [
                 {
-                    "name": "description"
+                    "name": "description",
+                    "fullWidth": true
                 }
             ],
             [

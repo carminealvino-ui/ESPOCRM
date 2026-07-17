@@ -216,7 +216,9 @@
         "OutlookCalendar": "Outlook Calendar",
         "PaymentMeansItem": "Pagamenti - Mandati",
         "StreamSubscription": "Messaggistica - Sottoscrizione",
-        "UserReaction": "Reazione"
+        "UserReaction": "Reazione",
+        "RegolaProvvigionale": "Regole Provvigionali",
+        "InvitoAFatturare": "Inviti a Fatturare"
     },
     "scopeNames": {
         "Meeting": "Impegno",
@@ -348,7 +350,9 @@
         "CrmKpi": "KPI CRM",
         "OutlookCalendar": "Outlook Caledar",
         "OutlookContacts": "Outlook Contacts",
-        "PaymentMeansItem": "Pagamento - Mandato di addebito - Voce"
+        "PaymentMeansItem": "Pagamento - Mandato di addebito - Voce",
+        "RegolaProvvigionale": "Regola Provvigionale",
+        "InvitoAFatturare": "Invito a Fatturare"
     },
     "dashlets": {
         "OpportunitiesByStage": "Opportunità per Stato",

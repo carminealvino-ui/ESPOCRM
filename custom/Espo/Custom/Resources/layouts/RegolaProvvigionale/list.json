@@ -1,0 +1,26 @@
+[
+    {
+        "name": "name",
+        "width": 22
+    },
+    {
+        "name": "regimeProvvigione",
+        "width": 14
+    },
+    {
+        "name": "tipoCalcolo",
+        "width": 16
+    },
+    {
+        "name": "productBrand",
+        "width": 14
+    },
+    {
+        "name": "priorita",
+        "width": 8
+    },
+    {
+        "name": "attiva",
+        "width": 8
+    }
+]

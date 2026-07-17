@@ -1,8 +1,8 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.7
-// DATA: 2026-06-23
+// VERSIONE: 2.2.6
+// DATA: 2026-05-27
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
 //
@@ -141,22 +141,6 @@
 //
 // - OpportunityPriceBookResolver in beforeSave
 // - Solo se priceBookId vuoto o cambiano data/brand (non se utente cambia listino)
-//
-// FIX 2.2.7
-// -----------------------------------------------------
-// TIMEOUT SECONDA OPPORTUNITA SU STESSO APPUNTAMENTO
-//
-// Problema:
-//
-// afterSave richiamava runOpportunitySync completa (importFromSource=true).
-// syncAccountAndContactFromLead eseguiva saveEntity(silent) senza skipHooks,
-// riattivando beforeSave/afterSave in loop → timeout "Salvataggio...".
-//
-// Fix:
-//
-// - Sync completa solo in beforeSave
-// - afterSave: solo fallback appuntamentoId se ancora vuoto (2.2.3)
-// - Nessun saveEntity annidato su Opportunity; account/contact nel save principale
 //
 // FIX 2.2.5
 // -----------------------------------------------------
@@ -323,38 +307,26 @@
 
 namespace Espo\Custom\Hooks\Opportunity;
 
-use Espo\ORM\Entity;
-use Espo\ORM\EntityManager;
+use Espo\Core\Hook\Hook\AfterSave;
+use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\Custom\Services\LineaProdottoCategorySync;
 use Espo\Custom\Services\OpportunityPriceBookResolver;
 use Espo\Custom\Services\ReferenteContactService;
+use Espo\ORM\Entity;
+use Espo\ORM\EntityManager;
+use Espo\ORM\Repository\Option\SaveOptions;
 
-class GlobalLogic
+class GlobalLogic implements BeforeSave, AfterSave
 {
-    protected EntityManager $entityManager;
-
-
-    // =====================================================
-    // COSTRUTTORE
-    // =====================================================
+    public static int $order = 5;
 
     public function __construct(
-        EntityManager $entityManager
-    ) {
-        $this->entityManager = $entityManager;
-    }
+        private EntityManager $entityManager
+    ) {}
 
-
-    // =====================================================
-    // BEFORE SAVE
-    // =====================================================
-
-    public function beforeSave(
-        Entity $entity,
-        array $options = []
-    ): void {
-
-        if (!empty($options['skipHooks'])) {
+    public function beforeSave(Entity $entity, SaveOptions $options): void
+    {
+        if ($options->get('skipHooks')) {
             return;
         }
 
@@ -364,7 +336,7 @@ class GlobalLogic
 
         $entity->set(
             'hookVersion',
-            '2.2.7'
+            '2.2.6'
         );
 
 
@@ -454,68 +426,22 @@ class GlobalLogic
     //
     // =====================================================
 
-    public function afterSave(
-        Entity $entity,
-        array $options = []
-    ): void {
-        if (!empty($options['skipHooks'])) {
-            return;
-        }
-
-        // Sync completa gia eseguita in beforeSave; evita loop su seconda opp. stesso appuntamento.
-        if ($entity->get('appuntamentoId')) {
-            return;
-        }
-
-        $this->linkAppuntamentoAfterSave($entity);
-    }
-
-    private function linkAppuntamentoAfterSave(Entity $entity): void
+    public function afterSave(Entity $entity, SaveOptions $options): void
     {
-        $appuntamento = null;
-
-        $collection = $this->entityManager
-            ->getRDBRepository('Opportunity')
-            ->getRelation($entity, 'appuntamento')
-            ->find();
-
-        foreach ($collection as $item) {
-            $appuntamento = $item;
-
-            break;
-        }
-
-        if (!$appuntamento) {
-            $appuntamento = $this->resolveAppuntamentoFromLead($entity);
-        }
-
-        if (!$appuntamento) {
-            return;
-        }
-
-        $entity->set(
-            'appuntamentoId',
-            $appuntamento->getId()
+        $this->runOpportunitySync(
+            $entity,
+            $options,
+            true
         );
-
-        $entity->set(
-            'appuntamentoName',
-            $appuntamento->get('name')
-        );
-
-        $this->entityManager->saveEntity($entity, [
-            'silent' => true,
-            'skipHooks' => true,
-        ]);
     }
 
     private function runOpportunitySync(
         Entity $entity,
-        array $options,
+        SaveOptions $options,
         bool $importFromSource
     ): void {
 
-        if (!empty($options['skipHooks'])) {
+        if ($options->get('skipHooks')) {
             return;
         }
 
@@ -527,7 +453,7 @@ class GlobalLogic
 
         if ($entity->get('appuntamentoId')) {
 
-            $appuntamento = $this->entityManager->getEntity(
+            $appuntamento = $this->entityManager->getEntityById(
                 'Appuntamento',
                 $entity->get('appuntamentoId')
             );
@@ -573,7 +499,7 @@ class GlobalLogic
 
         if ($appuntamento->get('prospectId')) {
 
-            $prospect = $this->entityManager->getEntity(
+            $prospect = $this->entityManager->getEntityById(
                 'Prospect',
                 $appuntamento->get('prospectId')
             );
@@ -583,7 +509,7 @@ class GlobalLogic
 
         if ($appuntamento->get('leadId')) {
 
-            $lead = $this->entityManager->getEntity(
+            $lead = $this->entityManager->getEntityById(
                 'Lead',
                 $appuntamento->get('leadId')
             );
@@ -593,7 +519,7 @@ class GlobalLogic
             $appuntamento->get('parentId')
         ) {
 
-            $lead = $this->entityManager->getEntity(
+            $lead = $this->entityManager->getEntityById(
                 'Lead',
                 $appuntamento->get('parentId')
             );
@@ -824,44 +750,35 @@ class GlobalLogic
         // NAMING DEFINITIVO
         // =====================================================
 
-        if ($entity->get('prospectName')) {
+        $displayName = $entity->get('prospectName')
+            ?: $entity->get('appuntamentoName')
+            ?: $entity->get('leadName');
+
+        if ($displayName) {
 
             $brandLabel = trim((string) (
                 $entity->get('productBrandName')
                 ?: $entity->get('azienda')
             ));
 
-            $name =
+            $importo = $entity->get('amount')
+                ?? $entity->get('importoOpportunit');
 
-                $entity->get('dataOpportunit')
+            $importoLabel = ($importo !== null && $importo !== '')
+                ? number_format((float) $importo, 0, ',', '.')
+                : '';
 
-                . ' - '
-
-                . $entity->get('prospectName')
-
-                . ' - '
-
-                . $brandLabel
-
-                . ' - '
-
-                . strtoupper(
-                    (string) $entity->get('description')
-                )
-
-                . ' - € '
-
-                . number_format(
-                    (float) $entity->get('amount'),
-                    0,
-                    ',',
-                    '.'
-                );
-
+            $parts = array_filter([
+                $entity->get('dataOpportunit'),
+                $displayName,
+                $brandLabel,
+                strtoupper((string) ($entity->get('description') ?: '')),
+                $importoLabel !== '' ? '€ ' . $importoLabel : null,
+            ], static fn ($part) => $part !== null && $part !== '');
 
             $entity->set(
                 'name',
-                $name
+                implode(' - ', $parts)
             );
         }
 
@@ -1129,6 +1046,13 @@ class GlobalLogic
             $entity->set('contactId', $referente['id']);
             $entity->set('contactName', $referente['name']);
         }
+
+        if ($entity->isAttributeChanged('accountId') || $entity->isAttributeChanged('contactId')) {
+            $this->entityManager->saveEntity($entity, [
+                'skipHooks' => true,
+                'silent' => true,
+            ]);
+        }
     }
 
     // =====================================================
@@ -1206,6 +1130,11 @@ class GlobalLogic
 
         $entity->set('leadId', $lead->getId());
         $entity->set('leadName', $leadName);
+
+        $this->entityManager->saveEntity($entity, [
+            'skipHooks' => true,
+            'silent' => true,
+        ]);
     }
 
     private function syncLeadFieldsFromOpportunity(Entity $opportunity, Entity $lead): void
@@ -1247,8 +1176,8 @@ class GlobalLogic
         }
 
         $this->entityManager->saveEntity($lead, [
-            'silent' => true,
             'skipHooks' => true,
+            'silent' => true,
         ]);
     }
 

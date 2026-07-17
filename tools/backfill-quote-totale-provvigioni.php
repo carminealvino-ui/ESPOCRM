@@ -1,87 +1,61 @@
-#!/usr/bin/env php
 <?php
+
 /**
- * Ricalcola e salva totaleProvvigioni su tutti i contratti (Quote).
- * Necessario se il report griglia mostra 0 nonostante le provvigioni siano presenti.
+ * Ricalcola totaleProvvigioni su tutti i contratti dalla somma importoConsolidato.
  *
- *   php tools/backfill-quote-totale-provvigioni.php --dry-run
- *   php tools/backfill-quote-totale-provvigioni.php --verbose
- *   php tools/backfill-quote-totale-provvigioni.php --quote-id=ID_CONTRATTO
+ * Uso: php tools/backfill-quote-totale-provvigioni.php [--dry-run]
  */
-declare(strict_types=1);
 
-$root = getenv('CRM_ROOT') ?: getcwd();
+$dryRun = in_array('--dry-run', $argv ?? [], true);
 
-if (!is_file($root . '/bootstrap.php')) {
-    fwrite(STDERR, "Eseguire da root CRM (es. ~/public_html/crm/mec-group).\n");
-    exit(1);
-}
+require dirname(__DIR__) . '/bootstrap.php';
 
-require_once $root . '/bootstrap.php';
+use Espo\Custom\Services\ProvvigioneManager;
 
-use Espo\Core\Application;
-use Espo\Core\Utils\Config;
-use Espo\Custom\Services\QuoteProvvigioniSync;
-
-$app = new Application();
+$app = new Espo\Core\Application();
 $app->setupSystemUser();
 
 $container = $app->getContainer();
-$em = $container->get('entityManager');
-/** @var Config $config */
-$config = $container->get('config');
+$entityManager = $container->get('entityManager');
+/** @var ProvvigioneManager $manager */
+$manager = $container->get('injectableFactory')->create(ProvvigioneManager::class);
 
-$sync = new QuoteProvvigioniSync($em, $config);
-
-$dryRun = in_array('--dry-run', $argv, true);
-$verbose = in_array('--verbose', $argv, true);
-$quoteFilter = null;
-
-foreach ($argv as $arg) {
-    if (str_starts_with($arg, '--quote-id=')) {
-        $quoteFilter = substr($arg, 11);
-    }
-}
-
-$where = [];
-
-if ($quoteFilter) {
-    $where['id'] = $quoteFilter;
-}
-
-$collection = $em->getRDBRepository('Quote')->where($where)->find();
+$quotes = $entityManager
+    ->getRDBRepository('Quote')
+    ->find();
 
 $updated = 0;
-$skipped = 0;
+$unchanged = 0;
 
-foreach ($collection as $quote) {
-    $quoteId = $quote->getId();
-    $sum = $sync->sumTotaleProvvigioni($quoteId);
-    $stored = (float) ($quote->get('totaleProvvigioni') ?? 0);
+foreach ($quotes as $quote) {
+    $expected = $manager->resolveTotaleProvvigioniForQuoteId($quote->getId());
+    $current = $quote->get('totaleProvvigioni');
 
-    if (abs($stored - $sum) < 0.001 && $quote->get('totaleProvvigioniCurrency')) {
-        $skipped++;
+    $expectedNorm = $expected === null ? null : round((float) $expected, 2);
+    $currentNorm = $current === null || $current === '' ? null : round((float) $current, 2);
 
-        if ($verbose) {
-            fwrite(STDOUT, "SKIP {$quoteId} totale={$stored}\n");
-        }
-
+    if ($expectedNorm === $currentNorm) {
+        $unchanged++;
         continue;
     }
 
-    if ($verbose || $dryRun) {
-        fwrite(STDOUT, ($dryRun ? '[dry-run] ' : '') . "Quote {$quoteId}: {$stored} -> {$sum}\n");
+    echo sprintf(
+        "%s: %s → %s\n",
+        $quote->get('name') ?: $quote->getId(),
+        $currentNorm === null ? 'null' : number_format($currentNorm, 2, '.', ''),
+        $expectedNorm === null ? 'null' : number_format($expectedNorm, 2, '.', '')
+    );
+
+    if (!$dryRun) {
+        $manager->refreshQuoteTotaleProvvigioni($quote);
     }
 
-    if ($dryRun) {
-        $updated++;
-        continue;
-    }
-
-    $sync->syncTotaleProvvigioniOnQuote($quoteId);
     $updated++;
 }
 
-fwrite(STDOUT, "Contratti aggiornati: {$updated}, già ok: {$skipped}\n");
-
-exit(0);
+echo sprintf(
+    "\n%s: %d aggiornati, %d già corretti\n",
+    $dryRun ? 'DRY-RUN' : 'FATTO',
+    $updated,
+    $unchanged
+);

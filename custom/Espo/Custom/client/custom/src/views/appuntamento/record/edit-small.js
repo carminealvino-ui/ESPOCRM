@@ -1,13 +1,44 @@
 /* global define */
 
-define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'], function (Dep) {
+define('custom:views/appuntamento/record/edit-small', [
+    'views/record/edit-small',
+    'moment',
+    'custom:helpers/appuntamento-prospect-sync',
+], function (Dep, moment, ProspectSync) {
 
-    const FALLBACK_DURATION_SECONDS = 5400;
+    const DEFAULT_DURATION_SECONDS = 5400;
+    const FULL_FORMAT = 'YYYY-MM-DD HH:mm:ss';
+    const SHORT_FORMAT = 'YYYY-MM-DD HH:mm';
+
+    function addSecondsUtc(dateStart, seconds) {
+        if (!dateStart) {
+            return null;
+        }
+
+        let m = moment.utc(dateStart, FULL_FORMAT, true);
+
+        if (!m.isValid()) {
+            m = moment.utc(dateStart, SHORT_FORMAT, true);
+        }
+
+        if (!m.isValid()) {
+            m = moment.utc(dateStart);
+        }
+
+        if (!m.isValid()) {
+            return null;
+        }
+
+        return m.add(seconds, 'seconds').format(FULL_FORMAT);
+    }
 
     return Dep.extend({
 
         setup: function () {
             Dep.prototype.setup.call(this);
+
+            // Prefill Fornitore / Brand / Categoria dal Prospect (Relazionato a)
+            ProspectSync.setupProspectSync(this);
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
@@ -20,25 +51,28 @@ define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'
             this.once('after:render', () => {
                 this.applyDefaultDuration();
             });
+
+            // Dopo che i campi data sono pronti (calendario passa spesso 30m)
+            setTimeout(() => this.applyDefaultDuration(), 200);
+            setTimeout(() => this.applyDefaultDuration(), 500);
         },
 
         getDefaultDurationSeconds: function () {
             const fromField = this.model.getFieldParam('duration', 'default');
 
             if (fromField !== null && fromField !== undefined && fromField !== '') {
-                return parseInt(fromField, 10);
+                return parseInt(fromField, 10) || DEFAULT_DURATION_SECONDS;
             }
 
-            const entityType = this.model.entityType || this.model.name;
             const fromMeta = this.getMetadata().get(
-                ['entityDefs', entityType, 'fields', 'duration', 'default']
+                ['entityDefs', 'Appuntamento', 'fields', 'duration', 'default']
             );
 
             if (fromMeta !== null && fromMeta !== undefined && fromMeta !== '') {
-                return parseInt(fromMeta, 10);
+                return parseInt(fromMeta, 10) || DEFAULT_DURATION_SECONDS;
             }
 
-            return FALLBACK_DURATION_SECONDS;
+            return DEFAULT_DURATION_SECONDS;
         },
 
         applyDefaultDuration: function () {
@@ -53,15 +87,19 @@ define('custom:views/appuntamento/record/edit-small', ['views/record/edit-small'
             }
 
             const seconds = this.getDefaultDurationSeconds();
-            const dateEnd = this.getDateTime()
-                .toMoment(dateStart)
-                .add(seconds, 'seconds')
-                .format(this.getDateTime().internalDateTimeFormat);
+            const dateEnd = addSecondsUtc(dateStart, seconds);
+
+            if (!dateEnd) {
+                return;
+            }
+
+            if (this.model.get('dateEnd') === dateEnd) {
+                return;
+            }
 
             this.model.set({
                 dateEnd: dateEnd,
-                duration: seconds,
-            }, {ui: true});
+            }, {updatedByDuration: true, ui: true});
         },
     });
 });

@@ -146,7 +146,7 @@
             "layout": "listForProduct",
             "unlinkDisabled": true,
             "selectDisabled": true,
-            "createHandler": "sales:handlers/product/add-price",
+            "createHandler": "modules/sales/handlers/product/add-price",
             "filterList": [
                 "all",
                 "active"
