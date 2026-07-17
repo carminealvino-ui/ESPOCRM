@@ -28,6 +28,13 @@ FILES=(
   "custom/Espo/Custom/Resources/layouts/Quote/finanziamento.json"
   "custom/Espo/Custom/Resources/layouts/Quote/relationships/provvigioni.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
+  "custom/Espo/Custom/Resources/metadata/app/actions.json"
+  "custom/Espo/Custom/Actions/Quote/RicalcolaProvvigioni.php"
+  "client/custom/src/views/quote/record/detail.js"
+  "client/custom/src/views/quote/record/panels/items.js"
+  "client/custom/src/views/quote/record/panels/finanziamento.js"
+  "client/custom/src/handlers/quote/crea-prodotto-articoli.js"
+  "client/custom/src/handlers/quote/ricalcola-provvigioni.js"
   "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
   "tools/deploy-fix-quote-layout-hotfix.sh"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Provvigione.json"
@@ -35,6 +42,7 @@ FILES=(
   "custom/Espo/Custom/Resources/i18n/it_IT/Provvigione.json"
   "custom/Espo/Custom/Resources/metadata/formula/Provvigione.json"
   "tools/backfill-totale-provvigioni.php"
+  "tools/backfill-ricalcola-provvigioni.php"
   "tools/migrate-allineamento-stati-contratti-provvigioni.php"
 )
 
@@ -71,9 +79,19 @@ echo ""
 echo "=== Backfill Quote.totaleProvvigioni (SQL diretto) ==="
 php tools/backfill-totale-provvigioni.php
 
+echo ""
+echo "=== Dry-run ricalcolo provvigioni consolidate ==="
+php tools/backfill-ricalcola-provvigioni.php --dry-run || true
+
+echo ""
+echo "=== Ricalcolo provvigioni consolidate su tutti i contratti ==="
+php tools/backfill-ricalcola-provvigioni.php
+
 php clear_cache.php
 
 if ! grep -q 'Provvigioni (calcolo)' custom/Espo/Custom/Resources/layouts/Quote/detail.json \
+  && grep -q 'recalculateAllForQuote' custom/Espo/Custom/Services/ProvvigioneManager.php \
+  && grep -q 'RicalcolaProvvigioni' custom/Espo/Custom/Actions/Quote/RicalcolaProvvigioni.php \
   && grep -q 'BeforeSaveTotaleProvvigioni' custom/Espo/Custom/Hooks/Quote/BeforeSaveTotaleProvvigioni.php \
   && grep -q 'SyncProvvigioniStato' custom/Espo/Custom/Hooks/Quote/SyncProvvigioniStato.php \
   && grep -q 'In pagamento' custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json \

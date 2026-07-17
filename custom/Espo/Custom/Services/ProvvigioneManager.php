@@ -554,6 +554,99 @@ class ProvvigioneManager
     }
 
     /**
+     * Rigenera tutte le provvigioni consolidate del contratto da regole provvigionali.
+     *
+     * @return array{created: int, updated: int, purged: int}
+     */
+    public function recalculateAllForQuote(Entity $quote): array
+    {
+        $opportunity = $this->resolveOpportunityForQuote($quote);
+
+        if (!$opportunity) {
+            return ['created' => 0, 'updated' => 0, 'purged' => 0];
+        }
+
+        $purged = $this->purgeProvvigioniForQuote($quote->getId());
+        $this->syncQuotePricingFields($quote, $opportunity);
+
+        $this->createConsolidataForQuote($opportunity, $quote);
+        $this->refreshQuoteTotaleProvvigioni($quote);
+
+        $count = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quote->getId()])
+            ->count();
+
+        return [
+            'created' => $count,
+            'updated' => 0,
+            'purged' => $purged,
+        ];
+    }
+
+    private function resolveOpportunityForQuote(Entity $quote): ?Entity
+    {
+        $opportunityId = $quote->get('opportunityId');
+
+        if (!$opportunityId) {
+            return null;
+        }
+
+        return $this->entityManager->getEntityById('Opportunity', $opportunityId);
+    }
+
+    private function purgeProvvigioniForQuote(string $quoteId): int
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quoteId])
+            ->find();
+
+        $count = 0;
+
+        foreach ($collection as $provvigione) {
+            $this->entityManager->removeEntity($provvigione);
+            $count++;
+        }
+
+        return $count;
+    }
+
+    private function syncQuotePricingFields(Entity $quote, Entity $opportunity): void
+    {
+        $imponibile = $this->floatField($quote, 'amount')
+            ?? $this->floatField($quote, 'importoContratto')
+            ?? $this->floatField($opportunity, 'amount')
+            ?? $this->floatField($opportunity, 'importoOpportunit');
+
+        $prezzoCodice = $this->floatField($quote, 'prezzoCodiceIvaEsclusa')
+            ?? $this->floatField($opportunity, 'prezzoCodiceIvaEsclusa');
+        $prezzoListino = $this->floatField($quote, 'prezzoListinoIvaEsclusa')
+            ?? $this->floatField($opportunity, 'prezzoListinoIvaEsclusa');
+
+        if ($imponibile !== null && $prezzoCodice !== null) {
+            $quote->set('minusPlus', round($imponibile - $prezzoCodice, 2));
+        }
+
+        if ($imponibile !== null && $prezzoListino !== null && $prezzoListino > 0) {
+            $quote->set(
+                'margineSuListino',
+                round((($imponibile - $prezzoListino) / $prezzoListino) * 100, 2)
+            );
+        }
+
+        if ($imponibile !== null && !$quote->get('importoContratto')) {
+            $quote->set('importoContratto', $imponibile);
+        }
+
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+            'silent' => true,
+            'skipFormula' => true,
+        ]);
+    }
+
+    /**
      * Somma importoConsolidato (fallback importo) delle Provvigioni del contratto.
      * Include sempre anche le provvigioni Inesigibili.
      */

@@ -18,6 +18,11 @@ FILES=(
   "custom/Espo/Custom/Resources/layouts/Quote/finanziamento.json"
   "custom/Espo/Custom/Resources/layouts/Quote/relationships/provvigioni.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Quote.json"
+  "client/custom/src/views/quote/record/detail.js"
+  "client/custom/src/views/quote/record/panels/items.js"
+  "client/custom/src/views/quote/record/panels/finanziamento.js"
+  "client/custom/src/handlers/quote/crea-prodotto-articoli.js"
+  "client/custom/src/handlers/quote/ricalcola-provvigioni.js"
 )
 
 echo "=== Hotfix layout Contratto (rimuove Provvigioni calcolo) ==="
