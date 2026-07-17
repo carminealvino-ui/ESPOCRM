@@ -8,8 +8,8 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Provvigioni Totali = somma importoConsolidato (o importo) delle Provvigioni del contratto.
- * Esclude Inesigibile. Non usa la formula legacy 15%+35% sull'imponibile.
+ * Provvigioni Totali = somma importoConsolidato (o importo) di tutte le Provvigioni del contratto.
+ * Include anche Inesigibile. Non usa la formula legacy 15%+35% sull'imponibile.
  */
 class AfterSaveTotaleProvvigioni implements AfterSave
 {

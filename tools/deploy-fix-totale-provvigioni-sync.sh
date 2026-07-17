@@ -13,12 +13,23 @@ BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 
 FILES=(
   "custom/Espo/Custom/Hooks/Quote/BeforeSave.php"
+  "custom/Espo/Custom/Hooks/Quote/NormalizeStati.php"
+  "custom/Espo/Custom/Hooks/Quote/SyncProvvigioniStato.php"
   "custom/Espo/Custom/Hooks/Quote/BeforeSaveTotaleProvvigioni.php"
   "custom/Espo/Custom/Hooks/Quote/AfterSaveTotaleProvvigioni.php"
   "custom/Espo/Custom/Hooks/Provvigione/AfterSaveRefreshQuoteTotale.php"
   "custom/Espo/Custom/Services/ProvvigioneManager.php"
+  "custom/Espo/Custom/Services/ProvvigioneStatusSync.php"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
+  "custom/Espo/Custom/Resources/metadata/logicDefs/Quote.json"
+  "custom/Espo/Custom/Resources/layouts/Quote/detail.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Provvigione.json"
+  "custom/Espo/Custom/Resources/metadata/logicDefs/Provvigione.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Provvigione.json"
   "custom/Espo/Custom/Resources/metadata/formula/Provvigione.json"
   "tools/backfill-totale-provvigioni.php"
+  "tools/migrate-allineamento-stati-contratti-provvigioni.php"
 )
 
 echo "=== Deploy sync totaleProvvigioni da ${BRANCH} ==="
@@ -39,6 +50,14 @@ php clear_cache.php
 php rebuild.php
 
 echo ""
+echo "=== Dry-run allineamento stati + mapping provvigioni ==="
+php tools/migrate-allineamento-stati-contratti-provvigioni.php --dry-run || true
+
+echo ""
+echo "=== Allineamento stati + mapping provvigioni su tutti i contratti ==="
+php tools/migrate-allineamento-stati-contratti-provvigioni.php
+
+echo ""
 echo "=== Dry-run backfill ==="
 php tools/backfill-totale-provvigioni.php --dry-run || true
 
@@ -49,10 +68,12 @@ php tools/backfill-totale-provvigioni.php
 php clear_cache.php
 
 if grep -q 'BeforeSaveTotaleProvvigioni' custom/Espo/Custom/Hooks/Quote/BeforeSaveTotaleProvvigioni.php \
+  && grep -q 'SyncProvvigioniStato' custom/Espo/Custom/Hooks/Quote/SyncProvvigioniStato.php \
+  && grep -q 'In pagamento' custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json \
   && grep -q 'updateQuoteTotaleProvvigioniInDatabase' custom/Espo/Custom/Services/ProvvigioneManager.php \
   && ! grep -q 'public function afterSave' custom/Espo/Custom/Hooks/Quote/BeforeSave.php; then
   echo ""
-  echo "VERIFICA OK: BeforeSaveTotaleProvvigioni + UPDATE SQL + legacy afterSave rimosso"
+  echo "VERIFICA OK: enum allineati + mapping provvigioni + totale sempre conteggiato"
 else
   echo ""
   echo "ATTENZIONE: verifica manuale file deployati"

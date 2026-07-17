@@ -1,0 +1,15 @@
+{
+    "fields": {
+        "importoConsolidato": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "notEquals",
+                        "attribute": "statoProvvigione",
+                        "value": "Inesigibile"
+                    }
+                ]
+            }
+        }
+    }
+}

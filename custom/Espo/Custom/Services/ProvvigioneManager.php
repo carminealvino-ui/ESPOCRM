@@ -338,9 +338,11 @@ class ProvvigioneManager
 
         $giorni = $rule?->get('giorniLiquidazione') ?? $this->accrual->getLiquidationDays($regime);
 
+        $statoProvvigione = $this->normalizeStatoProvvigione($stato);
+
         $provvigione->set([
-            'name' => ($stato === 'Prevista' ? 'PREV-' : 'CONS-') . ($parent->get('name') ?? $parent->getId()),
-            'statoProvvigione' => $stato,
+            'name' => ($statoProvvigione === 'Forecast' ? 'PREV-' : 'CONS-') . ($parent->get('name') ?? $parent->getId()),
+            'statoProvvigione' => $statoProvvigione,
             'regimeProvvigione' => $regime,
             'tipo' => $rule?->get('tipoProvvigioneRecord') ?? 'Provvigione Base',
             'productCategoryId' => $category?->getId(),
@@ -374,7 +376,7 @@ class ProvvigioneManager
             );
         }
 
-        if ($stato === 'Prevista') {
+        if ($statoProvvigione === 'Forecast') {
             $provvigione->set([
                 'importoPrevisto' => $importo,
                 'importo' => $importo,
@@ -395,7 +397,7 @@ class ProvvigioneManager
         ?string $contrattoId = null,
         ?string $tipo = null
     ): ?Entity {
-        $where = ['statoProvvigione' => $stato];
+        $where = ['statoProvvigione' => $this->normalizeStatoProvvigione($stato)];
 
         if ($appuntamentoId) {
             $where['appuntamentoId'] = $appuntamentoId;
@@ -553,7 +555,7 @@ class ProvvigioneManager
 
     /**
      * Somma importoConsolidato (fallback importo) delle Provvigioni del contratto.
-     * Esclude stato Inesigibile. Non applica 15%+35% sull'imponibile.
+     * Include sempre anche le provvigioni Inesigibili.
      */
     public function resolveTotaleProvvigioniForQuoteId(string $quoteId): ?float
     {
@@ -566,12 +568,6 @@ class ProvvigioneManager
         $counted = 0;
 
         foreach ($collection as $provvigione) {
-            $stato = (string) ($provvigione->get('statoProvvigione') ?? '');
-
-            if ($stato === 'Inesigibile') {
-                continue;
-            }
-
             $importo = $provvigione->get('importoConsolidato');
 
             if ($importo === null || $importo === '') {
@@ -587,6 +583,17 @@ class ProvvigioneManager
         }
 
         return $counted > 0 ? round($totale, 2) : null;
+    }
+
+    private function normalizeStatoProvvigione(string $stato): string
+    {
+        return match (trim($stato)) {
+            'Prevista', 'Forecast' => 'Forecast',
+            'Consolidata', 'InInvito', 'In pagamento' => 'In pagamento',
+            'Fatturata', 'Pagato' => 'Pagato',
+            'Stornata', 'Inesigibile' => 'Inesigibile',
+            default => 'Forecast',
+        };
     }
 
     public function refreshQuoteTotaleProvvigioni(Entity $quote): void

@@ -3,20 +3,18 @@
         "statoProvvigione": {
             "type": "enum",
             "options": [
-                "Prevista",
-                "Consolidata",
-                "InInvito",
-                "Fatturata",
-                "Stornata"
+                "Forecast",
+                "In pagamento",
+                "Pagato",
+                "Inesigibile"
             ],
             "style": {
-                "Prevista": "info",
-                "Consolidata": "primary",
-                "InInvito": "warning",
-                "Fatturata": "success",
-                "Stornata": "danger"
+                "Forecast": "info",
+                "In pagamento": "warning",
+                "Pagato": "success",
+                "Inesigibile": "danger"
             },
-            "default": "Consolidata",
+            "default": "Forecast",
             "isCustom": true
         },
         "regimeProvvigione": {

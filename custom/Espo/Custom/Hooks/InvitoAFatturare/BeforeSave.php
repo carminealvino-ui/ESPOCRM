@@ -81,12 +81,13 @@ class BeforeSave implements BeforeSave
             ->getRDBRepository('Provvigione')
             ->where([
                 'invitoAFatturareId' => $entity->getId(),
-                'statoProvvigione' => 'Consolidata',
+                'statoProvvigione' => 'In pagamento',
             ])
             ->find();
 
         foreach ($collection as $provvigione) {
-            $provvigione->set('statoProvvigione', 'InInvito');
+            // Con il modello semplificato resta "In pagamento" fino alla fatturazione.
+            $provvigione->set('statoProvvigione', 'In pagamento');
             $this->entityManager->saveEntity($provvigione, ['silent' => true]);
         }
     }
@@ -105,7 +106,7 @@ class BeforeSave implements BeforeSave
             ->find();
 
         foreach ($collection as $provvigione) {
-            $provvigione->set('statoProvvigione', 'Fatturata');
+            $provvigione->set('statoProvvigione', 'Pagato');
             $provvigione->set(
                 'dataLiquidazioneEffettiva',
                 $provvigione->get('dataLiquidazioneEffettiva') ?: date('Y-m-d')

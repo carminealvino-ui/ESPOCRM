@@ -6,7 +6,7 @@ use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
 /**
- * Generazione inviti a fatturare da provvigioni consolidate eleggibili.
+ * Generazione inviti a fatturare da provvigioni in pagamento eleggibili.
  */
 class InvitoAFatturareManager
 {
@@ -28,7 +28,7 @@ class InvitoAFatturareManager
         $meseEnd = date('Y-m-t', strtotime($meseStart));
 
         $where = [
-            'statoProvvigione' => 'Consolidata',
+            'statoProvvigione' => 'In pagamento',
             'invitoAFatturareId' => null,
             'assignedUserId' => $consulenteUserId,
         ];
@@ -66,7 +66,7 @@ class InvitoAFatturareManager
 
         if ($eligible === []) {
             throw new \RuntimeException(
-                'Nessuna provvigione consolidata eleggibile per il periodo selezionato.'
+                'Nessuna provvigione in pagamento eleggibile per il periodo selezionato.'
             );
         }
 

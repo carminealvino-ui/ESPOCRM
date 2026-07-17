@@ -94,7 +94,7 @@ class AccrualAndAmount implements BeforeSave
             return;
         }
 
-        if ($entity->get('statoProvvigione') === 'Prevista') {
+        if ($entity->get('statoProvvigione') === 'Forecast') {
             return;
         }
 

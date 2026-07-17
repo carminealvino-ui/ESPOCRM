@@ -43,6 +43,39 @@
             ],
             [
                 {
+                    "name": "statoContratto"
+                },
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "statoFinanziamento"
+                }
+            ],
+            [
+                {
+                    "name": "importoCaparra"
+                },
+                {
+                    "name": "importoSaldo"
+                }
+            ],
+            [
+                {
+                    "name": "importoFinanziato"
+                },
+                {
+                    "name": "nrRate"
+                },
+                {
+                    "name": "rataPrestito"
+                },
+                {
+                    "name": "tassoZero"
+                }
+            ],
+            [
+                {
                     "name": "description"
                 }
             ],
