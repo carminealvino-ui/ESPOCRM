@@ -55,6 +55,11 @@ done
 
 cd "${CRM_ROOT}"
 
+if grep -q 'Espo\\Core\\Hooks\\Base' custom/Espo/Custom/Hooks/Quote/BeforeSave.php 2>/dev/null; then
+  echo "ERRORE: BeforeSave.php usa ancora hook legacy Base"
+  exit 1
+fi
+
 if grep -q 'public function afterSave' custom/Espo/Custom/Hooks/Quote/BeforeSave.php 2>/dev/null; then
   echo "ERRORE: BeforeSave.php contiene ancora afterSave legacy — deploy incompleto"
   exit 1
@@ -90,6 +95,8 @@ php tools/backfill-ricalcola-provvigioni.php
 php clear_cache.php
 
 if ! grep -q 'Provvigioni (calcolo)' custom/Espo/Custom/Resources/layouts/Quote/detail.json \
+  && grep -q 'BeforeSaveHook' custom/Espo/Custom/Hooks/Quote/BeforeSave.php \
+  && ! grep -q 'Espo\\Core\\Hooks\\Base' custom/Espo/Custom/Hooks/Quote/BeforeSave.php \
   && grep -q 'recalculateAllForQuote' custom/Espo/Custom/Services/ProvvigioneManager.php \
   && grep -q 'RicalcolaProvvigioni' custom/Espo/Custom/Actions/Quote/RicalcolaProvvigioni.php \
   && grep -q 'BeforeSaveTotaleProvvigioni' custom/Espo/Custom/Hooks/Quote/BeforeSaveTotaleProvvigioni.php \

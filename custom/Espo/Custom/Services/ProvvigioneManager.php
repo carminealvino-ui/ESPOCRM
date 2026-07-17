@@ -109,7 +109,11 @@ class ProvvigioneManager
             $appuntamento
         );
 
-        $this->entityManager->saveEntity($provvigione, ['silent' => true]);
+        $this->entityManager->saveEntity($provvigione, [
+            'silent' => true,
+            'skipHooks' => true,
+            'skipFormula' => true,
+        ]);
 
         return $provvigione;
     }
@@ -295,7 +299,11 @@ class ProvvigioneManager
             }
         }
 
-        $this->entityManager->saveEntity($provvigione, ['silent' => true]);
+        $this->entityManager->saveEntity($provvigione, [
+            'silent' => true,
+            'skipHooks' => true,
+            'skipFormula' => true,
+        ]);
 
         return $provvigione;
     }
@@ -476,7 +484,11 @@ class ProvvigioneManager
             'name' => 'PLUS-CP5-' . ($quote->get('number') ?? $quote->getId()),
         ]);
 
-        $this->entityManager->saveEntity($plus, ['silent' => true]);
+        $this->entityManager->saveEntity($plus, [
+            'silent' => true,
+            'skipHooks' => true,
+            'skipFormula' => true,
+        ]);
     }
 
     private function resolvePrezzoListino(?Entity $source, ?Entity $opportunity): ?float
