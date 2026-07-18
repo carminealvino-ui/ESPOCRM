@@ -151,7 +151,8 @@ class ProvvigioneStatusSync
 
     public function shouldCountInTotale(string $statoProvvigione): bool
     {
-        return !in_array($statoProvvigione, [self::INESIGIBILE], true);
+        // Totale contratto: conta sempre, anche Inesigibile.
+        return true;
     }
 
     public function canRecalculate(Entity $provvigione): bool
