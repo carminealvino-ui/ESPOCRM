@@ -6,7 +6,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-$(pwd)}"
-BRANCH="${2:-cursor/opportunity-globallogic-9999}"
+BRANCH="${2:-main}"
 REPO="carminealvino-ui/ESPOCRM"
 FILE="client/custom/src/views/fields/product-category-by-brand.js"
 URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}/${FILE}"

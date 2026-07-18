@@ -2,12 +2,12 @@
 # Hotfix: rimuove pannello "Provvigioni (calcolo)" e ripristina layout Contratto stabile
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-totale-provvigioni-sync-9999/tools/deploy-fix-quote-layout-hotfix.sh?t=$(date +%s)" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-fix-quote-layout-hotfix.sh?t=$(date +%s)" | bash
 
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="cursor/fix-totale-provvigioni-sync-9999"
+BRANCH="main"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 

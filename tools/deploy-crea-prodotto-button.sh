@@ -2,12 +2,12 @@
 # «Crea prodotto» a sinistra del + nella tabella articoli. NON installa calculationHandler.
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL ".../cursor/quote-prezzi-iva-inclusa-9999/tools/deploy-crea-prodotto-button.sh?t=$(date +%s)" -o /tmp/deploy-btn.sh
+#   curl -fsSL ".../main/tools/deploy-crea-prodotto-button.sh?t=$(date +%s)" -o /tmp/deploy-btn.sh
 #   bash /tmp/deploy-btn.sh
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${BRANCH:-cursor/quote-prezzi-iva-inclusa-9999}"
+BRANCH="${BRANCH:-main}"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 CLIENT_JSON="${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/app/client.json"
 LEGACY_SCRIPT="client/custom/src/custom-product-button.js"

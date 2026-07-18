@@ -2,7 +2,7 @@
 # Deploy script sync listino prodotti (server produzione)
 set -euo pipefail
 
-BRANCH="${GITHUB_BRANCH:-cursor/opportunity-globallogic-9999}"
+BRANCH="${GITHUB_BRANCH:-main}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 

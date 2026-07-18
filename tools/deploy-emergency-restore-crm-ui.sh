@@ -2,12 +2,12 @@
 # Ripristino vista Contratto: NON sovrascrive layout né entityDefs da GitHub.
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL ".../cursor/quote-prezzi-iva-inclusa-9999/tools/deploy-emergency-restore-crm-ui.sh?t=$(date +%s)" -o /tmp/restore-crm.sh
+#   curl -fsSL ".../main/tools/deploy-emergency-restore-crm-ui.sh?t=$(date +%s)" -o /tmp/restore-crm.sh
 #   bash /tmp/restore-crm.sh
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${BRANCH:-cursor/quote-prezzi-iva-inclusa-9999}"
+BRANCH="${BRANCH:-main}"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 
 cd "${CRM_ROOT}" || exit 1

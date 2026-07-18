@@ -9,17 +9,17 @@
 #
 # Dry-run:
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/fase-3f-import-listino-completo-pdf.sh" | DRY_RUN=1 bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/fase-3f-import-listino-completo-pdf.sh" | DRY_RUN=1 bash
 #
 # Apply:
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/fase-3f-import-listino-completo-pdf.sh" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/fase-3f-import-listino-completo-pdf.sh" | bash
 # =============================================================================
 set -euo pipefail
 
 SCRIPT_VERSION="2026-05-27-prezzo-codice-v4"
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${GITHUB_BRANCH:-cursor/opportunity-globallogic-9999}"
+BRANCH="${GITHUB_BRANCH:-main}"
 REPO="${GITHUB_REPOSITORY:-carminealvino-ui/ESPOCRM}"
 RAW_BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 

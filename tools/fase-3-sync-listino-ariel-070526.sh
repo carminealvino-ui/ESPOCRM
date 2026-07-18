@@ -8,15 +8,15 @@
 #
 # 1) Dry-run (nessuna scrittura):
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/fase-3-sync-listino-ariel-070526.sh" | DRY_RUN=1 bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/fase-3-sync-listino-ariel-070526.sh" | DRY_RUN=1 bash
 #
 # 2) Applica:
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/fase-3-sync-listino-ariel-070526.sh" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/fase-3-sync-listino-ariel-070526.sh" | bash
 # =============================================================================
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${GITHUB_BRANCH:-cursor/opportunity-globallogic-9999}"
+BRANCH="${GITHUB_BRANCH:-main}"
 REPO="${GITHUB_REPOSITORY:-carminealvino-ui/ESPOCRM}"
 RAW_BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 

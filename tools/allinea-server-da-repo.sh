@@ -3,18 +3,18 @@
 # Deploy MIRATO: non sovrascrive tutto custom/, solo i file elencati negli script deploy.
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/crm-kpi-dashlet-9999/tools/allinea-server-da-repo.sh?t=$(date +%s)" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/allinea-server-da-repo.sh?t=$(date +%s)" | bash
 #   bash tools/allinea-server-da-repo.sh --step=0
 #   bash tools/allinea-server-da-repo.sh --step=1
 #   ...
 #
-# Branch canonico KPI + Call esito + avvisi: cursor/crm-kpi-dashlet-9999
+# Branch canonico: main (post sync produzione)
 # Documentazione: REGOLE-PRODUZIONE/12-ALLINEA-SERVER-DA-REPO.md
 
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${BRANCH:-cursor/crm-kpi-dashlet-9999}"
+BRANCH="${BRANCH:-main}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 USER_NAME="${ESPO_USER:-carmine_alvino}"

@@ -6,7 +6,7 @@
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${BRANCH:-cursor/quote-prezzi-iva-inclusa-9999}"
+BRANCH="${BRANCH:-main}"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SAMPLE="${SCRIPT_DIR}/layouts-samples/Quote/detail-prezzi-minusplus.json"

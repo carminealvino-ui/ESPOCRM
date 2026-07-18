@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # UI Appuntamento: sync Fornitore/Brand/Categoria da Prospect (campo parent autonomo).
 #
-# Deploy:
-#   bash tools/deploy-prospect-appuntamento-form-ui.sh cursor/fix-appuntamento-prospect-sync-9999
+# Deploy (solo da main):
+#   bash tools/deploy-prospect-appuntamento-form-ui.sh
 set -euo pipefail
 
-if [[ "${1:-}" == cursor/* ]]; then
-  BRANCH="$1"
-  CRM_ROOT="${2:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-else
-  CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-  BRANCH="${2:-cursor/fix-appuntamento-prospect-sync-9999}"
+if [[ "${1:-}" == cursor/* ]] || [[ "${2:-}" == cursor/* ]]; then
+  echo "ERRORE: branch cursor/* eliminati. Usare solo main. Vedi tools/DEPLOY-SOLO-DA-MAIN.md"
+  exit 1
 fi
+
+CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
+BRANCH="${2:-main}"
 
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"

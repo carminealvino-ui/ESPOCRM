@@ -5,7 +5,7 @@
 # Chiude le righe product_price errate su listini Maggio e 07/05 create dal sync precedente.
 #
 # cd ~/public_html/crm/mec-group
-# curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/fase-3d-chiudi-mono-9000-dopo-aprile.sh" | DRY_RUN=1 bash
+# curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/fase-3d-chiudi-mono-9000-dopo-aprile.sh" | DRY_RUN=1 bash
 # curl -fsSL ".../fase-3d-chiudi-mono-9000-dopo-aprile.sh" | bash
 # =============================================================================
 set -euo pipefail

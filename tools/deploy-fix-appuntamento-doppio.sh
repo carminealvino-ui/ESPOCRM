@@ -2,12 +2,12 @@
 # Fix doppio appuntamento + modifica appuntamento con ghost nello slot (v1.0.5).
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-appuntamento-doppio-9999/tools/deploy-fix-appuntamento-doppio.sh?t=$(date +%s)" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-fix-appuntamento-doppio.sh?t=$(date +%s)" | bash
 
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="${2:-cursor/fix-appuntamento-doppio-9999}"
+BRANCH="${2:-main}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 
