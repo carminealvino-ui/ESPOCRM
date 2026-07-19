@@ -7,14 +7,12 @@ use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
 /**
- * Stato provvigione derivato dallo stato contratto (Quote.statoContratto).
+ * Stato provvigione derivato da Quote.status + Quote.statoContratto.
  *
- * Forecast        ← Inserito, In lavorazione
- * In pagamento    ← Appuntamento fissato, Installato
- * Pagato          ← Chiuso
- * Inesigibile     ← Sospeso, Annullato, Recesso
- *
- * Maturazione invito: pagamento il 15 del mese successivo a installazione o caparra > 15%.
+ * Forecast        ← Bozza / In Gestione + Inserito/In lavorazione
+ * In pagamento    ← Appuntamento fissato
+ * Pagato          ← Installato / Chiuso
+ * Inesigibile     ← Invalido / Sospeso / Annullato / Recesso / fin. Respinto|Annullato
  */
 class ProvvigioneStatusSync
 {
@@ -48,15 +46,26 @@ class ProvvigioneStatusSync
             return self::INESIGIBILE;
         }
 
+        $status = trim((string) ($quote->get('status') ?? ''));
         $stato = trim((string) ($quote->get('statoContratto') ?? ''));
 
-        return match ($stato) {
-            'Inserito', 'In lavorazione' => self::FORECAST,
-            'Appuntamento Fissato', 'Appuntamento fissato', 'Installato' => self::IN_PAGAMENTO,
-            'Chiuso' => self::PAGATO,
-            'Sospeso', 'Annullato', 'Recesso' => self::INESIGIBILE,
-            default => self::FORECAST,
-        };
+        if (in_array($status, ['Invalido'], true)
+            || in_array($stato, ['Sospeso', 'Annullato', 'Recesso'], true)
+        ) {
+            return self::INESIGIBILE;
+        }
+
+        if ($status === 'Installato' || $stato === 'Chiuso') {
+            return self::PAGATO;
+        }
+
+        if ($status === 'Appuntamento fissato'
+            || in_array($stato, ['Appuntamento Fissato', 'Appuntamento fissato', 'Installato'], true)
+        ) {
+            return self::IN_PAGAMENTO;
+        }
+
+        return self::FORECAST;
     }
 
     /**
@@ -221,9 +230,19 @@ class ProvvigioneStatusSync
 
     private function isInstallatoState(Entity $quote): bool
     {
+        $status = trim((string) ($quote->get('status') ?? ''));
+
+        if ($status === 'Installato') {
+            return true;
+        }
+
         $stato = trim((string) ($quote->get('statoContratto') ?? ''));
 
-        return in_array($stato, ['Installato', 'Appuntamento Fissato', 'Appuntamento fissato', 'Chiuso'], true);
+        return in_array(
+            $stato,
+            ['Installato', 'Appuntamento Fissato', 'Appuntamento fissato', 'Chiuso'],
+            true
+        );
     }
 
     private function hasCaparraOltreSoglia(Entity $quote): bool

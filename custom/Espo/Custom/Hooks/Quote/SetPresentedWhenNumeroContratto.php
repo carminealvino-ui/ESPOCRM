@@ -7,12 +7,11 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Numero contratto valorizzato → stato Bozza diventa In lavorazione (schema semplificato)
- * oppure Draft diventa Presented (schema legacy Espo).
+ * Numero contratto valorizzato → Bozza diventa In Gestione.
  */
 class SetPresentedWhenNumeroContratto implements BeforeSave
 {
-    public static int $order = 12;
+    public static int $order = 10;
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
@@ -30,8 +29,7 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
 
         $status = $entity->get('status');
         $nextStatus = match ($status) {
-            'Bozza' => 'In lavorazione',
-            'Draft' => 'Presented',
+            'Bozza', 'Draft' => 'In Gestione',
             default => null,
         };
 

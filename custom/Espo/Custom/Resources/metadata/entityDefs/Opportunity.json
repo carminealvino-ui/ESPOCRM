@@ -216,25 +216,21 @@
             "type": "enum",
             "options": [
                 "",
-                "In attesa di OTP",
                 "In valutazione",
-                "In attesa documentazione",
-                "In lavorazione",
-                "In rivalutazione",
-                "In Attesa Documentazione",
+                "In attesa OTP",
                 "Approvato",
+                "In rivalutazione",
+                "In attesa di documentazione",
                 "Respinto",
                 "Annullato"
             ],
             "style": {
                 "": null,
-                "In attesa di OTP": "info",
                 "In valutazione": "primary",
-                "In attesa documentazione": "warning",
-                "In lavorazione": null,
-                "In rivalutazione": null,
-                "In Attesa Documentazione": "warning",
+                "In attesa OTP": "info",
                 "Approvato": "success",
+                "In rivalutazione": null,
+                "In attesa di documentazione": "warning",
                 "Respinto": "danger",
                 "Annullato": null
             },
@@ -262,10 +258,8 @@
             "type": "enum",
             "options": [
                 "",
-                "In lavorazione",
                 "Inserito",
-                "Appuntamento fissato",
-                "Installato",
+                "In lavorazione",
                 "Chiuso",
                 "Sospeso",
                 "Annullato",
@@ -273,14 +267,12 @@
             ],
             "style": {
                 "": null,
-                "In lavorazione": null,
                 "Inserito": null,
-                "Appuntamento fissato": null,
-                "Installato": null,
-                "Chiuso": "success",
+                "In lavorazione": null,
                 "Sospeso": null,
                 "Annullato": null,
-                "Recesso": null
+                "Recesso": null,
+                "Chiuso": "success"
             },
             "default": null,
             "isCustom": true

@@ -108,27 +108,23 @@
             "Permessi": "Permessi"
         },
         "statoFinanziamento": {
-            "In attesa di OTP": "In attesa di OTP",
             "In valutazione": "In valutazione",
-            "In attesa documentazione": "In attesa documentazione",
-            "In lavorazione": "In lavorazione",
-            "In rivalutazione": "In rivalutazione",
-            "In Attesa Documentazione": "In Attesa Documentazione",
+            "In attesa OTP": "In attesa OTP",
             "Approvato": "Approvato",
+            "In rivalutazione": "In rivalutazione",
+            "In attesa di documentazione": "In attesa di documentazione",
             "Respinto": "Respinto",
             "Annullato": "Annullato",
             "": ""
         },
         "statoContratto": {
-            "In lavorazione": "In lavorazione",
-            "Installato": "Installato",
-            "Annullato": "Annullato",
-            "": "",
-            "Sospeso": "Sospeso",
             "Inserito": "Inserito",
-            "Appuntamento fissato": "Appuntamento fissato",
-            "Chiuso": "Chiuso",
-            "Recesso": "Recesso"
+            "In lavorazione": "In lavorazione",
+            "Sospeso": "Sospeso",
+            "Annullato": "Annullato",
+            "Recesso": "Recesso",
+            "": "",
+            "Chiuso": "Chiuso"
         },
         "lineaProdotto": {
             "Tende da Sole": "Tende da Sole",
