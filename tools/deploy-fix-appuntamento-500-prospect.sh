@@ -9,7 +9,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-68f6e778e06eb6d6430c48dab2e8446400c038cb}"
+COMMIT="${DEPLOY_COMMIT:-REPLACE_AFTER_COMMIT}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="fix-appuntamento-500-prospect"
@@ -26,6 +26,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
   "tools/diagnose-appuntamento-500.php"
   "tools/bonifica-appuntamento-prospect-orfano.php"
+  "tools/ripara-appuntamento-senza-prospect.php"
 )
 
 mkdir -p tools/backup-manifests
@@ -85,14 +86,26 @@ php rebuild.php
 echo "=== Diagnosi record 6900a442ee92bd824 ==="
 php tools/diagnose-appuntamento-500.php 6900a442ee92bd824 || true
 
-echo "=== Bonifica prospect orfani (record + massiva) ==="
+echo "=== Bonifica prospect orfani ==="
 php tools/bonifica-appuntamento-prospect-orfano.php --dry-run 6900a442ee92bd824 || true
 php tools/bonifica-appuntamento-prospect-orfano.php 6900a442ee92bd824 || true
-php tools/bonifica-appuntamento-prospect-orfano.php --dry-run | head -n 40 || true
 set +o pipefail
-php tools/bonifica-appuntamento-prospect-orfano.php
+php tools/bonifica-appuntamento-prospect-orfano.php --dry-run 2>/dev/null | head -n 20 || true
+php tools/bonifica-appuntamento-prospect-orfano.php || true
 set -o pipefail
+
+echo "=== Ripara SENZA PROSPECT (nome + prospectName) ==="
+php tools/ripara-appuntamento-senza-prospect.php --dry-run 6900a442ee92bd824 || true
+php tools/ripara-appuntamento-senza-prospect.php 6900a442ee92bd824 || true
+php tools/ripara-appuntamento-senza-prospect.php --dry-run | head -n 30 || true
+set +o pipefail
+php tools/ripara-appuntamento-senza-prospect.php || true
+set -o pipefail
+
+echo "=== Diagnosi post-fix ==="
+php tools/diagnose-appuntamento-500.php 6900a442ee92bd824 || true
 
 echo ""
 echo "=== Fine ==="
 echo "Riapri #Appuntamento/view/6900a442ee92bd824 (hard-refresh)"
+echo "Atteso nome tipo: 00049 - LZ/E1 (Velletri) - RISTORANTE DA BAFFONE... (ARQUATI - PERGOLA)"
