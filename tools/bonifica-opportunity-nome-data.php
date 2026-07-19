@@ -6,7 +6,7 @@
  *   php tools/bonifica-opportunity-nome-data.php --dry-run
  *   php tools/bonifica-opportunity-nome-data.php
  *   php tools/bonifica-opportunity-nome-data.php --dry-run lommi
- *   php tools/bonifica-opportunity-nome-data.php lommi
+ *   php tools/bonifica-opportunity-nome-data.php 681d9c063557522f6
  */
 
 require_once dirname(__DIR__) . '/bootstrap.php';
@@ -31,20 +31,34 @@ $app->setupSystemUser();
 $em = $app->getContainer()->get('entityManager');
 $builder = new OpportunityNameBuilder($em);
 
+// Carica tutte e filtra in PHP (name* Espo può essere case-sensitive).
+$all = $em->getRDBRepository('Opportunity')->find();
+$collection = [];
+
 if ($filter) {
-    $collection = $em->getRDBRepository('Opportunity')
-        ->where([
-            'OR' => [
-                ['id' => $filter],
-                ['name*' => $filter],
-                ['prospectName*' => $filter],
-                ['accountName*' => $filter],
-            ],
-        ])
-        ->find();
+    $needle = mb_strtolower($filter);
+
+    foreach ($all as $opportunity) {
+        if ($opportunity->getId() === $filter) {
+            $collection[] = $opportunity;
+            continue;
+        }
+
+        $hay = mb_strtolower(implode(' ', [
+            (string) $opportunity->get('name'),
+            (string) $opportunity->get('prospectName'),
+            (string) $opportunity->get('accountName'),
+            (string) $opportunity->get('leadName'),
+        ]));
+
+        if (str_contains($hay, $needle)) {
+            $collection[] = $opportunity;
+        }
+    }
 } else {
-    // Ampia: tutte le opportunità; filtra in PHP con needsRebuild
-    $collection = $em->getRDBRepository('Opportunity')->find();
+    foreach ($all as $opportunity) {
+        $collection[] = $opportunity;
+    }
 }
 
 $scanned = 0;

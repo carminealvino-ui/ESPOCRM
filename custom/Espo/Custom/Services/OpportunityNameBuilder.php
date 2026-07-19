@@ -28,51 +28,51 @@ class OpportunityNameBuilder
             ?: ''
         ));
 
-        $dateLabel = $opportunity->get('dataOpportunit')
-            ?: $opportunity->get('closeDate');
+        $appuntamento = $this->resolveAppuntamento($opportunity);
 
-        $appuntamento = null;
-        $appuntamentoId = trim((string) ($opportunity->get('appuntamentoId') ?? ''));
+        $dateForField = $this->normalizeDate($opportunity->get('dataOpportunit'))
+            ?: $this->normalizeDate($opportunity->get('closeDate'));
 
-        if ($appuntamentoId !== '') {
-            $appuntamento = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
+        if ($dateForField === null && $appuntamento) {
+            $dateForField = $this->normalizeDate($appuntamento->get('dateStart'))
+                ?: $this->normalizeDate($appuntamento->get('dataAppuntamento'));
         }
 
-        if ((!$dateLabel || $dateLabel === '') && $appuntamento && $appuntamento->get('dateStart')) {
-            $dateLabel = substr((string) $appuntamento->get('dateStart'), 0, 10);
-        }
-
-        if ($dateLabel) {
-            $dateLabel = substr((string) $dateLabel, 0, 10);
-        }
+        // Ultimo fallback solo per il nome (non scrive dataOpportunit).
+        $dateForName = $dateForField
+            ?: $this->normalizeDate($opportunity->get('createdAt'));
 
         if ($displayName === '' && $appuntamento) {
             $displayName = trim((string) ($appuntamento->get('prospectName') ?? ''));
         }
 
         if ($displayName === '' && $before !== '') {
-            // Estrae "LOMMI MAURIZIO" da "- LOMMI MAURIZIO - ARTEL - ..."
             $displayName = $this->extractClientFromLegacyName($before);
         }
 
         $brandLabel = trim((string) (
             $opportunity->get('productBrandName')
             ?: $opportunity->get('azienda')
-            ?: ($appuntamento ? $appuntamento->get('productBrandName') : '')
+            ?: ($appuntamento ? ($appuntamento->get('productBrandName') ?: $appuntamento->get('azienda')) : '')
             ?: ''
         ));
 
-        $importo = $opportunity->get('amount')
-            ?? $opportunity->get('importoOpportunit');
+        $importo = $opportunity->get('amount');
+        if ($importo === null || $importo === '') {
+            $importo = $opportunity->get('importoOpportunit');
+        }
 
-        $importoLabel = ($importo !== null && $importo !== '')
-            ? number_format((float) $importo, 0, ',', '.')
-            : '';
+        $importoLabel = $this->formatImporto($importo);
 
         $description = strtoupper(trim((string) ($opportunity->get('description') ?: '')));
 
+        // Se descrizione vuota, prova a ricavarla dal nome legacy.
+        if ($description === '' && $before !== '') {
+            $description = $this->extractDescriptionFromLegacyName($before, $displayName, $brandLabel);
+        }
+
         $parts = array_filter([
-            $dateLabel ?: null,
+            $dateForName,
             $displayName !== '' ? $displayName : null,
             $brandLabel !== '' ? $brandLabel : null,
             $description !== '' ? $description : null,
@@ -83,28 +83,28 @@ class OpportunityNameBuilder
             return [
                 'changed' => false,
                 'name' => $before !== '' ? $before : null,
-                'dataOpportunit' => $dateLabel ?: null,
+                'dataOpportunit' => $dateForField,
                 'before' => $before !== '' ? $before : null,
             ];
         }
 
         $newName = implode(' - ', $parts);
-        $dataChanged = $dateLabel
-            && (string) ($opportunity->get('dataOpportunit') ?? '') !== $dateLabel;
+        $dataChanged = $dateForField !== null
+            && (string) ($opportunity->get('dataOpportunit') ?? '') !== $dateForField;
         $nameChanged = $newName !== $before;
 
         if (!$nameChanged && !$dataChanged) {
             return [
                 'changed' => false,
                 'name' => $newName,
-                'dataOpportunit' => $dateLabel ?: null,
+                'dataOpportunit' => $dateForField,
                 'before' => $before,
             ];
         }
 
         if (!$dryRun) {
             if ($dataChanged) {
-                $opportunity->set('dataOpportunit', $dateLabel);
+                $opportunity->set('dataOpportunit', $dateForField);
             }
 
             if ($nameChanged) {
@@ -120,7 +120,7 @@ class OpportunityNameBuilder
         return [
             'changed' => true,
             'name' => $newName,
-            'dataOpportunit' => $dateLabel ?: null,
+            'dataOpportunit' => $dateForField,
             'before' => $before,
         ];
     }
@@ -129,7 +129,12 @@ class OpportunityNameBuilder
     {
         $name = trim((string) ($opportunity->get('name') ?? ''));
 
-        if ($name === '' || str_starts_with($name, '-')) {
+        if ($name === '') {
+            return true;
+        }
+
+        // Trattino iniziale / spazio + trattino
+        if (preg_match('/^\s*-/', $name)) {
             return true;
         }
 
@@ -139,6 +144,88 @@ class OpportunityNameBuilder
         }
 
         return false;
+    }
+
+    private function resolveAppuntamento(Entity $opportunity): ?Entity
+    {
+        $appuntamentoId = trim((string) ($opportunity->get('appuntamentoId') ?? ''));
+
+        if ($appuntamentoId !== '') {
+            $linked = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
+
+            if ($linked) {
+                return $linked;
+            }
+        }
+
+        $prospectId = trim((string) ($opportunity->get('prospectId') ?? ''));
+
+        if ($prospectId === '') {
+            return null;
+        }
+
+        $candidates = $this->entityManager
+            ->getRDBRepository('Appuntamento')
+            ->where(['prospectId' => $prospectId])
+            ->order('dateStart', 'DESC')
+            ->limit(0, 5)
+            ->find();
+
+        foreach ($candidates as $app) {
+            return $app;
+        }
+
+        return null;
+    }
+
+    private function normalizeDate(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+
+        $raw = trim((string) $value);
+
+        if ($raw === '') {
+            return null;
+        }
+
+        // 23.04.2025 → 2025-04-23
+        if (preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $raw, $m)) {
+            return $m[3] . '-' . $m[2] . '-' . $m[1];
+        }
+
+        if (preg_match('/^\d{4}-\d{2}-\d{2}/', $raw)) {
+            return substr($raw, 0, 10);
+        }
+
+        $ts = strtotime($raw);
+
+        if ($ts === false) {
+            return null;
+        }
+
+        return date('Y-m-d', $ts);
+    }
+
+    private function formatImporto(mixed $importo): string
+    {
+        if ($importo === null || $importo === '') {
+            return '';
+        }
+
+        $value = (float) $importo;
+
+        // Evita 0.01 → 0
+        if (abs($value) > 0 && abs($value) < 1) {
+            return number_format($value, 2, ',', '.');
+        }
+
+        return number_format($value, 0, ',', '.');
     }
 
     private function extractClientFromLegacyName(string $name): string
@@ -156,10 +243,42 @@ class OpportunityNameBuilder
                 continue;
             }
 
-            // Skip brand-like short tokens only if next parts look like description
             return $part;
         }
 
         return '';
+    }
+
+    private function extractDescriptionFromLegacyName(
+        string $name,
+        string $displayName,
+        string $brandLabel
+    ): string {
+        $trimmed = trim($name);
+        $trimmed = ltrim($trimmed, "- \t");
+        $parts = array_map('trim', explode(' - ', $trimmed));
+        $descParts = [];
+
+        foreach ($parts as $part) {
+            if ($part === '' || preg_match('/^\d{4}-\d{2}-\d{2}$/', $part)) {
+                continue;
+            }
+
+            if (preg_match('/^€/', $part)) {
+                continue;
+            }
+
+            if ($displayName !== '' && strcasecmp($part, $displayName) === 0) {
+                continue;
+            }
+
+            if ($brandLabel !== '' && strcasecmp($part, $brandLabel) === 0) {
+                continue;
+            }
+
+            $descParts[] = $part;
+        }
+
+        return strtoupper(trim(implode(' - ', $descParts)));
     }
 }

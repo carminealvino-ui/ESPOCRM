@@ -759,20 +759,36 @@ class GlobalLogic implements BeforeSave, AfterSave
             ?: ''
         ));
 
-        $dateLabel = $entity->get('dataOpportunit')
-            ?: $entity->get('closeDate');
+        $dateForField = null;
 
-        if (
-            (!$dateLabel || $dateLabel === '')
-            && $appuntamento
-            && $appuntamento->get('dateStart')
-        ) {
-            $dateLabel = substr((string) $appuntamento->get('dateStart'), 0, 10);
-            $entity->set('dataOpportunit', $dateLabel);
+        foreach ([
+            $entity->get('dataOpportunit'),
+            $entity->get('closeDate'),
+            $appuntamento ? $appuntamento->get('dateStart') : null,
+            $appuntamento ? $appuntamento->get('dataAppuntamento') : null,
+        ] as $candidate) {
+            if ($candidate === null || $candidate === '') {
+                continue;
+            }
+
+            $dateForField = substr((string) $candidate, 0, 10);
+            break;
         }
 
-        if ($dateLabel) {
-            $dateLabel = substr((string) $dateLabel, 0, 10);
+        if (
+            $dateForField
+            && (
+                !$entity->get('dataOpportunit')
+                || $entity->get('dataOpportunit') === ''
+            )
+        ) {
+            $entity->set('dataOpportunit', $dateForField);
+        }
+
+        $dateLabel = $dateForField;
+
+        if (!$dateLabel && $entity->get('createdAt')) {
+            $dateLabel = substr((string) $entity->get('createdAt'), 0, 10);
         }
 
         if ($displayName !== '' || $dateLabel) {
@@ -781,12 +797,18 @@ class GlobalLogic implements BeforeSave, AfterSave
                 ?: $entity->get('azienda')
             ));
 
-            $importo = $entity->get('amount')
-                ?? $entity->get('importoOpportunit');
+            $importo = $entity->get('amount');
+            if ($importo === null || $importo === '') {
+                $importo = $entity->get('importoOpportunit');
+            }
 
-            $importoLabel = ($importo !== null && $importo !== '')
-                ? number_format((float) $importo, 0, ',', '.')
-                : '';
+            $importoLabel = '';
+            if ($importo !== null && $importo !== '') {
+                $importoValue = (float) $importo;
+                $importoLabel = (abs($importoValue) > 0 && abs($importoValue) < 1)
+                    ? number_format($importoValue, 2, ',', '.')
+                    : number_format($importoValue, 0, ',', '.');
+            }
 
             $parts = array_filter([
                 $dateLabel ?: null,

@@ -9,7 +9,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-c6810839d465a5d1582101b1d9a20f5212ab4aac}"
+COMMIT="${DEPLOY_COMMIT:-REPLACE_AFTER_COMMIT}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="opportunity-nome-da-appuntamento"
@@ -17,7 +17,12 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 
 cd "${CRM_ROOT}"
 
-echo "=== Deploy nome Opportunità da data Appuntamento ==="
+if [[ "${COMMIT}" == "REPLACE_AFTER_COMMIT" ]]; then
+  echo "ERRORE: DEPLOY_COMMIT non pinato."
+  exit 1
+fi
+
+echo "=== Deploy nome Opportunità da data Appuntamento (v2) ==="
 echo "COMMIT=${COMMIT}"
 
 FILES=(
@@ -65,7 +70,6 @@ for rel in "${FILES[@]}"; do
   echo "OK ${rel}"
 done
 
-# Marker versione hook
 if ! grep -q "VERSIONE: 2.2.7" custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php; then
   echo "ERRORE: GlobalLogic non è 2.2.7" >&2
   exit 1
@@ -76,13 +80,21 @@ rm -rf data/cache/* 2>/dev/null || true
 php clear_cache.php || true
 php rebuild.php
 
-echo "=== Bonifica Lommi + nomi con trattino iniziale ==="
+echo "=== 1) Lommi (id + testo) ==="
+php tools/bonifica-opportunity-nome-data.php --dry-run 681d9c063557522f6 || true
+php tools/bonifica-opportunity-nome-data.php 681d9c063557522f6 || true
 php tools/bonifica-opportunity-nome-data.php --dry-run lommi || true
 php tools/bonifica-opportunity-nome-data.php lommi || true
-php tools/bonifica-opportunity-nome-data.php --dry-run | head -40
+
+echo "=== 2) Dry-run campione (max 30, senza interrompere lo script) ==="
+set +o pipefail
+php tools/bonifica-opportunity-nome-data.php --dry-run 2>/dev/null | head -n 30 || true
+set -o pipefail
+
+echo ""
+echo "=== 3) Applica bonifica completa ==="
 php tools/bonifica-opportunity-nome-data.php
 
 echo ""
 echo "=== Fine ==="
 echo "Atteso Lommi: 2025-04-08 - LOMMI MAURIZIO - ARTEL - CLIMA 9000BTU - €. 3.000"
-echo "(data = dateStart appuntamento o dataOpportunit/closeDate)"
