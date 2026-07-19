@@ -14,8 +14,8 @@ use Espo\ORM\Repository\Option\SaveOptions;
  */
 class SyncStatiContrattoFinanziamento implements BeforeSave
 {
-    /** Dopo SyncFinanziamentoFromOpportunity (4) e NormalizeDefaults (5). */
-    public static int $order = 12;
+    /** Dopo SetPresentedWhenNumeroContratto (10) e SyncFinanziamento (4). */
+    public static int $order = 15;
 
     public function __construct(
         private ContrattoStatiRules $rules

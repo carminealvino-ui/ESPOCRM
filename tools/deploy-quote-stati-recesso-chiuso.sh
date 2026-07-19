@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Quote: stati finanziamento puliti + Recesso/Chiuso sync. Backup obbligatorio.
+# Allinea enum + condizioni tra Stato / Stato Contratto / Stato Finanziamento.
+# Backup obbligatorio in backup_dev/_sessions.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/quote-stati-recesso-chiuso-9999/tools/deploy-quote-stati-recesso-chiuso.sh?t=$(date +%s)" | bash
@@ -14,7 +15,9 @@ STAMP="$(date +%Y%m%d-%H%M%S)"
 
 FILES=(
   "custom/Espo/Custom/Services/ContrattoStatiRules.php"
+  "custom/Espo/Custom/Services/ProvvigioneStatusSync.php"
   "custom/Espo/Custom/Hooks/Quote/SyncStatiContrattoFinanziamento.php"
+  "custom/Espo/Custom/Hooks/Quote/SetPresentedWhenNumeroContratto.php"
   "custom/Espo/Custom/Hooks/Opportunity/SyncStatiContrattoFinanziamento.php"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
   "custom/Espo/Custom/Resources/metadata/entityDefs/Opportunity.json"
@@ -25,17 +28,16 @@ FILES=(
   "custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiSospesiFinanziamento.php"
   "custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiBacklog.php"
   "custom/Espo/Custom/Classes/Select/Opportunity/PrimaryFilters/ContrattiBacklog.php"
-  "tools/backfill-recesso-finanziamento-annullato.php"
   "tools/backfill-stati-contratto-finanziamento.php"
 )
 
 cd "${CRM_ROOT}"
 
-echo "=== Quote stati finanziamento — BRANCH=${BRANCH} ==="
+echo "=== Quote 3 stati (enum + condizioni) — BRANCH=${BRANCH} ==="
 
 echo ""
 echo "=== PASSO 0 — Backup ==="
-SESSION="backup_dev/_sessions/${STAMP}_quote-stati-recesso-chiuso"
+SESSION="backup_dev/_sessions/${STAMP}_quote-stati-tre-campi"
 mkdir -p "${SESSION}" tools
 
 for rel in "${FILES[@]}"; do
@@ -68,6 +70,5 @@ php rebuild.php
 
 echo ""
 echo "=== FATTO codice ==="
-echo "Dropdown pulito: niente 'In lavorazione' né doppio 'In attesa documentazione'."
-echo "Prossimo:"
+echo "Prossimo (dry-run, nessuna modifica dati):"
 echo "  php tools/backfill-stati-contratto-finanziamento.php --dry-run"

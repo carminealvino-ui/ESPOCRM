@@ -19,7 +19,7 @@ class Alerts
     /** @var string[] */
     private const FINANCING_SUSPENDED_STATES = [
         'In rivalutazione',
-        'In attesa documentazione',
+        'In attesa di documentazione',
     ];
 
     /** @var string[] */

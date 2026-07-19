@@ -17,7 +17,7 @@ class ContrattiSospesiFinanziamento implements Filter
             'finanziamento' => true,
             'statoFinanziamento' => [
                 'In rivalutazione',
-                'In attesa documentazione',
+                'In attesa di documentazione',
             ],
         ]);
     }
