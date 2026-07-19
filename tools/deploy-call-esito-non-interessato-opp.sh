@@ -2,9 +2,9 @@
 # Call esito Non interessato → opportunità Closed Lost + lead Perso.
 # L'Appuntamento Pending non viene modificato (resta storicizzato).
 #
-# Uso (un solo blocco — scarica manifest, backup, deploy):
+# Uso:
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/call-esito-non-interessato-opp-9999/tools/deploy-call-esito-non-interessato-opp.sh" \
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/f01b6b4a32929bf4e85f496d7f5dad7f1fe37b1a/tools/deploy-call-esito-non-interessato-opp.sh" \
 #     -o tools/deploy-call-esito-non-interessato-opp.sh
 #   bash tools/deploy-call-esito-non-interessato-opp.sh
 #
@@ -16,33 +16,21 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="${2:-cursor/call-esito-non-interessato-opp-9999}"
+# Pin al commit (evita cache CDN su nome branch).
+COMMIT="${DEPLOY_COMMIT:-f01b6b4a32929bf4e85f496d7f5dad7f1fe37b1a}"
 REPO="carminealvino-ui/ESPOCRM"
-BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
+BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="call-esito-non-interessato-opp"
 MANIFEST_REL="tools/backup-manifests/call-esito-non-interessato-opp.files"
-SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+SCRIPT_VERSION="2026-07-19c-bootstrap"
 STAMP=$(date +%Y%m%d-%H%M%S)
 
 cd "${CRM_ROOT}"
 
-if [[ "${DEPLOY_SELF_UPDATED:-}" != "1" ]]; then
-  tmp_script="${SCRIPT_PATH}.new.$$"
-  if curl -fsSL -o "${tmp_script}" "${BASE}/tools/deploy-call-esito-non-interessato-opp.sh?t=$(date +%s)"; then
-    if ! cmp -s "${SCRIPT_PATH}" "${tmp_script}"; then
-      mv "${tmp_script}" "${SCRIPT_PATH}"
-      chmod +x "${SCRIPT_PATH}"
-      echo "Script deploy aggiornato da ${BRANCH}, riesecuzione..."
-      exec env DEPLOY_SELF_UPDATED=1 bash "${SCRIPT_PATH}" "$@"
-    fi
-    rm -f "${tmp_script}"
-  else
-    rm -f "${tmp_script}"
-    echo "ATTENZIONE: impossibile aggiornare lo script deploy da GitHub, uso copia locale." >&2
-  fi
-fi
-
-echo "=== Deploy Call esito Non interessato → Opp/Lead → ${CRM_ROOT} ==="
+echo "=== Deploy Call esito Non interessato → Opp/Lead ==="
+echo "CRM_ROOT=${CRM_ROOT}"
+echo "COMMIT=${COMMIT}"
+echo "SCRIPT_VERSION=${SCRIPT_VERSION}"
 
 FILES=(
   "custom/Espo/Custom/Services/CallEsitoOpportunitySync.php"
@@ -69,8 +57,7 @@ has_backup() {
   [[ -n "${latest}" && -f "${latest}/manifest.txt" && -f "${latest}/files.list" ]]
 }
 
-# Bootstrap: scarica sempre il manifest prima del backup (file nuovi non esistono ancora sul server).
-echo "=== Bootstrap manifest da ${BRANCH} ==="
+echo "=== Bootstrap manifest ==="
 download_file "${MANIFEST_REL}"
 
 if [[ "${SKIP_BACKUP_CHECK:-}" != "1" ]] && ! has_backup; then
@@ -79,7 +66,7 @@ if [[ "${SKIP_BACKUP_CHECK:-}" != "1" ]] && ! has_backup; then
     exit 1
   fi
 
-  echo "=== PASSO 0 automatico: backup_dev (file esistenti; i nuovi saranno SKIP) ==="
+  echo "=== PASSO 0 automatico: backup_dev ==="
   bash "${CRM_ROOT}/tools/backup-dev-batch.sh" "${FIX_TAG}" \
     --manifest "${CRM_ROOT}/${MANIFEST_REL}"
 fi
@@ -95,9 +82,8 @@ fi
 LOCAL_BACKUP="${CRM_ROOT}/backup/call-esito-non-interessato-opp/server-${STAMP}"
 mkdir -p "${LOCAL_BACKUP}"
 
-backup_if_exists() {
-  local rel="$1"
-  local src="${CRM_ROOT}/${rel}"
+for rel in "${FILES[@]}"; do
+  src="${CRM_ROOT}/${rel}"
   if [[ -f "${src}" ]]; then
     mkdir -p "${LOCAL_BACKUP}/$(dirname "${rel}")"
     cp -a "${src}" "${LOCAL_BACKUP}/${rel}"
@@ -105,25 +91,16 @@ backup_if_exists() {
   else
     echo "SKIP backup (nuovo) ${rel}"
   fi
-}
-
-for rel in "${FILES[@]}"; do
-  backup_if_exists "${rel}"
 done
 
-echo "=== Download codice da ${BRANCH} ==="
+echo "=== Download codice ==="
 for rel in "${FILES[@]}"; do
   download_file "${rel}"
 done
 
 echo ""
-echo "=== Deploy completato ==="
+echo "=== Deploy completato (version ${SCRIPT_VERSION}) ==="
 echo "Poi:"
-echo "  cd ${CRM_ROOT}"
 echo "  php clear_cache.php && php rebuild.php"
 echo "  php tools/diagnose-call-esito-opportunity.php SEDDA"
 echo "  php tools/diagnose-call-esito-opportunity.php SEDDA --fix"
-echo "  php tools/bonifica-call-esito-opportunity-persa.php --dry-run"
-echo "  php tools/bonifica-call-esito-opportunity-persa.php"
-echo ""
-echo "Rollback: copiare i file da backup_dev/_sessions/*_${FIX_TAG}/ (o ${LOCAL_BACKUP}/) verso i path originali."
