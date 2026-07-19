@@ -10,19 +10,6 @@
             "layoutListDisabled": true,
             "noLoad": true,
             "isCustom": true
-        },
-        "name": {
-            "options": []
-        },
-        "color": {
-            "type": "varchar",
-            "trim": true,
-            "maxLength": 7,
-            "isCustom": true
-        },
-        "priceBook": {
-            "type": "link",
-            "isCustom": true
         }
     },
     "links": {
@@ -75,10 +62,10 @@
             "audited": false,
             "isCustom": true
         },
-        "priceBook": {
-            "type": "belongsTo",
-            "foreign": "productBrands",
-            "entity": "PriceBook",
+        "regoleProvvigionali": {
+            "type": "hasMany",
+            "foreign": "productBrand",
+            "entity": "RegolaProvvigionale",
             "audited": false,
             "isCustom": true
         }

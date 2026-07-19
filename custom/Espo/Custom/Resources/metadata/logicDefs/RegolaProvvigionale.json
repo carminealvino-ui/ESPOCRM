@@ -1,0 +1,140 @@
+{
+    "fields": {
+        "percentuale": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "PercentualeImponibile"
+                    },
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "PercentualeImponibileAddizionale"
+                    },
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "PercentualePlusvalenza"
+                    },
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "PercentualeMargine"
+                    }
+                ]
+            }
+        },
+        "percentualeAddizionale": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "PercentualeImponibileAddizionale"
+                    }
+                ]
+            }
+        },
+        "coefficiente": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "CoefficienteCanone"
+                    }
+                ]
+            }
+        },
+        "gettoneImporto": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "GettoneFisso"
+                    }
+                ]
+            }
+        },
+        "importoFissoPod": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "ImportoFissoPod"
+                    }
+                ]
+            }
+        },
+        "margineMin": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "PercentualeMargine"
+                    }
+                ]
+            }
+        },
+        "margineMax": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "PercentualeMargine"
+                    }
+                ]
+            }
+        },
+        "inflowMin": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "CoefficienteCanone"
+                    }
+                ]
+            }
+        },
+        "inflowMax": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "CoefficienteCanone"
+                    }
+                ]
+            }
+        },
+        "podMin": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "ImportoFissoPod"
+                    }
+                ]
+            }
+        },
+        "podMax": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "equals",
+                        "attribute": "tipoCalcolo",
+                        "value": "ImportoFissoPod"
+                    }
+                ]
+            }
+        }
+    }
+}
