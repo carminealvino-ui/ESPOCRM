@@ -1113,6 +1113,7 @@ class CrmKpiService
                 if (
                     !$this->isAppuntamentoPianificato($appuntamento)
                     && !$this->isAppuntamentoRifissato($appuntamento)
+                    && !$this->isAppuntamentoGestito($appuntamento)
                 ) {
                     $weekBuckets[$weekIndex]['appuntamentiTotali']++;
                 }
