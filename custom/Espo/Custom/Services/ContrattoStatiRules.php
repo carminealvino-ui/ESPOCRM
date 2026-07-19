@@ -12,9 +12,14 @@ use Espo\ORM\Entity;
  *
  * Target enum:
  * status: Bozza | In Gestione | Appuntamento fissato | Installato | Invalido
- * statoContratto: Inserito | In lavorazione | Sospeso | Annullato | Recesso
+ * statoContratto: Inserito | In lavorazione | Sospeso | Annullato | Recesso | Chiuso
  * statoFinanziamento: In valutazione | In attesa OTP | Approvato | In rivalutazione
  *                     | In attesa di documentazione | Respinto | Annullato
+ *
+ * Condizioni chiave:
+ * - status Installato ⇔ statoContratto Chiuso
+ * - Installato/Chiuso + finanziamento ⇒ Approvato
+ * - Recesso/Annullato ⇒ status Invalido + fin. Annullato
  */
 class ContrattoStatiRules
 {
@@ -35,8 +40,8 @@ class ContrattoStatiRules
     private const STATO_CONTRATTO_ALIASES = [
         'Appuntamento Fissato' => 'In lavorazione',
         'Appuntamento fissato' => 'In lavorazione',
-        'Installato' => 'In lavorazione',
-        'Chiuso' => 'In lavorazione',
+        // Legacy: Installato era su statoContratto → ora è Chiuso
+        'Installato' => 'Chiuso',
     ];
 
     /** @var array<string, string> */
@@ -144,8 +149,19 @@ class ContrattoStatiRules
             return;
         }
 
-        // Installato (lavorazione) + finanziamento ⇒ Approvato
-        if ($isQuote && $status === 'Installato') {
+        // Installato ⇔ Chiuso
+        if ($isQuote && $status === 'Installato' && $statoContratto !== 'Chiuso') {
+            $entity->set('statoContratto', 'Chiuso');
+            $statoContratto = 'Chiuso';
+        }
+
+        if ($isQuote && $statoContratto === 'Chiuso' && $status !== 'Installato' && $status !== 'Invalido') {
+            $entity->set('status', 'Installato');
+            $status = 'Installato';
+        }
+
+        // Chiuso / Installato + finanziamento ⇒ Approvato
+        if ($statoContratto === 'Chiuso' || ($isQuote && $status === 'Installato')) {
             $hasFinancing = $finanziamento || $statoFinanziamento !== '';
 
             if ($hasFinancing) {
@@ -157,22 +173,6 @@ class ContrattoStatiRules
                     $entity->set('statoFinanziamento', 'Approvato');
                 }
             }
-
-            if ($statoContratto === 'Inserito') {
-                $entity->set('statoContratto', 'In lavorazione');
-            }
-
-            return;
-        }
-
-        // Default allineamenti soft
-        if ($isQuote && $status === 'Bozza' && $statoContratto === '') {
-            $entity->set('statoContratto', 'Inserito');
-        }
-
-        if ($isQuote && $status === 'In Gestione' && $statoContratto === 'Inserito') {
-            // non forzare: l'utente può tenere Inserito
-            return;
         }
     }
 }

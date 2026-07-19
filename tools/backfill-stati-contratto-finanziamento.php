@@ -1,6 +1,6 @@
 <?php
 /**
- * Normalizza i 3 stati Contratto + applica regole crociate.
+ * Normalizza i 3 stati Contratto + regole crociate (incluso Chiuso).
  *
  *   php tools/backfill-stati-contratto-finanziamento.php --dry-run
  *   php tools/backfill-stati-contratto-finanziamento.php
@@ -61,15 +61,21 @@ foreach ($query->find() as $quote) {
         'finanziamento' => (bool) $quote->get('finanziamento'),
     ];
 
-    // Migrazione semantica legacy Chiuso/Installato su statoContratto → status
+    // Pre-pass: se era Chiuso o Installato (lavorazione), allinea prima delle regole
     $stato = trim($before['statoContratto']);
-    if ($stato === 'Chiuso' || $stato === 'Installato') {
-        if (!in_array($before['status'], ['Installato', 'Invalido'], true)) {
+    $status = trim($before['status']);
+
+    if ($stato === 'Chiuso' || $status === 'Installato' || $stato === 'Installato') {
+        if ($status !== 'Invalido' && $status !== 'Installato') {
             $quote->set('status', 'Installato');
         }
+        if ($stato !== 'Recesso' && $stato !== 'Annullato' && $stato !== 'Sospeso') {
+            $quote->set('statoContratto', 'Chiuso');
+        }
     }
+
     if (in_array($stato, ['Appuntamento Fissato', 'Appuntamento fissato'], true)) {
-        if (!in_array($before['status'], ['Appuntamento fissato', 'Installato', 'Invalido'], true)) {
+        if (!in_array($status, ['Appuntamento fissato', 'Installato', 'Invalido'], true)) {
             $quote->set('status', 'Appuntamento fissato');
         }
     }
@@ -91,11 +97,14 @@ foreach ($query->find() as $quote) {
     echo ($dryRun ? 'DRY ' : 'UPD ') . "{$label}\n";
     foreach (['status', 'statoContratto', 'statoFinanziamento', 'finanziamento'] as $k) {
         if ($before[$k] !== $after[$k]) {
-            $b = $before[$k] === '' || $before[$k] === false ? '(vuoto/false)' : (string) $before[$k];
-            $a = $after[$k] === '' || $after[$k] === false ? '(vuoto/false)' : (string) $after[$k];
+            $b = $before[$k];
+            $a = $after[$k];
             if (is_bool($before[$k])) {
                 $b = $before[$k] ? 'true' : 'false';
                 $a = $after[$k] ? 'true' : 'false';
+            } else {
+                $b = $b === '' ? '(vuoto)' : (string) $b;
+                $a = $a === '' ? '(vuoto)' : (string) $a;
             }
             echo "  {$k}: {$b} → {$a}\n";
         }

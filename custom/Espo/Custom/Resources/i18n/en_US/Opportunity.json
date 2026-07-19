@@ -101,7 +101,8 @@
             "Sospeso": "Sospeso",
             "Annullato": "Annullato",
             "Recesso": "Recesso",
-            "": ""
+            "": "",
+            "Chiuso": "Chiuso"
         },
         "lineaProdotto": {
             "Tende da Sole": "Tende da Sole",

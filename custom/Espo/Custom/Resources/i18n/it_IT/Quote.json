@@ -118,7 +118,8 @@
             "Sospeso": "Sospeso",
             "Annullato": "Annullato",
             "Recesso": "Recesso",
-            "": ""
+            "": "",
+            "Chiuso": "Chiuso"
         },
         "status": {
             "Bozza": "Bozza",

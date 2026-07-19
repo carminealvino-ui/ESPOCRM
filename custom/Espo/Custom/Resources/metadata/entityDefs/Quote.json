@@ -219,6 +219,7 @@
                 "",
                 "Inserito",
                 "In lavorazione",
+                "Chiuso",
                 "Sospeso",
                 "Annullato",
                 "Recesso"
@@ -229,7 +230,8 @@
                 "In lavorazione": null,
                 "Sospeso": null,
                 "Annullato": null,
-                "Recesso": null
+                "Recesso": null,
+                "Chiuso": "success"
             },
             "default": "Inserito",
             "isCustom": true

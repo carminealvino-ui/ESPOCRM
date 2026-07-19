@@ -11,7 +11,7 @@ use Espo\ORM\EntityManager;
  *
  * Forecast        ← Bozza / In Gestione + Inserito/In lavorazione
  * In pagamento    ← Appuntamento fissato
- * Pagato          ← Installato (legacy: Chiuso)
+ * Pagato          ← Installato / Chiuso
  * Inesigibile     ← Invalido / Sospeso / Annullato / Recesso / fin. Respinto|Annullato
  */
 class ProvvigioneStatusSync
