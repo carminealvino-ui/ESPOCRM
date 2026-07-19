@@ -25,6 +25,8 @@ FILES=(
   "custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php"
   "custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiSospesiOrdini.php"
   "custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiBacklog.php"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
   "tools/bonifica-quote-senza-numero-bozza.php"
 )
 
@@ -70,3 +72,4 @@ echo "Poi:"
 echo "  php clear_cache.php && php rebuild.php"
 echo "  php tools/bonifica-quote-senza-numero-bozza.php --dry-run"
 echo "  php tools/bonifica-quote-senza-numero-bozza.php"
+echo "  php tools/bonifica-quote-senza-numero-bozza.php Contratto_00154"

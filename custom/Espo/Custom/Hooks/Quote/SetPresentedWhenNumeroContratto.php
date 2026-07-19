@@ -7,9 +7,10 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Numero contratto:
- * - assente → status Bozza (contratto non ancora numerato)
- * - presente → Bozza/Draft diventa In lavorazione / Presented
+ * Solo Numero Contratto (numeroContratto), non il campo Espo `number`.
+ *
+ * - assente → status Bozza
+ * - presente → Bozza/Draft diventa In Gestione / Presented
  */
 class SetPresentedWhenNumeroContratto implements BeforeSave
 {
@@ -47,7 +48,7 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
     {
         $status = $entity->get('status');
         $nextStatus = match ($status) {
-            'Bozza' => 'In lavorazione',
+            'Bozza' => 'In Gestione',
             'Draft' => 'Presented',
             default => null,
         };
@@ -76,14 +77,8 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
 
     private function hasNumeroContratto(Entity $entity): bool
     {
-        foreach (['numeroContratto', 'number'] as $field) {
-            $value = $entity->get($field);
+        $value = $entity->get('numeroContratto');
 
-            if ($value !== null && trim((string) $value) !== '') {
-                return true;
-            }
-        }
-
-        return false;
+        return $value !== null && trim((string) $value) !== '';
     }
 }

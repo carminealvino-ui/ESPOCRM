@@ -246,30 +246,18 @@
         },
         "status": {
             "options": [
-                "Draft",
-                "Presented",
                 "Bozza",
-                "In lavorazione",
+                "In Gestione",
                 "Appuntamento fissato",
-                "Approved",
                 "Installato",
-                "Recesso",
-                "Finanziamento Rifiutato",
-                "Invalido",
-                "Canceled"
+                "Invalido"
             ],
             "style": {
-                "Draft": null,
-                "Presented": "primary",
                 "Bozza": "default",
-                "In lavorazione": "primary",
+                "In Gestione": "primary",
                 "Appuntamento fissato": "info",
-                "Approved": "info",
                 "Installato": "success",
-                "Recesso": "danger",
-                "Finanziamento Rifiutato": "warning",
-                "Invalido": "danger",
-                "Canceled": "info"
+                "Invalido": "danger"
             }
         }
     },

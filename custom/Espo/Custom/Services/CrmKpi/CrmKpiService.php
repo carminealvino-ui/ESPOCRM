@@ -957,15 +957,9 @@ class CrmKpiService
 
     private function quoteHasNumeroContratto(Entity $quote): bool
     {
-        foreach (['numeroContratto', 'number'] as $field) {
-            $value = $quote->get($field);
+        $value = $quote->get('numeroContratto');
 
-            if ($value !== null && trim((string) $value) !== '') {
-                return true;
-            }
-        }
-
-        return false;
+        return $value !== null && trim((string) $value) !== '';
     }
 
     /**
