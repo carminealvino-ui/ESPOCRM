@@ -1,0 +1,5 @@
+# Quote stati Recesso/Chiuso ↔ finanziamento
+custom/Espo/Custom/Services/ContrattoStatiRules.php
+custom/Espo/Custom/Hooks/Quote/SyncStatiContrattoFinanziamento.php
+custom/Espo/Custom/Hooks/Opportunity/SyncStatiContrattoFinanziamento.php
+tools/backfill-recesso-finanziamento-annullato.php
