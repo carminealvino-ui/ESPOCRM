@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Lista Contatti Telefonici: colonna Esito del richiamo.
+# Lista Contatti Telefonici: Esito del richiamo + Opportunità collegata.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/COMMIT/tools/deploy-call-lista-esito.sh" \
@@ -9,7 +9,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-3939421e8aedcb5d8d9dbb5138cb413f5dab8727}"
+COMMIT="${DEPLOY_COMMIT:-REPLACE_COMMIT}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="call-lista-esito"
@@ -17,11 +17,20 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 
 cd "${CRM_ROOT}"
 
-echo "=== Deploy lista Call esito → ${CRM_ROOT} (commit ${COMMIT}) ==="
+echo "=== Deploy Call lista esito+opportunità → ${CRM_ROOT} ==="
+echo "COMMIT=${COMMIT}"
 
 FILES=(
   "custom/Espo/Custom/Resources/layouts/Call/list.json"
+  "custom/Espo/Custom/Resources/layouts/Call/defaultSidePanel.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Call.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Opportunity.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/Call.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json"
+  "custom/Espo/Custom/Services/CallOpportunityLinker.php"
+  "custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php"
+  "custom/Espo/Custom/Hooks/Call/LinkOpportunity.php"
+  "tools/backfill-call-opportunity-link.php"
 )
 
 has_backup() {
@@ -32,9 +41,10 @@ has_backup() {
   [[ -n "${latest}" && -f "${latest}/manifest.txt" && -f "${latest}/files.list" ]]
 }
 
+mkdir -p tools/backup-manifests
+printf '%s\n' "${FILES[@]}" > "tools/backup-manifests/${FIX_TAG}.files"
+
 if [[ "${SKIP_BACKUP_CHECK:-}" != "1" ]] && ! has_backup; then
-  mkdir -p tools/backup-manifests
-  printf '%s\n' "${FILES[@]}" > "tools/backup-manifests/${FIX_TAG}.files"
   bash tools/backup-dev-batch.sh "${FIX_TAG}" --manifest "tools/backup-manifests/${FIX_TAG}.files"
 fi
 
@@ -47,6 +57,8 @@ for rel in "${FILES[@]}"; do
     mkdir -p "${LOCAL_BACKUP}/$(dirname "${rel}")"
     cp -a "${src}" "${LOCAL_BACKUP}/${rel}"
     echo "BACKUP ${rel}"
+  else
+    echo "SKIP backup (nuovo) ${rel}"
   fi
 done
 
@@ -59,5 +71,8 @@ done
 
 echo ""
 echo "=== Deploy completato ==="
-echo "Poi: php clear_cache.php && php rebuild.php"
+echo "Poi:"
+echo "  php clear_cache.php && php rebuild.php"
+echo "  php tools/backfill-call-opportunity-link.php --dry-run"
+echo "  php tools/backfill-call-opportunity-link.php"
 echo "Poi hard-refresh elenco Contatti Telefonici."

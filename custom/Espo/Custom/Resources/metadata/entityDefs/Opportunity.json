@@ -6,6 +6,14 @@
         "appuntamento": {
             "type": "link"
         },
+        "contattiTelefonici": {
+            "type": "linkMultiple",
+            "layoutDetailDisabled": true,
+            "layoutMassUpdateDisabled": true,
+            "noLoad": true,
+            "importDisabled": true,
+            "isCustom": true
+        },
         "dataOpportunit": {
             "notNull": false,
             "type": "date",
@@ -459,6 +467,13 @@
             "type": "belongsTo",
             "foreign": "opportunita",
             "entity": "ShippingProvider",
+            "audited": false,
+            "isCustom": true
+        },
+        "contattiTelefonici": {
+            "type": "hasMany",
+            "foreign": "opportunity",
+            "entity": "Call",
             "audited": false,
             "isCustom": true
         }
