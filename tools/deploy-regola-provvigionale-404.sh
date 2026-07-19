@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Attiva entità Regole Provvigionali (RegolaProvvigionale) + tabella + seed.
-# Risolve 404 su #RegolaProvvigionale/view/...
+# Attiva entità Regole Provvigionali (RegolaProvvigionale) + tabella + seed + ACL.
+# Risolve 404 su #RegolaProvvigionale e #RegolaProvvigionale/view/...
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/COMMIT/tools/deploy-regola-provvigionale-404.sh" \
@@ -10,13 +10,18 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-73984a030dffb795147d22ea17dabf359cc716e2}"
+COMMIT="${DEPLOY_COMMIT:-REPLACE_AFTER_COMMIT}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="regola-provvigionale-404"
 STAMP=$(date +%Y%m%d-%H%M%S)
 
 cd "${CRM_ROOT}"
+
+if [[ "${COMMIT}" == "REPLACE_AFTER_COMMIT" ]]; then
+  echo "ERRORE: DEPLOY_COMMIT non impostato. Usa lo SHA del commit pushato."
+  exit 1
+fi
 
 echo "=== Deploy RegolaProvvigionale (fix 404) ==="
 echo "COMMIT=${COMMIT}"
@@ -42,10 +47,13 @@ FILES=(
   "custom/Espo/Custom/Resources/layouts/RegolaProvvigionale/listSmall.json"
   "custom/Espo/Custom/Resources/layouts/RegolaProvvigionale/filters.json"
   "custom/Espo/Custom/Resources/i18n/it_IT/RegolaProvvigionale.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Global.json"
   "database/2026-07-03-regola-provvigionale-create-table.sql"
   "tools/create-regola-provvigionale-table.php"
   "tools/seed-regole-provvigioni.php"
   "tools/verify-regola-provvigionale.php"
+  "tools/enable-regola-provvigionale-acl.php"
+  "tools/diagnose-regola-provvigionale-404.php"
 )
 
 mkdir -p tools/backup-manifests
@@ -90,12 +98,23 @@ done
 echo "=== Crea tabella regola_provvigionale ==="
 php tools/create-regola-provvigionale-table.php
 
-echo "=== Cache + rebuild ==="
-php clear_cache.php
+echo "=== Svuota cache client/server ==="
+rm -rf data/cache/* 2>/dev/null || true
+php clear_cache.php || true
 php rebuild.php
 
 echo "=== Seed regole (include arielBase105) ==="
 php tools/seed-regole-provvigioni.php --only=ariel || php tools/seed-regole-provvigioni.php
+
+echo "=== Abilita ACL su tutti i ruoli ==="
+php tools/enable-regola-provvigionale-acl.php
+
+echo "=== Cache post-ACL ==="
+rm -rf data/cache/* 2>/dev/null || true
+php clear_cache.php || true
+
+echo "=== Diagnosi ==="
+php tools/diagnose-regola-provvigionale-404.php || true
 
 echo "=== Verifica arielBase105 ==="
 php -r '
@@ -107,12 +126,9 @@ $e = $em->getEntityById("RegolaProvvigionale", "arielBase105");
 echo $e ? ("OK arielBase105 = ".$e->get("name")."\n") : "ERRORE: arielBase105 assente\n";
 '
 
-echo "=== Verifica entità (no 404) ==="
-php tools/verify-regola-provvigionale.php
-
 echo ""
 echo "=== Fine ==="
-echo "1) Hard-refresh browser (Ctrl+Shift+R) o logout/login"
-echo "2) Apri: #RegolaProvvigionale"
-echo "3) Se ancora 404: Administration → Roles → abilita RegolaProvvigionale (read/create)"
+echo "1) Logout + login (obbligatorio: ACL/ruoli in sessione)"
+echo "2) Hard-refresh (Ctrl+Shift+R)"
+echo "3) Apri: #RegolaProvvigionale"
 echo "Menu: Regole Provvigionali"

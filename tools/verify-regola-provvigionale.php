@@ -38,6 +38,18 @@ $controllerClass = 'Espo\\Custom\\Controllers\\RegolaProvvigionale';
 echo class_exists($controllerClass) ? "OK Controller class\n" : "ERR Controller class assente\n";
 $ok = $ok && class_exists($controllerClass);
 
+if (class_exists($controllerClass)) {
+    $parent = get_parent_class($controllerClass) ?: '';
+    echo "  parent={$parent}\n";
+    if ($parent !== 'Espo\\Core\\Controllers\\Record') {
+        echo "WARN preferire extends Espo\\Core\\Controllers\\Record (Espo 10)\n";
+    }
+}
+
+$controllerFile = dirname(__DIR__) . '/custom/Espo/Custom/Controllers/RegolaProvvigionale.php';
+echo is_file($controllerFile) ? "OK Controller file\n" : "ERR Controller file assente\n";
+$ok = $ok && is_file($controllerFile);
+
 try {
     $count = $em->getRDBRepository('RegolaProvvigionale')->count();
     echo "OK repository count={$count}\n";
