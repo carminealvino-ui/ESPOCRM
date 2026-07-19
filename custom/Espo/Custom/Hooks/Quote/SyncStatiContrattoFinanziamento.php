@@ -8,7 +8,7 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Recesso → Finanziamento Annullato; Chiuso solo se Approvato.
+ * Recesso → Annullato; Chiuso + finanziamento → Approvato.
  *
  * @implements BeforeSave<Entity>
  */

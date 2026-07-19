@@ -18,6 +18,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Quote/SyncStatiContrattoFinanziamento.php"
   "custom/Espo/Custom/Hooks/Opportunity/SyncStatiContrattoFinanziamento.php"
   "tools/backfill-recesso-finanziamento-annullato.php"
+  "tools/backfill-stati-contratto-finanziamento.php"
 )
 
 cd "${CRM_ROOT}"
@@ -59,7 +60,7 @@ php rebuild.php
 
 echo ""
 echo "=== FATTO codice ==="
-echo "Prossimo (dopo verifica): dry-run Recesso → Annullato"
-echo "  php tools/backfill-recesso-finanziamento-annullato.php --dry-run"
+echo "Prossimo (dopo verifica): dry-run allineamento stati"
+echo "  php tools/backfill-stati-contratto-finanziamento.php --dry-run"
 echo "Poi, se OK:"
-echo "  php tools/backfill-recesso-finanziamento-annullato.php"
+echo "  php tools/backfill-stati-contratto-finanziamento.php"

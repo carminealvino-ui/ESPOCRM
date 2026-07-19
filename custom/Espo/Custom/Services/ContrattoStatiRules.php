@@ -2,15 +2,13 @@
 
 namespace Espo\Custom\Services;
 
-use Espo\Core\Exceptions\Error;
 use Espo\ORM\Entity;
 
 /**
  * Coerenza Stato Contratto ↔ Stato Finanziamento.
  *
  * - Recesso ⇒ Stato Finanziamento = Annullato
- *   (anche se c'era una richiesta di finanziamento)
- * - Chiuso consentito solo se c'è finanziamento e stato = Approvato
+ * - Chiuso + finanziamento (checkbox o stato valorizzato) ⇒ Approvato
  */
 class ContrattoStatiRules
 {
@@ -38,28 +36,19 @@ class ContrattoStatiRules
             return;
         }
 
-        $hasFinancingRequest = $finanziamento || $statoFinanziamento !== '';
+        $hasFinancing = $finanziamento || $statoFinanziamento !== '';
 
-        // Contanti senza richiesta finanziamento: Chiuso consentito.
-        if (!$hasFinancingRequest) {
+        // Contanti senza finanziamento: nessuna forzatura.
+        if (!$hasFinancing) {
             return;
         }
 
-        if ($statoFinanziamento === 'Approvato' && $finanziamento) {
-            return;
-        }
-
-        // C'è (o c'era) una richiesta: Chiuso solo con Approvato.
-        if ($statoFinanziamento !== 'Approvato') {
-            throw new Error(
-                'Stato Contratto "Chiuso" consentito solo se c\'è finanziamento '
-                . 'e Stato Finanziamento è "Approvato".'
-            );
-        }
-
-        // Approvato ma checkbox finanziamento spento → riattivalo.
         if (!$finanziamento) {
             $entity->set('finanziamento', true);
+        }
+
+        if ($statoFinanziamento !== 'Approvato') {
+            $entity->set('statoFinanziamento', 'Approvato');
         }
     }
 }

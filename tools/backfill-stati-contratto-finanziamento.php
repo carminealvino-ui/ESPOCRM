@@ -1,0 +1,104 @@
+<?php
+/**
+ * Allinea Stato Finanziamento da Stato Contratto:
+ * - Recesso → Annullato
+ * - Chiuso + finanziamento → Approvato
+ *
+ *   php tools/backfill-stati-contratto-finanziamento.php --dry-run
+ *   php tools/backfill-stati-contratto-finanziamento.php
+ *   php tools/backfill-stati-contratto-finanziamento.php --codice=Contratto_00106
+ */
+
+declare(strict_types=1);
+
+$crmRoot = getenv('CRM_ROOT') ?: (getenv('HOME') . '/public_html/crm/mec-group');
+
+if (!is_dir($crmRoot)) {
+    $crmRoot = dirname(__DIR__);
+}
+
+chdir($crmRoot);
+require_once $crmRoot . '/bootstrap.php';
+
+use Espo\Core\Application;
+use Espo\ORM\EntityManager;
+
+$dryRun = in_array('--dry-run', $argv ?? [], true);
+$onlyCodice = null;
+
+foreach ($argv ?? [] as $arg) {
+    if (str_starts_with($arg, '--codice=')) {
+        $onlyCodice = substr($arg, 9);
+    }
+}
+
+$app = new Application();
+$app->setupSystemUser();
+/** @var EntityManager $em */
+$em = $app->getContainer()->get('entityManager');
+
+$where = [
+    'OR' => [
+        ['statoContratto' => 'Recesso'],
+        ['statoContratto' => 'Chiuso'],
+    ],
+];
+
+$query = $em->getRDBRepository('Quote')->where($where);
+
+if ($onlyCodice) {
+    $query->where([
+        'OR' => [
+            ['number' => $onlyCodice],
+            ['numberA' => $onlyCodice],
+            ['name' => $onlyCodice],
+        ],
+    ]);
+}
+
+$updated = 0;
+$skipped = 0;
+
+foreach ($query->find() as $quote) {
+    $label = $quote->get('numberA') ?: $quote->get('name') ?: $quote->getId();
+    $statoContratto = trim((string) ($quote->get('statoContratto') ?? ''));
+    $statoFin = trim((string) ($quote->get('statoFinanziamento') ?? ''));
+    $finanziamento = (bool) $quote->get('finanziamento');
+    $patch = [];
+
+    if ($statoContratto === 'Recesso' && $statoFin !== 'Annullato') {
+        $patch['statoFinanziamento'] = 'Annullato';
+    }
+
+    if ($statoContratto === 'Chiuso') {
+        $hasFinancing = $finanziamento || $statoFin !== '';
+
+        if ($hasFinancing) {
+            if (!$finanziamento) {
+                $patch['finanziamento'] = true;
+            }
+            if ($statoFin !== 'Approvato') {
+                $patch['statoFinanziamento'] = 'Approvato';
+            }
+        }
+    }
+
+    if (!$patch) {
+        $skipped++;
+        continue;
+    }
+
+    $from = $statoFin === '' ? '(vuoto)' : $statoFin;
+    $to = $patch['statoFinanziamento'] ?? $statoFin;
+    echo ($dryRun ? 'DRY ' : 'UPD ')
+        . "{$label} [{$statoContratto}]: {$from} → {$to}\n";
+
+    if (!$dryRun) {
+        $quote->set($patch);
+        $em->saveEntity($quote, ['silent' => true, 'skipHooks' => true]);
+    }
+
+    $updated++;
+}
+
+echo "Fatto. aggiornati={$updated} skip={$skipped} dryRun=" . ($dryRun ? 'yes' : 'no') . "\n";
