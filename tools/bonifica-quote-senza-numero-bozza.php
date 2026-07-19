@@ -69,6 +69,25 @@ foreach ($collection as $quote) {
     $status = (string) $quote->get('status');
 
     if ($status === 'Bozza' || $status === 'Draft') {
+        // Bozza: Stato Contratto deve essere vuoto.
+        $stato = $quote->get('statoContratto');
+        if ($stato !== null && $stato !== '') {
+            echo ($dryRun ? 'DRY ' : 'OK  ')
+                . 'clear-statoContratto ' . $quote->getId() . ' ' . $quote->get('numberA')
+                . ' ' . $stato . ' → (vuoto)' . PHP_EOL;
+            if (!$dryRun) {
+                $update = $em->getQueryBuilder()
+                    ->update()
+                    ->in('Quote')
+                    ->set(['statoContratto' => null])
+                    ->where(['id' => $quote->getId()])
+                    ->build();
+                $em->getQueryExecutor()->execute($update);
+            }
+            $updated++;
+            continue;
+        }
+
         echo 'SKIP already-bozza ' . $quote->getId() . ' ' . $quote->get('numberA') . PHP_EOL;
         $skipped++;
         continue;
@@ -96,7 +115,10 @@ foreach ($collection as $quote) {
         $update = $em->getQueryBuilder()
             ->update()
             ->in('Quote')
-            ->set(['status' => 'Bozza'])
+            ->set([
+                'status' => 'Bozza',
+                'statoContratto' => null,
+            ])
             ->where(['id' => $quote->getId()])
             ->build();
 

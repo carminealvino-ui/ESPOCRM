@@ -58,6 +58,12 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
         }
 
         $entity->set('status', $nextStatus);
+
+        // Uscendo da Bozza, Stato Contratto non resta vuoto.
+        $statoContratto = $entity->get('statoContratto');
+        if ($statoContratto === null || $statoContratto === '') {
+            $entity->set('statoContratto', 'Inserito');
+        }
     }
 
     private function forceBozzaWhenMissingNumero(Entity $entity): void
@@ -65,6 +71,8 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
         $status = (string) $entity->get('status');
 
         if ($status === 'Bozza' || $status === 'Draft') {
+            $entity->set('statoContratto', null);
+
             return;
         }
 
@@ -73,6 +81,7 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
         }
 
         $entity->set('status', 'Bozza');
+        $entity->set('statoContratto', null);
     }
 
     private function hasNumeroContratto(Entity $entity): bool

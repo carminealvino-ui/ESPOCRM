@@ -8,6 +8,9 @@ use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
  * Valori di default su campi bool custom per evitare errori di salvataggio.
+ *
+ * Non forza più statoContratto=Inserito: in Bozza deve restare vuoto
+ * (vedi ClearStatoContrattoWhenBozza).
  */
 class NormalizeDefaults implements BeforeSave
 {
@@ -30,10 +33,6 @@ class NormalizeDefaults implements BeforeSave
 
         if ($entity->get('finanziamento') === null) {
             $entity->set('finanziamento', false);
-        }
-
-        if ($entity->get('statoContratto') === null || $entity->get('statoContratto') === '') {
-            $entity->set('statoContratto', 'Inserito');
         }
     }
 }

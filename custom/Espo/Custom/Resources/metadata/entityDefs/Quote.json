@@ -241,7 +241,7 @@
                 "Annullato": null,
                 "Recesso": null
             },
-            "default": "Inserito",
+            "default": "",
             "isCustom": true
         },
         "status": {
