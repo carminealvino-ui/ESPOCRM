@@ -4,7 +4,7 @@
 #
 # Uso:
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/a56c4207915ca0d4b5bc46f2ff5a26276d896240/tools/deploy-call-esito-non-interessato-opp.sh" \
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/6e4f5414672a4ee5003416f33389896352055ae8/tools/deploy-call-esito-non-interessato-opp.sh" \
 #     -o tools/deploy-call-esito-non-interessato-opp.sh
 #   bash tools/deploy-call-esito-non-interessato-opp.sh
 #
@@ -17,7 +17,7 @@ set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
 # Pin al commit (evita cache CDN su nome branch).
-COMMIT="${DEPLOY_COMMIT:-a56c4207915ca0d4b5bc46f2ff5a26276d896240}"
+COMMIT="${DEPLOY_COMMIT:-6e4f5414672a4ee5003416f33389896352055ae8}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="call-esito-non-interessato-opp"
