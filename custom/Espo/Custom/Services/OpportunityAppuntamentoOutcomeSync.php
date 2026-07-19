@@ -164,6 +164,12 @@ class OpportunityAppuntamentoOutcomeSync
                     'silent' => true,
                     'skipHooks' => true,
                 ]);
+
+                // Ricostruisce nome con data appuntamento (evita "- LOMMI...").
+                if (class_exists(OpportunityNameBuilder::class)) {
+                    (new OpportunityNameBuilder($this->entityManager))
+                        ->rebuild($opportunity, false);
+                }
             }
         }
 
