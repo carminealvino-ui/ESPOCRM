@@ -7,6 +7,14 @@ define('custom:views/fields/appuntamento-esito', [
 
         setup: function () {
             Dep.prototype.setup.call(this);
+
+            if (!this._allTranslatedOptions) {
+                this._allTranslatedOptions = Object.assign(
+                    {},
+                    this.translatedOptions || {}
+                );
+            }
+
             this.applyAllowedOptions();
 
             this.listenTo(this.model, 'change:status', () => {
@@ -40,40 +48,51 @@ define('custom:views/fields/appuntamento-esito', [
             const status = (this.model.get('status') || '').toString();
             const sottostato = (this.model.get('sottostato') || '').toString();
             const isPlanned = status === 'Planned' || status === '';
+            const allowed = isPlanned
+                ? []
+                : MapHelper.getAllowedEsiti(status, sottostato);
+            const list = [''].concat(allowed);
 
-            if (isPlanned) {
-                this.params.options = [''];
+            this.params.options = list;
+            this.translatedOptions = {};
 
-                if (this.model.get(this.name)) {
-                    this.model.set(this.name, '', {silent: true});
-                }
-
-                return;
-            }
-
-            const allowed = MapHelper.getAllowedEsiti(status, sottostato);
-            this.params.options = [''].concat(allowed);
-
-            const current = (this.model.get(this.name) || '').toString();
-
-            if (current && allowed.length && !allowed.includes(current)) {
-                // Se l'esito corrente mappa già a questo status/sottostato, tienilo.
-                const mapped = MapHelper.getEsitoMapping(current);
-
-                if (
-                    mapped &&
-                    mapped.status === status &&
-                    (mapped.sottostato || '') === sottostato
-                ) {
-                    this.params.options = [''].concat(
-                        allowed.includes(current) ? allowed : [current].concat(allowed)
-                    );
+            list.forEach((value) => {
+                if (value === '') {
+                    this.translatedOptions[value] = '';
 
                     return;
                 }
 
-                this.model.set(this.name, '', {silent: true});
+                this.translatedOptions[value] =
+                    (this._allTranslatedOptions && this._allTranslatedOptions[value]) ||
+                    value;
+            });
+
+            if (typeof this.setOptionList === 'function') {
+                this.setOptionList(list);
             }
+
+            const current = (this.model.get(this.name) || '').toString();
+
+            if (!current || !allowed.length) {
+                return;
+            }
+
+            if (allowed.indexOf(current) !== -1) {
+                return;
+            }
+
+            const mapped = MapHelper.getEsitoMapping(current);
+
+            if (
+                mapped &&
+                mapped.status === status &&
+                (mapped.sottostato || '') === sottostato
+            ) {
+                return;
+            }
+
+            this.model.set(this.name, '', {silent: true});
         },
     });
 });

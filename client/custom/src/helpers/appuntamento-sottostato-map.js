@@ -80,6 +80,25 @@ define('custom:helpers/appuntamento-sottostato-map', [], function () {
         ],
     };
 
+    const unionEsitiForStatus = function (status) {
+        if (status === 'Ingestibile') {
+            return esitiBySottostato.Ingestibile.slice();
+        }
+
+        const sottostati = allowedMap[status] || [];
+        const out = [];
+
+        sottostati.forEach(function (s) {
+            (esitiBySottostato[s] || []).forEach(function (e) {
+                if (out.indexOf(e) === -1) {
+                    out.push(e);
+                }
+            });
+        });
+
+        return out;
+    };
+
     return {
         getAllowedForStatus: function (status) {
             return allowedMap[status] || [];
@@ -94,6 +113,11 @@ define('custom:helpers/appuntamento-sottostato-map', [], function () {
 
             if (status === 'Ingestibile') {
                 return esitiBySottostato.Ingestibile.slice();
+            }
+
+            // Senza sottostato: tutti gli esiti ammessi per lo Stato (poi l'esito setta il sottostato).
+            if (!sottostato) {
+                return unionEsitiForStatus(status);
             }
 
             return (esitiBySottostato[sottostato] || []).slice();
