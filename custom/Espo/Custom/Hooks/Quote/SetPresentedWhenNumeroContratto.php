@@ -7,12 +7,23 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Numero contratto valorizzato → stato Bozza diventa In lavorazione (schema semplificato)
- * oppure Draft diventa Presented (schema legacy Espo).
+ * Solo Numero Contratto (numeroContratto), non il campo Espo `number`.
+ *
+ * - assente → status Bozza
+ * - presente → Bozza/Draft diventa In Gestione / Presented
  */
 class SetPresentedWhenNumeroContratto implements BeforeSave
 {
     public static int $order = 12;
+
+    /** @var string[] */
+    private const TERMINAL_STATUSES = [
+        'Installato',
+        'Recesso',
+        'Invalido',
+        'Canceled',
+        'Finanziamento Rifiutato',
+    ];
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
@@ -24,13 +35,20 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
             return;
         }
 
-        if (!$this->hasNumeroContratto($entity)) {
+        if ($this->hasNumeroContratto($entity)) {
+            $this->promoteFromBozza($entity);
+
             return;
         }
 
+        $this->forceBozzaWhenMissingNumero($entity);
+    }
+
+    private function promoteFromBozza(Entity $entity): void
+    {
         $status = $entity->get('status');
         $nextStatus = match ($status) {
-            'Bozza' => 'In lavorazione',
+            'Bozza' => 'In Gestione',
             'Draft' => 'Presented',
             default => null,
         };
@@ -40,18 +58,36 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
         }
 
         $entity->set('status', $nextStatus);
+
+        // Uscendo da Bozza, Stato Contratto non resta vuoto.
+        $statoContratto = $entity->get('statoContratto');
+        if ($statoContratto === null || $statoContratto === '') {
+            $entity->set('statoContratto', 'Inserito');
+        }
+    }
+
+    private function forceBozzaWhenMissingNumero(Entity $entity): void
+    {
+        $status = (string) $entity->get('status');
+
+        if ($status === 'Bozza' || $status === 'Draft') {
+            $entity->set('statoContratto', null);
+
+            return;
+        }
+
+        if (in_array($status, self::TERMINAL_STATUSES, true)) {
+            return;
+        }
+
+        $entity->set('status', 'Bozza');
+        $entity->set('statoContratto', null);
     }
 
     private function hasNumeroContratto(Entity $entity): bool
     {
-        foreach (['numeroContratto', 'number'] as $field) {
-            $value = $entity->get($field);
+        $value = $entity->get('numeroContratto');
 
-            if ($value !== null && trim((string) $value) !== '') {
-                return true;
-            }
-        }
-
-        return false;
+        return $value !== null && trim((string) $value) !== '';
     }
 }
