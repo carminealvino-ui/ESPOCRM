@@ -1,7 +1,7 @@
 <?php
 
 // =====================================================
-// VERSIONE: 1.13.0
+// VERSIONE: 1.14.0
 // DATA: 19-07-2026
 
 // FILE:
@@ -121,6 +121,11 @@
 // 1.13.0
 // -----------------------------------------------------
 // - Nome contratto da Lead (cliente), non da Prospect/referente
+//
+// 1.14.0
+// -----------------------------------------------------
+// - Contraente = Contact Lead; Referente Prospect = shippingContact
+// - Due referenti distinti (Lead + Prospect)
 // -----------------------------------------------------
 // - importoOpportunit (nome campo corretto)
 // - Cliente da Prospect.cliente / creazione Account
@@ -581,7 +586,7 @@ class CreateContratto
         $productCategoryName = $partnerData['productCategoryName'];
 
         // Non usare hookVersion opportunità (es. 2.1.5): la formula Quote lo interpreta e ricalcola il nome.
-        $hookVersion = 'CreateContratto-1.13.0';
+        $hookVersion = 'CreateContratto-1.14.0';
         $installatoreId = $opportunity->get('installatoreId');
 
         $clienteLabel = $this->resolveContractClienteLabel(
@@ -856,26 +861,18 @@ class CreateContratto
     ): array {
         $service = new ReferenteContactService($this->entityManager);
 
-        $referente = $service->ensureForAccount($accountId, [
+        // Contraente = Lead; Contatto Installazione / 2° referente = Prospect
+        $pair = $service->ensureLeadAndProspectForAccount($accountId, [
             'lead' => $lead,
             'prospect' => $prospect,
             'assignedUserId' => $opportunity->get('assignedUserId'),
         ]);
 
-        if (!$referente) {
-            return [
-                'billingContactId' => null,
-                'billingContactName' => null,
-                'shippingContactId' => null,
-                'shippingContactName' => null,
-            ];
-        }
-
         return [
-            'billingContactId' => $referente['id'],
-            'billingContactName' => $referente['name'],
-            'shippingContactId' => $referente['id'],
-            'shippingContactName' => $referente['name'],
+            'billingContactId' => $pair['billingContactId'],
+            'billingContactName' => $pair['billingContactName'],
+            'shippingContactId' => $pair['shippingContactId'],
+            'shippingContactName' => $pair['shippingContactName'],
         ];
     }
 
@@ -1360,7 +1357,7 @@ class CreateContratto
                 $importo
             ),
             'itemList' => [],
-            'hookVersion' => 'CreateContratto-1.13.0',
+            'hookVersion' => 'CreateContratto-1.14.0',
         ];
 
         foreach ([

@@ -22,9 +22,16 @@ class ReferenteContactService
 
     /**
      * @param array{lead?:Entity|null, prospect?:Entity|null, assignedUserId?:string|null} $context
-     * @return array{id:string,name:string,created:bool}|null
+     * @return array{
+     *     billingContactId:?string,
+     *     billingContactName:?string,
+     *     shippingContactId:?string,
+     *     shippingContactName:?string,
+     *     leadContact:?array{id:string,name:string,created:bool},
+     *     prospectContact:?array{id:string,name:string,created:bool}
+     * }
      */
-    public function ensureForAccount(string $accountId, array $context = []): ?array
+    public function ensureLeadAndProspectForAccount(string $accountId, array $context = []): array
     {
         $lead = $context['lead'] ?? null;
         $prospect = $context['prospect'] ?? null;
@@ -33,6 +40,58 @@ class ReferenteContactService
         if (!$prospect && $lead) {
             $prospect = $this->leadSync->findProspectForLead($lead);
         }
+
+        // Contraente / referente Lead
+        $leadContact = $this->ensureFromPerson($accountId, $lead, $assignedUserId, true);
+        // Referente Prospect (es. contatto installazione)
+        $prospectContact = $this->ensureFromPerson($accountId, $prospect, $assignedUserId, false);
+
+        $billing = $leadContact ?: $prospectContact;
+        $shipping = $prospectContact ?: $leadContact;
+
+        return [
+            'billingContactId' => $billing['id'] ?? null,
+            'billingContactName' => $billing['name'] ?? null,
+            'shippingContactId' => $shipping['id'] ?? null,
+            'shippingContactName' => $shipping['name'] ?? null,
+            'leadContact' => $leadContact,
+            'prospectContact' => $prospectContact,
+        ];
+    }
+
+    /**
+     * @param array{lead?:Entity|null, prospect?:Entity|null, assignedUserId?:string|null} $context
+     * @return array{id:string,name:string,created:bool}|null
+     */
+    public function ensureForAccount(string $accountId, array $context = []): ?array
+    {
+        $pair = $this->ensureLeadAndProspectForAccount($accountId, $context);
+
+        if (!empty($pair['leadContact'])) {
+            return $pair['leadContact'];
+        }
+
+        return $pair['prospectContact'];
+    }
+
+    /**
+     * Crea/riusa Contact da una sola persona (Lead oppure Prospect), senza mescolare i due.
+     *
+     * @return array{id:string,name:string,created:bool}|null
+     */
+    public function ensureFromPerson(
+        string $accountId,
+        ?Entity $person,
+        ?string $assignedUserId,
+        bool $linkLead
+    ): ?array {
+        if (!$person) {
+            return null;
+        }
+
+        $isLead = $person->getEntityType() === 'Lead';
+        $lead = $isLead ? $person : null;
+        $prospect = $isLead ? null : $person;
 
         $payload = $this->buildContactPayload($accountId, $lead, $prospect, $assignedUserId);
 
@@ -44,7 +103,10 @@ class ReferenteContactService
 
         if ($existing) {
             $this->patchContactIfNeeded($existing, $payload);
-            $this->linkLeadToContact($lead, $existing);
+
+            if ($linkLead && $lead) {
+                $this->linkLeadToContact($lead, $existing);
+            }
 
             return [
                 'id' => $existing->getId(),
@@ -57,7 +119,7 @@ class ReferenteContactService
         $contact->set($payload);
         $this->entityManager->saveEntity($contact);
 
-        if ($lead) {
+        if ($linkLead && $lead) {
             $lead->set([
                 'createdContactId' => $contact->getId(),
                 'createdContactName' => $contact->get('name'),
