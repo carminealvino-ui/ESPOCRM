@@ -4,13 +4,26 @@
     "tab": true,
     "acl": true,
     "aclPortal": true,
+    "aclPortalLevelList": [
+        "all",
+        "account",
+        "contact",
+        "own",
+        "no"
+    ],
     "customizable": true,
     "importable": true,
+    "massUpdate": true,
     "notifications": false,
     "stream": false,
     "disabled": false,
     "type": "Base",
     "module": "Custom",
     "object": true,
-    "isCustom": true
+    "isCustom": true,
+    "stars": false,
+    "preserveAuditLog": false,
+    "duplicateCheckFieldList": [],
+    "collaborators": false,
+    "assignedUsers": false
 }

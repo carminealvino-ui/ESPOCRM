@@ -2,6 +2,7 @@
     "controller": "controllers/record",
     "iconClass": "fas fa-percent",
     "color": "#5cb85c",
+    "createDisabled": false,
     "relationshipPanels": {
         "provvigioni": {
             "createDisabled": true,

@@ -22,6 +22,7 @@ echo "=== Deploy RegolaProvvigionale (fix 404) ==="
 echo "COMMIT=${COMMIT}"
 
 FILES=(
+  "custom/Espo/Custom/Controllers/RegolaProvvigionale.php"
   "custom/Espo/Custom/Entities/RegolaProvvigionale.php"
   "custom/Espo/Custom/Repositories/RegolaProvvigionale.php"
   "custom/Espo/Custom/Resources/metadata/entityDefs/RegolaProvvigionale.json"
@@ -44,6 +45,7 @@ FILES=(
   "database/2026-07-03-regola-provvigionale-create-table.sql"
   "tools/create-regola-provvigionale-table.php"
   "tools/seed-regole-provvigioni.php"
+  "tools/verify-regola-provvigionale.php"
 )
 
 mkdir -p tools/backup-manifests
@@ -105,7 +107,12 @@ $e = $em->getEntityById("RegolaProvvigionale", "arielBase105");
 echo $e ? ("OK arielBase105 = ".$e->get("name")."\n") : "ERRORE: arielBase105 assente\n";
 '
 
+echo "=== Verifica entità (no 404) ==="
+php tools/verify-regola-provvigionale.php
+
 echo ""
 echo "=== Fine ==="
-echo "Apri: #RegolaProvvigionale oppure #RegolaProvvigionale/view/arielBase105"
+echo "1) Hard-refresh browser (Ctrl+Shift+R) o logout/login"
+echo "2) Apri: #RegolaProvvigionale"
+echo "3) Se ancora 404: Administration → Roles → abilita RegolaProvvigionale (read/create)"
 echo "Menu: Regole Provvigionali"
