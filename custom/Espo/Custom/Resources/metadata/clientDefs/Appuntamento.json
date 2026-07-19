@@ -36,6 +36,8 @@
         }
     ],
     "fieldViews": {
-        "parent": "custom:views/fields/appuntamento-parent"
+        "parent": "custom:views/fields/appuntamento-parent",
+        "sottostato": "custom:views/fields/appuntamento-sottostato",
+        "esito": "custom:views/fields/appuntamento-esito"
     }
 }

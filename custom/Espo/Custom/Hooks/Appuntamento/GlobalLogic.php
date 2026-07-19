@@ -527,10 +527,12 @@ class GlobalLogic implements BeforeSave
             //
             // ========================================
 
+            // REGOLA: Gestito (Ripasso / non in agenda) non genera Lead/opportunità.
             if (
 
                 $status === 'Held' &&
-                $prospect
+                $prospect &&
+                $sottostato !== 'Gestito'
 
             ) {
 
