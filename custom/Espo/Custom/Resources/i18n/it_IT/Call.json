@@ -9,18 +9,20 @@
         "tipologia": "Tipologia",
         "vocale": "Vocale",
         "canaleContatto": "Canale",
-        "esito": "Esito",
+        "esito": "Esito del richiamo",
         "whatsAppNumero": "WhatsApp Numero",
         "data": "Data Riscontro",
         "dataRichiamo": "Data Richiamo",
         "richiamo": "Richiamo",
         "daRichiamare": "Rinvia richiamo",
         "name": "Contatto Telefonico",
-        "prospect": "Prospect"
+        "prospect": "Prospect",
+        "opportunity": "Opportunità"
     },
     "links": {
         "parent": "Relazionato a",
-        "prospect": "Prospect"
+        "prospect": "Prospect",
+        "opportunity": "Opportunità"
     },
     "options": {
         "tipologia": {

@@ -1,24 +1,33 @@
 [
     {
         "name": "name",
-        "width": 40,
+        "width": 28,
         "link": true,
         "align": "left"
     },
     {
         "name": "data",
-        "width": 12
-    },
-    {
-        "name": "status",
         "width": 10
     },
     {
+        "name": "status",
+        "width": 9
+    },
+    {
+        "name": "esito",
+        "width": 12
+    },
+    {
+        "name": "opportunity",
+        "width": 18,
+        "link": true
+    },
+    {
         "name": "dateStart",
-        "width": 14
+        "width": 12
     },
     {
         "name": "assignedUser",
-        "width": 14
+        "width": 11
     }
 ]

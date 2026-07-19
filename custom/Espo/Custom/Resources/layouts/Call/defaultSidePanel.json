@@ -6,6 +6,9 @@
         "name": "prospect"
     },
     {
+        "name": "opportunity"
+    },
+    {
         "name": ":assignedUser"
     },
     {

@@ -3,6 +3,7 @@
         "cAP": "CAP",
         "appuntamento": "Appuntamento",
         "contact": "Referente",
+        "contattiTelefonici": "Contatti Telefonici",
         "dataOpportunit": "Data Opportunità",
         "iVA": "IVA",
         "iVAListino": "IVA Listino",
@@ -87,7 +88,8 @@
         "pagamentiProvvigionali": "Pagamenti Provvigionali",
         "toDo": "To Do",
         "fornitorePartner": "Fornitore/Partner",
-        "productBrand": "Brand"
+        "productBrand": "Brand",
+        "contattiTelefonici": "Contatti Telefonici"
     },
     "options": {
         "motivoDecisione": {

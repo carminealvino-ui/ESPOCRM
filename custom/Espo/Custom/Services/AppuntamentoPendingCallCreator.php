@@ -182,6 +182,15 @@ class AppuntamentoPendingCallCreator
 
         $prospectName = $prospect?->get('name') ?: $appuntamento->get('prospectName');
 
+        $opportunityId = (new CallOpportunityLinker($this->entityManager))
+            ->resolveOpportunityIdForAppuntamento($appuntamentoId);
+        $opportunityName = null;
+
+        if ($opportunityId) {
+            $opportunity = $this->entityManager->getEntityById('Opportunity', $opportunityId);
+            $opportunityName = $opportunity?->get('name');
+        }
+
         $call = $this->entityManager->createEntity('Call');
 
         $usersNames = [];
@@ -200,6 +209,8 @@ class AppuntamentoPendingCallCreator
             'parentName' => $parentName,
             'prospectId' => $prospectId,
             'prospectName' => $prospectName,
+            'opportunityId' => $opportunityId,
+            'opportunityName' => $opportunityName,
             'telefono' => $telefono,
             'dateStart' => $callDateStartUtc,
             'assignedUserId' => $ownerUserId,
@@ -385,6 +396,14 @@ class AppuntamentoPendingCallCreator
         $ownerUserId = $this->resolveOwnerUserId($appuntamento);
         $ownerUserName = $this->resolveOwnerUserName($ownerUserId);
 
+        $opportunityId = (new CallOpportunityLinker($this->entityManager))
+            ->resolveOpportunityIdForAppuntamento($appuntamentoId);
+        $opportunityName = null;
+
+        if ($opportunityId) {
+            $opportunityName = $this->entityManager->getEntityById('Opportunity', $opportunityId)?->get('name');
+        }
+
         $call = $this->entityManager->createEntity('Call');
 
         $usersNames = [];
@@ -402,6 +421,8 @@ class AppuntamentoPendingCallCreator
             'parentName' => $parentName,
             'prospectId' => $appuntamento->get('prospectId'),
             'prospectName' => $appuntamento->get('prospectName'),
+            'opportunityId' => $opportunityId,
+            'opportunityName' => $opportunityName,
             'telefono' => $telefono,
             'dateStart' => $callDateStartUtc,
             'assignedUserId' => $ownerUserId,
@@ -1211,6 +1232,8 @@ class AppuntamentoPendingCallCreator
             'parentName' => $parentName,
             'prospectId' => $sourceCall->get('prospectId'),
             'prospectName' => $sourceCall->get('prospectName'),
+            'opportunityId' => $sourceCall->get('opportunityId'),
+            'opportunityName' => $sourceCall->get('opportunityName'),
             'telefono' => $telefono,
             'whatsAppNumero' => $whatsAppNumero,
             'dateStart' => $callDateStartUtc,
