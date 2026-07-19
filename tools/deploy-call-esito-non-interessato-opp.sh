@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Call esito Non interessato → opportunità Closed Lost + lead Perso.
+# L'Appuntamento Pending non viene modificato (resta storicizzato).
 #
 # PASSO 0 — backup obbligatorio:
 #   cd ~/public_html/crm/mec-group

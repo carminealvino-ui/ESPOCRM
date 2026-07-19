@@ -7,13 +7,15 @@ use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
 
 /**
- * Esito Call "Non interessato" → opportunità Closed Lost + appuntamento Pending → Non Interessato.
+ * Esito Call "Non interessato" → opportunità Closed Lost + lead Perso.
+ *
+ * L'Appuntamento Pending resta invariato (storicizzazione): un eventuale
+ * interesse in richiamo produce un nuovo appuntamento pianificato.
  */
 class CallEsitoOpportunitySync
 {
     public const NOTA_PREFIX = 'Auto-Pending-Appuntamento:';
     public const ESITO_NON_INTERESSATO = 'Non interessato';
-    private const APPUNTAMENTO_NON_INTERESSATO = 'Non Interessato';
     private const STAGE_LOST = 'Closed Lost';
 
     /** @var string[] */
@@ -30,7 +32,7 @@ class CallEsitoOpportunitySync
     ) {}
 
     /**
-     * @return array{opportunitiesClosed: int, appuntamentiUpdated: int, leadsUpdated: int}
+     * @return array{opportunitiesClosed: int, leadsUpdated: int}
      */
     public function syncFromCall(Entity $call): array
     {
@@ -50,19 +52,17 @@ class CallEsitoOpportunitySync
 
         return [
             'opportunitiesClosed' => $this->closeLinkedOpportunities($call, $closeDate),
-            'appuntamentiUpdated' => $this->updatePendingAppuntamento($call),
             'leadsUpdated' => $this->markLinkedLeadLost($call),
         ];
     }
 
     /**
-     * @return array{opportunitiesClosed: int, appuntamentiUpdated: int, leadsUpdated: int}
+     * @return array{opportunitiesClosed: int, leadsUpdated: int}
      */
     private function emptyResult(): array
     {
         return [
             'opportunitiesClosed' => 0,
-            'appuntamentiUpdated' => 0,
             'leadsUpdated' => 0,
         ];
     }
@@ -118,36 +118,6 @@ class CallEsitoOpportunitySync
         ]);
 
         return true;
-    }
-
-    private function updatePendingAppuntamento(Entity $call): int
-    {
-        $appuntamentoId = $this->extractAppuntamentoId((string) $call->get('nota'));
-
-        if (!$appuntamentoId) {
-            return 0;
-        }
-
-        $appuntamento = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
-
-        if (!$appuntamento) {
-            return 0;
-        }
-
-        if ($appuntamento->get('sottostato') !== 'Pending') {
-            return 0;
-        }
-
-        $appuntamento->set([
-            'status' => 'Held',
-            'sottostato' => self::APPUNTAMENTO_NON_INTERESSATO,
-        ]);
-
-        $this->entityManager->saveEntity($appuntamento, [
-            'silent' => true,
-        ]);
-
-        return 1;
     }
 
     private function markLinkedLeadLost(Entity $call): int

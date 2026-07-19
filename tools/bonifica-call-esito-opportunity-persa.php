@@ -2,7 +2,8 @@
 
 /**
  * Bonifica retroattiva: Call già esitate "Non interessato"
- * → opportunità Closed Lost, lead Perso, appuntamento Pending → Non Interessato.
+ * → opportunità Closed Lost + lead Perso.
+ * L'Appuntamento Pending resta invariato (storicizzazione).
  *
  *   cd ~/public_html/crm/mec-group
  *   php tools/bonifica-call-esito-opportunity-persa.php --dry-run
@@ -34,7 +35,6 @@ $collection = $entityManager
 
 $callsProcessed = 0;
 $opportunitiesClosed = 0;
-$appuntamentiUpdated = 0;
 $leadsUpdated = 0;
 $skipped = 0;
 
@@ -48,7 +48,6 @@ $terminalStages = [
 foreach ($collection as $call) {
     if ($dryRun) {
         $opportunityIds = $sync->resolveOpportunityIds($call);
-        $appuntamentoId = $sync->extractAppuntamentoId((string) $call->get('nota'));
         $leadId = $sync->resolveLeadId($call);
         $wouldClose = 0;
 
@@ -63,16 +62,6 @@ foreach ($collection as $call) {
 
             if (!in_array($stage, $terminalStages, true)) {
                 $wouldClose++;
-            }
-        }
-
-        $wouldUpdateApp = 0;
-
-        if ($appuntamentoId) {
-            $appuntamento = $entityManager->getEntityById('Appuntamento', $appuntamentoId);
-
-            if ($appuntamento && $appuntamento->get('sottostato') === 'Pending') {
-                $wouldUpdateApp = 1;
             }
         }
 
@@ -92,20 +81,18 @@ foreach ($collection as $call) {
             }
         }
 
-        if ($wouldClose === 0 && $wouldUpdateApp === 0 && $wouldUpdateLead === 0) {
+        if ($wouldClose === 0 && $wouldUpdateLead === 0) {
             $skipped++;
             continue;
         }
 
         echo 'DRY ' . $call->getId()
             . ' opp=' . $wouldClose
-            . ' app=' . $wouldUpdateApp
             . ' lead=' . $wouldUpdateLead
             . PHP_EOL;
 
         $callsProcessed++;
         $opportunitiesClosed += $wouldClose;
-        $appuntamentiUpdated += $wouldUpdateApp;
         $leadsUpdated += $wouldUpdateLead;
 
         continue;
@@ -113,11 +100,7 @@ foreach ($collection as $call) {
 
     $result = $sync->syncFromCall($call);
 
-    if (
-        $result['opportunitiesClosed'] === 0
-        && $result['appuntamentiUpdated'] === 0
-        && $result['leadsUpdated'] === 0
-    ) {
+    if ($result['opportunitiesClosed'] === 0 && $result['leadsUpdated'] === 0) {
         $skipped++;
 
         continue;
@@ -125,19 +108,16 @@ foreach ($collection as $call) {
 
     echo 'OK ' . $call->getId()
         . ' opp=' . $result['opportunitiesClosed']
-        . ' app=' . $result['appuntamentiUpdated']
         . ' lead=' . $result['leadsUpdated']
         . PHP_EOL;
 
     $callsProcessed++;
     $opportunitiesClosed += $result['opportunitiesClosed'];
-    $appuntamentiUpdated += $result['appuntamentiUpdated'];
     $leadsUpdated += $result['leadsUpdated'];
 }
 
 echo PHP_EOL;
 echo ($dryRun ? 'DRY-RUN ' : '') . 'Call elaborate: ' . $callsProcessed . PHP_EOL;
 echo 'Opportunità chiuse: ' . $opportunitiesClosed . PHP_EOL;
-echo 'Appuntamenti aggiornati: ' . $appuntamentiUpdated . PHP_EOL;
 echo 'Lead aggiornati: ' . $leadsUpdated . PHP_EOL;
 echo 'Già allineati: ' . $skipped . PHP_EOL;

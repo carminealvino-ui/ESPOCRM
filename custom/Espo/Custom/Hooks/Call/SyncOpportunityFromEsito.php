@@ -11,7 +11,8 @@ use Espo\ORM\Repository\Option\SaveOptions;
  * Esito "Non interessato" sul riscontro richiamo:
  * - opportunità collegata → Closed Lost (Chiusa negativamente)
  * - lead collegato → Perso (Dead)
- * - appuntamento Pending collegato → Non Interessato
+ *
+ * L'Appuntamento Pending non viene modificato (storicizzazione).
  */
 class SyncOpportunityFromEsito implements AfterSave
 {
