@@ -26,6 +26,8 @@ class ContrattiBacklog implements Filter
             'statoContratto!=' => self::EXCLUDED_STATES,
             'OR' => [
                 ['statoContratto' => 'Sospeso'],
+                ['numeroContratto' => null],
+                ['numeroContratto' => ''],
                 [
                     'AND' => [
                         ['finanziamento' => true],
