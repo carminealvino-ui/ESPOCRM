@@ -1,8 +1,9 @@
 <?php
 
 // =====================================================
-// VERSIONE: 1.6.0
-// DATA: 12-05-2026 22:05
+// VERSIONE: 1.13.0
+// DATA: 19-07-2026
+
 // FILE:
 // custom/Espo/Custom/Actions/Opportunity/CreateContratto.php
 // =====================================================
@@ -116,6 +117,10 @@
 // - hookVersion quote sempre CreateContratto-* (non copiare 2.1.5 da opportunità)
 // - Nome impostato in PHP prima e dopo save (formula non sovrascrive)
 // - billingContactName da accountName se referente assente
+//
+// 1.13.0
+// -----------------------------------------------------
+// - Nome contratto da Lead (cliente), non da Prospect/referente
 // -----------------------------------------------------
 // - importoOpportunit (nome campo corretto)
 // - Cliente da Prospect.cliente / creazione Account
@@ -576,12 +581,19 @@ class CreateContratto
         $productCategoryName = $partnerData['productCategoryName'];
 
         // Non usare hookVersion opportunità (es. 2.1.5): la formula Quote lo interpreta e ricalcola il nome.
-        $hookVersion = 'CreateContratto-1.12.0';
+        $hookVersion = 'CreateContratto-1.13.0';
         $installatoreId = $opportunity->get('installatoreId');
+
+        $clienteLabel = $this->resolveContractClienteLabel(
+            $opportunity,
+            $lead,
+            $accountName,
+            $billingContactName
+        );
 
         $contractDisplayName = $this->buildContractDisplayName(
             $dateQuoted,
-            $billingContactName ?: $accountName,
+            $clienteLabel,
             $description,
             $amount
         );
@@ -803,7 +815,9 @@ class CreateContratto
             $billingContactName,
             $amount,
             $dateQuoted,
-            $description
+            $description,
+            $opportunity,
+            $lead
         );
 
         $this->finalizeOpportunityAfterContratto(
@@ -1284,7 +1298,9 @@ class CreateContratto
         ?string $billingContactName,
         $amount,
         $dateQuoted,
-        ?string $description
+        ?string $description,
+        $opportunity = null,
+        $lead = null
     ): void {
         $quoteId = $quote->getId();
 
@@ -1298,11 +1314,16 @@ class CreateContratto
             return;
         }
 
-        $clienteLabel = $billingContactName ?: $accountName;
+        $clienteLabel = $this->resolveContractClienteLabel(
+            $opportunity,
+            $lead,
+            $accountName,
+            $billingContactName
+        );
 
         if (!$clienteLabel) {
-            $clienteLabel = $fresh->get('billingContactName')
-                ?: $fresh->get('accountName');
+            $clienteLabel = $fresh->get('accountName')
+                ?: $fresh->get('billingContactName');
         }
 
         if (!$clienteLabel && $fresh->get('accountId')) {
@@ -1339,7 +1360,7 @@ class CreateContratto
                 $importo
             ),
             'itemList' => [],
-            'hookVersion' => 'CreateContratto-1.12.0',
+            'hookVersion' => 'CreateContratto-1.13.0',
         ];
 
         foreach ([
@@ -1434,6 +1455,42 @@ class CreateContratto
             . $descrizione
             . ' - €. '
             . $importoStr;
+    }
+
+    /**
+     * Etichetta cliente nel nome contratto: Lead (non Prospect/referente).
+     */
+    private function resolveContractClienteLabel(
+        $opportunity,
+        $lead,
+        ?string $accountName,
+        ?string $billingContactName
+    ): ?string {
+        if ($opportunity) {
+            $fromOpp = trim((string) ($opportunity->get('leadName') ?? ''));
+
+            if ($fromOpp !== '') {
+                return $fromOpp;
+            }
+        }
+
+        if ($lead) {
+            $fromLead = $this->resolveDisplayName($lead);
+
+            if ($fromLead) {
+                return $fromLead;
+            }
+        }
+
+        $fromAccount = trim((string) ($accountName ?? ''));
+
+        if ($fromAccount !== '') {
+            return $fromAccount;
+        }
+
+        $fromBilling = trim((string) ($billingContactName ?? ''));
+
+        return $fromBilling !== '' ? $fromBilling : null;
     }
 
 }
