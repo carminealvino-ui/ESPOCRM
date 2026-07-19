@@ -9,7 +9,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-REPLACE_AFTER_COMMIT}"
+COMMIT="${DEPLOY_COMMIT:-463177957a84e66a9691a31f8920270d972b461e}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="opportunity-nome-da-appuntamento"
@@ -17,10 +17,6 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 
 cd "${CRM_ROOT}"
 
-if [[ "${COMMIT}" == "REPLACE_AFTER_COMMIT" ]]; then
-  echo "ERRORE: DEPLOY_COMMIT non pinato."
-  exit 1
-fi
 
 echo "=== Deploy nome Opportunità da data Appuntamento (v2) ==="
 echo "COMMIT=${COMMIT}"
