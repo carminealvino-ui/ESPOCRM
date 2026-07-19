@@ -100,6 +100,10 @@ class SyncLeadFromEsito implements AfterSave
 
         $prospectId = $call->get('prospectId');
 
+        if (!$prospectId && $call->get('parentType') === 'Prospect' && $call->get('parentId')) {
+            $prospectId = $call->get('parentId');
+        }
+
         if (!$prospectId) {
             return null;
         }
