@@ -583,39 +583,72 @@ class CrmKpiService
         bool $onlySospesi = false,
         bool $excludeSospesi = false
     ): float {
-        if (
-            $onlyFinancingKo
-            || $excludeFinancingKo
-            || $onlyRecesso
-            || $excludeRecesso
-            || $onlySospesi
-            || $excludeSospesi
-        ) {
-            return $this->sumQuoteFieldResolved(
-                $ctx,
-                ['totaleProvvigioni'],
-                $excludeFinancingKo,
-                $excludeRecesso,
-                $onlyFinancingKo,
-                $onlyRecesso,
-                $onlySospesi,
-                $excludeSospesi
-            );
+        // Sempre via resolve: su Recesso/Sospeso totaleProvvigioni può essere 0
+        // (provvigioni Inesigibili escluse dal campo), ma il KPI deve mostrare l'importo.
+        $quotes = $this->filterQuotesForTile(
+            $ctx,
+            $excludeFinancingKo,
+            $excludeRecesso,
+            $onlyFinancingKo,
+            $onlyRecesso,
+            $onlySospesi,
+            $excludeSospesi
+        );
+
+        $sum = 0.0;
+
+        foreach ($quotes as $quote) {
+            $sum += $this->resolveProvvigioniAmountForQuote($quote);
         }
 
-        return $this->safeSum(
-            'Quote',
-            $this->quoteFilterWhere(
-                $ctx,
-                $excludeFinancingKo,
-                $excludeRecesso,
-                $onlyFinancingKo,
-                $onlyRecesso,
-                $onlySospesi,
-                $excludeSospesi
-            ),
-            ['totaleProvvigioni']
-        );
+        return $sum;
+    }
+
+    /**
+     * Importo provvigioni per KPI: somma righe Provvigione (anche Inesigibili),
+     * fallback a Quote.totaleProvvigioni.
+     */
+    private function resolveProvvigioniAmountForQuote(Entity $quote): float
+    {
+        $quoteId = $quote->getId();
+
+        if ($quoteId) {
+            $fromRows = $this->sumProvvigioneRowsForQuoteId($quoteId);
+
+            if ($fromRows > 0.0) {
+                return $fromRows;
+            }
+        }
+
+        $stored = $quote->get('totaleProvvigioni');
+
+        if ($stored !== null && $stored !== '' && (float) $stored !== 0.0) {
+            return (float) $stored;
+        }
+
+        return 0.0;
+    }
+
+    private function sumProvvigioneRowsForQuoteId(string $quoteId): float
+    {
+        $totale = 0.0;
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quoteId])
+            ->find();
+
+        foreach ($collection as $provvigione) {
+            $importo = $provvigione->get('importoConsolidato') ?? $provvigione->get('importo');
+
+            if ($importo === null || $importo === '') {
+                continue;
+            }
+
+            $totale += (float) $importo;
+        }
+
+        return round($totale, 2);
     }
 
     private function countQuotesResolved(
