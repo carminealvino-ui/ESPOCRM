@@ -10,7 +10,7 @@
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${BRANCH:-cursor/appuntamento-produzione-fruibile-9999}"
+BRANCH="${BRANCH:-main}"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
 
 cd "${CRM_ROOT}" || exit 1

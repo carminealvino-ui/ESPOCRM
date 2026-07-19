@@ -3,7 +3,7 @@
 # Verifica quali listini ARIEL sono Active in CRM
 #
 # cd ~/public_html/crm/mec-group
-# curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/verifica-listini-ariel-attivi.sh" | bash
+# curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/verifica-listini-ariel-attivi.sh" | bash
 # =============================================================================
 set -euo pipefail
 

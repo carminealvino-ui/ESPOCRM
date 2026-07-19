@@ -27,7 +27,7 @@ if [[ -f "${REPO_ROOT}/tools/sync-listino-prodotti.php" ]]; then
   SYNC_PHP="${REPO_ROOT}/tools/sync-listino-prodotti.php"
   CSV="${REPO_ROOT}/database/data/listino-ariel-prodotti-07052026.csv"
 else
-  BRANCH="${GITHUB_BRANCH:-cursor/provvigioni-manuali-fase-a-9999}"
+  BRANCH="${GITHUB_BRANCH:-main}"
   RAW="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
   curl -fsSL "${RAW}/tools/sync-listino-prodotti.php" -o /tmp/sync-listino-prodotti.php
   curl -fsSL "${RAW}/database/data/listino-ariel-prodotti-07052026.csv" -o /tmp/listino-ariel-prodotti-07052026.csv

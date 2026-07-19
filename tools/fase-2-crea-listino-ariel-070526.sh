@@ -4,7 +4,7 @@
 # SOLO inserimento price_book (nessun prodotto ancora — Fase 3)
 #
 # Esecuzione (copia una riga):
-#   cd ~/public_html/crm/mec-group && curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/fase-2-crea-listino-ariel-070526.sh" | bash
+#   cd ~/public_html/crm/mec-group && curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/fase-2-crea-listino-ariel-070526.sh" | bash
 #
 # Anteprima senza scrivere:
 #   ... | DRY_RUN=1 bash

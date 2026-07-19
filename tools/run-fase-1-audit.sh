@@ -4,7 +4,7 @@
 # Produzione: telcalli_espo — colonne allineate allo schema reale (no date_start su price_book)
 #
 # Esecuzione consigliata (non serve file in tools/):
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/run-fase-1-audit.sh" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/run-fase-1-audit.sh" | bash
 # =============================================================================
 set -euo pipefail
 

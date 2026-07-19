@@ -2,12 +2,12 @@
 # Popup esito Call: scelta Chiamata / WhatsApp nel promemoria.
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/call-esito-canale-contatto-9999/tools/deploy-call-esito-canale-contatto.sh?t=$(date +%s)" | bash
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-call-esito-canale-contatto.sh?t=$(date +%s)" | bash
 
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="${2:-cursor/call-esito-canale-contatto-9999}"
+BRANCH="${2:-main}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 STAMP=$(date +%Y%m%d-%H%M%S)

@@ -7,7 +7,7 @@ set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 LABEL="${1:-session-close}"
-BRANCH="${BACKUP_BRANCH:-cursor/fix-appuntamento-prospect-sync-9999}"
+BRANCH="${BACKUP_BRANCH:-main}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 TS="$(date +%Y%m%d-%H%M%S)"

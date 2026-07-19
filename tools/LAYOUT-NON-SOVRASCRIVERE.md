@@ -15,7 +15,7 @@ Gli script **non** sono nella installazione Espo: vanno scaricati da GitHub:
 
 ```bash
 cd ~/public_html/crm/mec-group
-curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/quote-prezzi-iva-inclusa-9999/tools/bootstrap-server-tools.sh?t=$(date +%s)" | bash
+curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/bootstrap-server-tools.sh?t=$(date +%s)" | bash
 ```
 
 Poi `bash tools/backup-quote-layouts.sh` funziona.
@@ -67,7 +67,7 @@ Come nel tuo terminale (`ls: cannot access 'custom/backup-layouts/'`):
 4. Se manca solo il pannello prezzi in `detail.json` (non side panel):
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/quote-prezzi-iva-inclusa-9999/tools/apply-quote-detail-prezzi-sample.sh?t=$(date +%s)" -o /tmp/apply-prezzi-layout.sh
+curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/apply-quote-detail-prezzi-sample.sh?t=$(date +%s)" -o /tmp/apply-prezzi-layout.sh
 bash /tmp/apply-prezzi-layout.sh
 ```
 

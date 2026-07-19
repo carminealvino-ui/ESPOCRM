@@ -48,7 +48,7 @@ TOOL_FILES=(
 )
 
 # backup-account e subpanel Account: su main dopo merge PR; finché solo su branch feature:
-EXTRA_BRANCH="${EXTRA_BRANCH:-cursor/account-subpanel-appuntamenti-contratti-9999}"
+EXTRA_BRANCH="${EXTRA_BRANCH:-main}"
 EXTRA_BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${EXTRA_BRANCH}"
 EXTRA_FILES=(
   "tools/backup-account-layouts.sh"

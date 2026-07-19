@@ -8,14 +8,14 @@
 # Layout Opportunità: importo venduto + Minus/Plus
 #
 #   cd ~/public_html/crm/mec-group
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/provvigioni-manuali-fase-a-9999/tools/deploy-layout-minus-plus.sh?t=$(date +%s)" -o /tmp/deploy-layout-contratto-prezzi.sh
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-layout-minus-plus.sh?t=$(date +%s)" -o /tmp/deploy-layout-contratto-prezzi.sh
 #   bash /tmp/deploy-layout-contratto-prezzi.sh
 # =============================================================================
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
 DRY_RUN="${DRY_RUN:-0}"
-BRANCH="${BRANCH:-cursor/provvigioni-manuali-fase-a-9999}"
+BRANCH="${BRANCH:-main}"
 REPO_RAW="${REPO_RAW:-https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || true)"

@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # UI Opportunità: sync Fonte Lead / Partner / Brand / Categoria / Listino da Appuntamento.
 #
-# Deploy:
-#   bash tools/deploy-opportunity-appuntamento-sync.sh cursor/opportunity-from-appuntamento-sync-9999
+# Deploy (solo da main):
+#   bash tools/deploy-opportunity-appuntamento-sync.sh
 set -euo pipefail
 
-if [[ "${1:-}" == cursor/* ]]; then
-  BRANCH="$1"
-  CRM_ROOT="${2:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-else
-  CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-  BRANCH="${2:-cursor/opportunity-from-appuntamento-sync-9999}"
+if [[ "${1:-}" == cursor/* ]] || [[ "${2:-}" == cursor/* ]]; then
+  echo "ERRORE: branch cursor/* eliminati. Usare solo main. Vedi tools/DEPLOY-SOLO-DA-MAIN.md"
+  exit 1
 fi
+
+CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
+BRANCH="${2:-main}"
 
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"

@@ -3,12 +3,12 @@
 # FASE 3b — Crea solo Falcon 12k / 18k / 24k mancanti (con nome BRAND - CATEGORIA - DENOMINAZIONE)
 #
 # cd ~/public_html/crm/mec-group
-# curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/fase-3b-crea-falcon-mancanti.sh" | bash
+# curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/fase-3b-crea-falcon-mancanti.sh" | bash
 # =============================================================================
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${GITHUB_BRANCH:-cursor/opportunity-globallogic-9999}"
+BRANCH="${GITHUB_BRANCH:-main}"
 REPO="${GITHUB_REPOSITORY:-carminealvino-ui/ESPOCRM}"
 RAW_BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 PRICE_BOOK_ID="${PRICE_BOOK_ID:-07ce1b326cd314ca2}"

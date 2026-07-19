@@ -11,13 +11,13 @@
 #   bash tools/riapplica-variazioni-post-restore.sh --step=4     # KPI dashlet merge (opzionale)
 #   bash tools/riapplica-variazioni-post-restore.sh --step=5     # Report Vendite (solo elenco)
 #
-# Branch: cursor/crm-kpi-dashlet-9999 (include Call esito + KPI)
+# Branch: main (include Call esito + KPI)
 # User:  carmine_alvino (default)
 
 set -euo pipefail
 
 CRM_ROOT="${CRM_ROOT:-$HOME/public_html/crm/mec-group}"
-BRANCH="${BRANCH:-cursor/crm-kpi-dashlet-9999}"
+BRANCH="${BRANCH:-main}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 USER_NAME="${ESPO_USER:-carmine_alvino}"

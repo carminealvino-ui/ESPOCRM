@@ -7,7 +7,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="${2:-cursor/disponibilita-da-calendario-lavorativo-9999}"
+BRANCH="${2:-main}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 BACKUP="backup/disponibilita-da-calendario-lavorativo/pre-v2-ricorrenti-list"

@@ -18,5 +18,5 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd || true)"
 if [[ -f "${SCRIPT_DIR}/fase-3f-import-listino-completo-pdf.sh" ]]; then
   bash "${SCRIPT_DIR}/fase-3f-import-listino-completo-pdf.sh"
 else
-  curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/opportunity-globallogic-9999/tools/fase-3f-import-listino-completo-pdf.sh?t=$(date +%s)" | bash
+  curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/fase-3f-import-listino-completo-pdf.sh?t=$(date +%s)" | bash
 fi

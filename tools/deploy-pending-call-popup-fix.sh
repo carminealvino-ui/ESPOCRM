@@ -7,14 +7,14 @@
 #     --manifest tools/backup-manifests/pending-call-popup.files
 #
 # PASSO 1 — deploy (aggiorna sempre lo script prima di eseguire):
-#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-pending-call-popup-9999/tools/deploy-pending-call-popup-fix.sh" \
+#   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/main/tools/deploy-pending-call-popup-fix.sh" \
 #     -o tools/deploy-pending-call-popup-fix.sh
 #   bash tools/deploy-pending-call-popup-fix.sh
 
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-BRANCH="${2:-cursor/fix-pending-call-popup-9999}"
+BRANCH="${2:-main}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 FIX_TAG="pending-call-popup"
