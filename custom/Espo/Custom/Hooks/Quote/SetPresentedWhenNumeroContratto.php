@@ -7,12 +7,22 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Numero contratto valorizzato → stato Bozza diventa In lavorazione (schema semplificato)
- * oppure Draft diventa Presented (schema legacy Espo).
+ * Numero contratto:
+ * - assente → status Bozza (contratto non ancora numerato)
+ * - presente → Bozza/Draft diventa In lavorazione / Presented
  */
 class SetPresentedWhenNumeroContratto implements BeforeSave
 {
     public static int $order = 12;
+
+    /** @var string[] */
+    private const TERMINAL_STATUSES = [
+        'Installato',
+        'Recesso',
+        'Invalido',
+        'Canceled',
+        'Finanziamento Rifiutato',
+    ];
 
     public function beforeSave(Entity $entity, SaveOptions $options): void
     {
@@ -24,10 +34,17 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
             return;
         }
 
-        if (!$this->hasNumeroContratto($entity)) {
+        if ($this->hasNumeroContratto($entity)) {
+            $this->promoteFromBozza($entity);
+
             return;
         }
 
+        $this->forceBozzaWhenMissingNumero($entity);
+    }
+
+    private function promoteFromBozza(Entity $entity): void
+    {
         $status = $entity->get('status');
         $nextStatus = match ($status) {
             'Bozza' => 'In lavorazione',
@@ -40,6 +57,21 @@ class SetPresentedWhenNumeroContratto implements BeforeSave
         }
 
         $entity->set('status', $nextStatus);
+    }
+
+    private function forceBozzaWhenMissingNumero(Entity $entity): void
+    {
+        $status = (string) $entity->get('status');
+
+        if ($status === 'Bozza' || $status === 'Draft') {
+            return;
+        }
+
+        if (in_array($status, self::TERMINAL_STATUSES, true)) {
+            return;
+        }
+
+        $entity->set('status', 'Bozza');
     }
 
     private function hasNumeroContratto(Entity $entity): bool

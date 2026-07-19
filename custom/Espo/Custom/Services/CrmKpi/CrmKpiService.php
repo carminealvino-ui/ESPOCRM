@@ -791,7 +791,13 @@ class CrmKpiService
         }
 
         if ($onlySospesi) {
-            return array_merge($where, ['statoContratto' => self::CONTRACT_SOSPESO]);
+            return array_merge($where, [
+                'OR' => [
+                    ['statoContratto' => self::CONTRACT_SOSPESO],
+                    ['numeroContratto' => null],
+                    ['numeroContratto' => ''],
+                ],
+            ]);
         }
 
         $excludedStates = [];
@@ -806,6 +812,15 @@ class CrmKpiService
 
         if ($excludedStates !== []) {
             $where['statoContratto!='] = $excludedStates;
+        }
+
+        if ($excludeSospesi) {
+            $where[] = [
+                'AND' => [
+                    ['numeroContratto!=' => null],
+                    ['numeroContratto!=' => ''],
+                ],
+            ];
         }
 
         if ($excludeFinancingKo) {
@@ -881,6 +896,11 @@ class CrmKpiService
             return false;
         }
 
+        // Senza numero contratto: trattato come sospeso nei KPI (in attesa numerazione).
+        if (!$this->quoteHasNumeroContratto($quote)) {
+            return true;
+        }
+
         if ($quote->get('statoContratto') === self::CONTRACT_SOSPESO) {
             return true;
         }
@@ -900,6 +920,19 @@ class CrmKpiService
         return $linkedOpportunity
             && !$this->isQuoteRecesso($quote, $linkedOpportunity)
             && $linkedOpportunity->get('statoContratto') === self::CONTRACT_SOSPESO;
+    }
+
+    private function quoteHasNumeroContratto(Entity $quote): bool
+    {
+        foreach (['numeroContratto', 'number'] as $field) {
+            $value = $quote->get($field);
+
+            if ($value !== null && trim((string) $value) !== '') {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
