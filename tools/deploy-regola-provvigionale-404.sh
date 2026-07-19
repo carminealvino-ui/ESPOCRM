@@ -10,7 +10,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-7851c9a4fb56270073982126b6d861bdfacc5bd6}"
+COMMIT="${DEPLOY_COMMIT:-73984a030dffb795147d22ea17dabf359cc716e2}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="regola-provvigionale-404"
