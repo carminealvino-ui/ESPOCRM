@@ -247,6 +247,10 @@ class ReferenteContactService
     }
 
     /**
+     * Trova un Contact già esistente per la stessa persona.
+     * Non riusa un altro referente solo perché condivide telefono/email
+     * (caso tipico: Lead e Prospect sullo stesso Cliente).
+     *
      * @param array<string, mixed> $payload
      */
     private function findExistingContact(
@@ -254,69 +258,35 @@ class ReferenteContactService
         array $payload,
         ?Entity $lead
     ): ?Entity {
+        $expectedName = $payload['name'] ?? null;
+
         if ($lead && $lead->get('createdContactId')) {
             $fromLead = $this->entityManager->getEntityById(
                 'Contact',
                 $lead->get('createdContactId')
             );
 
-            if ($fromLead) {
+            // Evita di riusare il Contact del Prospect se createdContactId è sbagliato.
+            if ($fromLead && $this->namesMatch($fromLead->get('name'), $expectedName)) {
                 return $fromLead;
             }
         }
 
-        $name = $payload['name'] ?? null;
-
-        if ($name) {
-            $byName = $this->entityManager
+        if ($expectedName) {
+            $onAccount = $this->entityManager
                 ->getRDBRepository('Contact')
-                ->where([
-                    'accountId' => $accountId,
-                    'name' => $name,
-                ])
-                ->findOne();
+                ->where(['accountId' => $accountId])
+                ->find();
 
-            if ($byName) {
-                return $byName;
+            foreach ($onAccount as $candidate) {
+                if ($this->namesMatch($candidate->get('name'), $expectedName)) {
+                    return $candidate;
+                }
             }
-        }
 
-        $phone = $payload['phoneNumber'] ?? null;
-
-        if ($phone) {
-            $byPhone = $this->entityManager
-                ->getRDBRepository('Contact')
-                ->where([
-                    'accountId' => $accountId,
-                    'phoneNumber' => $phone,
-                ])
-                ->findOne();
-
-            if ($byPhone) {
-                return $byPhone;
-            }
-        }
-
-        $email = $payload['emailAddress'] ?? null;
-
-        if ($email) {
-            $byEmail = $this->entityManager
-                ->getRDBRepository('Contact')
-                ->where([
-                    'accountId' => $accountId,
-                    'emailAddress' => $email,
-                ])
-                ->findOne();
-
-            if ($byEmail) {
-                return $byEmail;
-            }
-        }
-
-        if ($name) {
             $byNameGlobal = $this->entityManager
                 ->getRDBRepository('Contact')
-                ->where(['name' => $name])
+                ->where(['name' => $expectedName])
                 ->findOne();
 
             if ($byNameGlobal && !$byNameGlobal->get('accountId')) {
@@ -328,6 +298,31 @@ class ReferenteContactService
         }
 
         return null;
+    }
+
+    private function namesMatch(?string $a, ?string $b): bool
+    {
+        $na = $this->normalizePersonName($a);
+        $nb = $this->normalizePersonName($b);
+
+        if ($na === '' || $nb === '') {
+            return false;
+        }
+
+        return $na === $nb;
+    }
+
+    private function normalizePersonName(?string $name): string
+    {
+        $name = trim((string) $name);
+
+        if ($name === '') {
+            return '';
+        }
+
+        $name = preg_replace('/\s+/u', ' ', $name) ?? $name;
+
+        return mb_strtoupper($name, 'UTF-8');
     }
 
 
