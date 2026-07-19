@@ -9,7 +9,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-REPLACE_COMMIT}"
+COMMIT="${DEPLOY_COMMIT:-a0023193ae007832146db4c4486995d5308f0d1f}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="call-lista-esito"
