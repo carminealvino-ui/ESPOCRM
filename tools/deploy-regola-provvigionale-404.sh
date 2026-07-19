@@ -10,18 +10,13 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-REPLACE_AFTER_COMMIT}"
+COMMIT="${DEPLOY_COMMIT:-60aaa87e070c7c3dda73287ce8554ab1d5222ce6}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="regola-provvigionale-404"
 STAMP=$(date +%Y%m%d-%H%M%S)
 
 cd "${CRM_ROOT}"
-
-if [[ "${COMMIT}" == "REPLACE_AFTER_COMMIT" ]]; then
-  echo "ERRORE: DEPLOY_COMMIT non impostato. Usa lo SHA del commit pushato."
-  exit 1
-fi
 
 echo "=== Deploy RegolaProvvigionale (fix 404) ==="
 echo "COMMIT=${COMMIT}"
