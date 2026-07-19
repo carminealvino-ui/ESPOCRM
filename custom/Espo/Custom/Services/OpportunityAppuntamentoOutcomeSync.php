@@ -8,9 +8,9 @@ use Espo\ORM\EntityManager;
 /**
  * Allinea Appuntamento all'esito dell'Opportunità vinta/installata.
  *
- * Opportunità Closed Won / Installato →
- *   Appuntamento: Held + Chiuso Positivamente + Venduto Cartaceo
- *   (mantiene Venduto Tablet se già presente).
+ * Allineato = Held + Chiuso Positivamente.
+ * Esito: impostato a Venduto Cartaceo solo se vuoto (non sovrascrive
+ * Annullato Azienda, Gestito, ecc.).
  */
 class OpportunityAppuntamentoOutcomeSync
 {
@@ -42,15 +42,16 @@ class OpportunityAppuntamentoOutcomeSync
         return trim((string) ($opportunity->get('statoContratto') ?? '')) === 'Installato';
     }
 
+    /**
+     * Allineato se Svolto + Chiuso Positivamente (esito non obbligatorio).
+     */
     public function isAppuntamentoAligned(Entity $appuntamento): bool
     {
         $status = (string) ($appuntamento->get('status') ?? '');
         $sottostato = (string) ($appuntamento->get('sottostato') ?? '');
-        $esito = (string) ($appuntamento->get('esito') ?? '');
 
         return $status === self::STATUS_HELD
-            && $sottostato === self::SOTTOSTATO_WON
-            && in_array($esito, self::ESITO_VENDUTO, true);
+            && $sottostato === self::SOTTOSTATO_WON;
     }
 
     public function resolveAppuntamento(Entity $opportunity): ?Entity
@@ -111,7 +112,6 @@ class OpportunityAppuntamentoOutcomeSync
                 $score += 2;
             }
 
-            // Preferisci quelli ancora non allineati (sono il target della bonifica).
             if (!$this->isAppuntamentoAligned($app)) {
                 $score += 1;
             }
@@ -176,11 +176,6 @@ class OpportunityAppuntamentoOutcomeSync
             ];
         }
 
-        $esito = (string) ($appuntamento->get('esito') ?? '');
-        if (!in_array($esito, self::ESITO_VENDUTO, true)) {
-            $esito = self::ESITO_DEFAULT;
-        }
-
         $before = [
             'status' => $appuntamento->get('status'),
             'sottostato' => $appuntamento->get('sottostato'),
@@ -190,21 +185,13 @@ class OpportunityAppuntamentoOutcomeSync
         $changes = [
             'status' => self::STATUS_HELD,
             'sottostato' => self::SOTTOSTATO_WON,
-            'esito' => $esito,
+            'color' => '#00aa00',
         ];
 
-        // Evita save inutile se già uguale (difesa).
-        if (
-            $before['status'] === $changes['status']
-            && $before['sottostato'] === $changes['sottostato']
-            && $before['esito'] === $changes['esito']
-        ) {
-            return [
-                'updated' => false,
-                'linked' => $linked,
-                'appuntamentoId' => $appuntamentoId,
-                'changes' => [],
-            ];
+        // Esito solo se vuoto: non sovrascrivere Annullato Azienda / Gestito / ecc.
+        $esito = trim((string) ($before['esito'] ?? ''));
+        if ($esito === '') {
+            $changes['esito'] = self::ESITO_DEFAULT;
         }
 
         if ($dryRun) {
@@ -217,7 +204,11 @@ class OpportunityAppuntamentoOutcomeSync
         }
 
         $appuntamento->set($changes);
-        $this->entityManager->saveEntity($appuntamento);
+        // skipHooks: evita hang Google Calendar sulla bonifica massiva.
+        $this->entityManager->saveEntity($appuntamento, [
+            'silent' => true,
+            'skipHooks' => true,
+        ]);
 
         return [
             'updated' => true,

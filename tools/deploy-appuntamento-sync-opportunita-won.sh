@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Allinea Appuntamenti a Opportunità vinte/installate (es. Lommi Maurizio).
+# v2: non sovrascrive esiti esistenti; skipHooks anti-hang Google; ripristino esiti.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/COMMIT/tools/deploy-appuntamento-sync-opportunita-won.sh" \
@@ -9,7 +10,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-5fafdca6c407af8ed54773feaf66afd616cad53f}"
+COMMIT="${DEPLOY_COMMIT:-REPLACE_AFTER_COMMIT}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="appuntamento-sync-opportunita-won"
@@ -17,13 +18,19 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 
 cd "${CRM_ROOT}"
 
-echo "=== Deploy sync Appuntamento ← Opportunità vinta ==="
+if [[ "${COMMIT}" == "REPLACE_AFTER_COMMIT" ]]; then
+  echo "ERRORE: DEPLOY_COMMIT non pinato."
+  exit 1
+fi
+
+echo "=== Deploy sync Appuntamento ← Opportunità vinta (v2 safe) ==="
 echo "COMMIT=${COMMIT}"
 
 FILES=(
   "custom/Espo/Custom/Services/OpportunityAppuntamentoOutcomeSync.php"
   "custom/Espo/Custom/Hooks/Opportunity/SyncAppuntamentoFromWon.php"
   "tools/bonifica-appuntamento-da-opportunita-won.php"
+  "tools/ripristina-esito-appuntamento-dopo-bonifica-won.php"
 )
 
 mkdir -p tools/backup-manifests
@@ -70,14 +77,21 @@ rm -rf data/cache/* 2>/dev/null || true
 php clear_cache.php || true
 php rebuild.php
 
-echo "=== Dry-run bonifica ==="
+echo "=== 1) Ripristina esiti storici sovrascritti per errore ==="
+php tools/ripristina-esito-appuntamento-dopo-bonifica-won.php --dry-run || true
+php tools/ripristina-esito-appuntamento-dopo-bonifica-won.php || true
+
+echo "=== 2) Dry-run bonifica (solo Non allineati: non Held/Chiuso Positivamente) ==="
 php tools/bonifica-appuntamento-da-opportunita-won.php --dry-run | head -80
 
 echo ""
-echo "=== Applica bonifica ==="
+echo "=== 3) Applica bonifica ==="
 php tools/bonifica-appuntamento-da-opportunita-won.php
 
 echo ""
+echo "=== Verifica Lommi ==="
+php tools/bonifica-appuntamento-da-opportunita-won.php --dry-run lommi || true
+
+echo ""
 echo "=== Fine ==="
-echo "Esempio: php tools/bonifica-appuntamento-da-opportunita-won.php lommi"
-echo "Atteso Appuntamento: Svolto / Chiuso Positivamente / Venduto Cartaceo"
+echo "Atteso Lommi: Svolto / Chiuso Positivamente (esito Venduto Cartaceo se era vuoto)"

@@ -2,11 +2,12 @@
 
 /**
  * Allinea Appuntamenti non sincronizzati con Opportunità vinte/installate.
+ * Solo status/sottostato (Held + Chiuso Positivamente). Esito solo se vuoto.
+ * Save con skipHooks (no hang Google).
  *
  *   php tools/bonifica-appuntamento-da-opportunita-won.php --dry-run
  *   php tools/bonifica-appuntamento-da-opportunita-won.php
  *   php tools/bonifica-appuntamento-da-opportunita-won.php --dry-run lommi
- *   php tools/bonifica-appuntamento-da-opportunita-won.php lommi
  */
 
 require_once dirname(__DIR__) . '/bootstrap.php';
@@ -81,7 +82,9 @@ foreach ($collection as $opportunity) {
     }
 
     $before = $result['changes']['_before'] ?? [];
-    $esitoFinal = $result['changes']['esito'] ?? ($before['esito'] ?? 'Venduto Cartaceo');
+    $esitoMsg = array_key_exists('esito', $result['changes'])
+        ? ($result['changes']['esito'] ?? '')
+        : '(invariato: ' . (($before['esito'] ?? '') !== '' ? $before['esito'] : 'vuoto') . ')';
 
     echo ($dryRun ? 'DRY ' : 'OK  ')
         . $opportunity->getId()
@@ -89,9 +92,9 @@ foreach ($collection as $opportunity) {
         . ' | app=' . $result['appuntamentoId']
         . ($result['linked'] ? ' (+link)' : '')
         . ' | '
-        . ($before['status'] ?? '?') . '/' . ($before['sottostato'] ?? '?') . '/'
-        . (($before['esito'] ?? '') !== '' ? $before['esito'] : '(vuoto)')
-        . ' → Held/Chiuso Positivamente/' . $esitoFinal
+        . ($before['status'] ?? '?') . '/' . ($before['sottostato'] ?? '?')
+        . ' → Held/Chiuso Positivamente'
+        . ' esito=' . $esitoMsg
         . PHP_EOL;
 
     $updated++;
