@@ -86,13 +86,14 @@
             "Permessi": "Permessi"
         },
         "statoFinanziamento": {
-            "In lavorazione": "In lavorazione",
+            "In attesa di OTP": "In attesa di OTP",
+            "In valutazione": "In valutazione",
+            "In attesa documentazione": "In attesa documentazione",
+            "In rivalutazione": "In rivalutazione",
             "Approvato": "Approvato",
             "Respinto": "Respinto",
-            "": "",
             "Annullato": "Annullato",
-            "In Attesa Documentazione": "In Attesa Documentazione",
-            "In rivalutazione": "In rivalutazione"
+            "": ""
         },
         "statoContratto": {
             "In lavorazione": "In lavorazione",

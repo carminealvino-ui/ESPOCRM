@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Quote: Recesso→Annullato; Chiuso solo con finanziamento Approvato.
-# Backup obbligatorio in backup_dev/_sessions prima del download.
+# Quote: stati finanziamento puliti + Recesso/Chiuso sync. Backup obbligatorio.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/quote-stati-recesso-chiuso-9999/tools/deploy-quote-stati-recesso-chiuso.sh?t=$(date +%s)" | bash
@@ -17,13 +16,22 @@ FILES=(
   "custom/Espo/Custom/Services/ContrattoStatiRules.php"
   "custom/Espo/Custom/Hooks/Quote/SyncStatiContrattoFinanziamento.php"
   "custom/Espo/Custom/Hooks/Opportunity/SyncStatiContrattoFinanziamento.php"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Opportunity.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json"
+  "custom/Espo/Custom/Resources/i18n/en_US/Opportunity.json"
+  "custom/Espo/Custom/Tools/CrmKpi/Alerts.php"
+  "custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiSospesiFinanziamento.php"
+  "custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiBacklog.php"
+  "custom/Espo/Custom/Classes/Select/Opportunity/PrimaryFilters/ContrattiBacklog.php"
   "tools/backfill-recesso-finanziamento-annullato.php"
   "tools/backfill-stati-contratto-finanziamento.php"
 )
 
 cd "${CRM_ROOT}"
 
-echo "=== Quote stati Recesso/Chiuso — BRANCH=${BRANCH} ==="
+echo "=== Quote stati finanziamento — BRANCH=${BRANCH} ==="
 
 echo ""
 echo "=== PASSO 0 — Backup ==="
@@ -60,7 +68,6 @@ php rebuild.php
 
 echo ""
 echo "=== FATTO codice ==="
-echo "Prossimo (dopo verifica): dry-run allineamento stati"
+echo "Dropdown pulito: niente 'In lavorazione' né doppio 'In attesa documentazione'."
+echo "Prossimo:"
 echo "  php tools/backfill-stati-contratto-finanziamento.php --dry-run"
-echo "Poi, se OK:"
-echo "  php tools/backfill-stati-contratto-finanziamento.php"

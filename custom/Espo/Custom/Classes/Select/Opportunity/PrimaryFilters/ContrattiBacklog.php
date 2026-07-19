@@ -9,9 +9,8 @@ class ContrattiBacklog implements Filter
 {
     /** @var string[] */
     private const FINANCING_BACKLOG_STATES = [
-        'In lavorazione',
         'In rivalutazione',
-        'In Attesa Documentazione',
+        'In attesa documentazione',
         'Respinto',
     ];
 

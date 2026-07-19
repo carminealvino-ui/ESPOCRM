@@ -1,8 +1,10 @@
 <?php
 /**
- * Allinea Stato Finanziamento da Stato Contratto:
+ * Allinea Stato Finanziamento:
  * - Recesso → Annullato
  * - Chiuso + finanziamento → Approvato
+ * - Alias obsoleti: "In Attesa Documentazione" → "In attesa documentazione"
+ *                 "In lavorazione" → "In valutazione"
  *
  *   php tools/backfill-stati-contratto-finanziamento.php --dry-run
  *   php tools/backfill-stati-contratto-finanziamento.php
@@ -32,19 +34,17 @@ foreach ($argv ?? [] as $arg) {
     }
 }
 
+$aliases = [
+    'In Attesa Documentazione' => 'In attesa documentazione',
+    'In lavorazione' => 'In valutazione',
+];
+
 $app = new Application();
 $app->setupSystemUser();
 /** @var EntityManager $em */
 $em = $app->getContainer()->get('entityManager');
 
-$where = [
-    'OR' => [
-        ['statoContratto' => 'Recesso'],
-        ['statoContratto' => 'Chiuso'],
-    ],
-];
-
-$query = $em->getRDBRepository('Quote')->where($where);
+$query = $em->getRDBRepository('Quote');
 
 if ($onlyCodice) {
     $query->where([
@@ -64,9 +64,16 @@ foreach ($query->find() as $quote) {
     $statoContratto = trim((string) ($quote->get('statoContratto') ?? ''));
     $statoFin = trim((string) ($quote->get('statoFinanziamento') ?? ''));
     $finanziamento = (bool) $quote->get('finanziamento');
+    $from = $statoFin === '' ? '(vuoto)' : $statoFin;
     $patch = [];
 
+    if (isset($aliases[$statoFin])) {
+        $statoFin = $aliases[$statoFin];
+        $patch['statoFinanziamento'] = $statoFin;
+    }
+
     if ($statoContratto === 'Recesso' && $statoFin !== 'Annullato') {
+        $statoFin = 'Annullato';
         $patch['statoFinanziamento'] = 'Annullato';
     }
 
@@ -78,6 +85,7 @@ foreach ($query->find() as $quote) {
                 $patch['finanziamento'] = true;
             }
             if ($statoFin !== 'Approvato') {
+                $statoFin = 'Approvato';
                 $patch['statoFinanziamento'] = 'Approvato';
             }
         }
@@ -88,10 +96,10 @@ foreach ($query->find() as $quote) {
         continue;
     }
 
-    $from = $statoFin === '' ? '(vuoto)' : $statoFin;
     $to = $patch['statoFinanziamento'] ?? $statoFin;
+    $extra = isset($patch['finanziamento']) ? ' +finanziamento=true' : '';
     echo ($dryRun ? 'DRY ' : 'UPD ')
-        . "{$label} [{$statoContratto}]: {$from} → {$to}\n";
+        . "{$label} [{$statoContratto}]: {$from} → {$to}{$extra}\n";
 
     if (!$dryRun) {
         $quote->set($patch);

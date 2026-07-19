@@ -1,6 +1,15 @@
-# Quote stati Recesso/Chiuso ↔ finanziamento
+# Quote stati Recesso/Chiuso + enum finanziamento pulito
 custom/Espo/Custom/Services/ContrattoStatiRules.php
 custom/Espo/Custom/Hooks/Quote/SyncStatiContrattoFinanziamento.php
 custom/Espo/Custom/Hooks/Opportunity/SyncStatiContrattoFinanziamento.php
+custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
+custom/Espo/Custom/Resources/metadata/entityDefs/Opportunity.json
+custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
+custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json
+custom/Espo/Custom/Resources/i18n/en_US/Opportunity.json
+custom/Espo/Custom/Tools/CrmKpi/Alerts.php
+custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiSospesiFinanziamento.php
+custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiBacklog.php
+custom/Espo/Custom/Classes/Select/Opportunity/PrimaryFilters/ContrattiBacklog.php
 tools/backfill-recesso-finanziamento-annullato.php
 tools/backfill-stati-contratto-finanziamento.php

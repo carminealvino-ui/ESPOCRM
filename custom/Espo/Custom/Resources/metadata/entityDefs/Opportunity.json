@@ -219,9 +219,7 @@
                 "In attesa di OTP",
                 "In valutazione",
                 "In attesa documentazione",
-                "In lavorazione",
                 "In rivalutazione",
-                "In Attesa Documentazione",
                 "Approvato",
                 "Respinto",
                 "Annullato"
@@ -231,9 +229,7 @@
                 "In attesa di OTP": "info",
                 "In valutazione": "primary",
                 "In attesa documentazione": "warning",
-                "In lavorazione": null,
                 "In rivalutazione": null,
-                "In Attesa Documentazione": "warning",
                 "Approvato": "success",
                 "Respinto": "danger",
                 "Annullato": null
