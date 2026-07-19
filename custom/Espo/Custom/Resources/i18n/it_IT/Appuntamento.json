@@ -30,7 +30,7 @@
         },
         "sottostato": {
             "": "",
-            "Pending": "PENDING",
+            "Pending": "Pending",
             "Gestito": "Gestito",
             "Non Interessato": "Non Interessato",
             "Chiuso Positivamente": "Chiuso Positivamente",
