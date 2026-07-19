@@ -1,7 +1,7 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.6
+// VERSIONE: 2.2.7
 // DATA: 2026-05-27
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
@@ -336,7 +336,7 @@ class GlobalLogic implements BeforeSave, AfterSave
 
         $entity->set(
             'hookVersion',
-            '2.2.6'
+            '2.2.7'
         );
 
 
@@ -750,9 +750,10 @@ class GlobalLogic implements BeforeSave, AfterSave
         // NAMING DEFINITIVO
         // =====================================================
 
-        $displayName = $entity->get('prospectName')
-            ?: $entity->get('appuntamentoName')
-            ?: $entity->get('leadName');
+        // Nome opportunità: Lead (cliente), non Prospect (referente/sito).
+        $displayName = $entity->get('leadName')
+            ?: $entity->get('prospectName')
+            ?: $entity->get('appuntamentoName');
 
         if ($displayName) {
 
