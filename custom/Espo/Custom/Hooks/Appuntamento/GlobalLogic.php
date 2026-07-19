@@ -1,7 +1,7 @@
 <?php
 // ========================================
-// VERSIONE: 1.7.3
-// DATA: 2026-05-22
+// VERSIONE: 1.7.5
+// DATA: 2026-07-19
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
 // custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php
@@ -181,7 +181,7 @@ class GlobalLogic implements BeforeSave
 
             $entity->set(
                 'hookVersion',
-                '1.7.14'
+                '1.7.15'
             );
 
             if ($entity->hasAttribute('zTL') && $entity->get('zTL') === null) {
@@ -239,6 +239,12 @@ class GlobalLogic implements BeforeSave
                     'Prospect',
                     (string) $entity->get('prospectId')
                 );
+
+                // Prospect orfano (cancellato) → foreign phone/name causano 500.
+                if (!$prospect) {
+                    $entity->set('prospectId', null);
+                    $entity->set('prospectName', null);
+                }
             }
 
             // ========================================
@@ -257,6 +263,14 @@ class GlobalLogic implements BeforeSave
                 $lead = $this->entityManager->getEntityById(
                     'Lead',
                     (string) $entity->get('parentId')
+                );
+            }
+
+            // Prospect da Lead se ancora assente
+            if (!$prospect && $lead && $lead->get('prospectId')) {
+                $prospect = $this->entityManager->getEntityById(
+                    'Prospect',
+                    (string) $lead->get('prospectId')
                 );
             }
 
