@@ -9,7 +9,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-aab64f6a0e8977dcbc87fab6abab6693a9765290}"
+COMMIT="${DEPLOY_COMMIT:-bc8532222292473af9661e4bb968c3382f89854c}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="contratto-senza-numero-bozza"
