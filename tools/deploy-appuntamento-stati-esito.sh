@@ -26,6 +26,7 @@ FILES=(
   "client/custom/src/helpers/appuntamento-sottostato-map.js"
   "client/custom/src/views/fields/appuntamento-sottostato.js"
   "client/custom/src/views/fields/appuntamento-esito.js"
+  "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
 )
 
 cd "${CRM_ROOT}"
