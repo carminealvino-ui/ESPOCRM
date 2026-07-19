@@ -3,6 +3,7 @@
 namespace Espo\Custom\Hooks\Call;
 
 use Espo\Core\Hook\Hook\AfterSave;
+use Espo\Custom\Services\CallEsitoOpportunitySync;
 use Espo\Custom\Services\LeadProspectSync;
 use Espo\ORM\Entity;
 use Espo\ORM\EntityManager;
@@ -10,6 +11,7 @@ use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
  * Propaga l'esito del Contatto Telefonico sul Lead collegato.
+ * Per "Non interessato" chiude anche l'opportunità collegata (Closed Lost).
  */
 class SyncLeadFromEsito implements AfterSave
 {
@@ -21,7 +23,8 @@ class SyncLeadFromEsito implements AfterSave
 
     public function __construct(
         private EntityManager $entityManager,
-        private LeadProspectSync $leadProspectSync
+        private LeadProspectSync $leadProspectSync,
+        private CallEsitoOpportunitySync $callEsitoOpportunitySync,
     ) {}
 
     public function afterSave(Entity $entity, SaveOptions $options): void
@@ -44,6 +47,11 @@ class SyncLeadFromEsito implements AfterSave
             return;
         }
 
+        // Opportunità: usa l'hook Call già attivo in cache (non solo SyncOpportunityFromEsito).
+        if ((string) $esito === self::ESITO_NON_INTERESSATO) {
+            $this->callEsitoOpportunitySync->syncFromCall($entity);
+        }
+
         $leadId = $this->resolveLeadId($entity);
 
         if (!$leadId) {
@@ -62,11 +70,25 @@ class SyncLeadFromEsito implements AfterSave
             return;
         }
 
+        $alreadyAligned = true;
+
+        foreach ($attributes as $field => $value) {
+            if ($lead->get($field) !== $value) {
+                $alreadyAligned = false;
+                break;
+            }
+        }
+
+        if ($alreadyAligned) {
+            return;
+        }
+
         $lead->set($attributes);
 
         $this->entityManager->saveEntity($lead, [
             'skipHooks' => false,
             'silent' => true,
+            'skipAcl' => true,
         ]);
     }
 

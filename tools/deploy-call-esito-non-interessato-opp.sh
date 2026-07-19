@@ -50,6 +50,7 @@ FILES=(
   "custom/Espo/Custom/Hooks/Call/SyncOpportunityFromEsito.php"
   "custom/Espo/Custom/Hooks/Call/SyncLeadFromEsito.php"
   "tools/bonifica-call-esito-opportunity-persa.php"
+  "tools/diagnose-call-esito-opportunity.php"
   "tools/backup-manifests/call-esito-non-interessato-opp.files"
 )
 
@@ -108,6 +109,8 @@ echo "=== Deploy completato ==="
 echo "Poi:"
 echo "  cd ${CRM_ROOT}"
 echo "  php clear_cache.php && php rebuild.php"
+echo "  php tools/diagnose-call-esito-opportunity.php SEDDA"
+echo "  php tools/diagnose-call-esito-opportunity.php SEDDA --fix"
 echo "  php tools/bonifica-call-esito-opportunity-persa.php --dry-run"
 echo "  php tools/bonifica-call-esito-opportunity-persa.php"
 echo ""

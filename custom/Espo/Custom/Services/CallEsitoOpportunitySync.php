@@ -14,7 +14,6 @@ use Espo\ORM\EntityManager;
  */
 class CallEsitoOpportunitySync
 {
-    public const NOTA_PREFIX = 'Auto-Pending-Appuntamento:';
     public const ESITO_NON_INTERESSATO = 'Non interessato';
     private const STAGE_LOST = 'Closed Lost';
 
@@ -26,13 +25,17 @@ class CallEsitoOpportunitySync
         'Chiuso Negativamente',
     ];
 
+    private LeadProspectSync $leadProspectSync;
+
     public function __construct(
         private EntityManager $entityManager,
-        private LeadProspectSync $leadProspectSync,
-    ) {}
+        ?LeadProspectSync $leadProspectSync = null,
+    ) {
+        $this->leadProspectSync = $leadProspectSync ?? new LeadProspectSync($entityManager);
+    }
 
     /**
-     * @return array{opportunitiesClosed: int, leadsUpdated: int}
+     * @return array{opportunitiesClosed: int, leadsUpdated: int, opportunityIds: string[]}
      */
     public function syncFromCall(Entity $call): array
     {
@@ -49,21 +52,30 @@ class CallEsitoOpportunitySync
         }
 
         $closeDate = $this->resolveCloseDate($call);
+        $closedIds = [];
+
+        foreach ($this->resolveOpportunityIds($call) as $opportunityId) {
+            if ($this->closeOpportunity($opportunityId, $closeDate)) {
+                $closedIds[] = $opportunityId;
+            }
+        }
 
         return [
-            'opportunitiesClosed' => $this->closeLinkedOpportunities($call, $closeDate),
+            'opportunitiesClosed' => count($closedIds),
             'leadsUpdated' => $this->markLinkedLeadLost($call),
+            'opportunityIds' => $closedIds,
         ];
     }
 
     /**
-     * @return array{opportunitiesClosed: int, leadsUpdated: int}
+     * @return array{opportunitiesClosed: int, leadsUpdated: int, opportunityIds: string[]}
      */
     private function emptyResult(): array
     {
         return [
             'opportunitiesClosed' => 0,
             'leadsUpdated' => 0,
+            'opportunityIds' => [],
         ];
     }
 
@@ -79,19 +91,6 @@ class CallEsitoOpportunitySync
 
         return (new \DateTimeImmutable('now', new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE)))
             ->format('Y-m-d');
-    }
-
-    private function closeLinkedOpportunities(Entity $call, string $closeDate): int
-    {
-        $closed = 0;
-
-        foreach ($this->resolveOpportunityIds($call) as $opportunityId) {
-            if ($this->closeOpportunity($opportunityId, $closeDate)) {
-                $closed++;
-            }
-        }
-
-        return $closed;
     }
 
     private function closeOpportunity(string $opportunityId, string $closeDate): bool
@@ -110,11 +109,13 @@ class CallEsitoOpportunitySync
 
         $opportunity->set([
             'stage' => self::STAGE_LOST,
+            'probability' => 0,
             'closeDate' => $closeDate,
         ]);
 
         $this->entityManager->saveEntity($opportunity, [
             'silent' => true,
+            'skipAcl' => true,
         ]);
 
         return true;
@@ -152,6 +153,7 @@ class CallEsitoOpportunitySync
 
         $this->entityManager->saveEntity($lead, [
             'silent' => true,
+            'skipAcl' => true,
         ]);
 
         return 1;
@@ -168,9 +170,9 @@ class CallEsitoOpportunitySync
             $ids[] = (string) $call->get('parentId');
         }
 
-        $appuntamentoId = $this->extractAppuntamentoId((string) $call->get('nota'));
+        $appuntamentoIds = $this->resolveAppuntamentoIds($call);
 
-        if ($appuntamentoId) {
+        foreach ($appuntamentoIds as $appuntamentoId) {
             $ids = array_merge($ids, $this->findOpportunityIdsBy([
                 'appuntamentoId' => $appuntamentoId,
             ]));
@@ -190,6 +192,28 @@ class CallEsitoOpportunitySync
             $ids = array_merge($ids, $this->findOpportunityIdsBy([
                 'prospectId' => $prospectId,
             ]));
+        }
+
+        $phone = $this->normalizePhone((string) $call->get('telefono'));
+
+        if ($phone !== '') {
+            $ids = array_merge($ids, $this->findOpportunityIdsByPhone($phone));
+        }
+
+        return array_values(array_unique(array_filter($ids)));
+    }
+
+    /**
+     * @return string[]
+     */
+    private function resolveAppuntamentoIds(Entity $call): array
+    {
+        $ids = [];
+
+        $fromNota = $this->extractAppuntamentoId((string) $call->get('nota'));
+
+        if ($fromNota) {
+            $ids[] = $fromNota;
         }
 
         return array_values(array_unique(array_filter($ids)));
@@ -214,6 +238,50 @@ class CallEsitoOpportunitySync
         }
 
         return $ids;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function findOpportunityIdsByPhone(string $normalizedPhone): array
+    {
+        $ids = [];
+
+        $collection = $this->entityManager
+            ->getRDBRepository('Opportunity')
+            ->select(['id', 'telefono', 'stage'])
+            ->where([
+                'telefono!=' => null,
+                'stage!=' => self::TERMINAL_STAGES,
+            ])
+            ->order('createdAt', 'DESC')
+            ->limit(0, 300)
+            ->find();
+
+        foreach ($collection as $opportunity) {
+            $oppPhone = $this->normalizePhone((string) $opportunity->get('telefono'));
+
+            if ($oppPhone !== '' && $oppPhone === $normalizedPhone) {
+                $ids[] = $opportunity->getId();
+            }
+        }
+
+        return $ids;
+    }
+
+    private function normalizePhone(string $phone): string
+    {
+        $digits = preg_replace('/\D+/', '', $phone) ?? '';
+
+        if ($digits === '') {
+            return '';
+        }
+
+        if (str_starts_with($digits, '39') && strlen($digits) > 10) {
+            $digits = substr($digits, 2);
+        }
+
+        return $digits;
     }
 
     public function resolveLeadId(Entity $call): ?string

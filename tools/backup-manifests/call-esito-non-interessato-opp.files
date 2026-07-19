@@ -3,3 +3,4 @@ custom/Espo/Custom/Services/CallEsitoOpportunitySync.php
 custom/Espo/Custom/Hooks/Call/SyncOpportunityFromEsito.php
 custom/Espo/Custom/Hooks/Call/SyncLeadFromEsito.php
 tools/bonifica-call-esito-opportunity-persa.php
+tools/diagnose-call-esito-opportunity.php

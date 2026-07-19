@@ -109,6 +109,7 @@ foreach ($collection as $call) {
     echo 'OK ' . $call->getId()
         . ' opp=' . $result['opportunitiesClosed']
         . ' lead=' . $result['leadsUpdated']
+        . ' ids=' . implode(',', $result['opportunityIds'] ?? [])
         . PHP_EOL;
 
     $callsProcessed++;
