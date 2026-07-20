@@ -576,7 +576,7 @@ fwrite(STDOUT, "=== Fase 1-3: pulizia link e Not Held ===\n");
 try {
 $shouldRemoveAppointment = static function (AppuntamentoGoogleSync $sync, Entity $appointment) use ($onlyNotHeld, $calendarUserId): bool {
     if ($onlyNotHeld) {
-        return !$appointment->get('deleted') && $appointment->get('status') === 'Not Held';
+        return !$appointment->get('deleted') && $sync->shouldRemoveFromGoogleCalendar($appointment);
     }
 
     return !$sync->shouldStayOnConsultantGoogleCalendar($appointment, $calendarUserId);
@@ -844,7 +844,14 @@ function findAppointmentsIncludingDeleted(EntityManager $em, bool $onlyNotHeld):
 {
     if ($onlyNotHeld) {
         return $em->getRDBRepository('Appuntamento')
-            ->where(['status' => 'Not Held', 'deleted' => false])
+            ->where([
+                'deleted' => false,
+                'OR' => [
+                    ['status' => 'Not Held'],
+                    ['sottostato' => 'Annullato'],
+                    ['esito*' => 'Annullato%'],
+                ],
+            ])
             ->find();
     }
 

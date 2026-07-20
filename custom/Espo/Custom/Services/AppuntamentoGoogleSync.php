@@ -359,26 +359,92 @@ class AppuntamentoGoogleSync
             return;
         }
 
-        if ($entity->get('status') !== 'Not Held') {
+        if (!$this->shouldRemoveFromGoogleCalendar($entity)) {
             return;
         }
 
-        $calendarUserId = $this->resolveGoogleCalendarUserIdForEntity($entity, true);
+        $userIds = $this->collectCalendarUserIdsForRemoval($entity);
 
-        if ($calendarUserId === null) {
+        if ($userIds === []) {
             return;
         }
 
-        if ($this->hasGoogleLink($entity->getId())) {
-            $fallbackUserId = $this->resolvePrimaryUserId(
-                $entity->getFetched('assignedUsersIds'),
-                $entity->getFetched('assignedUserId')
-            );
-
-            $this->unlinkFromGoogleForUser($entity, $fallbackUserId ?? $calendarUserId);
+        foreach ($userIds as $userId) {
+            if ($this->hasGoogleLink((string) $entity->getId())) {
+                $this->unlinkFromGoogleForUser($entity, $userId);
+            }
         }
 
-        $this->bonificaDeleteOrphanGoogleEvent($entity, $calendarUserId);
+        foreach ($userIds as $userId) {
+            $this->bonificaDeleteOrphanGoogleEvent($entity, $userId);
+        }
+    }
+
+    public function shouldRemoveFromGoogleCalendar(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE) {
+            return false;
+        }
+
+        if ($entity->get('deleted')) {
+            return true;
+        }
+
+        $status = (string) ($entity->get('status') ?? '');
+
+        if ($status === 'Not Held') {
+            return true;
+        }
+
+        $sottostato = trim((string) ($entity->get('sottostato') ?? ''));
+
+        if (strcasecmp($sottostato, 'Annullato') === 0) {
+            return true;
+        }
+
+        $esito = trim((string) ($entity->get('esito') ?? ''));
+
+        if ($esito !== '' && stripos($esito, 'Annullato') === 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function collectCalendarUserIdsForRemoval(Entity $entity): array
+    {
+        $ids = [];
+
+        foreach ($this->collectAssigneeUserIds($entity, true) as $userId) {
+            if ($this->isGoogleCalendarApiAvailableForUser($userId)) {
+                $ids[] = $userId;
+            }
+        }
+
+        foreach ($this->collectAssigneeUserIds($entity, false) as $userId) {
+            if ($this->isGoogleCalendarApiAvailableForUser($userId)) {
+                $ids[] = $userId;
+            }
+        }
+
+        $entityId = $entity->getId();
+
+        if ($entityId) {
+            $googleData = $this->getGoogleRepository()->getEventEntityGoogleData(self::ENTITY_TYPE, $entityId);
+
+            if (is_array($googleData)) {
+                $ownerId = $this->resolveCalendarOwnerUserId($googleData);
+
+                if ($ownerId !== null && $this->isGoogleCalendarApiAvailableForUser($ownerId)) {
+                    $ids[] = $ownerId;
+                }
+            }
+        }
+
+        return array_values(array_unique($ids));
     }
 
     public function handleRemoved(Entity $entity): void
@@ -1391,6 +1457,10 @@ class AppuntamentoGoogleSync
             return false;
         }
 
+        if ($this->shouldRemoveFromGoogleCalendar($entity)) {
+            return false;
+        }
+
         if (!$this->isSyncConGoogleEnabled($entity)) {
             return false;
         }
@@ -1400,10 +1470,6 @@ class AppuntamentoGoogleSync
         }
 
         $status = (string) ($entity->get('status') ?? '');
-
-        if ($status === 'Not Held') {
-            return false;
-        }
 
         if ($this->isGhostAppointment($entity)) {
             return false;
