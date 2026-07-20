@@ -34,7 +34,9 @@ class AssignNumberACodiceContratto implements BeforeSave
             return;
         }
 
-        if ($entity->get('status') === self::STATUS_DRAFT) {
+        if ($entity->get('status') === self::STATUS_DRAFT
+            || $entity->get('status') === 'Bozza'
+        ) {
             return;
         }
 
