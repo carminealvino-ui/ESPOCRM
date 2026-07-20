@@ -9,7 +9,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-REPLACE_AFTER_PUSH}"
+COMMIT="${DEPLOY_COMMIT:-fe148850a78c47489a2d3a48fdaf09b021be9992}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="crm-kpi-opportunity-senza-appuntamento"
