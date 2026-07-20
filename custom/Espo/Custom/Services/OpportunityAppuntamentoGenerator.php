@@ -270,14 +270,21 @@ class OpportunityAppuntamentoGenerator
         $this->applyStatusFromStage($opportunity, $appuntamento);
 
         $description = trim((string) ($opportunity->get('description') ?: ''));
+        $referenceDate = $this->resolveReferenceDate($opportunity);
 
-        $appuntamento->set([
+        $fields = [
             'dateStart' => $dateStart,
             'dateEnd' => $dateEnd,
             'description' => $description !== ''
                 ? $description
                 : 'Appuntamento generato da opportunità (bonifica storica)',
-        ]);
+        ];
+
+        if ($referenceDate && $appuntamento->hasAttribute('dataAppuntamento')) {
+            $fields['dataAppuntamento'] = $referenceDate;
+        }
+
+        $appuntamento->set($fields);
 
         if ($dryRun) {
             $nameBuilder = new AppuntamentoNameBuilder($this->entityManager);

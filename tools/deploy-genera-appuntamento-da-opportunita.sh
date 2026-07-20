@@ -70,9 +70,11 @@ echo "=== 2) Dry-run completo (campione 20) ==="
 php tools/genera-appuntamento-da-opportunita.php --dry-run --limit=20 || true
 
 echo ""
+echo "=== 3) Bonifica dataAppuntamento (colonna lista) ==="
+php tools/bonifica-data-appuntamento.php --dry-run 2>/dev/null | head -n 10 || true
+
+echo ""
 echo "=== Fine deploy ==="
-echo "Esegui in produzione:"
-echo "  php tools/genera-appuntamento-da-opportunita.php --dry-run --link-only"
-echo "  php tools/genera-appuntamento-da-opportunita.php --dry-run --limit=50"
-echo "  php tools/genera-appuntamento-da-opportunita.php --limit=50"
-echo "  php tools/genera-appuntamento-da-opportunita.php"
+echo "Dopo generazione appuntamenti, allinea dataAppuntamento:"
+echo "  php tools/bonifica-data-appuntamento.php --dry-run"
+echo "  php tools/bonifica-data-appuntamento.php"
