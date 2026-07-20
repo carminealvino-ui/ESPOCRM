@@ -42,6 +42,7 @@
                 "GettoneFisso",
                 "ImportoFissoPod",
                 "PercentualePlusvalenza",
+                "PercentualeMinusvalenza",
                 "PercentualeMargine"
             ],
             "default": "PercentualeImponibile",

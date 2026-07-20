@@ -35,6 +35,7 @@
             "GettoneFisso": "Gettone fisso",
             "ImportoFissoPod": "Importo fisso per POD",
             "PercentualePlusvalenza": "Percentuale su plusvalenza",
+            "PercentualeMinusvalenza": "Percentuale su minusvalenza",
             "PercentualeMargine": "Percentuale su base margine"
         }
     }
