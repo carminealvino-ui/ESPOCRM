@@ -428,6 +428,16 @@ class AppuntamentoGoogleSync
     }
 
     /**
+     * @param callable(Entity, string): void|null $onProgress
+     */
+    private function invokeBonificaProgress(?callable $onProgress, Entity $appointment, string $phase): void
+    {
+        if ($onProgress !== null) {
+            $onProgress($appointment, $phase);
+        }
+    }
+
+    /**
      * Rimuove da Google gli appuntamenti Not Held nel periodo indicato.
      *
      * @param callable(Entity, string): void|null $onProgress
@@ -462,16 +472,16 @@ class AppuntamentoGoogleSync
             if (!$apply) {
                 if ($this->hasGoogleLink((string) $appointment->getId())) {
                     $removed++;
-                    $onProgress?->($appointment, 'dry-link');
+                    $this->invokeBonificaProgress($onProgress, $appointment, 'dry-link');
                 } else {
                     $skipped++;
-                    $onProgress?->($appointment, 'dry-no-link');
+                    $this->invokeBonificaProgress($onProgress, $appointment, 'dry-no-link');
                 }
 
                 continue;
             }
 
-            $onProgress?->($appointment, 'start');
+            $this->invokeBonificaProgress($onProgress, $appointment, 'start');
 
             try {
                 if ($this->hasGoogleLink((string) $appointment->getId())) {
@@ -479,10 +489,10 @@ class AppuntamentoGoogleSync
 
                     if ($result === 'removed' || $result === 'no_link') {
                         $removed++;
-                        $onProgress?->($appointment, 'removed');
+                        $this->invokeBonificaProgress($onProgress, $appointment, 'removed');
                     } else {
                         $failed++;
-                        $onProgress?->($appointment, 'failed');
+                        $this->invokeBonificaProgress($onProgress, $appointment, 'failed');
                     }
 
                     continue;
@@ -492,14 +502,14 @@ class AppuntamentoGoogleSync
 
                 if ($this->hasGoogleLink((string) $appointment->getId())) {
                     $failed++;
-                    $onProgress?->($appointment, 'failed');
+                    $this->invokeBonificaProgress($onProgress, $appointment, 'failed');
                 } else {
                     $skipped++;
-                    $onProgress?->($appointment, 'no-link');
+                    $this->invokeBonificaProgress($onProgress, $appointment, 'no-link');
                 }
             } catch (\Throwable $e) {
                 $failed++;
-                $onProgress?->($appointment, 'error: ' . $e->getMessage());
+                $this->invokeBonificaProgress($onProgress, $appointment, 'error: ' . $e->getMessage());
                 $GLOBALS['log']->error(
                     'AppuntamentoGoogleSync: bonificaRemoveNotHeldInRange '
                     . $appointment->getId() . ': ' . $e->getMessage()
@@ -507,7 +517,11 @@ class AppuntamentoGoogleSync
             }
         }
 
-        $onProgress?->($appointment ?? $this->entityManager->getNewEntity(self::ENTITY_TYPE), 'reconcile-start');
+        $this->invokeBonificaProgress(
+            $onProgress,
+            $appointment ?? $this->entityManager->getNewEntity(self::ENTITY_TYPE),
+            'reconcile-start'
+        );
 
         $reconcile = $this->bonificaReconcileGoogleRange(
             $calendarUserId,
