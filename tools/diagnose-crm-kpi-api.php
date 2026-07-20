@@ -86,6 +86,14 @@ $checks = [
             'dataAppuntamento<=' => date('Y-m-d', strtotime('-3 days')),
         ])->limit(0, 5)->find();
     },
+    'Alert opportunità senza appuntamento' => function () use ($entityManager): void {
+        $entityManager->getRDBRepository('Opportunity')->where([
+            'OR' => [
+                ['appuntamentoId' => null],
+                ['appuntamentoId' => ''],
+            ],
+        ])->count();
+    },
     'Alert opportunità senza riscontro' => function () use ($entityManager): void {
         $entityManager->getRDBRepository('Opportunity')->where([
             'AND' => [

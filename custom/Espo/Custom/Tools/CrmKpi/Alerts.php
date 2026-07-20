@@ -89,6 +89,15 @@ class Alerts
                 'opportunita'
             ),
             $this->alert(
+                'opportunityWithoutAppuntamento',
+                'Senza appuntamento',
+                $this->countOpportunitiesWithoutAppuntamento($productBrandId),
+                '#Opportunity/list/primaryFilter=senzaAppuntamento',
+                null,
+                'criticita',
+                'opportunita'
+            ),
+            $this->alert(
                 'contractsSuspendedFinancing',
                 'Sospesi finanziamento',
                 $this->countContractsSuspendedFinancing($productBrandId),
@@ -254,6 +263,30 @@ class Alerts
         }
 
         return $count;
+    }
+
+    private function countOpportunitiesWithoutAppuntamento(?string $productBrandId = null): int
+    {
+        $where = [
+            'OR' => [
+                ['appuntamentoId' => null],
+                ['appuntamentoId' => ''],
+            ],
+        ];
+
+        if ($productBrandId) {
+            $where = [
+                'AND' => [
+                    $where,
+                    ['productBrandId' => $productBrandId],
+                ],
+            ];
+        }
+
+        return (int) $this->entityManager
+            ->getRDBRepository('Opportunity')
+            ->where($where)
+            ->count();
     }
 
     private function countRichiamiPianificati(): int
