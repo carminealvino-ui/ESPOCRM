@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Nome Opportunità con data da Appuntamento (fix "- LOMMI MAURIZIO - ...").
+# Nome Opportunità: data + cliente (da Lead se manca) — fix "2025-08-09 - - PROGETTO".
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/COMMIT/tools/deploy-opportunity-nome-da-appuntamento.sh" \
@@ -9,7 +9,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-463177957a84e66a9691a31f8920270d972b461e}"
+COMMIT="${DEPLOY_COMMIT:-REPLACE_AFTER_COMMIT}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="opportunity-nome-da-appuntamento"
@@ -17,8 +17,12 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 
 cd "${CRM_ROOT}"
 
+if [[ "${COMMIT}" == "REPLACE_AFTER_COMMIT" ]]; then
+  echo "ERRORE: DEPLOY_COMMIT non pinato."
+  exit 1
+fi
 
-echo "=== Deploy nome Opportunità da data Appuntamento (v2) ==="
+echo "=== Deploy nome Opportunità v3 (fix doppio trattino / cliente da Lead) ==="
 echo "COMMIT=${COMMIT}"
 
 FILES=(
@@ -66,8 +70,8 @@ for rel in "${FILES[@]}"; do
   echo "OK ${rel}"
 done
 
-if ! grep -q "VERSIONE: 2.2.7" custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php; then
-  echo "ERRORE: GlobalLogic non è 2.2.7" >&2
+if ! grep -q "VERSIONE: 2.2.8" custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php; then
+  echo "ERRORE: GlobalLogic non è 2.2.8" >&2
   exit 1
 fi
 
@@ -76,21 +80,21 @@ rm -rf data/cache/* 2>/dev/null || true
 php clear_cache.php || true
 php rebuild.php
 
-echo "=== 1) Lommi (id + testo) ==="
-php tools/bonifica-opportunity-nome-data.php --dry-run 681d9c063557522f6 || true
-php tools/bonifica-opportunity-nome-data.php 681d9c063557522f6 || true
-php tools/bonifica-opportunity-nome-data.php --dry-run lommi || true
-php tools/bonifica-opportunity-nome-data.php lommi || true
+echo "=== 1) Aremi / doppio trattino ==="
+php tools/bonifica-opportunity-nome-data.php --dry-run aremi || true
+php tools/bonifica-opportunity-nome-data.php aremi || true
+php tools/bonifica-opportunity-nome-data.php --dry-run "GAZEBO 800X400" || true
+php tools/bonifica-opportunity-nome-data.php "GAZEBO 800X400" || true
 
-echo "=== 2) Dry-run campione (max 30, senza interrompere lo script) ==="
+echo "=== 2) Dry-run campione ==="
 set +o pipefail
 php tools/bonifica-opportunity-nome-data.php --dry-run 2>/dev/null | head -n 30 || true
 set -o pipefail
 
 echo ""
-echo "=== 3) Applica bonifica completa ==="
+echo "=== 3) Applica bonifica completa (include nomi con ' - - ') ==="
 php tools/bonifica-opportunity-nome-data.php
 
 echo ""
 echo "=== Fine ==="
-echo "Atteso Lommi: 2025-04-08 - LOMMI MAURIZIO - ARTEL - CLIMA 9000BTU - €. 3.000"
+echo "Atteso Aremi: 2025-08-09 - AREMI SALVATORE - PROGETTO - GAZEBO 800X400 - €. 15.250"

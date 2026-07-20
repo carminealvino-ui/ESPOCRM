@@ -21,14 +21,8 @@ class OpportunityNameBuilder
     {
         $before = (string) ($opportunity->get('name') ?? '');
 
-        $displayName = trim((string) (
-            $opportunity->get('prospectName')
-            ?: $opportunity->get('leadName')
-            ?: $opportunity->get('accountName')
-            ?: ''
-        ));
-
         $appuntamento = $this->resolveAppuntamento($opportunity);
+        $displayName = $this->resolveClientLabel($opportunity, $appuntamento, $before);
 
         $dateForField = $this->normalizeDate($opportunity->get('dataOpportunit'))
             ?: $this->normalizeDate($opportunity->get('closeDate'));
@@ -38,17 +32,8 @@ class OpportunityNameBuilder
                 ?: $this->normalizeDate($appuntamento->get('dataAppuntamento'));
         }
 
-        // Ultimo fallback solo per il nome (non scrive dataOpportunit).
         $dateForName = $dateForField
             ?: $this->normalizeDate($opportunity->get('createdAt'));
-
-        if ($displayName === '' && $appuntamento) {
-            $displayName = trim((string) ($appuntamento->get('prospectName') ?? ''));
-        }
-
-        if ($displayName === '' && $before !== '') {
-            $displayName = $this->extractClientFromLegacyName($before);
-        }
 
         $brandLabel = trim((string) (
             $opportunity->get('productBrandName')
@@ -66,18 +51,17 @@ class OpportunityNameBuilder
 
         $description = strtoupper(trim((string) ($opportunity->get('description') ?: '')));
 
-        // Se descrizione vuota, prova a ricavarla dal nome legacy.
         if ($description === '' && $before !== '') {
             $description = $this->extractDescriptionFromLegacyName($before, $displayName, $brandLabel);
         }
 
-        $parts = array_filter([
+        $parts = array_values(array_filter([
             $dateForName,
             $displayName !== '' ? $displayName : null,
             $brandLabel !== '' ? $brandLabel : null,
             $description !== '' ? $description : null,
             $importoLabel !== '' ? '€. ' . $importoLabel : null,
-        ], static fn ($part) => $part !== null && trim((string) $part) !== '');
+        ], static fn ($part) => $part !== null && trim((string) $part) !== ''));
 
         if ($parts === []) {
             return [
@@ -89,11 +73,24 @@ class OpportunityNameBuilder
         }
 
         $newName = implode(' - ', $parts);
+        // Evita residui " - - "
+        $newName = preg_replace('/\s*-\s*-\s*/', ' - ', $newName) ?? $newName;
+        $newName = trim($newName, " -\t");
+
         $dataChanged = $dateForField !== null
             && (string) ($opportunity->get('dataOpportunit') ?? '') !== $dateForField;
         $nameChanged = $newName !== $before;
 
-        if (!$nameChanged && !$dataChanged) {
+        $leadNameSync = false;
+        if (
+            $displayName !== ''
+            && trim((string) ($opportunity->get('leadName') ?? '')) === ''
+            && $opportunity->get('leadId')
+        ) {
+            $leadNameSync = true;
+        }
+
+        if (!$nameChanged && !$dataChanged && !$leadNameSync) {
             return [
                 'changed' => false,
                 'name' => $newName,
@@ -105,6 +102,10 @@ class OpportunityNameBuilder
         if (!$dryRun) {
             if ($dataChanged) {
                 $opportunity->set('dataOpportunit', $dateForField);
+            }
+
+            if ($leadNameSync) {
+                $opportunity->set('leadName', $displayName);
             }
 
             if ($nameChanged) {
@@ -133,17 +134,111 @@ class OpportunityNameBuilder
             return true;
         }
 
-        // Trattino iniziale / spazio + trattino
         if (preg_match('/^\s*-/', $name)) {
             return true;
         }
 
-        // Manca prefisso data YYYY-MM-DD
+        // Cliente mancante: "2025-08-09 - - PROGETTO - ..."
+        if (preg_match('/\s-\s+-\s/', $name) || str_contains($name, ' - - ')) {
+            return true;
+        }
+
         if (!preg_match('/^\d{4}-\d{2}-\d{2}\b/', $name)) {
             return true;
         }
 
+        // Ha lead/prospect ma il nome non contiene il cliente
+        $client = trim((string) (
+            $opportunity->get('leadName')
+            ?: $opportunity->get('prospectName')
+            ?: $opportunity->get('accountName')
+            ?: ''
+        ));
+
+        if ($client === '' && $opportunity->get('leadId')) {
+            $lead = $this->entityManager->getEntityById('Lead', (string) $opportunity->get('leadId'));
+            $client = $lead ? trim((string) ($lead->get('name') ?? '')) : '';
+        }
+
+        if ($client !== '' && !str_contains(mb_strtoupper($name), mb_strtoupper($client))) {
+            return true;
+        }
+
         return false;
+    }
+
+    private function resolveClientLabel(
+        Entity $opportunity,
+        ?Entity $appuntamento,
+        string $before
+    ): string {
+        $displayName = trim((string) (
+            $opportunity->get('prospectName')
+            ?: $opportunity->get('leadName')
+            ?: $opportunity->get('accountName')
+            ?: ''
+        ));
+
+        if ($displayName !== '') {
+            return $displayName;
+        }
+
+        $leadId = trim((string) ($opportunity->get('leadId') ?? ''));
+        if ($leadId !== '') {
+            $lead = $this->entityManager->getEntityById('Lead', $leadId);
+            if ($lead) {
+                $n = trim((string) ($lead->get('name') ?? ''));
+                if ($n !== '') {
+                    return $n;
+                }
+            }
+        }
+
+        $prospectId = trim((string) ($opportunity->get('prospectId') ?? ''));
+        if ($prospectId !== '') {
+            $prospect = $this->entityManager->getEntityById('Prospect', $prospectId);
+            if ($prospect) {
+                $n = trim((string) ($prospect->get('name') ?? ''));
+                if ($n !== '') {
+                    return $n;
+                }
+            }
+        }
+
+        $accountId = trim((string) ($opportunity->get('accountId') ?? ''));
+        if ($accountId !== '') {
+            $account = $this->entityManager->getEntityById('Account', $accountId);
+            if ($account) {
+                $n = trim((string) ($account->get('name') ?? ''));
+                if ($n !== '') {
+                    return $n;
+                }
+            }
+        }
+
+        if ($appuntamento) {
+            $n = trim((string) (
+                $appuntamento->get('prospectName')
+                ?: $appuntamento->get('parentName')
+                ?: ''
+            ));
+            if ($n !== '' && !str_contains($n, 'SENZA PROSPECT')) {
+                return $n;
+            }
+
+            if ($appuntamento->get('parentType') === 'Lead' && $appuntamento->get('parentId')) {
+                $lead = $this->entityManager->getEntityById('Lead', (string) $appuntamento->get('parentId'));
+                if ($lead) {
+                    $n = trim((string) ($lead->get('name') ?? ''));
+                    if ($n !== '') {
+                        return $n;
+                    }
+                }
+            }
+        }
+
+        // Non usare extract da legacy se produrrebbe il brand (PROGETTO) come cliente
+        return '';
     }
 
     private function resolveAppuntamento(Entity $opportunity): ?Entity
@@ -194,7 +289,6 @@ class OpportunityNameBuilder
             return null;
         }
 
-        // 23.04.2025 → 2025-04-23
         if (preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $raw, $m)) {
             return $m[3] . '-' . $m[2] . '-' . $m[1];
         }
@@ -220,33 +314,11 @@ class OpportunityNameBuilder
 
         $value = (float) $importo;
 
-        // Evita 0.01 → 0
         if (abs($value) > 0 && abs($value) < 1) {
             return number_format($value, 2, ',', '.');
         }
 
         return number_format($value, 0, ',', '.');
-    }
-
-    private function extractClientFromLegacyName(string $name): string
-    {
-        $trimmed = trim($name);
-        $trimmed = ltrim($trimmed, "- \t");
-        $parts = array_map('trim', explode(' - ', $trimmed));
-
-        foreach ($parts as $part) {
-            if ($part === '' || preg_match('/^\d{4}-\d{2}-\d{2}$/', $part)) {
-                continue;
-            }
-
-            if (preg_match('/^€/', $part)) {
-                continue;
-            }
-
-            return $part;
-        }
-
-        return '';
     }
 
     private function extractDescriptionFromLegacyName(
@@ -256,6 +328,7 @@ class OpportunityNameBuilder
     ): string {
         $trimmed = trim($name);
         $trimmed = ltrim($trimmed, "- \t");
+        $trimmed = preg_replace('/\s*-\s*-\s*/', ' - ', $trimmed) ?? $trimmed;
         $parts = array_map('trim', explode(' - ', $trimmed));
         $descParts = [];
 

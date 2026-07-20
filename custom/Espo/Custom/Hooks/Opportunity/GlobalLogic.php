@@ -1,7 +1,7 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.7
+// VERSIONE: 2.2.8
 // DATA: 2026-05-27
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
@@ -336,7 +336,7 @@ class GlobalLogic implements BeforeSave, AfterSave
 
         $entity->set(
             'hookVersion',
-            '2.2.7'
+            '2.2.8'
         );
 
 
@@ -747,9 +747,9 @@ class GlobalLogic implements BeforeSave, AfterSave
 
 
         // =====================================================
-        // NAMING DEFINITIVO (2.2.7)
+        // NAMING DEFINITIVO (2.2.8)
         // data + cliente + brand + descrizione + €.
-        // Mai nome che inizia con " - " (data mancante).
+        // Cliente da leadId/prospectId se *Name vuoti (evita " - - ").
         // =====================================================
 
         $displayName = trim((string) (
@@ -758,6 +758,47 @@ class GlobalLogic implements BeforeSave, AfterSave
             ?: $entity->get('accountName')
             ?: ''
         ));
+
+        if ($displayName === '' && $entity->get('leadId')) {
+            $leadEntity = $this->entityManager->getEntityById(
+                'Lead',
+                (string) $entity->get('leadId')
+            );
+            if ($leadEntity) {
+                $displayName = trim((string) ($leadEntity->get('name') ?? ''));
+                if ($displayName !== '') {
+                    $entity->set('leadName', $displayName);
+                }
+            }
+        }
+
+        if ($displayName === '' && $entity->get('prospectId')) {
+            $prospectEntity = $this->entityManager->getEntityById(
+                'Prospect',
+                (string) $entity->get('prospectId')
+            );
+            if ($prospectEntity) {
+                $displayName = trim((string) ($prospectEntity->get('name') ?? ''));
+                if ($displayName !== '') {
+                    $entity->set('prospectName', $displayName);
+                }
+            }
+        }
+
+        if (
+            $displayName === ''
+            && $appuntamento
+            && $appuntamento->get('parentType') === 'Lead'
+            && $appuntamento->get('parentId')
+        ) {
+            $leadEntity = $this->entityManager->getEntityById(
+                'Lead',
+                (string) $appuntamento->get('parentId')
+            );
+            if ($leadEntity) {
+                $displayName = trim((string) ($leadEntity->get('name') ?? ''));
+            }
+        }
 
         $dateForField = null;
 
@@ -819,10 +860,9 @@ class GlobalLogic implements BeforeSave, AfterSave
             ], static fn ($part) => $part !== null && trim((string) $part) !== '');
 
             if ($parts !== []) {
-                $entity->set(
-                    'name',
-                    implode(' - ', $parts)
-                );
+                $name = implode(' - ', $parts);
+                $name = preg_replace('/\s*-\s*-\s*/', ' - ', $name) ?? $name;
+                $entity->set('name', trim($name));
             }
         }
 
