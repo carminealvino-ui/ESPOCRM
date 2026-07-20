@@ -66,19 +66,19 @@
         "fornitorePartner": {
             "type": "link",
             "entity": "FornitorePartner",
-            "readOnly": true,
+            "view": "custom:views/fields/fornitore-partner-cascade",
             "isCustom": true
         },
         "productBrand": {
             "type": "link",
             "entity": "ProductBrand",
-            "readOnly": true,
+            "view": "custom:views/fields/product-brand-by-partner",
             "isCustom": true
         },
         "productCategory": {
             "type": "link",
             "entity": "ProductCategory",
-            "readOnly": true,
+            "view": "custom:views/fields/product-category-by-brand",
             "isCustom": true
         },
         "dataInstallazione": {
