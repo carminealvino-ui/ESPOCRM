@@ -1,18 +1,27 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.10
+// VERSIONE: 2.2.11
 // DATA: 2026-07-20
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
 // =====================================================
 //
+// FIX 2.2.11
+// -----------------------------------------------------
+// APPUNTAMENTO SOFT-DELETED → RIPRISTINO
+//
+// Prima di azzerare il link, verifica se l'ID esiste in DB
+// con deleted=1 e lo ripristina (deleted=0).
+//
+// =====================================================
+//
 // FIX 2.2.10
 // -----------------------------------------------------
-// APPUNTAMENTO ORFANO (scheda mostra ID grezzo)
+// APPUNTAMENTO ORFANO / SOFT-DELETED
 //
-// Se appuntamentoId punta a un record mancante e non si
-// trova un sostituto da Lead/Prospect, azzera il link
-// (opportunità senza appuntamento correlato).
+// Se appuntamentoId punta a un record con deleted=1,
+// ripristina (deleted=0) prima di azzerare o ricollegare.
+// Solo se il record non esiste più in DB si svuota il link.
 //
 // =====================================================
 //
@@ -358,7 +367,7 @@ class GlobalLogic implements BeforeSave, AfterSave
 
         $entity->set(
             'hookVersion',
-            '2.2.10'
+            '2.2.11'
         );
 
 
@@ -393,6 +402,11 @@ class GlobalLogic implements BeforeSave, AfterSave
             || $entity->get('appuntamentoId')
             || $entity->get('leadId');
 
+        // 2.2.10 — ripristina/azzera appuntamento orfano PRIMA del sync
+        // (altrimenti sync azzera l'ID soft-deleted prima del restore)
+        (new OpportunityAppuntamentoOrphanRepair($this->entityManager))
+            ->apply($entity);
+
         if ($needsSync) {
             $this->runOpportunitySync(
                 $entity,
@@ -403,10 +417,6 @@ class GlobalLogic implements BeforeSave, AfterSave
 
         // 2.2.9 — ripara fornitorePartner orfano (lista ID grezzo → GFB)
         (new OpportunityFornitorePartnerRepair($this->entityManager))
-            ->apply($entity);
-
-        // 2.2.10 — ripara/azzera appuntamento orfano (scheda ID grezzo)
-        (new OpportunityAppuntamentoOrphanRepair($this->entityManager))
             ->apply($entity);
 
         $this->applyPriceBookFromEffectiveDate($entity);
@@ -487,6 +497,20 @@ class GlobalLogic implements BeforeSave, AfterSave
                 'Appuntamento',
                 $entity->get('appuntamentoId')
             );
+
+            // Soft-deleted: ripristina prima di cercare alternative.
+            if (!$appuntamento) {
+                $orphanRepair = new OpportunityAppuntamentoOrphanRepair($this->entityManager);
+                $info = $orphanRepair->inspectAppuntamento((string) $entity->get('appuntamentoId'));
+
+                if ($info['status'] === 'soft-deleted') {
+                    $orphanRepair->restoreAppuntamento((string) $entity->get('appuntamentoId'), false);
+                    $appuntamento = $this->entityManager->getEntityById(
+                        'Appuntamento',
+                        $entity->get('appuntamentoId')
+                    );
+                }
+            }
         }
 
         if (!$appuntamento) {

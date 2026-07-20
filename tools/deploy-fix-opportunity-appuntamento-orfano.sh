@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Bonifica Opportunità con Appuntamento orfano (ID grezzo → vuoto o ricollegato).
+# Verifica/ripristina Appuntamento soft-deleted + bonifica orfani Opportunity.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/COMMIT/tools/deploy-fix-opportunity-appuntamento-orfano.sh" \
@@ -9,7 +9,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-c57e159ccf4d8803e9f4f69ad9dc4ad1ef53c976}"
+COMMIT="${DEPLOY_COMMIT:-REPLACE_AFTER_PUSH}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="fix-opportunity-appuntamento-orfano"
@@ -17,13 +17,14 @@ STAMP=$(date +%Y%m%d-%H%M%S)
 
 cd "${CRM_ROOT}"
 
-echo "=== Deploy fix Opportunità Appuntamento orfano ==="
+echo "=== Deploy ripristino Appuntamento soft-deleted + orfani ==="
 echo "COMMIT=${COMMIT}"
 
 FILES=(
   "custom/Espo/Custom/Services/OpportunityAppuntamentoOrphanRepair.php"
   "custom/Espo/Custom/Services/OpportunityFornitorePartnerRepair.php"
   "custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php"
+  "tools/verifica-ripristina-appuntamento.php"
   "tools/bonifica-opportunity-appuntamento-orfano.php"
 )
 
@@ -66,13 +67,13 @@ for rel in "${FILES[@]}"; do
   echo "OK ${rel}"
 done
 
-if ! grep -q "VERSIONE: 2.2.10" custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php; then
-  echo "ERRORE: GlobalLogic non è 2.2.10" >&2
+if ! grep -q "VERSIONE: 2.2.11" custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php; then
+  echo "ERRORE: GlobalLogic non è 2.2.11" >&2
   exit 1
 fi
 
-if ! grep -q "OpportunityAppuntamentoOrphanRepair" custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php; then
-  echo "ERRORE: manca OpportunityAppuntamentoOrphanRepair in GlobalLogic" >&2
+if ! grep -q "soft-deleted" custom/Espo/Custom/Services/OpportunityAppuntamentoOrphanRepair.php; then
+  echo "ERRORE: manca logica soft-deleted in OpportunityAppuntamentoOrphanRepair" >&2
   exit 1
 fi
 
@@ -81,20 +82,28 @@ rm -rf data/cache/* 2>/dev/null || true
 php clear_cache.php || true
 php rebuild.php
 
-echo "=== 1) Dry-run Berana / ID orfano ==="
+echo ""
+echo "=== 1) VERIFICA DB (soft-deleted?) — Berana / ID ==="
+php tools/verifica-ripristina-appuntamento.php --dry-run 67ebb599b5324ca2c || true
+php tools/verifica-ripristina-appuntamento.php --dry-run berana || true
+
+echo ""
+echo "=== 2) RIPRISTINA se deleted=1 ==="
+php tools/verifica-ripristina-appuntamento.php 67ebb599b5324ca2c || true
+php tools/verifica-ripristina-appuntamento.php berana || true
+
+echo ""
+echo "=== 3) Scan altri orfani soft-deleted ==="
+php tools/verifica-ripristina-appuntamento.php --scan-orphans --dry-run || true
+php tools/verifica-ripristina-appuntamento.php --scan-orphans || true
+
+echo ""
+echo "=== 4) Bonifica residui (solo se record davvero assente) ==="
 php tools/bonifica-opportunity-appuntamento-orfano.php --dry-run berana || true
-php tools/bonifica-opportunity-appuntamento-orfano.php --dry-run 67ebb599b5324ca2c || true
-
-echo ""
-echo "=== 2) Applica Berana + ID orfano ==="
 php tools/bonifica-opportunity-appuntamento-orfano.php berana || true
-php tools/bonifica-opportunity-appuntamento-orfano.php 67ebb599b5324ca2c || true
-
-echo ""
-echo "=== 3) Bonifica completa orfani ==="
-php tools/bonifica-opportunity-appuntamento-orfano.php
 
 echo ""
 echo "=== Fine ==="
-echo "Atteso Berana: Appuntamento vuoto (o ricollegato se esiste un altro appuntamento sul Lead)"
-echo "HookVersion Opportunità → 2.2.10"
+echo "Se status=soft-deleted → ripristinato (Appuntamento di nuovo visibile)."
+echo "Se status=missing → serve backup DB, non recuperabile da qui."
+echo "HookVersion Opportunità → 2.2.11"
