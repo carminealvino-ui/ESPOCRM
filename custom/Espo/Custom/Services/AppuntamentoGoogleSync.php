@@ -422,7 +422,10 @@ class AppuntamentoGoogleSync
             if ($this->isGoogleEventAlive($entity, $userId)) {
                 if (
                     !$this->isGhostAppointment($entity)
-                    && $this->linkedGoogleEventHasGhostTitle($entity, $userId)
+                    && (
+                        $this->linkedGoogleEventHasGhostTitle($entity, $userId)
+                        || $this->linkedGoogleEventHasUntitledSummary($entity, $userId)
+                    )
                 ) {
                     $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entity->getId());
 
@@ -479,10 +482,20 @@ class AppuntamentoGoogleSync
 
         if ($this->hasGoogleLink($entity->getId())) {
             if ($this->isGoogleEventAlive($entity, $syncUserId)) {
-                return 'skipped';
+                if (
+                    !$this->isGhostAppointment($entity)
+                    && (
+                        $this->linkedGoogleEventHasGhostTitle($entity, $syncUserId)
+                        || $this->linkedGoogleEventHasUntitledSummary($entity, $syncUserId)
+                    )
+                ) {
+                    $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entity->getId());
+                } else {
+                    return 'skipped';
+                }
+            } else {
+                $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entity->getId());
             }
-
-            $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, $entity->getId());
         }
 
         if (!$this->pushEntityToGoogle($entity, $syncUserId)) {
@@ -1009,22 +1022,157 @@ class AppuntamentoGoogleSync
 
     public function linkedGoogleEventHasGhostTitle(Entity $entity, string $calendarUserId): bool
     {
+        $summary = $this->fetchLinkedGoogleEventSummary($entity, $calendarUserId);
+
+        if ($summary === null) {
+            return false;
+        }
+
+        return $this->isGoogleSummaryGhostTitle($summary);
+    }
+
+    public function linkedGoogleEventHasUntitledSummary(Entity $entity, string $calendarUserId): bool
+    {
+        $espoName = trim((string) ($entity->get('name') ?? ''));
+
+        if ($espoName === '' || $this->isGoogleSummaryGhostTitle($espoName)) {
+            return false;
+        }
+
+        $summary = $this->fetchLinkedGoogleEventSummary($entity, $calendarUserId);
+
+        if ($summary === null) {
+            return false;
+        }
+
+        return $this->isGoogleSummaryUntitled($summary);
+    }
+
+    public function isGoogleSummaryUntitled(string $summary): bool
+    {
+        $summary = trim($summary);
+
+        if ($summary === '') {
+            return true;
+        }
+
+        foreach ([
+            '(Senza titolo)',
+            '(No title)',
+            '(No Title)',
+            'Untitled',
+            '(Untitled)',
+        ] as $placeholder) {
+            if (strcasecmp($summary, $placeholder) === 0) {
+                return true;
+            }
+        }
+
+        return (bool) preg_match('/^(Appuntamento|Meeting|EspoCRM)[\s:\-]*$/i', $summary);
+    }
+
+    /**
+     * Ripush appuntamenti con titolo Google vuoto / "(Senza titolo)" ma nome Espo ok.
+     *
+     * @return array{scanned: int, candidates: int, repaired: int}
+     */
+    public function bonificaRepushUntitledGoogleEvents(
+        ?string $calendarUserId = null,
+        ?string $fromDate = null,
+        ?string $toDate = null,
+        bool $apply = true
+    ): array {
+        $where = [
+            'deleted' => false,
+            'status' => ['Planned', 'Held', 'Ingestibile'],
+            'name!=' => null,
+        ];
+
+        if ($fromDate) {
+            $where['dateStart>='] = $fromDate . ' 00:00:00';
+        }
+
+        if ($toDate) {
+            $where['dateStart<='] = $toDate . ' 23:59:59';
+        }
+
+        $appointments = $this->entityManager
+            ->getRDBRepository(self::ENTITY_TYPE)
+            ->where($where)
+            ->order('dateStart', 'DESC')
+            ->find();
+
+        $scanned = 0;
+        $candidates = 0;
+        $repaired = 0;
+
+        foreach ($appointments as $appointment) {
+            if ($this->isGhostAppointment($appointment)) {
+                continue;
+            }
+
+            if (!$this->shouldStayOnGoogleCalendar($appointment)) {
+                continue;
+            }
+
+            $userId = $this->resolveSyncableConsultantUserId($appointment);
+
+            if ($userId === null) {
+                continue;
+            }
+
+            if ($calendarUserId !== null && $userId !== $calendarUserId) {
+                continue;
+            }
+
+            $scanned++;
+
+            if (!$this->hasGoogleLink((string) $appointment->getId())) {
+                continue;
+            }
+
+            if (!$this->linkedGoogleEventHasUntitledSummary($appointment, $userId)) {
+                continue;
+            }
+
+            $candidates++;
+
+            if (!$apply) {
+                continue;
+            }
+
+            $this->getGoogleRepository()->resetEventRelation(self::ENTITY_TYPE, (string) $appointment->getId());
+
+            if ($this->pushEntityToGoogle($appointment, $userId)) {
+                $repaired++;
+            }
+        }
+
+        return [
+            'scanned' => $scanned,
+            'candidates' => $candidates,
+            'repaired' => $repaired,
+        ];
+    }
+
+    private function fetchLinkedGoogleEventSummary(Entity $entity, string $calendarUserId): ?string
+    {
         $entityId = $entity->getId();
 
         if (!$entityId || !$this->hasGoogleLink($entityId)) {
-            return false;
+            return null;
         }
 
         $googleData = $this->getGoogleRepository()->getEventEntityGoogleData(self::ENTITY_TYPE, $entityId);
 
         if (!is_array($googleData) || empty($googleData['googleCalendarEventId'])) {
-            return false;
+            return null;
         }
 
         $calendarId = $this->resolveMainGoogleCalendarIdForUser($calendarUserId);
 
         if ($calendarId === null) {
-            return false;
+            return null;
         }
 
         try {
@@ -1034,14 +1182,14 @@ class AppuntamentoGoogleSync
                 (string) $googleData['googleCalendarEventId']
             );
         } catch (\Throwable) {
-            return false;
+            return null;
         }
 
         if (!is_array($event)) {
-            return false;
+            return null;
         }
 
-        return $this->isGoogleSummaryGhostTitle((string) ($event['summary'] ?? ''));
+        return (string) ($event['summary'] ?? '');
     }
 
     /**
