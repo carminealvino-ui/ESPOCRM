@@ -9,7 +9,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-HEAD}"
+COMMIT="${DEPLOY_COMMIT:-415d114a85db94f0a8d5d8e0ce301ac74e125bd8}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="genera-appuntamento-da-opportunita"
