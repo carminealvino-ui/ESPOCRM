@@ -27,10 +27,45 @@ class ContrattoClienteFromOpportunitaResolver
      *     createdContact: bool
      * }|null
      */
+    public function resolveForQuote(Entity $quote, Entity $opportunity, bool $createIfMissing = true): ?array
+    {
+        $data = $this->resolve($opportunity, $createIfMissing);
+
+        if ($data) {
+            return $data;
+        }
+
+        if (!$createIfMissing) {
+            return null;
+        }
+
+        return $this->createFromQuoteFallback($quote, $opportunity);
+    }
+
     public function resolve(Entity $opportunity, bool $createIfMissing = true): ?array
     {
         $lead = $this->loadLead($opportunity);
         $prospect = $this->loadProspect($opportunity, $lead);
+
+        if (!$lead || !$prospect) {
+            $fromAppuntamento = $this->loadFromAppuntamento($opportunity);
+
+            if (!$lead && $fromAppuntamento['lead']) {
+                $lead = $fromAppuntamento['lead'];
+            }
+
+            if (!$prospect && $fromAppuntamento['prospect']) {
+                $prospect = $fromAppuntamento['prospect'];
+            }
+        }
+
+        if (!$lead) {
+            $lead = $this->findLeadByDisplayName($this->resolveCustomerLabel($opportunity));
+        }
+
+        if (!$prospect) {
+            $prospect = $this->findProspectByDisplayName($this->resolveCustomerLabel($opportunity));
+        }
         $teamsIds = $opportunity->getLinkMultipleIdList('teams') ?: [];
         $createdAccount = false;
 
@@ -93,6 +128,12 @@ class ContrattoClienteFromOpportunitaResolver
         }
 
         if (!$accountId) {
+            $fromContact = $this->resolveFromOpportunityContact($opportunity, $createIfMissing);
+
+            if ($fromContact) {
+                return $fromContact;
+            }
+
             return null;
         }
 
@@ -160,15 +201,50 @@ class ContrattoClienteFromOpportunitaResolver
         ]);
     }
 
+    /**
+     * @return array{lead: ?Entity, prospect: ?Entity}
+     */
+    private function loadFromAppuntamento(Entity $opportunity): array
+    {
+        $appuntamentoId = $opportunity->get('appuntamentoId');
+
+        if (!$appuntamentoId) {
+            return ['lead' => null, 'prospect' => null];
+        }
+
+        $appuntamento = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
+
+        if (!$appuntamento) {
+            return ['lead' => null, 'prospect' => null];
+        }
+
+        $lead = null;
+        $prospect = null;
+
+        if ($appuntamento->get('leadId')) {
+            $lead = $this->entityManager->getEntityById('Lead', $appuntamento->get('leadId'));
+        } elseif ($appuntamento->get('parentType') === 'Lead' && $appuntamento->get('parentId')) {
+            $lead = $this->entityManager->getEntityById('Lead', $appuntamento->get('parentId'));
+        }
+
+        if ($appuntamento->get('prospectId')) {
+            $prospect = $this->entityManager->getEntityById('Prospect', $appuntamento->get('prospectId'));
+        } elseif ($appuntamento->get('parentType') === 'Prospect' && $appuntamento->get('parentId')) {
+            $prospect = $this->entityManager->getEntityById('Prospect', $appuntamento->get('parentId'));
+        }
+
+        return ['lead' => $lead, 'prospect' => $prospect];
+    }
+
     private function loadLead(Entity $opportunity): ?Entity
     {
         $leadId = $opportunity->get('leadId');
 
-        if (!$leadId) {
-            return null;
+        if ($leadId) {
+            return $this->entityManager->getEntityById('Lead', $leadId);
         }
 
-        return $this->entityManager->getEntityById('Lead', $leadId);
+        return null;
     }
 
     private function loadProspect(Entity $opportunity, ?Entity $lead): ?Entity
@@ -317,5 +393,229 @@ class ContrattoClienteFromOpportunitaResolver
         ]);
 
         $this->entityManager->saveEntity($prospect, ['silent' => true]);
+    }
+
+    private function resolveFromOpportunityContact(Entity $opportunity, bool $createIfMissing): ?array
+    {
+        $contactId = $opportunity->get('contactId');
+
+        if (!$contactId) {
+            return null;
+        }
+
+        $contact = $this->entityManager->getEntityById('Contact', $contactId);
+
+        if (!$contact) {
+            return null;
+        }
+
+        $accountId = $contact->get('accountId');
+
+        if ($accountId && $this->entityManager->getEntityById('Account', $accountId)) {
+            return [
+                'accountId' => $accountId,
+                'accountName' => $contact->get('accountName') ?: $this->entityManager->getEntityById('Account', $accountId)?->get('name'),
+                'billingContactId' => $contact->getId(),
+                'billingContactName' => $contact->get('name'),
+                'shippingContactId' => $contact->getId(),
+                'shippingContactName' => $contact->get('name'),
+                'createdAccount' => false,
+                'createdContact' => false,
+            ];
+        }
+
+        if (!$createIfMissing) {
+            return null;
+        }
+
+        $teamsIds = $opportunity->getLinkMultipleIdList('teams') ?: [];
+        $cliente = $this->entityManager->createEntity('Account');
+        $cliente->set([
+            'name' => $contact->get('name') ?: $this->resolveCustomerLabel($opportunity) ?: 'Cliente da referente',
+            'phoneNumber' => $contact->get('phoneNumber'),
+            'emailAddress' => $contact->get('emailAddress'),
+            'billingAddressStreet' => $contact->get('addressStreet'),
+            'billingAddressCity' => $contact->get('addressCity'),
+            'billingAddressPostalCode' => $contact->get('addressPostalCode'),
+            'billingAddressState' => $contact->get('addressState'),
+            'shippingAddressStreet' => $contact->get('addressStreet'),
+            'shippingAddressCity' => $contact->get('addressCity'),
+            'shippingAddressPostalCode' => $contact->get('addressPostalCode'),
+            'shippingAddressState' => $contact->get('addressState'),
+            'stato' => 'Nuovo',
+            'type' => 'B2C',
+            'segmento' => 'B2C',
+            'teamsIds' => $teamsIds,
+            'assignedUserId' => $opportunity->get('assignedUserId'),
+        ]);
+        $this->entityManager->saveEntity($cliente, ['silent' => true]);
+
+        $accountId = (string) $cliente->getId();
+        $contact->set([
+            'accountId' => $accountId,
+            'accountName' => $cliente->get('name'),
+        ]);
+        $this->entityManager->saveEntity($contact, ['silent' => true]);
+
+        return [
+            'accountId' => $accountId,
+            'accountName' => $cliente->get('name'),
+            'billingContactId' => $contact->getId(),
+            'billingContactName' => $contact->get('name'),
+            'shippingContactId' => $contact->getId(),
+            'shippingContactName' => $contact->get('name'),
+            'createdAccount' => true,
+            'createdContact' => false,
+        ];
+    }
+
+    private function createFromQuoteFallback(Entity $quote, Entity $opportunity): ?array
+    {
+        $name = $this->resolveCustomerLabel($opportunity, $quote);
+
+        if (!$name) {
+            return null;
+        }
+
+        $teamsIds = $opportunity->getLinkMultipleIdList('teams') ?: [];
+        $cliente = $this->entityManager->createEntity('Account');
+        $cliente->set([
+            'name' => $name,
+            'billingAddressStreet' => $quote->get('billingAddressStreet'),
+            'billingAddressCity' => $quote->get('billingAddressCity'),
+            'billingAddressPostalCode' => $quote->get('billingAddressPostalCode'),
+            'billingAddressState' => $quote->get('billingAddressState'),
+            'billingAddressCountry' => $quote->get('billingAddressCountry'),
+            'shippingAddressStreet' => $quote->get('shippingAddressStreet') ?: $quote->get('billingAddressStreet'),
+            'shippingAddressCity' => $quote->get('shippingAddressCity') ?: $quote->get('billingAddressCity'),
+            'shippingAddressPostalCode' => $quote->get('shippingAddressPostalCode') ?: $quote->get('billingAddressPostalCode'),
+            'shippingAddressState' => $quote->get('shippingAddressState') ?: $quote->get('billingAddressState'),
+            'shippingAddressCountry' => $quote->get('shippingAddressCountry') ?: $quote->get('billingAddressCountry'),
+            'phoneNumber' => $opportunity->get('telefono'),
+            'stato' => 'Nuovo',
+            'type' => 'B2C',
+            'segmento' => 'B2C',
+            'teamsIds' => $teamsIds,
+            'assignedUserId' => $opportunity->get('assignedUserId') ?: $quote->get('assignedUserId'),
+        ]);
+        $this->entityManager->saveEntity($cliente, ['silent' => true]);
+
+        $accountId = (string) $cliente->getId();
+        $referente = (new ReferenteContactService($this->entityManager))->ensureForAccount($accountId, [
+            'assignedUserId' => $opportunity->get('assignedUserId'),
+        ]);
+
+        $billingContactId = $referente['id'] ?? null;
+        $billingContactName = $referente['name'] ?? $name;
+
+        if (!$billingContactId) {
+            $contact = $this->entityManager->createEntity('Contact');
+            $contact->set([
+                'firstName' => $name,
+                'name' => $name,
+                'accountId' => $accountId,
+                'accountName' => $name,
+                'phoneNumber' => $opportunity->get('telefono'),
+                'addressStreet' => $quote->get('billingAddressStreet'),
+                'addressCity' => $quote->get('billingAddressCity'),
+                'addressPostalCode' => $quote->get('billingAddressPostalCode'),
+                'addressState' => $quote->get('billingAddressState'),
+                'addressCountry' => $quote->get('billingAddressCountry'),
+            ]);
+            $this->entityManager->saveEntity($contact, ['silent' => true]);
+            $billingContactId = (string) $contact->getId();
+            $billingContactName = $contact->get('name');
+        }
+
+        return [
+            'accountId' => $accountId,
+            'accountName' => $name,
+            'billingContactId' => $billingContactId,
+            'billingContactName' => $billingContactName,
+            'shippingContactId' => $billingContactId,
+            'shippingContactName' => $billingContactName,
+            'createdAccount' => true,
+            'createdContact' => true,
+        ];
+    }
+
+    private function resolveCustomerLabel(Entity $opportunity, ?Entity $quote = null): ?string
+    {
+        foreach ([
+            $opportunity->get('prospectName'),
+            $opportunity->get('leadName'),
+            $opportunity->get('contactName'),
+            $this->parseCustomerNameFromRecordName($opportunity->get('name')),
+            $quote ? $this->parseCustomerNameFromRecordName($quote->get('name')) : null,
+        ] as $candidate) {
+            $candidate = trim((string) $candidate);
+
+            if ($candidate !== '') {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function parseCustomerNameFromRecordName(mixed $name): ?string
+    {
+        $name = trim((string) $name);
+
+        if ($name === '') {
+            return null;
+        }
+
+        $parts = array_map('trim', explode(' - ', $name));
+
+        if (count($parts) >= 2 && preg_match('/^\d{4}-\d{2}-\d{2}$/', $parts[0])) {
+            return $parts[1] !== '' ? $parts[1] : null;
+        }
+
+        return null;
+    }
+
+    private function findLeadByDisplayName(?string $name): ?Entity
+    {
+        $name = trim((string) $name);
+
+        if ($name === '') {
+            return null;
+        }
+
+        $byName = $this->entityManager->getRDBRepository('Lead')
+            ->where(['name' => $name])
+            ->findOne();
+
+        if ($byName) {
+            return $byName;
+        }
+
+        return $this->entityManager->getRDBRepository('Lead')
+            ->where(['name*' => '%' . $name . '%'])
+            ->order('modifiedAt', 'DESC')
+            ->findOne();
+    }
+
+    private function findProspectByDisplayName(?string $name): ?Entity
+    {
+        $name = trim((string) $name);
+
+        if ($name === '') {
+            return null;
+        }
+
+        $byName = $this->entityManager->getRDBRepository('Prospect')
+            ->where(['name' => $name])
+            ->findOne();
+
+        if ($byName) {
+            return $byName;
+        }
+
+        return $this->entityManager->getRDBRepository('Prospect')
+            ->where(['name*' => '%' . $name . '%'])
+            ->order('modifiedAt', 'DESC')
+            ->findOne();
     }
 }

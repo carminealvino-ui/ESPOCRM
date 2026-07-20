@@ -145,10 +145,10 @@ function repairQuote(
         return ['ok' => false, 'message' => 'Opportunità non trovata'];
     }
 
-    $data = $resolver->resolve($opportunity, !$dryRun);
+    $data = $resolver->resolveForQuote($quote, $opportunity, !$dryRun);
 
     if (!$data || !$data['accountId']) {
-        return ['ok' => false, 'message' => 'Impossibile risolvere cliente da Lead/Prospect'];
+        return ['ok' => false, 'message' => 'Impossibile risolvere cliente (Lead/Prospect/nome contratto)'];
     }
 
     $patch = [
