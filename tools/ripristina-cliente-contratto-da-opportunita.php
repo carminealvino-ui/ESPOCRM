@@ -10,6 +10,7 @@
  *   php tools/ripristina-cliente-contratto-da-opportunita.php --fix-names
  *   php tools/ripristina-cliente-contratto-da-opportunita.php --id=ID_CONTRATTO
  *   php tools/ripristina-cliente-contratto-da-opportunita.php --name="SABATINI"
+ *   php tools/ripristina-cliente-contratto-da-opportunita.php --account-id=ID_ACCOUNT
  */
 
 declare(strict_types=1);
@@ -26,6 +27,7 @@ $fixNamesOnly = in_array('--fix-names', $argv ?? [], true);
 $limit = null;
 $id = null;
 $name = null;
+$accountId = null;
 
 foreach ($argv ?? [] as $arg) {
     if ($arg === '--dry-run' || $arg === '--scan' || $arg === '--fix-names') {
@@ -46,6 +48,11 @@ foreach ($argv ?? [] as $arg) {
         $name = trim(substr((string) $arg, 7));
         continue;
     }
+
+    if (str_starts_with((string) $arg, '--account-id=')) {
+        $accountId = trim(substr((string) $arg, 13));
+        continue;
+    }
 }
 
 $app = new Application();
@@ -61,6 +68,14 @@ if ($id) {
     if ($quote) {
         $quotes[] = $quote;
     }
+} elseif ($accountId) {
+    $quotes = iterator_to_array(
+        $em->getRDBRepository('Quote')
+            ->where(['accountId' => $accountId])
+            ->order('modifiedAt', 'DESC')
+            ->limit(0, 10)
+            ->find()
+    );
 } elseif ($name) {
     $quotes = $em->getRDBRepository('Quote')
         ->where(['name*' => '%' . $name . '%'])
@@ -112,11 +127,24 @@ if ($id) {
         }
     }
 } else {
-    fwrite(STDERR, "Usare --scan, --fix-names, --id= o --name=\n");
+    fwrite(STDERR, "Usare --scan, --fix-names, --id=, --name= o --account-id=\n");
     exit(1);
 }
 
 if ($quotes === []) {
+    if ($accountId) {
+        $result = $resolver->repairEmptyAccountById($accountId, !$dryRun);
+        $prefix = $result ? ($dryRun ? 'DRY OK' : 'OK') : 'SKIP';
+        echo $prefix
+            . ' | account '
+            . $accountId
+            . ' | '
+            . ($result['message'] ?? 'Account non trovato o nome già presente')
+            . ($result ? ' → ' . ($result['patch']['accountName'] ?? '') : '')
+            . PHP_EOL;
+        exit($result ? 0 : 1);
+    }
+
     fwrite(STDERR, "Nessun contratto trovato.\n");
     exit(1);
 }

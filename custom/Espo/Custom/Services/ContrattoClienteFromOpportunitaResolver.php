@@ -82,7 +82,7 @@ class ContrattoClienteFromOpportunitaResolver
         if ($createIfMissing && !$accountId && $lead) {
             $cliente = $this->entityManager->createEntity('Account');
             $cliente->set($this->buildAccountDataFromLead($lead, $opportunity, $teamsIds, $prospect));
-            $this->entityManager->saveEntity($cliente, ['silent' => true]);
+            $this->entityManager->saveEntity($cliente, ['silent' => true, 'skipFormula' => true]);
 
             $accountId = (string) $cliente->getId();
             $createdAccount = true;
@@ -108,7 +108,7 @@ class ContrattoClienteFromOpportunitaResolver
             } else {
                 $cliente = $this->entityManager->createEntity('Account');
                 $cliente->set($this->buildAccountDataFromProspect($prospect, $opportunity, $teamsIds, $lead));
-                $this->entityManager->saveEntity($cliente, ['silent' => true]);
+                $this->entityManager->saveEntity($cliente, ['silent' => true, 'skipFormula' => true]);
 
                 $accountId = (string) $cliente->getId();
                 $createdAccount = true;
@@ -213,6 +213,14 @@ class ContrattoClienteFromOpportunitaResolver
             return true;
         }
 
+        if ($accountId !== '') {
+            $account = $this->entityManager->getEntityById('Account', $accountId);
+
+            if ($account && trim((string) $account->get('name')) === '') {
+                return true;
+            }
+        }
+
         foreach (['billingContactId' => 'billingContactName', 'shippingContactId' => 'shippingContactName'] as $idField => $nameField) {
             $relatedId = trim((string) ($quote->get($idField) ?: ''));
 
@@ -251,6 +259,14 @@ class ContrattoClienteFromOpportunitaResolver
 
             if ($account) {
                 $accountName = trim((string) $account->get('name'));
+
+                if ($accountName === '' && $createIfMissing) {
+                    $repairedName = $this->repairAccountEmptyName($account, $quote);
+
+                    if ($repairedName !== null) {
+                        $accountName = $repairedName;
+                    }
+                }
 
                 if ($accountName !== '' && $this->needsNameRepair($quote->get('accountName'), $accountId)) {
                     $patch['accountName'] = $accountName;
@@ -322,6 +338,16 @@ class ContrattoClienteFromOpportunitaResolver
             $message = 'accountName da contraente/nome contratto';
         }
 
+        if ($accountId !== '') {
+            $account = $this->entityManager->getEntityById('Account', $accountId);
+
+            if ($account && trim((string) $account->get('name')) !== ''
+                && trim((string) ($quote->get('accountName') ?: '')) === ''
+            ) {
+                $message = 'nome Account riparato';
+            }
+        }
+
         return [
             'patch' => $patch,
             'message' => $message,
@@ -370,10 +396,22 @@ class ContrattoClienteFromOpportunitaResolver
                 $account = $this->entityManager->getEntityById('Account', $contactAccountId);
 
                 if ($account) {
-                    return [
-                        'accountId' => (string) $account->getId(),
-                        'accountName' => (string) $account->get('name'),
-                    ];
+                    $accountName = trim((string) $account->get('name'));
+
+                    if ($accountName === '' && $createIfMissing) {
+                        $repairedName = $this->repairAccountEmptyName($account, $quote);
+
+                        if ($repairedName !== null) {
+                            $accountName = $repairedName;
+                        }
+                    }
+
+                    if ($accountName !== '') {
+                        return [
+                            'accountId' => (string) $account->getId(),
+                            'accountName' => $accountName,
+                        ];
+                    }
                 }
             }
 
@@ -472,10 +510,15 @@ class ContrattoClienteFromOpportunitaResolver
                 'segmento' => 'B2C',
                 'assignedUserId' => $quote->get('assignedUserId'),
             ]);
-            $this->entityManager->saveEntity($account, ['silent' => true]);
+            $this->saveAccountEntity($account);
 
             $accountId = (string) $account->getId();
-            $accountName = (string) $account->get('name');
+            $accountName = trim((string) $account->get('name'));
+
+            if ($accountName === '') {
+                $accountName = $name;
+            }
+
             $createdAccount = true;
         }
 
@@ -610,12 +653,137 @@ class ContrattoClienteFromOpportunitaResolver
             $teamsIds,
             $lead
         ));
-        $this->entityManager->saveEntity($cliente, ['silent' => true]);
+        $this->saveAccountEntity($cliente);
 
         $newId = (string) $cliente->getId();
-        $this->linkProspectToAccount($prospectAsAccount, $newId, $cliente->get('name'));
+        $this->linkProspectToAccount($prospectAsAccount, $newId, $cliente->get('name') ?: $this->resolveDisplayNameFromProspect($prospectAsAccount, $lead));
 
         return $newId;
+    }
+
+    private function saveAccountEntity(Entity $account): void
+    {
+        $this->entityManager->saveEntity($account, [
+            'silent' => true,
+            'skipFormula' => true,
+        ]);
+    }
+
+    private function resolveDisplayNameFromProspect(Entity $prospect, ?Entity $lead = null): ?string
+    {
+        $sync = new LeadProspectSync($this->entityManager);
+
+        return $sync->resolveDisplayName($prospect) ?: ($lead ? $sync->resolveDisplayName($lead) : null);
+    }
+
+    private function resolveAccountDisplayName(Entity $quote): ?string
+    {
+        foreach ([
+            $quote->get('billingContactName'),
+            $quote->get('shippingContactName'),
+            $this->resolveCustomerLabel($this->loadOpportunityForQuote($quote) ?? $quote, $quote),
+        ] as $candidate) {
+            $candidate = trim((string) $candidate);
+
+            if ($candidate !== '' && !preg_match('/^[a-f0-9]{17,24}$/i', $candidate)) {
+                return $candidate;
+            }
+        }
+
+        $billingContactId = trim((string) ($quote->get('billingContactId') ?: ''));
+
+        if ($billingContactId !== '') {
+            $contact = $this->entityManager->getEntityById('Contact', $billingContactId);
+
+            if ($contact) {
+                $name = trim((string) $contact->get('name'));
+
+                if ($name !== '') {
+                    return $name;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function repairAccountEmptyName(Entity $account, Entity $quote): ?string
+    {
+        $name = $this->resolveAccountDisplayName($quote);
+
+        if ($name === null || $name === '') {
+            return null;
+        }
+
+        $account->set('name', $name);
+        $this->saveAccountEntity($account);
+        $this->syncContactsAccountName((string) $account->getId(), $name);
+
+        return $name;
+    }
+
+    private function syncContactsAccountName(string $accountId, string $accountName): void
+    {
+        $contacts = $this->entityManager->getRDBRepository('Contact')
+            ->where(['accountId' => $accountId])
+            ->find();
+
+        foreach ($contacts as $contact) {
+            if (trim((string) $contact->get('accountName')) === $accountName) {
+                continue;
+            }
+
+            $contact->set('accountName', $accountName);
+            $this->entityManager->saveEntity($contact, ['silent' => true, 'skipFormula' => true]);
+        }
+    }
+
+    /**
+     * Ripara Account senza nome usando referenti collegati (senza passare da Quote).
+     *
+     * @return array{patch: array<string, string>, message: string}|null
+     */
+    public function repairEmptyAccountById(string $accountId, bool $persist = true): ?array
+    {
+        $account = $this->entityManager->getEntityById('Account', $accountId);
+
+        if (!$account || trim((string) $account->get('name')) !== '') {
+            return null;
+        }
+
+        $contact = $this->entityManager->getRDBRepository('Contact')
+            ->where(['accountId' => $accountId])
+            ->order('modifiedAt', 'DESC')
+            ->findOne();
+
+        $name = trim((string) ($contact?->get('name') ?: ''));
+
+        if ($name === '') {
+            $quote = $this->entityManager->getRDBRepository('Quote')
+                ->where(['accountId' => $accountId])
+                ->order('modifiedAt', 'DESC')
+                ->findOne();
+
+            if ($quote) {
+                $repairedName = $this->resolveAccountDisplayName($quote);
+                $name = trim((string) ($repairedName ?: ''));
+            }
+        }
+
+        if ($name === '') {
+            return null;
+        }
+
+        if ($persist) {
+            $account->set('name', $name);
+            $this->saveAccountEntity($account);
+            $this->syncContactsAccountName($accountId, $name);
+        }
+
+        return [
+            'patch' => ['accountName' => $name],
+            'message' => 'nome Account riparato da referente',
+        ];
     }
 
     /**
@@ -770,18 +938,19 @@ class ContrattoClienteFromOpportunitaResolver
             'teamsIds' => $teamsIds,
             'assignedUserId' => $opportunity->get('assignedUserId'),
         ]);
-        $this->entityManager->saveEntity($cliente, ['silent' => true]);
+        $this->saveAccountEntity($cliente);
 
         $accountId = (string) $cliente->getId();
+        $accountName = trim((string) ($cliente->get('name') ?: $contact->get('name') ?: $this->resolveCustomerLabel($opportunity) ?: ''));
         $contact->set([
             'accountId' => $accountId,
-            'accountName' => $cliente->get('name'),
+            'accountName' => $accountName,
         ]);
-        $this->entityManager->saveEntity($contact, ['silent' => true]);
+        $this->entityManager->saveEntity($contact, ['silent' => true, 'skipFormula' => true]);
 
         return [
             'accountId' => $accountId,
-            'accountName' => $cliente->get('name'),
+            'accountName' => $accountName,
             'billingContactId' => $contact->getId(),
             'billingContactName' => $contact->get('name'),
             'shippingContactId' => $contact->getId(),
@@ -820,9 +989,10 @@ class ContrattoClienteFromOpportunitaResolver
             'teamsIds' => $teamsIds,
             'assignedUserId' => $opportunity->get('assignedUserId') ?: $quote->get('assignedUserId'),
         ]);
-        $this->entityManager->saveEntity($cliente, ['silent' => true]);
+        $this->saveAccountEntity($cliente);
 
         $accountId = (string) $cliente->getId();
+        $accountName = trim((string) ($cliente->get('name') ?: $name));
         $referente = (new ReferenteContactService($this->entityManager))->ensureForAccount($accountId, [
             'assignedUserId' => $opportunity->get('assignedUserId'),
         ]);
@@ -851,7 +1021,7 @@ class ContrattoClienteFromOpportunitaResolver
 
         return [
             'accountId' => $accountId,
-            'accountName' => $name,
+            'accountName' => $accountName,
             'billingContactId' => $billingContactId,
             'billingContactName' => $billingContactName,
             'shippingContactId' => $billingContactId,
