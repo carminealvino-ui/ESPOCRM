@@ -4,11 +4,10 @@
  * Ripristina Cliente + Contraente su Contratti (Quote) senza account collegato.
  *
  *   cd ~/public_html/crm/mec-group
- *   php tools/ripristina-cliente-contratto-da-opportunita.php --scan --dry-run
- *   php tools/ripristina-cliente-contratto-da-opportunita.php --scan --limit=20
+ *   php tools/ripristina-cliente-contratto-da-opportunita.php --fix-all --dry-run
+ *   php tools/ripristina-cliente-contratto-da-opportunita.php --fix-all
  *   php tools/ripristina-cliente-contratto-da-opportunita.php --fix-names --dry-run
- *   php tools/ripristina-cliente-contratto-da-opportunita.php --fix-names
- *   php tools/ripristina-cliente-contratto-da-opportunita.php --id=ID_CONTRATTO
+ *   php tools/ripristina-cliente-contratto-da-opportunita.php --scan --dry-run
  *   php tools/ripristina-cliente-contratto-da-opportunita.php --name="SABATINI"
  *   php tools/ripristina-cliente-contratto-da-opportunita.php --account-id=ID_ACCOUNT
  */
@@ -22,15 +21,16 @@ use Espo\Custom\Services\ContrattoClienteFromOpportunitaResolver;
 use Espo\ORM\Entity;
 
 $dryRun = in_array('--dry-run', $argv ?? [], true);
+$fixAll = in_array('--fix-all', $argv ?? [], true);
 $scan = in_array('--scan', $argv ?? [], true);
-$fixNamesOnly = in_array('--fix-names', $argv ?? [], true);
+$fixNamesOnly = in_array('--fix-names', $argv ?? [], true) && !$fixAll;
 $limit = null;
 $id = null;
 $name = null;
 $accountId = null;
 
 foreach ($argv ?? [] as $arg) {
-    if ($arg === '--dry-run' || $arg === '--scan' || $arg === '--fix-names') {
+    if (in_array($arg, ['--dry-run', '--scan', '--fix-names', '--fix-all'], true)) {
         continue;
     }
 
@@ -77,23 +77,16 @@ if ($id) {
             ->find()
     );
 } elseif ($name) {
-    $quotes = $em->getRDBRepository('Quote')
-        ->where(['name*' => '%' . $name . '%'])
-        ->order('modifiedAt', 'DESC')
-        ->limit(0, 10)
-        ->find();
-} elseif ($scan || $fixNamesOnly) {
-    $query = $em->getRDBRepository('Quote');
-
-    if ($fixNamesOnly) {
-        $query = $query->where([
-            'OR' => [
-                ['accountId!=' => null, 'accountId!=' => ''],
-                ['billingContactId!=' => null, 'billingContactId!=' => ''],
-            ],
-        ]);
-    } else {
-        $query = $query->where([
+    $quotes = iterator_to_array(
+        $em->getRDBRepository('Quote')
+            ->where(['name*' => '%' . $name . '%'])
+            ->order('modifiedAt', 'DESC')
+            ->limit(0, 10)
+            ->find()
+    );
+} elseif ($scan) {
+    $query = $em->getRDBRepository('Quote')
+        ->where([
             'opportunityId!=' => null,
             'OR' => [
                 ['accountId' => null],
@@ -105,29 +98,18 @@ if ($id) {
                 ['billingContactName' => null],
                 ['billingContactName' => ''],
             ],
-        ]);
-    }
-
-    $query = $query->order('modifiedAt', 'DESC');
+        ])
+        ->order('modifiedAt', 'DESC');
 
     if ($limit !== null) {
         $query->limit(0, $limit);
     }
 
     $quotes = iterator_to_array($query->find());
-
-    if ($fixNamesOnly) {
-        $quotes = array_values(array_filter(
-            $quotes,
-            static fn (Entity $quote): bool => $resolver->quoteNeedsClienteRepair($quote)
-        ));
-
-        if ($limit !== null) {
-            $quotes = array_slice($quotes, 0, $limit);
-        }
-    }
+} elseif ($fixAll || $fixNamesOnly) {
+    $quotes = $resolver->findQuotesNeedingClienteRepair($limit);
 } else {
-    fwrite(STDERR, "Usare --scan, --fix-names, --id=, --name= o --account-id=\n");
+    fwrite(STDERR, "Usare --fix-all, --fix-names, --scan, --id=, --name= o --account-id=\n");
     exit(1);
 }
 
@@ -155,7 +137,7 @@ $skipped = 0;
 
 foreach ($quotes as $quote) {
     $scanned++;
-    $result = repairQuote($quote, $em, $resolver, $dryRun, $fixNamesOnly);
+    $result = repairQuote($quote, $em, $resolver, $dryRun, $fixNamesOnly, $fixAll);
 
     $prefix = $result['ok'] ? ($dryRun ? 'DRY OK' : 'OK') : 'SKIP';
 
@@ -176,6 +158,13 @@ foreach ($quotes as $quote) {
     $result['ok'] ? $updated++ : $skipped++;
 }
 
+if ($fixAll && !$dryRun) {
+    $accountStats = $resolver->repairAllEmptyAccounts(true);
+    echo PHP_EOL
+        . "Account senza nome riparati={$accountStats['repaired']} skip={$accountStats['skipped']}"
+        . PHP_EOL;
+}
+
 echo PHP_EOL
     . "Scansionati={$scanned} aggiornati={$updated} skip={$skipped}"
     . ($dryRun ? ' (dry-run)' : '')
@@ -189,7 +178,8 @@ function repairQuote(
     $em,
     ContrattoClienteFromOpportunitaResolver $resolver,
     bool $dryRun,
-    bool $fixNamesOnly = false
+    bool $fixNamesOnly = false,
+    bool $fixAll = false
 ): array {
     $nameFix = repairExistingLinks($quote, $em, $resolver, $dryRun);
 
@@ -244,7 +234,7 @@ function repairQuote(
         $flags[] = 'nuovo Contact';
     }
 
-    $message = $flags !== [] ? implode(', ', $flags) : 'collegato';
+    $message = $flags !== [] ? implode(', ', $flags) : ($fixAll ? 'risolto da opportunità' : 'collegato');
 
     return [
         'ok' => true,

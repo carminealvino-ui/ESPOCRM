@@ -204,6 +204,11 @@ class ContrattoClienteFromOpportunitaResolver
     public function quoteNeedsClienteRepair(Entity $quote): bool
     {
         $accountId = trim((string) ($quote->get('accountId') ?: ''));
+        $accountName = trim((string) ($quote->get('accountName') ?: ''));
+
+        if ($accountName !== '' && $this->looksLikeEntityId($accountName)) {
+            return true;
+        }
 
         if ($accountId !== '' && $this->needsNameRepair($quote->get('accountName'), $accountId)) {
             return true;
@@ -356,6 +361,13 @@ class ContrattoClienteFromOpportunitaResolver
         ];
     }
 
+    private function looksLikeEntityId(mixed $value): bool
+    {
+        $value = trim((string) $value);
+
+        return $value !== '' && (bool) preg_match('/^[a-f0-9]{17,24}$/i', $value);
+    }
+
     private function needsNameRepair(mixed $currentName, string $id): bool
     {
         $currentName = trim((string) $currentName);
@@ -368,7 +380,75 @@ class ContrattoClienteFromOpportunitaResolver
             return true;
         }
 
-        return (bool) preg_match('/^[a-f0-9]{17,24}$/i', $currentName);
+        return $this->looksLikeEntityId($currentName);
+    }
+
+    /**
+     * @return Entity[]
+     */
+    public function findQuotesNeedingClienteRepair(?int $limit = null): array
+    {
+        $quotes = iterator_to_array(
+            $this->entityManager->getRDBRepository('Quote')
+                ->where([
+                    'OR' => [
+                        ['accountId!=' => null, 'accountId!=' => ''],
+                        ['billingContactId!=' => null, 'billingContactId!=' => ''],
+                        ['accountName!=' => null, 'accountName!=' => ''],
+                    ],
+                ])
+                ->order('modifiedAt', 'DESC')
+                ->find()
+        );
+
+        $quotes = array_values(array_filter(
+            $quotes,
+            fn (Entity $quote): bool => $this->quoteNeedsClienteRepair($quote)
+        ));
+
+        if ($limit !== null) {
+            $quotes = array_slice($quotes, 0, $limit);
+        }
+
+        return $quotes;
+    }
+
+    /**
+     * @return array{repaired: int, skipped: int}
+     */
+    public function repairAllEmptyAccounts(bool $persist = true): array
+    {
+        $repaired = 0;
+        $skipped = 0;
+        $seen = [];
+
+        $quotes = $this->findQuotesNeedingClienteRepair();
+
+        foreach ($quotes as $quote) {
+            $accountId = trim((string) ($quote->get('accountId') ?: ''));
+
+            if ($accountId === '' || isset($seen[$accountId])) {
+                continue;
+            }
+
+            $seen[$accountId] = true;
+            $account = $this->entityManager->getEntityById('Account', $accountId);
+
+            if (!$account || trim((string) $account->get('name')) !== '') {
+                $skipped++;
+                continue;
+            }
+
+            if ($this->repairAccountEmptyName($account, $quote) !== null) {
+                $repaired++;
+            } else {
+                $result = $this->repairEmptyAccountById($accountId, $persist);
+
+                $result ? $repaired++ : $skipped++;
+            }
+        }
+
+        return ['repaired' => $repaired, 'skipped' => $skipped];
     }
 
     /**
