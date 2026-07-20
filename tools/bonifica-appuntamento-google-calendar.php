@@ -38,6 +38,8 @@ if (!is_file($root . '/bootstrap.php')) {
 
 require_once $root . '/bootstrap.php';
 
+set_time_limit(0);
+
 use Espo\Core\Application;
 use Espo\Core\InjectableFactory;
 use Espo\Custom\Services\AppuntamentoGoogleSync;
@@ -151,7 +153,7 @@ $googleOk = $externalAccount
     && $externalAccount->get('enabled')
     && ($externalAccount->get('calendarEnabled') || $externalAccount->get('googleCalendarEnabled'));
 
-fwrite(STDOUT, "=== Bonifica Google Calendar Appuntamenti (v1.8.1) ===\n");
+fwrite(STDOUT, "=== Bonifica Google Calendar Appuntamenti (v1.8.2) ===\n");
 fwrite(STDOUT, 'Modalità: ' . ($dryRun ? 'DRY-RUN (nessuna modifica)' : 'APPLY') . "\n");
 if ($onlyIngestibili) {
     fwrite(STDOUT, "Filtro: solo correzione Ingestibile (admin → consulente)\n");
@@ -225,20 +227,54 @@ if ($onlyNotHeld) {
         fwrite(STDOUT, '  - ' . formatAppointmentLabel($appointment) . "\n");
     }
 
+    if (!$dryRun) {
+        fwrite(STDOUT, "\nElaborazione (una riga per appuntamento, poi reconcile Google):\n");
+    }
+
     $notHeldResult = $sync->bonificaRemoveNotHeldInRange(
         $calendarUserId,
         $purgeFromDate,
         $purgeToDate,
-        !$dryRun
+        !$dryRun,
+        function (Entity $appointment, string $phase) use ($dryRun): void {
+            if ($dryRun) {
+                return;
+            }
+
+            $label = formatAppointmentLabel($appointment);
+
+            if ($phase === 'start') {
+                fwrite(STDOUT, "  > {$label}\n");
+            } elseif ($phase === 'removed') {
+                fwrite(STDOUT, "    ok rimosso\n");
+            } elseif ($phase === 'failed') {
+                fwrite(STDOUT, "    ERRORE rimozione\n");
+            } elseif ($phase === 'no-link') {
+                fwrite(STDOUT, "    nessun link Google\n");
+            } elseif (str_starts_with($phase, 'error:')) {
+                fwrite(STDOUT, '    ERRORE: ' . substr($phase, 7) . "\n");
+            } elseif ($phase === 'reconcile-start') {
+                fwrite(STDOUT, "\nReconcile Google Calendar (può richiedere qualche minuto)...\n");
+            }
+
+            if (function_exists('ob_flush')) {
+                @ob_flush();
+            }
+            flush();
+        }
     );
 
     $stats['links_scanned'] = $notHeldResult['scanned'];
-    $stats['google_removed'] = $notHeldResult['removed'];
+    $stats['google_removed'] = $notHeldResult['removed'] + $notHeldResult['reconcile_removed'];
     $stats['google_failed'] = $notHeldResult['failed'];
     $stats['google_reconcile_removed'] = $notHeldResult['reconcile_removed'];
 
-    fwrite(STDOUT, '  appuntamenti Not Held nel periodo: ' . $notHeldResult['scanned'] . "\n");
-    fwrite(STDOUT, '  rimossi da Google (link/orfani): ' . ($dryRun ? $notHeldResult['scanned'] : $notHeldResult['removed']) . "\n");
+    fwrite(STDOUT, "\n  appuntamenti Not Held nel periodo: {$notHeldResult['scanned']}\n");
+    fwrite(STDOUT, '  rimossi da Google (link): ' . $notHeldResult['removed'] . "\n");
+
+    if (($notHeldResult['skipped'] ?? 0) > 0) {
+        fwrite(STDOUT, '  senza link Google: ' . $notHeldResult['skipped'] . "\n");
+    }
 
     if ($notHeldResult['failed'] > 0) {
         fwrite(STDOUT, '  errori rimozione: ' . $notHeldResult['failed'] . "\n");
