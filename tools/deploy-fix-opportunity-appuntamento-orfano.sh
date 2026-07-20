@@ -9,7 +9,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-REPLACE_AFTER_PUSH}"
+COMMIT="${DEPLOY_COMMIT:-6e05d547e0c15347245c1907bdcc6a8ad946c26c}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="fix-opportunity-appuntamento-orfano"
