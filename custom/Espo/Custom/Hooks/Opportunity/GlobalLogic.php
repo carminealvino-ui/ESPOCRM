@@ -1,9 +1,19 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.6
-// DATA: 2026-05-27
+// VERSIONE: 2.2.9
+// DATA: 2026-07-20
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
+// =====================================================
+//
+// FIX 2.2.9
+// -----------------------------------------------------
+// FORNITORE/PARTNER ORFANO (lista mostra ID grezzo)
+//
+// Se fornitorePartnerId punta a un record mancante, o il
+// nome denormalizzato è vuoto/uguale all'ID, ripara da
+// ProductBrand / azienda (es. GFB) prima del salvataggio.
+//
 // =====================================================
 //
 // FIX 2.1.1
@@ -310,6 +320,7 @@ namespace Espo\Custom\Hooks\Opportunity;
 use Espo\Core\Hook\Hook\AfterSave;
 use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\Custom\Services\LineaProdottoCategorySync;
+use Espo\Custom\Services\OpportunityFornitorePartnerRepair;
 use Espo\Custom\Services\OpportunityPriceBookResolver;
 use Espo\Custom\Services\ReferenteContactService;
 use Espo\ORM\Entity;
@@ -336,7 +347,7 @@ class GlobalLogic implements BeforeSave, AfterSave
 
         $entity->set(
             'hookVersion',
-            '2.2.6'
+            '2.2.9'
         );
 
 
@@ -378,6 +389,10 @@ class GlobalLogic implements BeforeSave, AfterSave
                 $importFromSource
             );
         }
+
+        // 2.2.9 — ripara fornitorePartner orfano (lista ID grezzo → GFB)
+        (new OpportunityFornitorePartnerRepair($this->entityManager))
+            ->apply($entity);
 
         $this->applyPriceBookFromEffectiveDate($entity);
     }
@@ -747,39 +762,123 @@ class GlobalLogic implements BeforeSave, AfterSave
 
 
         // =====================================================
-        // NAMING DEFINITIVO
+        // NAMING DEFINITIVO (2.2.8)
+        // data + cliente + brand + descrizione + €.
+        // Cliente da leadId/prospectId se *Name vuoti (evita " - - ").
         // =====================================================
 
-        $displayName = $entity->get('prospectName')
-            ?: $entity->get('appuntamentoName')
-            ?: $entity->get('leadName');
+        $displayName = trim((string) (
+            $entity->get('prospectName')
+            ?: $entity->get('leadName')
+            ?: $entity->get('accountName')
+            ?: ''
+        ));
 
-        if ($displayName) {
+        if ($displayName === '' && $entity->get('leadId')) {
+            $leadEntity = $this->entityManager->getEntityById(
+                'Lead',
+                (string) $entity->get('leadId')
+            );
+            if ($leadEntity) {
+                $displayName = trim((string) ($leadEntity->get('name') ?? ''));
+                if ($displayName !== '') {
+                    $entity->set('leadName', $displayName);
+                }
+            }
+        }
 
+        if ($displayName === '' && $entity->get('prospectId')) {
+            $prospectEntity = $this->entityManager->getEntityById(
+                'Prospect',
+                (string) $entity->get('prospectId')
+            );
+            if ($prospectEntity) {
+                $displayName = trim((string) ($prospectEntity->get('name') ?? ''));
+                if ($displayName !== '') {
+                    $entity->set('prospectName', $displayName);
+                }
+            }
+        }
+
+        if (
+            $displayName === ''
+            && $appuntamento
+            && $appuntamento->get('parentType') === 'Lead'
+            && $appuntamento->get('parentId')
+        ) {
+            $leadEntity = $this->entityManager->getEntityById(
+                'Lead',
+                (string) $appuntamento->get('parentId')
+            );
+            if ($leadEntity) {
+                $displayName = trim((string) ($leadEntity->get('name') ?? ''));
+            }
+        }
+
+        $dateForField = null;
+
+        foreach ([
+            $entity->get('dataOpportunit'),
+            $entity->get('closeDate'),
+            $appuntamento ? $appuntamento->get('dateStart') : null,
+            $appuntamento ? $appuntamento->get('dataAppuntamento') : null,
+        ] as $candidate) {
+            if ($candidate === null || $candidate === '') {
+                continue;
+            }
+
+            $dateForField = substr((string) $candidate, 0, 10);
+            break;
+        }
+
+        if (
+            $dateForField
+            && (
+                !$entity->get('dataOpportunit')
+                || $entity->get('dataOpportunit') === ''
+            )
+        ) {
+            $entity->set('dataOpportunit', $dateForField);
+        }
+
+        $dateLabel = $dateForField;
+
+        if (!$dateLabel && $entity->get('createdAt')) {
+            $dateLabel = substr((string) $entity->get('createdAt'), 0, 10);
+        }
+
+        if ($displayName !== '' || $dateLabel) {
             $brandLabel = trim((string) (
                 $entity->get('productBrandName')
                 ?: $entity->get('azienda')
             ));
 
-            $importo = $entity->get('amount')
-                ?? $entity->get('importoOpportunit');
+            $importo = $entity->get('amount');
+            if ($importo === null || $importo === '') {
+                $importo = $entity->get('importoOpportunit');
+            }
 
-            $importoLabel = ($importo !== null && $importo !== '')
-                ? number_format((float) $importo, 0, ',', '.')
-                : '';
+            $importoLabel = '';
+            if ($importo !== null && $importo !== '') {
+                $importoValue = (float) $importo;
+                $importoLabel = (abs($importoValue) > 0 && abs($importoValue) < 1)
+                    ? number_format($importoValue, 2, ',', '.')
+                    : number_format($importoValue, 0, ',', '.');
+            }
 
             $parts = array_filter([
-                $entity->get('dataOpportunit'),
-                $displayName,
-                $brandLabel,
+                $dateLabel ?: null,
+                $displayName !== '' ? $displayName : null,
+                $brandLabel !== '' ? $brandLabel : null,
                 strtoupper((string) ($entity->get('description') ?: '')),
-                $importoLabel !== '' ? '€ ' . $importoLabel : null,
-            ], static fn ($part) => $part !== null && $part !== '');
+                $importoLabel !== '' ? '€. ' . $importoLabel : null,
+            ], static fn ($part) => $part !== null && trim((string) $part) !== '');
 
-            $entity->set(
-                'name',
-                implode(' - ', $parts)
-            );
+            if ($parts !== []) {
+                $name = implode(' - ', $parts);
+                $name = preg_replace('/\s*-\s*-\s*/', ' - ', $name) ?? $name;
+                $entity->set('name', trim($name));
+            }
         }
 
         $this->syncAccountAndContactFromLead($entity);
