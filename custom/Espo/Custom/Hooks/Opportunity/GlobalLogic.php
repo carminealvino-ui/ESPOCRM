@@ -1,9 +1,19 @@
 <?php
 
 // =====================================================
-// VERSIONE: 2.2.9
+// VERSIONE: 2.2.10
 // DATA: 2026-07-20
 // FILE: custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
+// =====================================================
+//
+// FIX 2.2.10
+// -----------------------------------------------------
+// APPUNTAMENTO ORFANO (scheda mostra ID grezzo)
+//
+// Se appuntamentoId punta a un record mancante e non si
+// trova un sostituto da Lead/Prospect, azzera il link
+// (opportunità senza appuntamento correlato).
+//
 // =====================================================
 //
 // FIX 2.2.9
@@ -320,6 +330,7 @@ namespace Espo\Custom\Hooks\Opportunity;
 use Espo\Core\Hook\Hook\AfterSave;
 use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\Custom\Services\LineaProdottoCategorySync;
+use Espo\Custom\Services\OpportunityAppuntamentoOrphanRepair;
 use Espo\Custom\Services\OpportunityFornitorePartnerRepair;
 use Espo\Custom\Services\OpportunityPriceBookResolver;
 use Espo\Custom\Services\ReferenteContactService;
@@ -347,7 +358,7 @@ class GlobalLogic implements BeforeSave, AfterSave
 
         $entity->set(
             'hookVersion',
-            '2.2.9'
+            '2.2.10'
         );
 
 
@@ -392,6 +403,10 @@ class GlobalLogic implements BeforeSave, AfterSave
 
         // 2.2.9 — ripara fornitorePartner orfano (lista ID grezzo → GFB)
         (new OpportunityFornitorePartnerRepair($this->entityManager))
+            ->apply($entity);
+
+        // 2.2.10 — ripara/azzera appuntamento orfano (scheda ID grezzo)
+        (new OpportunityAppuntamentoOrphanRepair($this->entityManager))
             ->apply($entity);
 
         $this->applyPriceBookFromEffectiveDate($entity);
@@ -500,6 +515,12 @@ class GlobalLogic implements BeforeSave, AfterSave
         // =====================================================
 
         if (!$appuntamento) {
+            // 2.2.10 — non lasciare ID orfano in scheda
+            if ($entity->get('appuntamentoId') || $entity->get('appuntamentoName')) {
+                $entity->set('appuntamentoId', null);
+                $entity->set('appuntamentoName', null);
+            }
+
             $this->linkLeadFromProspectIfMissing($entity);
             $this->syncAccountAndContactFromLead($entity);
             return;
