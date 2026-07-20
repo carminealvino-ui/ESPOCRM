@@ -157,7 +157,7 @@ if ($onlyIngestibili) {
     fwrite(STDOUT, "Filtro: solo correzione Ingestibile (admin → consulente)\n");
 }
 if ($onlyNotHeld) {
-    fwrite(STDOUT, "Filtro: solo rimozione Non Svolto / annullati (Not Held) da Google\n");
+    fwrite(STDOUT, "Filtro: solo rimozione Non Svolto (status=Not Held) {$purgeFromDate} → {$purgeToDate}\n");
 }
 if ($onlyPush) {
     fwrite(STDOUT, "Filtro: solo push appuntamenti mancanti su Google (ultimi {$pushSinceDays} giorni e futuri)\n");
@@ -208,6 +208,47 @@ $stats = [
 ];
 
 $purgeSince = date('Y-m-d', strtotime('-' . $pushSinceDays . ' days'));
+
+if ($onlyNotHeld) {
+    fwrite(STDOUT, "[NOT HELD] Rimozione da Google {$purgeFromDate} → {$purgeToDate}\n");
+
+    $notHeldQuery = $em->getRDBRepository('Appuntamento')
+        ->where([
+            'deleted' => false,
+            'status' => 'Not Held',
+            'dateStart>=' => $purgeFromDate . ' 00:00:00',
+            'dateStart<=' => $purgeToDate . ' 23:59:59',
+        ])
+        ->order('dateStart', 'ASC');
+
+    foreach ($notHeldQuery->find() as $appointment) {
+        fwrite(STDOUT, '  - ' . formatAppointmentLabel($appointment) . "\n");
+    }
+
+    $notHeldResult = $sync->bonificaRemoveNotHeldInRange(
+        $calendarUserId,
+        $purgeFromDate,
+        $purgeToDate,
+        !$dryRun
+    );
+
+    $stats['links_scanned'] = $notHeldResult['scanned'];
+    $stats['google_removed'] = $notHeldResult['removed'];
+    $stats['google_failed'] = $notHeldResult['failed'];
+    $stats['google_reconcile_removed'] = $notHeldResult['reconcile_removed'];
+
+    fwrite(STDOUT, '  appuntamenti Not Held nel periodo: ' . $notHeldResult['scanned'] . "\n");
+    fwrite(STDOUT, '  rimossi da Google (link/orfani): ' . ($dryRun ? $notHeldResult['scanned'] : $notHeldResult['removed']) . "\n");
+
+    if ($notHeldResult['failed'] > 0) {
+        fwrite(STDOUT, '  errori rimozione: ' . $notHeldResult['failed'] . "\n");
+    }
+
+    fwrite(STDOUT, '  orphan su Google (reconcile): ' . $notHeldResult['reconcile_candidates'] . "\n");
+    fwrite(STDOUT, '  orphan rimossi: ' . $notHeldResult['reconcile_removed'] . "\n\n");
+
+    goto summary;
+}
 
 if ($onlyPurgeGhosts || (!$onlyIngestibili && !$onlyPush && !$reconcileOnly && !$onlyPurgeDuplicates && !$backfillSyncFlag && !$onlyPurgeGoogleGhostTitles)) {
     fwrite(STDOUT, "[PURGE GHOSTS] Duplicati senza prospect dal {$purgeSince}\n");
@@ -372,7 +413,7 @@ if ($onlyFixAdminAssignment) {
 
 $runReconcile = $reconcileOnly || (!$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles && !$onlyRepushUntitled && !$onlyFixAdminAssignment);
 $runPush = $onlyPush || (!$onlyIngestibili && !$onlyNotHeld && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles && !$onlyRepushUntitled && !$onlyFixAdminAssignment);
-$runCleanup = !$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles && !$onlyRepushUntitled && !$onlyFixAdminAssignment;
+$runCleanup = !$onlyIngestibili && !$onlyPush && !$onlyPurgeDuplicates && !$onlyPurgeGoogleGhostTitles && !$onlyRepushUntitled && !$onlyFixAdminAssignment && !$onlyNotHeld;
 $runPurgeGoogleGhostTitles = !$onlyIngestibili && !$onlyPush && !$onlyNotHeld && !$onlyPurgeDuplicates
     && !$backfillSyncFlag && !$reconcileOnly && !$onlyFixAdminAssignment;
 

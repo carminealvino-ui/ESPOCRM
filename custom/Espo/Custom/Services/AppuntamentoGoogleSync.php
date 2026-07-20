@@ -412,6 +412,92 @@ class AppuntamentoGoogleSync
     }
 
     /**
+     * Bonifica: solo status Not Held (evita falsi positivi su Held con esito storico "Annullato").
+     */
+    public function shouldRemoveFromGoogleCalendarStrict(Entity $entity): bool
+    {
+        if ($entity->getEntityType() !== self::ENTITY_TYPE) {
+            return false;
+        }
+
+        if ($entity->get('deleted')) {
+            return true;
+        }
+
+        return (string) ($entity->get('status') ?? '') === 'Not Held';
+    }
+
+    /**
+     * Rimuove da Google gli appuntamenti Not Held nel periodo indicato.
+     *
+     * @return array{scanned: int, removed: int, failed: int, reconcile_removed: int}
+     */
+    public function bonificaRemoveNotHeldInRange(
+        string $calendarUserId,
+        string $fromDate,
+        string $toDate,
+        bool $apply = true
+    ): array {
+        $scanned = 0;
+        $removed = 0;
+        $failed = 0;
+
+        $appointments = $this->entityManager
+            ->getRDBRepository(self::ENTITY_TYPE)
+            ->where([
+                'deleted' => false,
+                'status' => 'Not Held',
+                'dateStart>=' => $fromDate . ' 00:00:00',
+                'dateStart<=' => $toDate . ' 23:59:59',
+            ])
+            ->order('dateStart', 'ASC')
+            ->find();
+
+        foreach ($appointments as $appointment) {
+            $scanned++;
+
+            if (!$apply) {
+                if ($this->hasGoogleLink((string) $appointment->getId())) {
+                    $removed++;
+                }
+
+                continue;
+            }
+
+            if ($this->hasGoogleLink((string) $appointment->getId())) {
+                $result = $this->bonificaForceRemoveGoogleLink($appointment, $calendarUserId);
+
+                if ($result === 'removed' || $result === 'no_link') {
+                    $removed++;
+                } else {
+                    $failed++;
+                }
+
+                continue;
+            }
+
+            if ($this->bonificaDeleteOrphanGoogleEvent($appointment, $calendarUserId)) {
+                $removed++;
+            }
+        }
+
+        $reconcile = $this->bonificaReconcileGoogleRange(
+            $calendarUserId,
+            $fromDate,
+            $toDate,
+            $apply
+        );
+
+        return [
+            'scanned' => $scanned,
+            'removed' => $removed,
+            'failed' => $failed,
+            'reconcile_removed' => $reconcile['removed'],
+            'reconcile_candidates' => $reconcile['candidates'],
+        ];
+    }
+
+    /**
      * @return string[]
      */
     private function collectCalendarUserIdsForRemoval(Entity $entity): array
