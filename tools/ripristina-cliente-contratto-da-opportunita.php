@@ -6,6 +6,7 @@
  *   cd ~/public_html/crm/mec-group
  *   php tools/ripristina-cliente-contratto-da-opportunita.php --scan --dry-run
  *   php tools/ripristina-cliente-contratto-da-opportunita.php --scan --limit=20
+ *   php tools/ripristina-cliente-contratto-da-opportunita.php --scan --fix-names
  *   php tools/ripristina-cliente-contratto-da-opportunita.php --id=ID_CONTRATTO
  *   php tools/ripristina-cliente-contratto-da-opportunita.php --name="SABATINI"
  */
@@ -20,12 +21,13 @@ use Espo\ORM\Entity;
 
 $dryRun = in_array('--dry-run', $argv ?? [], true);
 $scan = in_array('--scan', $argv ?? [], true);
+$fixNamesOnly = in_array('--fix-names', $argv ?? [], true);
 $limit = null;
 $id = null;
 $name = null;
 
 foreach ($argv ?? [] as $arg) {
-    if ($arg === '--dry-run' || $arg === '--scan') {
+    if ($arg === '--dry-run' || $arg === '--scan' || $arg === '--fix-names') {
         continue;
     }
 
@@ -64,18 +66,51 @@ if ($id) {
         ->order('modifiedAt', 'DESC')
         ->limit(0, 10)
         ->find();
-} elseif ($scan) {
-    $query = $em->getRDBRepository('Quote')
-        ->where([
+} elseif ($scan || $fixNamesOnly) {
+    $query = $em->getRDBRepository('Quote');
+
+    if ($fixNamesOnly) {
+        $query = $query->where([
+            'OR' => [
+                [
+                    'AND' => [
+                        ['accountId!=' => null],
+                        ['accountId!=' => ''],
+                        ['OR' => [
+                            ['accountName' => null],
+                            ['accountName' => ''],
+                        ]],
+                    ],
+                ],
+                [
+                    'AND' => [
+                        ['billingContactId!=' => null],
+                        ['billingContactId!=' => ''],
+                        ['OR' => [
+                            ['billingContactName' => null],
+                            ['billingContactName' => ''],
+                        ]],
+                    ],
+                ],
+            ],
+        ]);
+    } else {
+        $query = $query->where([
             'opportunityId!=' => null,
             'OR' => [
                 ['accountId' => null],
                 ['accountId' => ''],
+                ['accountName' => null],
+                ['accountName' => ''],
                 ['billingContactId' => null],
                 ['billingContactId' => ''],
+                ['billingContactName' => null],
+                ['billingContactName' => ''],
             ],
-        ])
-        ->order('modifiedAt', 'DESC');
+        ]);
+    }
+
+    $query = $query->order('modifiedAt', 'DESC');
 
     if ($limit !== null) {
         $query->limit(0, $limit);
@@ -83,7 +118,7 @@ if ($id) {
 
     $quotes = $query->find();
 } else {
-    fwrite(STDERR, "Usare --scan, --id= o --name=\n");
+    fwrite(STDERR, "Usare --scan, --fix-names, --id= o --name=\n");
     exit(1);
 }
 
@@ -98,7 +133,7 @@ $skipped = 0;
 
 foreach ($quotes as $quote) {
     $scanned++;
-    $result = repairQuote($quote, $em, $resolver, $dryRun);
+    $result = repairQuote($quote, $em, $resolver, $dryRun, $fixNamesOnly);
 
     $prefix = $result['ok'] ? ($dryRun ? 'DRY OK' : 'OK') : 'SKIP';
 
@@ -131,8 +166,19 @@ function repairQuote(
     Entity $quote,
     $em,
     ContrattoClienteFromOpportunitaResolver $resolver,
-    bool $dryRun
+    bool $dryRun,
+    bool $fixNamesOnly = false
 ): array {
+    $nameFix = fixExistingLinkNames($quote, $em, $dryRun);
+
+    if ($nameFix) {
+        return $nameFix;
+    }
+
+    if ($fixNamesOnly) {
+        return ['ok' => false, 'message' => 'Nomi già ok o link mancante'];
+    }
+
     $oppId = $quote->get('opportunityId');
 
     if (!$oppId) {
@@ -183,4 +229,80 @@ function repairQuote(
         'message' => $message,
         'cliente' => ($data['accountName'] ?: '') . ' / ' . ($data['billingContactName'] ?: ''),
     ];
+}
+
+/**
+ * @return array{ok: bool, message: string, cliente?: string}|null
+ */
+function fixExistingLinkNames(Entity $quote, $em, bool $dryRun): ?array
+{
+    $patch = [];
+
+    $accountId = $quote->get('accountId');
+
+    if ($accountId) {
+        $account = $em->getEntityById('Account', $accountId);
+
+        if ($account) {
+            $accountName = trim((string) $account->get('name'));
+
+            if ($accountName !== '' && needsNameRepair($quote->get('accountName'), $accountId)) {
+                $patch['accountName'] = $accountName;
+            }
+        }
+    }
+
+    foreach ([
+        ['billingContactId', 'billingContactName', 'Contact'],
+        ['shippingContactId', 'shippingContactName', 'Contact'],
+    ] as [$idField, $nameField, $entityType]) {
+        $relatedId = $quote->get($idField);
+
+        if (!$relatedId) {
+            continue;
+        }
+
+        $related = $em->getEntityById($entityType, $relatedId);
+
+        if (!$related) {
+            continue;
+        }
+
+        $relatedName = trim((string) $related->get('name'));
+
+        if ($relatedName !== '' && needsNameRepair($quote->get($nameField), $relatedId)) {
+            $patch[$nameField] = $relatedName;
+        }
+    }
+
+    if ($patch === []) {
+        return null;
+    }
+
+    if (!$dryRun) {
+        $quote->set($patch);
+        $em->saveEntity($quote, ['silent' => true, 'skipHooks' => true]);
+    }
+
+    return [
+        'ok' => true,
+        'message' => 'nomi link aggiornati',
+        'cliente' => ($patch['accountName'] ?? $quote->get('accountName') ?: $accountId) . ' / '
+            . ($patch['billingContactName'] ?? $quote->get('billingContactName') ?: ''),
+    ];
+}
+
+function needsNameRepair(mixed $currentName, string $id): bool
+{
+    $currentName = trim((string) $currentName);
+
+    if ($currentName === '') {
+        return true;
+    }
+
+    if ($currentName === $id) {
+        return true;
+    }
+
+    return (bool) preg_match('/^[a-f0-9]{17,24}$/i', $currentName);
 }
