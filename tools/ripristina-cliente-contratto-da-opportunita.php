@@ -1,211 +1,275 @@
-#!/usr/bin/env php
 <?php
+
 /**
- * Ripristina Cliente (account), Contraente e Contatto installazione su un Contratto
- * leggendo l'Opportunità collegata (stessa logica base di CreateContratto).
+ * Ripristina Cliente + Contraente su Contratti (Quote) senza account collegato.
  *
  *   cd ~/public_html/crm/mec-group
- *   php tools/ripristina-cliente-contratto-da-opportunita.php --id=ID_CONTRATTO
- *   php tools/ripristina-cliente-contratto-da-opportunita.php --name="SANTOSUOSSO"
+ *   php tools/ripristina-cliente-contratto-da-opportunita.php --fix-all --dry-run
+ *   php tools/ripristina-cliente-contratto-da-opportunita.php --fix-all
+ *   php tools/ripristina-cliente-contratto-da-opportunita.php --fix-names --dry-run
  *   php tools/ripristina-cliente-contratto-da-opportunita.php --scan --dry-run
+ *   php tools/ripristina-cliente-contratto-da-opportunita.php --name="SABATINI"
+ *   php tools/ripristina-cliente-contratto-da-opportunita.php --account-id=ID_ACCOUNT
  */
+
 declare(strict_types=1);
 
+require_once dirname(__DIR__) . '/bootstrap.php';
+
 use Espo\Core\Application;
-use Espo\Custom\Services\ReferenteContactService;
+use Espo\Custom\Services\ContrattoClienteFromOpportunitaResolver;
 use Espo\ORM\Entity;
 
-$root = getenv('CRM_ROOT') ?: getcwd();
+$dryRun = in_array('--dry-run', $argv ?? [], true);
+$fixAll = in_array('--fix-all', $argv ?? [], true);
+$scan = in_array('--scan', $argv ?? [], true);
+$fixNamesOnly = in_array('--fix-names', $argv ?? [], true) && !$fixAll;
+$limit = null;
+$id = null;
+$name = null;
+$accountId = null;
 
-if (!is_file($root . '/bootstrap.php')) {
-    fwrite(STDERR, "Eseguire da root CRM (bootstrap.php).\n");
-    exit(1);
+foreach ($argv ?? [] as $arg) {
+    if (in_array($arg, ['--dry-run', '--scan', '--fix-names', '--fix-all'], true)) {
+        continue;
+    }
+
+    if (str_starts_with((string) $arg, '--limit=')) {
+        $limit = max(1, (int) substr((string) $arg, 8));
+        continue;
+    }
+
+    if (str_starts_with((string) $arg, '--id=')) {
+        $id = trim(substr((string) $arg, 5));
+        continue;
+    }
+
+    if (str_starts_with((string) $arg, '--name=')) {
+        $name = trim(substr((string) $arg, 7));
+        continue;
+    }
+
+    if (str_starts_with((string) $arg, '--account-id=')) {
+        $accountId = trim(substr((string) $arg, 13));
+        continue;
+    }
 }
-
-require_once $root . '/bootstrap.php';
 
 $app = new Application();
 $app->setupSystemUser();
 $em = $app->getContainer()->get('entityManager');
+$resolver = new ContrattoClienteFromOpportunitaResolver($em);
 
-$id = null;
-$name = null;
-$scan = false;
-$dryRun = false;
-
-foreach ($argv as $arg) {
-    if (str_starts_with($arg, '--id=')) {
-        $id = substr($arg, 5);
-    }
-    if (str_starts_with($arg, '--name=')) {
-        $name = substr($arg, 7);
-    }
-    if ($arg === '--scan') {
-        $scan = true;
-    }
-    if ($arg === '--dry-run') {
-        $dryRun = true;
-    }
-}
-
-/**
- * @return array{accountId:?string,accountName:?string,billingContactId:?string,billingContactName:?string,shippingContactId:?string,shippingContactName:?string}
- */
-function resolveCustomerFromOpportunity(Entity $opportunity, $em): array
-{
-    $accountId = $opportunity->get('accountId');
-    $lead = null;
-    $prospect = null;
-
-    if ($opportunity->get('leadId')) {
-        $lead = $em->getEntityById('Lead', $opportunity->get('leadId'));
-        if (!$accountId && $lead && $lead->get('createdAccountId')) {
-            $accountId = $lead->get('createdAccountId');
-        }
-    }
-
-    if ($opportunity->get('prospectId')) {
-        $prospect = $em->getEntityById('Prospect', $opportunity->get('prospectId'));
-        if (!$accountId && $prospect && $prospect->get('clienteId')) {
-            $accountId = $prospect->get('clienteId');
-        }
-    }
-
-    if ($accountId && !$em->getEntityById('Account', $accountId)) {
-        $prospectAsAccount = $em->getEntityById('Prospect', $accountId);
-        if ($prospectAsAccount && $prospectAsAccount->get('clienteId')
-            && $em->getEntityById('Account', $prospectAsAccount->get('clienteId'))) {
-            $accountId = $prospectAsAccount->get('clienteId');
-            if (!$prospect) {
-                $prospect = $prospectAsAccount;
-            }
-        } else {
-            $accountId = null;
-        }
-    }
-
-    $accountName = null;
-    if ($accountId) {
-        $account = $em->getEntityById('Account', $accountId);
-        $accountName = $account ? $account->get('name') : null;
-    }
-
-    $billingContactId = null;
-    $billingContactName = null;
-    $shippingContactId = null;
-    $shippingContactName = null;
-
-    if ($accountId) {
-        $service = new ReferenteContactService($em);
-        $referente = $service->ensureForAccount($accountId, [
-            'lead' => $lead,
-            'prospect' => $prospect,
-            'assignedUserId' => $opportunity->get('assignedUserId'),
-        ]);
-
-        if ($referente) {
-            $billingContactId = $referente['id'];
-            $billingContactName = $referente['name'];
-            $shippingContactId = $referente['id'];
-            $shippingContactName = $referente['name'];
-        }
-    }
-
-    if (!$billingContactName && $accountName) {
-        $billingContactName = $accountName;
-    }
-    if (!$shippingContactName) {
-        $shippingContactName = $billingContactName;
-    }
-
-    return compact(
-        'accountId',
-        'accountName',
-        'billingContactId',
-        'billingContactName',
-        'shippingContactId',
-        'shippingContactName'
-    );
-}
-
-function repairQuote(Entity $quote, $em, bool $dryRun): array
-{
-    $oppId = $quote->get('opportunityId');
-    if (!$oppId) {
-        return ['ok' => false, 'error' => 'Nessuna opportunità collegata'];
-    }
-
-    $opportunity = $em->getEntityById('Opportunity', $oppId);
-    if (!$opportunity) {
-        return ['ok' => false, 'error' => 'Opportunità non trovata'];
-    }
-
-    $data = resolveCustomerFromOpportunity($opportunity, $em);
-
-    if (!$data['accountId'] && !$data['billingContactId']) {
-        return ['ok' => false, 'error' => 'Impossibile risolvere cliente/referente da opportunità'];
-    }
-
-    $before = [
-        'accountId' => $quote->get('accountId'),
-        'billingContactId' => $quote->get('billingContactId'),
-        'shippingContactId' => $quote->get('shippingContactId'),
-    ];
-
-    if (!$dryRun) {
-        $quote->set($data);
-        $em->saveEntity($quote, ['silent' => true]);
-    }
-
-    return [
-        'ok' => true,
-        'id' => $quote->getId(),
-        'name' => $quote->get('name'),
-        'before' => $before,
-        'after' => $data,
-        'dryRun' => $dryRun,
-    ];
-}
-
-$repo = $em->getRDBRepository('Quote');
 $quotes = [];
 
 if ($id) {
-    $q = $em->getEntityById('Quote', $id);
-    if ($q) {
-        $quotes[] = $q;
+    $quote = $em->getEntityById('Quote', $id);
+
+    if ($quote) {
+        $quotes[] = $quote;
     }
+} elseif ($accountId) {
+    $quotes = iterator_to_array(
+        $em->getRDBRepository('Quote')
+            ->where(['accountId' => $accountId])
+            ->order('modifiedAt', 'DESC')
+            ->limit(0, 10)
+            ->find()
+    );
 } elseif ($name) {
-    $quotes = $repo
-        ->where(['name*' => '%' . $name . '%'])
-        ->order('modifiedAt', 'DESC')
-        ->limit(0, 5)
-        ->find();
+    $quotes = iterator_to_array(
+        $em->getRDBRepository('Quote')
+            ->where(['name*' => '%' . $name . '%'])
+            ->order('modifiedAt', 'DESC')
+            ->limit(0, 10)
+            ->find()
+    );
 } elseif ($scan) {
-    $quotes = $repo
+    $query = $em->getRDBRepository('Quote')
         ->where([
             'opportunityId!=' => null,
             'OR' => [
                 ['accountId' => null],
+                ['accountId' => ''],
+                ['accountName' => null],
+                ['accountName' => ''],
                 ['billingContactId' => null],
+                ['billingContactId' => ''],
+                ['billingContactName' => null],
+                ['billingContactName' => ''],
             ],
         ])
-        ->order('modifiedAt', 'DESC')
-        ->limit(0, 50)
-        ->find();
+        ->order('modifiedAt', 'DESC');
+
+    if ($limit !== null) {
+        $query->limit(0, $limit);
+    }
+
+    $quotes = iterator_to_array($query->find());
+} elseif ($fixAll || $fixNamesOnly) {
+    $quotes = $resolver->findQuotesNeedingClienteRepair($limit);
 } else {
-    fwrite(STDERR, "Usare --id=, --name= o --scan (opz. --dry-run)\n");
+    fwrite(STDERR, "Usare --fix-all, --fix-names, --scan, --id=, --name= o --account-id=\n");
     exit(1);
 }
 
 if ($quotes === []) {
+    if ($accountId) {
+        $result = $resolver->repairEmptyAccountById($accountId, !$dryRun);
+        $prefix = $result ? ($dryRun ? 'DRY OK' : 'OK') : 'SKIP';
+        echo $prefix
+            . ' | account '
+            . $accountId
+            . ' | '
+            . ($result['message'] ?? 'Account non trovato o nome già presente')
+            . ($result ? ' → ' . ($result['patch']['accountName'] ?? '') : '')
+            . PHP_EOL;
+        exit($result ? 0 : 1);
+    }
+
     fwrite(STDERR, "Nessun contratto trovato.\n");
     exit(1);
 }
 
-$results = [];
+$scanned = 0;
+$updated = 0;
+$skipped = 0;
+
 foreach ($quotes as $quote) {
-    $results[] = repairQuote($quote, $em, $dryRun);
+    $scanned++;
+    $result = repairQuote($quote, $em, $resolver, $dryRun, $fixNamesOnly, $fixAll);
+
+    $prefix = $result['ok'] ? ($dryRun ? 'DRY OK' : 'OK') : 'SKIP';
+
+    echo $prefix
+        . ' | '
+        . $quote->getId()
+        . ' | '
+        . ($quote->get('name') ?: '∅')
+        . ' | '
+        . ($result['message'] ?? '');
+
+    if ($result['ok'] && isset($result['cliente'])) {
+        echo ' → ' . $result['cliente'];
+    }
+
+    echo PHP_EOL;
+
+    $result['ok'] ? $updated++ : $skipped++;
 }
 
-fwrite(STDOUT, json_encode($results, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n");
+if ($fixAll && !$dryRun) {
+    $accountStats = $resolver->repairAllEmptyAccounts(true);
+    echo PHP_EOL
+        . "Account senza nome riparati={$accountStats['repaired']} skip={$accountStats['skipped']}"
+        . PHP_EOL;
+}
+
+echo PHP_EOL
+    . "Scansionati={$scanned} aggiornati={$updated} skip={$skipped}"
+    . ($dryRun ? ' (dry-run)' : '')
+    . PHP_EOL;
+
+/**
+ * @return array{ok: bool, message: string, cliente?: string}
+ */
+function repairQuote(
+    Entity $quote,
+    $em,
+    ContrattoClienteFromOpportunitaResolver $resolver,
+    bool $dryRun,
+    bool $fixNamesOnly = false,
+    bool $fixAll = false
+): array {
+    $nameFix = repairExistingLinks($quote, $em, $resolver, $dryRun);
+
+    if ($nameFix) {
+        return $nameFix;
+    }
+
+    if ($fixNamesOnly) {
+        return ['ok' => false, 'message' => 'Nomi già ok o link mancante'];
+    }
+
+    $oppId = $quote->get('opportunityId');
+
+    if (!$oppId) {
+        return ['ok' => false, 'message' => 'Nessuna opportunità collegata'];
+    }
+
+    $opportunity = $em->getEntityById('Opportunity', $oppId);
+
+    if (!$opportunity) {
+        return ['ok' => false, 'message' => 'Opportunità non trovata'];
+    }
+
+    $data = $resolver->resolveForQuote($quote, $opportunity, !$dryRun);
+
+    if (!$data || !$data['accountId']) {
+        return ['ok' => false, 'message' => 'Impossibile risolvere cliente (Lead/Prospect/nome contratto)'];
+    }
+
+    $patch = [
+        'accountId' => $data['accountId'],
+        'accountName' => $data['accountName'],
+        'billingContactId' => $data['billingContactId'],
+        'billingContactName' => $data['billingContactName'],
+        'shippingContactId' => $data['shippingContactId'],
+        'shippingContactName' => $data['shippingContactName'],
+    ];
+
+    if (!$dryRun) {
+        $quote->set($patch);
+        $em->saveEntity($quote, ['silent' => true, 'skipHooks' => true]);
+        $resolver->syncOpportunity($opportunity, $data);
+    }
+
+    $flags = [];
+
+    if ($data['createdAccount']) {
+        $flags[] = 'nuovo Account';
+    }
+
+    if ($data['createdContact']) {
+        $flags[] = 'nuovo Contact';
+    }
+
+    $message = $flags !== [] ? implode(', ', $flags) : ($fixAll ? 'risolto da opportunità' : 'collegato');
+
+    return [
+        'ok' => true,
+        'message' => $message,
+        'cliente' => ($data['accountName'] ?: '') . ' / ' . ($data['billingContactName'] ?: ''),
+    ];
+}
+
+/**
+ * @return array{ok: bool, message: string, cliente?: string}|null
+ */
+function repairExistingLinks(
+    Entity $quote,
+    $em,
+    ContrattoClienteFromOpportunitaResolver $resolver,
+    bool $dryRun
+): ?array {
+    $result = $resolver->repairBrokenClienteLink($quote, !$dryRun);
+
+    if (!$result) {
+        return null;
+    }
+
+    if (!$dryRun) {
+        $quote->set($result['patch']);
+        $em->saveEntity($quote, ['silent' => true, 'skipHooks' => true]);
+    }
+
+    $patch = $result['patch'];
+
+    return [
+        'ok' => true,
+        'message' => $result['message'],
+        'cliente' => ($patch['accountName'] ?? $quote->get('accountName') ?: '')
+            . ' / '
+            . ($patch['billingContactName'] ?? $quote->get('billingContactName') ?: ''),
+    ];
+}
