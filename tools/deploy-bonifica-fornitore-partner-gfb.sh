@@ -9,7 +9,7 @@
 set -euo pipefail
 
 CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
-COMMIT="${DEPLOY_COMMIT:-0b737036ee5d436f10fa22fd884c93af9169659c}"
+COMMIT="${DEPLOY_COMMIT:-d2902eb617a36dfeb689c6fb4628d981a530e6a7}"
 REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${COMMIT}"
 FIX_TAG="bonifica-fornitore-partner-gfb"
