@@ -4,8 +4,9 @@ Riferimento per il caso **DI MAGGIO** (partner **GDL**, brand **ARIEL**).
 
 ## Regime CRM
 
-- Codice: `ARIEL_2026`
-- Attivazione automatica se `fornitorePartner` contiene **GDL** o `productBrand` contiene **ARIEL** (anche senza categoria prodotto).
+- Codice: `ARIEL_2026` — contratti con data **≥ 23/01/2026**
+- Contratti Ariel/GDL **prima del 23/01/2026** → vedi `backup/REGOLE-ARIEL-LEGACY.md` (scalette minus)
+- Attivazione automatica se `fornitorePartner` contiene **GDL** o `productBrand` contiene **ARIEL**
 
 ## Provvigioni su contratto (implementato)
 
