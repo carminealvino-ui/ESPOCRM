@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// VERSIONE: 1.7.3
+// VERSIONE: 1.7.4
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
@@ -143,6 +143,7 @@ namespace Espo\Custom\Hooks\Appuntamento;
 
 use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\Core\ORM\EntityManager;
+use Espo\Custom\Services\AppuntamentoCalendarColor;
 use Espo\Custom\Services\LeadProspectSync;
 use Espo\Custom\Services\LineaProdottoCategorySync;
 use Espo\ORM\Entity;
@@ -474,46 +475,14 @@ class GlobalLogic implements BeforeSave
             }
 
             // ========================================
-            // COLORI CALENDARIO
+            // COLORI CALENDARIO (palette Okabe–Ito via AppuntamentoCalendarColor)
             // ========================================
 
-            if (
+            $calendarColor = (new AppuntamentoCalendarColor($this->entityManager))
+                ->resolveColor($entity);
 
-                $status === 'Held' &&
-                $sottostato === 'Chiuso Positivamente'
-
-            ) {
-
-                $entity->set(
-                    'color',
-                    '#00aa00'
-                );
-
-            } elseif ($status === 'Held') {
-
-                $entity->set(
-                    'color',
-                    '#006400'
-                );
-
-            } elseif ($status === 'Planned') {
-
-                $entity->set(
-                    'color',
-                    '#0000ff'
-                );
-
-            } elseif (
-
-                $status === 'Not Held' ||
-                $status === 'Ingestibile'
-
-            ) {
-
-                $entity->set(
-                    'color',
-                    '#cc0000'
-                );
+            if ($calendarColor !== null) {
+                $entity->set('color', $calendarColor);
             }
 
             // ========================================
