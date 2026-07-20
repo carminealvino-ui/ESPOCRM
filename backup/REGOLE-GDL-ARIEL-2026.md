@@ -14,14 +14,15 @@ Riferimento per il caso **DI MAGGIO** (partner **GDL**, brand **ARIEL**).
 | **Base** | 10% + 5% imponibile | `arielBase105` — es. €4.500 → **€675** |
 | **Ordine incompleto** | Solo 10% | Flag `ordineIncompletoAriel` → `arielBase10` → **€450** |
 | **Plusvalenza** | 35% sulla plus € | Se imponibile > prezzo codice: `arielPlus35` su (imponibile − codice) |
+| **Minusvalenza** | **100%** sulla minus € | Se imponibile < prezzo codice: `arielMinus35` decrementa le provvigioni dell’intera minusvalenza |
 
-**Importante (mail):** anche in sottocosto il consulente percepisce l’**aliquota piena sull’imponibile**; la minus si compensa con plus entro 30 giorni / €990 mese (contatori portale — **fase 2**).
+**Importante (mail):** anche in sottocosto il consulente percepisce l’**aliquota piena sull’imponibile**; la minus al 100% decrementa il totale provvigioni (compensazione contatori portale — **fase 2**).
 
 ## Minus / plus su contratto
 
 - Campo **`minusPlus`** = imponibile − **prezzo codice IVA escl.** (da opportunità/contratto).
 - Valore **positivo** = plusvalenza → provvigione **Plus Provvigionale** 35%.
-- Valore **negativo** = minusvalenza (recupero/compensazione non ancora automatizzati).
+- Valore **negativo** = minusvalenza → **Minus Provvigionale** al **100%** (decremento).
 
 ## Non ancora automatizzato (fasi successive)
 

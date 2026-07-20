@@ -16,14 +16,14 @@ function seedRegoleProvvigioniAriel(EntityManager $em): void
     $rules = [
         [
             'id' => 'arielMinus35',
-            'name' => 'Ariel 2026 — 35% su minusvalenza',
-            'description' => 'Minus sotto listino codice (contatore minus/plus negativo)',
+            'name' => 'Ariel 2026 — 100% su minusvalenza',
+            'description' => 'Minus sotto listino codice: decremento provvigioni al 100% della minusvalenza (non 35% come le plus)',
             'attiva' => true,
             'priorita' => 545,
             'regimeProvvigione' => 'ARIEL_2026',
-            'tipoCalcolo' => 'PercentualePlusvalenza',
+            'tipoCalcolo' => 'PercentualeMinusvalenza',
             'tipoProvvigioneRecord' => 'Minus Provvigionale',
-            'percentuale' => 35.0,
+            'percentuale' => 100.0,
         ],
         [
             'id' => 'bonusWeekendSd',
