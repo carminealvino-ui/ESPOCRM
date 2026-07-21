@@ -89,19 +89,31 @@ class AppuntamentoCalendarColor
     {
         $brandId = $entity->get('productBrandId');
 
-        if (!$brandId) {
-            return null;
+        if ($brandId) {
+            $brand = $this->entityManager->getEntityById('ProductBrand', $brandId);
+
+            if ($brand) {
+                $color = trim((string) ($brand->get('color') ?: ''));
+
+                if ($color !== '') {
+                    return $color;
+                }
+
+                $brandName = trim((string) $brand->get('name'));
+
+                if ($brandName !== '') {
+                    return self::resolveColorForBrandKey($brandName);
+                }
+            }
         }
 
-        $brand = $this->entityManager->getEntityById('ProductBrand', $brandId);
+        $azienda = trim((string) ($entity->get('azienda') ?: ''));
 
-        if (!$brand) {
-            return null;
+        if ($azienda !== '') {
+            return self::resolveColorForBrandKey($azienda);
         }
 
-        $color = trim((string) ($brand->get('color') ?: ''));
-
-        return $color !== '' ? $color : null;
+        return null;
     }
 
     public function resolveDisponibilitaColor(Entity $entity): ?string

@@ -13,7 +13,7 @@ use Espo\ORM\EntityManager;
  * - prezzoCodiceIvaEsclusa: 4.000
  * - minusPlus = imponibile − codice net − costi aggiuntivi (IVA escl.)
  * - costi aggiuntivi: campo shippingCost (UI «Costi aggiuntivi»), €250 net se tasso zero,
- *   accessori Ariel su contratti fino al 24/01/2026
+ *   accessori Ariel su contratti fino al 23/01/2026 (incluso)
  * - provvigioni: % sull'imponibile; totale = somma subpanel
  *
  * Opportunity: minusPlus = imponibile netto − prezzo codice netto (IVA escl.).
@@ -26,7 +26,7 @@ class QuotePricingCalculator
     private const TASSO_ZERO_COSTI_NET = 250.0;
 
     /** Regola Ariel: accessori nel calcolo costi aggiuntivi fino a questa data (inclusa). */
-    private const ARIEL_ACCESSORIES_IN_COSTI_CUTOFF = '2026-01-24';
+    private const ARIEL_ACCESSORIES_IN_COSTI_CUTOFF = '2026-01-23';
 
     public function __construct(
         private EntityManager $entityManager,

@@ -2,7 +2,7 @@
 <?php
 
 /**
- * Inserisce/ripristina la regola arielMinus35 (diagnostica inclusa).
+ * Inserisce/ripristina la regola arielMinus35 (minusvalenza al 100%).
  *
  *   php tools/ensure-ariel-minus35.php
  */
@@ -16,9 +16,9 @@ $app->setupSystemUser();
 
 $pdo = $app->getContainer()->get('entityManager')->getPDO();
 
-echo "=== ensure-ariel-minus35 v1 ===\n";
+echo "=== ensure-ariel-minus35 v2 (100% su minusvalenza) ===\n";
 
-$check = $pdo->prepare('SELECT id, deleted, attiva, tipo_provvigione_record, percentuale FROM regola_provvigionale WHERE id = ?');
+$check = $pdo->prepare('SELECT id, deleted, attiva, tipo_provvigione_record, percentuale, name FROM regola_provvigionale WHERE id = ?');
 $check->execute(['arielMinus35']);
 $existing = $check->fetch(PDO::FETCH_ASSOC);
 
@@ -35,13 +35,13 @@ INSERT INTO regola_provvigionale (
     percentuale
 ) VALUES (
     'arielMinus35',
-    'Ariel 2026 — 35% su minusvalenza',
-    'Minus sotto listino codice (contatore minus/plus negativo)',
+    'Ariel 2026 — 100% su minusvalenza',
+    'Minus sotto listino codice: decremento provvigioni al 100% della minusvalenza (non 35% come le plus)',
     0, 1, 545,
     'ARIEL_2026',
-    'PercentualePlusvalenza',
+    'PercentualeMinusvalenza',
     'Minus Provvigionale',
-    35
+    100
 )
 ON DUPLICATE KEY UPDATE
     deleted = 0,
@@ -71,5 +71,12 @@ if (!$after || (int) ($after['deleted'] ?? 1) !== 0) {
     exit(1);
 }
 
+$pct = (float) ($after['percentuale'] ?? 0);
+
+if (abs($pct - 100.0) > 0.001) {
+    echo "ERRORE: percentuale attesa 100, trovata {$pct}\n";
+    exit(1);
+}
+
 echo 'DOPO: ' . json_encode($after, JSON_UNESCAPED_UNICODE) . "\n";
-echo "RISULTATO: OK arielMinus35 presente e attiva\n";
+echo "RISULTATO: OK arielMinus35 attiva al 100% su minusvalenza\n";

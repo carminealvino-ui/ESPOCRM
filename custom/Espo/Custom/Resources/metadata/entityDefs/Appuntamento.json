@@ -429,6 +429,11 @@
             "type": "bool",
             "isCustom": true
         },
+        "taxi": {
+            "notNull": true,
+            "type": "bool",
+            "isCustom": true
+        },
         "sorgente": {
             "type": "enum",
             "options": [

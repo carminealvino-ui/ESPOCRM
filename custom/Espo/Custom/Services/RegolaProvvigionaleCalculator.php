@@ -73,6 +73,10 @@ class RegolaProvvigionaleCalculator
                 $plusvalenza,
                 (float) $rule->get('percentuale')
             ),
+            'PercentualeMinusvalenza' => $this->percentOfPlusvalenza(
+                $plusvalenza,
+                (float) $rule->get('percentuale')
+            ),
             'PercentualeMargine' => $this->percentOf(
                 $imponibile,
                 (float) $rule->get('percentuale')
