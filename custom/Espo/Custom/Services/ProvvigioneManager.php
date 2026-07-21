@@ -282,7 +282,7 @@ class ProvvigioneManager
      *
      * @return array{created: int, updated: int, purged: int}
      */
-    public function recalculateAllForQuote(Entity $quote): array
+    public function recalculateAllForQuote(Entity $quote, bool $forceRecalculate = false): array
     {
         $opportunity = $this->resolveOpportunityForQuote($quote, null);
 
@@ -290,7 +290,9 @@ class ProvvigioneManager
             return ['created' => 0, 'updated' => 0, 'purged' => 0];
         }
 
-        $purged = $this->purgeRecalculableProvvigioniForQuote($quote->getId());
+        $purged = $forceRecalculate
+            ? $this->purgeAllAutoProvvigioniForQuote($quote->getId())
+            : $this->purgeRecalculableProvvigioniForQuote($quote->getId());
         $this->syncQuotePricingFields($quote, $opportunity);
 
         $quoteId = $quote->getId();
@@ -335,6 +337,43 @@ class ProvvigioneManager
 
         foreach ($collection as $provvigione) {
             if (!$this->statusSync->canRecalculate($provvigione)) {
+                continue;
+            }
+
+            $this->entityManager->removeEntity($provvigione);
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Rimuove tutte le righe provvigionali automatiche (bonifica massiva).
+     *
+     * @return list<string>
+     */
+    private const AUTO_PROVVIGIONE_TIPI = [
+        'Provvigione Base',
+        'Plus Provvigionale',
+        'Minus Provvigionale',
+        'Bonus (Sabato-Domenica)',
+        'Referenza Personale',
+    ];
+
+    private function purgeAllAutoProvvigioniForQuote(string $quoteId): int
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quoteId])
+            ->find();
+
+        $count = 0;
+
+        foreach ($collection as $provvigione) {
+            $tipo = (string) ($provvigione->get('tipo') ?? '');
+            $hasRule = (bool) $provvigione->get('regolaProvvigionaleId');
+
+            if (!$hasRule && !in_array($tipo, self::AUTO_PROVVIGIONE_TIPI, true)) {
                 continue;
             }
 
