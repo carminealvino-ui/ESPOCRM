@@ -194,6 +194,10 @@ class GlobalLogic implements BeforeSave
                 $entity->set('videoCallTelefonico', false);
             }
 
+            if ($entity->hasAttribute('taxi') && $entity->get('taxi') === null) {
+                $entity->set('taxi', false);
+            }
+
             if ($entity->hasAttribute('syncConGoogle') && $entity->get('syncConGoogle') === null) {
                 $entity->set('syncConGoogle', false);
             }

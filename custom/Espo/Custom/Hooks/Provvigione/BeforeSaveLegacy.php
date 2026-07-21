@@ -50,6 +50,10 @@ class BeforeSaveLegacy extends Base
             }
         }
 
+        elseif ($tipo === 'Bonus Taxi') {
+            $base = (float) $quote->get('amount');
+        }
+
         elseif (strpos($tipo, 'Gara') !== false) {
 
             $amount = (float) $quote->get('amount');

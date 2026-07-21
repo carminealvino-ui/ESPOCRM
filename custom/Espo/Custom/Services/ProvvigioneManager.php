@@ -225,6 +225,7 @@ class ProvvigioneManager
 
         $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
+        $this->ensureTaxiBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
         $this->statusSync->syncProvvigioniForQuote($quote);
         $this->refreshQuoteTotaleProvvigioni($quote);
@@ -353,6 +354,7 @@ class ProvvigioneManager
         'Plus Provvigionale',
         'Minus Provvigionale',
         'Bonus (Sabato-Domenica)',
+        'Bonus Taxi',
         'Referenza Personale',
     ];
 
@@ -489,6 +491,7 @@ class ProvvigioneManager
 
         $this->ensureArielLegacyPlusProvvigione($opportunity, $quote, $category, $context);
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
+        $this->ensureTaxiBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
         $this->statusSync->syncProvvigioniForQuote($quote);
         $this->refreshQuoteTotaleProvvigioni($quote);
 
@@ -604,6 +607,7 @@ class ProvvigioneManager
         }
 
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
+        $this->ensureTaxiBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
         $this->statusSync->syncProvvigioniForQuote($quote);
         $this->refreshQuoteTotaleProvvigioni($quote);
@@ -707,6 +711,55 @@ class ProvvigioneManager
             'Bonus (Sabato-Domenica)',
             null
         );
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function ensureTaxiBonusProvvigione(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        array $context,
+        ?float $imponibile
+    ): void {
+        if ($imponibile === null || $imponibile <= 0) {
+            return;
+        }
+
+        if (!$this->isTaxiOpportunity($opportunity)) {
+            return;
+        }
+
+        $result = $this->resultFromRuleId('bonusTaxi2', $context)
+            ?? $this->calculator->calculateForTipoRecord($context, 'Bonus Taxi');
+
+        if ($result === null) {
+            return;
+        }
+
+        $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            $result,
+            $context,
+            'Bonus Taxi',
+            null
+        );
+    }
+
+    private function isTaxiOpportunity(Entity $opportunity): bool
+    {
+        $appuntamentoId = $opportunity->get('appuntamentoId');
+
+        if (!$appuntamentoId) {
+            return false;
+        }
+
+        $appuntamento = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
+
+        return $appuntamento && (bool) $appuntamento->get('taxi');
     }
 
     private function isWeekendContractDate(Entity $quote, ?Entity $opportunity): bool

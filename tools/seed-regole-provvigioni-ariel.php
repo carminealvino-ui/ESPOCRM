@@ -37,6 +37,17 @@ function seedRegoleProvvigioniAriel(EntityManager $em): void
             'percentuale' => 2.0,
         ],
         [
+            'id' => 'bonusTaxi2',
+            'name' => 'Bonus Taxi',
+            'description' => 'Extra provvigione 2% se appuntamento con flag Taxi',
+            'attiva' => true,
+            'priorita' => 525,
+            'regimeProvvigione' => '',
+            'tipoCalcolo' => 'PercentualeImponibile',
+            'tipoProvvigioneRecord' => 'Bonus Taxi',
+            'percentuale' => 2.0,
+        ],
+        [
             'id' => 'referenzaPersonale',
             'name' => 'Referenza Personale',
             'description' => 'Appuntamento con tipo Referenza Personale — 6% su imponibile',
@@ -87,7 +98,7 @@ if (PHP_SAPI === 'cli' && realpath($argv[0] ?? '') === realpath(__FILE__)) {
     echo "=== Seed regole provvigionali Ariel ===\n";
     seedRegoleProvvigioniAriel($em);
 
-    foreach (['arielMinus35', 'bonusWeekendSd', 'referenzaPersonale'] as $ruleId) {
+    foreach (['arielMinus35', 'bonusWeekendSd', 'bonusTaxi2', 'referenzaPersonale'] as $ruleId) {
         $rule = $em->getEntityById('RegolaProvvigionale', $ruleId);
         echo $rule && !$rule->get('deleted')
             ? "OK {$ruleId} — {$rule->get('name')}\n"
