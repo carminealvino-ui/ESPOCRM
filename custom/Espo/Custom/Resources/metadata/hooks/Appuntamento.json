@@ -1,5 +1,9 @@
 {
     "beforeSave": {
+        "assignCreatorOnCreate": {
+            "className": "Espo\\Custom\\Hooks\\Appuntamento\\AssignCreatorOnCreate",
+            "order": 1
+        },
         "preventDuplicate": {
             "className": "Espo\\Custom\\Hooks\\Appuntamento\\PreventDuplicate",
             "order": 5
