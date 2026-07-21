@@ -4,9 +4,13 @@
  * Calendario: pre-compila Utente Assegnato (assignedUsers) alla creazione.
  * Appuntamento usa assignedUsers; il core calendario passa solo assignedUserId.
  */
-define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], function (CalendarEditModalModule) {
+define('custom:views/calendar/modals/edit', [
+    'crm:views/calendar/modals/edit',
+    'custom:helpers/appuntamento-duration',
+], function (CalendarEditModalModule, AppuntamentoDurationHelper) {
 
     const Dep = CalendarEditModalModule.default || CalendarEditModalModule;
+    const DEFAULT_DURATION_SECONDS = 5400;
 
     return Dep.extend({
 
@@ -16,11 +20,13 @@ define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], 
             }
 
             this.ensureCalendarAssignee();
+            this.ensureCalendarDefaultDuration();
         },
 
         createRecordView: function (model, callback) {
             Dep.prototype.createRecordView.call(this, model, view => {
                 this.ensureCalendarAssignee();
+                this.ensureCalendarDefaultDuration();
 
                 if (typeof callback === 'function') {
                     callback(view);
@@ -74,6 +80,32 @@ define('custom:views/calendar/modals/edit', ['crm:views/calendar/modals/edit'], 
                     assignedUserName: userName,
                 }, {ui: true});
             }
+        },
+
+        ensureCalendarDefaultDuration: function () {
+            if (this.id || !this.model || !this.model.isNew() || this.model.get('isAllDay')) {
+                return;
+            }
+
+            const dateStart = this.model.get('dateStart');
+
+            if (!dateStart) {
+                return;
+            }
+
+            const dateEnd = AppuntamentoDurationHelper.addSecondsToSystemDateTime(
+                this.getDateTime(),
+                dateStart,
+                DEFAULT_DURATION_SECONDS
+            );
+
+            if (!dateEnd || this.model.get('dateEnd') === dateEnd) {
+                return;
+            }
+
+            this.model.set({
+                dateEnd: dateEnd,
+            }, {updatedByDuration: true, ui: true});
         },
 
         resolveCalendarAssigneeUserId: function () {
