@@ -1,8 +1,9 @@
 #!/usr/bin/env php
 <?php
 /**
- * Seed solo regole Ariel LEGACY (scalette minus pre-23/01/2026).
+ * Seed regole Ariel LEGACY via ORM (affidabile anche se SQL raw fallisce).
  *
+ *   php tools/run-regola-provvigionale-schema-patch.php
  *   php tools/seed-regole-provvigioni-ariel-legacy.php
  */
 
@@ -13,71 +14,112 @@ require dirname(__DIR__) . '/bootstrap.php';
 $app = new Espo\Core\Application();
 $app->setupSystemUser();
 
-$pdo = $app->getContainer()->get('entityManager')->getPDO();
-$file = dirname(__DIR__) . '/database/2026-07-07-ariel-legacy-scalette-minus-seed.sql';
+$entityManager = $app->getContainer()->get('entityManager');
 
-echo "=== Seed Ariel LEGACY scalette minus ===\n";
+echo "=== Seed Ariel LEGACY (ORM) ===\n";
 
-if (!is_file($file)) {
-    fwrite(STDERR, "File mancante: {$file}\n");
-    exit(1);
-}
+$rules = getArielLegacySeedRules();
+$errors = 0;
 
-$sql = file_get_contents($file);
+foreach ($rules as $ruleData) {
+    $id = $ruleData['id'];
 
-if ($sql === false) {
-    fwrite(STDERR, "ERRORE lettura SQL\n");
-    exit(1);
-}
-
-$statements = array_filter(
-    array_map('trim', preg_split('/;\s*\n/', $sql) ?: []),
-    static fn (string $s): bool => $s !== '' && !str_starts_with($s, '--')
-);
-
-foreach ($statements as $statement) {
     try {
-        $pdo->exec($statement);
+        upsertLegacyRule($entityManager, $ruleData);
+        echo "OK   {$id} | {$ruleData['regimeProvvigione']} | {$ruleData['gruppoProvvigione']} | {$ruleData['percentuale']}%\n";
     } catch (Throwable $e) {
-        echo 'WARN: ' . $e->getMessage() . "\n";
+        echo "ERR  {$id}: {$e->getMessage()}\n";
+        $errors++;
     }
 }
 
-$required = [
-    'arlCliM029', 'arlCliM499', 'arlCliM699', 'arlCliM999', 'arlCliM1299', 'arlCliM1499',
-    'arlCalM290', 'arlCalM1000', 'arlCalMDeep',
-    'arlStuM290', 'arlStuM1000', 'arlStuMDeep',
-    'arlEcoWind5', 'arlLegacyPlus50',
-];
-
-$placeholders = implode(',', array_fill(0, count($required), '?'));
-$stmt = $pdo->prepare(
-    "SELECT id, percentuale, regime_provvigione, gruppo_provvigione
-     FROM regola_provvigionale
-     WHERE deleted = 0 AND id IN ({$placeholders})"
-);
-$stmt->execute($required);
-$found = [];
-
-foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-    $found[$row['id']] = $row;
-}
-
-$ok = true;
-
-foreach ($required as $id) {
-    if (!isset($found[$id])) {
-        echo "ERR  regola mancante: {$id}\n";
-        $ok = false;
-        continue;
-    }
-
-    $row = $found[$id];
-    echo "OK   {$id} | {$row['regime_provvigione']} | {$row['gruppo_provvigione']} | {$row['percentuale']}%\n";
-}
-
-if (!$ok) {
+if ($errors > 0) {
     exit(1);
 }
 
-echo "Seed Ariel LEGACY completato.\n";
+echo "Seed Ariel LEGACY completato (" . count($rules) . " regole).\n";
+
+/**
+ * @return list<array<string, mixed>>
+ */
+function getArielLegacySeedRules(): array
+{
+    return [
+        legacyRule('arlCliM029', 'Ariel Clima 0% / -2,99%', 'Scaletta minus climatizzatori', 410, 'Ariel Climatizzatori', 15, -2.99, 0),
+        legacyRule('arlCliM499', 'Ariel Clima -3% / -4,99%', null, 400, 'Ariel Climatizzatori', 13, -4.99, -3),
+        legacyRule('arlCliM699', 'Ariel Clima -5% / -6,99%', null, 390, 'Ariel Climatizzatori', 12, -6.99, -5),
+        legacyRule('arlCliM999', 'Ariel Clima -7% / -9,99%', null, 380, 'Ariel Climatizzatori', 10, -9.99, -7),
+        legacyRule('arlCliM1299', 'Ariel Clima -10% / -12,99%', null, 370, 'Ariel Climatizzatori', 6, -12.99, -10),
+        legacyRule('arlCliM1499', 'Ariel Clima -13% / -14,99%', null, 360, 'Ariel Climatizzatori', 3, -14.99, -13),
+        legacyRule('arlCalM290', 'Ariel Caldaie 0% / -2,90%', 'Scaletta minus caldaie', 410, 'Ariel Caldaie', 13, -2.9, 0),
+        legacyRule('arlCalM1000', 'Ariel Caldaie -3% / -10%', null, 400, 'Ariel Caldaie', 7, -10, -3),
+        legacyRule('arlCalMDeep', 'Ariel Caldaie oltre -10,10%', null, 390, 'Ariel Caldaie', 5, -99999, -10.1),
+        legacyRule('arlEcoWind5', 'Ariel Eco Wind Easy 5%', 'Pacchetto installato a prezzo fisso', 420, 'Ariel Eco Wind Easy', 5, 0, 0),
+        legacyRule('arlStuM290', 'Ariel Stufe 0% / -2,90%', 'Scaletta minus stufe', 410, 'Ariel Stufe', 13, -2.9, 0),
+        legacyRule('arlStuM1000', 'Ariel Stufe -3% / -10%', null, 400, 'Ariel Stufe', 7, -10, -3),
+        legacyRule('arlStuMDeep', 'Ariel Stufe oltre -10,10%', null, 390, 'Ariel Stufe', 5, -99999, -10.1),
+        [
+            'id' => 'arlLegacyPlus50',
+            'name' => 'Ariel legacy — Plus 50% oltre prezzo codice',
+            'description' => 'Clima/Caldaie/Stufe (escluso Eco Wind Easy)',
+            'attiva' => true,
+            'priorita' => 510,
+            'regimeProvvigione' => 'ARIEL_LEGACY',
+            'gruppoProvvigione' => null,
+            'tipoCalcolo' => 'PercentualePlusvalenza',
+            'tipoProvvigioneRecord' => 'Plus Provvigionale',
+            'percentuale' => 50.0,
+            'margineMin' => null,
+            'margineMax' => null,
+        ],
+    ];
+}
+
+function legacyRule(
+    string $id,
+    string $name,
+    ?string $description,
+    int $priorita,
+    string $gruppo,
+    float $percentuale,
+    float $margineMin,
+    float $margineMax
+): array {
+    return [
+        'id' => $id,
+        'name' => $name,
+        'description' => $description,
+        'attiva' => true,
+        'priorita' => $priorita,
+        'regimeProvvigione' => 'ARIEL_LEGACY',
+        'gruppoProvvigione' => $gruppo,
+        'tipoCalcolo' => 'PercentualeMargine',
+        'tipoProvvigioneRecord' => 'Provvigione Base',
+        'percentuale' => $percentuale,
+        'margineMin' => $margineMin,
+        'margineMax' => $margineMax,
+    ];
+}
+
+/**
+ * @param array<string, mixed> $ruleData
+ */
+function upsertLegacyRule(\Espo\ORM\EntityManager $entityManager, array $ruleData): void
+{
+    $id = $ruleData['id'];
+    $entity = $entityManager->getEntityById('RegolaProvvigionale', $id);
+
+    if (!$entity) {
+        $entity = $entityManager->getNewEntity('RegolaProvvigionale');
+        $entity->set('id', $id);
+    }
+
+    $entity->set(array_merge($ruleData, [
+        'deleted' => false,
+    ]));
+
+    $entityManager->saveEntity($entity, [
+        'skipHooks' => true,
+        'silent' => true,
+    ]);
+}

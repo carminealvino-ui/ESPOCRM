@@ -19,9 +19,11 @@ FILES=(
   "custom/Espo/Custom/Services/ProvvigioneAccrual.php"
   "custom/Espo/Custom/Services/QuotePricingCalculator.php"
   "custom/Espo/Custom/Services/RegolaProvvigionaleCalculator.php"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/RegolaProvvigionale.json"
   "database/2026-07-07-ariel-legacy-scalette-minus-seed.sql"
   "tools/migrate-ricalcola-provvigioni-contratti.php"
   "tools/run-regola-provvigionale-seed.php"
+  "tools/run-regola-provvigionale-schema-patch.php"
   "tools/seed-regole-provvigioni-ariel-legacy.php"
 )
 

@@ -25,6 +25,7 @@
                 "",
                 "ARQUATI_PNC",
                 "ARIEL_2026",
+                "ARIEL_LEGACY",
                 "GFB_VODAFONE_COEFF",
                 "GFB_FASTWEB_POD",
                 "GFB_RS_BIMESTRE",
@@ -126,7 +127,11 @@
                 "Tende da Sole",
                 "Pergole",
                 "Vetrate",
-                "Clima e altro"
+                "Clima e altro",
+                "Ariel Climatizzatori",
+                "Ariel Caldaie",
+                "Ariel Stufe",
+                "Ariel Eco Wind Easy"
             ],
             "isCustom": true
         },
