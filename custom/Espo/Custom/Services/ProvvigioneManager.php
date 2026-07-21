@@ -531,7 +531,7 @@ class ProvvigioneManager
             $plusResult,
             $context,
             'Plus Provvigionale',
-            $this->buildProvvigioneName($quote, 'Plus Provvigionale', $plusResult['regola'] ?? null)
+            null
         );
     }
 
