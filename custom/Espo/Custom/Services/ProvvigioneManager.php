@@ -243,10 +243,6 @@ class ProvvigioneManager
         $counted = 0;
 
         foreach ($collection as $provvigione) {
-            if (!$this->statusSync->shouldCountInTotale((string) $provvigione->get('statoProvvigione'))) {
-                continue;
-            }
-
             $importo = $provvigione->get('importoConsolidato') ?? $provvigione->get('importo');
 
             if ($importo === null || $importo === '') {
