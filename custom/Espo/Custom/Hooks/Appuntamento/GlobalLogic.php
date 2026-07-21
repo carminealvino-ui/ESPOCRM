@@ -1,6 +1,6 @@
 <?php
 // ========================================
-// VERSIONE: 1.7.3
+// VERSIONE: 1.7.16
 // DATA: 2026-05-22
 // AUTORE: CARMINE ALVINO + CHATGPT
 // FILE:
@@ -143,6 +143,7 @@ namespace Espo\Custom\Hooks\Appuntamento;
 
 use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\Core\ORM\EntityManager;
+use Espo\Custom\Services\AppuntamentoNameBuilder;
 use Espo\Custom\Services\LeadProspectSync;
 use Espo\Custom\Services\LineaProdottoCategorySync;
 use Espo\ORM\Entity;
@@ -181,7 +182,7 @@ class GlobalLogic implements BeforeSave
 
             $entity->set(
                 'hookVersion',
-                '1.7.14'
+                '1.7.16'
             );
 
             if ($entity->hasAttribute('zTL') && $entity->get('zTL') === null) {
@@ -644,6 +645,17 @@ class GlobalLogic implements BeforeSave
                     'parentName',
                     $leadName
                 );
+            }
+
+            // ========================================
+            // NAMING (1.7.16) — PHP al posto della formula (api script azzerava name)
+            // ========================================
+
+            $nameBuilder = new AppuntamentoNameBuilder($this->entityManager);
+            $builtName = $nameBuilder->build($entity);
+
+            if ($builtName !== '') {
+                $entity->set('name', $builtName);
             }
 
             // ========================================
