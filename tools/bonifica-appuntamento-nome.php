@@ -5,6 +5,7 @@
  *
  *   php tools/bonifica-appuntamento-nome.php --dry-run
  *   php tools/bonifica-appuntamento-nome.php --dry-run panfili
+ *   php tools/bonifica-appuntamento-nome.php --only-placeholder --dry-run
  *   php tools/bonifica-appuntamento-nome.php panfili
  */
 
@@ -14,6 +15,7 @@ use Espo\Core\Application;
 use Espo\Custom\Services\AppuntamentoNameBuilder;
 
 $dryRun = in_array('--dry-run', $argv ?? [], true);
+$onlyPlaceholder = in_array('--only-placeholder', $argv ?? [], true);
 $filter = null;
 
 foreach ($argv ?? [] as $i => $arg) {
@@ -52,6 +54,14 @@ foreach ($all as $appuntamento) {
             if (!str_contains($hay, $needle)) {
                 continue;
             }
+        }
+    }
+
+    if ($onlyPlaceholder) {
+        $currentName = (string) $appuntamento->get('name');
+
+        if (!preg_match('/\(APPUNTAMENTO\s*SENZA\s*PROSPECT\)/i', $currentName)) {
+            continue;
         }
     }
 
