@@ -732,7 +732,8 @@ class ProvvigioneManager
         }
 
         $result = $this->resultFromRuleId('bonusTaxi2', $context)
-            ?? $this->calculator->calculateForTipoRecord($context, 'Bonus Taxi');
+            ?? $this->calculator->calculateForTipoRecord($context, 'Bonus Taxi')
+            ?? $this->buildTaxiBonusResult($context, $imponibile);
 
         if ($result === null) {
             return;
@@ -760,6 +761,34 @@ class ProvvigioneManager
         $appuntamento = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
 
         return $appuntamento && (bool) $appuntamento->get('taxi');
+    }
+
+    /**
+     * Fallback se la regola bonusTaxi2 non è ancora in DB (seed non eseguito).
+     *
+     * @param array<string, mixed> $context
+     * @return array{importo: float, regola: Entity}|null
+     */
+    private function buildTaxiBonusResult(array $context, float $imponibile): ?array
+    {
+        if ($imponibile <= 0) {
+            return null;
+        }
+
+        $rule = $this->entityManager->getNewEntity('RegolaProvvigionale');
+        $rule->set([
+            'id' => 'bonusTaxi2',
+            'name' => 'Bonus Taxi',
+            'attiva' => true,
+            'tipoCalcolo' => 'PercentualeImponibile',
+            'tipoProvvigioneRecord' => 'Bonus Taxi',
+            'percentuale' => 2.0,
+        ]);
+
+        return [
+            'importo' => round($imponibile * 0.02, 2),
+            'regola' => $rule,
+        ];
     }
 
     private function isWeekendContractDate(Entity $quote, ?Entity $opportunity): bool

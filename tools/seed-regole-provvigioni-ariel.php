@@ -1,7 +1,7 @@
 <?php
 /**
- * Inserisce/aggiorna regole provvigionali Ariel (minus, weekend, referenza).
- * Non richiede mysql CLI — usa l'ORM Espo.
+ * Inserisce/aggiorna regole provvigionali Ariel (minus, weekend, taxi, referenza).
+ * Non richiede mysql CLI — usa l'ORM Espo (+ PDO fallback per ID fissi).
  *
  *   php tools/seed-regole-provvigioni-ariel.php
  */
@@ -11,9 +11,12 @@ declare(strict_types=1);
 use Espo\Core\Application;
 use Espo\ORM\EntityManager;
 
-function seedRegoleProvvigioniAriel(EntityManager $em): void
+/**
+ * @return list<array<string, mixed>>
+ */
+function getArielProvvigioniSeedRules(): array
 {
-    $rules = [
+    return [
         [
             'id' => 'arielMinus35',
             'name' => 'Ariel 2026 — 100% su minusvalenza',
@@ -59,13 +62,28 @@ function seedRegoleProvvigioniAriel(EntityManager $em): void
             'percentuale' => 6.0,
         ],
     ];
+}
 
-    foreach ($rules as $data) {
-        $id = $data['id'];
+function seedRegoleProvvigioniAriel(EntityManager $em): void
+{
+    foreach (getArielProvvigioniSeedRules() as $data) {
+        upsertArielRule($em, $data);
+    }
+}
+
+/**
+ * @param array<string, mixed> $data
+ */
+function upsertArielRule(EntityManager $em, array $data): void
+{
+    $id = (string) $data['id'];
+
+    try {
         $entity = $em->getEntityById('RegolaProvvigionale', $id);
 
         if (!$entity) {
-            $entity = $em->createEntity('RegolaProvvigionale');
+            // getNewEntity: non salva; createEntity salverebbe con ID random.
+            $entity = $em->getNewEntity('RegolaProvvigionale');
             $entity->set('id', $id);
         }
 
@@ -77,7 +95,64 @@ function seedRegoleProvvigioniAriel(EntityManager $em): void
             'skipHooks' => true,
             'silent' => true,
         ]);
+
+        $saved = $em->getEntityById('RegolaProvvigionale', $id);
+
+        if ($saved && !$saved->get('deleted')) {
+            return;
+        }
+    } catch (Throwable $e) {
+        fwrite(STDERR, "WARN ORM {$id}: {$e->getMessage()}\n");
     }
+
+    upsertArielRuleViaPdo($em, $data);
+}
+
+/**
+ * Fallback SQL se l'ORM rifiuta enum/cache non aggiornata.
+ *
+ * @param array<string, mixed> $data
+ */
+function upsertArielRuleViaPdo(EntityManager $em, array $data): void
+{
+    $pdo = $em->getPDO();
+    $id = (string) $data['id'];
+
+    $sql = <<<'SQL'
+INSERT INTO regola_provvigionale (
+    id, name, description, deleted, attiva, priorita,
+    regime_provvigione, tipo_calcolo, tipo_provvigione_record, percentuale,
+    created_at, modified_at
+) VALUES (
+    :id, :name, :description, 0, :attiva, :priorita,
+    :regime, :tipo_calcolo, :tipo_record, :percentuale,
+    NOW(), NOW()
+)
+ON DUPLICATE KEY UPDATE
+    name = VALUES(name),
+    description = VALUES(description),
+    deleted = 0,
+    attiva = VALUES(attiva),
+    priorita = VALUES(priorita),
+    regime_provvigione = VALUES(regime_provvigione),
+    tipo_calcolo = VALUES(tipo_calcolo),
+    tipo_provvigione_record = VALUES(tipo_provvigione_record),
+    percentuale = VALUES(percentuale),
+    modified_at = NOW()
+SQL;
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ':id' => $id,
+        ':name' => (string) $data['name'],
+        ':description' => (string) ($data['description'] ?? ''),
+        ':attiva' => !empty($data['attiva']) ? 1 : 0,
+        ':priorita' => (int) ($data['priorita'] ?? 100),
+        ':regime' => (string) ($data['regimeProvvigione'] ?? ''),
+        ':tipo_calcolo' => (string) ($data['tipoCalcolo'] ?? ''),
+        ':tipo_record' => (string) ($data['tipoProvvigioneRecord'] ?? ''),
+        ':percentuale' => (float) ($data['percentuale'] ?? 0),
+    ]);
 }
 
 if (PHP_SAPI === 'cli' && realpath($argv[0] ?? '') === realpath(__FILE__)) {
@@ -98,12 +173,35 @@ if (PHP_SAPI === 'cli' && realpath($argv[0] ?? '') === realpath(__FILE__)) {
     echo "=== Seed regole provvigionali Ariel ===\n";
     seedRegoleProvvigioniAriel($em);
 
+    $errors = 0;
+
     foreach (['arielMinus35', 'bonusWeekendSd', 'bonusTaxi2', 'referenzaPersonale'] as $ruleId) {
         $rule = $em->getEntityById('RegolaProvvigionale', $ruleId);
-        echo $rule && !$rule->get('deleted')
-            ? "OK {$ruleId} — {$rule->get('name')}\n"
-            : "ERRORE {$ruleId} non trovata\n";
+
+        if ($rule && !$rule->get('deleted')) {
+            echo "OK {$ruleId} — {$rule->get('name')}\n";
+            continue;
+        }
+
+        // Rileggi via SQL se ORM ha cache stantia
+        $stmt = $em->getPDO()->prepare(
+            'SELECT id, name, deleted FROM regola_provvigionale WHERE id = ? LIMIT 1'
+        );
+        $stmt->execute([$ruleId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row && (int) ($row['deleted'] ?? 0) === 0) {
+            echo "OK {$ruleId} — {$row['name']} (PDO)\n";
+            continue;
+        }
+
+        echo "ERRORE {$ruleId} non trovata\n";
+        $errors++;
     }
 
     echo "=== Fatto ===\n";
+
+    if ($errors > 0) {
+        exit(1);
+    }
 }

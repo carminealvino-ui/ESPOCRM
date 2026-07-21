@@ -63,6 +63,16 @@ grep -q "bonusTaxi2" "${CRM_ROOT}/tools/seed-regole-provvigioni-ariel.php" || {
 echo "OK verifiche file"
 
 echo ""
+echo "=== Clear cache (prima del seed, per enum Bonus Taxi) ==="
+if [[ -f "${CRM_ROOT}/clear_cache.php" ]]; then
+  php clear_cache.php || true
+elif [[ -f "${CRM_ROOT}/rebuild.php" ]]; then
+  php rebuild.php || true
+else
+  echo "WARN: clear_cache/rebuild non trovati"
+fi
+
+echo ""
 echo "=== Schema patch colonna taxi ==="
 php tools/run-appuntamento-taxi-schema-patch.php
 
@@ -71,12 +81,11 @@ echo "=== Seed regola bonusTaxi2 ==="
 php tools/seed-regole-provvigioni-ariel.php
 
 echo ""
+echo "=== Clear cache finale ==="
 if [[ -f "${CRM_ROOT}/clear_cache.php" ]]; then
   php clear_cache.php || true
 elif [[ -f "${CRM_ROOT}/rebuild.php" ]]; then
   php rebuild.php || true
-else
-  echo "WARN: clear_cache/rebuild non trovati — ricostruisci da Admin → Clear Cache"
 fi
 
 echo ""
