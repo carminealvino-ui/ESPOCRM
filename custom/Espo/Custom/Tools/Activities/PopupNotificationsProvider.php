@@ -57,10 +57,21 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
      */
     public function get(User $user): array
     {
-        $items = array_values(array_filter(
-            parent::get($user),
-            fn (Item $item): bool => $this->isItemVisible($item)
-        ));
+        $items = [];
+
+        try {
+            $items = array_values(array_filter(
+                parent::get($user),
+                fn (Item $item): bool => $this->isItemVisible($item)
+            ));
+        } catch (Throwable $e) {
+            // Non bloccare i promemoria custom se il provider core fallisce
+            // (es. colonne assenti / job in errore).
+            $this->log->error(
+                'PopupNotificationsProvider parent::get failed: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
+        }
 
         $seenReminderIds = [];
         $seenEntityKeys = [];
@@ -226,17 +237,31 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             : $now;
         $resultList = [];
 
-        $collection = $this->entityManager
+        $query = $this->entityManager
             ->getRDBRepository($entityType)
             ->select($this->getPastPlannedSelectFields($entityType, $dateField))
             ->where([
                 'status' => $statusList,
-                'assignedUserId' => $userId,
                 $dateField . '<=' => $popupCutoff,
             ])
             ->order($dateField, 'DESC')
-            ->limit(0, 50)
-            ->find();
+            ->limit(0, 50);
+
+        if ($entityType === 'Appuntamento' && $this->entityHasAssignedUsersLink($entityType)) {
+            $query
+                ->distinct()
+                ->leftJoin('assignedUsers')
+                ->where([
+                    'OR' => [
+                        ['assignedUserId' => $userId],
+                        ['assignedUsers.id' => $userId],
+                    ],
+                ]);
+        } else {
+            $query->where(['assignedUserId' => $userId]);
+        }
+
+        $collection = $query->find();
 
         foreach ($collection as $entity) {
             $item = $this->buildEntityItemIfNew($entity, $seenEntityKeys, $seenCallSignatures);
@@ -247,6 +272,17 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         return $resultList;
+    }
+
+    private function entityHasAssignedUsersLink(string $entityType): bool
+    {
+        try {
+            $defs = $this->entityManager->getDefs()->getEntity($entityType);
+
+            return $defs->hasRelation('assignedUsers');
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     private function buildReminderItem(Reminder $reminder, string $userId): ?Item

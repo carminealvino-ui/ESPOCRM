@@ -13,9 +13,23 @@ $app->setupSystemUser();
 
 $pdo = $app->getContainer()->get('entityManager')->getPDO();
 
+$schemaPatch = __DIR__ . '/run-regola-provvigionale-schema-patch.php';
+
+if (is_file($schemaPatch)) {
+    echo "=== Schema patch regola_provvigionale ===\n";
+    passthru('php ' . escapeshellarg($schemaPatch), $patchExit);
+
+    if ($patchExit !== 0) {
+        echo "WARN schema patch exit {$patchExit}\n";
+    }
+
+    echo "\n";
+}
+
 $files = [
     __DIR__ . '/../database/2026-05-26-gdl-ariel-2026-regole-provvigioni-seed.sql',
     __DIR__ . '/../database/2026-05-26-arquati-pnc-regole-provvigioni-seed.sql',
+    __DIR__ . '/../database/2026-07-07-ariel-legacy-scalette-minus-seed.sql',
 ];
 
 foreach ($files as $file) {
@@ -46,8 +60,20 @@ foreach ($files as $file) {
         try {
             $pdo->exec($statement);
         } catch (Throwable $e) {
-            echo 'WARN: ' . $e->getMessage() . "\n";
+            echo 'ERR: ' . $e->getMessage() . "\n";
         }
+    }
+}
+
+$legacyOrmSeed = __DIR__ . '/seed-regole-provvigioni-ariel-legacy.php';
+
+if (is_file($legacyOrmSeed)) {
+    echo "\n=== Seed legacy ORM (fallback affidabile) ===\n";
+    passthru('php ' . escapeshellarg($legacyOrmSeed), $legacyExit);
+
+    if ($legacyExit !== 0) {
+        echo "ERR seed legacy ORM exit {$legacyExit}\n";
+        exit(1);
     }
 }
 
@@ -56,7 +82,7 @@ $count = (int) $check->fetchColumn();
 
 echo "\nRegole attive in DB: {$count}\n";
 
-$required = ['arielPlus35', 'arielBase105', 'arqCpP5'];
+$required = ['arielPlus35', 'arielBase105', 'arqCpP5', 'arlCliM029', 'arlLegacyPlus50'];
 $placeholders = implode(',', array_fill(0, count($required), '?'));
 $stmt = $pdo->prepare(
     "SELECT id FROM regola_provvigionale WHERE deleted = 0 AND id IN ({$placeholders})"

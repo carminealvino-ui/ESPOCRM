@@ -92,9 +92,7 @@ foreach ($quotes as $quote) {
     }
 
     try {
-        if (!$manager->updateQuoteTotaleProvvigioniInDatabase($quote->getId(), $newRound)) {
-            $manager->refreshQuoteTotaleProvvigioni($quote);
-        }
+        $manager->refreshQuoteTotaleProvvigioni($quote);
 
         $check = $em->getEntityById('Quote', $quote->getId());
         $saved = $check?->get('totaleProvvigioni');

@@ -38,21 +38,71 @@ class ProvvigioneManager
             $imponibile = $this->resolveImponibile($opportunity);
         }
 
-        $prezzoCodice = $this->resolvePrezzoCodice($source, $opportunity);
-        $prezzoListino = $this->resolvePrezzoListino($source, $opportunity);
+        $prezzoCodice = null;
 
-        $plusvalenza = null;
-
-        if ($imponibile !== null && $prezzoCodice !== null && $imponibile > $prezzoCodice) {
-            $plusvalenza = $imponibile - $prezzoCodice;
+        if ($source && $source->getEntityType() === 'Quote') {
+            $prezzoCodice = $this->quotePricingCalculator->resolvePrezzoCodiceNetForMinusPlus($source, $opportunity);
         }
 
-        $margine = $this->resolveMarginePercentuale($source, $opportunity, $imponibile, $prezzoListino);
+        if ($prezzoCodice === null || $prezzoCodice <= 0) {
+            $prezzoCodice = $this->resolvePrezzoCodice($source, $opportunity);
+        }
+
+        $prezzoCodiceTotale = $this->resolvePrezzoCodice($source, $opportunity);
+
+        if ($prezzoCodiceTotale === null || $prezzoCodiceTotale <= 0) {
+            $prezzoCodiceTotale = $prezzoCodice;
+        }
+
+        $prezzoListino = $this->resolvePrezzoListino($source, $opportunity);
+
+        $referenceDate = $this->resolveCommercialReferenceDate($source, $opportunity);
 
         $regime = $this->accrual->resolveRegimeFromCommercial(
             $category,
             $source?->get('fornitorePartnerName') ?? $opportunity?->get('fornitorePartnerName'),
-            $source?->get('productBrandName') ?? $opportunity?->get('productBrandName')
+            $source?->get('productBrandName') ?? $opportunity?->get('productBrandName'),
+            $referenceDate
+        );
+
+        $ecoWindEasy = $this->isArielEcoWindEasy($category, $source, $opportunity);
+
+        $gruppoProvvigione = $category?->get('gruppoProvvigione');
+
+        if ($regime === 'ARIEL_LEGACY') {
+            $gruppoProvvigione = $this->resolveArielLegacyGruppo($category, $ecoWindEasy);
+        }
+
+        $plusvalenza = null;
+
+        if ($regime === 'ARIEL_LEGACY') {
+            // Allineato al campo Minus/Plus del contratto quando disponibile.
+            $minusPlusStored = $source ? $this->floatField($source, 'minusPlus') : null;
+
+            if ($minusPlusStored !== null && $minusPlusStored > 0) {
+                $plusvalenza = round($minusPlusStored, 2);
+            } elseif (
+                !$ecoWindEasy
+                && $imponibile !== null
+                && $prezzoCodiceTotale !== null
+                && $imponibile > $prezzoCodiceTotale
+            ) {
+                // Documento: «Plus oltre il prezzo codice» — 50% su (imponibile − codice totale).
+                $plusvalenza = round($imponibile - $prezzoCodiceTotale, 2);
+            }
+        } elseif ($imponibile !== null && $prezzoCodice !== null && $imponibile > $prezzoCodice) {
+            $plusvalenza = $imponibile - $prezzoCodice;
+        }
+
+        $prezzoCodicePerScaletta = $regime === 'ARIEL_LEGACY' ? $prezzoCodiceTotale : $prezzoCodice;
+
+        $margine = $this->resolveMarginePercentuale(
+            $source,
+            $opportunity,
+            $imponibile,
+            $prezzoListino,
+            $prezzoCodicePerScaletta,
+            $regime
         );
 
         return [
@@ -60,7 +110,7 @@ class ProvvigioneManager
             'fornitorePartnerId' => $source?->get('fornitorePartnerId') ?? $opportunity?->get('fornitorePartnerId'),
             'productBrandId' => $source?->get('productBrandId') ?? $opportunity?->get('productBrandId'),
             'productCategoryId' => $category?->getId() ?? $source?->get('productCategoryId') ?? $opportunity?->get('productCategoryId'),
-            'gruppoProvvigione' => $category?->get('gruppoProvvigione'),
+            'gruppoProvvigione' => $gruppoProvvigione,
             'imponibile' => $imponibile,
             'canoneMensile' => $this->floatField($source, 'canoneMensile') ?? $imponibile,
             'inflowTotale' => $imponibile,
@@ -73,6 +123,8 @@ class ProvvigioneManager
                 ?? $this->floatField($opportunity, 'integrazionePncPercentuale'),
             'ordineIncompletoAriel' => (bool) ($source?->get('ordineIncompletoAriel')
                 ?? $opportunity?->get('ordineIncompletoAriel')),
+            'arielEcoWindEasy' => $ecoWindEasy,
+            'referenceDate' => $referenceDate,
         ];
     }
 
@@ -135,6 +187,10 @@ class ProvvigioneManager
             return $this->createConsolidataAriel2026($opportunity, $quote, $category, $context, $imponibile);
         }
 
+        if ($context['regime'] === 'ARIEL_LEGACY') {
+            return $this->createConsolidataArielLegacy($opportunity, $quote, $category, $context, $imponibile);
+        }
+
         if (!$category) {
             return null;
         }
@@ -169,6 +225,7 @@ class ProvvigioneManager
 
         $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
+        $this->ensureTaxiBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
         $this->statusSync->syncProvvigioniForQuote($quote);
         $this->refreshQuoteTotaleProvvigioni($quote);
@@ -187,10 +244,6 @@ class ProvvigioneManager
         $counted = 0;
 
         foreach ($collection as $provvigione) {
-            if (!$this->statusSync->shouldCountInTotale((string) $provvigione->get('statoProvvigione'))) {
-                continue;
-            }
-
             $importo = $provvigione->get('importoConsolidato') ?? $provvigione->get('importo');
 
             if ($importo === null || $importo === '') {
@@ -226,7 +279,7 @@ class ProvvigioneManager
      *
      * @return array{created: int, updated: int, purged: int}
      */
-    public function recalculateAllForQuote(Entity $quote): array
+    public function recalculateAllForQuote(Entity $quote, bool $forceRecalculate = false): array
     {
         $opportunity = $this->resolveOpportunityForQuote($quote, null);
 
@@ -234,7 +287,9 @@ class ProvvigioneManager
             return ['created' => 0, 'updated' => 0, 'purged' => 0];
         }
 
-        $purged = $this->purgeRecalculableProvvigioniForQuote($quote->getId());
+        $purged = $forceRecalculate
+            ? $this->purgeAllAutoProvvigioniForQuote($quote->getId())
+            : $this->purgeRecalculableProvvigioniForQuote($quote->getId());
         $this->syncQuotePricingFields($quote, $opportunity);
 
         $quoteId = $quote->getId();
@@ -279,6 +334,44 @@ class ProvvigioneManager
 
         foreach ($collection as $provvigione) {
             if (!$this->statusSync->canRecalculate($provvigione)) {
+                continue;
+            }
+
+            $this->entityManager->removeEntity($provvigione);
+            $count++;
+        }
+
+        return $count;
+    }
+
+    /**
+     * Rimuove tutte le righe provvigionali automatiche (bonifica massiva).
+     *
+     * @return list<string>
+     */
+    private const AUTO_PROVVIGIONE_TIPI = [
+        'Provvigione Base',
+        'Plus Provvigionale',
+        'Minus Provvigionale',
+        'Bonus (Sabato-Domenica)',
+        'Bonus Taxi',
+        'Referenza Personale',
+    ];
+
+    private function purgeAllAutoProvvigioniForQuote(string $quoteId): int
+    {
+        $collection = $this->entityManager
+            ->getRDBRepository('Provvigione')
+            ->where(['contrattoId' => $quoteId])
+            ->find();
+
+        $count = 0;
+
+        foreach ($collection as $provvigione) {
+            $tipo = (string) ($provvigione->get('tipo') ?? '');
+            $hasRule = (bool) $provvigione->get('regolaProvvigionaleId');
+
+            if (!$hasRule && !in_array($tipo, self::AUTO_PROVVIGIONE_TIPI, true)) {
                 continue;
             }
 
@@ -343,6 +436,102 @@ class ProvvigioneManager
         }
 
         return $this->entityManager->getEntityById('Opportunity', $opportunityId);
+    }
+
+    /**
+     * Ariel legacy (scalette minus fino al 22/01/2026 incluso):
+     * % su imponibile per fascia sconto su prezzo codice + plus 50% oltre codice.
+     *
+     * @param array<string, mixed> $context
+     */
+    private function createConsolidataArielLegacy(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        array $context,
+        ?float $imponibile
+    ): ?Entity {
+        if ($imponibile === null || $imponibile <= 0) {
+            return null;
+        }
+
+        $minusPlus = $this->resolveMinusPlusValue($quote, $opportunity, $imponibile);
+
+        $quote->set([
+            'minusPlus' => $minusPlus,
+            'prezzoCodiceIvaEsclusa' => $quote->get('prezzoCodiceIvaEsclusa')
+                ?: $opportunity->get('prezzoCodiceIvaEsclusa'),
+            'prezzoListinoIvaEsclusa' => $quote->get('prezzoListinoIvaEsclusa')
+                ?: $opportunity->get('prezzoListinoIvaEsclusa'),
+        ]);
+
+        if ($context['marginePercentuale'] !== null) {
+            $quote->set('margineSuListino', $context['marginePercentuale']);
+        }
+
+        $this->entityManager->saveEntity($quote, [
+            'skipHooks' => true,
+            'silent' => true,
+        ]);
+
+        $context = $this->refreshArielLegacyContext($quote, $opportunity, $context, $imponibile, $minusPlus);
+
+        $result = $this->calculator->calculateForTipoRecord($context, 'Provvigione Base')
+            ?? $this->buildArielLegacyBaseResult($context, $imponibile);
+
+        $base = $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            $result,
+            $context,
+            'Provvigione Base',
+            null
+        );
+
+        $this->ensureArielLegacyPlusProvvigione($opportunity, $quote, $category, $context);
+        $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
+        $this->ensureTaxiBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
+        $this->statusSync->syncProvvigioniForQuote($quote);
+        $this->refreshQuoteTotaleProvvigioni($quote);
+
+        return $base;
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function ensureArielLegacyPlusProvvigione(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        array $context
+    ): void {
+        if (!empty($context['arielEcoWindEasy'])) {
+            return;
+        }
+
+        if ($context['plusvalenza'] === null || $context['plusvalenza'] <= 0) {
+            return;
+        }
+
+        $plusResult = $this->resultFromRuleId('arlLegacyPlus50', $context)
+            ?? $this->calculator->calculateForTipoRecord($context, 'Plus Provvigionale')
+            ?? $this->buildArielLegacyPlusResult($context);
+
+        if ($plusResult === null) {
+            return;
+        }
+
+        $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            $plusResult,
+            $context,
+            'Plus Provvigionale',
+            null
+        );
     }
 
     /**
@@ -418,6 +607,7 @@ class ProvvigioneManager
         }
 
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
+        $this->ensureTaxiBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
         $this->statusSync->syncProvvigioniForQuote($quote);
         $this->refreshQuoteTotaleProvvigioni($quote);
@@ -521,6 +711,84 @@ class ProvvigioneManager
             'Bonus (Sabato-Domenica)',
             null
         );
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function ensureTaxiBonusProvvigione(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        array $context,
+        ?float $imponibile
+    ): void {
+        if ($imponibile === null || $imponibile <= 0) {
+            return;
+        }
+
+        if (!$this->isTaxiOpportunity($opportunity)) {
+            return;
+        }
+
+        $result = $this->resultFromRuleId('bonusTaxi2', $context)
+            ?? $this->calculator->calculateForTipoRecord($context, 'Bonus Taxi')
+            ?? $this->buildTaxiBonusResult($context, $imponibile);
+
+        if ($result === null) {
+            return;
+        }
+
+        $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            $result,
+            $context,
+            'Bonus Taxi',
+            null
+        );
+    }
+
+    private function isTaxiOpportunity(Entity $opportunity): bool
+    {
+        $appuntamentoId = $opportunity->get('appuntamentoId');
+
+        if (!$appuntamentoId) {
+            return false;
+        }
+
+        $appuntamento = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
+
+        return $appuntamento && (bool) $appuntamento->get('taxi');
+    }
+
+    /**
+     * Fallback se la regola bonusTaxi2 non è ancora in DB (seed non eseguito).
+     *
+     * @param array<string, mixed> $context
+     * @return array{importo: float, regola: Entity}|null
+     */
+    private function buildTaxiBonusResult(array $context, float $imponibile): ?array
+    {
+        if ($imponibile <= 0) {
+            return null;
+        }
+
+        $rule = $this->entityManager->getNewEntity('RegolaProvvigionale');
+        $rule->set([
+            'id' => 'bonusTaxi2',
+            'name' => 'Bonus Taxi',
+            'attiva' => true,
+            'tipoCalcolo' => 'PercentualeImponibile',
+            'tipoProvvigioneRecord' => 'Bonus Taxi',
+            'percentuale' => 2.0,
+        ]);
+
+        return [
+            'importo' => round($imponibile * 0.02, 2),
+            'regola' => $rule,
+        ];
     }
 
     private function isWeekendContractDate(Entity $quote, ?Entity $opportunity): bool
@@ -749,7 +1017,8 @@ class ProvvigioneManager
         $regime = $context['regime'] ?? $this->accrual->resolveRegimeFromCommercial(
             $category,
             $parent->get('fornitorePartnerName'),
-            $parent->get('productBrandName')
+            $parent->get('productBrandName'),
+            $context['referenceDate'] ?? $this->resolveCommercialReferenceDate($dateSource, null)
         );
         $importo = $result['importo'] ?? null;
         $rule = $result['regola'] ?? null;
@@ -795,6 +1064,18 @@ class ProvvigioneManager
                 'baseCalcolo' => $fallbackBase['baseCalcolo'],
                 'importoBaseCalcolo' => $fallbackBase['importoBaseCalcolo'],
             ]);
+
+            if ($importo !== null && ($context['regime'] ?? '') === 'ARIEL_LEGACY') {
+                if ($tipoRecord === 'Provvigione Base') {
+                    $percent = $this->resolveArielLegacyBasePercent($context);
+
+                    if ($percent !== null) {
+                        $provvigione->set('tassoProvvigioni', $percent);
+                    }
+                } elseif ($tipoRecord === 'Plus Provvigionale') {
+                    $provvigione->set('tassoProvvigioni', 50);
+                }
+            }
         }
 
         if ($giorni > 0 && $eventDate && $stato !== ProvvigioneStatusSync::FORECAST) {
@@ -965,8 +1246,21 @@ class ProvvigioneManager
         ?Entity $source,
         ?Entity $opportunity,
         ?float $imponibile,
-        ?float $prezzoListino
+        ?float $prezzoListino,
+        ?float $prezzoCodice = null,
+        ?string $regime = null
     ): ?float {
+        if ($regime === 'ARIEL_LEGACY') {
+            if ($imponibile === null || $prezzoCodice === null || $prezzoCodice <= 0) {
+                return null;
+            }
+
+            // Sconto % su prezzo codice. Vendita sopra codice → fascia 0% (plus separato).
+            $sconto = round((($imponibile - $prezzoCodice) / $prezzoCodice) * 100, 2);
+
+            return min($sconto, 0.0);
+        }
+
         $stored = $this->floatField($source, 'margineSuListino')
             ?? $this->floatField($opportunity, 'suPrezzoCodice');
 
@@ -979,6 +1273,263 @@ class ProvvigioneManager
         }
 
         return round((($imponibile - $prezzoListino) / $prezzoListino) * 100, 2);
+    }
+
+    private function resolveCommercialReferenceDate(?Entity $source, ?Entity $opportunity): ?string
+    {
+        $candidates = [
+            $source?->get('dateQuoted'),
+            $source?->get('dataInstallazione'),
+            $source?->get('dataAttivazione'),
+            $opportunity?->get('closeDate'),
+            $opportunity?->get('dateStart'),
+            $opportunity?->get('dataInstallazione'),
+            $opportunity?->get('dataAttivazione'),
+            $source?->get('createdAt'),
+            $opportunity?->get('createdAt'),
+        ];
+
+        foreach ($candidates as $date) {
+            if (is_string($date) && $date !== '') {
+                return $date;
+            }
+        }
+
+        $name = (string) ($source?->get('name') ?? $opportunity?->get('name') ?? '');
+
+        if (preg_match('/\b(20\d{2})-(\d{2})-(\d{2})\b/', $name, $m)) {
+            return $m[1] . '-' . $m[2] . '-' . $m[3];
+        }
+
+        if (preg_match('/\b(\d{2})[.\-\/](\d{2})[.\-\/](20\d{2})\b/', $name, $m)) {
+            return $m[3] . '-' . $m[2] . '-' . $m[1];
+        }
+
+        return null;
+    }
+
+    private function isArielEcoWindEasy(?Entity $category, ?Entity $source, ?Entity $opportunity): bool
+    {
+        $labels = [
+            $category?->get('name'),
+            $source?->get('name'),
+            $opportunity?->get('name'),
+            $source?->get('description'),
+            $opportunity?->get('description'),
+        ];
+
+        foreach ($labels as $label) {
+            if ($label && stripos((string) $label, 'ECO WIND EASY') !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function resolveArielLegacyGruppo(?Entity $category, bool $ecoWindEasy): string
+    {
+        if ($ecoWindEasy) {
+            return 'Ariel Eco Wind Easy';
+        }
+
+        $name = strtoupper(trim((string) $category?->get('name')));
+
+        return match (true) {
+            str_contains($name, 'CLIMAT') => 'Ariel Climatizzatori',
+            str_contains($name, 'CALDA') => 'Ariel Caldaie',
+            str_contains($name, 'STUF') => 'Ariel Stufe',
+            str_contains($name, 'BIOMASSA') => 'Ariel Stufe',
+            str_contains($name, 'PELLET') => 'Ariel Stufe',
+            default => 'Ariel Climatizzatori',
+        };
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
+     */
+    private function refreshArielLegacyContext(
+        Entity $quote,
+        Entity $opportunity,
+        array $context,
+        ?float $imponibile,
+        ?float $minusPlus
+    ): array {
+        $context['imponibile'] = $imponibile;
+
+        if ($minusPlus !== null && $minusPlus > 0) {
+            $context['plusvalenza'] = round($minusPlus, 2);
+        } elseif ($minusPlus !== null && $minusPlus <= 0) {
+            $context['plusvalenza'] = null;
+        }
+
+        $prezzoCodiceTotale = $this->resolvePrezzoCodice($quote, $opportunity);
+
+        if ($prezzoCodiceTotale !== null && $prezzoCodiceTotale > 0 && $imponibile !== null) {
+            $context['marginePercentuale'] = $this->resolveMarginePercentuale(
+                $quote,
+                $opportunity,
+                $imponibile,
+                null,
+                $prezzoCodiceTotale,
+                'ARIEL_LEGACY'
+            );
+        }
+
+        return $context;
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     * @return array{importo: float, regola: Entity}|null
+     */
+    private function buildArielLegacyBaseResult(array $context, ?float $imponibile): ?array
+    {
+        if ($imponibile === null || $imponibile <= 0) {
+            return null;
+        }
+
+        $ruleId = $this->resolveArielLegacyBaseRuleId($context);
+
+        if ($ruleId) {
+            $fromRule = $this->resultFromRuleId($ruleId, $context);
+
+            if ($fromRule !== null) {
+                return $fromRule;
+            }
+        }
+
+        $percent = $this->resolveArielLegacyBasePercent($context);
+
+        if ($percent === null || $percent <= 0) {
+            return null;
+        }
+
+        $rule = $ruleId ? $this->entityManager->getEntityById('RegolaProvvigionale', $ruleId) : null;
+
+        return [
+            'importo' => round($imponibile * $percent / 100, 2),
+            'regola' => ($rule && $rule->get('attiva')) ? $rule : null,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     * @return array{importo: float, regola: Entity}|null
+     */
+    private function buildArielLegacyPlusResult(array $context): ?array
+    {
+        $plusvalenza = $context['plusvalenza'] ?? null;
+
+        if ($plusvalenza === null || (float) $plusvalenza <= 0) {
+            return null;
+        }
+
+        $fromRule = $this->resultFromRuleId('arlLegacyPlus50', $context);
+
+        if ($fromRule !== null) {
+            return $fromRule;
+        }
+
+        return [
+            'importo' => round((float) $plusvalenza * 0.5, 2),
+            'regola' => null,
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function resolveArielLegacyBaseRuleId(array $context): ?string
+    {
+        if (!empty($context['arielEcoWindEasy'])) {
+            return 'arlEcoWind5';
+        }
+
+        $gruppo = (string) ($context['gruppoProvvigione'] ?? 'Ariel Climatizzatori');
+        $margine = $context['marginePercentuale'] ?? null;
+
+        if ($margine === null) {
+            return match ($gruppo) {
+                'Ariel Caldaie', 'Ariel Stufe' => 'arlCalM290',
+                'Ariel Eco Wind Easy' => 'arlEcoWind5',
+                default => 'arlCliM029',
+            };
+        }
+
+        if ($gruppo === 'Ariel Caldaie' || $gruppo === 'Ariel Stufe') {
+            if ($margine >= -2.9) {
+                return 'arlCalM290';
+            }
+
+            if ($margine >= -10) {
+                return 'arlCalM1000';
+            }
+
+            return 'arlCalMDeep';
+        }
+
+        if ($gruppo === 'Ariel Climatizzatori') {
+            if ($margine >= -2.99) {
+                return 'arlCliM029';
+            }
+
+            if ($margine >= -4.99) {
+                return 'arlCliM499';
+            }
+
+            if ($margine >= -6.99) {
+                return 'arlCliM699';
+            }
+
+            if ($margine >= -9.99) {
+                return 'arlCliM999';
+            }
+
+            if ($margine >= -12.99) {
+                return 'arlCliM1299';
+            }
+
+            if ($margine >= -14.99) {
+                return 'arlCliM1499';
+            }
+
+            return null;
+        }
+
+        return 'arlCliM029';
+    }
+
+    /**
+     * @param array<string, mixed> $context
+     */
+    private function resolveArielLegacyBasePercent(array $context): ?float
+    {
+        $ruleId = $this->resolveArielLegacyBaseRuleId($context);
+
+        if (!$ruleId) {
+            return null;
+        }
+
+        $rule = $this->entityManager->getEntityById('RegolaProvvigionale', $ruleId);
+
+        if (!$rule || !$rule->get('attiva')) {
+            return match ($ruleId) {
+                'arlEcoWind5' => 5.0,
+                'arlCalM290', 'arlStuM290' => 13.0,
+                'arlCalM1000', 'arlStuM1000' => 7.0,
+                'arlCalMDeep', 'arlStuMDeep' => 5.0,
+                'arlCliM499' => 13.0,
+                'arlCliM699' => 12.0,
+                'arlCliM999' => 10.0,
+                'arlCliM1299' => 6.0,
+                'arlCliM1499' => 3.0,
+                default => 15.0,
+            };
+        }
+
+        return $this->floatField($rule, 'percentuale');
     }
 
     private function resolveMinusPlusValue(
@@ -1080,7 +1631,7 @@ class ProvvigioneManager
         $tipo = $rule?->get('tipoCalcolo') ?? 'PercentualeImponibile';
 
         return match ($tipo) {
-            'PercentualePlusvalenza' => [
+            'PercentualePlusvalenza', 'PercentualeMinusvalenza' => [
                 'baseCalcolo' => isset($context['plusvalenza']) && (float) $context['plusvalenza'] < 0
                     ? 'Minusvalenza'
                     : 'Plusvalenza',
