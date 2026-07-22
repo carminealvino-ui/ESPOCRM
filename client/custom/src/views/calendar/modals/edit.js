@@ -1,8 +1,7 @@
 /* global define */
 
 /**
- * Calendario: pre-compila Utente Assegnato (assignedUsers) alla creazione.
- * Appuntamento usa assignedUsers; il core calendario passa solo assignedUserId.
+ * Calendario: pre-compila Utente Assegnato + forza durata 1h30 (dateEnd).
  */
 define('custom:views/calendar/modals/edit', [
     'crm:views/calendar/modals/edit',
@@ -27,6 +26,10 @@ define('custom:views/calendar/modals/edit', [
             Dep.prototype.createRecordView.call(this, model, view => {
                 this.ensureCalendarAssignee();
                 this.ensureCalendarDefaultDuration();
+
+                if (view && typeof view.applyDefaultDuration === 'function') {
+                    view.applyDefaultDuration();
+                }
 
                 if (typeof callback === 'function') {
                     callback(view);
@@ -84,6 +87,10 @@ define('custom:views/calendar/modals/edit', [
 
         ensureCalendarDefaultDuration: function () {
             if (this.id || !this.model || !this.model.isNew() || this.model.get('isAllDay')) {
+                return;
+            }
+
+            if (this.model.entityType && this.model.entityType !== 'Appuntamento') {
                 return;
             }
 
