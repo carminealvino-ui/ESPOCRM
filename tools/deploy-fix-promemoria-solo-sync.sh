@@ -17,6 +17,10 @@ BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 FILES=(
   "custom/Espo/Custom/Hooks/Provvigione/BeforeSaveLegacy.php"
   "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
+  "custom/Espo/Custom/Classes/Select/Call/PrimaryFilters/ChiamateScadute.php"
+  "custom/Espo/Custom/Resources/metadata/selectDefs/Call.json"
+  "custom/Espo/Custom/Resources/metadata/clientDefs/Call.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Call.json"
   "tools/sync-promemoria-esistenti.php"
 )
 
