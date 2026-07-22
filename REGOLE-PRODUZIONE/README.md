@@ -6,6 +6,18 @@ Ambiente: `~/public_html/crm/mec-group` (produzione EspoCRM).
 
 ---
 
+## Regola 0 — Repo allineato prima di qualsiasi deploy (PRIORITÀ MASSIMA)
+
+> **Non si scrive codice sul server se il repository non riflette ciò che funziona in produzione.**
+
+1. `export-delta` dal server → `apply-delta` → push su `main`
+2. `php tools/verify-appuntamento-baseline.php` → deve dare OK
+3. Solo allora: nuovo fix o deploy mirato
+
+Dettaglio: [`12-NO-DEPLOY-SENZA-REPO-ALLINEATO.md`](12-NO-DEPLOY-SENZA-REPO-ALLINEATO.md)
+
+---
+
 ## Regola 1 — Un’istruzione alla volta
 
 - Si fornisce **una sola** azione per messaggio (un comando, un file, un deploy).
@@ -66,6 +78,7 @@ Dettaglio: [`04-STRUTTURA-BACKUP-DEV.md`](04-STRUTTURA-BACKUP-DEV.md) e [`backup
 
 ## Ordine obbligatorio di lavoro
 
+0. **Regola 0 — repo allineato:** [`12-NO-DEPLOY-SENZA-REPO-ALLINEATO.md`](12-NO-DEPLOY-SENZA-REPO-ALLINEATO.md)
 1. **Passo 0 backup:** [`00-PASSO-ZERO-BACKUP-OBBLIGATORIO.md`](00-PASSO-ZERO-BACKUP-OBBLIGATORIO.md)
 2. Flusso completo: [`00-ORDINE-DI-LAVORO.md`](00-ORDINE-DI-LAVORO.md)
 
@@ -84,7 +97,11 @@ Dettaglio: [`04-STRUTTURA-BACKUP-DEV.md`](04-STRUTTURA-BACKUP-DEV.md) e [`backup
 | `09-ALLINEAMENTO-GOOGLE-SYNC-20260609.md` | Allineamento post-fix Google Calendar Appuntamento |
 | `06-PUSH-GITHUB-DAL-SERVER.md` | Push delta su GitHub dal server (PAT) |
 | `07-VERIFICA-SYNC-PRODUZIONE-GITHUB.md` | Verifica allineamento: `status --branch=main` |
+| `12-NO-DEPLOY-SENZA-REPO-ALLINEATO.md` | **Regola 0:** export-delta prima di ogni fix/deploy |
+| `13-FILE-CONDIVISI-VIETATO-CURL-INTERO.md` | Vietato curl entityDefs Appuntamento intero |
+| `tools/DEPLOY-VIETATI.md` | Script deprecati e deploy autorizzati |
+| `tools/verify-appuntamento-baseline.php` | Blocco deploy se repo ha enum legacy |
 
 ---
 
-*Ultimo aggiornamento regole: 2026-06-09*
+*Ultimo aggiornamento regole: 2026-07-22*

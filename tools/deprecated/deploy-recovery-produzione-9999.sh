@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# ⛔ DEPRECATO — NON ESEGUIRE. Vedi tools/deprecated/README.md e tools/DEPLOY-VIETATI.md
+echo "ERRORE: script deprecato (2026-07-22). Usare deploy mirati." >&2
+exit 1
+
 # RECUPERO PRODUZIONE — un solo deploy con tutti i fix recenti.
 #
 # Cosa include:

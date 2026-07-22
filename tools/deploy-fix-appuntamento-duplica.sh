@@ -15,7 +15,6 @@ echo "=== Fix Appuntamento Duplica (viste standard, no crm:meeting) ==="
 
 FILES=(
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
-  "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
   "client/custom/src/views/appuntamento/record/edit.js"
   "client/custom/src/views/appuntamento/record/edit-small.js"
   "client/custom/src/views/appuntamento/record/detail.js"

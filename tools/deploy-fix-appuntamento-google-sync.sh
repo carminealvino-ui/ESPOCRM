@@ -20,7 +20,6 @@ FILES=(
   "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
   "custom/Espo/Modules/Google/Hooks/Common/GoogleCalendar.php"
   "custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json"
-  "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
   "tools/bonifica-appuntamento-google-calendar.php"
 )
 

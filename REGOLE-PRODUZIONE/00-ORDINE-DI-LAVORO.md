@@ -8,7 +8,16 @@ Usare questa sequenza per **ogni** intervento (fix, deploy, layout).
 └─────────────────┬───────────────────┘
                   ▼
 ┌─────────────────────────────────────┐
-│ 0b. BACKUP OBBLIGATORIO backup_dev/ │  ← NON SALTARE (vedi 00-PASSO-ZERO)
+│ 0a. REGOLA 0: export-delta prod     │  ← se repo non allineato, STOP
+│     → apply-delta → push main       │     (vedi 12-NO-DEPLOY-SENZA-REPO)
+└─────────────────┬───────────────────┘
+                  ▼
+┌─────────────────────────────────────┐
+│ 0b. verify-appuntamento-baseline    │  ← deve dare OK
+└─────────────────┬───────────────────┘
+                  ▼
+┌─────────────────────────────────────┐
+│ 0c. BACKUP OBBLIGATORIO backup_dev/ │  ← NON SALTARE (vedi 00-PASSO-ZERO)
 │     backup-dev-batch.sh o save.sh   │
 └─────────────────┬───────────────────┘
                   ▼
