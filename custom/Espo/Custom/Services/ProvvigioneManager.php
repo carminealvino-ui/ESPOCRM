@@ -265,7 +265,14 @@ class ProvvigioneManager
 
         $totale = $this->resolveTotaleProvvigioniForQuoteId($quote->getId());
 
-        $quote->set('totaleProvvigioni', $totale);
+        $currency = $quote->get('amountCurrency')
+            ?: $quote->get('importoContrattoCurrency')
+            ?: 'EUR';
+
+        $quote->set([
+            'totaleProvvigioni' => $totale,
+            'totaleProvvigioniCurrency' => $currency,
+        ]);
 
         $this->entityManager->saveEntity($quote, [
             'skipHooks' => true,

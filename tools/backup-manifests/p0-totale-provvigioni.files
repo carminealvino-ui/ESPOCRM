@@ -1,0 +1,6 @@
+# P0.1 — Provvigioni Totali da importoConsolidato
+custom/Espo/Custom/Services/QuoteProvvigioniSync.php
+custom/Espo/Custom/Services/ProvvigioneManager.php
+custom/Espo/Custom/Services/ProvvigioneStatusSync.php
+custom/Espo/Custom/Services/QuotePricingCalculator.php
+tools/backfill-quote-totale-provvigioni.php

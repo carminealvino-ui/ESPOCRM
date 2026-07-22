@@ -40,6 +40,7 @@ class QuotePricingCalculator
         $this->syncItemListPrezzoCodice($quote);
         $this->syncCostiAggiuntiviOnQuote($quote);
         $this->syncTotalsAndDerivedFields($quote, true);
+        $this->ensureCurrencyAttributes($quote);
     }
 
     /**
@@ -53,6 +54,54 @@ class QuotePricingCalculator
         }
 
         $this->syncCostiAggiuntiviOnQuote($quote);
+        $this->ensureCurrencyAttributes($quote);
+    }
+
+    /**
+     * Espo validCurrency: se c'è l'importo deve esserci anche *Currency (es. EUR).
+     * Evita Bad request su totalPrezzoCodice / altri campi currency.
+     */
+    private function ensureCurrencyAttributes(Entity $entity): void
+    {
+        $currency = $entity->get('amountCurrency')
+            ?: $entity->get('importoContrattoCurrency')
+            ?: $entity->get('grandTotalAmountCurrency')
+            ?: 'EUR';
+
+        $fields = [
+            'totalPrezzoCodice',
+            'prezzoCodiceIvaEsclusa',
+            'prezzoCodiceIvaInclusa',
+            'prezzoListinoIvaEsclusa',
+            'prezzoListinoIvaInclusa',
+            'prezzoListinoIVAInclusa',
+            'minusPlus',
+            'importoContratto',
+            'totaleProvvigioni',
+            'shippingCost',
+            'amount',
+            'taxAmount',
+            'grandTotalAmount',
+            'importoFinanziato',
+            'importoCaparra',
+            'importoSaldo',
+            'rataPrestito',
+        ];
+
+        foreach ($fields as $field) {
+            $value = $entity->get($field);
+
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $attr = $field . 'Currency';
+            $current = $entity->get($attr);
+
+            if ($current === null || $current === '') {
+                $entity->set($attr, $currency);
+            }
+        }
     }
 
     /**
@@ -483,9 +532,14 @@ class QuotePricingCalculator
         if ($taxInclusiveQuote) {
             if ($codiceIviFromItems > 0) {
                 $totalPrezzoCodice = round($codiceIviFromItems, 2);
+                $currency = $entity->get('amountCurrency')
+                    ?: $entity->get('importoContrattoCurrency')
+                    ?: 'EUR';
                 $entity->set([
                     'prezzoCodiceIvaInclusa' => $totalPrezzoCodice,
+                    'prezzoCodiceIvaInclusaCurrency' => $currency,
                     'totalPrezzoCodice' => $totalPrezzoCodice,
+                    'totalPrezzoCodiceCurrency' => $currency,
                 ]);
 
                 if ($codiceNetFromItems > 0) {
@@ -493,9 +547,14 @@ class QuotePricingCalculator
                 }
             } elseif ($codiceIviFromProducts > 0) {
                 $totalPrezzoCodice = round($codiceIviFromProducts, 2);
+                $currency = $entity->get('amountCurrency')
+                    ?: $entity->get('importoContrattoCurrency')
+                    ?: 'EUR';
                 $entity->set([
                     'prezzoCodiceIvaInclusa' => $totalPrezzoCodice,
+                    'prezzoCodiceIvaInclusaCurrency' => $currency,
                     'totalPrezzoCodice' => $totalPrezzoCodice,
+                    'totalPrezzoCodiceCurrency' => $currency,
                 ]);
             }
 
@@ -528,9 +587,14 @@ class QuotePricingCalculator
             }
 
             if ($totalPrezzoCodice > 0) {
+                $currency = $entity->get('amountCurrency')
+                    ?: $entity->get('importoContrattoCurrency')
+                    ?: 'EUR';
                 $entity->set([
                     'totalPrezzoCodice' => round($totalPrezzoCodice, 2),
+                    'totalPrezzoCodiceCurrency' => $currency,
                     'prezzoCodiceIvaEsclusa' => round($totalPrezzoCodice, 2),
+                    'prezzoCodiceIvaEsclusaCurrency' => $currency,
                 ]);
             }
 
