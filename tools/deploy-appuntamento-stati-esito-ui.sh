@@ -49,6 +49,12 @@ echo ""
 
 cd "${CRM_ROOT}"
 
+# Se produzione è OK, non serve deploy — preferire export-delta
+if bash tools/pre-deploy-check-appuntamento.sh "${CRM_ROOT}" 2>/dev/null; then
+  echo "ATTENZIONE: produzione già conforme baseline. Preferire export-delta → repo."
+  echo "Continuo solo se stai ripristinando dopo una regressione."
+fi
+
 for rel in "${FILES[@]}"; do
   target="${CRM_ROOT}/${rel}"
   mkdir -p "$(dirname "${target}")"

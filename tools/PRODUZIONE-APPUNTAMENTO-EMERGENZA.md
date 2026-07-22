@@ -1,5 +1,8 @@
 # Produzione — Appuntamento non si crea (emergenza)
 
+> ⛔ **DEPRECATO 2026-07-22** — Lo script `deploy-appuntamento-emergenza-produzione.sh` sovrascrive entityDefs con enum obsoleti.  
+> Usare: `export-delta` → repo, poi fix mirato. Vedi `tools/DEPLOY-VIETATI.md`.
+
 ## Cosa è successo
 
 Il CRM cerca file JavaScript del modulo **CRM Meeting** (`crm:views/meeting/record/edit.js`) che **non esistono** sul server (`client/modules/crm` assente). Dopo pulizia cache o deploy parziali, **Crea** e **Duplica** aprono pagina bianca.

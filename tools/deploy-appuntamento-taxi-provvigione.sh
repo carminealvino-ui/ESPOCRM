@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Deploy campo Taxi su Appuntamento + bonus provvigione 2%.
 #
+# NON include entityDefs/Appuntamento.json — vedi REGOLE-PRODUZIONE/13-FILE-CONDIVISI-VIETATO-CURL-INTERO.md
+# Il campo taxi in metadata deve arrivare da sync produzione → repo.
+#
 # Uso (salvare su disco, NON pipe):
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/appuntamento-taxi-provvigione-9999/tools/deploy-appuntamento-taxi-provvigione.sh?t=$(date +%s)" \
@@ -15,7 +18,6 @@ REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 
 FILES=(
-  "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/defaultSidePanel.json"
   "custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php"
   "custom/Espo/Custom/Hooks/Appuntamento/RecalculateProvvigioniOnTaxiChange.php"
@@ -35,6 +37,11 @@ echo ""
 
 cd "${CRM_ROOT}"
 
+bash tools/pre-deploy-check-appuntamento.sh "${CRM_ROOT}" || {
+  echo "Deploy bloccato: produzione non allineata. Vedi REGOLE-PRODUZIONE/12" >&2
+  exit 1
+}
+
 for rel in "${FILES[@]}"; do
   target="${CRM_ROOT}/${rel}"
   mkdir -p "$(dirname "${target}")"
@@ -44,10 +51,7 @@ done
 
 echo ""
 echo "=== Verifica file ==="
-grep -q '"taxi"' "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json" || {
-  echo "ERRORE: entityDefs Appuntamento senza campo taxi" >&2
-  exit 1
-}
+bash tools/pre-deploy-check-appuntamento.sh "${CRM_ROOT}" || exit 1
 grep -q '"name": "taxi"' "${CRM_ROOT}/custom/Espo/Custom/Resources/layouts/Appuntamento/defaultSidePanel.json" || {
   echo "ERRORE: side panel senza taxi" >&2
   exit 1

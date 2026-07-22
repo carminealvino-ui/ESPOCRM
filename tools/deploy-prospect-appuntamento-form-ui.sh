@@ -21,7 +21,6 @@ VERSION_MARKER="VERSION = '1.2.3'"
 FILES=(
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json"
-  "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
   "client/custom/src/views/appuntamento/record/edit.js"
   "client/custom/src/views/appuntamento/record/edit-small.js"
   "client/custom/src/views/calendar/calendar.js"

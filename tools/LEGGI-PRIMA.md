@@ -4,6 +4,10 @@
 
 → **[`../REGOLE-PRODUZIONE/README.md`](../REGOLE-PRODUZIONE/README.md)**
 
+**Regola 0:** nessun deploy senza repo allineato → [`REGOLE-PRODUZIONE/12-NO-DEPLOY-SENZA-REPO-ALLINEATO.md`](../REGOLE-PRODUZIONE/12-NO-DEPLOY-SENZA-REPO-ALLINEATO.md)
+
+Script vietati: [`DEPLOY-VIETATI.md`](DEPLOY-VIETATI.md)
+
 In sintesi:
 
 1. **Un’istruzione alla volta** — passo successivo solo dopo screenshot di successo.

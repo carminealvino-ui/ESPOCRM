@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# ⛔ DEPRECATO — NON ESEGUIRE. Vedi tools/deprecated/README.md
+echo "ERRORE: script deprecato (2026-07-22). Usare export-delta + deploy mirati." >&2
+exit 1
+
 # PRODUZIONE: backup automatico + Appuntamento con viste Espo standard (Crea / Duplica).
 #
 #   cd ~/public_html/crm/mec-group

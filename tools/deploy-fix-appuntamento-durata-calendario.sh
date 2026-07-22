@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Fix durata Appuntamento da calendario: sempre 1h30 (non span calendario + default).
 #
+# NON include entityDefs/Appuntamento.json — vedi REGOLE-PRODUZIONE/13
+#
 # PASSO 0 — backup obbligatorio in backup_dev/:
 #   cd ~/public_html/crm/mec-group
 #   bash tools/backup-dev-batch.sh appuntamento-durata-calendario \
@@ -27,7 +29,6 @@ FILES=(
   "client/custom/src/views/calendar/modals/edit.js"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json"
-  "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
 )
 
 echo "=== Fix durata Appuntamento calendario → ${CRM_ROOT} ==="
@@ -60,17 +61,16 @@ if has_backup; then
 fi
 echo ""
 
+bash tools/pre-deploy-check-appuntamento.sh "${CRM_ROOT}" 2>/dev/null || {
+  echo "WARN: pre-deploy check fallito — verificare entityDefs prima di procedere" >&2
+}
+
 for rel in "${FILES[@]}"; do
   target="${CRM_ROOT}/${rel}"
   mkdir -p "$(dirname "${target}")"
   curl -fsSL -o "${target}" "${BASE}/${rel}?t=$(date +%s)"
   echo "OK ${rel}"
 done
-
-grep -q 'custom:views/appuntamento/fields/duration' "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json" || {
-  echo "ERRORE: entityDefs Appuntamento senza campo duration custom" >&2
-  exit 1
-}
 
 grep -q 'custom:views/calendar/calendar' "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json" || {
   echo "ERRORE: Calendar.json senza calendarView custom" >&2
