@@ -55,8 +55,21 @@ define('custom:views/appuntamento/record/edit-small', [
             });
 
             // Dopo che i campi data sono pronti (calendario passa spesso 30m)
-            setTimeout(() => this.applyDefaultDuration(), 200);
-            setTimeout(() => this.applyDefaultDuration(), 500);
+            [50, 200, 500, 1000, 1800].forEach(ms => {
+                setTimeout(() => this.applyDefaultDuration(), ms);
+            });
+
+            this.listenTo(this.model, 'change:dateEnd', (model, value, o) => {
+                if (!this.model.isNew() || this.model.get('isAllDay')) {
+                    return;
+                }
+
+                if (o && o.updatedByDuration) {
+                    return;
+                }
+
+                this.applyDefaultDuration();
+            });
         },
 
         getDefaultDurationSeconds: function () {
