@@ -20,6 +20,7 @@ BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 FILES=(
   "custom/Espo/Custom/Hooks/Provvigione/BeforeSaveLegacy.php"
   "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
+  "tools/aggiorna-appuntamenti-passati-promemoria.php"
 )
 
 echo "=== Fix promemoria (Hooks\\Base + popup) → ${CRM_ROOT} ==="
@@ -77,5 +78,7 @@ fi
 echo ""
 echo "=== Deploy completato ==="
 echo "1) Ricarica il browser (Ctrl+F5)"
-echo "2) I popup esito Appuntamento (dopo ~12h da dateStart) e Call Planned devono riapparire"
+echo "2) Aggiorna appuntamenti passati (Call + promemoria):"
+echo "     php tools/aggiorna-appuntamenti-passati-promemoria.php           # anteprima"
+echo "     php tools/aggiorna-appuntamenti-passati-promemoria.php --apply   # applica"
 echo "3) Controlla data/log che non ci siano più errori Hooks\\Base"
