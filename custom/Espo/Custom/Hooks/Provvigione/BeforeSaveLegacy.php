@@ -2,20 +2,36 @@
 
 namespace Espo\Custom\Hooks\Provvigione;
 
+use Espo\Core\Hook\Hook\BeforeSave;
 use Espo\ORM\Entity;
-use Espo\Core\Hooks\Base;
+use Espo\ORM\EntityManager;
+use Espo\ORM\Repository\Option\SaveOptions;
 
-class BeforeSaveLegacy extends Base
+/**
+ * Calcolo legacy importo da tasso × base (compatibile Espo 10 — non usa Hooks\Base).
+ *
+ * @implements BeforeSave<Entity>
+ */
+class BeforeSaveLegacy implements BeforeSave
 {
-    public function beforeSave(Entity $entity, array $options)
+    public static int $order = 5;
+
+    public function __construct(
+        private EntityManager $entityManager
+    ) {}
+
+    public function beforeSave(Entity $entity, SaveOptions $options): void
     {
+        if ($options->get('skipHooks') || $options->get('silent')) {
+            return;
+        }
+
         if (!$entity->get('contrattoId')) {
             return;
         }
 
-        $em = $this->getEntityManager();
-
-        $quote = $em->getRepository('Quote')
+        $quote = $this->entityManager
+            ->getRDBRepository('Quote')
             ->where(['id' => $entity->get('contrattoId')])
             ->findOne();
 
@@ -23,58 +39,49 @@ class BeforeSaveLegacy extends Base
             return;
         }
 
-        $tipo = $entity->get('tipo');
+        $tipo = (string) ($entity->get('tipo') ?? '');
         $tasso = (float) $entity->get('tassoProvvigioni');
 
-        $base = 0;
+        $base = 0.0;
 
-        // BASE CALCOLO
         if ($tipo === 'Provvigione Base') {
             $base = (float) $quote->get('amount');
-        }
-
-        elseif ($tipo === 'Plus Provvigionale' || $tipo === 'Minus Provvigionale') {
+        } elseif ($tipo === 'Plus Provvigionale' || $tipo === 'Minus Provvigionale') {
             $base = (float) $quote->get('minusPlus');
-        }
-
-        elseif ($tipo === 'Bonus (Sabato-Domenica)') {
-
+        } elseif ($tipo === 'Bonus (Sabato-Domenica)') {
             $date = $quote->get('dateQuoted');
 
             if ($date) {
-                $day = date('N', strtotime($date));
+                $day = (int) date('N', strtotime((string) $date));
 
                 if ($day >= 6) {
                     $base = (float) $quote->get('amount');
                 }
             }
-        }
-
-        elseif (strpos($tipo, 'Gara') !== false) {
-
+        } elseif ($tipo === 'Bonus Taxi') {
+            $base = (float) $quote->get('amount');
+        } elseif (str_contains($tipo, 'Gara')) {
             $amount = (float) $quote->get('amount');
 
-            if (strpos($tipo, '2.5') !== false && $amount > 2500) {
+            if (str_contains($tipo, '2.5') && $amount > 2500) {
                 $base = $amount;
             }
 
-            if (strpos($tipo, '3.5') !== false && $amount > 3500) {
+            if (str_contains($tipo, '3.5') && $amount > 3500) {
                 $base = $amount;
             }
 
-            if (strpos($tipo, '5') !== false && $amount > 5000) {
+            if (str_contains($tipo, '5') && $amount > 5000) {
                 $base = $amount;
             }
         }
 
-        // CALCOLO
-        $importo = 0;
+        $importo = 0.0;
 
         if ($base > 0 && $tasso > 0) {
             $importo = ($base * $tasso) / 100;
         }
 
-        // SET DIRETTO → senza save
         $entity->set('importo', $importo);
     }
 }
