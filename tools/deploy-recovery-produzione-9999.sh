@@ -7,6 +7,7 @@
 #  - Filtro chiamateScadute su Call
 #  - Taxi + bonus 2% (schema + seed)
 #  - Durata calendario 1h30 allineata a Date End
+#  - UI stati/sottostato/esito filtrati (form calendario + popup esito)
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/recovery-produzione-9999/tools/deploy-recovery-produzione-9999.sh?t=$(date +%s)" \
@@ -65,6 +66,24 @@ FILES=(
   "custom/Espo/Custom/Resources/client/custom/src/views/fields/appuntamento-duration.js"
   "custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/record/edit-small.js"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json"
+  # UI stati/sottostato/esito filtrati (form calendario + popup)
+  "custom/Espo/Custom/Services/AppuntamentoStatiRules.php"
+  "custom/Espo/Custom/Hooks/Appuntamento/SyncStatiEsito.php"
+  "custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json"
+  "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
+  "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
+  "client/custom/src/helpers/appuntamento-sottostato-map.js"
+  "client/custom/src/views/fields/appuntamento-sottostato.js"
+  "client/custom/src/views/fields/appuntamento-sottostato-popup.js"
+  "client/custom/src/views/fields/appuntamento-esito.js"
+  "custom/Espo/Custom/client/custom/src/helpers/appuntamento-sottostato-map.js"
+  "custom/Espo/Custom/client/custom/src/views/fields/appuntamento-sottostato.js"
+  "custom/Espo/Custom/client/custom/src/views/fields/appuntamento-sottostato-popup.js"
+  "custom/Espo/Custom/client/custom/src/views/fields/appuntamento-esito.js"
+  "custom/Espo/Custom/Resources/client/custom/src/helpers/appuntamento-sottostato-map.js"
+  "custom/Espo/Custom/Resources/client/custom/src/views/fields/appuntamento-sottostato.js"
+  "custom/Espo/Custom/Resources/client/custom/src/views/fields/appuntamento-sottostato-popup.js"
+  "custom/Espo/Custom/Resources/client/custom/src/views/fields/appuntamento-esito.js"
 )
 
 echo "=============================================="
@@ -100,6 +119,15 @@ grep -q '"taxi"' \
 grep -q 'createEvent' \
   "${CRM_ROOT}/client/custom/src/views/calendar/calendar.js" || {
   echo "ERRORE: calendar.js senza fix durata" >&2; exit 1; }
+grep -q 'SyncStatiEsito' \
+  "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json" || {
+  echo "ERRORE: hook SyncStatiEsito mancante" >&2; exit 1; }
+grep -q 'appuntamento-esito' \
+  "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json" || {
+  echo "ERRORE: entityDefs esito senza view custom" >&2; exit 1; }
+grep -q 'getAllowedEsiti' \
+  "${CRM_ROOT}/client/custom/src/helpers/appuntamento-sottostato-map.js" || {
+  echo "ERRORE: appuntamento-sottostato-map.js incompleto" >&2; exit 1; }
 echo "OK tutte le verifiche"
 
 echo ""

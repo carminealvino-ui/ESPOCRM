@@ -18,7 +18,8 @@
             ],
             [
                 {
-                    "name": "esito"
+                    "name": "esito",
+                    "view": "custom:views/fields/appuntamento-esito"
                 }
             ],
             [
