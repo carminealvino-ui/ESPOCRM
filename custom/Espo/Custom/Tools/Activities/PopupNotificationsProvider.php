@@ -237,31 +237,27 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             : $now;
         $resultList = [];
 
-        $query = $this->entityManager
+        if ($entityType === 'Appuntamento') {
+            return $this->findPastPlannedAppuntamentoItems(
+                $userId,
+                $statusList,
+                $popupCutoff,
+                $seenEntityKeys,
+                $seenCallSignatures
+            );
+        }
+
+        $collection = $this->entityManager
             ->getRDBRepository($entityType)
             ->select($this->getPastPlannedSelectFields($entityType, $dateField))
             ->where([
                 'status' => $statusList,
+                'assignedUserId' => $userId,
                 $dateField . '<=' => $popupCutoff,
             ])
             ->order($dateField, 'DESC')
-            ->limit(0, 50);
-
-        if ($entityType === 'Appuntamento' && $this->entityHasAssignedUsersLink($entityType)) {
-            $query
-                ->distinct()
-                ->leftJoin('assignedUsers')
-                ->where([
-                    'OR' => [
-                        ['assignedUserId' => $userId],
-                        ['assignedUsers.id' => $userId],
-                    ],
-                ]);
-        } else {
-            $query->where(['assignedUserId' => $userId]);
-        }
-
-        $collection = $query->find();
+            ->limit(0, 50)
+            ->find();
 
         foreach ($collection as $entity) {
             $item = $this->buildEntityItemIfNew($entity, $seenEntityKeys, $seenCallSignatures);
@@ -274,14 +270,124 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         return $resultList;
     }
 
-    private function entityHasAssignedUsersLink(string $entityType): bool
-    {
-        try {
-            $defs = $this->entityManager->getDefs()->getEntity($entityType);
+    /**
+     * Appuntamento: non filtrare solo su assignedUserId (spesso vuoto con multi-assegnatari).
+     * Carica i Pianificato scaduti e filtra in PHP con userCanSeeActivity.
+     *
+     * @param string[] $statusList
+     * @param array<string, bool> $seenEntityKeys
+     * @return Item[]
+     */
+    private function findPastPlannedAppuntamentoItems(
+        string $userId,
+        array $statusList,
+        string $popupCutoff,
+        array &$seenEntityKeys,
+        array &$seenCallSignatures
+    ): array {
+        $resultList = [];
+        $candidateIds = [];
 
-            return $defs->hasRelation('assignedUsers');
-        } catch (Throwable) {
-            return false;
+        $byAssigned = $this->entityManager
+            ->getRDBRepository('Appuntamento')
+            ->select(['id'])
+            ->where([
+                'status' => $statusList,
+                'assignedUserId' => $userId,
+                'dateStart<=' => $popupCutoff,
+            ])
+            ->order('dateStart', 'DESC')
+            ->limit(0, 80)
+            ->find();
+
+        foreach ($byAssigned as $row) {
+            $candidateIds[(string) $row->getId()] = true;
+        }
+
+        foreach ($this->findAppuntamentoIdsForUserViaEntityUser($userId, $statusList, $popupCutoff) as $id) {
+            $candidateIds[$id] = true;
+        }
+
+        // Fallback: ultimi Pianificato scaduti, filtro visibilità in PHP
+        if ($candidateIds === []) {
+            $recent = $this->entityManager
+                ->getRDBRepository('Appuntamento')
+                ->select(['id'])
+                ->where([
+                    'status' => $statusList,
+                    'dateStart<=' => $popupCutoff,
+                ])
+                ->order('dateStart', 'DESC')
+                ->limit(0, 80)
+                ->find();
+
+            foreach ($recent as $row) {
+                $candidateIds[(string) $row->getId()] = true;
+            }
+        }
+
+        foreach (array_keys($candidateIds) as $appuntamentoId) {
+            $entity = $this->entityManager->getEntityById('Appuntamento', $appuntamentoId);
+
+            if (!$entity || !$this->userCanSeeActivity($entity, $userId)) {
+                continue;
+            }
+
+            $item = $this->buildEntityItemIfNew($entity, $seenEntityKeys, $seenCallSignatures);
+
+            if ($item !== null) {
+                $resultList[] = $item;
+            }
+        }
+
+        return $resultList;
+    }
+
+    /**
+     * @param string[] $statusList
+     * @return list<string>
+     */
+    private function findAppuntamentoIdsForUserViaEntityUser(
+        string $userId,
+        array $statusList,
+        string $popupCutoff
+    ): array {
+        try {
+            $pdo = $this->entityManager->getPDO();
+            $statusPlaceholders = implode(',', array_fill(0, count($statusList), '?'));
+            $sql = "SELECT a.id
+                FROM appuntamento a
+                INNER JOIN entity_user eu
+                    ON eu.entity_id = a.id
+                    AND eu.entity_type = 'Appuntamento'
+                    AND eu.deleted = 0
+                    AND eu.user_id = ?
+                WHERE a.deleted = 0
+                  AND a.status IN ({$statusPlaceholders})
+                  AND a.date_start <= ?
+                ORDER BY a.date_start DESC
+                LIMIT 80";
+
+            $params = array_merge([$userId], $statusList, [$popupCutoff]);
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+
+            $ids = [];
+
+            while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+                if (!empty($row['id'])) {
+                    $ids[] = (string) $row['id'];
+                }
+            }
+
+            return $ids;
+        } catch (Throwable $e) {
+            $this->log->error(
+                'PopupNotificationsProvider entity_user lookup failed: ' . $e->getMessage(),
+                ['exception' => $e]
+            );
+
+            return [];
         }
     }
 
