@@ -15,7 +15,10 @@
         "dataRichiamo": "Data Richiamo",
         "richiamo": "Richiamo",
         "noteEsito": "Note Esito",
-        "esito": "Esito"
+        "esito": "Esito",
+        "taxi": "Taxi",
+        "zTL": "ZTL",
+        "videoCallTelefonico": "Video Call/Telefonico"
     },
     "labels": {
         "Create Appuntamento": "Crea Appuntamento",

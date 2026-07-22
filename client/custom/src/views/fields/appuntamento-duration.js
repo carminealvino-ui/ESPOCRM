@@ -1,35 +1,16 @@
 /* global define */
 
+/**
+ * Durata Appuntamento: su nuovo record allinea sempre dateEnd a 1h30
+ * finché l'utente non cambia manualmente la durata.
+ * Evita lo stato inconsistente "Durata 1h30 / orario 30m" dal calendario.
+ */
 define('custom:views/fields/appuntamento-duration', [
     'views/fields/duration',
-    'moment',
-], function (Dep, moment) {
+    'custom:helpers/appuntamento-duration',
+], function (Dep, AppuntamentoDurationHelper) {
 
     const DEFAULT_DURATION_SECONDS = 5400;
-    const FULL_FORMAT = 'YYYY-MM-DD HH:mm:ss';
-    const SHORT_FORMAT = 'YYYY-MM-DD HH:mm';
-
-    function addSecondsUtc(dateStart, seconds) {
-        if (!dateStart) {
-            return null;
-        }
-
-        let m = moment.utc(dateStart, FULL_FORMAT, true);
-
-        if (!m.isValid()) {
-            m = moment.utc(dateStart, SHORT_FORMAT, true);
-        }
-
-        if (!m.isValid()) {
-            m = moment.utc(dateStart);
-        }
-
-        if (!m.isValid()) {
-            return null;
-        }
-
-        return m.add(seconds, 'seconds').format(FULL_FORMAT);
-    }
 
     return Dep.extend({
 
@@ -37,26 +18,25 @@ define('custom:views/fields/appuntamento-duration', [
             Dep.prototype.setup.call(this);
 
             this._userChangedDuration = false;
+            this._enforcingDefaultDuration = false;
 
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
             }
 
-            this.once('after:render', () => {
-                this.forceDefaultDurationEnd();
-            });
+            const enforce = () => this.forceDefaultDurationEnd();
 
-            // Il calendario passa spesso Date End a +30m: riallinea dopo i timeout Espo
-            setTimeout(() => this.forceDefaultDurationEnd(), 150);
-            setTimeout(() => this.forceDefaultDurationEnd(), 350);
-            setTimeout(() => this.forceDefaultDurationEnd(), 700);
+            this.once('after:render', enforce);
+            [50, 150, 350, 700, 1200, 2000].forEach(ms => {
+                setTimeout(enforce, ms);
+            });
 
             this.listenTo(this.model, 'change:dateStart', (model, value, o) => {
                 if (!this.model.isNew() || this.model.get('isAllDay')) {
                     return;
                 }
 
-                if (o && o.fromField === this.name) {
+                if (o && (o.fromField === this.name || o.updatedByDuration)) {
                     return;
                 }
 
@@ -65,6 +45,20 @@ define('custom:views/fields/appuntamento-duration', [
                 }
 
                 this.forceDefaultDurationEnd();
+            });
+
+            this.listenTo(this.model, 'change:dateEnd', (model, value, o) => {
+                if (!this.model.isNew() || this.model.get('isAllDay') || this._userChangedDuration) {
+                    return;
+                }
+
+                if (o && (o.fromField === this.name || o.updatedByDuration || o.ui === false)) {
+                    return;
+                }
+
+                if (this.needsDefaultDateEnd()) {
+                    this.forceDefaultDurationEnd();
+                }
             });
         },
 
@@ -78,9 +72,29 @@ define('custom:views/fields/appuntamento-duration', [
             return DEFAULT_DURATION_SECONDS;
         },
 
+        needsDefaultDateEnd: function () {
+            if (!this.model.isNew() || this.model.get('isAllDay') || this._userChangedDuration) {
+                return false;
+            }
+
+            const dateStart = this.model.get(this.startField);
+            const dateEnd = this.model.get(this.endField);
+
+            if (!dateStart || !dateEnd) {
+                return !!dateStart;
+            }
+
+            const expected = AppuntamentoDurationHelper.addSecondsToSystemDateTime(
+                this.getDateTime(),
+                dateStart,
+                this.getDefaultDurationSeconds()
+            );
+
+            return expected && dateEnd !== expected;
+        },
+
         /**
-         * Su nuovo: ignora slot calendario (es. 30m) e usa sempre default 1h30
-         * finché l'utente non cambia manualmente la durata.
+         * Su nuovo: mostra sempre 1h30 e sincronizza dateEnd.
          */
         calculateSeconds: function () {
             if (
@@ -97,7 +111,12 @@ define('custom:views/fields/appuntamento-duration', [
         },
 
         forceDefaultDurationEnd: function () {
-            if (!this.model.isNew() || this.model.get('isAllDay') || this._userChangedDuration) {
+            if (
+                this._enforcingDefaultDuration ||
+                !this.model.isNew() ||
+                this.model.get('isAllDay') ||
+                this._userChangedDuration
+            ) {
                 return;
             }
 
@@ -108,13 +127,27 @@ define('custom:views/fields/appuntamento-duration', [
             }
 
             const seconds = this.getDefaultDurationSeconds();
-            const dateEnd = addSecondsUtc(dateStart, seconds);
+            const dateEnd = AppuntamentoDurationHelper.addSecondsToSystemDateTime(
+                this.getDateTime(),
+                dateStart,
+                seconds
+            );
 
             if (!dateEnd) {
                 return;
             }
 
             this.seconds = seconds;
+
+            if (this.model.get(this.endField) === dateEnd) {
+                if (typeof this.updateDuration === 'function') {
+                    this.updateDuration();
+                }
+
+                return;
+            }
+
+            this._enforcingDefaultDuration = true;
             this.blockDateEndChangeListener = true;
 
             this.model.set(this.endField, dateEnd, {
@@ -124,11 +157,23 @@ define('custom:views/fields/appuntamento-duration', [
 
             setTimeout(() => {
                 this.blockDateEndChangeListener = false;
+                this._enforcingDefaultDuration = false;
 
                 if (typeof this.updateDuration === 'function') {
                     this.updateDuration();
                 }
-            }, 150);
+
+                // Aggiorna anche la view del campo Date End se già renderizzata
+                const recordView = this.getParentView && this.getParentView();
+
+                if (recordView && typeof recordView.getFieldView === 'function') {
+                    const endView = recordView.getFieldView(this.endField);
+
+                    if (endView && typeof endView.reRender === 'function') {
+                        endView.reRender();
+                    }
+                }
+            }, 50);
         },
 
         _getDateEnd: function () {
@@ -143,7 +188,11 @@ define('custom:views/fields/appuntamento-duration', [
                 return start;
             }
 
-            return addSecondsUtc(start, seconds) || start;
+            return AppuntamentoDurationHelper.addSecondsToSystemDateTime(
+                this.getDateTime(),
+                start,
+                seconds
+            ) || start;
         },
 
         afterRender: function () {
@@ -156,6 +205,10 @@ define('custom:views/fields/appuntamento-duration', [
             this.$duration.off('change.appuntamentoDefault').on('change.appuntamentoDefault', () => {
                 this._userChangedDuration = true;
             });
+
+            if (this.model.isNew() && !this._userChangedDuration) {
+                this.forceDefaultDurationEnd();
+            }
         },
     });
 });

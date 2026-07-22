@@ -46,7 +46,8 @@
                 "Gara (Soglia >2.5k)",
                 "Gara (Soglia >3.5)",
                 "Gara (Soglia >5k)",
-                "Referenza Personale"
+                "Referenza Personale",
+                "Bonus Taxi"
             ],
             "default": "Provvigione Base",
             "maxLength": 100,
