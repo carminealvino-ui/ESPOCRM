@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Deploy SOLO UI stati/sottostato/esito filtrati su Appuntamento.
-#
-# Perché serve: senza questi file il form calendario (Modifica Appuntamento)
-# mostra i vecchi enum completi invece dei menu filtrati per stato/sottostato.
+# Ripristino COMPLETO stati/sottostato/esito dal branch funzionante
+# cursor/appuntamento-stati-esito-9999 — NON tocca GlobalLogic 1.7.17 né taxi.
 #
 #   cd ~/public_html/crm/mec-group
 #   curl -fsSL "https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/cursor/fix-appuntamento-stati-esito-ui-9999/tools/deploy-appuntamento-stati-esito-ui.sh?t=$(date +%s)" \
@@ -19,8 +17,15 @@ REPO="carminealvino-ui/ESPOCRM"
 BASE="https://raw.githubusercontent.com/${REPO}/${BRANCH}"
 
 FILES=(
+  # Backend: regole stato ↔ sottostato ↔ esito
+  "custom/Espo/Custom/Services/AppuntamentoStatiRules.php"
+  "custom/Espo/Custom/Hooks/Appuntamento/SyncStatiEsito.php"
+  "custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
+  "custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json"
+  "custom/Espo/Custom/Resources/i18n/it_IT/Appuntamento.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
+  # Client JS (3 path Espo)
   "client/custom/src/helpers/appuntamento-sottostato-map.js"
   "client/custom/src/views/fields/appuntamento-sottostato.js"
   "client/custom/src/views/fields/appuntamento-sottostato-popup.js"
@@ -36,7 +41,7 @@ FILES=(
 )
 
 echo "=============================================="
-echo " UI stati/sottostato/esito Appuntamento"
+echo " RIPRISTINO stati/sottostato/esito"
 echo " Branch: ${BRANCH}"
 echo " CRM:    ${CRM_ROOT}"
 echo "=============================================="
@@ -53,12 +58,21 @@ done
 
 echo ""
 echo "=== Verifiche ==="
+grep -q 'SyncStatiEsito' \
+  "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json" || {
+  echo "ERRORE: hook SyncStatiEsito mancante" >&2; exit 1; }
 grep -q 'appuntamento-esito' \
-  "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json" || {
-  echo "ERRORE: clientDefs Appuntamento senza fieldViews esito" >&2; exit 1; }
+  "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json" || {
+  echo "ERRORE: entityDefs esito senza view custom" >&2; exit 1; }
+grep -q '"Pending"' \
+  "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json" || {
+  echo "ERRORE: sottostato enum non ripristinato" >&2; exit 1; }
+grep -q 'Fuori Target' \
+  "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json" && {
+  echo "ERRORE: enum legacy Fuori Target ancora in entityDefs" >&2; exit 1; } || true
 grep -q 'getAllowedEsiti' \
   "${CRM_ROOT}/client/custom/src/helpers/appuntamento-sottostato-map.js" || {
-  echo "ERRORE: map esito incompleta" >&2; exit 1; }
+  echo "ERRORE: map JS incompleta" >&2; exit 1; }
 echo "OK verifiche"
 
 if [[ -f clear_cache.php ]]; then
@@ -71,4 +85,7 @@ elif [[ -f command.php ]]; then
 fi
 
 echo ""
-echo "Fatto. Ctrl+Shift+R nel browser per ricaricare i JS client."
+echo "Fatto. Ctrl+Shift+R nel browser."
+echo "Sottostato atteso: Pending, Gestito, Non Interessato, Chiuso Positivamente,"
+echo "Annullato, Non Gestito, Non Ricevuto, Rifissato"
+echo "Esito atteso: In Trattativa, Venduto Tablet, Rimandato da cliente, ecc."

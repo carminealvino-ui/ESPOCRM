@@ -8,6 +8,10 @@
             "className": "Espo\\Custom\\Hooks\\Appuntamento\\PreventDuplicate",
             "order": 5
         },
+        "syncStatiEsito": {
+            "className": "Espo\\Custom\\Hooks\\Appuntamento\\SyncStatiEsito",
+            "order": 7
+        },
         "googleCalendarSyncBeforeGlobal": {
             "className": "Espo\\Custom\\Hooks\\Appuntamento\\GoogleCalendarSyncBeforeGlobal",
             "order": 8

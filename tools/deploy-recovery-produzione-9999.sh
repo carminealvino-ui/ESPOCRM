@@ -67,6 +67,9 @@ FILES=(
   "custom/Espo/Custom/Resources/client/custom/src/views/appuntamento/record/edit-small.js"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Calendar.json"
   # UI stati/sottostato/esito filtrati (form calendario + popup)
+  "custom/Espo/Custom/Services/AppuntamentoStatiRules.php"
+  "custom/Espo/Custom/Hooks/Appuntamento/SyncStatiEsito.php"
+  "custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json"
   "custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json"
   "custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json"
   "client/custom/src/helpers/appuntamento-sottostato-map.js"
@@ -116,9 +119,12 @@ grep -q '"taxi"' \
 grep -q 'createEvent' \
   "${CRM_ROOT}/client/custom/src/views/calendar/calendar.js" || {
   echo "ERRORE: calendar.js senza fix durata" >&2; exit 1; }
+grep -q 'SyncStatiEsito' \
+  "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json" || {
+  echo "ERRORE: hook SyncStatiEsito mancante" >&2; exit 1; }
 grep -q 'appuntamento-esito' \
-  "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json" || {
-  echo "ERRORE: clientDefs Appuntamento senza fieldViews esito/sottostato" >&2; exit 1; }
+  "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json" || {
+  echo "ERRORE: entityDefs esito senza view custom" >&2; exit 1; }
 grep -q 'getAllowedEsiti' \
   "${CRM_ROOT}/client/custom/src/helpers/appuntamento-sottostato-map.js" || {
   echo "ERRORE: appuntamento-sottostato-map.js incompleto" >&2; exit 1; }
