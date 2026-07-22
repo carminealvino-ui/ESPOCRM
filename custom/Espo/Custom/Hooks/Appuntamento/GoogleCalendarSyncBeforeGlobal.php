@@ -8,7 +8,7 @@ use Espo\ORM\Entity;
 use Espo\ORM\Repository\Option\SaveOptions;
 
 /**
- * Prima di GlobalLogic (order 9): rimuove da Google i Not Held mentre il consulente è ancora assegnato.
+ * Prima di GlobalLogic (order 9): rimuove da Google gli annullati mentre il consulente è ancora assegnato.
  *
  * @implements BeforeSave<Entity>
  */
@@ -30,7 +30,7 @@ class GoogleCalendarSyncBeforeGlobal implements BeforeSave
             return;
         }
 
-        if ($entity->get('status') !== 'Not Held') {
+        if (!$this->appuntamentoGoogleSync->shouldRemoveFromGoogleCalendar($entity)) {
             return;
         }
 

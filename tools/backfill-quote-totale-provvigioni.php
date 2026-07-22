@@ -1,61 +1,118 @@
 <?php
-
 /**
- * Ricalcola totaleProvvigioni su tutti i contratti dalla somma importoConsolidato.
+ * Ricalcola totaleProvvigioni = somma importoConsolidato (fallback importo).
  *
- * Uso: php tools/backfill-quote-totale-provvigioni.php [--dry-run]
+ *   php tools/backfill-quote-totale-provvigioni.php --dry-run
+ *   php tools/backfill-quote-totale-provvigioni.php
+ *   php tools/backfill-quote-totale-provvigioni.php --codice=Contratto_00153
  */
 
-$dryRun = in_array('--dry-run', $argv ?? [], true);
+declare(strict_types=1);
 
-require dirname(__DIR__) . '/bootstrap.php';
+$crmRoot = getenv('CRM_ROOT') ?: (getenv('HOME') . '/public_html/crm/mec-group');
 
+if (!is_dir($crmRoot)) {
+    $crmRoot = dirname(__DIR__);
+}
+
+chdir($crmRoot);
+require_once $crmRoot . '/bootstrap.php';
+
+use Espo\Core\Application;
 use Espo\Custom\Services\ProvvigioneManager;
+use Espo\ORM\EntityManager;
 
-$app = new Espo\Core\Application();
+$dryRun = in_array('--dry-run', $argv ?? [], true);
+$onlyCodice = null;
+
+foreach ($argv ?? [] as $arg) {
+    if (str_starts_with($arg, '--codice=')) {
+        $onlyCodice = substr($arg, 9);
+    }
+}
+
+$app = new Application();
 $app->setupSystemUser();
-
 $container = $app->getContainer();
-$entityManager = $container->get('entityManager');
-/** @var ProvvigioneManager $manager */
-$manager = $container->get('injectableFactory')->create(ProvvigioneManager::class);
 
-$quotes = $entityManager
-    ->getRDBRepository('Quote')
+/** @var EntityManager $em */
+$em = $container->get('entityManager');
+$factory = $container->get('injectableFactory');
+/** @var ProvvigioneManager $manager */
+$manager = $factory->create(ProvvigioneManager::class);
+
+$where = [];
+
+if ($onlyCodice) {
+    $where['numberA'] = $onlyCodice;
+}
+
+$quotes = $em->getRDBRepository('Quote')
+    ->select(['id', 'name', 'numberA', 'totaleProvvigioni'])
+    ->where($where)
     ->find();
 
 $updated = 0;
 $unchanged = 0;
+$errors = 0;
 
-foreach ($quotes as $quote) {
-    $expected = $manager->resolveTotaleProvvigioniForQuoteId($quote->getId());
-    $current = $quote->get('totaleProvvigioni');
+echo ($dryRun ? "=== DRY RUN totaleProvvigioni ===\n" : "=== Backfill totaleProvvigioni ===\n");
+echo 'Contratti: ' . $quotes->count() . "\n\n";
 
-    $expectedNorm = $expected === null ? null : round((float) $expected, 2);
-    $currentNorm = $current === null || $current === '' ? null : round((float) $current, 2);
+foreach ($quotes as $quoteLite) {
+    $label = (string) ($quoteLite->get('numberA') ?: $quoteLite->get('name') ?: $quoteLite->getId());
 
-    if ($expectedNorm === $currentNorm) {
-        $unchanged++;
-        continue;
-    }
+    try {
+        $expected = $manager->resolveTotaleProvvigioniForQuoteId($quoteLite->getId());
+        $current = $quoteLite->get('totaleProvvigioni');
 
-    echo sprintf(
-        "%s: %s → %s\n",
-        $quote->get('name') ?: $quote->getId(),
-        $currentNorm === null ? 'null' : number_format($currentNorm, 2, '.', ''),
-        $expectedNorm === null ? 'null' : number_format($expectedNorm, 2, '.', '')
-    );
+        $expectedNorm = $expected === null ? null : round((float) $expected, 2);
+        $currentNorm = $current === null || $current === '' ? null : round((float) $current, 2);
 
-    if (!$dryRun) {
+        if ($expectedNorm === $currentNorm) {
+            $unchanged++;
+            continue;
+        }
+
+        $line = sprintf(
+            '%s: %s → %s',
+            $label,
+            $currentNorm === null ? 'null' : number_format($currentNorm, 2, '.', ''),
+            $expectedNorm === null ? 'null' : number_format($expectedNorm, 2, '.', '')
+        );
+
+        if ($dryRun) {
+            echo '[DRY] ' . $line . "\n";
+            $updated++;
+            continue;
+        }
+
+        $quote = $em->getEntityById('Quote', $quoteLite->getId());
+
+        if (!$quote) {
+            throw new RuntimeException('Quote non trovata');
+        }
+
         $manager->refreshQuoteTotaleProvvigioni($quote);
-    }
 
-    $updated++;
+        $check = $em->getEntityById('Quote', $quote->getId());
+        $saved = $check?->get('totaleProvvigioni');
+        $savedNorm = $saved === null || $saved === '' ? null : round((float) $saved, 2);
+
+        if ($savedNorm !== $expectedNorm) {
+            echo '[WARN] ' . $line . " — salvato {$savedNorm}\n";
+            $errors++;
+            continue;
+        }
+
+        echo '[OK] ' . $line . "\n";
+        $updated++;
+    } catch (Throwable $e) {
+        echo '[ERR] ' . $label . ' — ' . $e->getMessage() . "\n";
+        $errors++;
+    }
 }
 
-echo sprintf(
-    "\n%s: %d aggiornati, %d già corretti\n",
-    $dryRun ? 'DRY-RUN' : 'FATTO',
-    $updated,
-    $unchanged
-);
+echo "\nAggiornati: {$updated}, già ok: {$unchanged}, errori: {$errors}\n";
+
+exit($errors > 0 ? 1 : 0);

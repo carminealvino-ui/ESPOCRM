@@ -25,6 +25,7 @@
                 "",
                 "ARQUATI_PNC",
                 "ARIEL_2026",
+                "ARIEL_LEGACY",
                 "GFB_VODAFONE_COEFF",
                 "GFB_FASTWEB_POD",
                 "GFB_RS_BIMESTRE",
@@ -42,6 +43,7 @@
                 "GettoneFisso",
                 "ImportoFissoPod",
                 "PercentualePlusvalenza",
+                "PercentualeMinusvalenza",
                 "PercentualeMargine"
             ],
             "default": "PercentualeImponibile",
@@ -57,7 +59,8 @@
                 "Gara (Soglia >2.5k)",
                 "Gara (Soglia >3.5)",
                 "Gara (Soglia >5k)",
-                "Referenza Personale"
+                "Referenza Personale",
+                "Bonus Taxi"
             ],
             "default": "Provvigione Base",
             "isCustom": true
@@ -125,7 +128,11 @@
                 "Tende da Sole",
                 "Pergole",
                 "Vetrate",
-                "Clima e altro"
+                "Clima e altro",
+                "Ariel Climatizzatori",
+                "Ariel Caldaie",
+                "Ariel Stufe",
+                "Ariel Eco Wind Easy"
             ],
             "isCustom": true
         },

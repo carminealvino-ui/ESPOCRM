@@ -1,0 +1,19 @@
+# Baseline Appuntamento — file che definiscono stati/esito funzionanti
+# Usare per backup prima di deploy e per export/sync produzione → repo
+#
+#   bash tools/backup-dev-batch.sh appuntamento-baseline \
+#     --manifest tools/backup-manifests/appuntamento-baseline-produzione.files
+
+custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json
+custom/Espo/Custom/Resources/metadata/clientDefs/Appuntamento.json
+custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json
+custom/Espo/Custom/Hooks/Appuntamento/SyncStatiEsito.php
+custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php
+custom/Espo/Custom/Services/AppuntamentoStatiRules.php
+custom/Espo/Custom/Resources/layouts/Appuntamento/detailEsitoPopup.json
+custom/Espo/Custom/Resources/layouts/Appuntamento/detailSmall.json
+custom/Espo/Custom/Resources/i18n/it_IT/Appuntamento.json
+client/custom/src/helpers/appuntamento-sottostato-map.js
+client/custom/src/views/fields/appuntamento-sottostato.js
+client/custom/src/views/fields/appuntamento-sottostato-popup.js
+client/custom/src/views/fields/appuntamento-esito.js

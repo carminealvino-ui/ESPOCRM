@@ -1,0 +1,3 @@
+custom/Espo/Custom/Services/OpportunityFornitorePartnerRepair.php
+custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
+tools/bonifica-opportunity-fornitore-partner.php

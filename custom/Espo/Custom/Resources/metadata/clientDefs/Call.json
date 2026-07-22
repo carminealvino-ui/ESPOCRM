@@ -19,6 +19,10 @@
             "label": "Richiami pianificati"
         },
         {
+            "name": "chiamateScadute",
+            "label": "Chiamate scadute"
+        },
+        {
             "name": "held",
             "style": "success"
         },

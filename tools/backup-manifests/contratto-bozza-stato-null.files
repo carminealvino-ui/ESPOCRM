@@ -1,0 +1,6 @@
+custom/Espo/Custom/Hooks/Quote/NormalizeDefaults.php
+custom/Espo/Custom/Hooks/Quote/ClearStatoContrattoWhenBozza.php
+custom/Espo/Custom/Hooks/Quote/SetPresentedWhenNumeroContratto.php
+custom/Espo/Custom/Actions/Opportunity/CreateContratto.php
+custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
+tools/bonifica-quote-bozza-stato-null.php

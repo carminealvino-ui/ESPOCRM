@@ -11,6 +11,7 @@
         "contrattiInLavorazione": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\ContrattiInLavorazione",
         "installatoPeriodo": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\InstallatoPeriodo",
         "installatoMesePrecedente": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\InstallatoMesePrecedente",
-        "senzaInvioWhatsapp": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\SenzaInvioWhatsapp"
+        "senzaInvioWhatsapp": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\SenzaInvioWhatsapp",
+        "senzaAppuntamento": "Espo\\Custom\\Classes\\Select\\Opportunity\\PrimaryFilters\\SenzaAppuntamento"
     }
 }

@@ -178,6 +178,11 @@
         },
         "prospect": {
             "type": "link"
+        },
+        "opportunity": {
+            "type": "link",
+            "view": "views/fields/link",
+            "isCustom": true
         }
     },
     "links": {
@@ -188,6 +193,13 @@
             "type": "belongsTo",
             "foreign": "contattiTelefonici",
             "entity": "Prospect",
+            "audited": false,
+            "isCustom": true
+        },
+        "opportunity": {
+            "type": "belongsTo",
+            "foreign": "contattiTelefonici",
+            "entity": "Opportunity",
             "audited": false,
             "isCustom": true
         }

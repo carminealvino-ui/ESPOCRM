@@ -1,0 +1,4 @@
+custom/Espo/Custom/Services/OpportunityAppuntamentoOutcomeSync.php
+custom/Espo/Custom/Hooks/Opportunity/SyncAppuntamentoFromWon.php
+tools/bonifica-appuntamento-da-opportunita-won.php
+tools/ripristina-esito-appuntamento-dopo-bonifica-won.php

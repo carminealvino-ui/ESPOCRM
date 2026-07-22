@@ -1,0 +1,7 @@
+custom/Espo/Custom/Hooks/Quote/SetPresentedWhenNumeroContratto.php
+custom/Espo/Custom/Services/CrmKpi/CrmKpiService.php
+custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiSospesiOrdini.php
+custom/Espo/Custom/Classes/Select/Quote/PrimaryFilters/ContrattiBacklog.php
+custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
+custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
+tools/bonifica-quote-senza-numero-bozza.php

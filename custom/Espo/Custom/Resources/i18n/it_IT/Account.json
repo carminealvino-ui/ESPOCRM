@@ -3,14 +3,11 @@
         "appuntamentoChildren": "Appuntamenti",
         "calls": "Contatto Telefonico",
         "callsPrimary": "Contatto Telefonico (ampliato)",
-        "contacts": "Referente",
-        "originalLead": "Lead originale",
+        "contacts": "Referenti",
         "pagamentiProvvigionali": "Pagamenti Provvigionali",
-        "prospect": "Prospect",
         "provvigioni": "Provvigioni"
     },
     "fields": {
-        "originalLead": "Lead Originale",
         "name": "Cliente",
         "codiceCliente": "Codice Cliente",
         "partitaIVA": "Partita IVA",
@@ -27,7 +24,6 @@
         "pagamentiProvvigionali": "Pagamenti Provvigionali",
         "azienda": "Azienda",
         "emailAddress": "E-Mail",
-        "prospect": "Prospect",
         "provvigioni": "Provvigioni"
     },
     "options": {

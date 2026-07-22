@@ -26,11 +26,11 @@
                 }
             ],
             [
-                false,
                 {
                     "name": "productCategory",
                     "customLabel": "Categoria prodotto"
-                }
+                },
+                false
             ],
             [
                 {

@@ -1,0 +1,5 @@
+custom/Espo/Custom/Resources/metadata/formula/Appuntamento.json
+custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php
+tools/diagnose-appuntamento-500.php
+tools/bonifica-appuntamento-prospect-orfano.php
+tools/ripara-appuntamento-senza-prospect.php

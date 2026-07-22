@@ -5,7 +5,9 @@ namespace Espo\Custom\Services;
 use Espo\ORM\EntityManager;
 
 /**
- * Somma importi Provvigione collegate al contratto e aggiorna totaleProvvigioni.
+ * Somma Provvigioni del contratto → Quote.totaleProvvigioni.
+ *
+ * Usa importoConsolidato (fallback importo). Include anche Inesigibili.
  */
 class QuoteProvvigioniSync
 {
@@ -13,23 +15,35 @@ class QuoteProvvigioniSync
         private EntityManager $entityManager
     ) {}
 
-    public function sumTotaleProvvigioni(string $quoteId): float
+    public function sumTotaleProvvigioni(string $quoteId): ?float
     {
-        $totale = 0.0;
-
         $collection = $this->entityManager
             ->getRDBRepository('Provvigione')
             ->where(['contrattoId' => $quoteId])
             ->find();
 
+        $totale = 0.0;
+        $counted = 0;
+
         foreach ($collection as $provvigione) {
-            $totale += (float) ($provvigione->get('importo') ?? 0);
+            $importo = $provvigione->get('importoConsolidato');
+
+            if ($importo === null || $importo === '') {
+                $importo = $provvigione->get('importo');
+            }
+
+            if ($importo === null || $importo === '') {
+                continue;
+            }
+
+            $totale += (float) $importo;
+            $counted++;
         }
 
-        return round($totale, 2);
+        return $counted > 0 ? round($totale, 2) : null;
     }
 
-    public function syncTotaleProvvigioniOnQuote(string $quoteId): float
+    public function syncTotaleProvvigioniOnQuote(string $quoteId): ?float
     {
         $totale = $this->sumTotaleProvvigioni($quoteId);
 
@@ -39,17 +53,26 @@ class QuoteProvvigioniSync
             return $totale;
         }
 
-        $current = (float) ($quote->get('totaleProvvigioni') ?? 0);
+        $current = $quote->get('totaleProvvigioni');
+        $currentNorm = $current === null || $current === '' ? null : round((float) $current, 2);
 
-        if (abs($current - $totale) < 0.001) {
+        if ($currentNorm === $totale) {
             return $totale;
         }
 
-        $quote->set('totaleProvvigioni', $totale);
+        $currency = $quote->get('amountCurrency')
+            ?: $quote->get('importoContrattoCurrency')
+            ?: 'EUR';
+
+        $quote->set([
+            'totaleProvvigioni' => $totale,
+            'totaleProvvigioniCurrency' => $currency,
+        ]);
 
         $this->entityManager->saveEntity($quote, [
             'skipHooks' => true,
             'silent' => true,
+            'skipFormula' => true,
         ]);
 
         return $totale;

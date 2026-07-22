@@ -40,6 +40,8 @@ define('custom:views/appuntamento/record/edit-small', [
             // Prefill Fornitore / Brand / Categoria dal Prospect (Relazionato a)
             ProspectSync.setupProspectSync(this);
 
+            this.ensureAssignedUserOnCreate();
+
             if (!this.model.isNew() || this.model.get('isAllDay')) {
                 return;
             }
@@ -53,8 +55,21 @@ define('custom:views/appuntamento/record/edit-small', [
             });
 
             // Dopo che i campi data sono pronti (calendario passa spesso 30m)
-            setTimeout(() => this.applyDefaultDuration(), 200);
-            setTimeout(() => this.applyDefaultDuration(), 500);
+            [50, 200, 500, 1000, 1800].forEach(ms => {
+                setTimeout(() => this.applyDefaultDuration(), ms);
+            });
+
+            this.listenTo(this.model, 'change:dateEnd', (model, value, o) => {
+                if (!this.model.isNew() || this.model.get('isAllDay')) {
+                    return;
+                }
+
+                if (o && o.updatedByDuration) {
+                    return;
+                }
+
+                this.applyDefaultDuration();
+            });
         },
 
         getDefaultDurationSeconds: function () {
@@ -100,6 +115,38 @@ define('custom:views/appuntamento/record/edit-small', [
             this.model.set({
                 dateEnd: dateEnd,
             }, {updatedByDuration: true, ui: true});
+        },
+
+        ensureAssignedUserOnCreate: function () {
+            if (!this.model.isNew()) {
+                return;
+            }
+
+            const user = this.getUser();
+            const userId = user.id;
+            const userName = user.get('name');
+            const ids = this.model.get('assignedUsersIds') || [];
+
+            if (ids.length) {
+                if (!this.model.get('assignedUserId')) {
+                    this.model.set({
+                        assignedUserId: ids[0],
+                        assignedUserName: (this.model.get('assignedUsersNames') || {})[ids[0]] || userName,
+                    }, {ui: true});
+                }
+
+                return;
+            }
+
+            const names = this.model.get('assignedUsersNames') || {};
+            names[userId] = userName;
+
+            this.model.set({
+                assignedUsersIds: [userId],
+                assignedUsersNames: names,
+                assignedUserId: userId,
+                assignedUserName: userName,
+            }, {ui: true});
         },
     });
 });

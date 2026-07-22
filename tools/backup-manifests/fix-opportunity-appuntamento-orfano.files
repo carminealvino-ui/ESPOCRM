@@ -1,0 +1,5 @@
+custom/Espo/Custom/Services/OpportunityAppuntamentoOrphanRepair.php
+custom/Espo/Custom/Services/OpportunityFornitorePartnerRepair.php
+custom/Espo/Custom/Hooks/Opportunity/GlobalLogic.php
+tools/verifica-ripristina-appuntamento.php
+tools/bonifica-opportunity-appuntamento-orfano.php

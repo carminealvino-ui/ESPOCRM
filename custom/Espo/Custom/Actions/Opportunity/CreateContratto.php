@@ -684,10 +684,10 @@ class CreateContratto
 
             // =================================================
             // STATO CONTRATTO (driver provvigioni)
+            // In Bozza/Draft resta vuoto (nessuna selezione).
             // =================================================
 
-            'statoContratto' =>
-                $opportunity->get('statoContratto') ?: 'In lavorazione',
+            'statoContratto' => null,
 
             'finanziamento' =>
                 (bool) $opportunity->get('finanziamento'),

@@ -1,0 +1,10 @@
+custom/Espo/Custom/Resources/layouts/Call/list.json
+custom/Espo/Custom/Resources/layouts/Call/defaultSidePanel.json
+custom/Espo/Custom/Resources/metadata/entityDefs/Call.json
+custom/Espo/Custom/Resources/metadata/entityDefs/Opportunity.json
+custom/Espo/Custom/Resources/i18n/it_IT/Call.json
+custom/Espo/Custom/Resources/i18n/it_IT/Opportunity.json
+custom/Espo/Custom/Services/CallOpportunityLinker.php
+custom/Espo/Custom/Services/AppuntamentoPendingCallCreator.php
+custom/Espo/Custom/Hooks/Call/LinkOpportunity.php
+tools/backfill-call-opportunity-link.php
