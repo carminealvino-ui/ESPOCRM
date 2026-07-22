@@ -370,6 +370,13 @@ class Alerts
             ->find();
 
         foreach ($collection as $appuntamento) {
+            $sottostato = (string) ($appuntamento->get('sottostato') ?? '');
+
+            // Gestito / Rifissato: fuori dal monitoraggio.
+            if (in_array($sottostato, ['Gestito', 'Rifissato'], true)) {
+                continue;
+            }
+
             if ($this->isAppuntamentoNotAnnullato($appuntamento)) {
                 $ids[] = $appuntamento->getId();
             }

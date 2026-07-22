@@ -23,6 +23,10 @@
         "googleCalendarSyncAfterGlobal": {
             "className": "Espo\\Custom\\Hooks\\Appuntamento\\GoogleCalendarSyncAfterGlobal",
             "order": 10
+        },
+        "syncStatiEsito": {
+            "className": "Espo\\Custom\\Hooks\\Appuntamento\\SyncStatiEsito",
+            "order": 7
         }
     },
     "afterSave": {

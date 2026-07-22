@@ -296,7 +296,8 @@ class CrmKpiService
         return $this->combineWhere(
             $ctx->appuntamentoWhere(),
             $this->notPianificatoWhere(),
-            $this->notRifissatoWhere()
+            $this->notRifissatoWhere(),
+            $this->notGestitoWhere()
         );
     }
 
@@ -346,6 +347,22 @@ class CrmKpiService
         return [
             'OR' => [
                 ['sottostato!=' => 'Rifissato'],
+                ['sottostato' => null],
+                ['sottostato' => ''],
+            ],
+        ];
+    }
+
+    /**
+     * Gestito (Ripasso / non in agenda) escluso dal monitoraggio.
+     *
+     * @return array<string, mixed>
+     */
+    private function notGestitoWhere(): array
+    {
+        return [
+            'OR' => [
+                ['sottostato!=' => 'Gestito'],
                 ['sottostato' => null],
                 ['sottostato' => ''],
             ],
@@ -1139,6 +1156,7 @@ class CrmKpiService
             if (
                 !$this->isAppuntamentoPianificato($appuntamento)
                 && !$this->isAppuntamentoRifissato($appuntamento)
+                && !$this->isAppuntamentoGestito($appuntamento)
             ) {
                 $weekdayBuckets[$weekday]['appuntamentiTotali']++;
             }
@@ -1155,6 +1173,7 @@ class CrmKpiService
                 if (
                     !$this->isAppuntamentoPianificato($appuntamento)
                     && !$this->isAppuntamentoRifissato($appuntamento)
+                    && !$this->isAppuntamentoGestito($appuntamento)
                 ) {
                     $weekBuckets[$weekIndex]['appuntamentiTotali']++;
                 }
@@ -1383,9 +1402,18 @@ class CrmKpiService
         return $appuntamento->get('sottostato') === 'Rifissato';
     }
 
+    private function isAppuntamentoGestito(Entity $appuntamento): bool
+    {
+        return $appuntamento->get('sottostato') === 'Gestito';
+    }
+
     private function isAppuntamentoLordo(Entity $appuntamento): bool
     {
-        if ($this->isAppuntamentoPianificato($appuntamento) || $this->isAppuntamentoRifissato($appuntamento)) {
+        if (
+            $this->isAppuntamentoPianificato($appuntamento)
+            || $this->isAppuntamentoRifissato($appuntamento)
+            || $this->isAppuntamentoGestito($appuntamento)
+        ) {
             return false;
         }
 
