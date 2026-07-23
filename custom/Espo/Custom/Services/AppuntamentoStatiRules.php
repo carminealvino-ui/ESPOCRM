@@ -11,7 +11,8 @@ use Espo\ORM\Entity;
  *   Planned | Held | Not Held | Ingestibile
  * Sottostato Held: Pending | Gestito | Non Interessato | Chiuso Positivamente
  * Sottostato Not Held: Annullato | Non Gestito | Non Ricevuto | Rifissato
- * Ingestibile: sottostato vuoto (motivo solo in esito)
+ * Sottostato Ingestibile: Infattibilità Tecnica | Solo Informazioni | Prodotto non Conforme | Fuori Target
+ * Esito Ingestibile: motivi commerciali/tecnici (indipendente dal sottostato)
  *
  * Gestito e Rifissato esclusi dal monitoraggio KPI (regola business).
  */
@@ -47,6 +48,8 @@ class AppuntamentoStatiRules
         'Cambio Telo' => ['status' => 'Ingestibile', 'sottostato' => ''],
         'Copertura Auto' => ['status' => 'Ingestibile', 'sottostato' => ''],
         'Tenda a Capanno' => ['status' => 'Ingestibile', 'sottostato' => ''],
+        'Infattibilità Tecnica' => ['status' => 'Ingestibile', 'sottostato' => 'Infattibilità Tecnica'],
+        'Prodotto non Conforme' => ['status' => 'Ingestibile', 'sottostato' => 'Prodotto non Conforme'],
     ];
 
     /** @var array<string, string> */
@@ -59,13 +62,22 @@ class AppuntamentoStatiRules
         'Non Gestito' => 'Not Held',
         'Non Ricevuto' => 'Not Held',
         'Rifissato' => 'Not Held',
+        'Infattibilità Tecnica' => 'Ingestibile',
+        'Solo Informazioni' => 'Ingestibile',
+        'Prodotto non Conforme' => 'Ingestibile',
+        'Fuori Target' => 'Ingestibile',
     ];
 
     /** @var array<string, list<string>> */
     public const ALLOWED_SOTTOSTATO = [
         'Held' => ['Pending', 'Gestito', 'Non Interessato', 'Chiuso Positivamente'],
         'Not Held' => ['Annullato', 'Non Gestito', 'Non Ricevuto', 'Rifissato'],
-        'Ingestibile' => [],
+        'Ingestibile' => [
+            'Infattibilità Tecnica',
+            'Solo Informazioni',
+            'Prodotto non Conforme',
+            'Fuori Target',
+        ],
         'Planned' => [],
     ];
 
@@ -93,16 +105,16 @@ class AppuntamentoStatiRules
             return;
         }
 
-        // Esito guida sottostato + status
+        // Esito guida status (+ sottostato se mappato; per Ingestibile non azzera il sottostato)
         if ($esito !== '' && isset(self::ESITO_MAP[$esito])) {
             $mapped = self::ESITO_MAP[$esito];
             $entity->set('status', $mapped['status']);
-            $entity->set(
-                'sottostato',
-                $mapped['sottostato'] === '' ? null : $mapped['sottostato']
-            );
+            $status = $mapped['status'];
 
-            return;
+            if ($mapped['sottostato'] !== '') {
+                $entity->set('sottostato', $mapped['sottostato']);
+                $sottostato = $mapped['sottostato'];
+            }
         }
 
         // Sottostato guida status
@@ -111,19 +123,15 @@ class AppuntamentoStatiRules
             $status = self::SOTTOSTATO_TO_STATUS[$sottostato];
         }
 
-        // Ingestibile: niente sottostato
-        if ($status === 'Ingestibile') {
-            $entity->set('sottostato', null);
-
-            return;
-        }
-
-        // Sottostato non ammesso per lo status → svuota
+        // Sottostato non ammesso per lo status → svuota solo sottostato (non l'esito su Ingestibile)
         $allowed = self::ALLOWED_SOTTOSTATO[$status] ?? [];
 
         if ($sottostato !== '' && !in_array($sottostato, $allowed, true)) {
             $entity->set('sottostato', null);
-            $entity->set('esito', null);
+
+            if ($status !== 'Ingestibile') {
+                $entity->set('esito', null);
+            }
         }
     }
 

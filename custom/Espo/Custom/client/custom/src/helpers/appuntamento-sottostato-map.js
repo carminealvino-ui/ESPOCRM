@@ -13,7 +13,12 @@ define('custom:helpers/appuntamento-sottostato-map', [], function () {
             'Non Ricevuto',
             'Rifissato',
         ],
-        Ingestibile: [],
+        Ingestibile: [
+            'Infattibilità Tecnica',
+            'Solo Informazioni',
+            'Prodotto non Conforme',
+            'Fuori Target',
+        ],
     };
 
     /** Esito → {status, sottostato} */
@@ -46,6 +51,8 @@ define('custom:helpers/appuntamento-sottostato-map', [], function () {
         'Cambio Telo': {status: 'Ingestibile', sottostato: ''},
         'Copertura Auto': {status: 'Ingestibile', sottostato: ''},
         'Tenda a Capanno': {status: 'Ingestibile', sottostato: ''},
+        'Infattibilità Tecnica': {status: 'Ingestibile', sottostato: 'Infattibilità Tecnica'},
+        'Prodotto non Conforme': {status: 'Ingestibile', sottostato: 'Prodotto non Conforme'},
     };
 
     const esitiBySottostato = {
@@ -65,6 +72,7 @@ define('custom:helpers/appuntamento-sottostato-map', [], function () {
             'Rimandato da cliente',
             'Rimandato da consulente',
         ],
+        // Esiti quando Stato=Ingestibile (anche senza sottostato ancora scelto)
         Ingestibile: [
             'Solo Preventivo',
             'Non Finanziabile',
@@ -77,6 +85,8 @@ define('custom:helpers/appuntamento-sottostato-map', [], function () {
             'Cambio Telo',
             'Copertura Auto',
             'Tenda a Capanno',
+            'Infattibilità Tecnica',
+            'Prodotto non Conforme',
         ],
     };
 
@@ -111,6 +121,7 @@ define('custom:helpers/appuntamento-sottostato-map', [], function () {
                 return [];
             }
 
+            // Ingestibile: motivo in sottostato + esito sempre selezionabile
             if (status === 'Ingestibile') {
                 return esitiBySottostato.Ingestibile.slice();
             }

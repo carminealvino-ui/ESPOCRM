@@ -27,6 +27,7 @@ foreach ($argv as $arg) {
 $entityDefsPath = $root . '/custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json';
 $hooksPath = $root . '/custom/Espo/Custom/Resources/metadata/hooks/Appuntamento.json';
 $globalLogicPath = $root . '/custom/Espo/Custom/Hooks/Appuntamento/GlobalLogic.php';
+$mapPath = $root . '/client/custom/src/helpers/appuntamento-sottostato-map.js';
 
 $errors = [];
 
@@ -53,19 +54,20 @@ $allowedSottostato = [
     'Non Gestito',
     'Non Ricevuto',
     'Rifissato',
+    'Infattibilità Tecnica',
+    'Solo Informazioni',
+    'Prodotto non Conforme',
+    'Fuori Target',
 ];
 
-$legacySottostato = [
-    'Fuori Target',
-    'Solo Informazioni',
-    'Infattibilità Tecnica',
-    'Prodotto non Conforme',
+// Valori davvero fuori modello (non sono sottostati Ingestibile)
+$forbiddenSottostato = [
     'Non Confermato',
 ];
 
-foreach ($legacySottostato as $legacy) {
-    if (in_array($legacy, $sottostato, true)) {
-        $errors[] = "REGRESSIONE sottostato: valore legacy \"{$legacy}\" presente in entityDefs";
+foreach ($forbiddenSottostato as $forbidden) {
+    if (in_array($forbidden, $sottostato, true)) {
+        $errors[] = "REGRESSIONE sottostato: valore fuori modello \"{$forbidden}\"";
     }
 }
 
@@ -91,6 +93,18 @@ if ($sottostatoView !== 'custom:views/fields/appuntamento-sottostato') {
     $errors[] = 'Sottostato senza view custom (atteso custom:views/fields/appuntamento-sottostato)';
 }
 
+if (is_file($mapPath)) {
+    $map = (string) file_get_contents($mapPath);
+    if (!str_contains($map, "'Infattibilità Tecnica'") && !str_contains($map, '"Infattibilità Tecnica"')) {
+        $errors[] = 'Map JS: mancano sottostati Ingestibile (Infattibilità Tecnica)';
+    }
+    if (preg_match("/Ingestibile:\\s*\\[\\s*\\]/", $map)) {
+        $errors[] = 'Map JS: Ingestibile ha lista sottostati vuota (esito/sottostato non selezionabili)';
+    }
+} else {
+    $errors[] = 'Mancante: client/custom/src/helpers/appuntamento-sottostato-map.js';
+}
+
 if (is_file($hooksPath)) {
     $hooks = json_decode((string) file_get_contents($hooksPath), true);
     $beforeSave = $hooks['beforeSave'] ?? [];
@@ -111,6 +125,11 @@ if (is_file($globalLogicPath)) {
 $syncRulesPath = $root . '/custom/Espo/Custom/Services/AppuntamentoStatiRules.php';
 if (!is_file($syncRulesPath)) {
     $errors[] = 'Mancante: Services/AppuntamentoStatiRules.php';
+} else {
+    $rules = (string) file_get_contents($syncRulesPath);
+    if (!str_contains($rules, 'Infattibilità Tecnica')) {
+        $errors[] = 'AppuntamentoStatiRules: mancano sottostati Ingestibile';
+    }
 }
 
 $syncHookPath = $root . '/custom/Espo/Custom/Hooks/Appuntamento/SyncStatiEsito.php';
@@ -123,6 +142,7 @@ if ($errors === []) {
     echo "  sottostato: " . count(array_filter($sottostato)) . " valori\n";
     echo "  esito view: {$esitoView}\n";
     echo "  SyncStatiEsito: presente\n";
+    echo "  Ingestibile sottostati: OK\n";
     exit(0);
 }
 
