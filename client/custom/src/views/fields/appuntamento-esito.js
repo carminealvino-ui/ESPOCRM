@@ -41,7 +41,11 @@ define('custom:views/fields/appuntamento-esito', [
             }
 
             this.model.set('status', mapped.status, {ui: true});
-            this.model.set('sottostato', mapped.sottostato || '', {ui: true});
+
+            // Per Ingestibile il sottostato è indipendente (motivo): non azzerarlo.
+            if (mapped.sottostato !== '' && mapped.sottostato !== null && mapped.sottostato !== undefined) {
+                this.model.set('sottostato', mapped.sottostato, {ui: true});
+            }
         },
 
         applyAllowedOptions: function () {

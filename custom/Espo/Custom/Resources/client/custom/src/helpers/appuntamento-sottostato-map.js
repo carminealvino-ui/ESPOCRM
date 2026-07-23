@@ -13,7 +13,12 @@ define('custom:helpers/appuntamento-sottostato-map', [], function () {
             'Non Ricevuto',
             'Rifissato',
         ],
-        Ingestibile: [],
+        Ingestibile: [
+            'Infattibilità Tecnica',
+            'Solo Informazioni',
+            'Prodotto non Conforme',
+            'Fuori Target',
+        ],
     };
 
     /** Esito → {status, sottostato} */
@@ -65,6 +70,7 @@ define('custom:helpers/appuntamento-sottostato-map', [], function () {
             'Rimandato da cliente',
             'Rimandato da consulente',
         ],
+        // Esiti quando Stato=Ingestibile (anche senza sottostato ancora scelto)
         Ingestibile: [
             'Solo Preventivo',
             'Non Finanziabile',
@@ -111,6 +117,7 @@ define('custom:helpers/appuntamento-sottostato-map', [], function () {
                 return [];
             }
 
+            // Ingestibile: motivo in sottostato + esito sempre selezionabile
             if (status === 'Ingestibile') {
                 return esitiBySottostato.Ingestibile.slice();
             }

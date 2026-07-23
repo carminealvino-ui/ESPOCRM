@@ -253,7 +253,11 @@
                 "Annullato",
                 "Non Gestito",
                 "Non Ricevuto",
-                "Rifissato"
+                "Rifissato",
+                "Infattibilità Tecnica",
+                "Solo Informazioni",
+                "Prodotto non Conforme",
+                "Fuori Target"
             ],
             "style": {
                 "": null,
@@ -264,7 +268,11 @@
                 "Annullato": "danger",
                 "Non Gestito": "info",
                 "Non Ricevuto": "warning",
-                "Rifissato": "info"
+                "Rifissato": "info",
+                "Infattibilità Tecnica": "warning",
+                "Solo Informazioni": "primary",
+                "Prodotto non Conforme": "warning",
+                "Fuori Target": "danger"
             },
             "default": null,
             "isCustom": true,

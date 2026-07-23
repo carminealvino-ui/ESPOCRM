@@ -40,7 +40,11 @@
             "Annullato": "Annullato",
             "Non Gestito": "Non Gestito",
             "Non Ricevuto": "Non Ricevuto",
-            "Rifissato": "Rifissato"
+            "Rifissato": "Rifissato",
+            "Infattibilità Tecnica": "Infattibilità Tecnica",
+            "Solo Informazioni": "Solo Informazioni",
+            "Prodotto non Conforme": "Prodotto non Conforme",
+            "Fuori Target": "Fuori Target"
         },
         "esito": {
             "In Trattativa": "In Trattativa",

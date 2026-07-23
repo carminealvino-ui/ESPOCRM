@@ -73,9 +73,12 @@ grep -q 'appuntamento-esito' \
 grep -q '"Pending"' \
   "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json" || {
   echo "ERRORE: sottostato enum non ripristinato" >&2; exit 1; }
-grep -q 'Fuori Target' \
+grep -q '"Non Confermato"' \
   "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json" && {
-  echo "ERRORE: enum legacy Fuori Target ancora in entityDefs" >&2; exit 1; } || true
+  echo "ERRORE: sottostato fuori modello Non Confermato in entityDefs" >&2; exit 1; } || true
+grep -q 'Infattibilità Tecnica' \
+  "${CRM_ROOT}/custom/Espo/Custom/Resources/metadata/entityDefs/Appuntamento.json" || {
+  echo "ERRORE: mancano sottostati Ingestibile in entityDefs" >&2; exit 1; }
 grep -q 'getAllowedEsiti' \
   "${CRM_ROOT}/client/custom/src/helpers/appuntamento-sottostato-map.js" || {
   echo "ERRORE: map JS incompleta" >&2; exit 1; }
