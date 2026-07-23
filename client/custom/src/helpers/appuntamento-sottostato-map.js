@@ -51,6 +51,8 @@ define('custom:helpers/appuntamento-sottostato-map', [], function () {
         'Cambio Telo': {status: 'Ingestibile', sottostato: ''},
         'Copertura Auto': {status: 'Ingestibile', sottostato: ''},
         'Tenda a Capanno': {status: 'Ingestibile', sottostato: ''},
+        'Infattibilità Tecnica': {status: 'Ingestibile', sottostato: 'Infattibilità Tecnica'},
+        'Prodotto non Conforme': {status: 'Ingestibile', sottostato: 'Prodotto non Conforme'},
     };
 
     const esitiBySottostato = {
@@ -83,6 +85,8 @@ define('custom:helpers/appuntamento-sottostato-map', [], function () {
             'Cambio Telo',
             'Copertura Auto',
             'Tenda a Capanno',
+            'Infattibilità Tecnica',
+            'Prodotto non Conforme',
         ],
     };
 

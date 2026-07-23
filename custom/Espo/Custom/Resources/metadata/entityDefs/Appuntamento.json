@@ -189,7 +189,9 @@
                 "In ristrutturazione/In costruzione/Cantiere",
                 "Cambio Telo",
                 "Copertura Auto",
-                "Tenda a Capanno"
+                "Tenda a Capanno",
+                "Infattibilità Tecnica",
+                "Prodotto non Conforme"
             ],
             "style": {
                 "": null,
@@ -220,7 +222,9 @@
                 "In ristrutturazione/In costruzione/Cantiere": null,
                 "Cambio Telo": null,
                 "Copertura Auto": null,
-                "Tenda a Capanno": null
+                "Tenda a Capanno": null,
+                "Infattibilità Tecnica": null,
+                "Prodotto non Conforme": null
             },
             "default": null,
             "isCustom": true,

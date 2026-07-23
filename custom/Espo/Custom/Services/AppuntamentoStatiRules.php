@@ -48,6 +48,8 @@ class AppuntamentoStatiRules
         'Cambio Telo' => ['status' => 'Ingestibile', 'sottostato' => ''],
         'Copertura Auto' => ['status' => 'Ingestibile', 'sottostato' => ''],
         'Tenda a Capanno' => ['status' => 'Ingestibile', 'sottostato' => ''],
+        'Infattibilità Tecnica' => ['status' => 'Ingestibile', 'sottostato' => 'Infattibilità Tecnica'],
+        'Prodotto non Conforme' => ['status' => 'Ingestibile', 'sottostato' => 'Prodotto non Conforme'],
     ];
 
     /** @var array<string, string> */

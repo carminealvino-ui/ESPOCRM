@@ -75,7 +75,9 @@
             "Cambio Telo": "Cambio Telo",
             "Copertura Auto": "Copertura Auto",
             "Tenda a Capanno": "Tenda a Capanno",
-            "": ""
+            "": "",
+            "Infattibilità Tecnica": "Infattibilità Tecnica",
+            "Prodotto non Conforme": "Prodotto non Conforme"
         }
     },
     "presetFilters": {
