@@ -110,12 +110,16 @@ class CallOpportunityLinker
 
         $phone = $this->normalizePhone((string) $call->get('telefono'));
 
+        if ($phone === '') {
+            $phone = $this->normalizePhone($this->extractPhoneFromCallName((string) $call->get('name')));
+        }
+
         if ($phone !== '') {
             $collection = $this->entityManager
                 ->getRDBRepository('Opportunity')
                 ->select(['id', 'telefono'])
                 ->order('createdAt', 'DESC')
-                ->limit(0, 300)
+                ->limit(0, 500)
                 ->find();
 
             foreach ($collection as $opportunity) {
@@ -135,6 +139,18 @@ class CallOpportunityLinker
         }
 
         return null;
+    }
+
+    /**
+     * Nome tipico: "22/07/2026 19:30 - RICHIAMO ... - COGNOME NOME - 3894931312"
+     */
+    public function extractPhoneFromCallName(string $name): string
+    {
+        if (preg_match('/(\d{8,15})\s*$/', trim($name), $matches)) {
+            return $matches[1];
+        }
+
+        return '';
     }
 
     private function normalizePhone(string $phone): string

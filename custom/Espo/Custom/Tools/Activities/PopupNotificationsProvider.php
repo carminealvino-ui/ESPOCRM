@@ -518,7 +518,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             return true;
         }
 
-        return $this->callCreator->shouldShowAutoPendingCallInPopup($entity);
+        // Mostra ogni Call Pianificato: la deduplica è già su signature/entityKey.
+        // shouldShowAutoPendingCallInPopup era troppo aggressivo (held sibling /
+        // non-canonical) e nascondeva richiami scaduti legittimi → zero popup.
+        return (string) $entity->get('status') === 'Planned';
     }
 
     private function isPopupEligible(Entity $entity): bool
