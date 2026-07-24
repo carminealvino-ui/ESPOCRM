@@ -57,10 +57,8 @@ echo 'navbar badge=' . (
 
 $badgePath = 'client/custom/src/views/notification/badge.js';
 $badgeJs = is_file($badgePath) ? (string) file_get_contents($badgePath) : '';
-echo 'badge ensurePopupContainerCompat=' . (str_contains($badgeJs, 'ensurePopupContainerCompat') ? 'YES' : 'NO') . "\n";
-echo 'badge Parent.prototype.showPopupNotification=' . (
-    str_contains($badgeJs, 'Parent.prototype.showPopupNotification') ? 'YES' : 'NO'
-) . "\n\n";
+echo 'badge shouldPollGrouped=' . (str_contains($badgeJs, 'shouldPollGroupedPopupNotifications') ? 'YES' : 'NO') . "\n";
+echo 'badge clearCollapsed=' . (str_contains($badgeJs, 'clearCollapsedStateForItem') ? 'YES' : 'NO') . "\n\n";
 
 $now = date('Y-m-d H:i:s');
 $dueReminders = $em->getRDBRepository('Reminder')
