@@ -1,113 +1,68 @@
-/* global define, Espo */
+/* global define, Espo, $ */
 
 define('custom:views/notification/badge', ['views/notification/badge'], function (BadgeModule) {
 
     const Parent = BadgeModule.default || BadgeModule;
 
-    return class QueuedNotificationBadgeView extends Parent {
+    /**
+     * Estende il badge core senza la coda custom (che restava bloccata
+     * se un popup veniva collassato / falliva prima del remove).
+     * Garantisce compatibilità $popupContainer (legacy) vs popupNotificationsContainer (Espo recente)
+     * e polling grouped anche se WebSocket globale è ON ma metadata.event.useWebSocket=false.
+     */
+    return class PopupNotificationBadgeView extends Parent {
 
-        setup() {
-            super.setup();
+        afterRender() {
+            if (typeof Parent.prototype.afterRender === 'function') {
+                Parent.prototype.afterRender.call(this);
+            }
 
-            this.popupDisplayQueue = [];
-            this.popupDisplayActive = false;
-            this.shownEntityKeys = {};
-        }
-
-        getPopupNotificationView(id) {
-            return this.getView('popup-' + id);
-        }
-
-        getCollapsedStorageKey(id) {
-            return 'popupNotificationCollapsed-' + id;
+            this.ensurePopupContainerCompat();
         }
 
         /**
-         * Espo recenti usano popupNotificationsContainer (DOM);
-         * versioni vecchie esponevano $popupContainer (jQuery).
+         * Espo recenti: popupNotificationsContainer (DOM).
+         * Codice legacy / override: $popupContainer (jQuery).
          */
-        getPopupNotificationsContainerEl() {
-            if (this.popupNotificationsContainer) {
-                return this.popupNotificationsContainer;
+        ensurePopupContainerCompat() {
+            if (!this.popupNotificationsContainer) {
+                const el = document.getElementById('popup-notifications-container');
+
+                if (el) {
+                    this.popupNotificationsContainer = el;
+                }
+                else if (typeof this.preparePopupNotificationContainer === 'function') {
+                    this.preparePopupNotificationContainer();
+                }
             }
-
-            if (this.$popupContainer && this.$popupContainer.length) {
-                return this.$popupContainer.get(0);
-            }
-
-            return document.getElementById('popup-notifications-container');
-        }
-
-        setPopupContainerHidden(hidden) {
-            const el = this.getPopupNotificationsContainerEl();
-
-            if (!el) {
-                return;
-            }
-
-            if (hidden) {
-                el.classList.add('hidden');
-            } else {
-                el.classList.remove('hidden');
-            }
-        }
-
-        markPopupRemoved(id) {
-            const index = this.shownNotificationIds.indexOf(id);
-
-            if (index > -1) {
-                this.shownNotificationIds.splice(index, 1);
-            }
-
-            const entityKey = this.getEntityKeyFromPopupId(id);
-
-            if (entityKey) {
-                delete this.shownEntityKeys[entityKey];
-            }
-
-            if (this.shownNotificationIds.length === 0) {
-                this.setPopupContainerHidden(true);
-            }
-
-            this.closedNotificationIds.push(id);
-        }
-
-        checkBypass() {
-            const last = this.getRouter().getLast() || {};
-            const pageAction = (last.options || {}).page || null;
 
             if (
-                last.controller === 'Admin' &&
-                last.action === 'page' &&
-                ['upgrade', 'extensions'].includes(pageAction)
+                (!this.$popupContainer || !this.$popupContainer.length) &&
+                this.popupNotificationsContainer &&
+                typeof $ === 'function'
             ) {
+                this.$popupContainer = $(this.popupNotificationsContainer);
+            }
+        }
+
+        showPopupNotification(name, data, isNotFirstCheck = false) {
+            this.ensurePopupContainerCompat();
+
+            return Parent.prototype.showPopupNotification.call(this, name, data, isNotFirstCheck);
+        }
+
+        /**
+         * Il core ferma il polling grouped se WebSocket globale è ON.
+         * Con metadata.event.useWebSocket=false (daemon assente) forziamo il polling.
+         */
+        shouldPollGroupedPopupNotifications() {
+            const eventMeta = (this.popupNotificationsData && this.popupNotificationsData.event) || {};
+
+            if (eventMeta.useWebSocket === false) {
                 return true;
             }
 
-            return false;
-        }
-
-        collapsePopupNotification(id, silent = false) {
-            const view = this.getPopupNotificationView(id);
-
-            if (!view) {
-                return;
-            }
-
-            if (!silent || !view.isCollapsed) {
-                this.modalBarProvider.get()?.addModalView(view, {
-                    title: view.getTitle() ?? this.translate('Notification'),
-                });
-            }
-
-            if (silent) {
-                view.makeCollapsed();
-
-                return;
-            }
-
-            localStorage.setItem('messageCollapsePopupNotificationId', id);
-            this.getStorage().set('state', this.getCollapsedStorageKey(id), true);
+            return !this.useWebSocket;
         }
 
         getPopupSortDate(data) {
@@ -124,184 +79,6 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             });
         }
 
-        buildEntityKey(data) {
-            const notificationData = data.data || {};
-            const entityType = notificationData.entityType || '';
-            const entityId = notificationData.id || '';
-
-            if (!entityType || !entityId) {
-                return null;
-            }
-
-            return entityType + ':' + entityId;
-        }
-
-        buildStablePopupId(name, data) {
-            const notificationId = data.id || null;
-
-            if (notificationId) {
-                return name + '_' + notificationId;
-            }
-
-            const notificationData = data.data || {};
-            const entityType = notificationData.entityType || '';
-            const entityId = notificationData.id || '';
-
-            if (entityType && entityId) {
-                return name + '__' + entityType + '__' + entityId;
-            }
-
-            return name + '_anon_' + this.lastId++;
-        }
-
-        getEntityKeyFromPopupId(id) {
-            const parts = (id || '').split('__');
-
-            if (parts.length !== 3) {
-                return null;
-            }
-
-            return parts[1] + ':' + parts[2];
-        }
-
-        buildPopupQueueKey(name, data) {
-            return this.buildStablePopupId(name, data);
-        }
-
-        enqueuePopupNotification(name, data, isNotFirstCheck = false) {
-            const id = this.buildStablePopupId(name, data);
-            const entityKey = this.buildEntityKey(data);
-            const notificationId = data.id || null;
-
-            if (this.shownNotificationIds.includes(id)) {
-                const notificationView = this.getPopupNotificationView(id);
-
-                if (notificationView) {
-                    notificationView.trigger('update-data', data.data);
-                }
-
-                return;
-            }
-
-            if (entityKey && this.shownEntityKeys[entityKey]) {
-                return;
-            }
-
-            if (notificationId && this.closedNotificationIds.includes(notificationId)) {
-                return;
-            }
-
-            if (this.closedNotificationIds.includes(id)) {
-                return;
-            }
-
-            const key = this.buildPopupQueueKey(name, data);
-            const existsInQueue = this.popupDisplayQueue.some(item => item.key === key);
-
-            if (existsInQueue) {
-                return;
-            }
-
-            this.popupDisplayQueue.push({
-                key: key,
-                name: name,
-                data: data,
-                isNotFirstCheck: isNotFirstCheck,
-            });
-
-            this.popupDisplayQueue.sort((a, b) => {
-                return this.getPopupSortDate(a.data).localeCompare(this.getPopupSortDate(b.data));
-            });
-
-            this.processPopupDisplayQueue();
-        }
-
-        onPopupDisplayFinished() {
-            this.popupDisplayActive = false;
-            this.processPopupDisplayQueue();
-        }
-
-        processPopupDisplayQueue() {
-            if (this.popupDisplayActive || !this.popupDisplayQueue.length) {
-                return;
-            }
-
-            const item = this.popupDisplayQueue.shift();
-
-            this.popupDisplayActive = true;
-
-            this.displayPopupNotificationNow(item.name, item.data, item.isNotFirstCheck)
-                .catch(err => {
-                    console.error('popup notification display failed', err);
-                    this.onPopupDisplayFinished();
-                });
-        }
-
-        showPopupNotification(name, data, isNotFirstCheck = false) {
-            this.enqueuePopupNotification(name, data, isNotFirstCheck);
-        }
-
-        async displayPopupNotificationNow(name, data, isNotFirstCheck = false) {
-            const viewName = this.popupNotificationsData[name].view;
-
-            if (!viewName) {
-                this.onPopupDisplayFinished();
-
-                return;
-            }
-
-            const id = this.buildStablePopupId(name, data);
-            const entityKey = this.buildEntityKey(data);
-
-            this.shownNotificationIds.push(id);
-
-            if (entityKey) {
-                this.shownEntityKeys[entityKey] = true;
-            }
-
-            const view = await this.createView('popup-' + id, viewName, {
-                notificationData: data.data ?? {},
-                notificationId: data.id,
-                id: id,
-                isFirstCheck: !isNotFirstCheck,
-                onCollapse: () => {
-                    this.collapsePopupNotification(id);
-                },
-                onExpand: () => {
-                    this.expandPopupNotification(id);
-                },
-            });
-
-            this.setPopupContainerHidden(false);
-
-            this.listenTo(view, 'remove', () => {
-                this.markPopupRemoved(id);
-
-                localStorage.setItem('messageClosePopupNotificationId', id);
-                this.onPopupDisplayFinished();
-            });
-
-            await view.render();
-
-            if (data.id && this.getStorage().get('state', this.getCollapsedStorageKey(id))) {
-                this.collapsePopupNotification(id, true);
-            }
-        }
-
-        /**
-         * Il core ferma il polling grouped se WebSocket globale è ON.
-         * Se metadata.event.useWebSocket è false (daemon assente), forziamo il polling.
-         */
-        shouldPollGroupedPopupNotifications() {
-            const eventMeta = (this.popupNotificationsData && this.popupNotificationsData.event) || {};
-
-            if (eventMeta.useWebSocket === false) {
-                return true;
-            }
-
-            return !this.useWebSocket;
-        }
-
         checkGroupedPopupNotifications() {
             if (!this.checkBypass()) {
                 Espo.Ajax.getRequest('PopupNotification/action/grouped')
@@ -309,7 +86,7 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
                         for (const type in result) {
                             const list = this.sortPopupItems(result[type] || []);
 
-                            list.forEach(item => this.enqueuePopupNotification(type, item));
+                            list.forEach(item => this.showPopupNotification(type, item));
                         }
                     })
                     .catch(err => {
