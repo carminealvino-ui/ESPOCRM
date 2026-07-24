@@ -13,6 +13,9 @@ class PendingCallDateTime
 {
     public const POPUP_DELAY_HOURS = 12;
 
+    /** Oltre questa età (giorni) gli Appuntamento Pianificato non compaiono più in popup. */
+    public const POPUP_MAX_AGE_DAYS = 14;
+
     private const CALL_HOUR = 9;
     private const CALL_MINUTE = 0;
     private const DAYS_OFFSET = 2;
@@ -96,6 +99,39 @@ class PendingCallDateTime
         return (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
             ->modify('-' . self::POPUP_DELAY_HOURS . ' hours')
             ->format('Y-m-d H:i:s');
+    }
+
+    /**
+     * Limite inferiore popup Appuntamento (UTC storage): max(MIN_APPOINTMENT_DATE, now-POPUP_MAX_AGE_DAYS).
+     */
+    public static function popupEligibilityFloor(): string
+    {
+        $rolling = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
+            ->modify('-' . self::POPUP_MAX_AGE_DAYS . ' days')
+            ->format('Y-m-d H:i:s');
+
+        $minBusiness = new \DateTimeImmutable(
+            self::MIN_APPOINTMENT_DATE . ' 00:00:00',
+            new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE)
+        );
+        $minUtc = $minBusiness
+            ->setTimezone(new \DateTimeZone('UTC'))
+            ->format('Y-m-d H:i:s');
+
+        return $rolling > $minUtc ? $rolling : $minUtc;
+    }
+
+    /**
+     * Appuntamento ammissibile in popup esito: non troppo recente (<12h), non troppo vecchio.
+     */
+    public static function isAppuntamentoPopupEligible(?string $dateStart): bool
+    {
+        if (!$dateStart || !self::isAppointmentEligible($dateStart)) {
+            return false;
+        }
+
+        return $dateStart <= self::popupEligibilityCutoff()
+            && $dateStart >= self::popupEligibilityFloor();
     }
 
     /** Data/ora default rinvio richiamo: giorno successivo alle 09:00 (Europe/Rome). */
