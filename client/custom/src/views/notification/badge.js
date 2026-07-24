@@ -22,6 +22,36 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             return 'popupNotificationCollapsed-' + id;
         }
 
+        /**
+         * Espo recenti usano popupNotificationsContainer (DOM);
+         * versioni vecchie esponevano $popupContainer (jQuery).
+         */
+        getPopupNotificationsContainerEl() {
+            if (this.popupNotificationsContainer) {
+                return this.popupNotificationsContainer;
+            }
+
+            if (this.$popupContainer && this.$popupContainer.length) {
+                return this.$popupContainer.get(0);
+            }
+
+            return document.getElementById('popup-notifications-container');
+        }
+
+        setPopupContainerHidden(hidden) {
+            const el = this.getPopupNotificationsContainerEl();
+
+            if (!el) {
+                return;
+            }
+
+            if (hidden) {
+                el.classList.add('hidden');
+            } else {
+                el.classList.remove('hidden');
+            }
+        }
+
         markPopupRemoved(id) {
             const index = this.shownNotificationIds.indexOf(id);
 
@@ -36,7 +66,7 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             }
 
             if (this.shownNotificationIds.length === 0) {
-                this.$popupContainer.addClass('hidden');
+                this.setPopupContainerHidden(true);
             }
 
             this.closedNotificationIds.push(id);
@@ -201,7 +231,8 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             this.popupDisplayActive = true;
 
             this.displayPopupNotificationNow(item.name, item.data, item.isNotFirstCheck)
-                .catch(() => {
+                .catch(err => {
+                    console.error('popup notification display failed', err);
                     this.onPopupDisplayFinished();
                 });
         }
@@ -241,7 +272,7 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
                 },
             });
 
-            this.$popupContainer.removeClass('hidden');
+            this.setPopupContainerHidden(false);
 
             this.listenTo(view, 'remove', () => {
                 this.markPopupRemoved(id);
@@ -257,6 +288,20 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             }
         }
 
+        /**
+         * Il core ferma il polling grouped se WebSocket globale è ON.
+         * Se metadata.event.useWebSocket è false (daemon assente), forziamo il polling.
+         */
+        shouldPollGroupedPopupNotifications() {
+            const eventMeta = (this.popupNotificationsData && this.popupNotificationsData.event) || {};
+
+            if (eventMeta.useWebSocket === false) {
+                return true;
+            }
+
+            return !this.useWebSocket;
+        }
+
         checkGroupedPopupNotifications() {
             if (!this.checkBypass()) {
                 Espo.Ajax.getRequest('PopupNotification/action/grouped')
@@ -266,10 +311,13 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
 
                             list.forEach(item => this.enqueuePopupNotification(type, item));
                         }
+                    })
+                    .catch(err => {
+                        console.error('PopupNotification/action/grouped failed', err);
                     });
             }
 
-            if (this.useWebSocket) {
+            if (!this.shouldPollGroupedPopupNotifications()) {
                 return;
             }
 
