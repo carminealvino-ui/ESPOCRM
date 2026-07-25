@@ -6,13 +6,13 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
 
     /**
      * - Polling grouped se metadata.event.useWebSocket=false
-     * - All'avvio cancella TUTTI gli stati collapsed popup in localStorage
-     *   (sessione normale vs anonima: in anonima lo storage è vuoto)
+     * - Wipe collapsed SOLO una volta a sessione (sblocca storage stale),
+     *   poi rispetta "Nascondi"/collapse senza riaprire a ogni poll
      */
     return class PopupNotificationBadgeView extends Parent {
 
         afterRender() {
-            this.wipeAllCollapsedPopupState();
+            this.wipeCollapsedOncePerSession();
 
             if (typeof Parent.prototype.afterRender === 'function') {
                 Parent.prototype.afterRender.call(this);
@@ -23,10 +23,28 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             return 'popupNotificationCollapsed-' + id;
         }
 
-        /**
-         * Espo Storage usa chiavi localStorage: espo-state-popupNotificationCollapsed-...
-         * getStorage().clear() non è affidabile su tutte le chiavi: usiamo removeItem.
-         */
+        wipeCollapsedOncePerSession() {
+            const flag = 'espoPopupCollapsedWipedSession';
+
+            try {
+                if (sessionStorage.getItem(flag) === '1') {
+                    return;
+                }
+            }
+            catch (e) {
+                // sessionStorage non disponibile: wipe comunque una volta
+            }
+
+            this.wipeAllCollapsedPopupState();
+
+            try {
+                sessionStorage.setItem(flag, '1');
+            }
+            catch (e2) {
+                // ignore
+            }
+        }
+
         wipeAllCollapsedPopupState() {
             const markers = [
                 'popupNotificationCollapsed-',
@@ -66,41 +84,6 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             }
         }
 
-        clearCollapsedStateForItem(name, data) {
-            const notificationId = data && data.id ? data.id : null;
-            const ids = [];
-
-            if (notificationId) {
-                ids.push(name + '_' + notificationId);
-            }
-
-            const notificationData = (data && data.data) || {};
-            const entityType = notificationData.entityType || '';
-            const entityId = notificationData.id || '';
-
-            if (entityType && entityId) {
-                ids.push(name + '__' + entityType + '__' + entityId);
-            }
-
-            ids.forEach(id => {
-                const storageName = this.getCollapsedStorageKey(id);
-
-                try {
-                    this.getStorage().clear('state', storageName);
-                }
-                catch (e) {
-                    // ignore
-                }
-
-                try {
-                    localStorage.removeItem('espo-state-' + storageName);
-                }
-                catch (e2) {
-                    // ignore
-                }
-            });
-        }
-
         shouldPollGroupedPopupNotifications() {
             const eventMeta = (this.popupNotificationsData && this.popupNotificationsData.event) || {};
 
@@ -109,12 +92,6 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             }
 
             return !this.useWebSocket;
-        }
-
-        showPopupNotification(name, data, isNotFirstCheck = false) {
-            this.clearCollapsedStateForItem(name, data);
-
-            return Parent.prototype.showPopupNotification.call(this, name, data, isNotFirstCheck);
         }
 
         checkGroupedPopupNotifications() {
@@ -130,7 +107,7 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
                         }
 
                         if (total > 0) {
-                            console.info('[popup] grouped items:', total, result);
+                            console.info('[popup] grouped items:', total);
                         }
                     })
                     .catch(err => {

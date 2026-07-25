@@ -132,12 +132,15 @@ define('custom:views/appuntamento/popup-notification', [
 
             this.esitoPopupConfig = config;
             this.isEsitoPopup = true;
+            // Chiudi (X) disabilitato: non si elimina il debito esito.
+            // Collapse/Nascondi abilitato: si può lavorare su altro e riprendere dopo.
             this.closeButton = false;
-            this.collapseButton = false;
+            this.collapseButton = true;
             this.template = 'custom:appuntamento/popup-notification';
 
             this.addActionHandler('saveEsito', () => this.actionSaveEsito());
             this.addActionHandler('createOpportunity', () => this.actionCreateOpportunity());
+            this.addActionHandler('hideEsitoPopup', () => this.actionHideEsitoPopup());
         }
 
         data() {
@@ -151,7 +154,7 @@ define('custom:views/appuntamento/popup-notification', [
                 notificationData: this.notificationData,
                 notificationId: this.notificationId,
                 closeButton: false,
-                collapseButton: false,
+                collapseButton: true,
             };
         }
 
@@ -163,7 +166,6 @@ define('custom:views/appuntamento/popup-notification', [
             }
 
             this.$el.find('[data-action="close"]').addClass('hidden');
-            this.$el.find('[data-action="collapse"]').addClass('hidden');
             this.$el.addClass('esito-popup-wide');
 
             if (!this.hasView('esitoRecord')) {
@@ -220,6 +222,25 @@ define('custom:views/appuntamento/popup-notification', [
                 });
 
             this.wait(promise);
+        }
+
+        /**
+         * Nasconde il popup (collapse) senza salvare esito: resta in coda / modal-bar.
+         */
+        actionHideEsitoPopup() {
+            if (typeof this.collapse === 'function') {
+                this.collapse();
+
+                return;
+            }
+
+            if (typeof this.options.onCollapse === 'function') {
+                this.options.onCollapse();
+            }
+
+            if (typeof this.hide === 'function') {
+                this.hide();
+            }
         }
 
         getEsitoModel() {
