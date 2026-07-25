@@ -41,12 +41,14 @@ $log = $app->getContainer()->get('log');
 $creator = new AppuntamentoPendingCallCreator($em, $log);
 
 $cutoff = PendingCallDateTime::popupEligibilityCutoff();
+$floor = PendingCallDateTime::popupEligibilityFloor();
 $nowRome = (new \DateTimeImmutable('now', new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE)))
     ->format('Y-m-d H:i');
 
 echo "=== Sync promemoria esistenti (NESSUNA nuova Call) ===\n";
 echo "Ora Rome: {$nowRome}\n";
 echo "Cutoff popup Appuntamento (now-12h UTC): {$cutoff}\n";
+echo "Floor popup Appuntamento: {$floor}\n";
 echo "Modalità: " . ($apply ? 'APPLICA' : 'ANTEPRIMA (aggiungi --apply)') . "\n\n";
 
 // -------------------------------------------------------------------------
@@ -110,6 +112,7 @@ $plannedAppt = $em->getRDBRepository('Appuntamento')
     ->where([
         'status' => 'Planned',
         'dateStart<=' => $cutoff,
+        'dateStart>=' => $floor,
     ])
     ->order('dateStart', 'DESC')
     ->limit(0, $limit ?? 300)

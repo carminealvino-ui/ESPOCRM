@@ -2,7 +2,7 @@
     "event": {
         "grouped": true,
         "providerClassName": "Espo\\Custom\\Tools\\Activities\\PopupNotificationsProvider",
-        "useWebSocket": true,
+        "useWebSocket": false,
         "portalDisabled": true,
         "view": "custom:views/appuntamento/popup-notification"
     }

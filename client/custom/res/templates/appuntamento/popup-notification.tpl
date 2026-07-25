@@ -1,5 +1,5 @@
 {{#if collapseButton}}
-<a role="button" tabindex="0" class="close-link" data-action="collapse">
+<a role="button" tabindex="0" class="close-link" data-action="collapse" title="Nascondi">
     <span class="fas fa-minus"></span>
 </a>
 {{/if}}
@@ -15,6 +15,9 @@
 <div class="cell margin-top-small esito-popup-actions">
     <button type="button" class="btn btn-primary btn-sm" data-action="saveEsito" data-role="save">
         {{translate 'Save'}}
+    </button>
+    <button type="button" class="btn btn-default btn-sm" data-action="hideEsitoPopup" data-role="hide">
+        Nascondi
     </button>
     <button type="button" class="btn btn-primary btn-sm hidden" data-action="createOpportunity" data-role="create-opportunity">
         Crea Opportunità

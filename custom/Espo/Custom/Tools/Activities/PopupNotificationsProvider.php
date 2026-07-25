@@ -287,6 +287,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
     ): array {
         $resultList = [];
         $candidateIds = [];
+        $popupFloor = PendingCallDateTime::popupEligibilityFloor();
 
         $byAssigned = $this->entityManager
             ->getRDBRepository('Appuntamento')
@@ -295,6 +296,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
                 'status' => $statusList,
                 'assignedUserId' => $userId,
                 'dateStart<=' => $popupCutoff,
+                'dateStart>=' => $popupFloor,
             ])
             ->order('dateStart', 'DESC')
             ->limit(0, 80)
@@ -304,7 +306,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             $candidateIds[(string) $row->getId()] = true;
         }
 
-        foreach ($this->findAppuntamentoIdsForUserViaEntityUser($userId, $statusList, $popupCutoff) as $id) {
+        foreach ($this->findAppuntamentoIdsForUserViaEntityUser($userId, $statusList, $popupCutoff, $popupFloor) as $id) {
             $candidateIds[$id] = true;
         }
 
@@ -316,6 +318,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
                 ->where([
                     'status' => $statusList,
                     'dateStart<=' => $popupCutoff,
+                    'dateStart>=' => $popupFloor,
                 ])
                 ->order('dateStart', 'DESC')
                 ->limit(0, 80)
@@ -350,7 +353,8 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
     private function findAppuntamentoIdsForUserViaEntityUser(
         string $userId,
         array $statusList,
-        string $popupCutoff
+        string $popupCutoff,
+        string $popupFloor
     ): array {
         try {
             $pdo = $this->entityManager->getPDO();
@@ -365,10 +369,11 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
                 WHERE a.deleted = 0
                   AND a.status IN ({$statusPlaceholders})
                   AND a.date_start <= ?
+                  AND a.date_start >= ?
                 ORDER BY a.date_start DESC
                 LIMIT 80";
 
-            $params = array_merge([$userId], $statusList, [$popupCutoff]);
+            $params = array_merge([$userId], $statusList, [$popupCutoff, $popupFloor]);
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
 
@@ -518,24 +523,21 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             return true;
         }
 
-        return $this->callCreator->shouldShowAutoPendingCallInPopup($entity);
+        // Mostra ogni Call Pianificato: la deduplica è già su signature/entityKey.
+        // shouldShowAutoPendingCallInPopup era troppo aggressivo (held sibling /
+        // non-canonical) e nascondeva richiami scaduti legittimi → zero popup.
+        return (string) $entity->get('status') === 'Planned';
     }
 
     private function isPopupEligible(Entity $entity): bool
     {
-        $entityType = $entity->getEntityType();
-
-        if ($entityType !== 'Appuntamento') {
+        if ($entity->getEntityType() !== 'Appuntamento') {
             return true;
         }
 
-        $dateStart = $entity->get('dateStart');
-
-        if (!$dateStart) {
-            return false;
-        }
-
-        return $dateStart <= PendingCallDateTime::popupEligibilityCutoff();
+        return PendingCallDateTime::isAppuntamentoPopupEligible(
+            $entity->get('dateStart') ? (string) $entity->get('dateStart') : null
+        );
     }
 
     private function isItemVisible(Item $item): bool
@@ -628,7 +630,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             return false;
         }
 
-        return $dateStart <= PendingCallDateTime::popupEligibilityCutoff();
+        return PendingCallDateTime::isAppuntamentoPopupEligible((string) $dateStart);
     }
 
     private function userCanSeeActivity(Entity $entity, string $userId): bool
