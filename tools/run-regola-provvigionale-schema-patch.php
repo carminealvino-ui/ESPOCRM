@@ -35,6 +35,7 @@ $columns = [
     'pod_min' => 'INT DEFAULT NULL',
     'pod_max' => 'INT DEFAULT NULL',
     'giorni_liquidazione' => 'INT DEFAULT NULL',
+    'gettone_importo' => 'DOUBLE DEFAULT NULL',
     'attiva' => 'TINYINT(1) DEFAULT 1',
     'priorita' => 'INT DEFAULT 100',
 ];

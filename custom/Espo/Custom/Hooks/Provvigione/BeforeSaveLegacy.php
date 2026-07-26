@@ -58,6 +58,14 @@ class BeforeSaveLegacy implements BeforeSave
                     $base = (float) $quote->get('amount');
                 }
             }
+        } elseif ($tipo === 'Bonus Estate 2026') {
+            // Importo fisso gestito da ProvvigioneManager / regola GettoneFisso.
+            if ($entity->get('importo') !== null && (float) $entity->get('importo') > 0) {
+                return;
+            }
+
+            $base = 50.0;
+            $tasso = 1.0;
         } elseif ($tipo === 'Bonus Taxi') {
             $base = (float) $quote->get('amount');
         } elseif (str_contains($tipo, 'Gara')) {

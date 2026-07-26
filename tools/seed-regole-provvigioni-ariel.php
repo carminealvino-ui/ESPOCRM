@@ -40,6 +40,17 @@ function getArielProvvigioniSeedRules(): array
             'percentuale' => 2.0,
         ],
         [
+            'id' => 'bonusEstate2026',
+            'name' => 'ESTATE 2026',
+            'description' => 'Overcompenso fisso 50 € per ogni contratto di sabato/domenica nei mesi di luglio e agosto 2026',
+            'attiva' => true,
+            'priorita' => 535,
+            'regimeProvvigione' => '',
+            'tipoCalcolo' => 'GettoneFisso',
+            'tipoProvvigioneRecord' => 'Bonus Estate 2026',
+            'gettoneImporto' => 50.0,
+        ],
+        [
             'id' => 'bonusTaxi2',
             'name' => 'Bonus Taxi',
             'description' => 'Extra provvigione 2% se appuntamento con flag Taxi',
@@ -122,10 +133,12 @@ function upsertArielRuleViaPdo(EntityManager $em, array $data): void
 INSERT INTO regola_provvigionale (
     id, name, description, deleted, attiva, priorita,
     regime_provvigione, tipo_calcolo, tipo_provvigione_record, percentuale,
+    gettone_importo,
     created_at, modified_at
 ) VALUES (
     :id, :name, :description, 0, :attiva, :priorita,
     :regime, :tipo_calcolo, :tipo_record, :percentuale,
+    :gettone,
     NOW(), NOW()
 )
 ON DUPLICATE KEY UPDATE
@@ -138,6 +151,7 @@ ON DUPLICATE KEY UPDATE
     tipo_calcolo = VALUES(tipo_calcolo),
     tipo_provvigione_record = VALUES(tipo_provvigione_record),
     percentuale = VALUES(percentuale),
+    gettone_importo = VALUES(gettone_importo),
     modified_at = NOW()
 SQL;
 
@@ -151,7 +165,8 @@ SQL;
         ':regime' => (string) ($data['regimeProvvigione'] ?? ''),
         ':tipo_calcolo' => (string) ($data['tipoCalcolo'] ?? ''),
         ':tipo_record' => (string) ($data['tipoProvvigioneRecord'] ?? ''),
-        ':percentuale' => (float) ($data['percentuale'] ?? 0),
+        ':percentuale' => isset($data['percentuale']) ? (float) $data['percentuale'] : null,
+        ':gettone' => isset($data['gettoneImporto']) ? (float) $data['gettoneImporto'] : null,
     ]);
 }
 
@@ -175,7 +190,7 @@ if (PHP_SAPI === 'cli' && realpath($argv[0] ?? '') === realpath(__FILE__)) {
 
     $errors = 0;
 
-    foreach (['arielMinus35', 'bonusWeekendSd', 'bonusTaxi2', 'referenzaPersonale'] as $ruleId) {
+    foreach (['arielMinus35', 'bonusWeekendSd', 'bonusEstate2026', 'bonusTaxi2', 'referenzaPersonale'] as $ruleId) {
         $rule = $em->getEntityById('RegolaProvvigionale', $ruleId);
 
         if ($rule && !$rule->get('deleted')) {
