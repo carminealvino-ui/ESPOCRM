@@ -37,6 +37,9 @@
             "PercentualePlusvalenza": "Percentuale su plusvalenza",
             "PercentualeMinusvalenza": "Percentuale su minusvalenza",
             "PercentualeMargine": "Percentuale su base margine"
+        },
+        "tipoProvvigioneRecord": {
+            "Bonus Estate 2026": "Bonus Estate 2026"
         }
     }
 }

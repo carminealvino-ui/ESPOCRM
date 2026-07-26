@@ -225,6 +225,7 @@ class ProvvigioneManager
 
         $this->syncIntegrazioneContattiPersonali($quote, $opportunity, $category, $context, $imponibile);
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
+        $this->ensureEstate2026BonusProvvigione($opportunity, $quote, $category, $context);
         $this->ensureTaxiBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
         $this->statusSync->syncProvvigioniForQuote($quote);
@@ -354,6 +355,7 @@ class ProvvigioneManager
         'Plus Provvigionale',
         'Minus Provvigionale',
         'Bonus (Sabato-Domenica)',
+        'Bonus Estate 2026',
         'Bonus Taxi',
         'Referenza Personale',
     ];
@@ -491,6 +493,7 @@ class ProvvigioneManager
 
         $this->ensureArielLegacyPlusProvvigione($opportunity, $quote, $category, $context);
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
+        $this->ensureEstate2026BonusProvvigione($opportunity, $quote, $category, $context);
         $this->ensureTaxiBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
         $this->statusSync->syncProvvigioniForQuote($quote);
         $this->refreshQuoteTotaleProvvigioni($quote);
@@ -607,6 +610,7 @@ class ProvvigioneManager
         }
 
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
+        $this->ensureEstate2026BonusProvvigione($opportunity, $quote, $category, $context);
         $this->ensureTaxiBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
 
         $this->statusSync->syncProvvigioniForQuote($quote);
@@ -711,6 +715,86 @@ class ProvvigioneManager
             'Bonus (Sabato-Domenica)',
             null
         );
+    }
+
+    /**
+     * Overcompenso fisso 50 € per contratti di sabato/domenica in luglio-agosto 2026.
+     *
+     * @param array<string, mixed> $context
+     */
+    private function ensureEstate2026BonusProvvigione(
+        Entity $opportunity,
+        Entity $quote,
+        ?Entity $category,
+        array $context
+    ): void {
+        if (!$this->isEstate2026WeekendContractDate($quote, $opportunity)) {
+            return;
+        }
+
+        $result = $this->resultFromRuleId('bonusEstate2026', $context)
+            ?? $this->calculator->calculateForTipoRecord($context, 'Bonus Estate 2026')
+            ?? $this->buildEstate2026BonusResult();
+
+        if ($result === null) {
+            return;
+        }
+
+        $this->saveConsolidataProvvigione(
+            $opportunity,
+            $quote,
+            $category,
+            $result,
+            $context,
+            'Bonus Estate 2026',
+            null
+        );
+    }
+
+    /**
+     * Fallback se la regola bonusEstate2026 non è ancora in DB.
+     *
+     * @return array{importo: float, regola: Entity}
+     */
+    private function buildEstate2026BonusResult(): array
+    {
+        $rule = $this->entityManager->getNewEntity('RegolaProvvigionale');
+        $rule->set([
+            'id' => 'bonusEstate2026',
+            'name' => 'ESTATE 2026',
+            'attiva' => true,
+            'tipoCalcolo' => 'GettoneFisso',
+            'tipoProvvigioneRecord' => 'Bonus Estate 2026',
+            'gettoneImporto' => 50.0,
+        ]);
+
+        return [
+            'importo' => 50.0,
+            'regola' => $rule,
+        ];
+    }
+
+    private function isEstate2026WeekendContractDate(Entity $quote, ?Entity $opportunity): bool
+    {
+        if (!$this->isWeekendContractDate($quote, $opportunity)) {
+            return false;
+        }
+
+        $date = $this->resolveWeekendReferenceDate($quote, $opportunity);
+
+        if ($date === null) {
+            return false;
+        }
+
+        try {
+            $dt = new \DateTimeImmutable(substr($date, 0, 10), new \DateTimeZone('Europe/Rome'));
+        } catch (\Throwable) {
+            return false;
+        }
+
+        $yearMonth = $dt->format('Y-m');
+
+        return $yearMonth === '2026-07' || $yearMonth === '2026-08';
     }
 
     /**
