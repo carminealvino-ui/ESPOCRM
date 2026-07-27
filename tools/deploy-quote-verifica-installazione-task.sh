@@ -36,13 +36,28 @@ download_one "custom/Espo/Custom/Resources/i18n/it_IT/Task.json"
 download_one "tools/backfill-verifica-installazione-task.php"
 download_one "tools/bonifica-invalido-data-installazione.php"
 download_one "custom/Espo/Custom/Services/ContrattoStatiRules.php"
+download_one "tools/verify-regressions.php"
+
+# Guardrail: se Quote.json ha enum legacy, aborti subito.
+if grep -q '"In Attesa Documentazione"\|"Draft"\|"Presented"\|"Canceled"\|"Finanziamento Rifiutato"' \
+  custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json; then
+  echo "ERR: Quote.json contiene enum LEGACY — deploy interrotto."
+  exit 1
+fi
 
 php clear_cache.php
 rm -rf data/cache/*
 php rebuild.php
 
+if [[ -f tools/verify-regressions.php ]]; then
+  php tools/verify-regressions.php --profile=quote-stati || {
+    echo "ERR: verify-regressions fallito — enum non bonificati."
+    exit 1
+  }
+fi
+
 echo
-echo "Deploy OK."
+echo "Deploy OK (enum verificati)."
 echo "1) Bonifica Invalidi (dataInstallazione=null):"
 echo "   php tools/bonifica-invalido-data-installazione.php --dry-run --limit=20"
 echo "2) Backfill solo in scadenza (oggi→+60gg):"

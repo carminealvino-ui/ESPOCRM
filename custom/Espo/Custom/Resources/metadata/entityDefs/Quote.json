@@ -172,25 +172,21 @@
             "type": "enum",
             "options": [
                 "",
-                "In attesa di OTP",
                 "In valutazione",
-                "In attesa documentazione",
-                "In lavorazione",
-                "In rivalutazione",
-                "In Attesa Documentazione",
+                "In attesa OTP",
                 "Approvato",
+                "In rivalutazione",
+                "In attesa di documentazione",
                 "Respinto",
                 "Annullato"
             ],
             "style": {
                 "": null,
-                "In attesa di OTP": "info",
                 "In valutazione": "primary",
-                "In attesa documentazione": "warning",
-                "In lavorazione": null,
-                "In rivalutazione": null,
-                "In Attesa Documentazione": "warning",
+                "In attesa OTP": "info",
                 "Approvato": "success",
+                "In rivalutazione": null,
+                "In attesa di documentazione": "warning",
                 "Respinto": "danger",
                 "Annullato": null
             },
@@ -229,8 +225,6 @@
                 "",
                 "Inserito",
                 "In lavorazione",
-                "Appuntamento Fissato",
-                "Installato",
                 "Chiuso",
                 "Sospeso",
                 "Annullato",
@@ -240,8 +234,6 @@
                 "": null,
                 "Inserito": null,
                 "In lavorazione": null,
-                "Appuntamento Fissato": null,
-                "Installato": null,
                 "Chiuso": "success",
                 "Sospeso": null,
                 "Annullato": null,
@@ -252,30 +244,18 @@
         },
         "status": {
             "options": [
-                "Draft",
-                "Presented",
                 "Bozza",
-                "In lavorazione",
+                "In Gestione",
                 "Appuntamento fissato",
-                "Approved",
                 "Installato",
-                "Recesso",
-                "Finanziamento Rifiutato",
-                "Invalido",
-                "Canceled"
+                "Invalido"
             ],
             "style": {
-                "Draft": null,
-                "Presented": "primary",
                 "Bozza": "default",
-                "In lavorazione": "primary",
+                "In Gestione": "primary",
                 "Appuntamento fissato": "info",
-                "Approved": "info",
                 "Installato": "success",
-                "Recesso": "danger",
-                "Finanziamento Rifiutato": "warning",
-                "Invalido": "danger",
-                "Canceled": "info"
+                "Invalido": "danger"
             }
         }
     },
