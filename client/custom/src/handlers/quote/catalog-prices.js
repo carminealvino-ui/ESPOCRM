@@ -38,7 +38,8 @@ define('custom:handlers/quote/catalog-prices', [], function () {
             if (codiceIvi != null && codiceIvi > 0) {
                 prezzoCodice = codiceIvi;
             } else if (codiceNet != null && codiceNet > 0) {
-                prezzoCodice = codiceNet;
+                // Product.prezzoCodice è netto: su B2C (IVA inclusa) rimonta il lordo.
+                prezzoCodice = Math.round(codiceNet * (1 + aliquota / 100) * 100) / 100;
             }
         } else {
             listPrice = listNet;

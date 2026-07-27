@@ -38,7 +38,8 @@ define('custom:handlers/quote/catalog-prices', [], function () {
             if (codiceIvi != null && codiceIvi > 0) {
                 prezzoCodice = codiceIvi;
             } else if (codiceNet != null && codiceNet > 0) {
-                prezzoCodice = codiceNet;
+                // Product.prezzoCodice è netto: su B2C (IVA inclusa) rimonta il lordo.
+                prezzoCodice = Math.round(codiceNet * (1 + aliquota / 100) * 100) / 100;
             }
         } else {
             listPrice = listNet;
@@ -112,14 +113,12 @@ define('custom:handlers/quote/catalog-prices', [], function () {
     var patchFromRow = function (item, row, currency, quoteModel) {
         var patch = {};
 
-        if (row.listPrice != null && row.listPrice > 0
-            && (item.listPrice == null || item.listPrice <= 0)) {
+        if (row.listPrice != null && row.listPrice > 0) {
             patch.listPrice = row.listPrice;
             patch.listPriceCurrency = item.listPriceCurrency || currency;
         }
 
-        if (row.prezzoCodice != null && row.prezzoCodice > 0
-            && (item.prezzoCodice == null || item.prezzoCodice <= 0)) {
+        if (row.prezzoCodice != null && row.prezzoCodice > 0) {
             patch.prezzoCodice = row.prezzoCodice;
             patch.prezzoCodiceCurrency = item.prezzoCodiceCurrency || currency;
         }
