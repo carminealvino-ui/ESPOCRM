@@ -1,31 +1,39 @@
 #!/usr/bin/env bash
 # Deploy: To-Do + promemoria verifica installazione su Contratto.
+# Evita curl -o diretto su path CRM (errore 23 su cPanel): scarica in /tmp poi cp.
 set -euo pipefail
 ROOT="${1:-$HOME/public_html/crm/mec-group}"
 BRANCH="cursor/quote-verifica-installazione-task-9999"
 BASE="https://raw.githubusercontent.com/carminealvino-ui/ESPOCRM/${BRANCH}"
+TMPDIR="${TMPDIR:-/tmp}/espo-deploy-verifica-inst-$$"
 
 cd "$ROOT"
+mkdir -p "$TMPDIR"
+trap 'rm -rf "$TMPDIR"' EXIT
 
-files=(
-  "custom/Espo/Custom/Services/QuoteInstallazioneVerificaTaskSync.php"
-  "custom/Espo/Custom/Hooks/Quote/SyncVerificaInstallazioneTask.php"
-  "custom/Espo/Custom/Hooks/Task/ApplyVerificaInstallazioneEsito.php"
-  "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
-  "custom/Espo/Custom/Resources/metadata/entityDefs/Task.json"
-  "custom/Espo/Custom/Resources/metadata/logicDefs/Task.json"
-  "custom/Espo/Custom/Resources/layouts/Quote/detail.json"
-  "custom/Espo/Custom/Resources/layouts/Task/detail.json"
-  "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
-  "custom/Espo/Custom/Resources/i18n/it_IT/Task.json"
-  "tools/backfill-verifica-installazione-task.php"
-)
+download_one() {
+  local rel="$1"
+  local tmp="$TMPDIR/$(basename "$rel")"
+  local dest="$ROOT/$rel"
 
-for rel in "${files[@]}"; do
-  mkdir -p "$(dirname "$rel")"
-  curl -fsSL "${BASE}/${rel}" -o "${rel}"
-  echo "OK ${rel}"
-done
+  echo ">> $rel"
+  mkdir -p "$(dirname "$dest")"
+  curl -fsSL "${BASE}/${rel}" -o "$tmp"
+  cp -f "$tmp" "$dest"
+  echo "   OK"
+}
+
+download_one "custom/Espo/Custom/Services/QuoteInstallazioneVerificaTaskSync.php"
+download_one "custom/Espo/Custom/Hooks/Quote/SyncVerificaInstallazioneTask.php"
+download_one "custom/Espo/Custom/Hooks/Task/ApplyVerificaInstallazioneEsito.php"
+download_one "custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json"
+download_one "custom/Espo/Custom/Resources/metadata/entityDefs/Task.json"
+download_one "custom/Espo/Custom/Resources/metadata/logicDefs/Task.json"
+download_one "custom/Espo/Custom/Resources/layouts/Quote/detail.json"
+download_one "custom/Espo/Custom/Resources/layouts/Task/detail.json"
+download_one "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
+download_one "custom/Espo/Custom/Resources/i18n/it_IT/Task.json"
+download_one "tools/backfill-verifica-installazione-task.php"
 
 php clear_cache.php
 rm -rf data/cache/*
@@ -33,7 +41,5 @@ php rebuild.php
 
 echo
 echo "Deploy OK."
-echo "Dry-run backfill contratti esistenti:"
-echo "  php tools/backfill-verifica-installazione-task.php --dry-run --limit=20"
-echo "Apply:"
-echo "  php tools/backfill-verifica-installazione-task.php --apply"
+echo "Dry-run: php tools/backfill-verifica-installazione-task.php --dry-run --limit=20"
+echo "Apply:   php tools/backfill-verifica-installazione-task.php --apply"
