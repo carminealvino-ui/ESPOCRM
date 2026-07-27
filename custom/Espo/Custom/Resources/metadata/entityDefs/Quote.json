@@ -86,6 +86,12 @@
             "useNumericFormat": true,
             "isCustom": true
         },
+        "verificaInstallazioneTask": {
+            "type": "link",
+            "entity": "Task",
+            "readOnly": true,
+            "isCustom": true
+        },
         "dataAttivazione": {
             "type": "date",
             "useNumericFormat": true,
@@ -312,6 +318,12 @@
             "type": "belongsTo",
             "entity": "ProductCategory",
             "foreign": "quotes",
+            "isCustom": true
+        },
+        "verificaInstallazioneTask": {
+            "type": "belongsTo",
+            "entity": "Task",
+            "foreign": "quotesVerificaInstallazione",
             "isCustom": true
         },
         "itemList": {

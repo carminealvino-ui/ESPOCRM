@@ -59,6 +59,7 @@
         "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)",
         "status": "Stato",
         "dataInstallazione": "Data Installazione",
+        "verificaInstallazioneTask": "To-Do verifica installazione",
         "codiceContratto": "Codice Contratto",
         "numeroContratto": "Numero Contratto",
         "venditaAbbinataAdAltroProdotto": "Vendita Abbinata ad Altro Prodotto",
@@ -90,7 +91,8 @@
         "provvigioni": "Provvigioni",
         "fornitorePartner": "Fornitore / Partner",
         "productBrand": "Brand",
-        "productCategory": "Categoria prodotto"
+        "productCategory": "Categoria prodotto",
+        "verificaInstallazioneTask": "To-Do verifica installazione"
     },
     "labels": {
         "Create Quote": "Creare un Contratto",

@@ -23,6 +23,26 @@
                     }
                 ]
             }
+        },
+        "esitoVerificaInstallazione": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "verificaInstallazioneContratto"
+                    }
+                ]
+            }
+        },
+        "verificaInstallazioneContratto": {
+            "visible": {
+                "conditionGroup": [
+                    {
+                        "type": "isTrue",
+                        "attribute": "verificaInstallazioneContratto"
+                    }
+                ]
+            }
         }
     }
 }

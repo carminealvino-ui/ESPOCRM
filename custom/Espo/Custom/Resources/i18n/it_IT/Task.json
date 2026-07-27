@@ -5,7 +5,9 @@
     "fields": {
         "opportunita": "Opportunità",
         "privato": "Privato",
-        "tipologia": "Tipologia"
+        "tipologia": "Tipologia",
+        "verificaInstallazioneContratto": "Verifica installazione (auto)",
+        "esitoVerificaInstallazione": "Esito verifica installazione"
     },
     "links": {
         "opportunita": "Opportunità"
@@ -16,7 +18,13 @@
             "Telefonata": "Telefonata",
             "Email": "Email",
             "Preparazione Documento": "Preparazione Documento",
-            "Sollecito": "Sollecito"
+            "Sollecito": "Sollecito",
+            "Verifica installazione": "Verifica installazione"
+        },
+        "esitoVerificaInstallazione": {
+            "": "",
+            "Installato": "Installato",
+            "Rinviato": "Rinviato"
         }
     }
 }
