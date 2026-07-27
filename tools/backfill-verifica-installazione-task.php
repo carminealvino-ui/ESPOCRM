@@ -4,6 +4,7 @@
  *
  *   php tools/backfill-verifica-installazione-task.php --dry-run
  *   php tools/backfill-verifica-installazione-task.php --apply --limit=50
+ *   php tools/backfill-verifica-installazione-task.php --apply --include-past
  */
 
 declare(strict_types=1);
@@ -12,9 +13,11 @@ require_once __DIR__ . '/../bootstrap.php';
 
 use Espo\Core\Application;
 use Espo\Custom\Services\QuoteInstallazioneVerificaTaskSync;
+use Espo\Custom\Tools\DateTime\BusinessDateTime;
 
 $dryRun = in_array('--dry-run', $argv ?? [], true);
 $apply = in_array('--apply', $argv ?? [], true);
+$includePast = in_array('--include-past', $argv ?? [], true);
 $limit = 0;
 
 foreach ($argv ?? [] as $arg) {
@@ -33,20 +36,34 @@ $em = $app->getContainer()->get('entityManager');
 /** @var QuoteInstallazioneVerificaTaskSync $sync */
 $sync = $app->getContainer()->get('injectableFactory')->create(QuoteInstallazioneVerificaTaskSync::class);
 
+$today = (new \DateTimeImmutable('now', new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE)))
+    ->format('Y-m-d');
+
+$where = [
+    'dataInstallazione!=' => null,
+    'status!=' => 'Installato',
+    'statoContratto!=' => 'Chiuso',
+];
+
+if (!$includePast) {
+    // Solo installazioni future (o oggi): evita flood di To-Do scaduti.
+    $where['dataInstallazione>='] = $today;
+}
+
 $collection = $em->getRDBRepository('Quote')
-    ->where([
-        'dataInstallazione!=' => null,
-        'status!=' => 'Installato',
-        'statoContratto!=' => 'Chiuso',
-    ])
-    ->order('modifiedAt', 'DESC')
+    ->where($where)
+    ->order('dataInstallazione', 'ASC')
     ->find();
 
 $processed = 0;
 $updated = 0;
+$skipped = 0;
 
 echo "=== Backfill To-Do verifica installazione ===\n";
-echo ($dryRun && !$apply) ? "Modalità: DRY-RUN\n\n" : "Modalità: APPLY\n\n";
+echo ($dryRun && !$apply) ? "Modalità: DRY-RUN\n" : "Modalità: APPLY\n";
+echo $includePast
+    ? "Filtro date: TUTTE (include passate)\n\n"
+    : "Filtro date: solo dataInstallazione >= {$today}\n\n";
 
 foreach ($collection as $quoteLite) {
     if ($limit > 0 && $processed >= $limit) {
@@ -57,6 +74,12 @@ foreach ($collection as $quoteLite) {
     $quote = $em->getEntityById('Quote', $quoteLite->getId());
 
     if (!$quote) {
+        $skipped++;
+        continue;
+    }
+
+    if ($quote->get('verificaInstallazioneTaskId')) {
+        $skipped++;
         continue;
     }
 
@@ -78,7 +101,7 @@ foreach ($collection as $quoteLite) {
     }
 }
 
-echo "\nElaborati: {$processed}, sync: {$updated}\n";
+echo "\nElaborati: {$processed}, sync: {$updated}, saltati: {$skipped}\n";
 
 if ($dryRun && !$apply) {
     echo "Per applicare: php tools/backfill-verifica-installazione-task.php --apply\n";
