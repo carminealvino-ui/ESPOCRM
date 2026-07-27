@@ -59,7 +59,6 @@
         "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)",
         "status": "Stato",
         "dataInstallazione": "Data Installazione",
-        "verificaInstallazioneTask": "To-Do verifica installazione",
         "codiceContratto": "Codice Contratto",
         "numeroContratto": "Numero Contratto",
         "venditaAbbinataAdAltroProdotto": "Vendita Abbinata ad Altro Prodotto",
@@ -91,8 +90,7 @@
         "provvigioni": "Provvigioni",
         "fornitorePartner": "Fornitore / Partner",
         "productBrand": "Brand",
-        "productCategory": "Categoria prodotto",
-        "verificaInstallazioneTask": "To-Do verifica installazione"
+        "productCategory": "Categoria prodotto"
     },
     "labels": {
         "Create Quote": "Creare un Contratto",
@@ -105,10 +103,12 @@
             "Not Available": "Non Disponibile"
         },
         "statoFinanziamento": {
-            "In attesa OTP": "In attesa OTP",
+            "In attesa di OTP": "In attesa di OTP",
             "In valutazione": "In valutazione",
+            "In attesa documentazione": "In attesa documentazione",
+            "In lavorazione": "In lavorazione",
             "In rivalutazione": "In rivalutazione",
-            "In attesa di documentazione": "In attesa di documentazione",
+            "In Attesa Documentazione": "In Attesa Documentazione",
             "Approvato": "Approvato",
             "Respinto": "Respinto",
             "Annullato": "Annullato",
@@ -116,18 +116,27 @@
         },
         "statoContratto": {
             "In lavorazione": "In lavorazione",
+            "Installato": "Installato",
             "Annullato": "Annullato",
             "": "",
             "Sospeso": "Sospeso",
             "Inserito": "Inserito",
             "Recesso": "Recesso",
+            "Appuntamento Fissato": "Appuntamento Fissato",
             "Chiuso": "Chiuso"
         },
         "status": {
+            "Draft": "Bozza",
+            "Presented": "Presentato",
             "Bozza": "Bozza",
             "In Gestione": "In Gestione",
+            "Approved": "In Pagamento",
             "Installato": "Installato",
+            "Recesso": "Recesso",
+            "Finanziamento Rifiutato": "Finanziamento Rifiutato",
             "Invalido": "Invalido",
+            "Canceled": "Annullato",
+            "In lavorazione": "In lavorazione",
             "Appuntamento fissato": "Appuntamento fissato"
         }
     }

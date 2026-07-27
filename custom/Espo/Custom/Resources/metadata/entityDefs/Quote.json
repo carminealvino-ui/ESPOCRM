@@ -86,12 +86,6 @@
             "useNumericFormat": true,
             "isCustom": true
         },
-        "verificaInstallazioneTask": {
-            "type": "link",
-            "entity": "Task",
-            "readOnly": true,
-            "isCustom": true
-        },
         "dataAttivazione": {
             "type": "date",
             "useNumericFormat": true,
@@ -172,21 +166,25 @@
             "type": "enum",
             "options": [
                 "",
+                "In attesa di OTP",
                 "In valutazione",
-                "In attesa OTP",
-                "Approvato",
+                "In attesa documentazione",
+                "In lavorazione",
                 "In rivalutazione",
-                "In attesa di documentazione",
+                "In Attesa Documentazione",
+                "Approvato",
                 "Respinto",
                 "Annullato"
             ],
             "style": {
                 "": null,
+                "In attesa di OTP": "info",
                 "In valutazione": "primary",
-                "In attesa OTP": "info",
-                "Approvato": "success",
+                "In attesa documentazione": "warning",
+                "In lavorazione": null,
                 "In rivalutazione": null,
-                "In attesa di documentazione": "warning",
+                "In Attesa Documentazione": "warning",
+                "Approvato": "success",
                 "Respinto": "danger",
                 "Annullato": null
             },
@@ -225,6 +223,8 @@
                 "",
                 "Inserito",
                 "In lavorazione",
+                "Appuntamento Fissato",
+                "Installato",
                 "Chiuso",
                 "Sospeso",
                 "Annullato",
@@ -234,6 +234,8 @@
                 "": null,
                 "Inserito": null,
                 "In lavorazione": null,
+                "Appuntamento Fissato": null,
+                "Installato": null,
                 "Chiuso": "success",
                 "Sospeso": null,
                 "Annullato": null,
@@ -244,18 +246,30 @@
         },
         "status": {
             "options": [
+                "Draft",
+                "Presented",
                 "Bozza",
-                "In Gestione",
+                "In lavorazione",
                 "Appuntamento fissato",
+                "Approved",
                 "Installato",
-                "Invalido"
+                "Recesso",
+                "Finanziamento Rifiutato",
+                "Invalido",
+                "Canceled"
             ],
             "style": {
+                "Draft": null,
+                "Presented": "primary",
                 "Bozza": "default",
-                "In Gestione": "primary",
+                "In lavorazione": "primary",
                 "Appuntamento fissato": "info",
+                "Approved": "info",
                 "Installato": "success",
-                "Invalido": "danger"
+                "Recesso": "danger",
+                "Finanziamento Rifiutato": "warning",
+                "Invalido": "danger",
+                "Canceled": "info"
             }
         }
     },
@@ -298,12 +312,6 @@
             "type": "belongsTo",
             "entity": "ProductCategory",
             "foreign": "quotes",
-            "isCustom": true
-        },
-        "verificaInstallazioneTask": {
-            "type": "belongsTo",
-            "entity": "Task",
-            "foreign": "quotesVerificaInstallazione",
             "isCustom": true
         },
         "itemList": {
