@@ -447,6 +447,18 @@ class QuotePricingCalculator
             $lineCodice = $this->floatOrNull($this->itemValue($item, 'prezzoCodice'));
 
             if ($lineCodice !== null && $lineCodice > 0) {
+                // B2C: se in riga è rimasto il netto (es. 4090.91) invece del lordo (4500), correggi.
+                if (
+                    $taxInclusive
+                    && $codiceIvi !== null && $codiceIvi > 0
+                    && $codiceNet !== null && $codiceNet > 0
+                    && abs($lineCodice - $codiceNet) < 0.02
+                    && abs($lineCodice - $codiceIvi) > 0.02
+                ) {
+                    $itemList[$index] = $this->itemSet($item, 'prezzoCodice', $codiceIvi);
+                    $changed = true;
+                }
+
                 continue;
             }
 
@@ -662,14 +674,12 @@ class QuotePricingCalculator
             return round($ivi / (1 + $aliquotaPercent / 100), 2);
         }
 
+        // Su Product il campo prezzoCodice è sempre IVA esclusa (convenzione listino).
+        // Il flag $pricesTaxInclusive riguarda solo il contratto/UI, non lo storage prodotto.
         $stored = $this->floatOrNull($product->get('prezzoCodice'));
 
         if ($stored !== null && $stored > 0) {
-            if ($pricesTaxInclusive) {
-                return round($stored / (1 + $aliquotaPercent / 100), 2);
-            }
-
-            return $stored;
+            return round($stored, 2);
         }
 
         return null;
@@ -692,16 +702,13 @@ class QuotePricingCalculator
         $ivi = $this->floatOrNull($product->get('prezzoCodiceIvaInclusa'));
 
         if ($ivi !== null && $ivi > 0) {
-            return $ivi;
+            return round($ivi, 2);
         }
 
+        // Product.prezzoCodice = netto → su B2C/IVA inclusa si rimonta il lordo.
         $stored = $this->floatOrNull($product->get('prezzoCodice'));
 
         if ($stored !== null && $stored > 0) {
-            if ($pricesTaxInclusive) {
-                return round($stored, 2);
-            }
-
             return round($stored * (1 + $aliquotaPercent / 100), 2);
         }
 
