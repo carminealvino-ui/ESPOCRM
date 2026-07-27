@@ -16,10 +16,13 @@ curl -fsSL "${BASE}/custom/Espo/Custom/Resources/i18n/it_IT/Quote.json" \
   -o custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
 curl -fsSL "${BASE}/tools/test-contratto-stati-respinto.php" \
   -o tools/test-contratto-stati-respinto.php
+curl -fsSL "${BASE}/tools/verify-quote-stati-deploy.php" \
+  -o tools/verify-quote-stati-deploy.php
 
 php clear_cache.php
 rm -rf data/cache/*
 php rebuild.php
+php tools/verify-quote-stati-deploy.php
 php tools/test-contratto-stati-respinto.php
 
 echo

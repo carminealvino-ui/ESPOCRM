@@ -74,6 +74,74 @@ foreach ($files as $rel => $needles) {
     }
 }
 
+// Guardrail anti-regressione: enum Quote devono restare bonificati.
+$quoteMetaPath = $root . '/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json';
+$quoteI18nPath = $root . '/custom/Espo/Custom/Resources/i18n/it_IT/Quote.json';
+
+if (is_file($quoteMetaPath)) {
+    $metaRaw = file_get_contents($quoteMetaPath);
+    $meta = is_string($metaRaw) ? json_decode($metaRaw, true) : null;
+
+    if (!is_array($meta)) {
+        $failed++;
+        echo "[ERR] Quote metadata non leggibile come JSON.\n";
+    } else {
+        $expectedStatus = ['Bozza', 'In Gestione', 'Appuntamento fissato', 'Installato', 'Invalido'];
+        $expectedContratto = ['', 'Inserito', 'In lavorazione', 'Chiuso', 'Sospeso', 'Annullato', 'Recesso'];
+        $expectedFin = ['', 'In valutazione', 'In attesa OTP', 'Approvato', 'In rivalutazione', 'In attesa di documentazione', 'Respinto', 'Annullato'];
+
+        $actualStatus = $meta['fields']['status']['options'] ?? null;
+        $actualContratto = $meta['fields']['statoContratto']['options'] ?? null;
+        $actualFin = $meta['fields']['statoFinanziamento']['options'] ?? null;
+
+        if ($actualStatus !== $expectedStatus) {
+            $failed++;
+            echo "[ERR] Quote.status options non bonificate.\n";
+        } else {
+            echo "[OK] Quote.status options bonificate.\n";
+        }
+
+        if ($actualContratto !== $expectedContratto) {
+            $failed++;
+            echo "[ERR] Quote.statoContratto options non bonificate.\n";
+        } else {
+            echo "[OK] Quote.statoContratto options bonificate.\n";
+        }
+
+        if ($actualFin !== $expectedFin) {
+            $failed++;
+            echo "[ERR] Quote.statoFinanziamento options non bonificate.\n";
+        } else {
+            echo "[OK] Quote.statoFinanziamento options bonificate.\n";
+        }
+    }
+}
+
+if (is_file($quoteI18nPath)) {
+    $i18nRaw = file_get_contents($quoteI18nPath);
+    $forbidden = [
+        '"Draft"',
+        '"Presented"',
+        '"Approved"',
+        '"Canceled"',
+        '"Finanziamento Rifiutato"',
+        '"In Attesa Documentazione"',
+        '"In attesa di OTP"',
+    ];
+
+    if (!is_string($i18nRaw)) {
+        $failed++;
+        echo "[ERR] Quote i18n non leggibile.\n";
+    } else {
+        foreach ($forbidden as $token) {
+            if (str_contains($i18nRaw, $token)) {
+                $failed++;
+                echo "[ERR] Quote i18n contiene token legacy vietato: {$token}\n";
+            }
+        }
+    }
+}
+
 if ($failed === 0) {
     echo "\nDeploy file OK.\n";
 }
