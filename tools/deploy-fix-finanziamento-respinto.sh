@@ -10,6 +10,10 @@ curl -fsSL "${BASE}/custom/Espo/Custom/Services/ContrattoStatiRules.php" \
   -o custom/Espo/Custom/Services/ContrattoStatiRules.php
 curl -fsSL "${BASE}/custom/Espo/Custom/Hooks/Quote/SyncStatiContrattoFinanziamento.php" \
   -o custom/Espo/Custom/Hooks/Quote/SyncStatiContrattoFinanziamento.php
+curl -fsSL "${BASE}/custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json" \
+  -o custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
+curl -fsSL "${BASE}/custom/Espo/Custom/Resources/i18n/it_IT/Quote.json" \
+  -o custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
 curl -fsSL "${BASE}/tools/test-contratto-stati-respinto.php" \
   -o tools/test-contratto-stati-respinto.php
 
