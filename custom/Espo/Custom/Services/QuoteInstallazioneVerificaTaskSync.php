@@ -30,7 +30,18 @@ class QuoteInstallazioneVerificaTaskSync
             return;
         }
 
-        if ($this->isQuoteAlreadyClosed($quote)) {
+        if ($this->isQuoteAlreadyClosed($quote) || $this->isQuoteInvalid($quote)) {
+            if ($this->isQuoteInvalid($quote) && $quote->get('dataInstallazione')) {
+                $quote->set('dataInstallazione', null);
+
+                if ($allowQuoteLinkUpdate) {
+                    $this->entityManager->saveEntity($quote, [
+                        'silent' => true,
+                        'skipHooks' => true,
+                    ]);
+                }
+            }
+
             $this->cancelLinkedTask($quote, $allowQuoteLinkUpdate);
 
             return;
@@ -159,6 +170,15 @@ class QuoteInstallazioneVerificaTaskSync
         $statoContratto = trim((string) ($quote->get('statoContratto') ?? ''));
 
         return $status === 'Installato' || $statoContratto === 'Chiuso';
+    }
+
+    private function isQuoteInvalid(Entity $quote): bool
+    {
+        $status = trim((string) ($quote->get('status') ?? ''));
+        $statoContratto = trim((string) ($quote->get('statoContratto') ?? ''));
+
+        return $status === 'Invalido'
+            || in_array($statoContratto, ['Annullato', 'Recesso'], true);
     }
 
     private function resolveTaskForQuote(Entity $quote): Entity

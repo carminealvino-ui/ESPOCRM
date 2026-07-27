@@ -34,6 +34,8 @@ download_one "custom/Espo/Custom/Resources/layouts/Task/detail.json"
 download_one "custom/Espo/Custom/Resources/i18n/it_IT/Quote.json"
 download_one "custom/Espo/Custom/Resources/i18n/it_IT/Task.json"
 download_one "tools/backfill-verifica-installazione-task.php"
+download_one "tools/bonifica-invalido-data-installazione.php"
+download_one "custom/Espo/Custom/Services/ContrattoStatiRules.php"
 
 php clear_cache.php
 rm -rf data/cache/*
@@ -41,5 +43,7 @@ php rebuild.php
 
 echo
 echo "Deploy OK."
-echo "Dry-run: php tools/backfill-verifica-installazione-task.php --dry-run --limit=20"
-echo "Apply:   php tools/backfill-verifica-installazione-task.php --apply"
+echo "1) Bonifica Invalidi (dataInstallazione=null):"
+echo "   php tools/bonifica-invalido-data-installazione.php --dry-run --limit=20"
+echo "2) Backfill solo in scadenza (oggi→+60gg):"
+echo "   php tools/backfill-verifica-installazione-task.php --dry-run --limit=20"

@@ -131,6 +131,10 @@ class ContrattoStatiRules
                 $entity->set('status', 'Invalido');
             }
 
+            if ($isQuote) {
+                $this->clearDataInstallazione($entity);
+            }
+
             return;
         }
 
@@ -144,6 +148,10 @@ class ContrattoStatiRules
                 && $statoFinanziamento !== 'Annullato'
             ) {
                 $entity->set('statoFinanziamento', 'Annullato');
+            }
+
+            if ($isQuote) {
+                $this->clearDataInstallazione($entity);
             }
 
             return;
@@ -160,6 +168,13 @@ class ContrattoStatiRules
             $status = 'Installato';
         }
 
+        // Contratto Invalido ⇒ niente data installazione
+        if ($isQuote && $status === 'Invalido') {
+            $this->clearDataInstallazione($entity);
+
+            return;
+        }
+
         // Chiuso / Installato + finanziamento ⇒ Approvato
         if ($statoContratto === 'Chiuso' || ($isQuote && $status === 'Installato')) {
             $hasFinancing = $finanziamento || $statoFinanziamento !== '';
@@ -174,5 +189,16 @@ class ContrattoStatiRules
                 }
             }
         }
+    }
+
+    private function clearDataInstallazione(Entity $entity): void
+    {
+        $value = $entity->get('dataInstallazione');
+
+        if ($value === null || $value === '') {
+            return;
+        }
+
+        $entity->set('dataInstallazione', null);
     }
 }
