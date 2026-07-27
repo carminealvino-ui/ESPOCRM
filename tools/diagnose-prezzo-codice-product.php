@@ -20,11 +20,11 @@ $app->setupSystemUser();
 $em = $app->getContainer()->get('entityManager');
 
 $collection = $em->getRDBRepository('Product')
-    ->where(['name*' => $q])
-    ->limit(0, 15)
+    ->where(['name*' => '%' . $q . '%'])
+    ->limit(0, 20)
     ->find();
 
-echo "Query name*={$q}\n";
+echo "Query name contiene={$q}\n";
 $count = 0;
 foreach ($collection as $p) {
     $count++;
@@ -34,6 +34,7 @@ foreach ($collection as $p) {
     echo 'prezzoCodice=' . var_export($p->get('prezzoCodice'), true) . "\n";
     echo 'prezzoCodiceIvaInclusa=' . var_export($p->get('prezzoCodiceIvaInclusa'), true) . "\n";
     echo 'listPrice=' . var_export($p->get('listPrice'), true) . "\n";
+    echo 'prezzoListinoIvaEsclusa=' . var_export($p->get('prezzoListinoIvaEsclusa'), true) . "\n";
     echo 'prezzoListinoIvaInclusa=' . var_export($p->get('prezzoListinoIvaInclusa'), true) . "\n";
 }
 echo "Trovati: {$count}\n";
