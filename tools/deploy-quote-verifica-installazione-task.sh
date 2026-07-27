@@ -22,7 +22,9 @@ files=(
 )
 
 for rel in "${files[@]}"; do
+  mkdir -p "$(dirname "$rel")"
   curl -fsSL "${BASE}/${rel}" -o "${rel}"
+  echo "OK ${rel}"
 done
 
 php clear_cache.php
