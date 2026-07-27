@@ -19,7 +19,9 @@ use Espo\ORM\Entity;
  * Condizioni chiave:
  * - status Installato ⇔ statoContratto Chiuso
  * - Installato/Chiuso + finanziamento ⇒ Approvato
- * - Recesso/Annullato ⇒ status Invalido + fin. Annullato
+ * - Recesso ⇒ status Invalido + fin. Annullato
+ * - Respinto ⇒ status Invalido + statoContratto Annullato (fin. resta Respinto)
+ * - Annullato (senza Respinto) ⇒ status Invalido + fin. Annullato
  */
 class ContrattoStatiRules
 {
@@ -134,7 +136,26 @@ class ContrattoStatiRules
             return;
         }
 
+        // Finanziamento respinto (KO banca): non forzare Annullato sul finanziamento.
+        // Il contratto resta Annullato/Invalido, i KPI contano solo "Respinto".
+        if ($statoFinanziamento === 'Respinto') {
+            if ($statoContratto !== 'Annullato') {
+                $entity->set('statoContratto', 'Annullato');
+            }
+
+            if ($isQuote && $status !== 'Invalido') {
+                $entity->set('status', 'Invalido');
+            }
+
+            if (!$finanziamento) {
+                $entity->set('finanziamento', true);
+            }
+
+            return;
+        }
+
         // Annullato ⇒ stato lavorazione Invalido; se c'era finanziamento ⇒ Annullato
+        // (Respinto già gestito sopra e non va sovrascritto).
         if ($statoContratto === 'Annullato') {
             if ($isQuote && $status !== 'Invalido') {
                 $entity->set('status', 'Invalido');
