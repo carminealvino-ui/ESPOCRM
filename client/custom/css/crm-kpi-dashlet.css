@@ -292,24 +292,32 @@
     font-size: 0.78rem;
 }
 
+.crm-kpi-bottom-col.crm-kpi-bottom-pipeline {
+    align-items: stretch;
+}
+
 .crm-kpi-panel-pipeline {
     margin-bottom: 0;
-    padding: 8px 10px;
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .crm-kpi-panel-pipeline .crm-kpi-panel-title {
     font-size: 0.88rem;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .crm-kpi-pipeline-results {
-    margin-top: 12px;
+    margin-top: 6px;
     width: 100%;
+    flex: 0 0 auto;
 }
 
 .crm-kpi-pipeline-results-note {
-    margin-bottom: 6px;
-    line-height: 1.25;
+    margin-bottom: 4px;
+    line-height: 1.2;
     font-size: 10px !important;
     color: var(--text-muted-color, #6c757d);
 }
@@ -324,18 +332,18 @@
 .crm-kpi-pipeline-results-head,
 .crm-kpi-pipeline-results-row {
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) 0.55fr 1.3fr;
+    grid-template-columns: minmax(0, 1.05fr) 0.5fr 1.45fr;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     width: 100%;
-    padding: 4px 5px;
+    padding: 2px 4px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .crm-kpi-pipeline-results-head {
     padding-top: 0;
-    padding-bottom: 5px;
-    font-size: 11px !important;
+    padding-bottom: 3px;
+    font-size: 10px !important;
     font-weight: 600;
     color: var(--text-muted-color, #6c757d);
     border-bottom: 1px solid rgba(0, 0, 0, 0.08);
@@ -356,36 +364,38 @@
     font-weight: 700;
     color: inherit;
     min-width: 0;
-    line-height: 1.35;
+    line-height: 1.25;
 }
 
 .crm-kpi-pipeline-results-value {
-    font-size: 12px !important;
-    font-weight: 600;
-    text-align: right;
-    white-space: nowrap;
-    line-height: 1.35;
-}
-
-.crm-kpi-pipeline-results-detail {
     font-size: 11px !important;
     font-weight: 600;
     text-align: right;
     white-space: nowrap;
+    line-height: 1.25;
+}
+
+.crm-kpi-pipeline-results-detail {
+    font-size: 10px !important;
+    font-weight: 600;
+    text-align: right;
+    white-space: nowrap;
     color: var(--text-muted-color, #6c757d);
-    line-height: 1.35;
+    line-height: 1.25;
 }
 
 .crm-kpi-pipeline {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 4px;
     align-items: stretch;
     min-height: 0;
+    flex: 0 0 auto;
 }
 
 .crm-kpi-pipeline-chart {
-    height: 280px;
+    height: 168px;
+    max-height: 168px;
     width: 100%;
 }
 
@@ -440,7 +450,7 @@
     font-size: 0.78rem;
     font-weight: 600;
     text-align: center;
-    min-height: 48px;
+    min-height: 28px;
     width: 100%;
     clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
 }

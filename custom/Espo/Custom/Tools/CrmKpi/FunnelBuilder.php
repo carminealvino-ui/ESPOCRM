@@ -98,6 +98,7 @@ class FunnelBuilder
             if (in_array($step['key'], ['contratti', 'contrattiNetti'], true)) {
                 $percentOfLordi = self::ratioPercent($value, $baseLordi);
                 $percentOfNetti = self::ratioPercent($value, $baseNetti);
+                $percentOfTotali = self::ratioPercent($value, $baseTotali);
             }
 
             $result[] = (object) [
