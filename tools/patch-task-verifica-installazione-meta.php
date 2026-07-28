@@ -93,6 +93,7 @@ saveJson($i18nPath, $i18n);
 echo "[OK] Task i18n patch\n";
 
 $logic = loadJson($logicPath);
+$logic['fields']['dateCompleted']['required'] = null;
 $logic['fields']['esitoVerificaInstallazione'] = [
     'visible' => [
         'conditionGroup' => [

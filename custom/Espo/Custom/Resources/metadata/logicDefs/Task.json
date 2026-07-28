@@ -9,7 +9,8 @@
                         "value": "Completed"
                     }
                 ]
-            }
+            },
+            "required": null
         },
         "reminders": {
             "visible": null
