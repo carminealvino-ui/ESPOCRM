@@ -148,7 +148,10 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                 {
                     label: 'Contr. totali',
                     value: this.formatNumber(baseContrattiTotali),
-                    detail: this.formatPercentOf(baseContrattiTotali, baseTotali),
+                    detail: this.joinPercentDetails([
+                        this.formatPercentOf(baseContrattiTotali, baseTotali),
+                        this.formatPercentOf(baseContrattiTotali, baseLordi),
+                    ]),
                 },
                 {
                     label: 'Contr. lordi',
