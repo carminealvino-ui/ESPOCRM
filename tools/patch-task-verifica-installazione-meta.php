@@ -59,6 +59,9 @@ if (!in_array('Verifica installazione', $tipologiaOptions, true)) {
     $meta['fields']['tipologia']['style']['Verifica installazione'] = null;
 }
 
+$meta['fields']['dateCompleted']['required'] = false;
+$meta['fields']['dateCompleted']['notNull'] = false;
+
 $meta['fields']['verificaInstallazioneContratto'] = [
     'type' => 'bool',
     'default' => false,

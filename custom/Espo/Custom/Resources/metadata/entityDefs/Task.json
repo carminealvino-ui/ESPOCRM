@@ -26,7 +26,9 @@
         },
         "dateCompleted": {
             "useNumericFormat": true,
-            "minuteStep": 30
+            "minuteStep": 30,
+            "required": false,
+            "notNull": false
         },
         "createdAt": {
             "useNumericFormat": true,
