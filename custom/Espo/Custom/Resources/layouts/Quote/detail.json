@@ -84,11 +84,17 @@
             ],
             [
                 {
-                    "name": "dataInstallazione"
+                    "name": "shippingProvider"
                 },
                 {
-                    "name": "verificaInstallazioneTask"
+                    "name": "dataInstallazione"
                 }
+            ],
+            [
+                {
+                    "name": "verificaInstallazioneTask"
+                },
+                false
             ]
         ],
         "style": "default",

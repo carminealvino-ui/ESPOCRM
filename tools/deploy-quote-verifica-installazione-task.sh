@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Deploy verifica installazione SENZA sovrascrivere Quote.json intero.
-# Enum: solo patch in-place. Metadata feature: solo merge campi nuovi.
+# Deploy verifica installazione — SOLO file sicuri + patch IN-PLACE.
+# VIETATO sovrascrivere: Quote.json, Task.json, layout, i18n (usare patch).
 set -euo pipefail
 ROOT="${1:-$HOME/public_html/crm/mec-group}"
 BRANCH="cursor/quote-verifica-installazione-task-9999"
@@ -22,35 +22,41 @@ download_one() {
   echo "   OK"
 }
 
-# PHP/hooks/Task metadata/layout — MAI Quote.json / Quote i18n interi
+# === SAFE: solo PHP nuovi / tools / ContrattoStatiRules (logica feature) ===
 download_one "custom/Espo/Custom/Services/QuoteInstallazioneVerificaTaskSync.php"
 download_one "custom/Espo/Custom/Hooks/Quote/SyncVerificaInstallazioneTask.php"
 download_one "custom/Espo/Custom/Hooks/Task/ApplyVerificaInstallazioneEsito.php"
 download_one "custom/Espo/Custom/Services/ContrattoStatiRules.php"
-download_one "custom/Espo/Custom/Resources/metadata/entityDefs/Task.json"
-download_one "custom/Espo/Custom/Resources/metadata/logicDefs/Task.json"
-download_one "custom/Espo/Custom/Resources/layouts/Quote/detail.json"
-download_one "custom/Espo/Custom/Resources/layouts/Task/detail.json"
-download_one "custom/Espo/Custom/Resources/i18n/it_IT/Task.json"
 download_one "tools/backfill-verifica-installazione-task.php"
 download_one "tools/bonifica-invalido-data-installazione.php"
 download_one "tools/patch-quote-enum-bonificati.php"
 download_one "tools/patch-quote-verifica-installazione-meta.php"
+download_one "tools/patch-task-verifica-installazione-meta.php"
+download_one "tools/patch-layouts-verifica-installazione.php"
 download_one "tools/verify-regressions.php"
 
-echo ">> patch IN-PLACE enum bonificati (niente overwrite Quote.json)"
+echo
+echo ">> PATCH in-place (niente overwrite metadata/layout)"
 php tools/patch-quote-enum-bonificati.php
-
-echo ">> patch IN-PLACE solo campi verificaInstallazioneTask"
 php tools/patch-quote-verifica-installazione-meta.php
+php tools/patch-task-verifica-installazione-meta.php
+php tools/patch-layouts-verifica-installazione.php
 
 php tools/verify-regressions.php --profile=quote-stati
 
+# Blocco se Quote.json ancora legacy
+if grep -E '"In Attesa Documentazione"|"Draft"|"Presented"|"Canceled"|"Finanziamento Rifiutato"' \
+  custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json; then
+  echo "ERR: Quote.json ancora sporco dopo patch"
+  exit 1
+fi
+
 php clear_cache.php
-rm -rf data/cache/*
+rm -rf data/cache
+mkdir -p data/cache
 php rebuild.php
 
 echo
-echo "Deploy OK. Quote.json NON è stato sostituito per intero."
+echo "Deploy OK (solo patch metadata/layout)."
 echo "1) php tools/bonifica-invalido-data-installazione.php --dry-run --limit=20"
 echo "2) php tools/backfill-verifica-installazione-task.php --dry-run --limit=20"
