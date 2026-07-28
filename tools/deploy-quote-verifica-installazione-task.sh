@@ -26,6 +26,7 @@ download_one() {
 download_one "custom/Espo/Custom/Services/QuoteInstallazioneVerificaTaskSync.php"
 download_one "custom/Espo/Custom/Hooks/Quote/SyncVerificaInstallazioneTask.php"
 download_one "custom/Espo/Custom/Hooks/Task/ApplyVerificaInstallazioneEsito.php"
+download_one "custom/Espo/Custom/Hooks/Task/AutoSetDateCompletedOnStatusCompleted.php"
 download_one "custom/Espo/Custom/Services/ContrattoStatiRules.php"
 download_one "tools/backfill-verifica-installazione-task.php"
 download_one "tools/bonifica-invalido-data-installazione.php"
