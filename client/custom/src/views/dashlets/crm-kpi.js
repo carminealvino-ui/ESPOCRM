@@ -1,6 +1,6 @@
 define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!espo-funnel-chart'], function (Dep) {
 
-    // kpi-tile-labels-v4: metriche lordi 100%, doppia % su ingestibili/netti/contratti funnel
+    // kpi-pipeline-v5: Contr. totali + % su app. totali; funnel chart più basso
 
     return Dep.extend({
 
@@ -118,11 +118,11 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
 
             const tile = appuntamentiTile || {};
             const contratti = contrattiTile || {};
-            // kpi-pipeline-labels-v3: etichette ripristinate come layout stabile
-            // Totali → Lordi → Netti → Contr. lordi → Contr. netti
+            // kpi-pipeline-labels-v4: + Contr. totali; % contratti anche su app. totali
             const baseTotali = Number(tile.totali ?? valueByKey.appuntamentiTotali ?? 0);
             const baseLordi = Number(tile.lordi ?? valueByKey.appuntamentiLordi ?? 0);
             const baseNetti = Number(tile.netti ?? valueByKey.appuntamentiNetti ?? 0);
+            const baseContrattiTotali = Number(contratti.totali ?? 0);
             const baseContratti = Number(contratti.lordi ?? valueByKey.contratti ?? 0);
             const baseContrattiNetti = Number(contratti.netti ?? valueByKey.contrattiNetti ?? 0);
 
@@ -146,9 +146,18 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     ]),
                 },
                 {
+                    label: 'Contr. totali',
+                    value: this.formatNumber(baseContrattiTotali),
+                    detail: this.joinPercentDetails([
+                        this.formatPercentOf(baseContrattiTotali, baseTotali),
+                        this.formatPercentOf(baseContrattiTotali, baseLordi),
+                    ]),
+                },
+                {
                     label: 'Contr. lordi',
                     value: this.formatNumber(baseContratti),
                     detail: this.joinPercentDetails([
+                        this.formatPercentOf(baseContratti, baseTotali),
                         this.formatPercentOf(baseContratti, baseLordi),
                         this.formatPercentOf(baseContratti, baseNetti),
                     ]),
@@ -157,6 +166,7 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
                     label: 'Contr. netti',
                     value: this.formatNumber(baseContrattiNetti),
                     detail: this.joinPercentDetails([
+                        this.formatPercentOf(baseContrattiNetti, baseTotali),
                         this.formatPercentOf(baseContrattiNetti, baseLordi),
                         this.formatPercentOf(baseContrattiNetti, baseNetti),
                     ]),
@@ -246,11 +256,62 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
         },
 
         afterRender: function () {
+            this.fitDashletHeightToContent();
+
             if (this.loadError || !this.summary) {
                 return;
             }
 
             this.drawSalesPipeline();
+            // Dopo il draw del funnel l'altezza può cambiare: riallinea i contenitori.
+            this.fitDashletHeightToContent();
+        },
+
+        /**
+         * Espo assegna height fisso alla cella griglia → scroll pagina a vuoto.
+         * Forza i contenitori del dashlet KPI all'altezza del contenuto.
+         */
+        fitDashletHeightToContent: function () {
+            if (!this.$el || !this.$el.length) {
+                return;
+            }
+
+            this.$el.addClass('crm-kpi-dashlet');
+
+            const $nodes = this.$el
+                .parents()
+                .addBack()
+                .filter((i, el) => {
+                    const $el = $(el);
+                    return $el.hasClass('dashlet')
+                        || $el.hasClass('dashlet-container')
+                        || $el.hasClass('dashlet-body')
+                        || $el.hasClass('panel')
+                        || $el.hasClass('panel-body')
+                        || $el.hasClass('gs-w')
+                        || $el.hasClass('grid-stack-item')
+                        || $el.hasClass('grid-stack-item-content')
+                        || ($el.attr('data-name') === 'CrmKpi');
+                });
+
+            $nodes.each((i, el) => {
+                const $el = $(el);
+                $el.addClass('crm-kpi-dashlet-fit');
+                el.style.setProperty('height', 'auto', 'important');
+                el.style.setProperty('min-height', '0', 'important');
+                el.style.setProperty('max-height', 'none', 'important');
+                el.style.setProperty('overflow', 'visible', 'important');
+                el.style.setProperty('bottom', 'auto', 'important');
+            });
+
+            // Contenitore dashboard: evita min-height residua che crea scroll vuoto
+            const $dashboards = this.$el.closest('#dashboard, .dashboard, .dashlets');
+
+            $dashboards.each((i, el) => {
+                el.style.setProperty('min-height', '0', 'important');
+                el.style.setProperty('height', 'auto', 'important');
+                el.style.setProperty('overflow', 'visible', 'important');
+            });
         },
 
         getPipelineSteps: function () {
@@ -334,6 +395,10 @@ define('custom:views/dashlets/crm-kpi', ['views/dashlets/abstract/base', 'lib!es
             }
 
             if (item.stage === 'contratti' || item.stage === 'contrattiNetti') {
+                if (item.percentOfTotali != null) {
+                    parts.push(item.percentOfTotali + '% su app. totali');
+                }
+
                 if (item.percentOfLordi != null) {
                     parts.push(item.percentOfLordi + '% su app. lordi');
                 }
