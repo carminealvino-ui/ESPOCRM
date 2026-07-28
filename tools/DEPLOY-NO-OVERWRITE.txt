@@ -1,0 +1,12 @@
+# File MAI da sovrascrivere con curl/cp nei deploy feature.
+# Usare solo patch IN-PLACE (tools/patch-*.php).
+#
+# custom/Espo/Custom/Resources/metadata/entityDefs/Quote.json
+# custom/Espo/Custom/Resources/i18n/it_IT/Quote.json
+# custom/Espo/Custom/Resources/metadata/entityDefs/Task.json
+# custom/Espo/Custom/Resources/i18n/it_IT/Task.json
+# custom/Espo/Custom/Resources/metadata/logicDefs/Task.json
+# custom/Espo/Custom/Resources/layouts/Quote/detail.json
+# custom/Espo/Custom/Resources/layouts/Task/detail.json
+#
+# Motivo: un branch da main sporco/vecchio li riporta indietro (regressione enum/layout).

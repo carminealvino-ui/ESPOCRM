@@ -19,7 +19,10 @@ use Espo\ORM\Entity;
  * Condizioni chiave:
  * - status Installato ⇔ statoContratto Chiuso
  * - Installato/Chiuso + finanziamento ⇒ Approvato
- * - Recesso/Annullato ⇒ status Invalido + fin. Annullato
+ * - Recesso ⇒ status Invalido + fin. Annullato + dataInstallazione null
+ * - Respinto ⇒ status Invalido + statoContratto Annullato (fin. resta Respinto)
+ * - Annullato (senza Respinto) ⇒ status Invalido + fin. Annullato
+ * - Invalido/Annullato/Recesso ⇒ dataInstallazione null
  */
 class ContrattoStatiRules
 {
@@ -131,10 +134,36 @@ class ContrattoStatiRules
                 $entity->set('status', 'Invalido');
             }
 
+            if ($isQuote) {
+                $this->clearDataInstallazione($entity);
+            }
+
+            return;
+        }
+
+        // Finanziamento respinto (KO banca): non forzare Annullato sul finanziamento.
+        if ($statoFinanziamento === 'Respinto') {
+            if ($statoContratto !== 'Annullato') {
+                $entity->set('statoContratto', 'Annullato');
+            }
+
+            if ($isQuote && $status !== 'Invalido') {
+                $entity->set('status', 'Invalido');
+            }
+
+            if (!$finanziamento) {
+                $entity->set('finanziamento', true);
+            }
+
+            if ($isQuote) {
+                $this->clearDataInstallazione($entity);
+            }
+
             return;
         }
 
         // Annullato ⇒ stato lavorazione Invalido; se c'era finanziamento ⇒ Annullato
+        // (Respinto già gestito sopra e non va sovrascritto).
         if ($statoContratto === 'Annullato') {
             if ($isQuote && $status !== 'Invalido') {
                 $entity->set('status', 'Invalido');
@@ -144,6 +173,10 @@ class ContrattoStatiRules
                 && $statoFinanziamento !== 'Annullato'
             ) {
                 $entity->set('statoFinanziamento', 'Annullato');
+            }
+
+            if ($isQuote) {
+                $this->clearDataInstallazione($entity);
             }
 
             return;
@@ -160,6 +193,13 @@ class ContrattoStatiRules
             $status = 'Installato';
         }
 
+        // Contratto Invalido ⇒ niente data installazione
+        if ($isQuote && $status === 'Invalido') {
+            $this->clearDataInstallazione($entity);
+
+            return;
+        }
+
         // Chiuso / Installato + finanziamento ⇒ Approvato
         if ($statoContratto === 'Chiuso' || ($isQuote && $status === 'Installato')) {
             $hasFinancing = $finanziamento || $statoFinanziamento !== '';
@@ -174,5 +214,16 @@ class ContrattoStatiRules
                 }
             }
         }
+    }
+
+    private function clearDataInstallazione(Entity $entity): void
+    {
+        $value = $entity->get('dataInstallazione');
+
+        if ($value === null || $value === '') {
+            return;
+        }
+
+        $entity->set('dataInstallazione', null);
     }
 }

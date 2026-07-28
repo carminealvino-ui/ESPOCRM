@@ -89,6 +89,12 @@
                 {
                     "name": "dataInstallazione"
                 }
+            ],
+            [
+                {
+                    "name": "verificaInstallazioneTask"
+                },
+                false
             ]
         ],
         "style": "default",

@@ -108,13 +108,9 @@ define('custom:views/appuntamento/popup-notification', [
                     return false;
                 }
 
-                if (status === 'Completed' && !model.get('dateCompleted')) {
-                    return false;
-                }
-
                 return true;
             },
-            incompleteMessage: 'Aggiornare Stato (es. Completato) e data completamento se necessario, poi cliccare Salva.',
+            incompleteMessage: 'Aggiornare Stato (es. Completato) e poi cliccare Salva.',
         },
     };
 

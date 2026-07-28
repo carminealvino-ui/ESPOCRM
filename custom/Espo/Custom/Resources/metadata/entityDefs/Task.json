@@ -6,6 +6,7 @@
                 "Prospect",
                 "Lead",
                 "Opportunity",
+                "Quote",
                 "FornitorePartner",
                 "Provvigione"
             ]
@@ -25,7 +26,9 @@
         },
         "dateCompleted": {
             "useNumericFormat": true,
-            "minuteStep": 30
+            "minuteStep": 30,
+            "required": false,
+            "notNull": false
         },
         "createdAt": {
             "useNumericFormat": true,
@@ -57,16 +60,38 @@
                 "Telefonata",
                 "Email",
                 "Preparazione Documento",
-                "Sollecito"
+                "Sollecito",
+                "Verifica installazione"
             ],
             "style": {
                 "": null,
                 "Telefonata": null,
                 "Email": null,
                 "Preparazione Documento": null,
-                "Sollecito": null
+                "Sollecito": null,
+                "Verifica installazione": null
             },
             "default": "",
+            "isCustom": true
+        },
+        "verificaInstallazioneContratto": {
+            "type": "bool",
+            "default": false,
+            "readOnly": true,
+            "isCustom": true
+        },
+        "esitoVerificaInstallazione": {
+            "type": "enum",
+            "options": [
+                "",
+                "Installato",
+                "Rinviato"
+            ],
+            "style": {
+                "": null,
+                "Installato": "success",
+                "Rinviato": "warning"
+            },
             "isCustom": true
         }
     },

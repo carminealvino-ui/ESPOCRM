@@ -1,4 +1,10 @@
 {
+    "viewSetupHandlers": {
+        "record/edit": [
+            "__APPEND__",
+            "custom:handlers/task/auto-date-completed-on-save"
+        ]
+    },
     "kanbanViewMode": true,
     "color": null,
     "iconClass": "fas fa-tasks"
