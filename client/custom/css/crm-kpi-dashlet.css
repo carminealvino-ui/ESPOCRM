@@ -1,6 +1,29 @@
 .crm-kpi-dashlet {
-    padding: 4px 2px 8px;
+    padding: 4px 2px 4px;
     font-size: 13px;
+    height: auto;
+    min-height: 0;
+}
+
+/*
+ * Evita scroll pagina a vuoto: il dashlet KPI prende altezza dal contenuto,
+ * non dalla cella griglia oversized.
+ */
+.dashlet-container:has(.crm-kpi-dashlet),
+.dashlet:has(.crm-kpi-dashlet) {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    bottom: auto !important;
+}
+
+.dashlet-container:has(.crm-kpi-dashlet) .dashlet-body,
+.dashlet:has(.crm-kpi-dashlet) .dashlet-body,
+.panel:has(.crm-kpi-dashlet) > .panel-body {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
 }
 
 .crm-kpi-period {
@@ -26,7 +49,7 @@
     border: 1px solid var(--border-color, #dee2e6);
     border-radius: 6px;
     padding: 10px 12px;
-    height: 100%;
+    height: auto;
 }
 
 .crm-kpi-tile-title,
@@ -72,7 +95,7 @@
 }
 
 .crm-kpi-bottom-col .crm-kpi-panel {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     width: 100%;
 }
 

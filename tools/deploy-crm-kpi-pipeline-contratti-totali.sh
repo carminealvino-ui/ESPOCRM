@@ -26,6 +26,7 @@ download_one "client/custom/css/crm-kpi-dashlet.css"
 download_one "client/custom/src/views/dashlets/crm-kpi.js"
 download_one "client/custom/res/templates/dashlets/crm-kpi.tpl"
 download_one "custom/Espo/Custom/Tools/CrmKpi/FunnelBuilder.php"
+download_one "tools/fix-crm-kpi-dashlet-height.php"
 
 php clear_cache.php
 rm -rf data/cache
@@ -33,4 +34,7 @@ mkdir -p data/cache
 php rebuild.php
 
 echo
-echo "Deploy OK. Hard refresh (Ctrl+Shift+R) sulla dashboard."
+echo "Deploy OK. Hard refresh (Ctrl+Shift+R)."
+echo "Se resta scroll a vuoto, riduci altezza dashlet:"
+echo "  php tools/fix-crm-kpi-dashlet-height.php --dry-run"
+echo "  php tools/fix-crm-kpi-dashlet-height.php --apply --height=4"
