@@ -7,10 +7,11 @@
 
 /*
  * Evita scroll pagina a vuoto: il dashlet KPI prende altezza dal contenuto,
- * non dalla cella griglia oversized.
+ * non dalla cella griglia oversized. Classe .crm-kpi-dashlet-fit impostata via JS.
  */
 .dashlet-container:has(.crm-kpi-dashlet),
-.dashlet:has(.crm-kpi-dashlet) {
+.dashlet:has(.crm-kpi-dashlet),
+.crm-kpi-dashlet-fit {
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
@@ -19,10 +20,21 @@
 
 .dashlet-container:has(.crm-kpi-dashlet) .dashlet-body,
 .dashlet:has(.crm-kpi-dashlet) .dashlet-body,
-.panel:has(.crm-kpi-dashlet) > .panel-body {
+.panel:has(.crm-kpi-dashlet) > .panel-body,
+.crm-kpi-dashlet-fit.dashlet-body,
+.crm-kpi-dashlet-fit > .panel-body,
+.crm-kpi-dashlet-fit .dashlet-body {
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
+    overflow: visible !important;
+}
+
+#dashboard:has(.crm-kpi-dashlet),
+.dashboard:has(.crm-kpi-dashlet),
+.dashlets:has(.crm-kpi-dashlet) {
+    height: auto !important;
+    min-height: 0 !important;
     overflow: visible !important;
 }
 
