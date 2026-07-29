@@ -1,0 +1,31 @@
+Nascondi popup esito — anti-regressione
+=====================================
+
+Il tasto Nascondi vive SOLO in:
+  - client/custom/src/views/appuntamento/popup-notification.js
+  - client/custom/res/templates/appuntamento/popup-notification.tpl
+  - client/custom/src/views/notification/badge.js (non cancellare collapsed a ogni poll)
+
+Obbligatorio nel JS:
+  - collapseButton = true
+  - addActionHandler('hideEsitoPopup', ...)
+  - actionHideEsitoPopup() → collapse / onCollapse
+  - NON nascondere [data-action="collapse"] in afterRender
+  - chiamare super.setup() così onCollapse del badge resta collegato
+  - openCreateOpportunityModal() deve chiamare sendAllEsitoPopupsToBackground()
+    (tutti i popup in modal-bar mentre si compila l'opportunità)
+
+Obbligatorio nel TPL:
+  - <button ... data-action="hideEsitoPopup">Nascondi</button>
+
+Obbligatorio nel badge:
+  - collapseAllPopupNotifications()
+  - non wipe collapsed a ogni show/poll
+
+Perché si rompe spesso:
+  Feature deploy che curl-overwrite popup-notification.js da branch
+  senza Nascondi (es. pending-call, verifica-installazione, call-query)
+  lasciano il bottone nel tpl (se non sovrascritto) ma senza handler → click morto.
+
+Regola: se aggiorni quel JS, porta SEMPRE anche Nascondi + background su
+Crea Opportunità, oppure usa patch in-place invece di overwrite totale del file.

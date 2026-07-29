@@ -121,7 +121,7 @@ define('custom:views/appuntamento/popup-notification', [
     return class EsitoPopupNotificationView extends Parent {
 
         setup() {
-            const entityType = this.notificationData.entityType;
+            const entityType = (this.options.notificationData || this.notificationData || {}).entityType;
             const config = ESITO_POPUP_SCOPES[entityType];
 
             if (!config) {
@@ -130,14 +130,24 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
+            // NON chiamare super.setup(): il parent Meeting assume un popup
+            // standard e può rompere il render del form esito.
+            // Inizializziamo solo i campi che servono (come prima del fix Nascondi).
+            this.notificationData = this.options.notificationData || {};
+            this.notificationId = this.options.notificationId;
+            this.id = this.options.id || this.id;
+            this.onCollapse = this.options.onCollapse;
+            this.onExpand = this.options.onExpand;
+
             this.esitoPopupConfig = config;
             this.isEsitoPopup = true;
             this.closeButton = false;
-            this.collapseButton = false;
+            this.collapseButton = true;
             this.template = 'custom:appuntamento/popup-notification';
 
             this.addActionHandler('saveEsito', () => this.actionSaveEsito());
             this.addActionHandler('createOpportunity', () => this.actionCreateOpportunity());
+            this.addActionHandler('hideEsitoPopup', () => this.actionHideEsitoPopup());
         }
 
         data() {
@@ -151,7 +161,7 @@ define('custom:views/appuntamento/popup-notification', [
                 notificationData: this.notificationData,
                 notificationId: this.notificationId,
                 closeButton: false,
-                collapseButton: false,
+                collapseButton: true,
             };
         }
 
@@ -163,11 +173,38 @@ define('custom:views/appuntamento/popup-notification', [
             }
 
             this.$el.find('[data-action="close"]').addClass('hidden');
-            this.$el.find('[data-action="collapse"]').addClass('hidden');
             this.$el.addClass('esito-popup-wide');
 
             if (!this.hasView('esitoRecord')) {
                 this.createEsitoRecordView();
+            }
+        }
+
+        /**
+         * Nasconde il popup (collapse) senza salvare esito: resta in coda / modal-bar.
+         */
+        actionHideEsitoPopup() {
+            if (typeof this.onCollapse === 'function') {
+                this.onCollapse();
+            }
+            else if (this.options && typeof this.options.onCollapse === 'function') {
+                this.options.onCollapse();
+            }
+
+            if (typeof this.makeCollapsed === 'function') {
+                this.makeCollapsed();
+
+                return;
+            }
+
+            if (typeof this.collapse === 'function') {
+                this.collapse();
+
+                return;
+            }
+
+            if (typeof this.hide === 'function') {
+                this.hide();
             }
         }
 
@@ -600,19 +637,73 @@ define('custom:views/appuntamento/popup-notification', [
             };
         }
 
+        /**
+         * Nasconde TEMPORANEAMENTE lo stack popup mentre si compila l'Opportunità.
+         * Non usa collapse/storage: evita di "perdere" i popup nelle sessioni successive.
+         */
+        sendAllEsitoPopupsToBackground() {
+            const $container = this.$el.closest('.popup-notification-container');
+            const activeElement = document.activeElement;
+
+            if ($container && $container.length) {
+                // Evita warning focus su elementi che diventano non-interagibili.
+                if (activeElement && $container.has(activeElement).length && typeof activeElement.blur === 'function') {
+                    activeElement.blur();
+                }
+                $container.attr('data-opportunity-parked', '1');
+                $container.addClass('hidden');
+                return;
+            }
+
+            if (typeof this.actionHideEsitoPopup === 'function') {
+                this.actionHideEsitoPopup();
+            }
+        }
+
+        restoreEsitoPopupsFromBackground() {
+            const $container = this.$el.closest('.popup-notification-container');
+
+            if (!$container || !$container.length) {
+                return;
+            }
+
+            if ($container.attr('data-opportunity-parked') === '1') {
+                $container.removeAttr('data-opportunity-parked');
+                $container.removeClass('hidden');
+            }
+        }
+
         openCreateOpportunityModal(model) {
             const attributes = AppuntamentoSync.buildAttributesFromAppuntamento(
                 this.getAppuntamentoSyncPayload(model)
             );
 
+            // Park temporaneo: altrimenti lo stack copre "Crea Opportunità".
+            this.sendAllEsitoPopupsToBackground();
+
             this.createView('createOpportunityDialog', 'views/modals/edit', {
                 scope: 'Opportunity',
                 attributes: attributes,
+                // Riduce i warning browser dovuti a focus forzato in contesti non interagibili.
+                focusForCreate: false,
+                noFocus: true,
             }, view => {
-                view.render();
+                // Apri il modal al tick successivo: il container popup è già nascosto.
+                setTimeout(() => view.render(), 0);
+
+                let opportunitySaved = false;
 
                 this.listenToOnce(view, 'after:save', () => {
+                    opportunitySaved = true;
+                    this.restoreEsitoPopupsFromBackground();
                     super.resolveCancel();
+                });
+
+                // Annulla / chiusura senza salvataggio → ripristina i popup.
+                this.listenToOnce(view, 'remove', () => {
+                    if (!opportunitySaved) {
+                        this.restoreEsitoPopupsFromBackground();
+                    }
                 });
             });
         }

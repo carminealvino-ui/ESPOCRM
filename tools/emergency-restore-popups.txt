@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Emergenza: se i popup non compaiono, forza wipe storage browser-side non basta.
+# Questo script solo rebuild + stampa istruzioni console. I file devono già
+# essere quelli del branch fix-nascondi (deploy-fix-nascondi-popup-esito.sh).
+
+set -euo pipefail
+CRM_ROOT="${1:-${CRM_ROOT:-$HOME/public_html/crm/mec-group}}"
+
+echo "=== Emergenza popup ==="
+echo "1) Rilancia prima: bash /tmp/deploy-nascondi.sh"
+echo "2) Poi nel browser (F12 → Console) incolla TUTTO e Invio:"
+echo ""
+cat <<'JS'
+(function () {
+  try { sessionStorage.clear(); } catch (e) {}
+  try {
+    Object.keys(localStorage).forEach(function (k) {
+      if (/popup|Collapse|ClosePopup|espo-state/i.test(k)) {
+        localStorage.removeItem(k);
+      }
+    });
+  } catch (e2) {}
+  console.log('[popup] storage pulito, reload...');
+  location.reload(true);
+})();
+JS
+echo ""
+echo "3) Se ancora nulla, verifica API da browser loggato:"
+echo "   fetch('?entryPoint=oauth').catch(function(){});"
+echo "   Espo.Ajax.getRequest('PopupNotification/action/grouped').then(console.log)"
+echo "   Se {} o lista vuota → problema server/reminder, non UI."
+
+if [[ -f "${CRM_ROOT}/command.php" ]]; then
+  (cd "${CRM_ROOT}" && php command.php clearCache) || true
+fi
