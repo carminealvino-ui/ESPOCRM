@@ -73,9 +73,15 @@ grep -q "parkAllPopupNotificationsTemporarily" \
   exit 1
 }
 
-grep -q "espoPopupCollapsedWipedSessionV3" \
+grep -q "espoPopupCollapsedWipedSessionV4" \
   "${CRM_ROOT}/client/custom/src/views/notification/badge.js" || {
-  echo "ERRORE: badge.js senza wipe sessione V3" >&2
+  echo "ERRORE: badge.js senza wipe sessione V4" >&2
+  exit 1
+}
+
+grep -q "NON chiamare super.setup" \
+  "${CRM_ROOT}/client/custom/src/views/appuntamento/popup-notification.js" || {
+  echo "ERRORE: popup-notification.js non deve chiamare super.setup sugli esito" >&2
   exit 1
 }
 

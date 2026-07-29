@@ -11,6 +11,10 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
     return class QueuedNotificationBadgeView extends Parent {
 
         setup() {
+            // Wipe PRIMA di super.setup(): altrimenti il parent legge closed/collapsed
+            // da localStorage e i popup restano invisibili per tutta la sessione.
+            this.wipeCollapsedOncePerSession();
+
             super.setup();
 
             this.popupDisplayQueue = [];
@@ -18,8 +22,8 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             this.shownEntityKeys = {};
             this._popupsParkedForOpportunity = false;
 
-            // Sblocca popup "spariti" da collapsed/close stale (una volta a sessione).
-            this.wipeCollapsedOncePerSession();
+            // Forza riapertura dopo deploy che avevano "chiuso" tutto in storage.
+            this.closedNotificationIds = [];
         }
 
         getPopupNotificationView(id) {
@@ -31,8 +35,8 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
         }
 
         wipeCollapsedOncePerSession() {
-            // v3: forza un wipe anche se sessioni precedenti avevano già il flag
-            const flag = 'espoPopupCollapsedWipedSessionV3';
+            // v4: wipe prima di super.setup + closedNotificationIds azzerati
+            const flag = 'espoPopupCollapsedWipedSessionV4';
 
             try {
                 if (sessionStorage.getItem(flag) === '1') {
@@ -363,13 +367,11 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
 
             await view.render();
 
-            // Solo Nascondi esplicito (storage). Dopo wipe sessione non dovrebbe scattare.
-            if (data.id && this.getStorage().get('state', this.getCollapsedStorageKey(id))) {
-                this.collapsePopupNotification(id, true);
-            }
+            // Non auto-collassare da storage: dopo i deploy rotti nascondeva tutto.
+            // Nascondi resta manuale (collapsePopupNotification scrive storage + UI).
 
             // CRITICO: sblocca la coda subito, altrimenti resta un solo popup
-            // e se quello è collassato/nascosto sembra che siano "spariti".
+            // e se quello è nascosto sembra che siano "spariti".
             this.onPopupDisplayFinished();
         }
 

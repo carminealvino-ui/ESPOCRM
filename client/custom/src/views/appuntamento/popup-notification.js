@@ -121,20 +121,26 @@ define('custom:views/appuntamento/popup-notification', [
     return class EsitoPopupNotificationView extends Parent {
 
         setup() {
-            const entityType = this.notificationData.entityType;
+            const entityType = (this.options.notificationData || this.notificationData || {}).entityType;
             const config = ESITO_POPUP_SCOPES[entityType];
 
-            // Sempre super.setup(): collega onCollapse/onExpand dal badge.
-            super.setup();
-
             if (!config) {
+                super.setup();
+
                 return;
             }
 
+            // NON chiamare super.setup(): il parent Meeting assume un popup
+            // standard e può rompere il render del form esito.
+            // Inizializziamo solo i campi che servono (come prima del fix Nascondi).
+            this.notificationData = this.options.notificationData || {};
+            this.notificationId = this.options.notificationId;
+            this.id = this.options.id || this.id;
+            this.onCollapse = this.options.onCollapse;
+            this.onExpand = this.options.onExpand;
+
             this.esitoPopupConfig = config;
             this.isEsitoPopup = true;
-            // Chiudi (X) disabilitato: non si elimina il debito esito.
-            // Collapse/Nascondi abilitato: si può lavorare su altro e riprendere dopo.
             this.closeButton = false;
             this.collapseButton = true;
             this.template = 'custom:appuntamento/popup-notification';
@@ -176,25 +182,23 @@ define('custom:views/appuntamento/popup-notification', [
 
         /**
          * Nasconde il popup (collapse) senza salvare esito: resta in coda / modal-bar.
-         * Non chiude il debito: al prossimo refresh resta collassato finché non si Salva.
          */
         actionHideEsitoPopup() {
-            const onCollapse = (typeof this.onCollapse === 'function')
-                ? this.onCollapse
-                : (this.options && this.options.onCollapse);
-
-            if (typeof this.collapse === 'function') {
-                this.collapse();
-
-                return;
+            if (typeof this.onCollapse === 'function') {
+                this.onCollapse();
             }
-
-            if (typeof onCollapse === 'function') {
-                onCollapse.call(this);
+            else if (this.options && typeof this.options.onCollapse === 'function') {
+                this.options.onCollapse();
             }
 
             if (typeof this.makeCollapsed === 'function') {
                 this.makeCollapsed();
+
+                return;
+            }
+
+            if (typeof this.collapse === 'function') {
+                this.collapse();
 
                 return;
             }
