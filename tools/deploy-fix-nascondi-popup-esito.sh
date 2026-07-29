@@ -67,15 +67,27 @@ grep -q 'data-action="hideEsitoPopup"' \
   exit 1
 }
 
-grep -q "collapseAllPopupNotifications" \
+grep -q "parkAllPopupNotificationsTemporarily" \
   "${CRM_ROOT}/client/custom/src/views/notification/badge.js" || {
-  echo "ERRORE: badge.js senza collapseAllPopupNotifications" >&2
+  echo "ERRORE: badge.js senza parkAllPopupNotificationsTemporarily" >&2
+  exit 1
+}
+
+grep -q "wipeCollapsedOncePerSession" \
+  "${CRM_ROOT}/client/custom/src/views/notification/badge.js" || {
+  echo "ERRORE: badge.js senza wipeCollapsedOncePerSession" >&2
   exit 1
 }
 
 grep -q "sendAllEsitoPopupsToBackground" \
   "${CRM_ROOT}/client/custom/src/views/appuntamento/popup-notification.js" || {
   echo "ERRORE: popup-notification.js senza sendAllEsitoPopupsToBackground" >&2
+  exit 1
+}
+
+grep -q "restoreEsitoPopupsFromBackground" \
+  "${CRM_ROOT}/client/custom/src/views/appuntamento/popup-notification.js" || {
+  echo "ERRORE: popup-notification.js senza restoreEsitoPopupsFromBackground" >&2
   exit 1
 }
 

@@ -634,14 +634,19 @@ define('custom:views/appuntamento/popup-notification', [
         }
 
         /**
-         * Collassa tutti i popup esito aperti (modal-bar) per lasciare spazio
-         * al form Opportunità. Si riprendono dalla barra in basso.
+         * Park TEMPORANEO di tutti i popup (no persistenza) per lasciare spazio
+         * al form Opportunità. Si ripristinano a chiusura/salvataggio del modal.
          */
         sendAllEsitoPopupsToBackground() {
             let badge = this.getParentView();
 
-            // Il popup è figlio del badge; in alcuni layout può esserci un wrapper.
             for (let i = 0; i < 4 && badge; i++) {
+                if (typeof badge.parkAllPopupNotificationsTemporarily === 'function') {
+                    badge.parkAllPopupNotificationsTemporarily();
+
+                    return;
+                }
+
                 if (typeof badge.collapseAllPopupNotifications === 'function') {
                     badge.collapseAllPopupNotifications();
 
@@ -656,12 +661,26 @@ define('custom:views/appuntamento/popup-notification', [
             }
         }
 
+        restoreEsitoPopupsFromBackground() {
+            let badge = this.getParentView();
+
+            for (let i = 0; i < 4 && badge; i++) {
+                if (typeof badge.restoreParkedPopupNotifications === 'function') {
+                    badge.restoreParkedPopupNotifications(this.id || null);
+
+                    return;
+                }
+
+                badge = typeof badge.getParentView === 'function' ? badge.getParentView() : null;
+            }
+        }
+
         openCreateOpportunityModal(model) {
             const attributes = AppuntamentoSync.buildAttributesFromAppuntamento(
                 this.getAppuntamentoSyncPayload(model)
             );
 
-            // Prima in background: altrimenti lo stack popup copre "Crea Opportunità".
+            // Park temporaneo: altrimenti lo stack copre "Crea Opportunità".
             this.sendAllEsitoPopupsToBackground();
 
             this.createView('createOpportunityDialog', 'views/modals/edit', {
@@ -670,8 +689,19 @@ define('custom:views/appuntamento/popup-notification', [
             }, view => {
                 view.render();
 
+                let opportunitySaved = false;
+
                 this.listenToOnce(view, 'after:save', () => {
+                    opportunitySaved = true;
+                    this.restoreEsitoPopupsFromBackground();
                     super.resolveCancel();
+                });
+
+                // Annulla / chiusura senza salvataggio → ripristina i popup.
+                this.listenToOnce(view, 'remove', () => {
+                    if (!opportunitySaved) {
+                        this.restoreEsitoPopupsFromBackground();
+                    }
                 });
             });
         }
