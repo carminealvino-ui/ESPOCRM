@@ -643,8 +643,13 @@ define('custom:views/appuntamento/popup-notification', [
          */
         sendAllEsitoPopupsToBackground() {
             const $container = this.$el.closest('.popup-notification-container');
+            const activeElement = document.activeElement;
 
             if ($container && $container.length) {
+                // Evita warning focus su elementi che diventano non-interagibili.
+                if (activeElement && $container.has(activeElement).length && typeof activeElement.blur === 'function') {
+                    activeElement.blur();
+                }
                 $container.attr('data-opportunity-parked', '1');
                 $container.addClass('hidden');
                 return;
@@ -679,8 +684,12 @@ define('custom:views/appuntamento/popup-notification', [
             this.createView('createOpportunityDialog', 'views/modals/edit', {
                 scope: 'Opportunity',
                 attributes: attributes,
+                // Riduce i warning browser dovuti a focus forzato in contesti non interagibili.
+                focusForCreate: false,
+                noFocus: true,
             }, view => {
-                view.render();
+                // Apri il modal al tick successivo: il container popup è già nascosto.
+                setTimeout(() => view.render(), 0);
 
                 let opportunitySaved = false;
 

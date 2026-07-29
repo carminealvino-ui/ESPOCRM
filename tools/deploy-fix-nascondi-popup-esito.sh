@@ -97,6 +97,12 @@ grep -q "data-opportunity-parked" \
   exit 1
 }
 
+grep -q "focusForCreate: false" \
+  "${CRM_ROOT}/client/custom/src/views/appuntamento/popup-notification.js" || {
+  echo "ERRORE: popup-notification.js senza guard focusForCreate=false" >&2
+  exit 1
+}
+
 # Anti-regressione: afterRender non deve nascondere collapse
 if grep -q "find('[data-action=\"collapse\"]').addClass('hidden')" \
   "${CRM_ROOT}/client/custom/src/views/appuntamento/popup-notification.js" \
