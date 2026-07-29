@@ -73,9 +73,15 @@ grep -q "parkAllPopupNotificationsTemporarily" \
   exit 1
 }
 
-grep -q "wipeCollapsedOncePerSession" \
+grep -q "espoPopupCollapsedWipedSessionV3" \
   "${CRM_ROOT}/client/custom/src/views/notification/badge.js" || {
-  echo "ERRORE: badge.js senza wipeCollapsedOncePerSession" >&2
+  echo "ERRORE: badge.js senza wipe sessione V3" >&2
+  exit 1
+}
+
+grep -q "onPopupDisplayFinished();" \
+  "${CRM_ROOT}/client/custom/src/views/notification/badge.js" || {
+  echo "ERRORE: badge.js non sblocca la coda dopo render" >&2
   exit 1
 }
 
@@ -107,8 +113,8 @@ elif [[ -f "${CRM_ROOT}/rebuild.php" ]]; then
 fi
 
 echo ""
-echo "Deploy OK. Hard refresh browser (Ctrl+Shift+R)."
-echo "Nascondi deve collassare il popup nella modal-bar senza salvare l'esito."
+echo "Deploy OK. Hard refresh browser (Ctrl+Shift+R) o nuova scheda anonima."
+echo "Se i popup non tornano, in console browser esegui:"
+echo "  sessionStorage.clear(); Object.keys(localStorage).filter(k=>/popup|Collapse|ClosePopup/i.test(k)).forEach(k=>localStorage.removeItem(k)); location.reload();"
 echo ""
-echo "IMPORTANTE: i prossimi deploy che toccano popup-notification.js/tpl"
-echo "DEVONO preservare hideEsitoPopup + collapseButton=true (vedi PR Nascondi)."
+echo "Nascondi = collapse singolo. Crea Opportunità = nasconde solo il container (temporaneo)."

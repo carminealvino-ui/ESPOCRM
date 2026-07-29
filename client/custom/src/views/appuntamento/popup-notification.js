@@ -666,7 +666,7 @@ define('custom:views/appuntamento/popup-notification', [
 
             for (let i = 0; i < 4 && badge; i++) {
                 if (typeof badge.restoreParkedPopupNotifications === 'function') {
-                    badge.restoreParkedPopupNotifications(this.id || null);
+                    badge.restoreParkedPopupNotifications();
 
                     return;
                 }

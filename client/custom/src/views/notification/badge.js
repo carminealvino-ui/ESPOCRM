@@ -5,9 +5,8 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
     const Parent = BadgeModule.default || BadgeModule;
 
     /**
-     * - Coda popup (un display alla volta)
-     * - Wipe collapsed SOLO una volta a sessione (sblocca storage stale)
-     * - "Nascondi" persiste in storage; "Crea Opportunità" solo park temporaneo
+     * Coda popup + Nascondi (collapse persistente) + park TEMPORANEO container
+     * per Crea Opportunità (solo CSS, niente localStorage).
      */
     return class QueuedNotificationBadgeView extends Parent {
 
@@ -17,15 +16,10 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             this.popupDisplayQueue = [];
             this.popupDisplayActive = false;
             this.shownEntityKeys = {};
-            this._parkedPopupIds = [];
-        }
+            this._popupsParkedForOpportunity = false;
 
-        afterRender() {
+            // Sblocca popup "spariti" da collapsed/close stale (una volta a sessione).
             this.wipeCollapsedOncePerSession();
-
-            if (typeof Parent.prototype.afterRender === 'function') {
-                Parent.prototype.afterRender.call(this);
-            }
         }
 
         getPopupNotificationView(id) {
@@ -37,8 +31,8 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
         }
 
         wipeCollapsedOncePerSession() {
-            // bump v2: sblocca chi è rimasto senza popup dopo park persistente
-            const flag = 'espoPopupCollapsedWipedSessionV2';
+            // v3: forza un wipe anche se sessioni precedenti avevano già il flag
+            const flag = 'espoPopupCollapsedWipedSessionV3';
 
             try {
                 if (sessionStorage.getItem(flag) === '1') {
@@ -46,7 +40,7 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
                 }
             }
             catch (e) {
-                // sessionStorage non disponibile: wipe comunque una volta
+                // ignore
             }
 
             this.wipeAllCollapsedPopupState();
@@ -98,6 +92,10 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
                     // ignore
                 }
             });
+
+            if (toRemove.length) {
+                console.info('[popup] wiped stale collapsed/close keys:', toRemove.length);
+            }
         }
 
         markPopupRemoved(id) {
@@ -112,8 +110,6 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             if (entityKey) {
                 delete this.shownEntityKeys[entityKey];
             }
-
-            this._parkedPopupIds = (this._parkedPopupIds || []).filter(x => x !== id);
 
             if (this.shownNotificationIds.length === 0) {
                 this.$popupContainer.addClass('hidden');
@@ -160,90 +156,32 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             this.getStorage().set('state', this.getCollapsedStorageKey(id), true);
         }
 
-        expandPopupNotification(id) {
-            if (typeof Parent.prototype.expandPopupNotification === 'function') {
-                Parent.prototype.expandPopupNotification.call(this, id);
-            }
-            else {
-                const view = this.getPopupNotificationView(id);
-
-                if (view && typeof view.makeExpanded === 'function') {
-                    view.makeExpanded();
-                }
-
-                try {
-                    this.getStorage().clear('state', this.getCollapsedStorageKey(id));
-                }
-                catch (e) {
-                    // ignore
-                }
-            }
-
-            if (this.$popupContainer && this.$popupContainer.length) {
-                this.$popupContainer.removeClass('hidden');
-            }
-        }
-
         /**
-         * Park TEMPORANEO (no localStorage): per Crea Opportunità.
-         * I popup tornano con restoreParkedPopupNotifications().
+         * Solo nasconde il container: i popup restano vivi e ricompaiono al restore.
+         * NON scrive localStorage (altrimenti spariscono al refresh).
          */
         parkAllPopupNotificationsTemporarily() {
-            this._parkedPopupIds = [];
-
-            const ids = (this.shownNotificationIds || []).slice();
-
-            ids.forEach(id => {
-                const view = this.getPopupNotificationView(id);
-
-                if (!view || view.isCollapsed) {
-                    return;
-                }
-
-                this._parkedPopupIds.push(id);
-
-                this.modalBarProvider.get()?.addModalView(view, {
-                    title: view.getTitle() ?? this.translate('Notification'),
-                });
-
-                if (typeof view.makeCollapsed === 'function') {
-                    view.makeCollapsed();
-                }
-            });
+            this._popupsParkedForOpportunity = true;
 
             if (this.$popupContainer && this.$popupContainer.length) {
                 this.$popupContainer.addClass('hidden');
+                this.$popupContainer.attr('data-parked-for-opportunity', '1');
             }
         }
 
-        restoreParkedPopupNotifications(exceptId = null) {
-            const ids = (this._parkedPopupIds || []).slice();
-            this._parkedPopupIds = [];
+        restoreParkedPopupNotifications() {
+            this._popupsParkedForOpportunity = false;
 
-            ids.forEach(id => {
-                if (exceptId && id === exceptId) {
-                    return;
+            if (this.$popupContainer && this.$popupContainer.length) {
+                this.$popupContainer.removeAttr('data-parked-for-opportunity');
+
+                if ((this.shownNotificationIds || []).length > 0) {
+                    this.$popupContainer.removeClass('hidden');
                 }
-
-                if (!(this.shownNotificationIds || []).includes(id)) {
-                    return;
-                }
-
-                this.expandPopupNotification(id);
-            });
-
-            const stillVisible = (this.shownNotificationIds || []).some(id => {
-                const view = this.getPopupNotificationView(id);
-
-                return view && !view.isCollapsed;
-            });
-
-            if (stillVisible && this.$popupContainer && this.$popupContainer.length) {
-                this.$popupContainer.removeClass('hidden');
             }
         }
 
-        /** @deprecated alias: non persistere — usa park temporaneo */
+        /** @deprecated */
         collapseAllPopupNotifications() {
             this.parkAllPopupNotificationsTemporarily();
         }
@@ -316,15 +254,6 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
 
                 if (notificationView) {
                     notificationView.trigger('update-data', data.data);
-
-                    // Solo se Nascondi esplicito (storage), non per park temporaneo.
-                    if (
-                        data.id &&
-                        this.getStorage().get('state', this.getCollapsedStorageKey(id)) &&
-                        !notificationView.isCollapsed
-                    ) {
-                        this.collapsePopupNotification(id, true);
-                    }
                 }
 
                 return;
@@ -384,7 +313,6 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
         }
 
         showPopupNotification(name, data, isNotFirstCheck = false) {
-            // Non cancellare collapsed qui: altrimenti "Nascondi" riapre a ogni poll.
             this.enqueuePopupNotification(name, data, isNotFirstCheck);
         }
 
@@ -419,20 +347,30 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
                 },
             });
 
-            this.$popupContainer.removeClass('hidden');
+            // Se siamo in park temporaneo (Crea Opportunità), non ri-mostrare lo stack.
+            if (!this._popupsParkedForOpportunity) {
+                this.$popupContainer.removeClass('hidden');
+            }
 
             this.listenTo(view, 'remove', () => {
                 this.markPopupRemoved(id);
 
                 localStorage.setItem('messageClosePopupNotificationId', id);
+                // Non rilanciare la coda qui: già sbloccata dopo render.
+                // Se era l'ultimo popup attivo, processPopupDisplayQueue è no-op.
                 this.onPopupDisplayFinished();
             });
 
             await view.render();
 
+            // Solo Nascondi esplicito (storage). Dopo wipe sessione non dovrebbe scattare.
             if (data.id && this.getStorage().get('state', this.getCollapsedStorageKey(id))) {
                 this.collapsePopupNotification(id, true);
             }
+
+            // CRITICO: sblocca la coda subito, altrimenti resta un solo popup
+            // e se quello è collassato/nascosto sembra che siano "spariti".
+            this.onPopupDisplayFinished();
         }
 
         checkGroupedPopupNotifications() {
