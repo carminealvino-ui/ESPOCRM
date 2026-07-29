@@ -30,6 +30,7 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
      */
     private const BLOCKED_POPUP_ENTITY_TYPES = [
         'Disponibilita',
+        'Meeting',
     ];
 
     /**
@@ -57,6 +58,10 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
      */
     public function get(User $user): array
     {
+        // Gli "Impegni" (Meeting) non devono generare popup:
+        // appena scadono li esitiamo automaticamente come Svolti (Held).
+        $this->autoCompleteDueMeetings($user);
+
         $items = [];
 
         try {
@@ -247,6 +252,11 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
             );
         }
 
+        // Meeting gestiti da autoCompleteDueMeetings(): niente popup.
+        if ($entityType === Meeting::ENTITY_TYPE) {
+            return [];
+        }
+
         $collection = $this->entityManager
             ->getRDBRepository($entityType)
             ->select($this->getPastPlannedSelectFields($entityType, $dateField))
@@ -268,6 +278,58 @@ class PopupNotificationsProvider extends BasePopupNotificationsProvider
         }
 
         return $resultList;
+    }
+
+    private function autoCompleteDueMeetings(User $user): void
+    {
+        if (!$this->entityManager->hasRepository(Meeting::ENTITY_TYPE)) {
+            return;
+        }
+
+        $userId = $user->getId();
+        $now = (new DateTime())->format(DateTimeUtil::SYSTEM_DATE_TIME_FORMAT);
+
+        try {
+            $collection = $this->entityManager
+                ->getRDBRepository(Meeting::ENTITY_TYPE)
+                ->select(['id', 'status', 'dateStart', 'assignedUserId'])
+                ->where([
+                    'status' => ['Planned'],
+                    'dateStart<=' => $now,
+                    'assignedUserId' => $userId,
+                ])
+                ->order('dateStart', 'ASC')
+                ->limit(0, 100)
+                ->find();
+        } catch (Throwable $e) {
+            $this->log->error('PopupNotificationsProvider autoCompleteDueMeetings query failed: ' . $e->getMessage(), [
+                'exception' => $e,
+            ]);
+
+            return;
+        }
+
+        foreach ($collection as $meeting) {
+            try {
+                if (!$this->userCanSeeActivity($meeting, $userId)) {
+                    continue;
+                }
+
+                if ((string) $meeting->get('status') !== 'Planned') {
+                    continue;
+                }
+
+                $meeting->set('status', 'Held');
+                $this->entityManager->saveEntity($meeting, [
+                    'silent' => true,
+                ]);
+            } catch (Throwable $e) {
+                $this->log->error('PopupNotificationsProvider autoCompleteDueMeetings save failed: ' . $e->getMessage(), [
+                    'meetingId' => $meeting->getId(),
+                    'exception' => $e,
+                ]);
+            }
+        }
     }
 
     /**

@@ -25,6 +25,7 @@ FILES=(
   "client/custom/src/views/appuntamento/popup-notification.js"
   "client/custom/res/templates/appuntamento/popup-notification.tpl"
   "client/custom/src/views/notification/badge.js"
+  "custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php"
 )
 
 has_backup() {
@@ -100,6 +101,18 @@ grep -q "data-opportunity-parked" \
 grep -q "focusForCreate: false" \
   "${CRM_ROOT}/client/custom/src/views/appuntamento/popup-notification.js" || {
   echo "ERRORE: popup-notification.js senza guard focusForCreate=false" >&2
+  exit 1
+}
+
+grep -q "'Meeting'" \
+  "${CRM_ROOT}/custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php" || {
+  echo "ERRORE: provider popup senza blocco Meeting (Impegno)" >&2
+  exit 1
+}
+
+grep -q "autoCompleteDueMeetings" \
+  "${CRM_ROOT}/custom/Espo/Custom/Tools/Activities/PopupNotificationsProvider.php" || {
+  echo "ERRORE: provider popup senza auto-esito Impegni scaduti" >&2
   exit 1
 }
 
