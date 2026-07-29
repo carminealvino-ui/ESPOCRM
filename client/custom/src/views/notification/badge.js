@@ -80,6 +80,28 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
             this.getStorage().set('state', this.getCollapsedStorageKey(id), true);
         }
 
+        /**
+         * Manda tutti i popup esito in background (modal-bar) così un modal
+         * (es. Crea Opportunità) resta usabile senza stack sopra il form.
+         */
+        collapseAllPopupNotifications() {
+            const ids = (this.shownNotificationIds || []).slice();
+
+            ids.forEach(id => {
+                const view = this.getPopupNotificationView(id);
+
+                if (!view || view.isCollapsed) {
+                    return;
+                }
+
+                this.collapsePopupNotification(id);
+            });
+
+            if (this.$popupContainer && this.$popupContainer.length) {
+                this.$popupContainer.addClass('hidden');
+            }
+        }
+
         getPopupSortDate(data) {
             const notificationData = data.data || {};
             const dateField = notificationData.dateField || 'dateStart';

@@ -633,10 +633,36 @@ define('custom:views/appuntamento/popup-notification', [
             };
         }
 
+        /**
+         * Collassa tutti i popup esito aperti (modal-bar) per lasciare spazio
+         * al form Opportunità. Si riprendono dalla barra in basso.
+         */
+        sendAllEsitoPopupsToBackground() {
+            let badge = this.getParentView();
+
+            // Il popup è figlio del badge; in alcuni layout può esserci un wrapper.
+            for (let i = 0; i < 4 && badge; i++) {
+                if (typeof badge.collapseAllPopupNotifications === 'function') {
+                    badge.collapseAllPopupNotifications();
+
+                    return;
+                }
+
+                badge = typeof badge.getParentView === 'function' ? badge.getParentView() : null;
+            }
+
+            if (typeof this.actionHideEsitoPopup === 'function') {
+                this.actionHideEsitoPopup();
+            }
+        }
+
         openCreateOpportunityModal(model) {
             const attributes = AppuntamentoSync.buildAttributesFromAppuntamento(
                 this.getAppuntamentoSyncPayload(model)
             );
+
+            // Prima in background: altrimenti lo stack popup copre "Crea Opportunità".
+            this.sendAllEsitoPopupsToBackground();
 
             this.createView('createOpportunityDialog', 'views/modals/edit', {
                 scope: 'Opportunity',

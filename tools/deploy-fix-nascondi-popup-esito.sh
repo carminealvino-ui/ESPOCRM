@@ -67,9 +67,15 @@ grep -q 'data-action="hideEsitoPopup"' \
   exit 1
 }
 
-grep -q "Non cancellare mai lo stato collapsed" \
+grep -q "collapseAllPopupNotifications" \
   "${CRM_ROOT}/client/custom/src/views/notification/badge.js" || {
-  echo "ERRORE: badge.js non aggiornato (manca guard collapsed)" >&2
+  echo "ERRORE: badge.js senza collapseAllPopupNotifications" >&2
+  exit 1
+}
+
+grep -q "sendAllEsitoPopupsToBackground" \
+  "${CRM_ROOT}/client/custom/src/views/appuntamento/popup-notification.js" || {
+  echo "ERRORE: popup-notification.js senza sendAllEsitoPopupsToBackground" >&2
   exit 1
 }
 
