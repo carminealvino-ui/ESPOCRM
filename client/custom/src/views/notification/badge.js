@@ -148,6 +148,15 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
 
                 if (notificationView) {
                     notificationView.trigger('update-data', data.data);
+
+                    // Se era nascosto, resta nascosto anche dopo update dati dal poll.
+                    if (
+                        data.id &&
+                        this.getStorage().get('state', this.getCollapsedStorageKey(id)) &&
+                        !notificationView.isCollapsed
+                    ) {
+                        this.collapsePopupNotification(id, true);
+                    }
                 }
 
                 return;
@@ -207,6 +216,7 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
         }
 
         showPopupNotification(name, data, isNotFirstCheck = false) {
+            // Non cancellare mai lo stato collapsed qui: altrimenti "Nascondi" riapre a ogni poll.
             this.enqueuePopupNotification(name, data, isNotFirstCheck);
         }
 

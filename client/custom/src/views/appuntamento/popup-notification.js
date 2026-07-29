@@ -124,20 +124,24 @@ define('custom:views/appuntamento/popup-notification', [
             const entityType = this.notificationData.entityType;
             const config = ESITO_POPUP_SCOPES[entityType];
 
-            if (!config) {
-                super.setup();
+            // Sempre super.setup(): collega onCollapse/onExpand dal badge.
+            super.setup();
 
+            if (!config) {
                 return;
             }
 
             this.esitoPopupConfig = config;
             this.isEsitoPopup = true;
+            // Chiudi (X) disabilitato: non si elimina il debito esito.
+            // Collapse/Nascondi abilitato: si può lavorare su altro e riprendere dopo.
             this.closeButton = false;
-            this.collapseButton = false;
+            this.collapseButton = true;
             this.template = 'custom:appuntamento/popup-notification';
 
             this.addActionHandler('saveEsito', () => this.actionSaveEsito());
             this.addActionHandler('createOpportunity', () => this.actionCreateOpportunity());
+            this.addActionHandler('hideEsitoPopup', () => this.actionHideEsitoPopup());
         }
 
         data() {
@@ -151,7 +155,7 @@ define('custom:views/appuntamento/popup-notification', [
                 notificationData: this.notificationData,
                 notificationId: this.notificationId,
                 closeButton: false,
-                collapseButton: false,
+                collapseButton: true,
             };
         }
 
@@ -163,11 +167,40 @@ define('custom:views/appuntamento/popup-notification', [
             }
 
             this.$el.find('[data-action="close"]').addClass('hidden');
-            this.$el.find('[data-action="collapse"]').addClass('hidden');
             this.$el.addClass('esito-popup-wide');
 
             if (!this.hasView('esitoRecord')) {
                 this.createEsitoRecordView();
+            }
+        }
+
+        /**
+         * Nasconde il popup (collapse) senza salvare esito: resta in coda / modal-bar.
+         * Non chiude il debito: al prossimo refresh resta collassato finché non si Salva.
+         */
+        actionHideEsitoPopup() {
+            const onCollapse = (typeof this.onCollapse === 'function')
+                ? this.onCollapse
+                : (this.options && this.options.onCollapse);
+
+            if (typeof this.collapse === 'function') {
+                this.collapse();
+
+                return;
+            }
+
+            if (typeof onCollapse === 'function') {
+                onCollapse.call(this);
+            }
+
+            if (typeof this.makeCollapsed === 'function') {
+                this.makeCollapsed();
+
+                return;
+            }
+
+            if (typeof this.hide === 'function') {
+                this.hide();
             }
         }
 
