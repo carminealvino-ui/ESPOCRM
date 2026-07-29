@@ -24,7 +24,7 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
         }
 
         wipeCollapsedOncePerSession() {
-            const flag = 'espoPopupCollapsedWipedSession';
+            const flag = 'espoPopupCollapsedWipedSessionV5';
 
             try {
                 if (sessionStorage.getItem(flag) === '1') {
@@ -100,10 +100,24 @@ define('custom:views/notification/badge', ['views/notification/badge'], function
                     .then(result => {
                         let total = 0;
 
+                        // Modalità emergenza: non fidarti di flag stale di "ignora popup".
+                        try {
+                            localStorage.removeItem('messageClosePopupNotificationId');
+                        }
+                        catch (e) {
+                            // ignore
+                        }
+
                         for (const type in result) {
                             const list = result[type] || [];
                             total += list.length;
-                            list.forEach(item => this.showPopupNotification(type, item));
+                            list.forEach(item => {
+                                if (item && typeof item === 'object') {
+                                    item.xIgnored = false;
+                                }
+
+                                this.showPopupNotification(type, item, true);
+                            });
                         }
 
                         if (total > 0) {

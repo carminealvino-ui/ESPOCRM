@@ -73,6 +73,12 @@ grep -q "wipeCollapsedOncePerSession" \
   exit 1
 }
 
+grep -q "espoPopupCollapsedWipedSessionV5" \
+  "${CRM_ROOT}/client/custom/src/views/notification/badge.js" || {
+  echo "ERRORE: badge.js non aggiornato (manca V5 emergency wipe)" >&2
+  exit 1
+}
+
 grep -q "sendAllEsitoPopupsToBackground" \
   "${CRM_ROOT}/client/custom/src/views/appuntamento/popup-notification.js" || {
   echo "ERRORE: popup-notification.js senza sendAllEsitoPopupsToBackground" >&2
