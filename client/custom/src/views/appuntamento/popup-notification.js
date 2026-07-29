@@ -638,26 +638,16 @@ define('custom:views/appuntamento/popup-notification', [
         }
 
         /**
-         * Park TEMPORANEO di tutti i popup (no persistenza) per lasciare spazio
-         * al form Opportunità. Si ripristinano a chiusura/salvataggio del modal.
+         * Nasconde TEMPORANEAMENTE lo stack popup mentre si compila l'Opportunità.
+         * Non usa collapse/storage: evita di "perdere" i popup nelle sessioni successive.
          */
         sendAllEsitoPopupsToBackground() {
-            let badge = this.getParentView();
+            const $container = this.$el.closest('.popup-notification-container');
 
-            for (let i = 0; i < 4 && badge; i++) {
-                if (typeof badge.parkAllPopupNotificationsTemporarily === 'function') {
-                    badge.parkAllPopupNotificationsTemporarily();
-
-                    return;
-                }
-
-                if (typeof badge.collapseAllPopupNotifications === 'function') {
-                    badge.collapseAllPopupNotifications();
-
-                    return;
-                }
-
-                badge = typeof badge.getParentView === 'function' ? badge.getParentView() : null;
+            if ($container && $container.length) {
+                $container.attr('data-opportunity-parked', '1');
+                $container.addClass('hidden');
+                return;
             }
 
             if (typeof this.actionHideEsitoPopup === 'function') {
@@ -666,16 +656,15 @@ define('custom:views/appuntamento/popup-notification', [
         }
 
         restoreEsitoPopupsFromBackground() {
-            let badge = this.getParentView();
+            const $container = this.$el.closest('.popup-notification-container');
 
-            for (let i = 0; i < 4 && badge; i++) {
-                if (typeof badge.restoreParkedPopupNotifications === 'function') {
-                    badge.restoreParkedPopupNotifications();
+            if (!$container || !$container.length) {
+                return;
+            }
 
-                    return;
-                }
-
-                badge = typeof badge.getParentView === 'function' ? badge.getParentView() : null;
+            if ($container.attr('data-opportunity-parked') === '1') {
+                $container.removeAttr('data-opportunity-parked');
+                $container.removeClass('hidden');
             }
         }
 

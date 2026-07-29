@@ -67,27 +67,9 @@ grep -q 'data-action="hideEsitoPopup"' \
   exit 1
 }
 
-grep -q "parkAllPopupNotificationsTemporarily" \
+grep -q "wipeCollapsedOncePerSession" \
   "${CRM_ROOT}/client/custom/src/views/notification/badge.js" || {
-  echo "ERRORE: badge.js senza parkAllPopupNotificationsTemporarily" >&2
-  exit 1
-}
-
-grep -q "espoPopupCollapsedWipedSessionV4" \
-  "${CRM_ROOT}/client/custom/src/views/notification/badge.js" || {
-  echo "ERRORE: badge.js senza wipe sessione V4" >&2
-  exit 1
-}
-
-grep -q "NON chiamare super.setup" \
-  "${CRM_ROOT}/client/custom/src/views/appuntamento/popup-notification.js" || {
-  echo "ERRORE: popup-notification.js non deve chiamare super.setup sugli esito" >&2
-  exit 1
-}
-
-grep -q "onPopupDisplayFinished();" \
-  "${CRM_ROOT}/client/custom/src/views/notification/badge.js" || {
-  echo "ERRORE: badge.js non sblocca la coda dopo render" >&2
+  echo "ERRORE: badge.js non aggiornato (manca wipeCollapsedOncePerSession)" >&2
   exit 1
 }
 
@@ -100,6 +82,12 @@ grep -q "sendAllEsitoPopupsToBackground" \
 grep -q "restoreEsitoPopupsFromBackground" \
   "${CRM_ROOT}/client/custom/src/views/appuntamento/popup-notification.js" || {
   echo "ERRORE: popup-notification.js senza restoreEsitoPopupsFromBackground" >&2
+  exit 1
+}
+
+grep -q "data-opportunity-parked" \
+  "${CRM_ROOT}/client/custom/src/views/appuntamento/popup-notification.js" || {
+  echo "ERRORE: popup-notification.js senza park temporaneo CSS" >&2
   exit 1
 }
 
