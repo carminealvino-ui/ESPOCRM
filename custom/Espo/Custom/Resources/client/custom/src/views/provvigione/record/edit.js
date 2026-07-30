@@ -12,9 +12,7 @@ define('custom:views/provvigione/record/edit', ['views/record/edit'], function (
             this.setFieldReadOnly('importoBaseCalcolo');
             this.setFieldReadOnly('baseCalcolo');
             this.setFieldReadOnly('tassoProvvigioni');
-            this.setFieldReadOnly('regolaProvvigionale');
-            this.setFieldReadOnly('regimeProvvigione');
-            this.setFieldReadOnly('tipo');
+            // Regola/regime/tipo devono restare selezionabili per gestione manuale regole.
         }
     });
 });

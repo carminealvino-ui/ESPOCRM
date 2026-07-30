@@ -197,7 +197,6 @@
         },
         "regolaProvvigionale": {
             "type": "link",
-            "readOnly": true,
             "isCustom": true
         }
     },

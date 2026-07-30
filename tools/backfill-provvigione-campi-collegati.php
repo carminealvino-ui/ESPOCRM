@@ -1,11 +1,12 @@
 #!/usr/bin/env php
 <?php
 /**
- * Ri-salva le provvigioni collegate a un contratto per applicare Cliente / Contratto / nome.
+ * Ri-salva le provvigioni per applicare collegamenti Cliente / Contratto / Opportunità / nome.
  *
  *   php tools/backfill-provvigione-campi-collegati.php --dry-run
  *   php tools/backfill-provvigione-campi-collegati.php --verbose
  *   php tools/backfill-provvigione-campi-collegati.php --quote-id=ID_CONTRATTO
+ *   php tools/backfill-provvigione-campi-collegati.php --all
  */
 declare(strict_types=1);
 
@@ -34,7 +35,18 @@ foreach ($argv as $arg) {
     }
 }
 
-$where = ['contrattoId!=' => null];
+$all = in_array('--all', $argv, true);
+$where = $all
+    ? ['deleted' => false]
+    : [
+        'deleted' => false,
+        [
+            'OR' => [
+                ['contrattoId!=' => null],
+                ['opportunitaId!=' => null],
+            ],
+        ],
+    ];
 
 if ($quoteFilter) {
     $where['contrattoId'] = $quoteFilter;
@@ -47,14 +59,19 @@ $skipped = 0;
 foreach ($collection as $provvigione) {
     $id = $provvigione->getId();
     $quoteId = $provvigione->get('contrattoId');
+    $oppId = $provvigione->get('opportunitaId');
 
-    if (!$quoteId) {
+    if (!$quoteId && !$oppId) {
         $skipped++;
         continue;
     }
 
     if ($verbose || $dryRun) {
-        fwrite(STDOUT, ($dryRun ? '[dry-run] ' : '') . "Provvigione {$id} → contratto {$quoteId}\n");
+        fwrite(
+            STDOUT,
+            ($dryRun ? '[dry-run] ' : '')
+            . "Provvigione {$id} → contratto " . ($quoteId ?: '-') . " / opportunita " . ($oppId ?: '-') . "\n"
+        );
     }
 
     if ($dryRun) {

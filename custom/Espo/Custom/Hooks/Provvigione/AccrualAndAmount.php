@@ -121,11 +121,34 @@ class AccrualAndAmount implements BeforeSave
             ]);
         }
 
+        if (!$entity->get('opportunitaId') && $quote->get('opportunityId')) {
+            $entity->set([
+                'opportunitaId' => $quote->get('opportunityId'),
+                'opportunitaName' => $quote->get('opportunityName'),
+            ]);
+        }
+
         if (!$entity->get('clienteId') && $quote->get('accountId')) {
             $entity->set([
                 'clienteId' => $quote->get('accountId'),
                 'clienteName' => $quote->get('accountName'),
             ]);
+
+            return;
+        }
+
+        // Fallback legacy: alcuni contratti non hanno account, ma l'opportunità sì.
+        $opportunityId = $entity->get('opportunitaId') ?: $quote->get('opportunityId');
+
+        if (!$entity->get('clienteId') && $opportunityId) {
+            $opportunity = $this->entityManager->getEntityById('Opportunity', (string) $opportunityId);
+
+            if ($opportunity && $opportunity->get('accountId')) {
+                $entity->set([
+                    'clienteId' => $opportunity->get('accountId'),
+                    'clienteName' => $opportunity->get('accountName'),
+                ]);
+            }
         }
     }
 
