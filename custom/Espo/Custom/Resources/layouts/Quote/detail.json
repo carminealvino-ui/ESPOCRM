@@ -86,8 +86,14 @@
                 {
                     "name": "shippingProvider"
                 },
+                false
+            ],
+            [
                 {
                     "name": "dataInstallazione"
+                },
+                {
+                    "name": "verificaInstallazioneTask"
                 }
             ]
         ],
