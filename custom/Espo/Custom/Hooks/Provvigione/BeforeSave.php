@@ -45,19 +45,40 @@ class BeforeSave implements BeforeSaveHook
             $entity->set('contrattoName', $quoteName);
         }
 
+        if (!$entity->get('opportunitaId') && $quote->get('opportunityId')) {
+            $entity->set('opportunitaId', $quote->get('opportunityId'));
+            $entity->set('opportunitaName', $quote->get('opportunityName'));
+        }
+
         $accountId = $quote->get('accountId');
 
-        if (!$accountId) {
+        if ($accountId) {
+            $entity->set('clienteId', $accountId);
+
+            $accountName = $quote->get('accountName');
+
+            if (is_string($accountName) && $accountName !== '') {
+                $entity->set('clienteName', $accountName);
+            }
+
             return;
         }
 
-        $entity->set('clienteId', $accountId);
+        // Fallback legacy: cliente presente su opportunità ma non su contratto.
+        $opportunityId = $entity->get('opportunitaId') ?: $quote->get('opportunityId');
 
-        $accountName = $quote->get('accountName');
-
-        if (is_string($accountName) && $accountName !== '') {
-            $entity->set('clienteName', $accountName);
+        if (!$opportunityId) {
+            return;
         }
+
+        $opportunity = $this->entityManager->getEntityById('Opportunity', (string) $opportunityId);
+
+        if (!$opportunity || !$opportunity->get('accountId')) {
+            return;
+        }
+
+        $entity->set('clienteId', $opportunity->get('accountId'));
+        $entity->set('clienteName', $opportunity->get('accountName'));
     }
 
     private function applyImporto(Entity $entity, Entity $quote): void
