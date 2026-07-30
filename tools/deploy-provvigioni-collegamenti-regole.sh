@@ -41,15 +41,20 @@ grep -q "opportunitaId" "${CRM_ROOT}/custom/Espo/Custom/Hooks/Provvigione/Accrua
   exit 1
 }
 
-grep -q "regolaProvvigionale" "${CRM_ROOT}/custom/Espo/Custom/Resources/client/custom/src/views/provvigione/record/edit.js" || {
-  echo "ERRORE: edit.js provvigione non aggiornato" >&2
-  exit 1
-}
+for js in \
+  "${CRM_ROOT}/client/custom/src/views/provvigione/record/edit.js" \
+  "${CRM_ROOT}/custom/Espo/Custom/Resources/client/custom/src/views/provvigione/record/edit.js"
+do
+  grep -q "setFieldReadOnly('tassoProvvigioni')" "${js}" || {
+    echo "ERRORE: file edit provvigione non aggiornato (${js})" >&2
+    exit 1
+  }
 
-if grep -q "setFieldReadOnly('regolaProvvigionale')" "${CRM_ROOT}/client/custom/src/views/provvigione/record/edit.js"; then
-  echo "ERRORE: client/custom/src/views/provvigione/record/edit.js ancora readOnly su regolaProvvigionale" >&2
-  exit 1
-fi
+  if grep -q "setFieldReadOnly('regolaProvvigionale')" "${js}"; then
+    echo "ERRORE: ${js} ancora readOnly su regolaProvvigionale" >&2
+    exit 1
+  fi
+done
 
 echo "=== Rebuild + cache ==="
 if [[ -f "${CRM_ROOT}/command.php" ]]; then
