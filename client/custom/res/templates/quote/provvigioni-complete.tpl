@@ -1,0 +1,10 @@
+{{#if error}}<div class="text-danger">{{error}}</div>{{else}}
+<div class="table-responsive"><table class="table table-striped table-condensed" style="width:100%;table-layout:auto;white-space:nowrap"><thead><tr><th style="white-space:nowrap;padding:6px">Provvigione</th><th style="white-space:nowrap;padding:6px">Base calcolo</th><th style="white-space:nowrap;padding:6px">Importo base</th><th style="white-space:nowrap;padding:6px">Tasso</th><th style="white-space:nowrap;padding:6px">Importo</th><th style="white-space:nowrap;padding:6px">Importo rettificato</th><th style="white-space:nowrap;padding:6px">Stato</th></tr></thead><tbody>
+{{#each entries}}<tr><td style="white-space:nowrap;padding:5px 6px">{{#if url}}<a href="{{url}}">{{name}}</a>{{else}}{{name}}{{/if}}</td><td style="white-space:nowrap;padding:5px 6px">{{baseLabel}}</td><td style="white-space:nowrap;padding:5px 6px">{{base}}</td><td style="white-space:nowrap;padding:5px 6px">{{rate}}</td><td style="white-space:nowrap;padding:5px 6px">{{amount}}</td><td style="white-space:nowrap;padding:5px 6px"><strong>{{corrected}}</strong></td><td style="white-space:nowrap;padding:5px 6px">{{#if archived}}<span class="label label-default">Archiviata</span><br><small>Ultima modifica: {{modified}}</small><br>{{/if}}{{state}}</td></tr>{{else}}<tr><td colspan="7">Nessuna provvigione registrata per questo contratto.</td></tr>{{/each}}
+</tbody>
+{{#if hasEntries}}<tfoot style="font-weight:600;border-top:2px solid var(--border-color,#ddd)">
+<tr><td colspan="4" style="padding:7px 6px">Totale</td><td style="white-space:nowrap;padding:7px 6px">{{totals.amount}}</td><td style="white-space:nowrap;padding:7px 6px">{{#if totals.hasCorrections}}{{totals.corrected}}{{else}}—{{/if}}</td><td></td></tr>
+{{#if totals.hasCorrections}}<tr><td colspan="4" style="padding:7px 6px">Totale complessivo con rettifiche</td><td colspan="2" style="white-space:nowrap;padding:7px 6px" title="Importi rettificati dove presenti, importi originari per le altre provvigioni">{{totals.effective}}</td><td></td></tr>{{/if}}
+</tfoot>{{/if}}</table></div>
+
+{{/if}}
