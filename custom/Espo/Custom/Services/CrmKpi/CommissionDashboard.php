@@ -363,7 +363,7 @@ class CommissionDashboard
         $brandEntity=$brand ? $this->em->getEntityById('ProductBrand',$brand) : null;
         return (object)['from'=>$from,'to'=>$to,'today'=>$today,'brandName'=>$brandEntity?->get('name'),
             'liquidation'=>array_merge($this->paymentSummary($user,$quoteMap,$invoices,$excluded,$today),$this->reversalSummary($user,$quoteMap,$invoices)),'report'=>$report,'reportGroups'=>$reportGroups,
-            'openFunnel'=>$this->openFunnel($user,$brand,$quoteMap,$invoices),'metrics'=>$b,'groups'=>$groups,'forecast'=>array_values($forecast),'forecastMissingDates'=>$missing,
+            'lifetimeFunnel'=>$this->lifetimeFunnel($user,$quoteMap,$invoices,$today),'openFunnel'=>$this->openFunnel($user,$brand,$quoteMap,$invoices),'metrics'=>$b,'groups'=>$groups,'forecast'=>array_values($forecast),'forecastMissingDates'=>$missing,
             'monthlyPreviewAvailable'=>$user->isAdmin(),
             'monthlyManualReview'=>count($manualMonthly),
             'reconciliationCents'=>$b['netti']['cents']-$b['maturate']['cents']-$b['daMaturare']['cents']-$b['mensili']['cents']-$b['inesigibili']['cents']];
@@ -579,6 +579,67 @@ class CommissionDashboard
     }
 
     /** Lifetime positions. Dates and contract production filters do not constrain this funnel. */
+    /** Lifetime portfolio, including invited and settled commissions. */
+    private function lifetimeFunnel(User $user, array $quotes, array $invoices, string $today): array
+    {
+        $metrics=array_fill_keys(['totali','finanziamentiOk','recessi','finanziamentiKo','netti','pagate'],$this->bucket());
+        $groups=array_fill_keys(['provvigioni','plus','minus','bonus','altre','nonAttribuite'],$metrics);
+        $linked=[];
+        foreach ($this->em->getRDBRepository('InvitoAFatturareItem')->find() as $line) {
+            $i=$invoices[$line->get('invitoId')] ?? null;
+            if (!$i) continue;
+            if ($line->get('provvigioneId')) $linked[$line->get('provvigioneId')]=true;
+            if ($i->get('stato')!=='Pagato') continue;
+            $p=$line->get('provvigioneId') ? $this->em->getEntityById('Provvigione',$line->get('provvigioneId')) : null;
+            if (!$p && $line->get('provvigioneId')) {
+                $query=$this->em->getQueryBuilder()->select()->from('Provvigione')->withDeleted()->where(['id'=>$line->get('provvigioneId')])->build();
+                foreach($this->em->getRDBRepository('Provvigione')->clone($query)->find() as $archived){$p=$archived;break;}
+            }
+            $qid=$line->get('contrattoId') ?: $p?->get('contrattoId');
+            $item=$quotes[$qid] ?? null;
+            if (!$item) continue;
+            if (!$this->readable($user,$line) || !$this->readable($user,$i) || ($p && !$this->readable($user,$p))) throw new Forbidden('Accesso parziale ai pagamenti storici.');
+            $category=self::category($line->get('tipo') ?: $p?->get('tipo'));
+            $row=['id'=>$line->getId(),'entityType'=>'InvitoAFatturareItem','name'=>$line->get('name'),
+                'contractId'=>$qid,'contractName'=>$item['entity']->get('name'),'date'=>$i->get('dataPagamento'),
+                'status'=>'Invito pagato · '.$i->get('name'),'category'=>$category];
+            $this->addMetric($metrics,$groups,$category,'pagate',$this->cents($line->get('importoConsolidato')),$row);
+        }
+        foreach ($quotes as $item) {
+            $q=$item['entity'];$count=0;
+            $recesso=$item['bucket']==='recessi';
+            $ko=!$recesso && $item['bucket']==='finanziamentiRifiutati';
+            $ok=!$recesso && !$ko && $q->get('statoFinanziamento')==='Approvato';
+            foreach ($this->em->getRDBRepository('Provvigione')->where(['contrattoId'=>$q->getId()])->find() as $p) {
+                if (!$this->readable($user,$p)) throw new Forbidden('Accesso parziale alle provvigioni storiche.');
+                $count++;
+                $category=self::category($p->get('tipo'));
+                $amount=$this->cents($p->get('importoConsolidato') ?? $p->get('importo'));
+                $row=$this->row($p,'Provvigione',$q->get('dateQuoted'));
+                $row['category']=$category;$row['status']=$p->get('statoProvvigione');
+                foreach (['totali'=>true,'finanziamentiOk'=>$ok,'recessi'=>$recesso,'finanziamentiKo'=>$ko,'netti'=>!$recesso&&!$ko] as $key=>$include) {
+                    if ($include) $this->addMetric($metrics,$groups,$category,$key,$amount,$row);
+                }
+                // Invoice payments are authoritative; never add their cached commission total twice.
+                if (isset($linked[$p->getId()])) continue;
+                $date=ArielInvoicePolicy::date($p->get('dataPagamento')) ?: ArielInvoicePolicy::date($p->get('dataLiquidazioneEffettiva'));
+                $paid=$this->cents($p->get('importoPagatoInviti'));
+                if ($p->get('statoProvvigione')==='Pagato' || ($date && $date<=$today && $p->get('statoProvvigione')!=='Acconto provvigionale')) $paid=$amount;
+                if ($paid) {$paidRow=$row;$paidRow['date']=$date;$paidRow['status']='Pagamento storico registrato';$this->addMetric($metrics,$groups,$category,'pagate',$paid,$paidRow);}
+            }
+            if (!$count) {
+                $amount=$this->cents($item['amount']);
+                if (!$amount) continue;
+                $row=['id'=>$q->getId(),'entityType'=>'Quote','name'=>$q->get('name'),'contractId'=>$q->getId(),
+                    'contractName'=>$q->get('name'),'date'=>$q->get('dateQuoted'),'status'=>'Importo del contratto da riconciliare','category'=>'nonAttribuite'];
+                foreach (['totali'=>true,'finanziamentiOk'=>$ok,'recessi'=>$recesso,'finanziamentiKo'=>$ko,'netti'=>!$recesso&&!$ko] as $key=>$include) {
+                    if ($include) $this->addMetric($metrics,$groups,'nonAttribuite',$key,$amount,$row);
+                }
+            }
+        }
+        return ['metrics'=>$metrics,'groups'=>$groups];
+    }
+
     private function openFunnel(User $user, ?string $brand, array $quotes, array $invoices): array
     {
         $excluded=$this->excludedPositions();
