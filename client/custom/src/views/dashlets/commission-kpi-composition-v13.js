@@ -1,6 +1,6 @@
 define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/dashlets/crm-kpi-20260924'], function (Dep) {
     const labels={aperteValide:'In pagamento + stima + sospesi',aperteAttive:'Sospesi',pagamentoEStima:'In pagamento + stima futura',inPagamento:'Prossimo invito · in pagamento',stimaFutura:'Stima futura',provvigioniMaturate:'Provvigioni maturate',bonusMaturati:'Bonus maturati',plusMinusMaturati:'Plus/minus maturati',sospese:'Provvigioni sospese',maturateContratti:'Provvigioni maturate',aperte:'Aperte',bloccate:'Bloccate',totali:'Totali',recessi:'Recessi',lordi:'Lorde',finanziamentiRifiutati:'Finanziamenti KO',sospesi:'Sospese',netti:'Nette',maturate:'In pagamento',daMaturare:'Da andare in pagamento',pagate:'Pagate',residuo:'Residuo da incassare',negliInviti:'Negli inviti aperti',disponibili:'Maturate disponibili',differenze:'Differenze di chiusura',daVerificare:'Differenze da verificare',arretrati:'Arretrati non inseriti negli inviti',senzaData:'Contratti senza data prevista',inesigibili:'Inesigibili',mensili:'A saldo mensile'};
-    const lifetimeLabels={totali:'Provvigioni totali',finanziamentiOk:'Provvigioni · finanziamenti OK',recessi:'Provvigioni · recessi',finanziamentiKo:'Provvigioni · finanziamenti KO',netti:'Provvigioni escluse recessi e finanziamenti KO',pagate:'Provvigioni pagate'};
+    const lifetimeLabels={totali:'Provvigioni lorde',finanziamentiOk:'Provvigioni · finanziamenti OK',recessi:'Provvigioni · recessi',finanziamentiKo:'Provvigioni · finanziamenti KO',netti:'Provvigioni nette',pagate:'Provvigioni pagate'};
     const categories={provvigioni:'Provvigioni / PNC',plus:'Plus',minus:'Minus',bonus:'Bonus e premi',altre:'Altre voci',nonAttribuite:'Da riconciliare'};
     return Dep.extend({
         name:'CommissionKpi',template:'custom:dashlets/commission-kpi-composition-v13',
@@ -102,14 +102,14 @@ define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/da
             const s=this.summary||{},m=s.metrics||{},groups=s.groups||{},reportGroups=s.reportGroups||{};
             const metric=(key,category)=>{const b=category?groups[category]?.[key]:m[key];return{key,category,label:labels[key],value:this.money(b?.cents),count:b?.count||0};};
             const selected=this.funnelCategory||'',open=s.lifetimeFunnel||{},fm=selected?open.groups?.[selected]||{}:open.metrics||{};
-            const keys=['totali','finanziamentiOk','recessi','netti','pagate'];
+            const keys=['totali','netti','pagate'];
             const values=keys.map(k=>fm[k]?.cents||0),base=values[0];
             // These historical subsets overlap: each width is independent, with its signed amount intact.
-            const monotonic=false,scale=Math.max(...values.map(Math.abs),1);
+            const monotonic=values.every(v=>v>=0)&&values[0]>=values[1]&&values[1]>=values[2],scale=Math.max(...values.map(Math.abs),1);
             const funnel=keys.map((key,index)=>{
-                const width=Math.abs(values[index])/scale*1000;
-                return{key,category:selected,label:lifetimeLabels[key],value:this.money(values[index]),color:['#63a7c2','#58a96a','#cd7772','#b9a951','#6e9bcd'][index],
-                    points:`${(1000-width)/2},0 ${(1000+width)/2},0 ${(1000+width)/2},36 ${(1000-width)/2},36`,
+                const width=Math.abs(values[index])/scale*1000,lower=monotonic?Math.abs(values[Math.min(index+1,2)])/scale*1000:width;
+                return{key,category:selected,label:lifetimeLabels[key],value:this.money(values[index]),color:['#63a7c2','#ccc058','#5cb85c'][index],
+                    points:`${(1000-width)/2},0 ${(1000+width)/2},0 ${(1000+lower)/2},36 ${(1000-lower)/2},36`,
                     percent:base!==0?(values[index]/base*100).toLocaleString('it-IT',{maximumFractionDigits:1})+'%':'—'};
             });
             const next=this.nextForecast(),nextTotal=next.reduce((a,f)=>a+f.cents,0);
@@ -121,7 +121,7 @@ define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/da
             return{ready:!!this.summary,loadError:this.loadError,brand:s.brandName||'Tutti i brand',today:s.today,period:'Report totale · tutto lo storico',
                 cards:['aperteValide','aperteAttive','pagamentoEStima','inPagamento','stimaFutura'].map(key=>({key,label:labels[key],value:this.money(s.report?.[key]?.cents),count:s.report?.[key]?.contractCount||0})),nextTotal:this.money(nextTotal),hasNext:next.length>0,
                 funnel,funnelSigned:!monotonic,funnelChoices:[{key:'',label:'Tutte'},...['provvigioni','plus','minus','bonus'].map(k=>({key:k,label:k==='provvigioni'?'Provvigioni':categories[k]}))].map(x=>({...x,active:x.key===selected})),
-                exclusions:['finanziamentiKo'].map(key=>({key,category:selected,label:lifetimeLabels[key],value:this.money(fm[key]?.cents)})),composition,
+                exclusions:['finanziamentiKo','recessi'].map(key=>({key,category:selected,label:key==='recessi'?'Recessi':'Finanziamenti KO',count:fm[key]?.contractCount||0,value:this.money(fm[key]?.cents)})),composition,
                 settlement:[['pagate','Provvigioni pagate'],['recessi','Provvigioni recessi'],['finanziamentiKo','Provvigioni finanziamenti KO'],['maturate','Provvigioni maturate'],['daMaturare','Provvigioni da maturare'],['stornate','Provvigioni stornate'],['daStornare','Provvigioni da stornare']].map(([key,label])=>({key,label,value:this.money(s.liquidation?.[key]?.cents)})),alerts:['arretrati','senzaData','daVerificare','inesigibili'].map(key=>({...metric(key),count:key==='senzaData'?(m[key]?.contractCount||0):(m[key]?.count||0)})),
                 forecast:ordered,forecastCount:forecast.length,moreForecast:false,
                 reconciliation:s.reconciliationCents?this.money(s.reconciliationCents):null,
