@@ -39,5 +39,22 @@
         "parent": "custom:views/fields/appuntamento-parent",
         "sottostato": "custom:views/fields/appuntamento-sottostato",
         "esito": "custom:views/fields/appuntamento-esito"
+    },
+    "kanbanViewMode": false,
+    "color": null,
+    "iconClass": "far fa-calendar-plus",
+    "viewSetupHandlers": {
+        "record/detail": [
+            "__APPEND__",
+            "custom:handlers/appuntamento/held-opportunity"
+        ],
+        "record/edit": [
+            "__APPEND__",
+            "custom:handlers/appuntamento/held-opportunity"
+        ],
+        "record/list": [
+            "__APPEND__",
+            "custom:handlers/appuntamento/held-opportunity"
+        ]
     }
 }

@@ -102,26 +102,37 @@ define('custom:views/appuntamento/popup-notification', [
         Task: {
             layoutName: 'detailEsitoPopup',
             isComplete: function (model) {
+                if (model.get('verificaInstallazioneContratto')) {
+                    return ['Installato', 'Rinviato'].includes(model.get('esitoVerificaInstallazione'));
+                }
+
                 const status = model.get('status');
 
                 if (!status || status === 'Not Started' || status === 'Started') {
                     return false;
                 }
 
-                if (status === 'Completed' && !model.get('dateCompleted')) {
-                    return false;
-                }
-
+                // EspoCRM sets dateCompleted server-side when the status is saved.
                 return true;
             },
-            incompleteMessage: 'Aggiornare Stato (es. Completato) e data completamento se necessario, poi cliccare Salva.',
+            incompleteMessage: 'Aggiornare Stato (es. Completato), poi cliccare Salva.',
+            getMissingFields: function (model) {
+                if (model.get('verificaInstallazioneContratto')) {
+                    return ['Installato', 'Rinviato'].includes(model.get('esitoVerificaInstallazione')) ?
+                        [] : ['Esito verifica installazione'];
+                }
+
+                const status = model.get('status');
+
+                return !status || status === 'Not Started' || status === 'Started' ? ['Stato'] : [];
+            },
         },
     };
 
     return class EsitoPopupNotificationView extends Parent {
 
         setup() {
-            const entityType = this.notificationData.entityType;
+            const entityType = (this.options.notificationData || this.notificationData || {}).entityType;
             const config = ESITO_POPUP_SCOPES[entityType];
 
             if (!config) {
@@ -130,14 +141,26 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
+            // NON chiamare super.setup(): il parent Meeting assume un popup
+            // standard e può rompere il render del form esito.
+            // Inizializziamo solo i campi che servono (come prima del fix Nascondi).
+            this.notificationData = this.options.notificationData || {};
+            this.notificationId = this.options.notificationId;
+            this.id = this.options.id || this.id;
+            this.onCollapse = this.options.onCollapse;
+            this.onExpand = this.options.onExpand;
+
             this.esitoPopupConfig = config;
             this.isEsitoPopup = true;
             this.closeButton = false;
-            this.collapseButton = false;
+            this.collapseButton = true;
             this.template = 'custom:appuntamento/popup-notification';
 
             this.addActionHandler('saveEsito', () => this.actionSaveEsito());
+            this.addActionHandler('rememberTesto', () => this.actionRememberTesto());
             this.addActionHandler('createOpportunity', () => this.actionCreateOpportunity());
+            this.addActionHandler('hideEsitoPopup', () => this.actionHideEsitoPopup());
+            this.addActionHandler('collapse', () => this.actionHideEsitoPopup());
         }
 
         data() {
@@ -148,10 +171,11 @@ define('custom:views/appuntamento/popup-notification', [
             return {
                 header: this.translate(this.notificationData.entityType, 'scopeNames'),
                 entityType: this.notificationData.entityType,
+                persistentTestoHelp: this.notificationData.entityType === 'Call',
                 notificationData: this.notificationData,
                 notificationId: this.notificationId,
                 closeButton: false,
-                collapseButton: false,
+                collapseButton: true,
             };
         }
 
@@ -163,12 +187,23 @@ define('custom:views/appuntamento/popup-notification', [
             }
 
             this.$el.find('[data-action="close"]').addClass('hidden');
-            this.$el.find('[data-action="collapse"]').addClass('hidden');
             this.$el.addClass('esito-popup-wide');
 
             if (!this.hasView('esitoRecord')) {
                 this.createEsitoRecordView();
             }
+        }
+
+        /** Nasconde per 30 minuti la sola notifica, senza cambiare il record CRM. */
+        actionHideEsitoPopup() {
+            this.remove();
+            this.notifyReminderQueue('hidden');
+        }
+
+        notifyReminderQueue(kind) {
+            window.dispatchEvent(new CustomEvent('crm:reminder-next', {
+                detail: {id: this.notificationId, kind: kind},
+            }));
         }
 
         createEsitoRecordView() {
@@ -182,6 +217,13 @@ define('custom:views/appuntamento/popup-notification', [
                     model.id = id;
 
                     return model.fetch().then(() => {
+                        if (entityType !== 'Call') return;
+                        return Espo.Ajax.getRequest('CallStandardTesto/action/read').then(response => {
+                            const current = (model.get('testo') || '').trim();
+                            const legacy = 'Salve, sono Carmine Alvino di ARIEL ENERGIA, mi fa sapere entro la giornata di oggi poi cosa ha deciso rispetto alla proposta che le ho fatto, Grazie';
+                            if (!current || current === legacy) model.set('testo', response.testo);
+                        });
+                    }).then(() => {
                         this.esitoModel = model;
                         this.esitoEntityType = entityType;
 
@@ -205,6 +247,7 @@ define('custom:views/appuntamento/popup-notification', [
                                     CallEsitoDefaults.applyDefaults(model, this.notificationData.name);
                                     CallEsitoDefaults.applyWithRetry(view, this.notificationData.name);
                                     this.setupRinvioDefaults(view);
+                                    this.setupPersistentTesto(view, model);
                                 }
 
                                 if (entityType === 'Appuntamento') {
@@ -222,6 +265,34 @@ define('custom:views/appuntamento/popup-notification', [
             this.wait(promise);
         }
 
+        actionRememberTesto() {
+            if (this.rememberingTesto || this.esitoEntityType !== 'Call') return;
+            const model = this.getEsitoModel();
+            const textarea = this.$el.find('.field[data-name="testo"] textarea');
+            const testo = (textarea.length ? textarea.val() : model.get('testo') || '').trim();
+            if (!testo) { Espo.Ui.warning('Scrivi il messaggio da memorizzare.'); return; }
+            this.rememberingTesto = true;
+            Espo.Ajax.postRequest('CallStandardTesto/action/save', {id: model.id, testo: testo}).then(() => {
+                model.set('testo', testo, {silent: true});
+                Espo.Ui.success('Testo memorizzato per i prossimi messaggi.');
+            }).finally(() => { this.rememberingTesto = false; });
+        }
+
+        setupPersistentTesto(recordView, model) {
+            const $field = recordView.$el.find('.field[data-name="testo"]');
+            const $textarea = $field.find('textarea');
+
+            if (!$textarea.length) {
+                return;
+            }
+
+            $textarea.off('input.crmPopupTesto').on('input.crmPopupTesto', event => {
+                model.set('testo', $(event.currentTarget).val(), {silent: true});
+            });
+
+            this.once('remove', () => $textarea.off('input.crmPopupTesto'));
+        }
+
         getEsitoModel() {
             this.syncEsitoRecordModel();
 
@@ -235,6 +306,10 @@ define('custom:views/appuntamento/popup-notification', [
         }
 
         getEditableFieldNames(entityType) {
+            if (entityType === 'Task') {
+                return ['status', 'esitoVerificaInstallazione'];
+            }
+
             if (entityType === 'Call') {
                 return [
                     'status',
@@ -384,7 +459,7 @@ define('custom:views/appuntamento/popup-notification', [
             const recordModel = recordView.model || this.esitoModel;
 
             if (recordModel) {
-                this.listenTo(recordModel, 'change:status', () => this.updateActionButtons());
+                this.listenTo(recordModel, 'change:status change:sottostato change:esito', () => this.updateActionButtons());
                 this.listenTo(recordModel, 'change', () => {
                     if (recordModel.hasChanged('status')) {
                         this.updateActionButtons();
@@ -572,6 +647,8 @@ define('custom:views/appuntamento/popup-notification', [
                 return;
             }
 
+            const model = this.esitoModel;
+            $save.text(model && model.get('sottostato') === 'Rifissato' ? 'Scegli nuova data' : 'Salva');
             const showCreateOpportunity = this.shouldShowCreateOpportunity();
 
             if (showCreateOpportunity) {
@@ -600,24 +677,112 @@ define('custom:views/appuntamento/popup-notification', [
             };
         }
 
+        /**
+         * Nasconde TEMPORANEAMENTE lo stack popup mentre si compila l'Opportunità.
+         * Non usa collapse/storage: evita di "perdere" i popup nelle sessioni successive.
+         */
+        sendAllEsitoPopupsToBackground() {
+            const $container = this.$el.closest('.popup-notification-container');
+            const activeElement = document.activeElement;
+
+            if ($container && $container.length) {
+                // Evita warning focus su elementi che diventano non-interagibili.
+                if (activeElement && $container.has(activeElement).length && typeof activeElement.blur === 'function') {
+                    activeElement.blur();
+                }
+                $container.attr('data-opportunity-parked', '1');
+                $container.addClass('hidden');
+                return;
+            }
+
+            this.$el.addClass('hidden');
+        }
+
+        restoreEsitoPopupsFromBackground() {
+            this.$el.removeClass('hidden');
+            const $container = this.$el.closest('.popup-notification-container');
+
+            if (!$container || !$container.length) {
+                return;
+            }
+
+            if ($container.attr('data-opportunity-parked') === '1') {
+                $container.removeAttr('data-opportunity-parked');
+                $container.removeClass('hidden');
+            }
+        }
+
         openCreateOpportunityModal(model) {
             const attributes = AppuntamentoSync.buildAttributesFromAppuntamento(
                 this.getAppuntamentoSyncPayload(model)
             );
 
+            // Park temporaneo: altrimenti lo stack copre "Crea Opportunità".
+            this.sendAllEsitoPopupsToBackground();
+
             this.createView('createOpportunityDialog', 'views/modals/edit', {
                 scope: 'Opportunity',
                 attributes: attributes,
+                // Riduce i warning browser dovuti a focus forzato in contesti non interagibili.
+                focusForCreate: false,
+                noFocus: true,
             }, view => {
-                view.render();
+                // Apri il modal al tick successivo: il container popup è già nascosto.
+                setTimeout(() => view.render(), 0);
+
+                let opportunitySaved = false;
 
                 this.listenToOnce(view, 'after:save', () => {
+                    opportunitySaved = true;
+                    this.restoreEsitoPopupsFromBackground();
                     super.resolveCancel();
+                    this.notifyReminderQueue('completed');
+                });
+
+                // Annulla / chiusura senza salvataggio → ripristina i popup.
+                this.listenToOnce(view, 'remove', () => {
+                    if (!opportunitySaved) {
+                        this.creatingOpportunity = false;
+                        this.restoreEsitoPopupsFromBackground();
+                    }
                 });
             });
         }
 
+        reviewProspectIdentity(model) {
+            const id = model.get('prospectId');
+            if (!id) {
+                this.openCreateOpportunityModal(model);
+                return;
+            }
+            this.sendAllEsitoPopupsToBackground();
+            this.createView('reviewProspectIdentity', 'views/modals/edit', {
+                scope: 'Prospect', id: id,
+                layoutName: 'identityReview',
+                headerText: 'Esito appuntamento: verifica nominativo e B2C/B2B',
+                fullFormDisabled: true,
+            }, view => {
+                let saved = false;
+                this.listenToOnce(view, 'after:save', () => {
+                    saved = true;
+                    model.fetch().then(() => this.openCreateOpportunityModal(model)).catch(() => {
+                        this.creatingOpportunity = false;
+                        this.restoreEsitoPopupsFromBackground();
+                        Espo.Ui.error('Anagrafica salvata. Riaprire l’esito per aggiornare l’appuntamento.');
+                    });
+                });
+                this.listenToOnce(view, 'remove', () => {
+                    if (!saved) {
+                        this.creatingOpportunity = false;
+                        this.restoreEsitoPopupsFromBackground();
+                    }
+                });
+                view.render();
+            });
+        }
+
         actionCreateOpportunity() {
+            if (this.creatingOpportunity) return;
             if (!this.shouldShowCreateOpportunity()) {
                 return;
             }
@@ -630,17 +795,22 @@ define('custom:views/appuntamento/popup-notification', [
 
             const model = this.getEsitoModel();
 
+            this.creatingOpportunity = true;
+            this.notifyReminderQueue('opportunity-pending');
             Espo.Ui.notify(' ...');
 
+            model._appointmentOpportunityManaged = true;
             model.save()
                 .then(() => {
                     Espo.Ui.notify();
-                    this.openCreateOpportunityModal(model);
+                    this.reviewProspectIdentity(model);
                 })
                 .catch(error => {
+                    this.creatingOpportunity = false;
+                    this.notifyReminderQueue('opportunity-save-failed');
                     Espo.Ui.notify(false);
                     Espo.Ui.error((error && error.message) || 'Errore salvataggio esito.');
-                });
+                }).finally(() => { delete model._appointmentOpportunityManaged; });
         }
 
         buildSaveAttributes() {
@@ -676,8 +846,41 @@ define('custom:views/appuntamento/popup-notification', [
             return saveAttributes;
         }
 
+        openRifissatoModal(model) {
+            if (this.creatingRifissato) return;
+            this.creatingRifissato = true;
+            this.sendAllEsitoPopupsToBackground();
+            this.createView('rifissatoDialog', 'custom:views/appuntamento/modals/rifissato-create', {
+                sourceId: model.id,
+                originalDateStart: model.get('dateStart'),
+                sourceAttributes: {
+                    status: 'Not Held', sottostato: 'Rifissato',
+                    esito: model.get('esito') || null, noteEsito: model.get('noteEsito') || null
+                }
+            }, view => {
+                view.render();
+                let saved = false;
+                this.listenToOnce(view, 'after:save', () => {
+                    saved = true;
+                    this.restoreEsitoPopupsFromBackground();
+                    super.resolveCancel();
+                    this.notifyReminderQueue('completed');
+                });
+                this.listenToOnce(view, 'remove', () => {
+                    this.creatingRifissato = false;
+                    if (!saved) this.restoreEsitoPopupsFromBackground();
+                });
+            });
+        }
+
         actionSaveEsito() {
             this.syncEsitoRecordModel();
+            const source = this.getEsitoModel();
+            if ((this.esitoEntityType || this.notificationData.entityType) === 'Appuntamento' &&
+                source && source.get('sottostato') === 'Rifissato' && source.get('status') !== 'Planned') {
+                this.openRifissatoModal(source);
+                return;
+            }
 
             if (!this.isEsitoComplete()) {
                 Espo.Ui.warning(this.getIncompleteMessage());
@@ -716,6 +919,7 @@ define('custom:views/appuntamento/popup-notification', [
                 .then(() => {
                     Espo.Ui.notify();
                     super.resolveCancel();
+                    this.notifyReminderQueue('completed');
                 })
                 .catch(error => {
                     Espo.Ui.notify(false);
