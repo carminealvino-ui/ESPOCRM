@@ -1,0 +1,871 @@
+define('custom:views/dashlets/crm-kpi-20260924', ['views/dashlets/abstract/base', 'lib!espo-funnel-chart', 'custom:views/dashlets/kpi-viewport'], function (Dep, Funnel, fitViewport) {
+
+    // kpi-pipeline-v5: Contr. totali + % su app. totali; funnel chart più basso
+
+    return Dep.extend({
+
+        name: 'CrmKpi',
+        template: 'custom:dashlets/crm-kpi',
+
+        pipelineColors: ['#63a7c2', '#ccc058', '#c96947', '#b770e0', '#5cb85c'],
+        successColor: '#5cb85c',
+
+        events: {
+            'click [data-action="refresh"]': function () {
+                this.actionRefresh();
+            },
+            'click [data-action="openAlert"]': function (e) {
+                const key = $(e.currentTarget).data('key');
+                this.actionOpenAlert({key: key});
+            },
+            'click .crm-kpi-tile-title': function (e) {
+                this.openTileAnalysis(e);
+            },
+            'click .crm-kpi-tile-row': function (e) {
+                this.openTileAnalysis(e);
+            },
+            'click .crm-kpi-pipeline-results-row': function (e) {
+                const index = this.$el.find('.crm-kpi-pipeline-results-row').index($(e.currentTarget));
+                const selections = [
+                    ['appuntamenti', 'totali'], ['appuntamenti', 'lordi'],
+                    ['appuntamenti', 'netti'], ['contratti', 'totali'],
+                    ['contratti', 'lordi'], ['contratti', 'netti'],
+                ];
+                if (selections[index]) this.openAnalysis(...selections[index]);
+            },
+            'click .crm-kpi-yields-table td': function (e) {
+                const $cell = $(e.currentTarget);
+                const column = $cell.parent().find('td').index($cell);
+                const row = $cell.closest('tbody').find('tr').index($cell.parent());
+                const columns = [
+                    ['appuntamenti', 'totali'], ['appuntamenti', 'lordi'],
+                    ['appuntamenti', 'netti'], ['contratti', 'totali'], ['contratti', 'netti'],
+                ];
+                if (columns[column]) this.openAnalysis(...columns[column],
+                    $cell.closest('.crm-kpi-panel-yields-day').length ? 'weekday' : 'week', row + 1);
+            },
+            'keydown .crm-kpi-tile-title': function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.openTileAnalysis(e);
+                }
+            },
+            'keydown .crm-kpi-tile-row': function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.openTileAnalysis(e);
+                }
+            },
+            'keydown .crm-kpi-pipeline-results-row, .crm-kpi-yields-table td': function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    $(e.currentTarget).trigger('click');
+                }
+            },
+            'click [data-action="closeKpiAnalysis"]': function () {
+                this.$el.find('.crm-kpi-analysis').remove();
+                this.fitDashletHeightToContent();
+            },
+        },
+
+        setup: function () {
+            this.summary = null;
+            this.loadError = null;
+            this.pipelineChart = null;
+
+            Dep.prototype.setup.call(this);
+
+            this.wait(true);
+            this.loadSummary();
+        },
+
+        actionRefresh: function () {
+            this.loadSummary();
+        },
+
+        autoRefresh: function () {
+            this.loadSummary(true);
+        },
+
+        loadSummary: function (silent) {
+            if (!silent) {
+                this.wait(true);
+            }
+
+            const params = {
+                period: this.getOption('period') || 'currentMonth',
+                dateFrom: this.getOption('dateFrom'),
+                dateTo: this.getOption('dateTo'),
+            };
+
+            const productBrandId = this.getOption('productBrandId')
+                || this.getOption('productBrand');
+
+            if (productBrandId) {
+                params.productBrandId = productBrandId;
+            }
+
+            return Espo.Ajax.getRequest('Appuntamento/action/getSummary', params)
+                .then(response => {
+                    this.summary = response;
+                    this.loadError = null;
+                    this.wait(false);
+                    this.reRender();
+                })
+                .catch(xhr => {
+                    this.loadError = xhr.responseJSON && xhr.responseJSON.message
+                        ? xhr.responseJSON.message
+                        : 'Errore caricamento KPI';
+                    this.wait(false);
+                    this.reRender();
+                });
+        },
+
+        data: function () {
+            const summary = this.summary || {};
+            const tiles = summary.tiles || {};
+            const pipeline = summary.salesPipeline || [];
+            const hasPipeline = pipeline.some(step => Number(step.value || 0) > 0);
+
+            return {
+                loadError: this.loadError,
+                periodLabel: this.getPeriodLabel(),
+                brandLabel: summary.productBrandName || null,
+                from: summary.from,
+                to: summary.to,
+                showDateRange: summary.from && summary.to,
+                hasPipeline: hasPipeline,
+                tiles: {
+                    appuntamenti: this.mapAppuntamentiTile(tiles.appuntamenti),
+                    opportunita: this.mapOpportunitaTile(tiles.opportunita),
+                    contratti: this.mapContrattiTile(tiles.contratti),
+                    valoreProduzione: this.mapValoreProduzioneTile(tiles.valoreProduzione),
+                    provvigioni: this.mapProvvigioniTile(tiles.provvigioni),
+                },
+                criticitaBoxes: this.mapCriticitaBoxes(summary.alerts),
+                yieldsByWeekday: this.mapYieldRows(summary.yieldsByWeekday),
+                yieldsByWeek: this.mapYieldRows(summary.yieldsByWeek),
+                yieldColumns: summary.yieldColumns || this.getDefaultYieldColumns(),
+                pipelineResultsRows: this.mapPipelineResultsRows(
+                    pipeline,
+                    tiles.appuntamenti || {},
+                    tiles.contratti || {}
+                ),
+            };
+        },
+
+        mapPipelineResultsRows: function (pipeline, appuntamentiTile, contrattiTile) {
+            const steps = pipeline || [];
+
+            if (!steps.length) {
+                return [];
+            }
+
+            const valueByKey = {};
+            steps.forEach(step => {
+                valueByKey[step.key] = Number(step.value || 0);
+            });
+
+            const tile = appuntamentiTile || {};
+            const contratti = contrattiTile || {};
+            // kpi-pipeline-labels-v4: + Contr. totali; % contratti anche su app. totali
+            const baseTotali = Number(tile.totali ?? valueByKey.appuntamentiTotali ?? 0);
+            const baseLordi = Number(tile.lordi ?? valueByKey.appuntamentiLordi ?? 0);
+            const baseNetti = Number(tile.netti ?? valueByKey.appuntamentiNetti ?? 0);
+            const baseContrattiTotali = Number(contratti.totali ?? 0);
+            const baseContratti = Number(contratti.lordi ?? valueByKey.contratti ?? 0);
+            const baseContrattiNetti = Number(contratti.netti ?? valueByKey.contrattiNetti ?? 0);
+
+            return [
+                {
+                    label: 'Totali',
+                    value: this.formatNumber(baseTotali),
+                    detail: this.formatPercentOf(baseTotali, baseTotali),
+                },
+                {
+                    label: 'Lordi',
+                    value: this.formatNumber(baseLordi),
+                    detail: this.formatPercentOf(baseLordi, baseTotali),
+                },
+                {
+                    label: 'Netti',
+                    value: this.formatNumber(baseNetti),
+                    detail: this.joinPercentDetails([
+                        this.formatPercentOf(baseNetti, baseLordi),
+                        this.formatPercentOf(baseNetti, baseTotali),
+                    ]),
+                },
+                {
+                    label: 'Contr. totali',
+                    value: this.formatNumber(baseContrattiTotali),
+                    detail: this.joinPercentDetails([
+                        this.formatPercentOf(baseContrattiTotali, baseTotali),
+                        this.formatPercentOf(baseContrattiTotali, baseLordi),
+                    ]),
+                },
+                {
+                    label: 'Contr. lordi',
+                    value: this.formatNumber(baseContratti),
+                    detail: this.joinPercentDetails([
+                        this.formatPercentOf(baseContratti, baseTotali),
+                        this.formatPercentOf(baseContratti, baseLordi),
+                        this.formatPercentOf(baseContratti, baseNetti),
+                    ]),
+                },
+                {
+                    label: 'Contr. netti',
+                    value: this.formatNumber(baseContrattiNetti),
+                    detail: this.joinPercentDetails([
+                        this.formatPercentOf(baseContrattiNetti, baseTotali),
+                        this.formatPercentOf(baseContrattiNetti, baseLordi),
+                        this.formatPercentOf(baseContrattiNetti, baseNetti),
+                    ]),
+                },
+            ];
+        },
+
+        joinPercentDetails: function (parts) {
+            return (parts || []).filter(part => part && part !== '-').join(' · ');
+        },
+
+        computePercent: function (value, base) {
+            const num = Number(value || 0);
+            const den = Number(base || 0);
+
+            if (den <= 0) {
+                return '-';
+            }
+
+            return ((num / den) * 100).toFixed(1) + '%';
+        },
+
+        getDefaultYieldColumns: function () {
+            return [
+                {key: 'appuntamentiTotali', label: 'Totali'},
+                {key: 'appuntamentiLordi', label: 'Lordi'},
+                {key: 'appuntamentiNetti', label: 'Netti'},
+                {key: 'contratti', label: 'Contr.'},
+                {key: 'contrattiNetti', label: 'C. netti'},
+            ];
+        },
+
+        mapAlerts: function (alerts, group) {
+            return (alerts || [])
+                .filter(function (alert) {
+                    return (alert.group || 'avvisi') === group;
+                })
+                .map(function (alert) {
+                    return {
+                        key: alert.key,
+                        label: alert.label,
+                        value: alert.value,
+                        meta: alert.meta || null,
+                        entity: alert.entity || null,
+                    };
+                });
+        },
+
+        mapCriticitaBoxes: function (alerts) {
+            const entities = [
+                {key: 'appuntamenti', title: 'Appuntamenti'},
+                {key: 'opportunita', title: 'Opportunità'},
+                {key: 'contratti', title: 'Contratti'},
+                {key: 'chiamate', title: 'Chiamate'},
+            ];
+
+            const criticita = this.mapAlerts(alerts, 'criticita');
+
+            return entities.map(entity => {
+                const items = criticita
+                    .filter(alert => (alert.entity || '') === entity.key)
+                    .filter(alert => Number(alert.value || 0) > 0);
+
+                return {
+                    key: entity.key,
+                    title: entity.title,
+                    alerts: items,
+                    hasAlerts: items.length > 0,
+                    showEmpty: items.length === 0,
+                };
+            });
+        },
+
+        mapYieldRows: function (rows) {
+            return (rows || []).map(row => {
+                const cells = (row.cells || []).map(cell => ({
+                    value: Number(cell.value || 0),
+                    percents: (cell.percents || []).map(percent => Number(percent)),
+                }));
+
+                return {
+                    label: row.label,
+                    labelFull: row.labelFull || null,
+                    cells: cells,
+                };
+            });
+        },
+
+        afterRender: function () {
+            this.fitDashletHeightToContent();
+
+            if (this.loadError || !this.summary) {
+                return;
+            }
+
+            this.drawSalesPipeline();
+            this.$el.find('.crm-kpi-tile-title, .crm-kpi-tile-row, .crm-kpi-pipeline-results-row, .crm-kpi-yields-table td')
+                .attr({role: 'button', tabindex: '0', title: 'Apri analisi e record del KPI'})
+                .css('cursor', 'pointer');
+            // Dopo il draw del funnel l'altezza può cambiare: riallinea i contenitori.
+            this.fitDashletHeightToContent();
+        },
+
+        openTileAnalysis: function (event) {
+            const types = ['appuntamenti', 'opportunita', 'contratti', 'valoreProduzione', 'provvigioni'];
+            const metrics = {
+                appuntamenti: ['totali', 'annullati', 'lordi', 'ingestibili', 'netti'],
+                opportunita: ['totali', 'perse', 'pending', 'concluse'],
+                contratti: ['totali', 'recessi', 'lordi', 'finanziamentiRifiutati', 'sospesi', 'netti'],
+                valoreProduzione: ['totali', 'recessi', 'lordi', 'finanziamentiRifiutati', 'sospesi', 'netti'],
+                provvigioni: ['totali', 'recessi', 'lordi', 'finanziamentiRifiutati', 'sospesi', 'netti'],
+            };
+            const $tile = $(event.currentTarget).closest('.crm-kpi-tile');
+            const type = types[this.$el.find('.crm-kpi-tiles .crm-kpi-tile').index($tile)];
+            const rowIndex = $tile.find('.crm-kpi-tile-row').index($(event.currentTarget));
+            const metric = rowIndex < 0 ? 'totali' : (metrics[type] || [])[rowIndex];
+
+            if (!type || !metric) {
+                return;
+            }
+
+            this.openAnalysis(type, metric);
+        },
+
+        openAnalysis: function (type, metric, sliceKind, sliceIndex) {
+            const params = {
+                period: this.getOption('period') || 'currentMonth',
+                dateFrom: this.getOption('dateFrom'),
+                dateTo: this.getOption('dateTo'),
+                analysisType: type,
+                metric: metric,
+            };
+            if (sliceKind) {
+                params.sliceKind = sliceKind;
+                params.sliceIndex = sliceIndex;
+            }
+            const productBrandId = this.getOption('productBrandId') || this.getOption('productBrand');
+            if (productBrandId) {
+                params.productBrandId = productBrandId;
+            }
+
+            const token = this.analysisRequestToken = (this.analysisRequestToken || 0) + 1;
+            this.$el.find('.crm-kpi-analysis').remove();
+            Espo.Ui.notify('Caricamento analisi…');
+            return Espo.Ajax.getRequest('Appuntamento/action/getSummary', params)
+                .then(data => {
+                    if (token !== this.analysisRequestToken) return;
+                    Espo.Ui.notify(false);
+                    const names = {appuntamenti:'Appuntamenti',opportunita:'Opportunità',contratti:'Contratti',valoreProduzione:'Valore produzione',provvigioni:'Provvigioni'};
+                    const metrics = {totali:'Totali',annullati:'Annullati',lordi:'Lordi',ingestibili:'Ingestibili',netti:'Netti',perse:'Perse',pending:'Pending',concluse:'Concluse positivamente',recessi:'Recessi',finanziamentiRifiutati:'Finanziamenti KO',sospesi:'Sospesi'};
+                    const title = (data.sliceLabel ? data.sliceLabel+' · ' : '') + (names[data.analysisType]||type)+' · '+(metrics[data.metric]||metric) + (data.from&&data.to?' · '+data.from+' → '+data.to:'');
+                    return this.createView('kpiAnalysisDetail','custom:views/modals/crm-kpi-analysis',{
+                        title: title, html: this.buildTileAnalysisHtml(data, true)
+                    }).then(view => {
+                        if (token !== this.analysisRequestToken) { view.remove(); return; }
+                        view.render();
+                    });
+                })
+                .catch(() => {
+                    if (token !== this.analysisRequestToken) return;
+                    Espo.Ui.notify(false);
+                    Espo.Ui.error('Impossibile caricare l’analisi KPI.');
+                });
+        },
+
+        buildTileAnalysisHtml: function (data, inModal) {
+            const escape = value => String(value == null ? '' : value)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            const names = {
+                appuntamenti: 'Appuntamenti', opportunita: 'Opportunità',
+                contratti: 'Contratti', valoreProduzione: 'Valore produzione',
+                provvigioni: 'Provvigioni',
+            };
+            const labels = {
+                totali: 'Totali', annullati: 'Annullati', lordi: 'Lordi',
+                ingestibili: 'Ingestibili', netti: 'Netti', perse: 'Perse',
+                pending: 'Pending', concluse: 'Concluse positivamente',
+                recessi: 'Recessi', finanziamentiRifiutati: 'Finanziamenti KO',
+                sospesi: 'Sospesi',
+            };
+            const isMoney = data.analysisType === 'valoreProduzione' || data.analysisType === 'provvigioni';
+            const value = isMoney ? this.formatCurrency(data.metricValue) : this.formatNumber(data.metricValue);
+            const recordCount = Number(data.totalRecords || 0);
+            const isOpportunityBase = data.analysisType === 'opportunita' && data.metric === 'totali';
+            const valueLabel = isOpportunityBase ? ' appuntamenti netti' : '';
+            const countLabel = isOpportunityBase ? ' opportunità collegate consultabili' : ' record consultabili';
+            const sliceTitle = data.sliceLabel
+                ? (data.sliceKind === 'weekday' ? 'Rese per giorno · ' : 'Rese per settimana · ') + data.sliceLabel + ' · '
+                : '';
+            const metricLabel = data.analysisType === 'contratti' && data.sliceKind
+                ? (data.metric === 'netti' ? 'Contratti netti' : 'Contratti')
+                : (labels[data.metric] || data.metric);
+            const context = [];
+            if (data.from || data.to) {
+                context.push(escape(data.from || '…') + ' → ' + escape(data.to || '…'));
+            }
+            if (data.productBrandName) {
+                context.push(escape(data.productBrandName));
+            }
+            const contextHtml = context.length ? '<small>' + context.join(' · ') + '</small>' : '';
+            let html = (inModal ? contextHtml : '<div style="display:flex;justify-content:space-between;gap:12px;align-items:start">' +
+                '<div><h4 style="margin:0 0 4px">' + escape(sliceTitle) +
+                (data.sliceKind ? '' : escape(names[data.analysisType]) + ' · ') + escape(metricLabel) + '</h4>' +
+                contextHtml + '</div><button type="button" class="btn btn-default btn-sm" data-action="closeKpiAnalysis">Chiudi</button></div>') +
+                '<p style="margin:12px 0"><strong style="font-size:20px">' + escape(value) +
+                '</strong>' + escape(valueLabel) + ' <span class="text-muted">· ' + escape(recordCount) + escape(countLabel) + '</span></p>';
+
+            if (data.note) {
+                html += '<p class="text-muted">' + escape(data.note) + '</p>';
+            }
+            const columns = data.entityType === 'Quote'
+                ? [['numeroContratto', 'N. contratto'], ['date', 'Data'], ['status', 'Stato'],
+                    ['assignedUserName', 'Agente'], ['statoFinanziamento', 'Finanziamento'],
+                    ['dataInstallazione', 'Installazione'], ['amount', 'Importo'], ['commission', 'Provvigione']]
+                : data.entityType === 'Appuntamento'
+                    ? [['date', 'Data'], ['status', 'Stato'], ['esito', 'Esito'],
+                        ['sottostato', 'Sottostato'], ['assignedUserName', 'Agente']]
+                    : [['date', 'Data'], ['status', 'Fase'], ['assignedUserName', 'Agente']];
+            html += '<div class="table-responsive"><table class="table table-striped table-condensed">' +
+                '<thead><tr><th>Record</th>' + columns.map(column => '<th>' + escape(column[1]) + '</th>').join('') + '</tr></thead><tbody>';
+            (data.records || []).forEach(record => {
+                const href = '#' + encodeURIComponent(data.entityType) + '/view/' + encodeURIComponent(record.id);
+                html += '<tr><td><a href="' + href + '">' + escape(record.name) + '</a></td>' +
+                    columns.map(column => {
+                        const value = record[column[0]];
+                        return '<td>' + (value == null || value === '' ? '—'
+                            : escape(['amount', 'commission'].includes(column[0]) ? this.formatCurrency(value) : value)) + '</td>';
+                    }).join('') + '</tr>';
+            });
+            if (!recordCount) {
+                html += '<tr><td colspan="' + (columns.length + 1) + '">Nessun record nel periodo.</td></tr>';
+            }
+            html += '</tbody></table></div>';
+            if (recordCount > (data.records || []).length) {
+                html += '<p class="text-muted">Mostrati i primi ' + escape((data.records || []).length) +
+                    ' record su ' + escape(recordCount) + '.</p>';
+            }
+            return html;
+        },
+
+        /**
+         * Espo assegna height fisso alla cella griglia → scroll pagina a vuoto.
+         * Forza i contenitori del dashlet KPI all'altezza del contenuto.
+         */
+        fitDashletHeightToContent: function () {
+            if (!this.$el || !this.$el.length) {
+                return;
+            }
+
+            this.$el.addClass('crm-kpi-dashlet');
+
+            const $nodes = this.$el
+                .parents()
+                .addBack()
+                .filter((i, el) => {
+                    const $el = $(el);
+                    return $el.hasClass('dashlet')
+                        || $el.hasClass('dashlet-container')
+                        || $el.hasClass('dashlet-body')
+                        || $el.hasClass('panel')
+                        || $el.hasClass('panel-body')
+                        || $el.hasClass('gs-w')
+                        || $el.hasClass('grid-stack-item')
+                        || $el.hasClass('grid-stack-item-content')
+                        || ($el.attr('data-name') === 'CrmKpi');
+                });
+
+            $nodes.each((i, el) => {
+                const $el = $(el);
+                $el.addClass('crm-kpi-dashlet-fit');
+                el.style.setProperty('height', 'auto', 'important');
+                el.style.setProperty('min-height', '0', 'important');
+                el.style.setProperty('max-height', 'none', 'important');
+                el.style.setProperty('overflow', 'visible', 'important');
+                el.style.setProperty('bottom', 'auto', 'important');
+            });
+
+            // Contenitore dashboard: evita min-height residua che crea scroll vuoto
+            const $dashboards = this.$el.closest('#dashboard, .dashboard, .dashlets');
+
+            $dashboards.each((i, el) => {
+                el.style.setProperty('min-height', '0', 'important');
+                el.style.setProperty('height', 'auto', 'important');
+                el.style.setProperty('overflow', 'visible', 'important');
+            });
+
+            // Il footer Espo usa un margine negativo: riserva nella pagina lo spazio
+            // realmente occupato dal drill-down per evitare che copra le righe.
+            const $content = this.$el.closest('.content');
+            if ($content.length && this.$el.offset() && $content.offset()) {
+                const footerHeight = $('body > footer').outerHeight(true) || 26;
+                const requiredHeight = Math.ceil(
+                    this.$el.offset().top + this.$el.outerHeight(true) - $content.offset().top + footerHeight + 16
+                );
+                const viewportHeight = Math.max((window.innerHeight || 0) - $content.offset().top, 0);
+                $content.get(0).style.setProperty(
+                    'min-height', Math.max(requiredHeight, viewportHeight) + 'px', 'important'
+                );
+            }
+            fitViewport(this);
+        },
+
+        getPipelineSteps: function () {
+            return (this.summary && this.summary.salesPipeline) || [];
+        },
+
+        getPipelineColor: function (index, total) {
+            const colors = this.pipelineColors;
+
+            if (index + 1 === total) {
+                return this.successColor;
+            }
+
+            return colors[index % colors.length];
+        },
+
+        drawSalesPipeline: function () {
+            const steps = this.getPipelineSteps();
+            const $container = this.$el.find('[data-name="pipeline-chart"]');
+
+            if (!$container.length || !steps.length) {
+                return;
+            }
+
+            $container.empty();
+
+            const hasValues = steps.some(step => Number(step.value || 0) > 0);
+
+            if (!hasValues) {
+                return;
+            }
+
+            const chartData = steps.map((step, index) => ({
+                stageTranslated: step.label,
+                value: Number(step.value || 0),
+                stage: step.key,
+                color: this.getPipelineColor(index, steps.length),
+                percentOfTotali: step.percentOfTotali,
+                percentOfLordi: step.percentOfLordi,
+                percentOfNetti: step.percentOfNetti,
+                percentOfPrevious: step.percentOfPrevious,
+            }));
+
+            if (typeof EspoFunnel !== 'undefined' && EspoFunnel.Funnel) {
+                this.pipelineChart = new EspoFunnel.Funnel($container.get(0), {
+                    colors: chartData.map(item => item.color),
+                    outlineColor: '#444',
+                    gapWidth: 0.015,
+                    callbacks: {
+                        tooltipHtml: index => this.getPipelineTooltip(chartData[index]),
+                    },
+                    tooltipClassName: 'crm-kpi-pipeline-tooltip',
+                    tooltipStyleString:
+                        'opacity:0.9;background-color:#000;color:#fff;position:absolute;' +
+                        'padding:4px 10px;border-radius:4px;white-space:nowrap;z-index:1000;',
+                }, chartData);
+            } else {
+                this.drawPipelineFallback($container, chartData);
+            }
+        },
+
+        getPipelinePercentMeta: function (item) {
+            if (!item) {
+                return '';
+            }
+
+            const parts = [];
+
+            if (item.stage === 'appuntamentiLordi' && item.percentOfTotali != null) {
+                parts.push(item.percentOfTotali + '% su totali');
+            }
+
+            if (item.stage === 'appuntamentiNetti') {
+                if (item.percentOfLordi != null) {
+                    parts.push(item.percentOfLordi + '% su lordi');
+                }
+
+                if (item.percentOfTotali != null) {
+                    parts.push(item.percentOfTotali + '% su totali');
+                }
+            }
+
+            if (item.stage === 'contratti' || item.stage === 'contrattiNetti') {
+                if (item.percentOfTotali != null) {
+                    parts.push(item.percentOfTotali + '% su app. totali');
+                }
+
+                if (item.percentOfLordi != null) {
+                    parts.push(item.percentOfLordi + '% su app. lordi');
+                }
+
+                if (item.percentOfNetti != null) {
+                    parts.push(item.percentOfNetti + '% su app. netti');
+                }
+            }
+
+            return parts.join(' · ');
+        },
+
+        getPipelineTooltip: function (item) {
+            if (!item) {
+                return '';
+            }
+
+            const meta = this.getPipelinePercentMeta(item);
+            let text = item.stageTranslated + ' ' + this.formatNumber(item.value);
+
+            if (meta) {
+                text += ' (' + meta + ')';
+            }
+
+            return text;
+        },
+
+        drawPipelineFallback: function ($container, chartData) {
+            const max = Math.max.apply(null, chartData.map(item => item.value).concat([1]));
+            let html = '<div class="crm-kpi-pipeline-fallback">';
+
+            chartData.forEach(item => {
+                const width = Math.max((item.value / max) * 100, 12);
+
+                html += '<div class="crm-kpi-pipeline-fallback-step" style="' +
+                    'width:' + width + '%;' +
+                    'background-color:' + item.color + ';">' +
+                    this.getHelper().escapeString(item.stageTranslated) +
+                    ' · ' + this.formatNumber(item.value) +
+                    '</div>';
+            });
+
+            html += '</div>';
+            $container.html(html);
+        },
+
+        drawPipelineLegend: function ($container, chartData) {
+            let html = '<div class="row"><div class="col-sm-12">';
+
+            chartData.forEach(item => {
+                const meta = this.getPipelinePercentMeta(item);
+                const valueLine = this.formatNumber(item.value) + (meta ? ' · ' + meta : '');
+
+                html += '<div class="legend-item">' +
+                    '<span class="legend-box" style="background-color:' + item.color + ';"></span>' +
+                    '<span>' +
+                    '<span class="legend-label">' + this.getHelper().escapeString(item.stageTranslated) + '</span>' +
+                    '<span class="legend-meta">' + valueLine + '</span>' +
+                    '</span>' +
+                    '</div>';
+            });
+
+            html += '</div></div>';
+            $container.html(html);
+        },
+
+        mapAppuntamentiTile: function (tile) {
+            // kpi-appuntamenti-gerarchia-v3 / kpi-periodo-andwhere-v1:
+            // Totali del PERIODO selezionato (non tutta la storia)
+            const source = tile || {};
+            const baseTotali = Number(source.totali || 0);
+            const baseLordi = Number(source.lordi || 0);
+
+            return [
+                {key: 'totali', label: 'Totali'},
+                {key: 'annullati', label: 'Annullati'},
+                {key: 'lordi', label: 'Lordi'},
+                {key: 'ingestibili', label: 'Ingestibili'},
+                {key: 'netti', label: 'Netti'},
+            ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                let value = this.formatNumber(raw);
+
+                if (def.key === 'totali' || def.key === 'annullati' || def.key === 'lordi') {
+                    value += ' · ' + this.formatPercentOf(raw, baseTotali);
+                } else if (def.key === 'ingestibili' || def.key === 'netti') {
+                    value += ' · ' + this.joinPercentDetails([
+                        this.formatPercentOf(raw, baseLordi),
+                        this.formatPercentOf(raw, baseTotali),
+                    ]);
+                }
+
+                return {
+                    label: def.label,
+                    value: value,
+                };
+            });
+        },
+
+        mapOpportunitaTile: function (tile) {
+            const source = tile || {};
+            const base = Number(source.totali || 0);
+
+            return [
+                {key: 'totali', label: 'Opportunità totali'},
+                {key: 'perse', label: 'Opportunità perse'},
+                {key: 'pending', label: 'Opportunità pending'},
+                {key: 'concluse', label: 'Opportunità concluse positivamente'},
+            ].map(def => {
+                const raw = Number(source[def.key] || 0);
+                const percent = base > 0 ? ((raw / base) * 100).toFixed(1) : '0.0';
+
+                return {
+                    label: def.label,
+                    value: this.formatNumber(raw) + ' · ' + percent + '%',
+                };
+            });
+        },
+
+        mapContrattiTile: function (tile) {
+            // kpi-quote-gerarchia-v1: Totali → Recessi → Lordi → Fin.KO → Sospesi → Netti
+            // come Appuntamenti (Totali base 100%, Lordi = Totali − Recessi)
+            return this.mapMetricTile(tile, [
+                {key: 'totali', label: 'Totali'},
+                {key: 'recessi', label: 'Recessi'},
+                {key: 'lordi', label: 'Lordi'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamenti KO'},
+                {key: 'sospesi', label: 'Sospesi'},
+                {key: 'netti', label: 'Netti'},
+            ], this.formatNumber);
+        },
+
+        mapValoreProduzioneTile: function (tile) {
+            return this.mapMetricTile(tile, [
+                {key: 'totali', label: 'Totali'},
+                {key: 'recessi', label: 'Recessi'},
+                {key: 'lordi', label: 'Lorde'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamenti KO'},
+                {key: 'sospesi', label: 'Sospesi'},
+                {key: 'netti', label: 'Nette'},
+            ], this.formatCurrency);
+        },
+
+        mapProvvigioniTile: function (tile) {
+            return this.mapMetricTile(tile, [
+                {key: 'totali', label: 'Totali'},
+                {key: 'recessi', label: 'Recessi'},
+                {key: 'lordi', label: 'Lorde'},
+                {key: 'finanziamentiRifiutati', label: 'Finanziamenti KO'},
+                {key: 'sospesi', label: 'Sospesi'},
+                {key: 'netti', label: 'Nette'},
+            ], this.formatCurrency);
+        },
+
+        /**
+         * Tile metriche gerarchiche (come Appuntamenti):
+         * totali 100% · recessi/lordi % totali · fin./sospesi/netti % lordi e % totali.
+         *
+         * @param {Function} formatValue
+         */
+        mapMetricTile: function (tile, rows, formatValue) {
+            const source = tile || {};
+            const baseTotali = Number(source.totali || 0);
+            const baseLordi = Number(source.lordi || 0);
+
+            return rows.map(def => {
+                const raw = Number(source[def.key] || 0);
+                let value = formatValue.call(this, raw);
+
+                if (
+                    def.key === 'totali'
+                    || def.key === 'annullati'
+                    || def.key === 'recessi'
+                    || def.key === 'lordi'
+                ) {
+                    value += ' · ' + this.formatPercentOf(raw, baseTotali);
+                } else if (
+                    def.key === 'ingestibili'
+                    || def.key === 'finanziamentiRifiutati'
+                    || def.key === 'sospesi'
+                    || def.key === 'netti'
+                ) {
+                    value += ' · ' + this.joinPercentDetails([
+                        this.formatPercentOf(raw, baseLordi),
+                        this.formatPercentOf(raw, baseTotali),
+                    ]);
+                }
+
+                return {
+                    label: def.label,
+                    value: value,
+                };
+            });
+        },
+
+        mapQuoteMetricTile: function (tile, rows, formatValue) {
+            return this.mapMetricTile(tile, rows, formatValue);
+        },
+
+        formatPercentOf: function (value, base) {
+            const num = Number(value || 0);
+            const den = Number(base || 0);
+
+            if (den <= 0) {
+                return '0.0%';
+            }
+
+            return ((num / den) * 100).toFixed(1) + '%';
+        },
+
+        getPeriodLabel: function () {
+            const period = this.getOption('period') || 'currentMonth';
+            const translated = this.translate(period, 'options', 'CrmKpi', 'period');
+
+            if (translated && translated !== period) {
+                return translated;
+            }
+
+            const labels = {
+                totals: 'Totali',
+                currentYear: 'Totali Anno in Corso',
+                previousYear: 'Totali Anno Precedente',
+                currentQuarter: 'Totali Trimestre in Corso',
+                previousQuarter: 'Totali Trimestre Precedente',
+                currentMonth: 'Totali Mese in Corso',
+                previousMonth: 'Totali Mese Precedente',
+            };
+
+            return period === 'custom' ? 'Periodo personalizzato' : (labels[period] || labels.currentMonth);
+        },
+
+        formatNumber: function (value) {
+            const n = Number(value || 0);
+
+            return n.toLocaleString('it-IT');
+        },
+
+        formatCurrency: function (value) {
+            const n = Number(value || 0);
+
+            return n.toLocaleString('it-IT', {
+                style: 'currency',
+                currency: 'EUR',
+                maximumFractionDigits: 0,
+            });
+        },
+
+        buildEntityListUrl: function (entityType, primaryFilter) {
+            return '#' + entityType + '/list/primaryFilter=' + primaryFilter;
+        },
+
+        actionOpenAlert: function (data) {
+            const key = data && data.key;
+            const alerts = (this.summary && this.summary.alerts) || [];
+            const alert = alerts.find(function (item) {
+                return item.key === key;
+            });
+
+            if (alert && alert.link) {
+                this.getRouter().navigate(alert.link, {trigger: true});
+            }
+        },
+    });
+});
