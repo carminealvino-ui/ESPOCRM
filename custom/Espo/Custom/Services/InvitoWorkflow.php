@@ -38,6 +38,22 @@ class InvitoWorkflow
 
 
 
+    /** Read archived commissions only for invalid/cancelled contracts, without restoring them. */
+    public function isHistoricalCommission(Entity $p): bool
+    {
+        $q=$p->get('contrattoId') ? $this->em->getEntityById('Quote',$p->get('contrattoId')) : null;
+        return $q && ($q->get('status') === 'Invalido' || $q->get('statoContratto') === 'Annullato');
+    }
+    public function invoiceCommission(?string $id): ?Entity
+    {
+        if (!$id) return null;
+        $p=$this->em->getEntityById('Provvigione',$id);
+        if ($p) return $p;
+        $query=$this->em->getQueryBuilder()->select()->from('Provvigione')->withDeleted()->where(['id'=>$id])->build();
+        $p=$this->em->getRDBRepository('Provvigione')->clone($query)->findOne();
+        return $p && $this->isHistoricalCommission($p) ? $p : null;
+    }
+
     public function isDraft(Entity $i): bool
 
     {
@@ -156,7 +172,7 @@ class InvitoWorkflow
 
             $this->ariel->validateMember($i,$p);
 
-        } elseif (!in_array($p->get('statoProvvigione'), ['In pagamento', 'Pagato', 'Acconto provvigionale'], true)) throw new BadRequest('La provvigione non Ã¨ fatturabile.');
+        } elseif (!$this->isHistoricalCommission($p) && !in_array($p->get('statoProvvigione'), ['In pagamento', 'Pagato', 'Acconto provvigionale'], true)) throw new BadRequest('La provvigione non Ã¨ fatturabile.');
 
         if ($p->get('fornitorePartnerId') !== $i->get('fornitorePartnerId')) {
 
@@ -506,7 +522,7 @@ class InvitoWorkflow
 
         if ($line->get('voceAutomatica')) return;
 
-        $p = $this->em->getEntityById('Provvigione', $line->get('provvigioneId'));
+        $p = $this->invoiceCommission($line->get('provvigioneId'));
 
         if (!$p) throw new BadRequest('Provvigione non trovata.');
 
@@ -599,7 +615,7 @@ class InvitoWorkflow
                 continue;
             }
 
-            $p = $this->em->getEntityById('Provvigione', $line->get('provvigioneId'));
+            $p = $this->invoiceCommission($line->get('provvigioneId'));
 
             if ($p) $this->refreshCommission($p);
 
@@ -612,6 +628,8 @@ class InvitoWorkflow
     public function refreshCommission(Entity $p): void
 
     {
+        if ($p->get('deleted')) return; // Historical invoice rows must not revive archived commissions.
+
 
         $lock = $this->em->getPDO()->prepare('SELECT id FROM provvigione WHERE id = ? FOR UPDATE');
 

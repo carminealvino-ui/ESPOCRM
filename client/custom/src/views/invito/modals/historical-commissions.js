@@ -1,0 +1,10 @@
+define('custom:views/invito/modals/historical-commissions',['views/modal'],function(Dep){return Dep.extend({
+ template:'custom:invito/historical-commissions',className:'dialog dialog-record',
+ events:{'click [data-action="searchHistorical"]':function(){this.search();},'keydown [data-name="historicalSearch"]':function(e){if(e.key==='Enter')this.search();}},
+ setup:function(){Dep.prototype.setup.call(this);this.headerText='Provvigioni storiche · invalidi e annullati';this.buttonList=[{name:'select',text:'Seleziona',style:'primary'},{name:'cancel',text:'Annulla'}];this.rows=[];this.wait(this.load(''));},
+ load:function(text){return Espo.Ajax.getRequest('InvitoAFatturare/action/provvigioniStoriche',{id:this.options.invoiceId,text:text}).then(data=>{this.rows=data.list||[];});},
+ search:async function(){if(this.busy)return;const text=this.$el.find('[data-name="historicalSearch"]').val();this.busy=true;try{await this.load(text);await this.reRender();this.$el.find('[data-name="historicalSearch"]').val(text);}finally{this.busy=false;}},
+ data:function(){return {rows:this.rows.map(r=>Object.assign({},r,{input:Number(r.amount).toFixed(2).replace('.',',')}))};},
+ actionSelect:async function(){if(this.busy)return;const entries=[];let invalid=false;this.$el.find('tr[data-id]').each(function(){if(!this.querySelector('input[type="checkbox"]').checked)return;const raw=this.querySelector('input[data-name="amount"]').value.trim().replace(',','.');if(!/^-?\d+(\.\d{1,2})?$/.test(raw)){invalid=true;return;}entries.push({id:this.dataset.id,amount:Number(raw)});});if(invalid){Espo.Ui.error('Inserire importi con massimo due decimali.');return;}if(!entries.length){Espo.Ui.error('Selezionare almeno una voce.');return;}this.busy=true;this.disableButton('select');try{const result=await Espo.Ajax.postRequest('InvitoAFatturare/action/aggiungiProvvigioniStoriche',{id:this.options.invoiceId,entries:entries});this.trigger('added',result);Espo.Ui.success('Voci storiche aggiunte: '+result.count);this.close();}finally{this.busy=false;this.enableButton('select');}},
+ actionCancel:function(){this.close();}
+});});
