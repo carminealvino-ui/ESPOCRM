@@ -47,7 +47,10 @@
                 "Gara (Soglia >3.5)",
                 "Gara (Soglia >5k)",
                 "Referenza Personale",
-                "Bonus Taxi"
+                "Bonus Taxi",
+                "Bonus Ordine Completo",
+                "Patto di non concorrenza (PNC)",
+                "Premio produzione"
             ],
             "default": "Provvigione Base",
             "maxLength": 100,
@@ -80,19 +83,12 @@
                 "GettoneFisso",
                 "NumeroPod"
             ],
-            "isCustom": true
+            "isCustom": true,
+            "style": [],
+            "default": "ImponibileContratto"
         },
         "importoBaseCalcolo": {
             "type": "currency",
-            "isCustom": true
-        },
-        "contrattoArticoli": {
-            "type": "link"
-        },
-        "hookVersion": {
-            "type": "varchar",
-            "maxLength": 100,
-            "options": [],
             "isCustom": true
         },
         "statoProvvigione": {
@@ -101,13 +97,17 @@
                 "Forecast",
                 "In pagamento",
                 "Pagato",
-                "Inesigibile"
+                "Inesigibile",
+                "Acconto provvigionale",
+                "Chiuso con differenza"
             ],
             "style": {
                 "Forecast": "info",
                 "In pagamento": "warning",
                 "Pagato": "success",
-                "Inesigibile": "danger"
+                "Inesigibile": "danger",
+                "Acconto provvigionale": "warning",
+                "Chiuso con differenza": "primary"
             },
             "default": "Forecast",
             "massUpdate": true,
@@ -117,15 +117,21 @@
             "type": "enum",
             "options": [
                 "",
-                "ARQUATI_PNC",
-                "ARIEL_2026",
-                "GFB_VODAFONE_COEFF",
-                "GFB_FASTWEB_POD",
-                "GFB_RS_BIMESTRE",
-                "SOLUTION_ENEL_GETTONE",
+                "ARQUATI 2023",
+                "ARIEL 2025",
+                "ARIEL 2026",
+                "ARTEL",
+                "PROGETTO",
+                "VODAFONE - INFLOW (Coefficiente)",
+                "VODAFONE - Revenue Sharing",
+                "FASTWEB ENERGIA",
+                "ENEL 2024",
+                "ENEL",
+                "WIND",
                 "GENERICO"
             ],
-            "isCustom": true
+            "isCustom": true,
+            "style": []
         },
         "dataInstallazione": {
             "type": "date",
@@ -153,17 +159,8 @@
             "useNumericFormat": true,
             "isCustom": true
         },
-        "importoPrevisto": {
-            "type": "currency",
-            "isCustom": true
-        },
         "importoConsolidato": {
             "type": "currency",
-            "isCustom": true
-        },
-        "scostamentoImporto": {
-            "type": "currency",
-            "readOnly": true,
             "isCustom": true
         },
         "giorniLiquidazioneDaAttivazione": {
@@ -185,7 +182,8 @@
         },
         "invitoAFatturare": {
             "type": "link",
-            "isCustom": true
+            "isCustom": true,
+            "readOnly": true
         },
         "fornitorePartner": {
             "type": "link",
@@ -197,6 +195,84 @@
         },
         "regolaProvvigionale": {
             "type": "link",
+            "isCustom": true
+        },
+        "consolidata": {
+            "notNull": true,
+            "type": "bool",
+            "readOnly": false,
+            "isCustom": true
+        },
+        "numeroFattura": {
+            "type": "varchar",
+            "readOnly": false,
+            "isCustom": true,
+            "maxLength": 100,
+            "options": []
+        },
+        "dataFattura": {
+            "notNull": false,
+            "type": "date",
+            "readOnly": false,
+            "isCustom": true
+        },
+        "dataPagamento": {
+            "notNull": false,
+            "type": "date",
+            "readOnly": false,
+            "isCustom": true
+        },
+        "importoConsolidatoInviti": {
+            "type": "currency",
+            "readOnly": false,
+            "isCustom": true
+        },
+        "datiPrimaFatturazione": {
+            "type": "text",
+            "readOnly": false,
+            "isCustom": true
+        },
+        "importoPagatoInviti": {
+            "type": "currency",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "residuoProvvigionale": {
+            "type": "currency",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "differenzaChiusura": {
+            "type": "currency",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "bloccoOrdineAriel": {
+            "type": "foreign",
+            "link": "contratto",
+            "field": "bloccoOrdineAriel",
+            "view": "views/fields/foreign-bool",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "dataRettificaAriel": {
+            "type": "foreign",
+            "link": "contratto",
+            "field": "dataRettificaAriel",
+            "view": "views/fields/foreign-date",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "differenzaDaVerificare": {
+            "type": "currency",
+            "readOnly": true,
+            "isCustom": true
+        },
+        "dataContrattoInvito": {
+            "type": "foreign",
+            "link": "contratto",
+            "field": "dateQuoted",
+            "view": "views/fields/foreign-date",
             "readOnly": true,
             "isCustom": true
         }
@@ -255,13 +331,6 @@
             "audited": false,
             "isCustom": true
         },
-        "contrattoArticoli": {
-            "type": "belongsTo",
-            "foreign": "provvigioni",
-            "entity": "QuoteItem",
-            "audited": false,
-            "isCustom": true
-        },
         "appuntamento": {
             "type": "belongsTo",
             "foreign": "provvigioni",
@@ -284,7 +353,8 @@
             "type": "belongsTo",
             "foreign": "provvigioni",
             "entity": "InvitoAFatturare",
-            "isCustom": true
+            "isCustom": true,
+            "readOnly": true
         },
         "fornitorePartner": {
             "type": "belongsTo",
@@ -303,10 +373,16 @@
             "foreign": "provvigioni",
             "entity": "RegolaProvvigionale",
             "isCustom": true
+        },
+        "righeInvito": {
+            "type": "hasMany",
+            "entity": "InvitoAFatturareItem",
+            "foreign": "provvigione",
+            "isCustom": true
         }
     },
     "collection": {
-        "orderBy": "createdAt",
+        "orderBy": "contratto",
         "order": "desc",
         "textFilterFields": [
             "name"
@@ -340,5 +416,6 @@
             ]
         }
     },
-    "optimisticConcurrencyControl": false
+    "optimisticConcurrencyControl": false,
+    "transactionalSave": true
 }
