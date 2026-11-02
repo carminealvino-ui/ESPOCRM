@@ -85,6 +85,8 @@ class CommissionDashboard
         $this->requireFields($user);
         $excluded=$this->excludedPositions();
         [$from,$to] = [null,null]; // Total portfolio snapshot, independent of contract month.
+        $funnelPeriod=DateRange::normalizePeriod($period);
+        [$funnelFrom,$funnelTo]=DateRange::resolve($funnelPeriod,$dateFrom,$dateTo);
         $today = ArielInvoicePolicy::today();
         $keys = ['maturateContratti','totali','recessi','lordi','finanziamentiRifiutati','sospesi','netti',
             'maturate','daMaturare','pagate','residuo','negliInviti','disponibili','differenze','daVerificare','arretrati','senzaData','inesigibili','mensili'];
@@ -174,7 +176,7 @@ class CommissionDashboard
                 if ($supplier) $monthlySuppliers[$supplier]=true;
                 foreach ($lines[$p->getId()] ?? [] as $line) {
                     $i=$invoices[$line->get('invitoId')];
-                    if (substr((string)$q->get('dateQuoted'),0,7)===substr($today,0,7)) $manualMonthly[$supplier]=true;
+                    $manualMonthly[$supplier][substr((string)$q->get('dateQuoted'),0,7).'-01']=true;
                 }
                 continue;
             }
@@ -234,45 +236,46 @@ class CommissionDashboard
             $this->forecastAdd($forecast,$supplier,$date,$label,$available,$row);
         }
 
-        // Monthly Ariel plus/minus and tier awards are estimated once per supplier/month.
-        // This portfolio-wide calculation is only exposed to administrators.
-        if ($user->isAdmin()) foreach (array_keys($monthlySuppliers) as $supplier) {
-            $month=substr($today,0,7).'-01';
+        // Estimate every visible competence month, including zero balances.
+        // Commercial settlement follows signature month, not installation month.
+        $months=[];
+        foreach (array_keys($monthlySuppliers) as $supplier) $months[$supplier][substr($today,0,7).'-01']=true;
+        foreach ($forecast as $entry) {
+            if (!isset($monthlySuppliers[$entry['supplierId']])) continue;
+            $month=(new \DateTimeImmutable($entry['date']))->modify('first day of previous month')->format('Y-m-01');
+            $months[$entry['supplierId']][$month]=true;
+        }
+        if ($user->isAdmin()) foreach ($months as $supplier=>$supplierMonths) foreach (array_keys($supplierMonths) as $month) {
             $owned=false;
             foreach ($invoices as $i) if ($i->get('fornitorePartnerId')===$supplier && $i->get('meseCompetenza')===$month && $i->get('arielIncludiSaldoMensile')) $owned=true;
-            if ($owned || isset($manualMonthly[$supplier])) continue;
+            if ($owned || isset($manualMonthly[$supplier][$month])) continue;
             $preview=$this->ariel->previewSettlement($supplier,$month);
-            $amount=$this->ariel->supplementCents($preview);
+            // The circular specifies full recovery of uncompensated losses after 30 days.
+            // This is a projection only: no invoice or ledger is changed here.
+            $preview->set('arielAddebitoMinus',min(0,(float)$preview->get('arielSaldoMinusPlus')));
             $date=ArielInvoicePolicy::calendar($month)['arielDataCaricamento'];
             foreach (['arielProvvigionePlus'=>['plus','Quota plus dopo compensazione mensile'],
-                'arielAddebitoMinus'=>['minus','Minus residuo dopo compensazione mensile'],
+                'arielAddebitoMinus'=>['minus','Minus residuo: recupero integrale se non compensato entro 30 giorni'],
                 'arielPremioProduzione'=>['bonus','Premio produzione mensile']] as $field=>[$category,$label]) {
                 $part=$this->cents($preview->get($field));
                 if ($part) $this->forecastAdd($forecast,$supplier,$date,'Competenza '.substr($month,0,7).' · caricamento '.$date,$part,
                     ['id'=>null,'entityType'=>null,'category'=>$category,'name'=>$label.' (stima)','date'=>$date,
-                    'status'=>$preview->get('arielAnomalie') ?: 'Da confermare a chiusura mese']);
+                    'status'=>$preview->get('arielAnomalie') ?: 'Presuntivo: da confermare a chiusura mese']);
             }
-        }
-        // Explain the monthly aggregate without counting its source amounts twice.
-        if ($user->isAdmin()) foreach ($forecast as &$entry) {
-            $hasSettlement=false;
-            foreach ($entry['records'] as $row) if (!$row['id']) $hasSettlement=true;
-            if (!$hasSettlement) continue;
-            $month=(new \DateTimeImmutable($entry['date']))->modify('first day of previous month')->format('Y-m-01');
-            $preview=$this->ariel->previewSettlement($entry['supplierId'],$month);
+            $key=$supplier.'|'.$date;
+            if (!isset($forecast[$key])) continue;
             $events=json_decode($preview->get('arielSnapshot') ?: '[]',true,512,JSON_THROW_ON_ERROR);
-            $entry['settlement']=['month'=>substr($month,0,7),'records'=>[]];
+            $forecast[$key]['settlement']=['month'=>substr($month,0,7),'estimated'=>true,'warnings'=>$preview->get('arielAnomalie'),'records'=>[]];
             foreach ($events as $event) {
                 $q=$this->em->getEntityById('Quote',$event['quoteId']);
                 if (!$q || !$this->readable($user,$q)) throw new Forbidden();
-                $entry['settlement']['records'][]=['id'=>$q->getId(),'entityType'=>'Quote','name'=>$event['name'],
+                $forecast[$key]['settlement']['records'][]=['id'=>$q->getId(),'entityType'=>'Quote','name'=>$event['name'],
                     'date'=>$event['date'],'amount'=>$event['grossCents']/100,
-                    'category'=>$event['grossCents']<0?'minus':'plus','status'=>$event['kind']==='rettifica'?'Rettifica · lordo commerciale':'Lordo commerciale'];
+                    'category'=>$event['grossCents']<0?'minus':'plus','status'=>$event['kind']==='rettifica'?'Rettifica · lordo commerciale presuntivo':'Lordo commerciale presuntivo'];
             }
-            foreach (['arielPlusLordo','arielMinusLordo','arielCompensato','arielSaldoMinusPlus','arielProvvigionePlus','arielAddebitoMinus'] as $field)
-                $entry['settlement'][$field]=$this->cents($preview->get($field));
+            foreach (['arielPlusLordo','arielMinusLordo','arielCompensato','arielSaldoMinusPlus','arielProvvigionePlus','arielAddebitoMinus','arielPremioProduzione'] as $field)
+                $forecast[$key]['settlement'][$field]=$this->cents($preview->get($field));
         }
-        unset($entry);
         foreach ($forecast as &$f) {
             $supplier=$this->em->getEntityById('FornitorePartner',$f['supplierId']);
             $f['supplierName']=$supplier && $this->readable($user,$supplier) ? $supplier->get('name') : 'Fornitore';
@@ -363,7 +366,7 @@ class CommissionDashboard
         $brandEntity=$brand ? $this->em->getEntityById('ProductBrand',$brand) : null;
         return (object)['from'=>$from,'to'=>$to,'today'=>$today,'brandName'=>$brandEntity?->get('name'),
             'liquidation'=>array_merge($this->paymentSummary($user,$quoteMap,$invoices,$excluded,$today),$this->reversalSummary($user,$quoteMap,$invoices)),'report'=>$report,'reportGroups'=>$reportGroups,
-            'lifetimeFunnel'=>$this->lifetimeFunnel($user,$quoteMap,$invoices,$today),'openFunnel'=>$this->openFunnel($user,$brand,$quoteMap,$invoices),'metrics'=>$b,'groups'=>$groups,'forecast'=>array_values($forecast),'forecastMissingDates'=>$missing,
+            'periodFunnel'=>$this->periodFunnel($user,$quoteMap,$funnelFrom,$funnelTo),'funnelPeriod'=>['period'=>$funnelPeriod,'from'=>$funnelFrom,'to'=>$funnelTo],'lifetimeFunnel'=>$this->lifetimeFunnel($user,$quoteMap,$invoices,$today),'openFunnel'=>$this->openFunnel($user,$brand,$quoteMap,$invoices),'metrics'=>$b,'groups'=>$groups,'forecast'=>array_values($forecast),'forecastMissingDates'=>$missing,
             'monthlyPreviewAvailable'=>$user->isAdmin(),
             'monthlyManualReview'=>count($manualMonthly),
             'reconciliationCents'=>$b['netti']['cents']-$b['maturate']['cents']-$b['daMaturare']['cents']-$b['mensili']['cents']-$b['inesigibili']['cents']];
@@ -580,6 +583,38 @@ class CommissionDashboard
 
     /** Lifetime positions. Dates and contract production filters do not constrain this funnel. */
     /** Lifetime portfolio, including invited and settled commissions. */
+    /** Commission funnel by contract date and the already-authorized brand portfolio. */
+    private function periodFunnel(User $user, array $quotes, ?string $from, ?string $to): array
+    {
+        $metrics=array_fill_keys(['totali','lordi','valide','netti','recessi','finanziamentiKo','sospesi'],$this->bucket());
+        $groups=array_fill_keys(['provvigioni','plus','minus','bonus','altre','nonAttribuite'],$metrics);
+        foreach ($quotes as $item) {
+            $q=$item['entity']; $date=$q->get('dateQuoted');
+            if (($from!==null && (!$date || $date<$from)) || ($to!==null && (!$date || $date>$to))) continue;
+            $recesso=$item['bucket']==='recessi';
+            $ko=!$recesso && $item['bucket']==='finanziamentiRifiutati';
+            $sospeso=$item['bucket']==='sospesi';
+            $included=['totali'=>true,'lordi'=>!$recesso,'valide'=>!$recesso&&!$ko,
+                'netti'=>$item['bucket']==='netti','recessi'=>$recesso,'finanziamentiKo'=>$ko,'sospesi'=>$sospeso];
+            $count=0;
+            foreach ($this->em->getRDBRepository('Provvigione')->where(['contrattoId'=>$q->getId()])->find() as $p) {
+                if (!$this->readable($user,$p)) throw new Forbidden('Accesso parziale alle provvigioni del periodo.');
+                $count++;
+                $category=self::category($p->get('tipo'));
+                $amount=$this->cents($p->get('importoConsolidato') ?? $p->get('importo'));
+                $row=$this->row($p,'Provvigione',$date); $row['category']=$category; $row['status']=$p->get('statoProvvigione');
+                foreach($included as $key=>$include) if($include) $this->addMetric($metrics,$groups,$category,$key,$amount,$row);
+            }
+            if (!$count) {
+                $amount=$this->cents($item['amount']); if(!$amount) continue;
+                $row=['id'=>$q->getId(),'entityType'=>'Quote','name'=>$q->get('name'),'contractId'=>$q->getId(),
+                    'contractName'=>$q->get('name'),'date'=>$date,'status'=>'Importo del contratto da riconciliare','category'=>'nonAttribuite'];
+                foreach($included as $key=>$include) if($include) $this->addMetric($metrics,$groups,'nonAttribuite',$key,$amount,$row);
+            }
+        }
+        return ['metrics'=>$metrics,'groups'=>$groups];
+    }
+
     private function lifetimeFunnel(User $user, array $quotes, array $invoices, string $today): array
     {
         $metrics=array_fill_keys(['totali','finanziamentiOk','recessi','finanziamentiKo','netti','pagate'],$this->bucket());

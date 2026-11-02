@@ -1,6 +1,7 @@
 define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/dashlets/crm-kpi-20260924'], function (Dep) {
     const labels={aperteValide:'In pagamento + stima + sospesi',aperteAttive:'Sospesi',pagamentoEStima:'In pagamento + stima futura',inPagamento:'Prossimo invito · in pagamento',stimaFutura:'Stima futura',provvigioniMaturate:'Provvigioni maturate',bonusMaturati:'Bonus maturati',plusMinusMaturati:'Plus/minus maturati',sospese:'Provvigioni sospese',maturateContratti:'Provvigioni maturate',aperte:'Aperte',bloccate:'Bloccate',totali:'Totali',recessi:'Recessi',lordi:'Lorde',finanziamentiRifiutati:'Finanziamenti KO',sospesi:'Sospese',netti:'Nette',maturate:'In pagamento',daMaturare:'Da andare in pagamento',pagate:'Pagate',residuo:'Residuo da incassare',negliInviti:'Negli inviti aperti',disponibili:'Maturate disponibili',differenze:'Differenze di chiusura',daVerificare:'Differenze da verificare',arretrati:'Arretrati non inseriti negli inviti',senzaData:'Contratti senza data prevista',inesigibili:'Inesigibili',mensili:'A saldo mensile'};
     const lifetimeLabels={totali:'Provvigioni lorde',finanziamentiOk:'Provvigioni · finanziamenti OK',recessi:'Provvigioni · recessi',finanziamentiKo:'Provvigioni · finanziamenti KO',netti:'Provvigioni nette',pagate:'Provvigioni pagate'};
+    const periodLabels={totali:'Provvigioni lorde',lordi:'Provvigioni meno recessi',valide:'Provvigioni meno recessi e KO finanziamenti',netti:'Provvigioni nette',recessi:'Recessi',finanziamentiKo:'Finanziamenti KO',sospesi:'Sospesi'};
     const categories={provvigioni:'Provvigioni / PNC',plus:'Plus',minus:'Minus',bonus:'Bonus e premi',altre:'Altre voci',nonAttribuite:'Da riconciliare'};
     return Dep.extend({
         name:'CommissionKpi',template:'custom:dashlets/commission-kpi-composition-v13',
@@ -11,6 +12,7 @@ define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/da
             'click [data-liquidation]':function(e){this.showDetail('liquidation',$(e.currentTarget).attr('data-liquidation'));},
             'click [data-snapshot]':function(e){this.showDetail('snapshot',$(e.currentTarget).attr('data-snapshot'));},
             'click [data-metric]':function(e){this.showDetail('metric',$(e.currentTarget).attr('data-metric'),$(e.currentTarget).attr('data-category'));},
+            'click [data-period-metric]':function(e){this.showDetail('period',$(e.currentTarget).attr('data-period-metric'),$(e.currentTarget).attr('data-category'));},
             'click [data-lifetime-metric]':function(e){this.showDetail('lifetime',$(e.currentTarget).attr('data-lifetime-metric'),$(e.currentTarget).attr('data-category'));},
             'click [data-open-metric]':function(e){this.showDetail('open',$(e.currentTarget).attr('data-open-metric'),$(e.currentTarget).attr('data-category'));},
             'click [data-forecast]':function(e){this.showDetail('forecast',Number($(e.currentTarget).attr('data-forecast')),$(e.currentTarget).attr('data-category'));},
@@ -21,7 +23,7 @@ define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/da
         },
         loadSummary:function(silent){
             const token=this.loadToken=(this.loadToken||0)+1;if(!silent)this.wait(true);
-            return Espo.Ajax.getRequest('CommissionKpi/action/getSummary',{period:'totals',productBrandId:this.getOption('productBrandId')||this.getOption('productBrand'),dateFrom:null,dateTo:null})
+            return Espo.Ajax.getRequest('CommissionKpi/action/getSummary',{period:this.getOption('period')||'totals',productBrandId:this.getOption('productBrandId')||this.getOption('productBrand'),dateFrom:this.getOption('dateFrom'),dateTo:this.getOption('dateTo')})
                 .then(data=>{if(token!==this.loadToken)return;this.summary=data;this.loadError=null;this.wait(false);this.reRender();})
                 .catch(xhr=>{if(token!==this.loadToken)return;this.summary=null;this.loadError=xhr.status===403?'Permessi insufficienti per i dati provvigionali.':(xhr.responseJSON?.message||'Impossibile caricare le provvigioni.');this.wait(false);this.reRender();});
         },
@@ -40,7 +42,8 @@ define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/da
                     parts:Object.entries(f.parts||{}).map(([k,b])=>categories[k]+': '+this.money(b.cents)).join(' · ')}))};
             }else{
                 let bucket,title;
-                if(type==='lifetime'){bucket=category?s.lifetimeFunnel?.groups?.[category]?.[key]:s.lifetimeFunnel?.metrics?.[key];title=lifetimeLabels[key]+' · tutto lo storico'+(category?' · '+categories[category]:'');}
+                if(type==='period'){bucket=category?s.periodFunnel?.groups?.[category]?.[key]:s.periodFunnel?.metrics?.[key];title=periodLabels[key]+' · '+this.funnelPeriodLabel()+(category?' · '+categories[category]:'');}
+                else if(type==='lifetime'){bucket=category?s.lifetimeFunnel?.groups?.[category]?.[key]:s.lifetimeFunnel?.metrics?.[key];title=lifetimeLabels[key]+' · tutto lo storico'+(category?' · '+categories[category]:'');}
                 else if(type==='liquidation'){bucket=s.liquidation?.[key];title=({stornate:'Provvigioni stornate',daStornare:'Provvigioni da stornare',pagate:'Provvigioni pagate',recessi:'Provvigioni recessi',finanziamentiKo:'Provvigioni finanziamenti KO',maturate:'Provvigioni maturate',daMaturare:'Provvigioni da maturare'})[key]+' · pagamenti · tutto lo storico';}
                 else if(type==='snapshot'){bucket=s.openFunnel?.snapshot?.[key];title=labels[key]+' · tutto lo storico';}
                 else if(type==='open'){bucket=category?s.openFunnel?.groups?.[category]?.[key]:s.openFunnel?.metrics?.[key];title='Aperte · tutto lo storico · '+(category?categories[category]+' · ':'')+labels[key];}
@@ -61,7 +64,7 @@ define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/da
                 else{const f=s.forecast?.[key];bucket=category?f?.parts?.[category]:f;title=(f?.supplierName||'')+' · '+(f?.label||'')+(category?' · '+categories[category]:'');}
                 if(!bucket)return;
                 detail={title,total:this.money(bucket.cents),count:bucket.count,limited:bucket.count>bucket.records.length,rows:this.detailRows(bucket)};
-                if(type==='lifetime'||type==='snapshot'||type==='column'||type==='liquidation'||(type==='metric'&&key==='senzaData')){detail.rows=this.contractRows(bucket);detail.count=bucket.contractCount||0;detail.contracts=true;detail.limited=false;if(bucket.monthlyRows)detail.rows.push(...bucket.monthlyRows);}
+                if(type==='period'||type==='lifetime'||type==='snapshot'||type==='column'||type==='liquidation'||(type==='metric'&&key==='senzaData')){detail.rows=this.contractRows(bucket);detail.count=bucket.contractCount||0;detail.contracts=true;detail.limited=false;if(bucket.monthlyRows)detail.rows.push(...bucket.monthlyRows);}
                 if(type==='metric'&&key==='daVerificare'){
                     detail.differences=true;detail.contracts=true;detail.count=bucket.contractCount||bucket.count;
                     detail.rows=(bucket.records||[]).map(r=>({...r,url:'#Quote/view/'+encodeURIComponent(r.id),expected:this.money(r.expectedCents),invited:this.money(r.invitedCents),difference:this.money(r.differenceCents),absolute:this.money(r.absoluteCents),
@@ -87,8 +90,8 @@ define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/da
                     const f=s.forecast[key];
                     const available=!!f.settlement;
                     const st=f.settlement||{month:(f.label||'').match(/\d{4}-\d{2}/)?.[0]||'',records:[]};
-                    detail.settlement={month:st.month,unavailable:!available,rows:this.detailRows(st),
-                        totals:[['Plus lordi','arielPlusLordo'],['Minus lordi','arielMinusLordo'],['Compensazione provvigionale (35%)','arielCompensato'],['Saldo commerciale','arielSaldoMinusPlus'],['Quota plus provvigionale (35%)','arielProvvigionePlus'],['Minus residuo provvigionale (35%)','arielAddebitoMinus']].map(([label,k])=>({label,value:available?this.money(k==='arielCompensato'?Math.round(st[k]*0.35):st[k]):'Da calcolare'}))};
+                    detail.settlement={month:st.month,unavailable:!available,estimated:!!st.estimated,warnings:st.warnings,rows:this.detailRows(st),
+                        totals:[['Plus lordi','arielPlusLordo'],['Minus lordi','arielMinusLordo'],['Compensazione commerciale','arielCompensato'],['Saldo commerciale','arielSaldoMinusPlus'],['Quota plus provvigionale (35%)','arielProvvigionePlus'],['Minus residuo: stima recupero integrale dopo 30 giorni','arielAddebitoMinus'],['Premio produzione presuntivo','arielPremioProduzione']].map(([label,k])=>({label,value:available?this.money(st[k]):'Da calcolare'}))};
                 }
             }
             this.createView('commissionDetail','custom:views/modals/commission-kpi-detail-v2',{detail}).then(view=>{this.listenTo(view,'saved',()=>this.loadSummary());view.render();});
@@ -98,31 +101,32 @@ define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/da
             const rows=this.contractRows(bucket);rows.push(...this.detailRows({records:(bucket.records||[]).filter(r=>!r.id&&!r.contractId)}));
             this.createView('commissionDetail','custom:views/modals/commission-kpi-detail-v2',{detail:{title:categories[category]+' · '+labels[key],total:this.money(bucket.cents),count:bucket.contractCount||0,contracts:true,rows}}).then(v=>v.render());
         },
+        funnelPeriodLabel:function(){const p=this.summary?.funnelPeriod;return p?.from?p.from+' → '+p.to:'Tutto lo storico';},
         data:function(){
             const s=this.summary||{},m=s.metrics||{},groups=s.groups||{},reportGroups=s.reportGroups||{};
             const metric=(key,category)=>{const b=category?groups[category]?.[key]:m[key];return{key,category,label:labels[key],value:this.money(b?.cents),count:b?.count||0};};
-            const selected=this.funnelCategory||'',open=s.lifetimeFunnel||{},fm=selected?open.groups?.[selected]||{}:open.metrics||{};
-            const keys=['totali','netti','pagate'];
+            const selected=this.funnelCategory||'',open=s.periodFunnel||{},fm=selected?open.groups?.[selected]||{}:open.metrics||{};
+            const keys=['totali','lordi','valide','netti'];
             const values=keys.map(k=>fm[k]?.cents||0),base=values[0];
             // These historical subsets overlap: each width is independent, with its signed amount intact.
-            const monotonic=values.every(v=>v>=0)&&values[0]>=values[1]&&values[1]>=values[2],scale=Math.max(...values.map(Math.abs),1);
+            const monotonic=values.every((v,i)=>v>=0&&(!i||v<=values[i-1])),scale=Math.max(...values.map(Math.abs),1);
             const funnel=keys.map((key,index)=>{
-                const width=Math.abs(values[index])/scale*1000,lower=monotonic?Math.abs(values[Math.min(index+1,2)])/scale*1000:width;
-                return{key,category:selected,label:lifetimeLabels[key],value:this.money(values[index]),color:['#63a7c2','#ccc058','#5cb85c'][index],
+                const width=Math.abs(values[index])/scale*1000,lower=monotonic?(index===keys.length-1?0:Math.abs(values[index+1])/scale*1000):width;
+                return{key,category:selected,label:periodLabels[key],count:fm[key]?.contractCount||0,value:this.money(values[index]),color:['#63a7c2','#ccc058','#89b875','#5cb85c'][index],
                     points:`${(1000-width)/2},0 ${(1000+width)/2},0 ${(1000+lower)/2},36 ${(1000-lower)/2},36`,
                     percent:base!==0?(values[index]/base*100).toLocaleString('it-IT',{maximumFractionDigits:1})+'%':'—'};
             });
             const next=this.nextForecast(),nextTotal=next.reduce((a,f)=>a+f.cents,0);
-            const forecast=(s.forecast||[]).map((f,index)=>({...f,index,value:this.money(f.cents),next:next.some(n=>n.index===index),parts:['provvigioni','plus','minus','bonus'].map(category=>({category,index,value:this.money(f.parts?.[category]?.cents),hasValue:!!f.parts?.[category]}))}));
+            const forecast=(s.forecast||[]).map((f,index)=>({...f,index,value:this.money(f.cents),next:next.some(n=>n.index===index),parts:['provvigioni','plus','minus','bonus'].map(category=>({category,index,value:this.money(f.parts?.[category]?.cents),hasValue:!!f.parts?.[category]|| (!!f.settlement && ['plus','minus','bonus'].includes(category))}))}));
             // Show upcoming rows first; keep the complete calendar in a modal.
             const ordered=[...forecast].sort((a,b)=>b.date.localeCompare(a.date) || a.supplierName.localeCompare(b.supplierName));
             const composition=Object.entries(categories).filter(([k])=>['provvigioni','plus','minus','bonus'].includes(k)||reportGroups[k]?.aperteValide?.count).map(([category,label])=>({category,label,
                 cells:['aperteValide','aperteAttive','pagamentoEStima','inPagamento','stimaFutura'].map(key=>({key,category,value:this.money(reportGroups[category]?.[key]?.cents)}))}));
             return{ready:!!this.summary,loadError:this.loadError,brand:s.brandName||'Tutti i brand',today:s.today,period:'Report totale · tutto lo storico',
                 cards:['aperteValide','aperteAttive','pagamentoEStima','inPagamento','stimaFutura'].map(key=>({key,label:labels[key],value:this.money(s.report?.[key]?.cents),count:s.report?.[key]?.contractCount||0})),nextTotal:this.money(nextTotal),hasNext:next.length>0,
-                funnel,funnelSigned:!monotonic,funnelChoices:[{key:'',label:'Tutte'},...['provvigioni','plus','minus','bonus'].map(k=>({key:k,label:k==='provvigioni'?'Provvigioni':categories[k]}))].map(x=>({...x,active:x.key===selected})),
+                funnel,funnelPeriodLabel:this.funnelPeriodLabel(),funnelSigned:!monotonic,funnelChoices:[{key:'',label:'Tutte'},...['provvigioni','plus','minus','bonus'].map(k=>({key:k,label:k==='provvigioni'?'Provvigioni':categories[k]}))].map(x=>({...x,active:x.key===selected})),
                 exclusions:['finanziamentiKo','recessi'].map(key=>({key,category:selected,label:key==='recessi'?'Recessi':'Finanziamenti KO',count:fm[key]?.contractCount||0,value:this.money(fm[key]?.cents)})),composition,
-                settlement:[['pagate','Provvigioni pagate'],['recessi','Provvigioni recessi'],['finanziamentiKo','Provvigioni finanziamenti KO'],['maturate','Provvigioni maturate'],['daMaturare','Provvigioni da maturare'],['stornate','Provvigioni stornate'],['daStornare','Provvigioni da stornare']].map(([key,label])=>({key,label,value:this.money(s.liquidation?.[key]?.cents)})),alerts:['arretrati','senzaData','daVerificare','inesigibili'].map(key=>({...metric(key),count:key==='senzaData'?(m[key]?.contractCount||0):(m[key]?.count||0)})),
+                settlement:[['maturate','Provvigioni maturate'],['daMaturare','Provvigioni da maturare'],['stornate','Provvigioni stornate'],['daStornare','Provvigioni da stornare']].map(([key,label])=>({key,label,value:this.money(s.liquidation?.[key]?.cents)})),alerts:['arretrati','senzaData','daVerificare','inesigibili'].map(key=>({...metric(key),count:key==='senzaData'?(m[key]?.contractCount||0):(m[key]?.count||0)})),
                 forecast:ordered,forecastCount:forecast.length,moreForecast:false,
                 reconciliation:s.reconciliationCents?this.money(s.reconciliationCents):null,
                 forecastWarning:s.monthlyManualReview?'Plus/minus manuali: saldo mensile escluso dalla stima.':(s.forecastMissingDates?s.forecastMissingDates+' voci senza data escluse dalla previsione.':(!s.monthlyPreviewAvailable?'Saldo mensile riservato agli amministratori.':null))};
