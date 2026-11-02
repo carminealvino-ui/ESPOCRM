@@ -108,7 +108,7 @@ class InvitoWorkflow
 
         $s->execute([$supplierId]);$ids=$s->fetchAll(\PDO::FETCH_COLUMN);
         // Archived source rows remain owned by the active documentary settlement.
-        $doc=$this->em->getPDO()->prepare("SELECT DISTINCT l.provvigione_id FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id AND i.deleted=0 JOIN invito_a_fatturare_item d ON d.invito_id=i.id AND d.deleted=0 AND d.voce_automatica='saldoDocumentale' WHERE l.deleted=1 AND l.description LIKE '[SALDO-DOCUMENTALE]%' AND l.provvigione_id IS NOT NULL AND i.stato<>'Annullato' AND i.fornitore_partner_id=?");
+        $doc=$this->em->getPDO()->prepare("SELECT DISTINCT l.provvigione_id FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id AND i.deleted=0 JOIN invito_a_fatturare_item d ON d.invito_id=i.id AND d.deleted=0 AND (d.voce_automatica='saldoDocumentale' OR d.voce_automatica LIKE 'saldoDocumentale:%') WHERE l.deleted=1 AND l.description LIKE '[SALDO-DOCUMENTALE]%' AND l.provvigione_id IS NOT NULL AND i.stato<>'Annullato' AND i.fornitore_partner_id=?");
         $doc->execute([$supplierId]);return array_values(array_unique(array_merge($ids,$doc->fetchAll(\PDO::FETCH_COLUMN))));
 
     }
@@ -289,13 +289,18 @@ class InvitoWorkflow
 
         }
 
-        // Preserve an explicitly recorded supplier-document settlement; do not derive it from current contract prices.
-        if (isset($existing['saldoDocumentale'])) {
-            if ($i->get('arielIncludiSaldoMensile')) throw new BadRequest('Il saldo del documento e gia registrato: non sommare anche il saldo mensile automatico.');
-            $doc=$existing['saldoDocumentale'];$raw=$doc->get('importoConsolidato');
-            if ($doc->get('tipo')!=='Saldo Plus/Minus documentale' || $doc->get('provvigioneId') || $doc->get('contrattoId') || !is_numeric($raw) || !is_finite((float)$raw) || abs((float)$raw)>100000000 || abs((float)$raw-round((float)$raw,2))>0.000001) throw new BadRequest('Saldo documentale non valido.');
-            $components['saldoDocumentale']=[];
-            foreach (['name','tipo','description','importoConsolidato','importoOriginaleInvito','importoOriginaleInvitoCurrency','importoPrevistoRiga','importoPrevistoRigaCurrency'] as $field) $components['saldoDocumentale'][$field]=$doc->get($field);
+        // Preserve recorded documentary amounts and per-contract source rows, independently of current prices.
+        foreach ($existing as $key=>$doc) {
+            if ($key!=='saldoDocumentale' && !str_starts_with($key,'saldoDocumentale:')) continue;
+            if ($i->get('arielIncludiSaldoMensile')) throw new BadRequest('Le voci documentali sono gia registrate: non sommare anche il saldo mensile automatico.');
+            $raw=$doc->get('importoConsolidato');$detail=str_starts_with($key,'saldoDocumentale:');
+            if ($doc->get('provvigioneId') || !is_numeric($raw) || !is_finite((float)$raw) || abs((float)$raw)>100000000 || abs((float)$raw-round((float)$raw,2))>0.000001) throw new BadRequest('Importo documentale non valido.');
+            if ($detail) {
+                $q=$doc->get('contrattoId') ? $this->em->getEntityById('Quote',$doc->get('contrattoId')) : null;
+                if (!$q || $q->get('fornitorePartnerId')!==$i->get('fornitorePartnerId') || $key!=='saldoDocumentale:'.$q->getId() || !in_array($doc->get('tipo'),['Plus Provvigionale','Minus Provvigionale'],true) || !is_numeric($doc->get('importoBaseCalcolo')) || (float)$doc->get('tassoProvvigioni')!==35.0) throw new BadRequest('Dettaglio documentale non valido.');
+            } elseif ($doc->get('tipo')!=='Saldo Plus/Minus documentale' || $doc->get('contrattoId')) throw new BadRequest('Saldo documentale non valido.');
+            $components[$key]=[];
+            foreach (['name','tipo','contrattoId','baseCalcolo','importoBaseCalcolo','importoBaseCalcoloCurrency','tassoProvvigioni','description','importoConsolidato','importoOriginaleInvito','importoOriginaleInvitoCurrency','importoPrevistoRiga','importoPrevistoRigaCurrency'] as $field) $components[$key][$field]=$doc->get($field);
         }
         foreach($existing as $key=>$line)if(!isset($components[$key]))$this->em->removeEntity($line,$skip);
 
