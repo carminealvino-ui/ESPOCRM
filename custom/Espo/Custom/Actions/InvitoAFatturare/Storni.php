@@ -105,6 +105,7 @@ class Storni
   return isset($client['contract']) ? $client['id'].':'.$client['contract']['id'] : 'missing:'.$line->getId();
  }
  public function client(Entity $line): array {
+  if ($line->get('voceAutomatica')==='integrazioneDocumentale') return ['id'=>'integrazione:'.$line->get('invitoId'),'name'=>'Integrazione documentata · causale da classificare'];
   if ($line->get('voceAutomatica')==='saldoDocumentale') return ['id'=>'documento:'.$line->get('invitoId'),'name'=>'Saldo Plus/Minus da prospetto GDL'];
   $qid=$line->get('contrattoId');
   if (!$qid && $line->get('provvigioneId')) $qid=$this->em->getEntityById('Provvigione',$line->get('provvigioneId'))?->get('contrattoId');

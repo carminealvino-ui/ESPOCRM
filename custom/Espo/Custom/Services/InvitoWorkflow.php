@@ -292,7 +292,8 @@ class InvitoWorkflow
         // Preserve recorded documentary amounts and per-contract source rows, independently of current prices.
         foreach ($existing as $key=>$doc) {
             $adjustment=str_starts_with($key,'rettificaDocumentale:');
-            if ($key!=='saldoDocumentale' && !str_starts_with($key,'saldoDocumentale:') && !$adjustment) continue;
+            $unclassified=$key==='integrazioneDocumentale';
+            if ($key!=='saldoDocumentale' && !str_starts_with($key,'saldoDocumentale:') && !$adjustment && !$unclassified) continue;
             if ($i->get('arielIncludiSaldoMensile')) throw new BadRequest('Le voci documentali sono gia registrate: non sommare anche il saldo mensile automatico.');
             $raw=$doc->get('importoConsolidato');$detail=str_starts_with($key,'saldoDocumentale:') || $adjustment;
             if ($doc->get('provvigioneId') || !is_numeric($raw) || !is_finite((float)$raw) || abs((float)$raw)>100000000 || abs((float)$raw-round((float)$raw,2))>0.000001) throw new BadRequest('Importo documentale non valido.');
@@ -302,9 +303,11 @@ class InvitoWorkflow
                 if ($adjustment) {
                     if ($doc->get('tipo')!=='Rettifica provvigioni' || $doc->get('movimento')!=='Storno' || $doc->get('tassoProvvigioni')!==null) throw new BadRequest('Rettifica documentale non valida.');
                 } elseif (!in_array($doc->get('tipo'),['Plus Provvigionale','Minus Provvigionale'],true) || !is_numeric($doc->get('importoBaseCalcolo')) || !in_array((float)$doc->get('tassoProvvigioni'),[35.0,100.0],true)) throw new BadRequest('Dettaglio documentale non valido.');
+            } elseif ($unclassified) {
+                if ($doc->get('tipo')!=='Integrazione da classificare' || $doc->get('contrattoId') || $doc->get('movimento')!=='Addebito') throw new BadRequest('Integrazione documentale non valida.');
             } elseif ($doc->get('tipo')!=='Saldo Plus/Minus documentale' || $doc->get('contrattoId')) throw new BadRequest('Saldo documentale non valido.');
             $components[$key]=[];
-            foreach (['name','tipo','movimento','contrattoId','baseCalcolo','importoBaseCalcolo','importoBaseCalcoloCurrency','tassoProvvigioni','description','importoConsolidato','importoOriginaleInvito','importoOriginaleInvitoCurrency','importoPrevistoRiga','importoPrevistoRigaCurrency'] as $field) $components[$key][$field]=$doc->get($field);
+            foreach (['name','tipo','movimento','tipoLiquidazione','contrattoId','baseCalcolo','importoBaseCalcolo','importoBaseCalcoloCurrency','tassoProvvigioni','description','importoConsolidato','importoOriginaleInvito','importoOriginaleInvitoCurrency','importoPrevistoRiga','importoPrevistoRigaCurrency'] as $field) $components[$key][$field]=$doc->get($field);
         }
         foreach($existing as $key=>$line)if(!isset($components[$key]))$this->em->removeEntity($line,$skip);
 
