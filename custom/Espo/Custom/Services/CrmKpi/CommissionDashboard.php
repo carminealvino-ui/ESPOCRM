@@ -250,12 +250,12 @@ class CommissionDashboard
             foreach ($invoices as $i) if ($i->get('fornitorePartnerId')===$supplier && $i->get('meseCompetenza')===$month && $i->get('arielIncludiSaldoMensile')) $owned=true;
             if ($owned || isset($manualMonthly[$supplier][$month])) continue;
             $preview=$this->ariel->previewSettlement($supplier,$month);
-            // The circular specifies full recovery of uncompensated losses after 30 days.
+            // Keep the provisional loss at 35%; full recovery requires a later deadline review.
             // This is a projection only: no invoice or ledger is changed here.
-            $preview->set('arielAddebitoMinus',min(0,(float)$preview->get('arielSaldoMinusPlus')));
+            $preview->set('arielAddebitoMinus',-round(max(0,-(float)$preview->get('arielSaldoMinusPlus'))*0.35,2));
             $date=ArielInvoicePolicy::calendar($month)['arielDataCaricamento'];
             foreach (['arielProvvigionePlus'=>['plus','Quota plus dopo compensazione mensile'],
-                'arielAddebitoMinus'=>['minus','Minus residuo: recupero integrale se non compensato entro 30 giorni'],
+                'arielAddebitoMinus'=>['minus','Minus residuo presuntivo al 35%; scadenza da verificare'],
                 'arielPremioProduzione'=>['bonus','Premio produzione mensile']] as $field=>[$category,$label]) {
                 $part=$this->cents($preview->get($field));
                 if ($part) $this->forecastAdd($forecast,$supplier,$date,'Competenza '.substr($month,0,7).' · caricamento '.$date,$part,

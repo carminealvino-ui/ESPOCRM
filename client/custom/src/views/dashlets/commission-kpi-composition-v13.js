@@ -91,7 +91,7 @@ define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/da
                     const available=!!f.settlement;
                     const st=f.settlement||{month:(f.label||'').match(/\d{4}-\d{2}/)?.[0]||'',records:[]};
                     detail.settlement={month:st.month,unavailable:!available,estimated:!!st.estimated,warnings:st.warnings,rows:this.detailRows(st),
-                        totals:[['Plus lordi','arielPlusLordo'],['Minus lordi','arielMinusLordo'],['Compensazione commerciale','arielCompensato'],['Saldo commerciale','arielSaldoMinusPlus'],['Quota plus provvigionale (35%)','arielProvvigionePlus'],['Minus residuo: stima recupero integrale dopo 30 giorni','arielAddebitoMinus'],['Premio produzione presuntivo','arielPremioProduzione']].map(([label,k])=>({label,value:available?this.money(st[k]):'Da calcolare'}))};
+                        totals:[['Plus lordi','arielPlusLordo'],['Minus lordi','arielMinusLordo'],['Compensazione commerciale','arielCompensato'],['Saldo commerciale','arielSaldoMinusPlus'],['Quota plus provvigionale (35%)','arielProvvigionePlus'],['Minus residuo presuntivo (35%)','arielAddebitoMinus'],['Premio produzione presuntivo','arielPremioProduzione']].map(([label,k])=>({label,value:available?this.money(st[k]):'Da calcolare'}))};
                 }
             }
             this.createView('commissionDetail','custom:views/modals/commission-kpi-detail-v2',{detail}).then(view=>{this.listenTo(view,'saved',()=>this.loadSummary());view.render();});
