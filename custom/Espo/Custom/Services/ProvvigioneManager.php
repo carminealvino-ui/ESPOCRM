@@ -519,7 +519,7 @@ class ProvvigioneManager
     }
 
     /**
-     * Ariel legacy (scalette minus fino al 22/02/2026 incluso):
+     * Ariel legacy (scalette minus fino al 25/01/2026 incluso):
      * % su imponibile per fascia sconto su prezzo codice + plus 50% oltre codice.
      *
      * @param array<string, mixed> $context

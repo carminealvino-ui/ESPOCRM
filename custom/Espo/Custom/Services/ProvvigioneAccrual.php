@@ -11,7 +11,7 @@ use DateTimeImmutable;
 class ProvvigioneAccrual
 {
     /** Contratti con data < cutover usano scalette minus (ARIEL_LEGACY). */
-    public const ARIEL_2026_CUTOVER = '2026-02-23';
+    public const ARIEL_2026_CUTOVER = '2026-01-26';
 
     private const LIQUIDATION_DAYS = [
         'ENEL 2024' => 40,
@@ -48,7 +48,7 @@ class ProvvigioneAccrual
 
     /**
      * GDL + brand Ariel → regime in base alla data commerciale.
-     * Scalette minus (ARIEL_LEGACY) se data < 23/02/2026; altrimenti ARIEL_2026.
+     * Scalette minus (ARIEL_LEGACY) se data < 26/01/2026; altrimenti ARIEL_2026.
      */
     public function resolveRegimeFromCommercial(
         ?object $category,
