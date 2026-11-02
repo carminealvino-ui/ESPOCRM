@@ -108,8 +108,11 @@ class InvitoWorkflow
 
         $s->execute([$supplierId]);$ids=$s->fetchAll(\PDO::FETCH_COLUMN);
         // Archived source rows remain owned by the active documentary settlement.
-        $doc=$this->em->getPDO()->prepare("SELECT DISTINCT l.provvigione_id FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id AND i.deleted=0 JOIN invito_a_fatturare_item d ON d.invito_id=i.id AND d.deleted=0 AND (d.voce_automatica='saldoDocumentale' OR d.voce_automatica LIKE 'saldoDocumentale:%') WHERE l.deleted=1 AND l.description LIKE '[SALDO-DOCUMENTALE]%' AND l.provvigione_id IS NOT NULL AND i.stato<>'Annullato' AND i.fornitore_partner_id=?");
-        $doc->execute([$supplierId]);return array_values(array_unique(array_merge($ids,$doc->fetchAll(\PDO::FETCH_COLUMN))));
+        $doc=$this->em->getPDO()->prepare("SELECT DISTINCT l.provvigione_id FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id AND i.deleted=0 JOIN invito_a_fatturare_item d ON d.invito_id=i.id AND d.deleted=0 AND (d.voce_automatica='saldoDocumentale' OR d.voce_automatica LIKE 'saldoDocumentale:%' OR d.voce_automatica LIKE 'venditaDocumentale:%') WHERE l.deleted=1 AND l.description LIKE '[SALDO-DOCUMENTALE]%' AND l.provvigione_id IS NOT NULL AND i.stato<>'Annullato' AND i.fornitore_partner_id=?");
+        $doc->execute([$supplierId]);$ids=array_merge($ids,$doc->fetchAll(\PDO::FETCH_COLUMN));
+        // A documented total sales commission replaces its automatic base/bonus components.
+        $sales=$this->em->getPDO()->prepare("SELECT DISTINCT p.id FROM provvigione p JOIN invito_a_fatturare_item d ON d.contratto_id=p.contratto_id AND d.deleted=0 AND d.voce_automatica LIKE 'venditaDocumentale:%' JOIN invito_a_fatturare i ON i.id=d.invito_id AND i.deleted=0 AND i.stato<>'Annullato' WHERE p.deleted=0 AND p.fornitore_partner_id=? AND p.tipo IN ('Provvigione Base','Bonus Ordine Completo','Bonus (Sabato-Domenica)','Referenza Personale','Bonus Taxi')");
+        $sales->execute([$supplierId]);return array_values(array_unique(array_merge($ids,$sales->fetchAll(\PDO::FETCH_COLUMN))));
 
     }
 
@@ -292,15 +295,18 @@ class InvitoWorkflow
         // Preserve recorded documentary amounts and per-contract source rows, independently of current prices.
         foreach ($existing as $key=>$doc) {
             $adjustment=str_starts_with($key,'rettificaDocumentale:');
+            $sales=str_starts_with($key,'venditaDocumentale:');
             $unclassified=$key==='integrazioneDocumentale';
-            if ($key!=='saldoDocumentale' && !str_starts_with($key,'saldoDocumentale:') && !$adjustment && !$unclassified) continue;
+            if ($key!=='saldoDocumentale' && !str_starts_with($key,'saldoDocumentale:') && !$adjustment && !$unclassified && !$sales) continue;
             if ($i->get('arielIncludiSaldoMensile')) throw new BadRequest('Le voci documentali sono gia registrate: non sommare anche il saldo mensile automatico.');
-            $raw=$doc->get('importoConsolidato');$detail=str_starts_with($key,'saldoDocumentale:') || $adjustment;
+            $raw=$doc->get('importoConsolidato');$detail=str_starts_with($key,'saldoDocumentale:') || $adjustment || $sales;
             if ($doc->get('provvigioneId') || !is_numeric($raw) || !is_finite((float)$raw) || abs((float)$raw)>100000000 || abs((float)$raw-round((float)$raw,2))>0.000001) throw new BadRequest('Importo documentale non valido.');
             if ($detail) {
                 $q=$doc->get('contrattoId') ? $this->em->getEntityById('Quote',$doc->get('contrattoId')) : null;
-                if (!$q || $q->get('fornitorePartnerId')!==$i->get('fornitorePartnerId') || $key!==($adjustment?'rettificaDocumentale:':'saldoDocumentale:').$q->getId()) throw new BadRequest('Contratto documentale non valido.');
-                if ($adjustment) {
+                if (!$q || $q->get('fornitorePartnerId')!==$i->get('fornitorePartnerId') || $key!==($sales?'venditaDocumentale:':($adjustment?'rettificaDocumentale:':'saldoDocumentale:')).$q->getId()) throw new BadRequest('Contratto documentale non valido.');
+                if ($sales) {
+                    if ($doc->get('tipo')!=='Provvigione vendita' || $doc->get('movimento')!=='Addebito' || !is_numeric($doc->get('importoBaseCalcolo')) || (float)$doc->get('importoBaseCalcolo')<0 || !is_numeric($doc->get('tassoProvvigioni')) || (float)$doc->get('tassoProvvigioni')<0 || (float)$doc->get('tassoProvvigioni')>100 || (float)$raw<0) throw new BadRequest('Provvigione vendita documentale non valida.');
+                } elseif ($adjustment) {
                     if ($doc->get('tipo')!=='Rettifica provvigioni' || $doc->get('movimento')!=='Storno' || $doc->get('tassoProvvigioni')!==null) throw new BadRequest('Rettifica documentale non valida.');
                 } elseif (!in_array($doc->get('tipo'),['Plus Provvigionale','Minus Provvigionale'],true) || !is_numeric($doc->get('importoBaseCalcolo')) || !in_array((float)$doc->get('tassoProvvigioni'),[35.0,100.0],true)) throw new BadRequest('Dettaglio documentale non valido.');
             } elseif ($unclassified) {
