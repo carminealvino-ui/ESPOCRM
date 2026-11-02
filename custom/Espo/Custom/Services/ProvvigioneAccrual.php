@@ -11,17 +11,19 @@ use DateTimeImmutable;
 class ProvvigioneAccrual
 {
     /** Contratti con data < cutover usano scalette minus (ARIEL_LEGACY). */
-    public const ARIEL_2026_CUTOVER = '2026-01-23';
+    public const ARIEL_2026_CUTOVER = '2026-02-23';
 
     private const LIQUIDATION_DAYS = [
-        'SOLUTION_ENEL_GETTONE' => 40,
-        'GFB_FASTWEB_POD' => 60,
-        'GFB_VODAFONE_COEFF' => 0,
-        'GFB_RS_BIMESTRE' => 0,
-        'ARIEL_2026' => 0,
-        'ARIEL_LEGACY' => 0,
-        'ARQUATI_PNC' => 0,
+        'ENEL 2024' => 40,
+        'FASTWEB ENERGIA' => 60,
+        'VODAFONE - INFLOW (Coefficiente)' => 0,
+        'VODAFONE - Revenue Sharing' => 0,
+        'ARIEL 2026' => 0,
+        'ARIEL 2025' => 0,
+        'ARQUATI 2023' => 0,
         'GENERICO' => 0,
+        'ARTEL' => 0,
+        'PROGETTO' => 0,
     ];
 
     public function resolveRegimeFromCategory(?object $category): string
@@ -39,14 +41,14 @@ class ProvvigioneAccrual
         $gruppo = $category->get('gruppoProvvigione');
 
         return match ($gruppo) {
-            'Tende da Sole', 'Pergole', 'Vetrate', 'Clima e altro' => 'ARQUATI_PNC',
+            'Tende da Sole', 'Pergole', 'Vetrate', 'Clima e altro' => 'ARQUATI 2023',
             default => 'GENERICO',
         };
     }
 
     /**
      * GDL + brand Ariel → regime in base alla data commerciale.
-     * Scalette minus (ARIEL_LEGACY) se data < 23/01/2026; altrimenti ARIEL_2026.
+     * Scalette minus (ARIEL_LEGACY) se data < 23/02/2026; altrimenti ARIEL_2026.
      */
     public function resolveRegimeFromCommercial(
         ?object $category,
@@ -57,16 +59,21 @@ class ProvvigioneAccrual
         $brand = strtoupper(trim((string) $productBrandName));
         $partner = strtoupper(trim((string) $fornitorePartnerName));
 
+        if ($brand === 'ARTEL' || $partner === 'AMG') return 'ARTEL';
+        if ($brand === 'PROGETTO' || $partner === 'PROGETTO') return 'PROGETTO';
+
         if (str_contains($brand, 'ARIEL') || str_contains($partner, 'GDL')) {
             return $this->resolveArielRegimeByDate($referenceDate);
         }
 
-        if ($category && $category->get('regimeProvvigione') === 'ARIEL_2026') {
-            return 'ARIEL_2026';
+        if ($partner === 'ARQUATI' || $brand === 'ARQUATI') return 'ARQUATI 2023';
+
+        if ($category && $category->get('regimeProvvigione') === 'ARIEL 2026') {
+            return 'ARIEL 2026';
         }
 
-        if ($category && $category->get('regimeProvvigione') === 'ARIEL_LEGACY') {
-            return 'ARIEL_LEGACY';
+        if ($category && $category->get('regimeProvvigione') === 'ARIEL 2025') {
+            return 'ARIEL 2025';
         }
 
         return $this->resolveRegimeFromCategory($category);
@@ -75,18 +82,18 @@ class ProvvigioneAccrual
     public function resolveArielRegimeByDate(?string $referenceDate): string
     {
         if (!$referenceDate) {
-            return 'ARIEL_2026';
+            return 'ARIEL 2026';
         }
 
         try {
             $date = new DateTimeImmutable(substr($referenceDate, 0, 10));
         } catch (\Exception) {
-            return 'ARIEL_2026';
+            return 'ARIEL 2026';
         }
 
         $cutover = new DateTimeImmutable(self::ARIEL_2026_CUTOVER);
 
-        return $date < $cutover ? 'ARIEL_LEGACY' : 'ARIEL_2026';
+        return $date < $cutover ? 'ARIEL 2025' : 'ARIEL 2026';
     }
 
     public function resolveEventDate(?string $dataAttivazione, ?string $dataInstallazione): ?string
@@ -149,8 +156,8 @@ class ProvvigioneAccrual
         }
 
         return match ($regime) {
-            'ARIEL_2026', 'ARIEL_LEGACY' => round($imponibile * 0.15, 2),
-            'GFB_VODAFONE_COEFF' => round($imponibile * 2.0, 2),
+            'ARIEL 2026', 'ARIEL 2025' => round($imponibile * 0.15, 2),
+            'VODAFONE - INFLOW (Coefficiente)' => round($imponibile * 2.0, 2),
             default => null,
         };
     }
