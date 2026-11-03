@@ -6,7 +6,7 @@
 <p><strong>Provvigioni maturate (box 1):</strong> posizioni ancora aperte su tutto lo storico, al netto degli acconti, con finanziamento approvato o in valutazione, già installati oppure con acconto almeno del 15%. Annullati, recessi e finanziamenti respinti sono esclusi. <strong>In pagamento:</strong> installazione effettuata o acconto almeno pari al 15% del contratto, secondo le regole applicabili; incluse le quote già pagate. Il solo finanziamento in valutazione o approvato non soddisfa la soglia dell’acconto. <strong>Da andare in pagamento:</strong> condizioni ancora da soddisfare. <strong>Residuo:</strong> importi non pagati, comprese le quote da maturare. Plus/minus ARIEL a saldo mensile sono separati dalla maturazione individuale: non sommare queste misure come fossero tutte disponibili.</p>
 <p><strong>Previsione:</strong> intero portafoglio del brand, indipendente dal periodo contratti. Esclude pagato e quote già in inviti aperti. La card somma la prima scadenza futura di ciascun fornitore; gli arretrati restano nel calendario. Per ARIEL la data indica il caricamento, non il pagamento; plus/minus compensati e premio mensile sono stimati per ogni mese di competenza disponibile, una sola volta. Gli importi contrattuali plus/minus e il saldo da fatturare sono misure differenti.</p>
 {{else}}
-{{#if total}}<p><strong>{{total}}</strong> · {{count}} {{#if contracts}}contratti{{else}}record{{/if}}{{#if limited}} · Mostrati i primi 100; il totale comprende tutti i record{{/if}}</p>{{/if}}
+{{#if total}}<p><strong>{{total}}</strong> · {{count}} {{#if contracts}}contratti{{else}}record{{/if}}{{#if monthlyCount}} · {{monthlyCount}} quote mensili stimate{{/if}}{{#if limited}} · Mostrati i primi 100; il totale comprende tutti i record{{/if}}</p>{{/if}}
 {{#if reversals}}
 <div style="max-height:65vh;overflow:auto"><table class="table table-condensed" style="width:100%;table-layout:fixed"><colgroup><col style="width:38%"><col style="width:31%"><col style="width:31%"></colgroup><thead><tr><th>Provvigione</th><th>Invito importo originario</th><th>Invito storno</th></tr></thead><tbody>
 {{#each rows}}<tr><td colspan="3" style="padding-top:14px"><a href="{{url}}"><strong>{{name}}</strong></a></td></tr>
@@ -20,7 +20,22 @@
 <table class="table table-condensed" style="table-layout:fixed;width:100%;margin-top:6px"><colgroup><col style="width:46%"><col style="width:18%"><col style="width:18%"><col style="width:18%"></colgroup><tbody>{{#each lines}}<tr><td>{{name}}{{#if isReversal}} · Storno{{/if}}<br><a class="small" href="{{invoiceUrl}}">{{invoiceName}}</a><br><small>{{reviewState}}</small> <button type="button" class="btn btn-link btn-sm" data-action="reviewGdl" data-id="{{lineId}}">Gestisci</button>{{#if reviewNotes}}<div class="small" style="white-space:pre-wrap">{{reviewNotes}}</div>{{/if}}</td><td style="white-space:nowrap;text-align:right">{{expected}}</td><td style="white-space:nowrap;text-align:right">{{invited}}</td><td style="white-space:nowrap;text-align:right">{{difference}}</td></tr>{{/each}}</tbody></table>
 </div>{{else}}<p>Nessuna differenza rilevata.</p>{{/each}}</div>
 {{else}}
+{{#if groupedContracts}}
+<div style="max-height:65vh;overflow:auto">
+<table class="table table-striped"><thead><tr><th>Contratto</th><th>Data prevista</th><th>Composizione</th><th style="text-align:right">Totale contratto</th></tr></thead><tbody>
+{{#each rows}}<tr><td><a href="{{url}}">{{name}}</a></td><td style="white-space:nowrap">{{date}}</td><td><small>{{parts}}</small><br><small class="text-muted">{{status}}</small></td><td style="text-align:right;white-space:nowrap"><strong>{{value}}</strong></td></tr>{{else}}<tr><td colspan="4">Nessun contratto.</td></tr>{{/each}}
+</tbody><tfoot><tr><th colspan="3">Totale contratti</th><th style="text-align:right;white-space:nowrap">{{contractsTotal}}</th></tr></tfoot></table>
+{{#if monthlyCount}}
+<h4>Saldi e premi mensili stimati</h4>
+<p class="text-muted">Queste quote si riferiscono al saldo Plus/Minus dell'intero mese, dopo la compensazione, o al premio di produzione mensile. Sono separate dai singoli contratti e sono già comprese nel totale generale. Vanno confrontate con il prospetto GDL prima di inserirle in un invito.</p>
+<table class="table table-striped"><thead><tr><th>Voce</th><th>Competenza</th><th>Verifica</th><th style="text-align:right">Importo stimato</th></tr></thead><tbody>
+{{#each monthlyRows}}<tr><td>{{name}}</td><td style="white-space:nowrap">{{month}}</td><td><small>{{status}}</small></td><td style="text-align:right;white-space:nowrap">{{value}}</td></tr>{{/each}}
+</tbody><tfoot><tr><th colspan="3">Totale quote mensili stimate</th><th style="text-align:right;white-space:nowrap">{{monthlyTotal}}</th></tr></tfoot></table>
+{{/if}}
+</div>
+{{else}}
 <div style="max-height:60vh;overflow:auto"><table class="table table-striped"><thead><tr><th>Record / fornitore</th><th>Data</th><th>Stato / composizione</th><th style="text-align:right">Importo</th></tr></thead><tbody>{{#each rows}}<tr><td>{{#if url}}<a href="{{url}}">{{name}}</a>{{else}}{{name}}{{/if}}</td><td style="white-space:nowrap">{{date}}</td><td>{{status}}{{#if categoryLabel}} · {{categoryLabel}}{{/if}}{{#if parts}}<br><small>{{parts}}</small>{{/if}}</td><td style="text-align:right;white-space:nowrap">{{value}}</td></tr>{{else}}<tr><td colspan="4">Nessun record.</td></tr>{{/each}}</tbody></table></div>
+{{/if}}
 {{#if commissionTotal}}<p style="text-align:right"><strong>Totale provvigioni e premi: {{commissionTotal}}</strong></p>{{/if}}
 {{#if settlement}}
 <h4>Dettaglio plus/minus e premio · competenza {{settlement.month}}</h4>

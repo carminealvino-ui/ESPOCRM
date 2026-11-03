@@ -30,7 +30,7 @@ define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/da
         money:function(cents){return(Number(cents||0)/100).toLocaleString('it-IT',{style:'currency',currency:'EUR',useGrouping:true});},
         nextForecast:function(){const map=new Map();(this.summary?.forecast||[]).forEach((f,index)=>{if(!f.overdue&&(!map.has(f.supplierId)||f.date<map.get(f.supplierId).date))map.set(f.supplierId,{...f,index});});return[...map.values()];},
         detailRows:function(bucket){return(bucket.records||[]).map(r=>({...r,value:this.money(Math.round(r.amount*100)),categoryLabel:categories[r.category]||'',url:r.id&&r.entityType?'#'+encodeURIComponent(r.entityType)+'/view/'+encodeURIComponent(r.id):null}));},
-        contractRows:function(bucket){return this.detailRows({records:Object.values(bucket.contracts||{})}).map(r=>({...r,parts:Object.entries(r.components||{}).map(([k,v])=>(categories[k]||k)+': '+this.money(v)).join(' · ')}));},
+        contractRows:function(bucket){return this.detailRows({records:Object.values(bucket.contracts||{})}).sort((a,b)=>(a.name||'').localeCompare(b.name||'','it',{numeric:true,sensitivity:'base'})).map(r=>({...r,parts:Object.entries(r.components||{}).map(([k,v])=>(categories[k]||k)+': '+this.money(v)).join(' · ')}));},
         showDetail:function(type,key,category){
             if(type==='nextForecast' && this.nextForecast().length===1)return this.showDetail('forecast',this.nextForecast()[0].index);
             const s=this.summary||{},m=s.metrics||{};let detail;
@@ -65,6 +65,19 @@ define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/da
                 if(!bucket)return;
                 detail={title,total:this.money(bucket.cents),count:bucket.count,limited:bucket.count>bucket.records.length,rows:this.detailRows(bucket)};
                 if(type==='period'||type==='lifetime'||type==='snapshot'||type==='column'||type==='liquidation'||(type==='metric'&&key==='senzaData')){detail.rows=this.contractRows(bucket);detail.count=bucket.contractCount||0;detail.contracts=true;detail.limited=false;if(bucket.monthlyRows)detail.rows.push(...bucket.monthlyRows);}
+                if(type==='metric'&&['arretrati','senzaData','inesigibili'].includes(key)){
+                    const monthly=(bucket.records||[]).filter(r=>!r.id&&!r.contractId);
+                    detail.groupedContracts=true;detail.rows=this.contractRows(bucket);detail.contracts=true;
+                    detail.count=bucket.contractCount||0;detail.limited=false;detail.generalTotal=detail.total;
+                    detail.contractsTotal=this.money(Object.values(bucket.contracts||{}).reduce((sum,r)=>sum+Math.round(r.amount*100),0));
+                    detail.monthlyRows=this.detailRows({records:monthly}).map(r=>{
+                        let month='';if(/^\d{4}-\d{2}-\d{2}$/.test(r.date||'')){const d=new Date(r.date+'T00:00:00Z');d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()-1);month=d.toISOString().slice(0,7);}
+                        return {...r,name:r.category==='bonus'?'Premio di produzione mensile stimato':'Saldo Plus/Minus mensile stimato',month,
+                            status:'Presuntivo: da confrontare con il prospetto GDL del mese.'};
+                    }).sort((a,b)=>(a.month||'').localeCompare(b.month||''));
+                    detail.monthlyCount=monthly.length;
+                    detail.monthlyTotal=this.money(monthly.reduce((sum,r)=>sum+Math.round(r.amount*100),0));
+                }
                 if(type==='metric'&&key==='daVerificare'){
                     detail.differences=true;detail.contracts=true;detail.count=bucket.contractCount||bucket.count;
                     detail.rows=(bucket.records||[]).map(r=>({...r,url:'#Quote/view/'+encodeURIComponent(r.id),expected:this.money(r.expectedCents),invited:this.money(r.invitedCents),difference:this.money(r.differenceCents),absolute:this.money(r.absoluteCents),
