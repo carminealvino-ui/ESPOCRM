@@ -205,7 +205,18 @@ class CommissionDashboard
             if (!$line->get('provvigioneId') || !isset($invoices[$line->get('invitoId')])) continue;
             $lines[$line->get('provvigioneId')][]=$line;
         }
-        $forecast=[]; $monthlySuppliers=[]; $missing=0; $manualMonthly=[];
+        // Imported supplier settlements own their competence month even when
+        // the documentary total has no canonical commission ID.
+        $documentaryMonths=[];
+        foreach ($this->allRows('InvitoAFatturareItem') as $line) {
+            $invoice=$invoices[$line->get('invitoId')]??null;
+            $key=(string)$line->get('voceAutomatica');
+            if (!$invoice || !($key==='saldoDocumentale' || str_starts_with($key,'saldoDocumentale:'))) continue;
+            $month=substr((string)$invoice->get('meseCompetenza'),0,7).'-01';
+            $supplier=(string)$invoice->get('fornitorePartnerId');
+            if ($supplier && preg_match('/^\d{4}-\d{2}-01$/',$month)) $documentaryMonths[$supplier][$month]=true;
+        }
+        $forecast=[]; $monthlySuppliers=[]; $missing=0; $manualMonthly=$documentaryMonths;
         foreach ($this->allRows('Provvigione') as $p) {
             if (isset($excluded[$p->getId()])) continue;
             $qid=$p->get('contrattoId');
@@ -602,9 +613,10 @@ class CommissionDashboard
     private function excludedPositions(): array
     {
         if ($this->summaryCacheActive && $this->summaryExcluded!==null) return $this->summaryExcluded;
-        $invoices=[];$months=[];$direct=[];$automatic=[];$excluded=[];
+        $invoices=[];$months=[];$direct=[];$automatic=[];$excluded=[];$suppliers=[];
         foreach ($this->em->getRDBRepository('InvitoAFatturare')->where(['stato!='=>'Annullato'])->find() as $i) {
             $invoices[$i->getId()]=true;
+            if ($i->get('fornitorePartnerId')) $suppliers[$i->get('fornitorePartnerId')]=true;
             if ($i->get('arielIncludiSaldoMensile')) $months[$i->get('fornitorePartnerId').'|'.substr((string)$i->get('meseCompetenza'),0,7)]=true;
         }
         foreach ($this->allRows('InvitoAFatturareItem') as $line) {
@@ -612,6 +624,10 @@ class CommissionDashboard
             if ($line->get('provvigioneId')) $direct[$line->get('provvigioneId')]=true;
             if ($line->get('voceAutomatica') && $line->get('contrattoId')) $automatic[$line->get('contrattoId').'|'.$line->get('tipo')]=true;
         }
+        // Use the same replacement/membership guards as the invoice picker:
+        // a documented sales total replaces base, order-complete and sales bonuses,
+        // not unrelated production awards or outstanding components.
+        foreach(array_keys($suppliers) as $supplier) foreach($this->workflow->reservedCommissionIds($supplier) as $id) $direct[$id]=true;
         foreach ($this->allRows('Provvigione') as $p) {
             $state=$p->get('statoProvvigione');
             $exclude=isset($direct[$p->getId()]) || isset($automatic[$p->get('contrattoId').'|'.$p->get('tipo')]) || self::isFinanciallyClosed($state)
