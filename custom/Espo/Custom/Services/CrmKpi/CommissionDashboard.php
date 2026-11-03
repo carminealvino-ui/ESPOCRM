@@ -19,6 +19,58 @@ class CommissionDashboard
     public function __construct(private EntityManager $em, private AclManager $acl,
         private CrmKpiService $kpi, private ArielInvitiService $ariel, private InvitoWorkflow $workflow) {}
 
+    private bool $summaryCacheActive=false;
+    private array $summaryRows=[];
+    private array $summaryEntities=[];
+    private ?array $summaryCommissionGroups=null;
+    private ?array $summaryLineCounts=null;
+    private ?array $summaryExcluded=null;
+
+    private function allRows(string $type): array
+    {
+        if (!$this->summaryCacheActive) return iterator_to_array($this->em->getRDBRepository($type)->find(),false);
+        if (!array_key_exists($type,$this->summaryRows)) {
+            $this->summaryRows[$type]=iterator_to_array($this->em->getRDBRepository($type)->find(),false);
+            foreach($this->summaryRows[$type] as $entity)$this->summaryEntities[$type][$entity->getId()]=$entity;
+        }
+        return $this->summaryRows[$type];
+    }
+
+    private function entityById(string $type, ?string $id): ?Entity
+    {
+        if (!$id) return null;
+        if (!$this->summaryCacheActive) return $this->em->getEntityById($type,$id);
+        if (!array_key_exists($id,$this->summaryEntities[$type]??[])) $this->summaryEntities[$type][$id]=$this->em->getEntityById($type,$id);
+        return $this->summaryEntities[$type][$id];
+    }
+
+    private function commissionsForQuote(string $id, ?string $type=null): array
+    {
+        if (!$this->summaryCacheActive) {
+            $where=['contrattoId'=>$id];if($type!==null)$where['tipo']=$type;
+            return iterator_to_array($this->em->getRDBRepository('Provvigione')->where($where)->find(),false);
+        }
+        if ($this->summaryCommissionGroups===null) {
+            $this->summaryCommissionGroups=[];
+            foreach($this->allRows('Provvigione') as $p)$this->summaryCommissionGroups[$p->get('contrattoId')][]=$p;
+        }
+        $rows=$this->summaryCommissionGroups[$id]??[];
+        return $type===null?$rows:array_values(array_filter($rows,fn($p)=>$p->get('tipo')===$type));
+    }
+
+    private function invoiceLineCount(string $id): int
+    {
+        if ($this->summaryCacheActive) {
+            if ($this->summaryLineCounts===null) {
+                $this->summaryLineCounts=[];
+                $sql="SELECT l.provvigione_id,COUNT(*) n FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id AND i.deleted=0 AND i.stato!='Annullato' WHERE l.deleted=0 GROUP BY l.provvigione_id";
+                foreach($this->em->getPDO()->query($sql)->fetchAll(\PDO::FETCH_ASSOC) as $row)$this->summaryLineCounts[$row['provvigione_id']]=(int)$row['n'];
+            }
+            return $this->summaryLineCounts[$id]??0;
+        }
+        $s=$this->em->getPDO()->prepare("SELECT COUNT(*) FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id AND i.deleted=0 AND i.stato!='Annullato' WHERE l.provvigione_id=? AND l.deleted=0");$s->execute([$id]);return (int)$s->fetchColumn();
+    }
+
     private function cents(mixed $amount): int { return (int) round(100 * (float) $amount); }
     public static function position(int $expected, int $paid, int $reserved, bool $closed): array
     {
@@ -58,7 +110,7 @@ class CommissionDashboard
     private function readable(User $u, Entity $e): bool { return $this->acl->check($u, $e, 'read'); }
     private function row(Entity $e, string $type, ?string $date=null): array
     {
-        $contract=$type==='Provvigione' && $e->get('contrattoId') ? $this->em->getEntityById('Quote',$e->get('contrattoId')) : null;
+        $contract=$type==='Provvigione' && $e->get('contrattoId') ? $this->entityById('Quote',$e->get('contrattoId')) : null;
         return ['contractId'=>$contract?->getId(),'contractName'=>$contract?->get('name'),'id'=>$e->getId(), 'entityType'=>$type, 'name'=>$e->get('name') ?: $e->getId(), 'date'=>$date];
     }
     private function requireFields(User $u): void
@@ -83,6 +135,8 @@ class CommissionDashboard
     public function summary(User $user, string $period, ?string $brand, ?string $dateFrom=null, ?string $dateTo=null): object
     {
         $this->requireFields($user);
+        $this->summaryCacheActive=true;
+        try {
         $excluded=$this->excludedPositions();
         [$from,$to] = [null,null]; // Total portfolio snapshot, independent of contract month.
         $funnelPeriod=DateRange::normalizePeriod($period);
@@ -98,13 +152,13 @@ class CommissionDashboard
         $activeIds=[];$paymentIds=[];
         $quoteMap=[]; $selected=[];
         foreach ($this->kpi->commissionDashboardQuotes($user,new KpiContext(null,null,$brand)) as $item) {
-            $q=$item['entity']; $quoteMap[$q->getId()]=$item;
+            $q=$item['entity']; $quoteMap[$q->getId()]=$item; $this->summaryEntities['Quote'][$q->getId()]=$q;
             $date=$q->get('dateQuoted');
             if (($from && (!$date || $date<$from)) || ($to && (!$date || $date>$to))) continue;
             $selected[$q->getId()]=true;
             $rowSum=0; $rowCount=0;
             // Verify commission row access before allowing the inherited contract total.
-            foreach ($this->em->getRDBRepository('Provvigione')->where(['contrattoId'=>$q->getId()])->find() as $p) {
+            foreach ($this->commissionsForQuote($q->getId()) as $p) {
                 if (isset($excluded[$p->getId()])) continue;
                 $rowCount++;
                 if (!$this->readable($user,$p)) throw new Forbidden('Accesso parziale alle provvigioni del contratto.');
@@ -147,12 +201,12 @@ class CommissionDashboard
         $invoices=[];
         foreach ($this->em->getRDBRepository('InvitoAFatturare')->where(['stato!='=>'Annullato'])->find() as $i) $invoices[$i->getId()]=$i;
         $lines=[];
-        foreach ($this->em->getRDBRepository('InvitoAFatturareItem')->find() as $line) {
+        foreach ($this->allRows('InvitoAFatturareItem') as $line) {
             if (!$line->get('provvigioneId') || !isset($invoices[$line->get('invitoId')])) continue;
             $lines[$line->get('provvigioneId')][]=$line;
         }
         $forecast=[]; $monthlySuppliers=[]; $missing=0; $manualMonthly=[];
-        foreach ($this->em->getRDBRepository('Provvigione')->find() as $p) {
+        foreach ($this->allRows('Provvigione') as $p) {
             if (isset($excluded[$p->getId()])) continue;
             $qid=$p->get('contrattoId');
             if (!isset($quoteMap[$qid]) || !$this->readable($user,$p)) continue;
@@ -267,7 +321,7 @@ class CommissionDashboard
             $events=json_decode($preview->get('arielSnapshot') ?: '[]',true,512,JSON_THROW_ON_ERROR);
             $forecast[$key]['settlement']=['month'=>substr($month,0,7),'estimated'=>true,'warnings'=>$preview->get('arielAnomalie'),'records'=>[]];
             foreach ($events as $event) {
-                $q=$this->em->getEntityById('Quote',$event['quoteId']);
+                $q=$this->entityById('Quote',$event['quoteId']);
                 if (!$q || !$this->readable($user,$q)) throw new Forbidden();
                 $forecast[$key]['settlement']['records'][]=['id'=>$q->getId(),'entityType'=>'Quote','name'=>$event['name'],
                     'date'=>$event['date'],'amount'=>$event['grossCents']/100,
@@ -277,7 +331,7 @@ class CommissionDashboard
                 $forecast[$key]['settlement'][$field]=$this->cents($preview->get($field));
         }
         foreach ($forecast as &$f) {
-            $supplier=$this->em->getEntityById('FornitorePartner',$f['supplierId']);
+            $supplier=$this->entityById('FornitorePartner',$f['supplierId']);
             $f['supplierName']=$supplier && $this->readable($user,$supplier) ? $supplier->get('name') : 'Fornitore';
             $f['overdue']=$f['date']<$today;
         }
@@ -329,7 +383,7 @@ class CommissionDashboard
         foreach ($quoteMap as $qid=>$item) {
             $q=$item['entity'];
             if ($q->get('status')==='Invalido' || (!in_array($q->get('statoContratto'),['Sospeso','Sospesa'],true) && !in_array($q->get('status'),['Sospeso','Sospesa'],true))) continue;
-            foreach ($this->em->getRDBRepository('Provvigione')->where(['contrattoId'=>$qid])->find() as $p) {
+            foreach ($this->commissionsForQuote($qid) as $p) {
                 if (isset($excluded[$p->getId()])) continue;
                 if (!$this->readable($user,$p)) throw new Forbidden();
                 $category=self::category($p->get('tipo'));
@@ -344,7 +398,7 @@ class CommissionDashboard
         $b['senzaData']=$this->bucket();
         foreach ($groups as &$group) $group['senzaData']=$this->bucket();
         unset($group);
-        foreach ($this->em->getRDBRepository('Provvigione')->find() as $p) {
+        foreach ($this->allRows('Provvigione') as $p) {
             if (isset($excluded[$p->getId()]) || !$this->readable($user,$p) || $this->ariel->monthlyOnly($p)) continue;
             $item=$quoteMap[$p->get('contrattoId')] ?? null;
             if (!$item || in_array($item['bucket'],['recessi','finanziamentiRifiutati'],true)) continue;
@@ -363,13 +417,17 @@ class CommissionDashboard
             $this->addMetric($b,$groups,$row['category'],'senzaData',$amount,$row);
         }
         $b['daVerificare']=$this->invitationDifferences($user,$brand,$invoices);
-        $brandEntity=$brand ? $this->em->getEntityById('ProductBrand',$brand) : null;
+        $brandEntity=$brand ? $this->entityById('ProductBrand',$brand) : null;
         return (object)['from'=>$from,'to'=>$to,'today'=>$today,'brandName'=>$brandEntity?->get('name'),
             'liquidation'=>array_merge($this->paymentSummary($user,$quoteMap,$invoices,$excluded,$today),$this->reversalSummary($user,$quoteMap,$invoices)),'report'=>$report,'reportGroups'=>$reportGroups,
             'periodFunnel'=>$this->periodFunnel($user,$quoteMap,$funnelFrom,$funnelTo),'funnelPeriod'=>['period'=>$funnelPeriod,'from'=>$funnelFrom,'to'=>$funnelTo],'lifetimeFunnel'=>$this->lifetimeFunnel($user,$quoteMap,$invoices,$today),'openFunnel'=>$this->openFunnel($user,$brand,$quoteMap,$invoices),'metrics'=>$b,'groups'=>$groups,'forecast'=>array_values($forecast),'forecastMissingDates'=>$missing,
             'monthlyPreviewAvailable'=>$user->isAdmin(),
             'monthlyManualReview'=>count($manualMonthly),
             'reconciliationCents'=>$b['netti']['cents']-$b['maturate']['cents']-$b['daMaturare']['cents']-$b['mensili']['cents']-$b['inesigibili']['cents']];
+        } finally {
+            $this->summaryCacheActive=false;$this->summaryRows=[];$this->summaryEntities=[];
+            $this->summaryCommissionGroups=null;$this->summaryLineCounts=null;$this->summaryExcluded=null;
+        }
     }
 
     /** Reconciliation deliberately includes invited/closed positions, independently of the portfolio exclusion. */
@@ -385,30 +443,28 @@ class CommissionDashboard
             if (!$ids) { $result['contractCount']=0; return $result; }
             $lines=$lines->where(['id'=>$ids]);
         }
-        foreach ($lines->find() as $line) {
+        foreach (($contractId===null?$this->allRows('InvitoAFatturareItem'):$lines->find()) as $line) {
             $i=$invoices[$line->get('invitoId')] ?? null;
             if (!$i) continue;
-            $p=$line->get('provvigioneId') ? $this->em->getEntityById('Provvigione',$line->get('provvigioneId')) : null;
+            $p=$line->get('provvigioneId') ? $this->entityById('Provvigione',$line->get('provvigioneId')) : null;
             if (!$p && $line->get('provvigioneId')) {
                 $query=$this->em->getQueryBuilder()->select()->from('Provvigione')->withDeleted()->where(['id'=>$line->get('provvigioneId')])->build();
                 foreach ($this->em->getRDBRepository('Provvigione')->clone($query)->find() as $archived) {$p=$archived;break;}
             }
             $qid=$line->get('contrattoId') ?: $p?->get('contrattoId');
-            $q=$qid ? $this->em->getEntityById('Quote',$qid) : null;
+            $q=$qid ? $this->entityById('Quote',$qid) : null;
             if (!$q || ($brand && $q->get('productBrandId')!==$brand)) continue;
             if ($contractId && $qid!==$contractId) continue;
             if (!$this->readable($user,$q) || !$this->readable($user,$line) || !$this->readable($user,$i) || ($p && !$this->readable($user,$p))) throw new Forbidden('Accesso parziale al confronto degli inviti.');
             $expected=$line->get('importoPrevistoRiga');$source='Conteggio CRM conservato nella riga';
             if ($p && $line->get('movimento')==='Addebito' && in_array($line->get('tipoLiquidazione'),['Saldo','Da verificare'],true) && $p->get('importo')!==null) {
-                $count=$this->em->getPDO()->prepare("SELECT COUNT(*) FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id AND i.deleted=0 AND i.stato!='Annullato' WHERE l.provvigione_id=? AND l.deleted=0");
-                $count->execute([$p->getId()]);
-                if ((int)$count->fetchColumn()===1) {$expected=$p->get('importo');$source='Conteggio CRM attuale';}
+                if ($this->invoiceLineCount($p->getId())===1) {$expected=$p->get('importo');$source='Conteggio CRM attuale';}
             }
             if ($expected===null) {
                 if ($p) $expected=$p->get('importo') ?? $p->get('importoConsolidato');
                 elseif ($line->get('contrattoId') && $line->get('tipo')) {
                     $expected=null;
-                    foreach ($this->em->getRDBRepository('Provvigione')->where(['contrattoId'=>$qid,'tipo'=>$line->get('tipo')])->find() as $component) {
+                    foreach ($this->commissionsForQuote($qid,$line->get('tipo')) as $component) {
                         if (!$this->readable($user,$component)) throw new Forbidden();
                         $expected=($expected ?? 0)+(float)($component->get('importo') ?? $component->get('importoConsolidato'));
                     }
@@ -448,11 +504,11 @@ class CommissionDashboard
 
     private function reversalSummary(User $user, array $quotes, array $invoices): array
     {
-        $b=['stornate'=>$this->bucket(),'daStornare'=>$this->bucket()];$positions=[];$charges=[];$allLines=$this->em->getRDBRepository('InvitoAFatturareItem')->find();
+        $b=['stornate'=>$this->bucket(),'daStornare'=>$this->bucket()];$positions=[];$charges=[];$allLines=$this->allRows('InvitoAFatturareItem');
         foreach ($allLines as $candidate) if ($candidate->get('movimento')==='Addebito' && isset($invoices[$candidate->get('invitoId')]) && $candidate->get('provvigioneId')) $charges[$candidate->get('provvigioneId')][]=$candidate;
         foreach ($allLines as $line) {
             $i=$invoices[$line->get('invitoId')] ?? null;if (!$i) continue;
-            $p=$line->get('provvigioneId') ? $this->em->getEntityById('Provvigione',$line->get('provvigioneId')) : null;
+            $p=$line->get('provvigioneId') ? $this->entityById('Provvigione',$line->get('provvigioneId')) : null;
             if (!$p && $line->get('provvigioneId')) {
                 $query=$this->em->getQueryBuilder()->select()->from('Provvigione')->withDeleted()->where(['id'=>$line->get('provvigioneId')])->build();
                 foreach ($this->em->getRDBRepository('Provvigione')->clone($query)->find() as $archived) {$p=$archived;break;}
@@ -468,7 +524,7 @@ class CommissionDashboard
             if ($isReversal) {
                 $originId=$line->get('rigaOrigineId');$origins=[];
                 if ($originId) {
-                    $origin=$this->em->getEntityById('InvitoAFatturareItem',$originId);
+                    $origin=$this->entityById('InvitoAFatturareItem',$originId);
                     if ($origin) $origins[]=$origin;
                 } else {
                     foreach ($charges[$line->get('provvigioneId')] ?? [] as $candidate) {
@@ -477,7 +533,7 @@ class CommissionDashboard
                 }
                 $detail=$row+['commissionType'=>$line->get('tipo') ?: $p?->get('tipo'),'reversalId'=>$i->getId(),'reversalName'=>$i->get('name'),'reversalCents'=>$value,'origins'=>[],'explicitOrigin'=>(bool)$originId];
                 foreach ($origins as $origin) {
-                    $originalInvoice=$this->em->getEntityById('InvitoAFatturare',$origin->get('invitoId'));
+                    $originalInvoice=$this->entityById('InvitoAFatturare',$origin->get('invitoId'));
                     if (!$originalInvoice) continue;
                     if (!$this->readable($user,$origin) || !$this->readable($user,$originalInvoice)) throw new Forbidden('Accesso parziale agli inviti originari.');
                     $detail['origins'][]=['id'=>$originalInvoice->getId(),'name'=>$originalInvoice->get('name'),'cents'=>$this->cents($origin->get('importoConsolidato'))];
@@ -508,12 +564,12 @@ class CommissionDashboard
     {
         $result=array_fill_keys(['pagate','recessi','finanziamentiKo','maturate','daMaturare'],$this->bucket());
         $invited=[];$automatic=[];
-        foreach ($this->em->getRDBRepository('InvitoAFatturareItem')->find() as $line) {
+        foreach ($this->allRows('InvitoAFatturareItem') as $line) {
             if (!isset($invoices[$line->get('invitoId')])) continue;
             if ($line->get('provvigioneId')) $invited[$line->get('provvigioneId')]=true;
             if ($line->get('voceAutomatica') && $line->get('contrattoId')) $automatic[$line->get('contrattoId').'|'.$line->get('tipo')]=true;
         }
-        foreach ($this->em->getRDBRepository('Provvigione')->find() as $p) {
+        foreach ($this->allRows('Provvigione') as $p) {
             $item=$quotes[$p->get('contrattoId')] ?? null;
             if (!$item || !$this->readable($user,$p) || $this->ariel->monthlyOnly($p)) continue;
             if (isset($invited[$p->getId()]) || isset($automatic[$p->get('contrattoId').'|'.$p->get('tipo')])) continue;
@@ -545,17 +601,18 @@ class CommissionDashboard
     /** Exclude membership, not just paid amounts: drafts and unpaid invitations reserve the entire position. */
     private function excludedPositions(): array
     {
+        if ($this->summaryCacheActive && $this->summaryExcluded!==null) return $this->summaryExcluded;
         $invoices=[];$months=[];$direct=[];$automatic=[];$excluded=[];
         foreach ($this->em->getRDBRepository('InvitoAFatturare')->where(['stato!='=>'Annullato'])->find() as $i) {
             $invoices[$i->getId()]=true;
             if ($i->get('arielIncludiSaldoMensile')) $months[$i->get('fornitorePartnerId').'|'.substr((string)$i->get('meseCompetenza'),0,7)]=true;
         }
-        foreach ($this->em->getRDBRepository('InvitoAFatturareItem')->find() as $line) {
+        foreach ($this->allRows('InvitoAFatturareItem') as $line) {
             if (!isset($invoices[$line->get('invitoId')])) continue;
             if ($line->get('provvigioneId')) $direct[$line->get('provvigioneId')]=true;
             if ($line->get('voceAutomatica') && $line->get('contrattoId')) $automatic[$line->get('contrattoId').'|'.$line->get('tipo')]=true;
         }
-        foreach ($this->em->getRDBRepository('Provvigione')->find() as $p) {
+        foreach ($this->allRows('Provvigione') as $p) {
             $state=$p->get('statoProvvigione');
             $exclude=isset($direct[$p->getId()]) || isset($automatic[$p->get('contrattoId').'|'.$p->get('tipo')]) || self::isFinanciallyClosed($state)
                 || ($state!=='Acconto provvigionale' && ($p->get('dataPagamento') || $p->get('dataLiquidazioneEffettiva')));
@@ -565,6 +622,7 @@ class CommissionDashboard
             }
             if ($exclude) $excluded[$p->getId()]=true;
         }
+        if ($this->summaryCacheActive) $this->summaryExcluded=$excluded;
         return $excluded;
     }
 
@@ -597,7 +655,7 @@ class CommissionDashboard
             $included=['totali'=>true,'lordi'=>!$recesso,'valide'=>!$recesso&&!$ko,
                 'netti'=>$item['bucket']==='netti','recessi'=>$recesso,'finanziamentiKo'=>$ko,'sospesi'=>$sospeso];
             $count=0;
-            foreach ($this->em->getRDBRepository('Provvigione')->where(['contrattoId'=>$q->getId()])->find() as $p) {
+            foreach ($this->commissionsForQuote($q->getId()) as $p) {
                 if (!$this->readable($user,$p)) throw new Forbidden('Accesso parziale alle provvigioni del periodo.');
                 $count++;
                 $category=self::category($p->get('tipo'));
@@ -620,12 +678,12 @@ class CommissionDashboard
         $metrics=array_fill_keys(['totali','finanziamentiOk','recessi','finanziamentiKo','netti','pagate'],$this->bucket());
         $groups=array_fill_keys(['provvigioni','plus','minus','bonus','altre','nonAttribuite'],$metrics);
         $linked=[];
-        foreach ($this->em->getRDBRepository('InvitoAFatturareItem')->find() as $line) {
+        foreach ($this->allRows('InvitoAFatturareItem') as $line) {
             $i=$invoices[$line->get('invitoId')] ?? null;
             if (!$i) continue;
             if ($line->get('provvigioneId')) $linked[$line->get('provvigioneId')]=true;
             if ($i->get('stato')!=='Pagato') continue;
-            $p=$line->get('provvigioneId') ? $this->em->getEntityById('Provvigione',$line->get('provvigioneId')) : null;
+            $p=$line->get('provvigioneId') ? $this->entityById('Provvigione',$line->get('provvigioneId')) : null;
             if (!$p && $line->get('provvigioneId')) {
                 $query=$this->em->getQueryBuilder()->select()->from('Provvigione')->withDeleted()->where(['id'=>$line->get('provvigioneId')])->build();
                 foreach($this->em->getRDBRepository('Provvigione')->clone($query)->find() as $archived){$p=$archived;break;}
@@ -645,7 +703,7 @@ class CommissionDashboard
             $recesso=$item['bucket']==='recessi';
             $ko=!$recesso && $item['bucket']==='finanziamentiRifiutati';
             $ok=!$recesso && !$ko && $q->get('statoFinanziamento')==='Approvato';
-            foreach ($this->em->getRDBRepository('Provvigione')->where(['contrattoId'=>$q->getId()])->find() as $p) {
+            foreach ($this->commissionsForQuote($q->getId()) as $p) {
                 if (!$this->readable($user,$p)) throw new Forbidden('Accesso parziale alle provvigioni storiche.');
                 $count++;
                 $category=self::category($p->get('tipo'));
@@ -682,17 +740,17 @@ class CommissionDashboard
         $groups=array_fill_keys(['provvigioni','plus','minus','bonus','altre'],$metrics);
         $snapshot=array_fill_keys(['provvigioniMaturate','bonusMaturati','plusMinusMaturati','sospese'],$this->bucket());
         $direct=[]; $automatic=[]; $reversed=[];
-        foreach ($this->em->getRDBRepository('InvitoAFatturareItem')->find() as $line) {
+        foreach ($this->allRows('InvitoAFatturareItem') as $line) {
             $i=$invoices[$line->get('invitoId')] ?? null;
             if (!$i) continue;
             if ($line->get('rigaOrigineId') && $i->get('stato')==='Pagato') $reversed[$line->get('rigaOrigineId')]=true;
             if ($line->get('provvigioneId')) $direct[$line->get('provvigioneId')][]=$line;
             elseif ($line->get('voceAutomatica') && $line->get('contrattoId')) $automatic[$line->get('contrattoId').'|'.$line->get('tipo')][]=$line;
         }
-        foreach ($this->em->getRDBRepository('Provvigione')->find() as $p) {
+        foreach ($this->allRows('Provvigione') as $p) {
             if (isset($excluded[$p->getId()])) continue;
             if (!$this->readable($user,$p)) continue;
-            $q=$p->get('contrattoId') ? $this->em->getEntityById('Quote',$p->get('contrattoId')) : null;
+            $q=$p->get('contrattoId') ? $this->entityById('Quote',$p->get('contrattoId')) : null;
             if ($q && !$this->readable($user,$q)) continue;
             if ($brand && ($q?->get('productBrandId') ?: $p->get('productBrandId'))!==$brand) continue;
             $state=$p->get('statoProvvigione');
