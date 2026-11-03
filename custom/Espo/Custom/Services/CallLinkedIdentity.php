@@ -47,7 +47,15 @@ class CallLinkedIdentity
         }
         $actual=[];
         foreach ($patch as $field=>$value) if ($call->get($field)!==$value) $actual[$field]=$value;
-        if ($actual && !$dryRun) {$call->set($actual);$this->em->saveEntity($call,['skipHooks'=>true,'skipFormula'=>true,'silent'=>true]);}
+        if ($actual && !$dryRun) {
+            $columns=['name'=>'name','telefono'=>'telefono','whatsAppNumero'=>'whats_app_numero','prospectId'=>'prospect_id','opportunityId'=>'opportunity_id'];
+            $sets=[];$values=[];
+            foreach($actual as $field=>$value)if(isset($columns[$field])){$sets[]='`'.$columns[$field].'`=?';$values[]=$value;}
+            // Update only intended columns: legacy Call repositories may otherwise
+            // normalize dateEnd/duration even when hooks and formulas are skipped.
+            if($sets){$sets[]='modified_at=?';$values[]=gmdate('Y-m-d H:i:s');$values[]=$call->getId();$q=$this->em->getPDO()->prepare('UPDATE `call` SET '.implode(',',$sets).' WHERE id=? AND deleted=0');$q->execute($values);}
+            $call->set($actual);
+        }
         return $actual;
     }
 
