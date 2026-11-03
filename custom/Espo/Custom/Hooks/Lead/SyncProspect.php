@@ -41,6 +41,19 @@ class SyncProspect implements AfterSave
             $actual=[];
             foreach ($patch as $field=>$value) if ($prospect->get($field)!==$value) $actual[$field]=$value;
             if (!$actual) continue;
+            // Preserve the initial Prospect identity once, before the first rename.
+            // Courtesy-title/contact-only edits must not create a name-history note.
+            if (!$lead->isNew() && array_intersect(['name','firstName','lastName'],array_keys($actual))) {
+                $oldName=trim((string)$prospect->get('name'));
+                $newName=trim((string)$lead->get('name'));
+                $normalize=static fn(string $name):string=>mb_strtoupper(preg_replace('/\s+/u',' ',trim($name)));
+                $description=(string)$prospect->get('description');
+                $marker='[NOMINATIVO ORIGINARIO]';
+                if ($oldName!=='' && $newName!=='' && $normalize($oldName)!==$normalize($newName) && !str_contains($description,$marker)) {
+                    $date=(new \DateTimeImmutable('now',new \DateTimeZone('Europe/Rome')))->format('d/m/Y H:i');
+                    $actual['description']=rtrim($description).($description!==''?"\n\n":'').$marker.' Registrato inizialmente come: '.$oldName.'. Conservato al cambio nome del Lead del '.$date.'.';
+                }
+            }
             $prospect->set($actual);
             // Run normal Prospect normalization and appointment hooks; the reverse
             // identity hook saves its Lead with skipHooks, preventing recursion.
