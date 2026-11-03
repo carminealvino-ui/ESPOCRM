@@ -188,6 +188,7 @@ class LeadProspectSync
         }
 
         $scalarFields = [
+            'salutationName',
             'firstName',
             'lastName',
             'name',
@@ -324,7 +325,9 @@ class LeadProspectSync
         Entity $lead,
         bool $onlyEmpty = true
     ): bool {
-        $name = $this->resolveDisplayName($lead);
+        $prospect = $this->findProspectForLead($lead);
+        $business = (bool) ($prospect ? $prospect->get('b2B') : $lead->get('b2B'));
+        $name = $business && $prospect ? trim((string) $prospect->get('ragioneSociale')) : $this->resolveDisplayName($lead);
 
         $data = [
             'name' => $name ?: 'Cliente da lead',
@@ -344,8 +347,9 @@ class LeadProspectSync
             'whatsApp' => $lead->get('whatsApp'),
             'partitaIVA' => $lead->get('partitaIVA'),
             'originalLeadId' => $lead->getId(),
-            'segmento' => $lead->get('segmento') ?: 'B2C',
-            'type' => 'B2C',
+            'segmento' => $business ? 'B2B' : 'B2C',
+            'type' => $business ? 'B2B' : 'B2C',
+            'b2B' => $business,
         ];
 
         $patch = [];
@@ -355,7 +359,7 @@ class LeadProspectSync
                 continue;
             }
 
-            if ($onlyEmpty && $account->get($key)) {
+            if ($onlyEmpty && $account->get($key) && !in_array($key, ['type', 'segmento', 'b2B'], true)) {
                 continue;
             }
 
