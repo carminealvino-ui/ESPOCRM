@@ -61,7 +61,35 @@ class AppuntamentoPendingCallCreator
         self::$rememberedLeadIds[$appuntamentoId] = $leadId;
     }
 
+    /** Serializza controllo e creazione per evitare duplicati da richieste simultanee. */
+    private function withCallCreationLock(string $sourceKey, callable $operation): ?string
+    {
+        $pdo = $this->entityManager->getPDO();
+        $key = 'crm-call-' . sha1($sourceKey);
+        $statement = $pdo->prepare('SELECT GET_LOCK(?, 10)');
+        $statement->execute([$key]);
+        if ((int) $statement->fetchColumn() !== 1) {
+            throw new \RuntimeException('Creazione richiamo occupata. Riprovare tra pochi secondi.');
+        }
+        try {
+            return $operation();
+        } finally {
+            $release = $pdo->prepare('SELECT RELEASE_LOCK(?)');
+            $release->execute([$key]);
+        }
+    }
+
     public function createIfNeeded(
+        Entity $appuntamento,
+        ?\DateTimeImmutable $notBefore = null,
+        ?string $leadIdOverride = null
+    ): ?string {
+        if (!$appuntamento->getId()) return $this->fail('appuntamento senza id');
+        return $this->withCallCreationLock('pending:' . $appuntamento->getId(),
+            fn () => $this->createIfNeededLocked($appuntamento, $notBefore, $leadIdOverride));
+    }
+
+    private function createIfNeededLocked(
         Entity $appuntamento,
         ?\DateTimeImmutable $notBefore = null,
         ?string $leadIdOverride = null
@@ -86,13 +114,17 @@ class AppuntamentoPendingCallCreator
             return $this->fail('appuntamento senza id');
         }
 
-        $existingCallId = $this->findExistingPlannedPendingCallId($appuntamentoId);
+        // Un appuntamento Pending genera un solo contatto automatico nel suo
+        // intero ciclo di vita. I richiami successivi passano dai flag di
+        // rinvio e hanno una nota Auto-Richiamo separata.
+        $existingCallId = $this->findExistingCallId($appuntamentoId);
 
         if ($existingCallId) {
             $this->syncCallOwnerFromAppuntamento($existingCallId, $appuntamento);
             $existingCall = $this->entityManager->getEntityById('Call', $existingCallId);
 
             if ($existingCall) {
+                (new CallLinkedIdentity($this->entityManager))->syncCall($existingCall);
                 $this->syncPopupRemindersSafe($existingCall);
             }
 
@@ -253,6 +285,7 @@ class AppuntamentoPendingCallCreator
             return $this->fail('salvataggio Call senza id');
         }
 
+        (new CallLinkedIdentity($this->entityManager))->syncCall($call);
         $this->syncPopupRemindersSafe($call);
 
         $this->log->info(
@@ -288,8 +321,8 @@ class AppuntamentoPendingCallCreator
             return 'appuntamento senza id';
         }
 
-        if ($this->findExistingPlannedPendingCallId($appuntamentoId)) {
-            return 'call pianificata già presente';
+        if ($this->findExistingCallId($appuntamentoId)) {
+            return 'call automatica già presente';
         }
 
         $prospect = $this->resolveProspect($appuntamento);
@@ -336,6 +369,13 @@ class AppuntamentoPendingCallCreator
     }
 
     public function createRichiamoIfNeeded(Entity $appuntamento): ?string
+    {
+        if (!$appuntamento->getId()) return null;
+        return $this->withCallCreationLock('richiamo:' . $appuntamento->getId(),
+            fn () => $this->createRichiamoIfNeededLocked($appuntamento));
+    }
+
+    private function createRichiamoIfNeededLocked(Entity $appuntamento): ?string
     {
         if (!$appuntamento->get('daRichiamare')) {
             return null;
@@ -654,7 +694,9 @@ class AppuntamentoPendingCallCreator
             );
         }
 
-        $dataLabel = PendingCallDateTime::formatBusinessDateTime($appointmentInstant);
+        $dataLabel = $appointmentInstant
+            ->setTimezone(new \DateTimeZone(BusinessDateTime::BUSINESS_TIMEZONE))
+            ->format('Y/m/d H:i');
         $tipologia = trim((string) ($tipologia ?: self::TIPOLOGIA));
 
         $parentName = trim((string) $parentName);
@@ -1163,6 +1205,13 @@ class AppuntamentoPendingCallCreator
      */
     public function createFollowUpFromCall(Entity $sourceCall): ?string
     {
+        if (!$sourceCall->getId()) return null;
+        return $this->withCallCreationLock('followup:' . $sourceCall->getId(),
+            fn () => $this->createFollowUpFromCallLocked($sourceCall));
+    }
+
+    private function createFollowUpFromCallLocked(Entity $sourceCall): ?string
+    {
         if (!$sourceCall->get('daRichiamare')) {
             return null;
         }
@@ -1193,10 +1242,19 @@ class AppuntamentoPendingCallCreator
         if ($existingCallId) {
             $existingCall = $this->entityManager->getEntityById('Call', $existingCallId);
 
-            if ($existingCall && (string) $existingCall->get('dateStart') !== $dataRichiamo) {
-                $this->applyRinvioToStoredCall($existingCall, (string) $dataRichiamo, $tipologia);
-            } elseif ($existingCall) {
-                $this->syncPopupReminders($existingCall);
+            if ($existingCall) {
+                $existingCall->set('testo', $sourceCall->get('testo') ?: $this->getStandardTesto());
+
+                if ((string) $existingCall->get('dateStart') !== $dataRichiamo) {
+                    $this->applyRinvioToStoredCall($existingCall, (string) $dataRichiamo, $tipologia);
+                } else {
+                    $this->entityManager->saveEntity($existingCall, [
+                        'skipAcl' => true,
+                        'silent' => true,
+                        'skipHooks' => true,
+                    ]);
+                    $this->syncPopupReminders($existingCall);
+                }
             }
 
             return $existingCallId;
@@ -1206,7 +1264,7 @@ class AppuntamentoPendingCallCreator
         $callDateStartUtc = BusinessDateTime::businessToStorage($callInstant);
         $parentName = $sourceCall->get('parentName');
         $telefono = $sourceCall->get('telefono');
-        $name = $this->buildFollowUpCallName($sourceCall, $tipologia);
+        $name = $this->buildFollowUpCallName($sourceCall, $tipologia, $callDateStartUtc);
 
         $call = $this->entityManager->createEntity('Call');
 
@@ -1317,7 +1375,7 @@ class AppuntamentoPendingCallCreator
             $existing = $this->entityManager
                 ->getRDBRepository('Call')
                 ->where([
-                    'nota*' => $prefix . ' ' . $sourceCallId,
+                    'nota*' => $prefix . ' ' . $sourceCallId . '%',
                     'status' => 'Planned',
                 ])
                 ->findOne();
@@ -1366,7 +1424,11 @@ class AppuntamentoPendingCallCreator
             . BusinessDateTime::formatBusiness($dataRichiamo, 'd/m/Y H:i');
     }
 
-    private function buildFollowUpCallName(Entity $sourceCall, string $tipologia): string
+    private function buildFollowUpCallName(
+        Entity $sourceCall,
+        string $tipologia,
+        string $followUpDateStart
+    ): string
     {
         $name = (string) $sourceCall->get('name');
         $contactName = $this->resolveCallContactName($sourceCall);
@@ -1375,6 +1437,11 @@ class AppuntamentoPendingCallCreator
             $parts = explode(' - ', $name);
 
             if (count($parts) >= 4) {
+                // Il titolo deve mostrare la data del richiamo futuro, non
+                // quella del contatto di origine: così le due attività sono
+                // distinguibili anche nella lista.
+                $parts[0] = BusinessDateTime::formatBusiness($followUpDateStart, 'Y/m/d H:i');
+
                 if ($contactName !== '') {
                     $parts[2] = $contactName;
                 }
@@ -1618,7 +1685,7 @@ class AppuntamentoPendingCallCreator
         $existing = $this->entityManager
             ->getRDBRepository('Call')
             ->where([
-                'nota*' => self::NOTA_PREFIX . ' ' . $appuntamentoId,
+                'nota*' => self::NOTA_PREFIX . ' ' . $appuntamentoId . '%',
                 'status' => 'Planned',
             ])
             ->findOne();
@@ -1631,7 +1698,7 @@ class AppuntamentoPendingCallCreator
         $existing = $this->entityManager
             ->getRDBRepository('Call')
             ->where([
-                'nota*' => self::NOTA_PREFIX . ' ' . $appuntamentoId,
+                'nota*' => self::NOTA_PREFIX . ' ' . $appuntamentoId . '%',
             ])
             ->findOne();
 
@@ -1643,7 +1710,7 @@ class AppuntamentoPendingCallCreator
         $collection = $this->entityManager
             ->getRDBRepository('Call')
             ->where([
-                'nota*' => self::NOTA_RICHIAMO_PREFIX . ' ' . $appuntamentoId,
+                'nota*' => self::NOTA_RICHIAMO_PREFIX . ' ' . $appuntamentoId . '%',
                 'status' => 'Planned',
             ])
             ->find();
@@ -1688,7 +1755,7 @@ class AppuntamentoPendingCallCreator
             $heldByAppuntamento = $this->entityManager
                 ->getRDBRepository('Call')
                 ->where([
-                    'nota*' => self::NOTA_PREFIX . ' ' . $appuntamentoId,
+                    'nota*' => self::NOTA_PREFIX . ' ' . $appuntamentoId . '%',
                     'status' => ['Held', 'Not Held'],
                 ])
                 ->findOne();
