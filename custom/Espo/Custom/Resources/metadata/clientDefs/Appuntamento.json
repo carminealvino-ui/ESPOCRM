@@ -55,6 +55,10 @@
         "record/list": [
             "__APPEND__",
             "custom:handlers/appuntamento/held-opportunity"
+        ],
+        "record/editSmall": [
+            "__APPEND__",
+            "custom:handlers/appuntamento/held-opportunity"
         ]
     }
 }

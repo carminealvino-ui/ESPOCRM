@@ -48,6 +48,39 @@ define('custom:handlers/appuntamento/held-opportunity', [
         }
     }
 
+    async function openReschedule(host, model) {
+        const id = model.id;
+        const key = 'rifissato:' + id;
+        if (!id || active.has(key)) return;
+        active.set(key, true);
+        let opened = false;
+        try {
+            const fresh = await Espo.Ajax.getRequest('Appuntamento/' + encodeURIComponent(id));
+            if (fresh.status === 'Planned' || fresh.sottostato !== 'Rifissato') return;
+            const replacements = await Espo.Ajax.getRequest('Appuntamento', {
+                maxSize: 1, select: 'id',
+                where: [{type: 'equals', attribute: 'rifissatoDaId', value: id}]
+            });
+            if (replacements.list && replacements.list.length) return;
+            if (!host.getAcl().checkScope('Appuntamento', 'create')) {
+                Espo.Ui.warning('Esito salvato. Non hai i permessi per creare il nuovo appuntamento.');
+                return;
+            }
+            const modal = await host.createView('reschedule-' + id,
+                'custom:views/appuntamento/modals/rifissato-create', {
+                    sourceId: id, originalDateStart: fresh.dateStart
+                });
+            modal.once('remove', () => active.delete(key));
+            modal.once('after:save', () => model.trigger('update-related:appuntamenti'));
+            opened = true;
+            modal.render();
+        } catch (error) {
+            Espo.Ui.error('Esito salvato, ma non è stato possibile aprire la scelta della nuova data. Riapri e salva l’appuntamento per riprovare.');
+        } finally {
+            if (!opened) active.delete(key);
+        }
+    }
+
     return class {
         constructor(view) { this.view = view; }
         process() {
@@ -71,6 +104,10 @@ define('custom:handlers/appuntamento/held-opportunity', [
                 const request = save(attributes, options);
                 if (!request || typeof request.then !== 'function') return request;
                 return request.then(result => {
+                    if (!managed && model.id && model.get('status') !== 'Planned' &&
+                        model.get('sottostato') === 'Rifissato') {
+                        setTimeout(() => openReschedule(model._heldOpportunityHost, model), 0);
+                    }
                     if (!managed && model.get('status') === 'Held' && model.id) {
                         // Let edit-small/calendar finish closing before opening the next modal.
                         setTimeout(() => openOpportunity(model._heldOpportunityHost, model), 0);
