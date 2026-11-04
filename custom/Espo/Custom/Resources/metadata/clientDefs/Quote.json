@@ -5,12 +5,10 @@
     },
     "viewSetupHandlers": {
         "record/detail": [
-            "__APPEND__",
-            "custom:handlers/quote/crea-prodotto-articoli"
+            "__APPEND__"
         ],
         "record/edit": [
             "__APPEND__",
-            "custom:handlers/quote/crea-prodotto-articoli",
             "custom:handlers/quote/sanitize-articoli-before-save"
         ]
     },
@@ -35,7 +33,8 @@
             "selectDisabled": true,
             "unlinkDisabled": false,
             "order": 20,
-            "layout": "listSmall"
+            "layout": "listSmall",
+            "view": "custom:views/quote/record/panels/provvigioni-complete"
         }
     },
     "additionalLayouts": {
@@ -49,6 +48,9 @@
         },
         "listForProduct": {
             "type": "list"
+        },
+        "finanziamento": {
+            "type": "detail"
         }
     },
     "bottomPanels": {
@@ -67,7 +69,21 @@
                 "label": "Finanziamento",
                 "view": "custom:views/quote/record/panels/finanziamento",
                 "isForm": true,
-                "order": 10
+                "order": 10,
+                "dynamicLogicVisible": {
+                    "conditionGroup": [
+                        {
+                            "type": "isTrue",
+                            "attribute": "finanziamento"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "invitiCollegati",
+                "label": "Inviti a fatturare del contratto",
+                "view": "custom:views/quote/record/panels/inviti-collegati-v2",
+                "order": 30
             }
         ],
         "edit": [
@@ -85,7 +101,15 @@
                 "label": "Finanziamento",
                 "view": "custom:views/quote/record/panels/finanziamento",
                 "isForm": true,
-                "order": 10
+                "order": 10,
+                "dynamicLogicVisible": {
+                    "conditionGroup": [
+                        {
+                            "type": "isTrue",
+                            "attribute": "finanziamento"
+                        }
+                    ]
+                }
             }
         ],
         "detailSmall": [
@@ -103,7 +127,21 @@
                 "label": "Finanziamento",
                 "view": "custom:views/quote/record/panels/finanziamento",
                 "isForm": true,
-                "order": 10
+                "order": 10,
+                "dynamicLogicVisible": {
+                    "conditionGroup": [
+                        {
+                            "type": "isTrue",
+                            "attribute": "finanziamento"
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "invitiCollegati",
+                "label": "Inviti a fatturare del contratto",
+                "view": "custom:views/quote/record/panels/inviti-collegati-v2",
+                "order": 30
             }
         ],
         "editSmall": [
@@ -121,7 +159,15 @@
                 "label": "Finanziamento",
                 "view": "custom:views/quote/record/panels/finanziamento",
                 "isForm": true,
-                "order": 10
+                "order": 10,
+                "dynamicLogicVisible": {
+                    "conditionGroup": [
+                        {
+                            "type": "isTrue",
+                            "attribute": "finanziamento"
+                        }
+                    ]
+                }
             }
         ]
     },
@@ -159,5 +205,101 @@
             "name": "contrattiInLavorazione",
             "label": "In lavorazione"
         }
-    ]
+    ],
+    "sidePanels": {
+        "detail": [
+            {
+                "name": "incongruenzeGdl",
+                "label": "Incongruenze GDL",
+                "view": "custom:views/panels/gdl-discrepancies",
+                "order": 4
+            },
+            {
+                "name": "storicoStati",
+                "label": "Storico stati contratto",
+                "view": "custom:views/quote/record/panels/storico-stati",
+                "order": 5
+            },
+            {
+                "name": "provvigioniArchiviate",
+                "label": "Provvigioni archiviate",
+                "view": "custom:views/quote/record/panels/provvigioni-archiviate",
+                "order": 6
+            },
+            {
+                "name": "activities",
+                "reference": "activities",
+                "order": 10
+            },
+            {
+                "name": "history",
+                "reference": "history",
+                "order": 20
+            },
+            {
+                "name": "tasks",
+                "reference": "tasks",
+                "order": 30
+            }
+        ],
+        "detailSmall": [
+            {
+                "name": "incongruenzeGdl",
+                "label": "Incongruenze GDL",
+                "view": "custom:views/panels/gdl-discrepancies",
+                "order": 4
+            },
+            {
+                "name": "storicoStati",
+                "label": "Storico stati contratto",
+                "view": "custom:views/quote/record/panels/storico-stati",
+                "order": 5
+            },
+            {
+                "name": "provvigioniArchiviate",
+                "label": "Provvigioni archiviate",
+                "view": "custom:views/quote/record/panels/provvigioni-archiviate",
+                "order": 6
+            },
+            {
+                "name": "activities",
+                "reference": "activities",
+                "order": 10
+            },
+            {
+                "name": "history",
+                "reference": "history",
+                "order": 20
+            },
+            {
+                "name": "tasks",
+                "reference": "tasks",
+                "order": 30
+            }
+        ]
+    },
+    "dynamicLogic": {
+        "fields": {
+            "causaleAnnullamento": {
+                "visible": {
+                    "conditionGroup": [
+                        {
+                            "type": "equals",
+                            "attribute": "statoContratto",
+                            "value": "Annullato"
+                        }
+                    ]
+                },
+                "required": {
+                    "conditionGroup": [
+                        {
+                            "type": "equals",
+                            "attribute": "statoContratto",
+                            "value": "Annullato"
+                        }
+                    ]
+                }
+            }
+        }
+    }
 }

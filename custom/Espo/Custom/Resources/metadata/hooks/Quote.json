@@ -1,0 +1,38 @@
+{
+    "beforeSave": {
+        "globalLogic": {
+            "className": "Espo\\Custom\\Hooks\\Quote\\GlobalLogic",
+            "order": 1
+        },
+        "syncEditedCatalogPrices": {
+            "className": "Espo\\Custom\\Hooks\\Quote\\SyncEditedCatalogPrices",
+            "order": 0
+        },
+        "requireCancellationReason": {
+            "className": "Espo\\Custom\\Hooks\\Quote\\RequireCancellationReason",
+            "order": 10001
+        }
+    },
+    "afterSave": {
+        "provvigioneConsolidata": {
+            "className": "Espo\\Custom\\Hooks\\Quote\\ProvvigioneConsolidata",
+            "order": 15
+        },
+        "syncProvvigioniStato": {
+            "className": "Espo\\Custom\\Hooks\\Quote\\SyncProvvigioniStato",
+            "order": 18
+        },
+        "afterSaveTotaleProvvigioni": {
+            "className": "Espo\\Custom\\Hooks\\Quote\\AfterSaveTotaleProvvigioni",
+            "order": 20
+        },
+        "syncProductContratti": {
+            "className": "Espo\\Custom\\Hooks\\Quote\\SyncProductContratti",
+            "order": 100
+        },
+        "syncVerificaInstallazioneTask": {
+            "className": "Espo\\Custom\\Hooks\\Quote\\SyncVerificaInstallazioneTask",
+            "order": 25
+        }
+    }
+}

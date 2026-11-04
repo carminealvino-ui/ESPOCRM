@@ -24,13 +24,13 @@ define('custom:views/dashlets/sales-kpi',['custom:views/dashlets/crm-kpi-2026092
         cardPeriodLabel:function(){const p=this.summary?.cardPeriod;return p?.from?p.from+' → '+p.to:'Tutto lo storico';},
         periodStates:function(){
             const states=Object.create(null);
-            ['Totali','Annullati · Finanziamento KO','Annullati · Infattibilità tecnica','Annullati · Da classificare','Annullati · Altro','Recessi','Sospesi','In lavorazione','Chiusi'].forEach(key=>{
+            ['Totali','Annullati · Finanziamento KO','Annullati · Infattibilità tecnica','Annullati · Altro','Recessi','Sospesi','In lavorazione','Chiusi'].forEach(key=>{
                 states[key]={cents:0,count:0,records:[]};
             });
             const names={Annullato:'Annullati',Recesso:'Recessi',Sospeso:'Sospesi',Chiuso:'Chiusi'};
             (this.summary?.cardMetrics?.totali?.records||[]).forEach(row=>{
                 const key=row.status==='Annullato'
-                    ? 'Annullati · '+(['Finanziamento KO','Infattibilità tecnica','Altro'].includes(row.causaleAnnullamento)?row.causaleAnnullamento:'Da classificare')
+                    ? 'Annullati · '+(['Finanziamento KO','Infattibilità tecnica','Altro'].includes(row.causaleAnnullamento)?row.causaleAnnullamento:'Causale non indicata')
                     : names[row.status]||row.status||'Senza stato';
                 const b=states[key]||(states[key]={cents:0,count:0,records:[]});
                 const cents=Math.round(row.amount*100);
