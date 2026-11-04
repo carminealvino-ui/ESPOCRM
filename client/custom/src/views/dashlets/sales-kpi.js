@@ -1,5 +1,5 @@
 define('custom:views/dashlets/sales-kpi',['custom:views/dashlets/crm-kpi-20260924'],function(Dep){
-    const labels={totali:'Vendite totali',lordi:'Esclusi recessi',valide:'Esclusi recessi e finanziamenti KO',netti:'Vendite nette',recessi:'Recessi',finanziamentiRifiutati:'Finanziamenti KO',sospesi:'Sospesi',senzaImporto:'Contratti senza importo',senzaData:'Contratti senza data'};
+    const labels={annullati:'Altri annullati',totali:'Vendite totali',lordi:'Esclusi recessi',valide:'Esclusi recessi e finanziamenti KO',netti:'Vendite nette',recessi:'Recessi',finanziamentiRifiutati:'Finanziamenti KO',sospesi:'Sospesi',senzaImporto:'Contratti senza importo',senzaData:'Contratti senza data'};
     return Dep.extend({
         name:'SalesKpi',template:'custom:dashlets/sales-kpi',
         events:{
@@ -53,7 +53,7 @@ define('custom:views/dashlets/sales-kpi',['custom:views/dashlets/crm-kpi-2026092
                 average:this.money(s.cardMetrics?.netti?.count?Math.round(s.cardMetrics.netti.cents/s.cardMetrics.netti.count):0),conversion:s.cardMetrics?.totali?.count?((s.cardMetrics.netti?.count||0)/s.cardMetrics.totali.count*100).toLocaleString('it-IT',{maximumFractionDigits:1})+'%':'—',
                 states:Object.entries(this.periodStates()).map(([key,b])=>({key,value:this.money(b.cents),count:b.count})),
                 monthRange:recentMonths.length?recentMonths[0][0]+' → '+recentMonths[recentMonths.length-1][0]:'',
-                months:recentMonths.map(([key,b])=>({key,value:this.money(b.totali.cents),count:b.totali.count,countLabel:b.totali.count===1?'contratto':'contratti',chartValue:volume?b.totali.count:this.money(b.totali.cents),chartSecondary:volume?this.money(b.totali.cents):b.totali.count+' '+(b.totali.count===1?'contratto':'contratti'),width:Math.abs(measure(b.totali))/monthScale*100,negative:measure(b.totali)<0,segments:measure(b.totali)>0 && ['netti','sospesi','recessi','finanziamentiRifiutati'].every(k=>measure(b[k])>=0)?['netti','sospesi','recessi','finanziamentiRifiutati'].filter(k=>measure(b[k])>0).map(k=>({key:k,label:labels[k],height:measure(b[k])/measure(b.totali)*100,value:this.money(b[k].cents),count:b[k].count})):[]})),
+                months:recentMonths.map(([key,b])=>({key,value:this.money(b.totali.cents),count:b.totali.count,countLabel:b.totali.count===1?'contratto':'contratti',chartValue:volume?b.totali.count:this.money(b.totali.cents),chartSecondary:volume?this.money(b.totali.cents):b.totali.count+' '+(b.totali.count===1?'contratto':'contratti'),width:Math.abs(measure(b.totali))/monthScale*100,negative:measure(b.totali)<0,segments:measure(b.totali)>0 && ['netti','sospesi','recessi','finanziamentiRifiutati','annullati'].every(k=>measure(b[k])>=0)?['netti','sospesi','recessi','finanziamentiRifiutati','annullati'].filter(k=>measure(b[k])>0).map(k=>({key:k,label:labels[k],height:measure(b[k])/measure(b.totali)*100,value:this.money(b[k].cents),count:b[k].count})):[]})),
                 alerts:['senzaImporto','senzaData'].map(key=>({key,label:labels[key],value:this.money(s.cardMetrics?.[key]?.cents),count:s.cardMetrics?.[key]?.count||0}))};
         },
         afterRender:function(){

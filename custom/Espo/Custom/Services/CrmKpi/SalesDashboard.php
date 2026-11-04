@@ -52,9 +52,10 @@ class SalesDashboard
             if (!$row['date']) $keys[]='senzaData';
             foreach (array_unique($keys) as $key) self::add($metrics[$key],$row,$cents);
             $month=$row['date']?substr($row['date'],0,7):'Senza data';
-            $months[$month]??=array_fill_keys(['totali','netti','recessi','finanziamentiRifiutati','sospesi'],$empty);
+            $months[$month]??=array_fill_keys(['totali','netti','recessi','finanziamentiRifiutati','sospesi','annullati'],$empty);
             self::add($months[$month]['totali'],$row,$cents);
-            self::add($months[$month][$bucket],$row,$cents);
+            $monthBucket=$row['status']==='Annullato' && $bucket!=='finanziamentiRifiutati' ? 'annullati' : $bucket;
+            self::add($months[$month][$monthBucket],$row,$cents);
             $state=$row['status']?:'Senza stato'; $states[$state]??=$empty;
             self::add($states[$state],$row,$cents);
         }
