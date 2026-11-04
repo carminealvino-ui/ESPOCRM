@@ -81,6 +81,33 @@ class AppuntamentoRifissatoCreator
             }
         }
 
+        // A direct outcome save may already have moved the source to system admin.
+        // Recover only through its explicit Prospect/Lead relationship, never by name/phone.
+        $candidates = $assignedUsersIds ?: $source->getLinkMultipleIdList('assignedUsers');
+        if (!$candidates && $source->get('assignedUserId')) $candidates = [$source->get('assignedUserId')];
+        $usable = [];
+        foreach ($candidates as $userId) {
+            $user = $this->entityManager->getEntityById('User', $userId);
+            if ($user && $user->get('isActive') && $user->get('userName') !== 'admin' && $userId !== '1') $usable[] = $userId;
+        }
+        if (!$usable) {
+            $parentType = $source->get('prospectId') ? 'Prospect' : $source->get('parentType');
+            $parentId = $source->get('prospectId') ?: $source->get('parentId');
+            if ($parentId && in_array($parentType, ['Prospect', 'Lead'], true)) {
+                $parent = $this->entityManager->getEntityById($parentType, $parentId);
+                $userId = $parent?->get('assignedUserId');
+                $user = $userId ? $this->entityManager->getEntityById('User', $userId) : null;
+                if ($user && $user->get('isActive') && $user->get('userName') !== 'admin' && $userId !== '1') {
+                    $usable = [$userId];
+                }
+            }
+        }
+        if (!$usable) {
+            throw new BadRequest('Impossibile individuare il consulente: assegnare il Prospect al consulente prima di rifissare.');
+        }
+        $assignedUsersIds = array_values(array_unique($usable));
+        $new->set('assignedUserId', $assignedUsersIds[0]);
+
         $this->ensureName($source, $new);
         $this->copyTeams($source, $new);
         $this->copyAssignedUsers($source, $new, $assignedUsersIds);
@@ -92,6 +119,7 @@ class AppuntamentoRifissatoCreator
         }
 
         $new->set([
+            'rifissatoDaId' => $sourceId,
             'status' => 'Planned',
             'sottostato' => null,
             'esito' => null,
