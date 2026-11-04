@@ -18,12 +18,12 @@
         "taxAmount": "Importo Imposta",
         "taxAmountConverted": "Importo Imposta (convertito)",
         "shippingAddress": "Indirizzo di Installazione",
-        "shippingAddressCity": "Citta' (Installazione)",
-        "shippingAddressCountry": "Nazione (Installazione)",
-        "shippingAddressMap": "Mappa (Installazione)",
-        "shippingAddressPostalCode": "Codice Postale (Installazione)",
-        "shippingAddressState": "Stato (Installazione)",
-        "shippingAddressStreet": "Via (Installazione)",
+        "shippingAddressCity": " Città",
+        "shippingAddressCountry": " Nazione",
+        "shippingAddressMap": " Mappa",
+        "shippingAddressPostalCode": " Codice postale",
+        "shippingAddressState": " Provincia",
+        "shippingAddressStreet": " Via",
         "shippingContact": "Contatto Installazione",
         "shippingCost": "Costi aggiuntivi",
         "shippingCostConverted": "Costi aggiuntivi (convertito)",
@@ -40,7 +40,7 @@
         "minusPlusConverted": "Minus/Plus (Convertito)",
         "taxRate": "Tax Rate",
         "aliquotaIVA": "Aliquota IVA",
-        "billingContact": "Contraente",
+        "billingContact": "Referente fatturazione",
         "totalPrezzoCodice": "Prezzo Codice Totale",
         "totalPrezzoCodiceCurrency": "Prezzo Codice Totale (Valuta)",
         "totalPrezzoCodiceConverted": "Prezzo Codice Totale (Convertito)",
@@ -59,7 +59,7 @@
         "ordineIncompletoAriel": "Ordine incompleto Ariel (−5% provv.)",
         "status": "Stato",
         "dataInstallazione": "Data Installazione",
-        "codiceContratto": "Codice Contratto",
+        "verificaInstallazioneTask": "To-Do verifica installazione",
         "numeroContratto": "Numero Contratto",
         "venditaAbbinataAdAltroProdotto": "Vendita Abbinata ad Altro Prodotto",
         "scontoVenditaAbbinata": "% Sconto Vendita Abbinata",
@@ -79,7 +79,25 @@
         "rataPrestitoConverted": "Rata Prestito (Convertito)",
         "importoSaldo": "Importo Saldo",
         "importoSaldoCurrency": "Importo Saldo (Valuta)",
-        "importoSaldoConverted": "Importo Saldo (Convertito)"
+        "importoSaldoConverted": "Importo Saldo (Convertito)",
+        "billingAddress": "Indirizzo di fatturazione",
+        "billingAddressStreet": " Via",
+        "billingAddressCity": " Città",
+        "billingAddressState": " Provincia",
+        "billingAddressPostalCode": " Codice postale",
+        "billingAddressCountry": " Nazione",
+        "billingAddressMap": " Mappa",
+        "totaleConsolidatoInviti": "Totale netto consolidato negli inviti",
+        "bloccoOrdineAriel": "Blocco ordine Ariel (retrocessione)",
+        "dataRettificaAriel": "Data rettifica Ariel",
+        "importoPagatoInviti": "Incassato consolidato",
+        "residuoProvvigionale": "Residuo da incassare",
+        "differenzaChiusura": "Differenza di chiusura",
+        "esitoLiquidazione": "Liquidazione provvigionale",
+        "tipoLiquidazione": "Acconto / saldo / chiusura",
+        "tassoProvvigioneTotale": "Tasso Provvigionale",
+        "contractingParty": "Contraente",
+        "causaleAnnullamento": "Causale annullamento"
     },
     "links": {
         "cAP": "CAP",
@@ -90,7 +108,8 @@
         "provvigioni": "Provvigioni",
         "fornitorePartner": "Fornitore / Partner",
         "productBrand": "Brand",
-        "productCategory": "Categoria prodotto"
+        "productCategory": "Categoria prodotto",
+        "verificaInstallazioneTask": "To-Do verifica installazione"
     },
     "labels": {
         "Create Quote": "Creare un Contratto",
@@ -103,12 +122,10 @@
             "Not Available": "Non Disponibile"
         },
         "statoFinanziamento": {
-            "In attesa di OTP": "In attesa di OTP",
+            "In attesa OTP": "In attesa OTP",
             "In valutazione": "In valutazione",
-            "In attesa documentazione": "In attesa documentazione",
-            "In lavorazione": "In lavorazione",
             "In rivalutazione": "In rivalutazione",
-            "In Attesa Documentazione": "In Attesa Documentazione",
+            "In attesa di documentazione": "In attesa di documentazione",
             "Approvato": "Approvato",
             "Respinto": "Respinto",
             "Annullato": "Annullato",
@@ -116,28 +133,24 @@
         },
         "statoContratto": {
             "In lavorazione": "In lavorazione",
-            "Installato": "Installato",
             "Annullato": "Annullato",
             "": "",
             "Sospeso": "Sospeso",
             "Inserito": "Inserito",
             "Recesso": "Recesso",
-            "Appuntamento Fissato": "Appuntamento Fissato",
-            "Chiuso": "Chiuso"
+            "Chiuso": "Chiuso",
+            "In Attesa Documentazione": "In Attesa Documentazione"
         },
         "status": {
-            "Draft": "Bozza",
-            "Presented": "Presentato",
             "Bozza": "Bozza",
             "In Gestione": "In Gestione",
-            "Approved": "In Pagamento",
             "Installato": "Installato",
-            "Recesso": "Recesso",
-            "Finanziamento Rifiutato": "Finanziamento Rifiutato",
             "Invalido": "Invalido",
-            "Canceled": "Annullato",
-            "In lavorazione": "In lavorazione",
-            "Appuntamento fissato": "Appuntamento fissato"
+            "Appuntamento fissato": "Appuntamento fissato",
+            "Sospeso": "Sospeso"
         }
+    },
+    "layouts": {
+        "finanziamento": "Finanziamento"
     }
 }

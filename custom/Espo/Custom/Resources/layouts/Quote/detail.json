@@ -23,14 +23,11 @@
                 {
                     "name": "productBrand",
                     "customLabel": "Brand"
-                }
-            ],
-            [
+                },
                 {
                     "name": "productCategory",
                     "customLabel": "Categoria prodotto"
-                },
-                false
+                }
             ],
             [
                 {
@@ -41,8 +38,7 @@
                 },
                 {
                     "name": "importoContratto"
-                },
-                false
+                }
             ],
             [
                 {
@@ -53,6 +49,22 @@
                 },
                 {
                     "name": "importoCaparra"
+                }
+            ],
+            [
+                {
+                    "name": "causaleAnnullamento"
+                },
+                false,
+                false
+            ],
+            [
+                false,
+                {
+                    "name": "finanziamento"
+                },
+                {
+                    "name": "importoSaldo"
                 }
             ],
             [
@@ -68,10 +80,30 @@
         "rows": [
             [
                 {
-                    "name": "billingContact"
+                    "name": "contractingParty"
                 },
                 {
                     "name": "shippingContact"
+                }
+            ],
+            [
+                {
+                    "name": "billingPhone",
+                    "customLabel": "Telefono contraente"
+                },
+                {
+                    "name": "shippingPhone",
+                    "customLabel": "Telefono contatto installazione"
+                }
+            ],
+            [
+                {
+                    "name": "billingWhatsApp",
+                    "customLabel": "WhatsApp contraente"
+                },
+                {
+                    "name": "shippingWhatsApp",
+                    "customLabel": "WhatsApp contatto installazione"
                 }
             ],
             [
@@ -84,10 +116,10 @@
             ],
             [
                 {
-                    "name": "shippingProvider"
+                    "name": "dataInstallazione"
                 },
                 {
-                    "name": "dataInstallazione"
+                    "name": "verificaInstallazioneTask"
                 }
             ]
         ],
