@@ -40,6 +40,8 @@ class AppuntamentoRifissatoCreator
         'indirizzoState',
         'indirizzoCountry',
         'location',
+        'noteCallCenter',
+        'noteConsulente',
     ];
 
     public function __construct(
@@ -297,23 +299,21 @@ class AppuntamentoRifissatoCreator
 
     private function buildDescription(Entity $source): string
     {
+        $label = 'appuntamento rifissato';
         $dateStart = (string) $source->get('dateStart');
-
-        if ($dateStart === '') {
-            return 'appuntamento rifissato';
+        if ($dateStart !== '') {
+            try {
+                $dateTime = new \DateTime($dateStart, new \DateTimeZone('UTC'));
+                $dateTime->setTimezone(new \DateTimeZone('Europe/Rome'));
+                $label .= ' del ' . $dateTime->format('d/m/Y') . ' ore ' . $dateTime->format('H:i');
+            } catch (\Throwable) {}
         }
-
-        try {
-            $dateTime = new \DateTime($dateStart);
-        } catch (\Throwable) {
-            return 'appuntamento rifissato';
-        }
-
-        return sprintf(
-            'appuntamento rifissato del %s ore %s',
-            $dateTime->format('d/m/Y'),
-            $dateTime->format('H:i')
-        );
+        $parts = [$label];
+        $description = trim((string) $source->get('description'));
+        if ($description !== '') $parts[] = $description;
+        $outcomeNotes = trim((string) $source->get('noteEsito'));
+        if ($outcomeNotes !== '') $parts[] = "Note esito appuntamento precedente:\n" . $outcomeNotes;
+        return implode("\n\n", $parts);
     }
 
     private function resolveDateEnd(string $dateStart): string
