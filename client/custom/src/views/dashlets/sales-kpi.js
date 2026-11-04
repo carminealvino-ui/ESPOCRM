@@ -3,6 +3,7 @@ define('custom:views/dashlets/sales-kpi',['custom:views/dashlets/crm-kpi-2026092
     return Dep.extend({
         name:'SalesKpi',template:'custom:dashlets/sales-kpi',
         events:{
+            'click [data-action="monthMode"]':function(e){e.preventDefault();this.monthMode=e.currentTarget.getAttribute('data-mode');this.reRender();},
             'click [data-action="refresh"]':function(){this.loadSummary();},
             'click [data-action="definitions"]':function(){this.createView('salesDetail','custom:views/modals/sales-kpi-detail',{detail:{title:'Criteri e legenda · vendite',definitions:true}}).then(v=>v.render());},
             'click [data-sales-key]':function(e){this.openBucket($(e.currentTarget).attr('data-sales-key'),$(e.currentTarget).attr('data-sales-group'),$(e.currentTarget).attr('data-sales-subkey'));},
@@ -46,12 +47,13 @@ define('custom:views/dashlets/sales-kpi',['custom:views/dashlets/crm-kpi-2026092
             const funnel=keys.map((key,i)=>{const width=Math.abs(values[i])/scale*1000,lower=monotonic?(i===keys.length-1?0:Math.abs(values[i+1])/scale*1000):width;
                 return{...item(key),color:['#63a7c2','#ccc058','#89b875','#5cb85c'][i],points:`${(1000-width)/2},0 ${(1000+width)/2},0 ${(1000+lower)/2},85 ${(1000-lower)/2},85`,percent:base?(values[i]/base*100).toLocaleString('it-IT',{maximumFractionDigits:1})+'%':'—'};});
             const recentMonths=Object.entries(s.months||{}).filter(([key])=>/^\d{4}-\d{2}$/.test(key)).sort(([a],[b])=>a.localeCompare(b)).slice(-(this.monthCapacity||28));
-            const monthScale=Math.max(...recentMonths.map(([,b])=>Math.abs(b.totali.cents)),1);
-            return{ready:!!this.summary,loadError:this.loadError,brand:s.brandName||'Tutti i brand',today:s.today,cardPeriodLabel:this.cardPeriodLabel(),cards:['totali','netti','sospesi','recessi','finanziamentiRifiutati'].map(key=>({key,label:labels[key],value:this.money(s.cardMetrics?.[key]?.cents),count:s.cardMetrics?.[key]?.count||0})),funnel,signed:!monotonic,
+            const volume=this.monthMode==='volumes', measure=b=>volume?b.count:b.cents;
+            const monthScale=Math.max(...recentMonths.map(([,b])=>Math.abs(measure(b.totali))),1);
+            return{volume,valueMode:!volume,ready:!!this.summary,loadError:this.loadError,brand:s.brandName||'Tutti i brand',today:s.today,cardPeriodLabel:this.cardPeriodLabel(),cards:['totali','netti','sospesi','recessi','finanziamentiRifiutati'].map(key=>({key,label:labels[key],value:this.money(s.cardMetrics?.[key]?.cents),count:s.cardMetrics?.[key]?.count||0})),funnel,signed:!monotonic,
                 average:this.money(s.cardMetrics?.netti?.count?Math.round(s.cardMetrics.netti.cents/s.cardMetrics.netti.count):0),conversion:s.cardMetrics?.totali?.count?((s.cardMetrics.netti?.count||0)/s.cardMetrics.totali.count*100).toLocaleString('it-IT',{maximumFractionDigits:1})+'%':'—',
                 states:Object.entries(this.periodStates()).map(([key,b])=>({key,value:this.money(b.cents),count:b.count})),
                 monthRange:recentMonths.length?recentMonths[0][0]+' → '+recentMonths[recentMonths.length-1][0]:'',
-                months:recentMonths.map(([key,b])=>({key,value:this.money(b.totali.cents),count:b.totali.count,countLabel:b.totali.count===1?'contratto':'contratti',width:Math.abs(b.totali.cents)/monthScale*100,negative:b.totali.cents<0,segments:b.totali.cents>0 && ['netti','sospesi','recessi','finanziamentiRifiutati'].every(k=>b[k].cents>=0)?['netti','sospesi','recessi','finanziamentiRifiutati'].filter(k=>b[k].cents>0).map(k=>({key:k,label:labels[k],height:b[k].cents/b.totali.cents*100,value:this.money(b[k].cents),count:b[k].count})):[]})),
+                months:recentMonths.map(([key,b])=>({key,value:this.money(b.totali.cents),count:b.totali.count,countLabel:b.totali.count===1?'contratto':'contratti',chartValue:volume?b.totali.count:this.money(b.totali.cents),chartSecondary:volume?this.money(b.totali.cents):b.totali.count+' '+(b.totali.count===1?'contratto':'contratti'),width:Math.abs(measure(b.totali))/monthScale*100,negative:measure(b.totali)<0,segments:measure(b.totali)>0 && ['netti','sospesi','recessi','finanziamentiRifiutati'].every(k=>measure(b[k])>=0)?['netti','sospesi','recessi','finanziamentiRifiutati'].filter(k=>measure(b[k])>0).map(k=>({key:k,label:labels[k],height:measure(b[k])/measure(b.totali)*100,value:this.money(b[k].cents),count:b[k].count})):[]})),
                 alerts:['senzaImporto','senzaData'].map(key=>({key,label:labels[key],value:this.money(s.cardMetrics?.[key]?.cents),count:s.cardMetrics?.[key]?.count||0}))};
         },
         afterRender:function(){
