@@ -50,7 +50,7 @@ class AppointmentDashboard
                 if (!array_key_exists($capId,$caps)) $caps[$capId]=$this->em->getEntityById('CAP',$capId);
                 if ($caps[$capId] && $this->acl->check($user,$caps[$capId],'read')) $visibleCap=$caps[$capId];
             }
-            $rows[]=['id'=>$a->getId(),'name'=>$a->get('name')?:$a->getId(),'date'=>$date?substr($date,0,10):null,'status'=>$a->get('status'),'sottostato'=>$a->get('sottostato'),'esito'=>$a->get('esito'),'productId'=>$product?->getId(),'productName'=>$product?->get('name')?:'Prodotto non disponibile','capId'=>$visibleCap?->getId(),'capName'=>$visibleCap?->get('name'),'areaId'=>$area?->getId(),'areaName'=>$area?->get('name')?:'Area non disponibile'];
+            $rows[]=['id'=>$a->getId(),'name'=>$a->get('name')?:$a->getId(),'date'=>$date?substr($date,0,10):null,'status'=>$a->get('status'),'sottostato'=>$a->get('sottostato'),'esito'=>$a->get('esito'),'productId'=>$product?->getId(),'productName'=>$product?->get('name')?:'Prodotto non disponibile','capId'=>$visibleCap?->getId(),'capName'=>$visibleCap?->get('name'),'capDescription'=>$visibleCap && $this->acl->checkField($user,'CAP','description','read') ? $visibleCap->get('description') : null,'areaId'=>$area?->getId(),'areaName'=>$area?->get('name')?:'Area non disponibile'];
         }
         $filtered=array_values(array_filter($rows,fn($r)=>($from===null||($r['date']&&$r['date']>=$from))&&($to===null||($r['date']&&$r['date']<=$to))));
         $months=[]; foreach ($rows as $row) { $month=$row['date']?substr($row['date'],0,7):'Senza data'; $months[$month][]=$row; }
@@ -65,7 +65,7 @@ class AppointmentDashboard
         $capGroups=[];
         foreach($filtered as $row){
             if (!$row['capId'] || !$row['capName']) continue;
-            $key=$row['capId'];$capGroups[$key]['name']=$row['capName'];$capGroups[$key]['rows'][]=$row;
+            $key=$row['capId'];$capGroups[$key]['name']=$row['capName'];$capGroups[$key]['description']=$row['capDescription'];$capGroups[$key]['rows'][]=$row;
         }
         foreach($capGroups as &$group){$group['metrics']=self::aggregate($group['rows']);unset($group['rows']);}unset($group);
         uasort($capGroups,fn($a,$b)=>($b['metrics']['totali']['count']<=>$a['metrics']['totali']['count']) ?: strcmp((string)$a['name'],(string)$b['name']));
