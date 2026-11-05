@@ -47,7 +47,7 @@ define('custom:views/calendar/calendar', [
             const isRow = info.el.classList.contains('fc-list-event') || info.el.classList.contains('fc-daygrid-dot-event');
             const background = isRow ? '#ffffff' :
                 (info.event.backgroundColor || window.getComputedStyle(info.el).backgroundColor);
-            const isInstallationReminder = /^Verifica installazione:/i.test(info.event.title || '');
+            const isInstallationReminder = /^Verifica installazione(?: del \d{2}\/\d{2}\/\d{4})?:/i.test(info.event.title || '');
             const isCompleted = info.event.extendedProps?.status === 'Completed';
             const color = !isRow && isInstallationReminder ?
                 (isCompleted ? '#303840' : '#ffffff') : this.getContrastTextColor(background);
