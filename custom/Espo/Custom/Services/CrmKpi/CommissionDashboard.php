@@ -123,7 +123,7 @@ class CommissionDashboard
             'Provvigione'=>['name','contratto','importo','importoConsolidato','statoProvvigione','regimeProvvigione','tipo',
                 'dataPagamento','dataLiquidazioneEffettiva','dataLiquidazionePrevista','dataInstallazione','dataAttivazione',
                 'consolidata','fornitorePartner','productBrand','regolaProvvigionale','importoPagatoInviti','residuoProvvigionale','differenzaChiusura','differenzaDaVerificare'],
-            'InvitoAFatturare'=>['name','stato','meseCompetenza','fornitorePartner','arielIncludiSaldoMensile'],
+            'InvitoAFatturare'=>['name','stato','meseCompetenza','fornitorePartner','arielIncludiSaldoMensile','dataInvito','dataPagamento'],
             'InvitoAFatturareItem'=>['name','provvigione','invito','importoConsolidato','movimento','tipoLiquidazione','contratto','tipo','voceAutomatica','rigaOrigine','importoPrevistoRiga','createdAt','incongruenzaStato','incongruenzaNote','incongruenzaStorico','incongruenzaInvitoRettifica','incongruenzaVersion'],
         ];
         foreach ($fields as $scope=>$names) {
@@ -341,10 +341,33 @@ class CommissionDashboard
             foreach (['arielPlusLordo','arielMinusLordo','arielCompensato','arielSaldoMinusPlus','arielProvvigionePlus','arielAddebitoMinus','arielPremioProduzione'] as $field)
                 $forecast[$key]['settlement'][$field]=$this->cents($preview->get($field));
         }
+        // Real unpaid invoices are already reserved and excluded from estimates.
+        // Include their readable ledger rows once, alongside the remaining forecast.
+        foreach ($this->allRows('InvitoAFatturareItem') as $line) {
+            $invoice=$invoices[$line->get('invitoId')]??null;
+            if (!$invoice || $invoice->get('stato')==='Pagato' || $invoice->get('dataPagamento')) continue;
+            $invoiceDate=ArielInvoicePolicy::date($invoice->get('dataInvito'));
+            if (!$invoiceDate || $invoiceDate<substr($today,0,7).'-01') continue;
+            $qid=$line->get('contrattoId');
+            $p=$line->get('provvigioneId')?$this->entityById('Provvigione',$line->get('provvigioneId')):null;
+            if (!$qid) $qid=$p?->get('contrattoId');
+            if (!$qid || !isset($selected[$qid])) continue;
+            if (!$this->readable($user,$invoice) || !$this->readable($user,$line)) throw new Forbidden();
+            $amount=$this->cents($line->get('importoConsolidato'));
+            if (!$amount) continue;
+            $q=$quoteMap[$qid]['entity'];
+            $row=$this->row($line,'InvitoAFatturareItem',$invoiceDate);
+            $row['contractId']=$qid;$row['contractName']=$q->get('name');
+            $row['actualInvoice']=true;$row['invoiceId']=$invoice->getId();
+            $row['category']=self::category($line->get('tipo') ?: $p?->get('tipo'));
+            $row['status']=$invoice->get('name').' · '.$invoice->get('stato').' · già inserita in invito';
+            $this->forecastAdd($forecast,(string)$invoice->get('fornitorePartnerId'),$invoiceDate,
+                'Invito esistente: '.$invoice->get('name'),$amount,$row);
+        }
         foreach ($forecast as &$f) {
             $supplier=$this->entityById('FornitorePartner',$f['supplierId']);
             $f['supplierName']=$supplier && $this->readable($user,$supplier) ? $supplier->get('name') : 'Fornitore';
-            $f['overdue']=$f['date']<$today;
+            $f['overdue']=$f['date']<$today && empty($f['allRecords'][0]['actualInvoice']);
         }
         unset($f);
         // Overdue amounts not reserved in open invoices belong to the review box.
@@ -364,7 +387,7 @@ class CommissionDashboard
         }
         $nextDates=[];
         foreach ($forecast as $entry) {
-            if (!$entry['date'] || $entry['date']<$today) continue;
+            if (!$entry['date']) continue;
             $supplier=$entry['supplierId'];
             if (!isset($nextDates[$supplier]) || $entry['date']<$nextDates[$supplier]) $nextDates[$supplier]=$entry['date'];
         }
@@ -372,7 +395,7 @@ class CommissionDashboard
             if (!$entry['date'] || $entry['date']<$today) continue;
             $invoiceKey=$entry['date']===$nextDates[$entry['supplierId']] ? 'inPagamento' : 'stimaFutura';
             foreach ($entry['allRecords'] ?? $entry['records'] as $row) {
-                if (!empty($row['id']) && !isset($activeIds[$row['id']])) continue;
+                if (empty($row['actualInvoice']) && !empty($row['id']) && !isset($activeIds[$row['id']])) continue;
                 $amount=$this->cents($row['amount']);$category=$row['category'] ?? 'altre';
                 foreach ([$invoiceKey,'pagamentoEStima'] as $key) {
                     $this->addMetric($report,$reportGroups,$category,$key,$amount,$row);
