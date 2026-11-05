@@ -4,6 +4,7 @@ define('custom:views/dashlets/appointment-kpi-v11',['custom:views/dashlets/crm-k
     return Dep.extend({
         name:'AppointmentKpi',template:'custom:dashlets/appointment-kpi-v11',
         events:{
+            'click [data-action="sortGrouping"]':function(e){e.preventDefault();this.groupingSort=this.groupingSort==='closure'?'total':'closure';this.reRender();},
             'click [data-action="toggleGrouping"]':function(e){e.preventDefault();const mode=e.currentTarget.getAttribute('data-grouping');if(!['areas','products','caps'].includes(mode))return;this.groupingMode=mode;this.reRender();},
             'click [data-action="refresh"]':function(){this.loadSummary();},
             'click [data-action="definitions"]':function(){this.createView('appointmentDetail','custom:views/modals/appointment-kpi-detail-v5',{detail:{title:'Criteri · appuntamenti',definitions:true}}).then(v=>v.render());},
@@ -31,8 +32,15 @@ define('custom:views/dashlets/appointment-kpi-v11',['custom:views/dashlets/crm-k
             const months=Object.entries(s.months||{}).filter(([k])=>/^\d{4}-\d{2}$/.test(k)).sort(([a],[b])=>a.localeCompare(b)).slice(-(this.monthCapacity||24));
             const monthMax=Math.max(...months.map(([,b])=>b.totali.count),1);
             const positive=m.conclusi?.count||0,percent=(n,d)=>d?(n/d*100).toLocaleString('it-IT',{maximumFractionDigits:1})+'%':'—';
-            const grouping=['products','caps'].includes(this.groupingMode)?this.groupingMode:'areas',areas=Object.entries(s[grouping]||{}),areaMax=Math.max(...areas.map(([,b])=>b.metrics.totali.count),1);
-            return {grouping,isAreas:grouping==='areas',isProducts:grouping==='products',isCaps:grouping==='caps',zoneHeading:grouping==='caps'?'Appuntamenti per CAP · primi 15':grouping==='products'?'Appuntamenti per prodotto':'Appuntamenti per zona',groupCaption:grouping==='caps'?'Primi 15 CAP per appuntamenti totali':grouping==='products'?'Per prodotto':'Per zona',groupColumn:grouping==='caps'?'CAP':grouping==='products'?'Prodotto':'Zona',toggleGroupingLabel:grouping==='products'?'Per CAP':grouping==='caps'?'Per zona':'Per prodotto',ready:!!this.summary,loadError:this.loadError,brand:s.brandName||'Tutti i brand',areaFilter:this.getOption('areaName')||'Tutte le aree',cardPeriodLabel:this.cardPeriodLabel(),
+            const grouping=['products','caps'].includes(this.groupingMode)?this.groupingMode:'areas',areas=Object.entries(s[grouping]||{}).sort(([,a],[,b])=>{
+                if(this.groupingSort==='closure'){
+                    const denominator=g=>Math.max(0,g.metrics.totali.count-g.metrics.annullati.count);
+                    const rate=g=>denominator(g)?(g.metrics.conclusi?.count||0)/denominator(g):-1;
+                    const delta=rate(b)-rate(a);if(delta)return delta;
+                }
+                return b.metrics.totali.count-a.metrics.totali.count || a.name.localeCompare(b.name,'it');
+            }),areaMax=Math.max(...areas.map(([,b])=>b.metrics.totali.count),1);
+            return {grouping,sortGroupingLabel:this.groupingSort==='closure'?'Ordine: % chiusura':'Ordine: appuntamenti',isAreas:grouping==='areas',isProducts:grouping==='products',isCaps:grouping==='caps',zoneHeading:grouping==='caps'?'Appuntamenti per CAP · primi 15':grouping==='products'?'Appuntamenti per prodotto':'Appuntamenti per zona',groupCaption:grouping==='caps'?'Primi 15 CAP per appuntamenti totali':grouping==='products'?'Per prodotto':'Per zona',groupColumn:grouping==='caps'?'CAP':grouping==='products'?'Prodotto':'Zona',toggleGroupingLabel:grouping==='products'?'Per CAP':grouping==='caps'?'Per zona':'Per prodotto',ready:!!this.summary,loadError:this.loadError,brand:s.brandName||'Tutti i brand',areaFilter:this.getOption('areaName')||'Tutte le aree',cardPeriodLabel:this.cardPeriodLabel(),
                 positive,conclusionRates:['totali','lordi','netti'].map(key=>({key,label:key==='lordi'?'Sui lordi':key==='netti'?'Sui netti':'Sui totali',base:m[key]?.count||0,positive,rate:percent(positive,m[key]?.count||0)})),zoneRates:areas.map(([key,b])=>({key,grouping,name:b.name,positive:b.metrics.conclusi?.count||0,base:b.metrics.netti.count,rate:percent(b.metrics.conclusi?.count||0,b.metrics.netti.count),rates:['totali','lordi','netti'].map(metric=>({key,grouping,metric,label:metric,positive:b.metrics.conclusi?.count||0,base:b.metrics[metric].count,rate:percent(b.metrics.conclusi?.count||0,b.metrics[metric].count)}))})),
                 cards:['totali','annullati','ingestibili','netti','conclusi'].map(key=>({...item(key),percent:percent(m[key]?.count||0,key==='conclusi'?Math.max(0,base-(m.annullati?.count||0)):base),percentBaseLabel:key==='conclusi'?'sul totale meno annullati':'sul totale'})),funnel,
                 conversion:base?((m.netti?.count||0)/base*100).toLocaleString('it-IT',{maximumFractionDigits:1})+'%':'—',
