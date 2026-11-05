@@ -1427,9 +1427,14 @@ class AppuntamentoPendingCallCreator
 
     private function buildFollowUpCallNota(string $sourceCallId, string $dataRichiamo): string
     {
-        return self::NOTA_RICHIAMO_CALL_PREFIX . ' ' . $sourceCallId
-            . "\nRichiamo programmato dopo esito contatto per "
-            . BusinessDateTime::formatBusiness($dataRichiamo, 'd/m/Y H:i');
+        $source = $this->entityManager->getEntityById('Call', $sourceCallId);
+        $lines = [self::NOTA_RICHIAMO_CALL_PREFIX . ' ' . $sourceCallId,
+            'Richiamo programmato dopo esito contatto per ' . BusinessDateTime::formatBusiness($dataRichiamo, 'd/m/Y H:i')];
+        $esito = trim((string) $source?->get('esito'));
+        $description = trim((string) $source?->get('description'));
+        if ($esito !== '') $lines[] = 'Esito contatto precedente: ' . $esito;
+        if ($description !== '') $lines[] = 'Motivazione / note del contatto precedente: ' . $description;
+        return implode("\n", $lines);
     }
 
     private function buildFollowUpCallName(
