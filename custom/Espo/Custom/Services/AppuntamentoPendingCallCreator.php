@@ -89,12 +89,19 @@ class AppuntamentoPendingCallCreator
             fn () => $this->createIfNeededLocked($appuntamento, $notBefore, $leadIdOverride));
     }
 
+    private function hasLinkedOpportunity(Entity $appointment): bool
+    {
+        if ($appointment->get('sottostato') === 'Annullato' || str_starts_with((string)$appointment->get('esito'), 'Annullato')) return false;
+        return $appointment->getId() && (bool) $this->entityManager->getRDBRepository('Opportunity')->where(['appuntamentoId'=>$appointment->getId()])->findOne();
+    }
+
     private function createIfNeededLocked(
         Entity $appuntamento,
         ?\DateTimeImmutable $notBefore = null,
         ?string $leadIdOverride = null
     ): ?string {
         $this->lastFailureReason = null;
+        if (!$this->hasLinkedOpportunity($appuntamento)) return $this->fail('opportunita collegata non ancora generata o appuntamento annullato');
 
         if ($appuntamento->get('status') !== 'Held') {
             return $this->fail('status=' . (string) $appuntamento->get('status') . ' (atteso Held)');
@@ -377,6 +384,7 @@ class AppuntamentoPendingCallCreator
 
     private function createRichiamoIfNeededLocked(Entity $appuntamento): ?string
     {
+        if (!$this->hasLinkedOpportunity($appuntamento)) return null;
         if (!$appuntamento->get('daRichiamare')) {
             return null;
         }
