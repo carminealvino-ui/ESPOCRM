@@ -4,7 +4,7 @@ define('custom:views/dashlets/appointment-kpi-v11',['custom:views/dashlets/crm-k
     return Dep.extend({
         name:'AppointmentKpi',template:'custom:dashlets/appointment-kpi-v11',
         events:{
-            'click [data-action="toggleGrouping"]':function(e){e.preventDefault();this.groupingMode=this.groupingMode==='products'?'areas':'products';this.reRender();},
+            'click [data-action="toggleGrouping"]':function(e){e.preventDefault();this.groupingMode=this.groupingMode==='products'?'caps':this.groupingMode==='caps'?'areas':'products';this.reRender();},
             'click [data-action="refresh"]':function(){this.loadSummary();},
             'click [data-action="definitions"]':function(){this.createView('appointmentDetail','custom:views/modals/appointment-kpi-detail-v5',{detail:{title:'Criteri · appuntamenti',definitions:true}}).then(v=>v.render());},
             'click [data-appointment-key]':function(e){e.stopPropagation();const el=$(e.currentTarget);this.openBucket(el.attr('data-appointment-key'),el.attr('data-group'),el.attr('data-subkey'));},
@@ -18,9 +18,9 @@ define('custom:views/dashlets/appointment-kpi-v11',['custom:views/dashlets/crm-k
         },
         cardPeriodLabel:function(){const p=this.summary?.cardPeriod,date=v=>v.split('-').reverse().join('/');return p?.from?date(p.from)+' → '+date(p.to):'Tutto lo storico';},
         openBucket:function(key,group,subkey){
-            const b=group==='months'?this.summary?.months?.[key]?.[subkey]:['areas','products'].includes(group)?this.summary?.[group]?.[key]?.metrics?.[subkey]:this.summary?.cardMetrics?.[key];
+            const b=group==='months'?this.summary?.months?.[key]?.[subkey]:['areas','products','caps'].includes(group)?this.summary?.[group]?.[key]?.metrics?.[subkey]:this.summary?.cardMetrics?.[key];
             if(!b)return;
-            const title=group==='months'?key+' · '+labels[subkey]:['areas','products'].includes(group)?this.summary[group][key].name+' · '+labels[subkey]:labels[key];
+            const title=group==='months'?key+' · '+labels[subkey]:['areas','products','caps'].includes(group)?this.summary[group][key].name+' · '+labels[subkey]:labels[key];
             const detail={title:title+' · '+(group==='months'?'Storico':this.cardPeriodLabel()),count:b.count,rows:b.records.map(r=>({...r,status:statuses[r.status]||r.status,url:'#Appuntamento/view/'+encodeURIComponent(r.id)}))};
             this.createView('appointmentDetail','custom:views/modals/appointment-kpi-detail-v5',{detail}).then(v=>v.render());
         },
@@ -31,8 +31,8 @@ define('custom:views/dashlets/appointment-kpi-v11',['custom:views/dashlets/crm-k
             const months=Object.entries(s.months||{}).filter(([k])=>/^\d{4}-\d{2}$/.test(k)).sort(([a],[b])=>a.localeCompare(b)).slice(-(this.monthCapacity||24));
             const monthMax=Math.max(...months.map(([,b])=>b.totali.count),1);
             const positive=m.conclusi?.count||0,percent=(n,d)=>d?(n/d*100).toLocaleString('it-IT',{maximumFractionDigits:1})+'%':'—';
-            const grouping=this.groupingMode==='products'?'products':'areas',areas=Object.entries(s[grouping]||{}),areaMax=Math.max(...areas.map(([,b])=>b.metrics.totali.count),1);
-            return {grouping,zoneHeading:grouping==='products'?'Appuntamenti per prodotto':'Appuntamenti per zona',groupCaption:grouping==='products'?'Per prodotto':'Per zona',groupColumn:grouping==='products'?'Prodotto':'Zona',toggleGroupingLabel:grouping==='products'?'Per zona':'Per prodotto',ready:!!this.summary,loadError:this.loadError,brand:s.brandName||'Tutti i brand',areaFilter:this.getOption('areaName')||'Tutte le aree',cardPeriodLabel:this.cardPeriodLabel(),
+            const grouping=['products','caps'].includes(this.groupingMode)?this.groupingMode:'areas',areas=Object.entries(s[grouping]||{}),areaMax=Math.max(...areas.map(([,b])=>b.metrics.totali.count),1);
+            return {grouping,zoneHeading:grouping==='caps'?'Appuntamenti per CAP · primi 15':grouping==='products'?'Appuntamenti per prodotto':'Appuntamenti per zona',groupCaption:grouping==='caps'?'Primi 15 CAP per appuntamenti totali':grouping==='products'?'Per prodotto':'Per zona',groupColumn:grouping==='caps'?'CAP':grouping==='products'?'Prodotto':'Zona',toggleGroupingLabel:grouping==='products'?'Per CAP':grouping==='caps'?'Per zona':'Per prodotto',ready:!!this.summary,loadError:this.loadError,brand:s.brandName||'Tutti i brand',areaFilter:this.getOption('areaName')||'Tutte le aree',cardPeriodLabel:this.cardPeriodLabel(),
                 positive,conclusionRates:['totali','lordi','netti'].map(key=>({key,label:key==='lordi'?'Sui lordi':key==='netti'?'Sui netti':'Sui totali',base:m[key]?.count||0,positive,rate:percent(positive,m[key]?.count||0)})),zoneRates:areas.map(([key,b])=>({key,grouping,name:b.name,positive:b.metrics.conclusi?.count||0,base:b.metrics.netti.count,rate:percent(b.metrics.conclusi?.count||0,b.metrics.netti.count),rates:['totali','lordi','netti'].map(metric=>({key,grouping,metric,label:metric,positive:b.metrics.conclusi?.count||0,base:b.metrics[metric].count,rate:percent(b.metrics.conclusi?.count||0,b.metrics[metric].count)}))})),
                 cards:['totali','annullati','ingestibili','netti','conclusi'].map(key=>({...item(key),percent:percent(m[key]?.count||0,key==='conclusi'?Math.max(0,base-(m.annullati?.count||0)):base),percentBaseLabel:key==='conclusi'?'sul totale meno annullati':'sul totale'})),funnel,
                 conversion:base?((m.netti?.count||0)/base*100).toLocaleString('it-IT',{maximumFractionDigits:1})+'%':'—',

@@ -45,7 +45,12 @@ class AppointmentDashboard
                 if (!array_key_exists($productId,$products)) $products[$productId]=$this->em->getEntityById('ProductCategory',$productId);
                 if ($products[$productId] && $this->acl->check($user,$products[$productId],'read')) $product=$products[$productId];
             }
-            $rows[]=['id'=>$a->getId(),'name'=>$a->get('name')?:$a->getId(),'date'=>$date?substr($date,0,10):null,'status'=>$a->get('status'),'sottostato'=>$a->get('sottostato'),'esito'=>$a->get('esito'),'productId'=>$product?->getId(),'productName'=>$product?->get('name')?:'Prodotto non disponibile','areaId'=>$area?->getId(),'areaName'=>$area?->get('name')?:'Area non disponibile'];
+            $visibleCap=null;
+            if ($capId && $this->acl->check($user,'CAP','read') && $this->acl->checkField($user,'CAP','name','read')) {
+                if (!array_key_exists($capId,$caps)) $caps[$capId]=$this->em->getEntityById('CAP',$capId);
+                if ($caps[$capId] && $this->acl->check($user,$caps[$capId],'read')) $visibleCap=$caps[$capId];
+            }
+            $rows[]=['id'=>$a->getId(),'name'=>$a->get('name')?:$a->getId(),'date'=>$date?substr($date,0,10):null,'status'=>$a->get('status'),'sottostato'=>$a->get('sottostato'),'esito'=>$a->get('esito'),'productId'=>$product?->getId(),'productName'=>$product?->get('name')?:'Prodotto non disponibile','capId'=>$visibleCap?->getId(),'capName'=>$visibleCap?->get('name'),'areaId'=>$area?->getId(),'areaName'=>$area?->get('name')?:'Area non disponibile'];
         }
         $filtered=array_values(array_filter($rows,fn($r)=>($from===null||($r['date']&&$r['date']>=$from))&&($to===null||($r['date']&&$r['date']<=$to))));
         $months=[]; foreach ($rows as $row) { $month=$row['date']?substr($row['date'],0,7):'Senza data'; $months[$month][]=$row; }
@@ -57,8 +62,16 @@ class AppointmentDashboard
         foreach($filtered as $row){$key=$row['productId']?:'unavailable';$productGroups[$key]['name']=$row['productName'];$productGroups[$key]['rows'][]=$row;}
         foreach($productGroups as &$group){$group['metrics']=self::aggregate($group['rows']);unset($group['rows']);}unset($group);
         uasort($productGroups,fn($a,$b)=>$b['metrics']['totali']['count']<=>$a['metrics']['totali']['count']);
+        $capGroups=[];
+        foreach($filtered as $row){
+            if (!$row['capId'] || !$row['capName']) continue;
+            $key=$row['capId'];$capGroups[$key]['name']=$row['capName'];$capGroups[$key]['rows'][]=$row;
+        }
+        foreach($capGroups as &$group){$group['metrics']=self::aggregate($group['rows']);unset($group['rows']);}unset($group);
+        uasort($capGroups,fn($a,$b)=>($b['metrics']['totali']['count']<=>$a['metrics']['totali']['count']) ?: strcmp((string)$a['name'],(string)$b['name']));
+        $capGroups=array_slice($capGroups,0,15,true);
         $brandEntity=$brand?$this->em->getEntityById('ProductBrand',$brand):null;
-        return (object)['metrics'=>self::aggregate($rows),'cardMetrics'=>self::aggregate($filtered),'months'=>(object)$months,'areas'=>(object)$groups,'products'=>(object)$productGroups,'cardPeriod'=>['period'=>$period,'from'=>$from,'to'=>$to],'brandName'=>$brandEntity&&$this->acl->check($user,$brandEntity,'read')&&$this->acl->checkField($user,'ProductBrand','name','read')?$brandEntity->get('name'):null];
+        return (object)['metrics'=>self::aggregate($rows),'cardMetrics'=>self::aggregate($filtered),'months'=>(object)$months,'areas'=>(object)$groups,'products'=>(object)$productGroups,'caps'=>(object)$capGroups,'cardPeriod'=>['period'=>$period,'from'=>$from,'to'=>$to],'brandName'=>$brandEntity&&$this->acl->check($user,$brandEntity,'read')&&$this->acl->checkField($user,'ProductBrand','name','read')?$brandEntity->get('name'):null];
     }
 
     /** Same funnel exclusions as CRM KPI; Planned and Rifissato are separate. */
