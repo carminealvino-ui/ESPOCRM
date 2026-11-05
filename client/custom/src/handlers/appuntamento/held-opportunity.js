@@ -10,6 +10,27 @@ define('custom:handlers/appuntamento/held-opportunity', [
         return root;
     }
 
+    async function reviewIdentity(host, appointment) {
+        const prospectId = appointment.prospectId ||
+            (appointment.parentType === 'Prospect' ? appointment.parentId : null);
+        if (!prospectId) {
+            Espo.Ui.warning('Collegare il Prospect all’appuntamento prima di creare l’opportunità.');
+            return false;
+        }
+        const modal = await host.createView('heldIdentity-' + appointment.id, 'views/modals/edit', {
+            scope: 'Prospect', id: prospectId,
+            layoutName: 'identityReview',
+            headerText: 'Esito appuntamento: verifica nominativo e B2C/B2B',
+            fullFormDisabled: true
+        });
+        return new Promise(resolve => {
+            let saved = false;
+            modal.once('after:save', () => { saved = true; resolve(true); });
+            modal.once('remove', () => { if (!saved) resolve(false); });
+            modal.render();
+        });
+    }
+
     async function openOpportunity(host, model) {
         const id = model.id;
         if (!id || active.has(id)) return;
@@ -28,8 +49,17 @@ define('custom:handlers/appuntamento/held-opportunity', [
                 Espo.Ui.warning('Appuntamento salvato come Svolto. Non hai i permessi per creare l’opportunità collegata.');
                 return;
             }
-            const fresh = await Espo.Ajax.getRequest('Appuntamento/' + encodeURIComponent(id));
+            let fresh = await Espo.Ajax.getRequest('Appuntamento/' + encodeURIComponent(id));
             if (fresh.status !== 'Held') return;
+            if (!await reviewIdentity(host, {...fresh, id: id})) return;
+            // Identity hooks may change names, salutation, phone and linked Lead.
+            fresh = await Espo.Ajax.getRequest('Appuntamento/' + encodeURIComponent(id));
+            if (fresh.status !== 'Held') return;
+            const linked = await Espo.Ajax.getRequest('Opportunity', {
+                maxSize: 1, select: 'id',
+                where: [{type: 'equals', attribute: 'appuntamentoId', value: id}]
+            });
+            if (linked.list && linked.list.length) return;
             const attributes = AppuntamentoSync.buildAttributesFromAppuntamento({...fresh, id: id});
             const modal = await host.createView('heldOpportunity-' + id, 'views/modals/edit', {
                 scope: 'Opportunity', attributes: attributes,
