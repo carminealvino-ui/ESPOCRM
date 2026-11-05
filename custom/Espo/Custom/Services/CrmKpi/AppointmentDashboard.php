@@ -69,7 +69,7 @@ class AppointmentDashboard
         }
         foreach($capGroups as &$group){$group['metrics']=self::aggregate($group['rows']);unset($group['rows']);}unset($group);
         uasort($capGroups,fn($a,$b)=>($b['metrics']['totali']['count']<=>$a['metrics']['totali']['count']) ?: strcmp((string)$a['name'],(string)$b['name']));
-        $capGroups=array_slice($capGroups,0,15,true);
+        // Return every readable CAP: the selected ranking determines the top 15 in the view.
         $brandEntity=$brand?$this->em->getEntityById('ProductBrand',$brand):null;
         return (object)['metrics'=>self::aggregate($rows),'cardMetrics'=>self::aggregate($filtered),'months'=>(object)$months,'areas'=>(object)$groups,'products'=>(object)$productGroups,'caps'=>(object)$capGroups,'cardPeriod'=>['period'=>$period,'from'=>$from,'to'=>$to],'brandName'=>$brandEntity&&$this->acl->check($user,$brandEntity,'read')&&$this->acl->checkField($user,'ProductBrand','name','read')?$brandEntity->get('name'):null];
     }
