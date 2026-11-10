@@ -50,8 +50,9 @@ class AppointmentDashboard
                 if (!array_key_exists($capId,$caps)) $caps[$capId]=$this->em->getEntityById('CAP',$capId);
                 if ($caps[$capId] && $this->acl->check($user,$caps[$capId],'read')) $visibleCap=$caps[$capId];
             }
-            $rows[]=['id'=>$a->getId(),'name'=>$a->get('name')?:$a->getId(),'date'=>$date?substr($date,0,10):null,'status'=>$a->get('status'),'sottostato'=>$a->get('sottostato'),'esito'=>$a->get('esito'),'productId'=>$product?->getId(),'productName'=>$product?->get('name')?:'Prodotto non disponibile','capId'=>$visibleCap?->getId(),'capName'=>$visibleCap?->get('name'),'capDescription'=>$visibleCap && $this->acl->checkField($user,'CAP','description','read') ? $visibleCap->get('description') : null,'areaId'=>$area?->getId(),'areaName'=>$area?->get('name')?:'Area non disponibile'];
+            $rows[]=['id'=>$a->getId(),'name'=>$a->get('name')?:$a->getId(),'date'=>$date?substr($date,0,10):null,'rifissatoDaId'=>$a->get('rifissatoDaId'),'status'=>$a->get('status'),'sottostato'=>$a->get('sottostato'),'esito'=>$a->get('esito'),'productId'=>$product?->getId(),'productName'=>$product?->get('name')?:'Prodotto non disponibile','capId'=>$visibleCap?->getId(),'capName'=>$visibleCap?->get('name'),'capDescription'=>$visibleCap && $this->acl->checkField($user,'CAP','description','read') ? $visibleCap->get('description') : null,'areaId'=>$area?->getId(),'areaName'=>$area?->get('name')?:'Area non disponibile'];
         }
+        $rows=self::latestRescheduledRows($rows);
         $filtered=array_values(array_filter($rows,fn($r)=>($from===null||($r['date']&&$r['date']>=$from))&&($to===null||($r['date']&&$r['date']<=$to))));
         $months=[]; foreach ($rows as $row) { $month=$row['date']?substr($row['date'],0,7):'Senza data'; $months[$month][]=$row; }
         ksort($months); foreach ($months as &$bucket) $bucket=self::aggregate($bucket); unset($bucket);
@@ -72,6 +73,22 @@ class AppointmentDashboard
         // Return every readable CAP: the selected ranking determines the top 15 in the view.
         $brandEntity=$brand?$this->em->getEntityById('ProductBrand',$brand):null;
         return (object)['metrics'=>self::aggregate($rows),'cardMetrics'=>self::aggregate($filtered),'months'=>(object)$months,'areas'=>(object)$groups,'products'=>(object)$productGroups,'caps'=>(object)$capGroups,'cardPeriod'=>['period'=>$period,'from'=>$from,'to'=>$to],'brandName'=>$brandEntity&&$this->acl->check($user,$brandEntity,'read')&&$this->acl->checkField($user,'ProductBrand','name','read')?$brandEntity->get('name'):null];
+    }
+
+    /** Count only the current appointment in each explicitly linked rescheduling chain. */
+    public static function latestRescheduledRows(array $rows): array
+    {
+        $byId=[];foreach($rows as $row)$byId[$row['id']]=$row;
+        $superseded=[];
+        foreach($rows as $row){
+            $path=[];$seen=[$row['id']=>true];$parent=$row['rifissatoDaId']??null;$cycle=false;
+            while($parent && isset($byId[$parent])){
+                if(isset($seen[$parent])){$cycle=true;break;}
+                $seen[$parent]=true;$path[]=$parent;$parent=$byId[$parent]['rifissatoDaId']??null;
+            }
+            if(!$cycle)foreach($path as $id)$superseded[$id]=true;
+        }
+        return array_values(array_filter($rows,fn($row)=>!isset($superseded[$row['id']])));
     }
 
     /** Same funnel exclusions as CRM KPI; Planned and Rifissato are separate. */
