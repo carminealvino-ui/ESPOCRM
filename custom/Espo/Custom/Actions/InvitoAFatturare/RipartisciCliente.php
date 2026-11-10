@@ -40,7 +40,7 @@ class RipartisciCliente
   $line??=$this->em->getNewEntity('InvitoAFatturareItem');$new=$line->isNew();
   $gross=(float)$q->get('minusPlus');
   $matched=(int)round($gross*35)===$cents;
-  if(!$matched)$gross=round($cents/35*100,2);
+  if(!$matched)$gross=round($cents/35,2);
   $line->set(['invitoId'=>$i->getId(),'contrattoId'=>$q->getId(),'voceAutomatica'=>$key,'movimento'=>'Addebito',
    'tipo'=>$cents<0?'Minus Provvigionale':'Plus Provvigionale','baseCalcolo'=>$cents<0?'Minusvalenza':'Plusvalenza',
    'importoBaseCalcolo'=>$gross,'importoBaseCalcoloCurrency'=>'EUR','tassoProvvigioni'=>35,
