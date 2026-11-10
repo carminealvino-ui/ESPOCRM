@@ -55,6 +55,9 @@ class Storni
   }catch(\Throwable $e){$tm->rollback();throw $e;}
  }
  public function summary(Request $r): object {return $this->summarize($this->invoice($r->getQueryParam('id'),'read'));}
+ public function isEditableManualPlusMinus(Entity $line): bool {
+  return str_starts_with((string)$line->get('voceAutomatica'),'saldoDocumentale:') && str_contains((string)$line->get('description'),'[PLUSMINUS-MANUALE-INVITO]') && !$line->get('provvigioneId') && !$line->get('rigaOrigineId');
+ }
  public function isPlusMinus(Entity $line): bool {
   return $line->get('movimento')!=='Storno' && preg_match('/Plus|Minus/i',(string)$line->get('tipo'))===1;
  }
@@ -90,14 +93,15 @@ class Storni
    }
    $clients[$clientKey][$bucket.'Count']++;
    if($bucket!=='other')$clients[$clientKey][$bucket.'Cents']+=$amount;
-   $clients[$clientKey][$bucket.'Editable']=$clients[$clientKey][$bucket.'Editable'] && $this->workflow->isDraft($i) && $this->acl->checkEntity($i,'edit') && $this->acl->checkEntity($l,'edit') && !$l->get('voceAutomatica') && !$l->get('rigaOrigineId') && isset($client['contract']);
+   $clients[$clientKey][$bucket.'Editable']=$clients[$clientKey][$bucket.'Editable'] && $this->workflow->isDraft($i) && $this->acl->checkEntity($i,'edit') && $this->acl->checkEntity($l,'edit') && (!$l->get('voceAutomatica') || ($bucket==='plusMinus' && $this->isEditableManualPlusMinus($l))) && !$l->get('rigaOrigineId') && isset($client['contract']);
    $clients[$clientKey]['versions'][$l->getId()]=[$amount,$l->get('importoOriginaleInvito'),$l->get('modifiedAt')];
 
   }
   $t['saldoPlusMinus']=$t['plus']+$t['minus'];
   $result=array_map(fn($v)=>$v/100,$t);
   uasort($clients,fn($a,$b)=>strnatcasecmp($a['name'],$b['name']));
-  $result['clienti']=array_values(array_map(function($c){ksort($c['versions']);return ['id'=>$c['id'],'name'=>$c['name'],'total'=>$c['cents']/100,'plusMinusOriginal'=>$c['plusMinusOriginalCents']/100,'plusMinus'=>$c['plusMinusCents']/100,'premi'=>$c['premiCents']/100,'premiEditable'=>$c['premiEditable'] && $c['premiCount']>0,'other'=>($c['cents']-$c['plusMinusCents']-$c['premiCents'])/100,'plusMinusEditable'=>$c['plusMinusEditable'] && $c['plusMinusCount']>0,'otherEditable'=>$c['otherEditable'] && $c['otherCount']>0,'original'=>$c['original']/100,'difference'=>($c['cents']-$c['original'])/100,'count'=>$c['count'],'contracts'=>array_values($c['contracts']),'editable'=>$c['editable'],'version'=>hash('sha256',json_encode($c['versions']))];},$clients));
+  $canCreatePm=$this->workflow->isDraft($i) && $this->acl->checkEntity($i,'edit') && $this->acl->checkScope('InvitoAFatturareItem','create') && $i->get('arielRegolamento') && !$i->get('arielIncludiSaldoMensile');
+  $result['clienti']=array_values(array_map(function($c) use ($canCreatePm){ksort($c['versions']);return ['id'=>$c['id'],'name'=>$c['name'],'total'=>$c['cents']/100,'plusMinusOriginal'=>$c['plusMinusOriginalCents']/100,'plusMinus'=>$c['plusMinusCents']/100,'premi'=>$c['premiCents']/100,'premiEditable'=>$c['premiEditable'] && $c['premiCount']>0,'other'=>($c['cents']-$c['plusMinusCents']-$c['premiCents'])/100,'plusMinusEditable'=>$c['plusMinusCount']>0 ? $c['plusMinusEditable'] : ($canCreatePm && count($c['contracts'])===1),'otherEditable'=>$c['otherEditable'] && $c['otherCount']>0,'original'=>$c['original']/100,'difference'=>($c['cents']-$c['original'])/100,'count'=>$c['count'],'contracts'=>array_values($c['contracts']),'editable'=>$c['editable'],'version'=>hash('sha256',json_encode($c['versions']))];},$clients));
   return (object)$result;
  }
  public function groupKey(Entity $line): string {
