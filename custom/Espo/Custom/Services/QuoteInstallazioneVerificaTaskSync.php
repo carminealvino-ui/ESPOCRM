@@ -127,6 +127,10 @@ class QuoteInstallazioneVerificaTaskSync
             return;
         }
 
+        if ($this->isQuoteInvalid($quote)) {
+            throw new \Espo\Core\Exceptions\BadRequest('Il contratto è annullato, receduto o invalido: la verifica installazione non è più applicabile.');
+        }
+
         if ($esito === 'Installato') {
             $quote->set([
                 'status' => 'Installato',
