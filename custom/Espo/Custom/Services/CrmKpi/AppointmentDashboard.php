@@ -11,7 +11,7 @@ use Espo\Custom\Tools\CrmKpi\DateRange;
 /** Read-only appointment portfolio; each appointment contributes once. */
 class AppointmentDashboard
 {
-    private const CANCELLED = ['Annullato dal Potenziale','Annullato dal Consulente','Annullato Azienda','Annullato Call Center','Appuntamento non in agenda'];
+    private const CANCELLED = ['Annullato dal Potenziale','Annullato dal Consulente','Annullato Azienda','Annullato Call Center','Appuntamento non in agenda','Cliente Assente'];
     public function __construct(private EntityManager $em, private AclManager $acl) {}
 
     public function summary(User $user, ?string $brand=null, string $period='totals', ?string $dateFrom=null, ?string $dateTo=null, ?string $areaId=null): object
@@ -84,7 +84,7 @@ class AppointmentDashboard
             elseif ($row['status']==='Planned') $keys[]='pianificati';
             else {
                 $keys[]='totali';
-                if ($row['sottostato']==='Annullato'||in_array($row['esito'],self::CANCELLED,true)) $keys[]='annullati';
+                if (in_array($row['sottostato'],['Annullato','Non Ricevuto'],true)||in_array($row['esito'],self::CANCELLED,true)) $keys[]='annullati';
                 else { $keys[]='lordi'; $keys[]=$row['status']==='Ingestibile'?'ingestibili':'netti'; }
             }
             if ($row['status']==='Held') $keys[]='svolti';
