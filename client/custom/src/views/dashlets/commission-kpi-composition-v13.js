@@ -101,9 +101,31 @@ define('custom:views/dashlets/commission-kpi-composition-v13', ['custom:views/da
                 }
                 if(type==='forecast'){
                     const f=s.forecast[key];
+                    const invoices=new Map();
+                    for(const row of f.allRecords||[]){
+                        if(!row.actualInvoice)continue;
+                        if(!invoices.has(row.invoiceId)){
+                            invoices.set(row.invoiceId,{name:row.invoiceName,month:row.invoiceMonth,records:[],plus:0,minus:0,bonus:0});
+                        }
+                        if(!['plus','minus','bonus'].includes(row.settlementCategory))continue;
+                        const invoice=invoices.get(row.invoiceId);
+                        invoice[row.settlementCategory]+=Math.round(row.amount*100);
+                        invoice.records.push({...row,name:row.contractName,date:row.contractDate});
+                    }
+                    detail.actualSettlements=[...invoices.values()].map(invoice=>({
+                        ...invoice,
+                        rows:this.detailRows({records:invoice.records.sort((a,b)=>(a.date||'9999').localeCompare(b.date||'9999')||a.name.localeCompare(b.name))})
+                            .map(row=>({...row,grossValue:row.grossCents==null?'—':this.money(row.grossCents)})),
+                        totals:[
+                            {label:'Plus da invito',value:this.money(invoice.plus)},
+                            {label:'Minus da invito',value:this.money(invoice.minus)},
+                            {label:'Saldo Plus/Minus da invito',value:this.money(invoice.plus+invoice.minus)},
+                            {label:'Premi e bonus da invito',value:this.money(invoice.bonus)}
+                        ]
+                    }));
                     const available=!!f.settlement;
                     const st=f.settlement||{month:(f.label||'').match(/\d{4}-\d{2}/)?.[0]||'',records:[]};
-                    detail.settlement={month:st.month,unavailable:!available,estimated:!!st.estimated,warnings:st.warnings,rows:this.detailRows(st),
+                    if(available||!invoices.size)detail.settlement={month:st.month,unavailable:!available,estimated:!!st.estimated,warnings:st.warnings,rows:this.detailRows(st),
                         totals:[['Plus lordi','arielPlusLordo'],['Minus lordi','arielMinusLordo'],['Compensazione commerciale','arielCompensato'],['Saldo commerciale','arielSaldoMinusPlus'],['Quota plus provvigionale (35%)','arielProvvigionePlus'],['Minus residuo presuntivo (35%)','arielAddebitoMinus'],['Premio produzione presuntivo','arielPremioProduzione']].map(([label,k])=>({label,value:available?this.money(st[k]):'Da calcolare'}))};
                 }
             }

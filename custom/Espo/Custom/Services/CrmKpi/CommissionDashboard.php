@@ -360,6 +360,17 @@ class CommissionDashboard
             $row['contractId']=$qid;$row['contractName']=$q->get('name');
             $row['actualInvoice']=true;$row['invoiceId']=$invoice->getId();
             $row['category']=self::category($line->get('tipo') ?: $p?->get('tipo'));
+            $row['invoiceName']=$invoice->get('name');
+            $row['invoiceMonth']=substr((string)$invoice->get('meseCompetenza'),0,7);
+            $row['contractDate']=$q->get('dateQuoted');
+            $row['settlementCategory']=$line->get('movimento')==='Storno' ? null : $row['category'];
+            $row['grossCents']=null;
+            if (in_array($row['settlementCategory'], ['plus','minus'], true)
+                && $this->acl->checkField($user,'InvitoAFatturareItem','importoBaseCalcolo','read')
+                && $line->get('importoBaseCalcolo') !== null) {
+                $gross=abs($this->cents($line->get('importoBaseCalcolo')));
+                $row['grossCents']=$row['category']==='minus' ? -$gross : $gross;
+            }
             $row['status']=$invoice->get('name').' · '.$invoice->get('stato').' · già inserita in invito';
             $this->forecastAdd($forecast,(string)$invoice->get('fornitorePartnerId'),$invoiceDate,
                 'Invito esistente: '.$invoice->get('name'),$amount,$row);

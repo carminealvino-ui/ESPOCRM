@@ -37,6 +37,13 @@
 <div style="max-height:60vh;overflow:auto"><table class="table table-striped"><thead><tr><th>Record / fornitore</th><th>Data</th><th>Stato / composizione</th><th style="text-align:right">Importo</th></tr></thead><tbody>{{#each rows}}<tr><td>{{#if url}}<a href="{{url}}">{{name}}</a>{{else}}{{name}}{{/if}}</td><td style="white-space:nowrap">{{date}}</td><td>{{status}}{{#if categoryLabel}} · {{categoryLabel}}{{/if}}{{#if parts}}<br><small>{{parts}}</small>{{/if}}</td><td style="text-align:right;white-space:nowrap">{{value}}</td></tr>{{else}}<tr><td colspan="4">Nessun record.</td></tr>{{/each}}</tbody></table></div>
 {{/if}}
 {{#if commissionTotal}}<p style="text-align:right"><strong>Totale provvigioni e premi: {{commissionTotal}}</strong></p>{{/if}}
+{{#each actualSettlements}}
+<h4>Plus/Minus e premi registrati · {{name}}{{#if month}} · competenza {{month}}{{/if}}</h4>
+<div style="max-height:30vh;overflow:auto"><table class="table table-striped"><thead><tr><th>Contratto</th><th>Data contratto</th><th>Voce</th><th style="text-align:right">Lordo</th><th style="text-align:right">Importo in invito</th></tr></thead><tbody>
+{{#each rows}}<tr><td><a href="{{url}}">{{name}}</a></td><td>{{date}}</td><td>{{categoryLabel}}</td><td style="text-align:right;white-space:nowrap">{{grossValue}}</td><td style="text-align:right;white-space:nowrap">{{value}}</td></tr>{{else}}<tr><td colspan="5">Nessuna voce Plus/Minus o premio registrata in questo invito.</td></tr>{{/each}}
+</tbody></table></div>
+<table class="table table-condensed"><tbody>{{#each totals}}<tr><td>{{label}}</td><td style="text-align:right">{{value}}</td></tr>{{/each}}</tbody></table>
+{{/each}}
 {{#if settlement}}
 <h4>Dettaglio plus/minus e premio · competenza {{settlement.month}}</h4>
 {{#if settlement.estimated}}<p class="text-muted">Calcolo presuntivo sui contratti firmati nel mese di competenza, distinto dalle provvigioni previste per installazione. Saldo e premio sono inclusi una sola volta nel totale generale. Plus sul saldo positivo: 35%; premio netto: 250 € da 2.500 €, 350 € da 3.500 €, 500 € da 5.000 €. Il minus residuo è stimato al 35%. L eventuale recupero al 100% richiede una verifica successiva della scadenza del termine di compensazione; non viene applicato automaticamente. Mesi futuri: importi basati sui contratti già registrati, aggiornabili con nuove vendite.</p>{{#if settlement.warnings}}<p class="text-warning">{{settlement.warnings}}</p>{{/if}}{{/if}}
