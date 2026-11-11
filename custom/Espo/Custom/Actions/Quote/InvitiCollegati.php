@@ -20,10 +20,11 @@ class InvitiCollegati
   }
   $ids=[];
   $expected=$this->acl->checkScope('Provvigione','read') && $this->acl->checkField('Provvigione','importo','read') ? 0 : null;
+  $cancelled=in_array($q->get('statoContratto'),['Annullato','Recesso'],true);
   foreach($this->em->getRDBRepository('Provvigione')->where(['contrattoId'=>$id])->find() as $p){
    if(!$this->acl->checkEntity($p,'read'))continue;
    $ids[]=$p->getId();
-   if($expected!==null)$expected+=(int)round(100*(float)$p->get('importo'));
+   if($expected!==null && !$cancelled)$expected+=(int)round(100*(float)$p->get('importo'));
   }
   $conditions=[['contrattoId'=>$id]];if($ids)$conditions[]=['provvigioneId'=>$ids];
   $out=[];
