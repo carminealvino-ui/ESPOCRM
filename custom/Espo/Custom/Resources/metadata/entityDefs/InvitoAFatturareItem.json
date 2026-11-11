@@ -1,0 +1,208 @@
+{
+  "fields": {
+    "name": {
+      "type": "varchar",
+      "readOnly": true
+    },
+    "invito": {
+      "type": "link",
+      "required": true
+    },
+    "provvigione": {
+      "type": "link"
+    },
+    "movimento": {
+      "type": "enum",
+      "options": [
+        "Addebito",
+        "Storno"
+      ],
+      "default": "Addebito",
+      "required": true
+    },
+    "rigaOrigine": {
+      "type": "link"
+    },
+    "description": {
+      "type": "text"
+    },
+    "tipo": {
+      "type": "varchar",
+      "readOnly": true,
+      "view": "custom:views/fields/tipo-prov-label-v2"
+    },
+    "baseCalcolo": {
+      "type": "varchar",
+      "readOnly": true
+    },
+    "tassoProvvigioni": {
+      "type": "float",
+      "readOnly": true
+    },
+    "importoBaseCalcolo": {
+      "type": "currency",
+      "readOnly": true
+    },
+    "importoConsolidato": {
+      "type": "currency",
+      "readOnly": false,
+      "audited": true
+    },
+    "createdAt": {
+      "type": "datetime",
+      "readOnly": true
+    },
+    "modifiedAt": {
+      "type": "datetime",
+      "readOnly": true
+    },
+    "createdBy": {
+      "type": "link",
+      "readOnly": true
+    },
+    "modifiedBy": {
+      "type": "link",
+      "readOnly": true
+    },
+    "assignedUser": {
+      "type": "link",
+      "view": "views/fields/assigned-user"
+    },
+    "teams": {
+      "type": "linkMultiple",
+      "view": "views/fields/teams"
+    },
+    "tipoLiquidazione": {
+      "type": "enum",
+      "options": [
+        "Acconto",
+        "Saldo",
+        "Chiusura con differenza",
+        "Da verificare"
+      ],
+      "default": "Saldo",
+      "required": true,
+      "isCustom": true
+    },
+    "voceAutomatica": {
+      "type": "varchar",
+      "maxLength": 80,
+      "readOnly": true,
+      "isCustom": true
+    },
+    "contratto": {
+      "type": "link",
+      "readOnly": false,
+      "isCustom": true
+    },
+    "importoPrevistoRiga": {
+      "type": "currency",
+      "readOnly": true,
+      "isCustom": true
+    },
+    "differenzaImporto": {
+      "type": "currency",
+      "readOnly": true,
+      "isCustom": true
+    },
+    "importoOriginaleInvito": {
+      "type": "currency",
+      "readOnly": true,
+      "audited": true
+    },
+    "differenzaFornitore": {
+      "type": "currency",
+      "readOnly": true,
+      "audited": true
+    },
+    "incongruenzaStato": {
+      "type": "enum",
+      "options": [
+        "Da verificare",
+        "Chiarimento richiesto",
+        "Confermata",
+        "Rettificata"
+      ],
+      "readOnly": true
+    },
+    "incongruenzaNote": {
+      "type": "text",
+      "readOnly": true
+    },
+    "incongruenzaStorico": {
+      "type": "text",
+      "readOnly": true
+    },
+    "incongruenzaVersion": {
+      "type": "int",
+      "default": 0,
+      "readOnly": true
+    },
+    "incongruenzaInvitoRettifica": {
+      "type": "link",
+      "readOnly": true
+    },
+    "incongruenzaModifiedAt": {
+      "type": "datetime",
+      "readOnly": true
+    }
+  },
+  "links": {
+    "invito": {
+      "type": "belongsTo",
+      "entity": "InvitoAFatturare",
+      "foreign": "righeProvvigionali"
+    },
+    "provvigione": {
+      "type": "belongsTo",
+      "entity": "Provvigione",
+      "foreign": "righeInvito"
+    },
+    "rigaOrigine": {
+      "type": "belongsTo",
+      "entity": "InvitoAFatturareItem",
+      "foreign": "storni"
+    },
+    "storni": {
+      "type": "hasMany",
+      "entity": "InvitoAFatturareItem",
+      "foreign": "rigaOrigine"
+    },
+    "createdBy": {
+      "type": "belongsTo",
+      "entity": "User"
+    },
+    "modifiedBy": {
+      "type": "belongsTo",
+      "entity": "User"
+    },
+    "assignedUser": {
+      "type": "belongsTo",
+      "entity": "User"
+    },
+    "teams": {
+      "type": "hasMany",
+      "entity": "Team",
+      "relationName": "entityTeam",
+      "layoutRelationshipsDisabled": true
+    },
+    "contratto": {
+      "type": "belongsTo",
+      "entity": "Quote",
+      "isCustom": true
+    },
+    "incongruenzaInvitoRettifica": {
+      "type": "belongsTo",
+      "entity": "InvitoAFatturare"
+    }
+  },
+  "collection": {
+    "orderBy": "provvigione",
+    "order": "asc",
+    "textFilterFields": [],
+    "fullTextSearch": false,
+    "countDisabled": false
+  },
+  "transactionalSave": true,
+  "optimisticConcurrencyControl": true
+}

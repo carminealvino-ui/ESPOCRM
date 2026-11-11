@@ -206,6 +206,11 @@ class InvitoWorkflow
 
 
 
+    public function isManualCorrectionKey(string $key): bool
+    {
+        return preg_match('/^saldoDocumentale:[A-Za-z0-9]+:[a-f0-9]{16}$/D', $key) === 1;
+    }
+
     public function monthlyRowLabel(Entity $quote, string $tipo, float $amount): string
 
     {
@@ -303,7 +308,7 @@ class InvitoWorkflow
             if ($doc->get('provvigioneId') || !is_numeric($raw) || !is_finite((float)$raw) || abs((float)$raw)>100000000 || abs((float)$raw-round((float)$raw,2))>0.000001) throw new BadRequest('Importo documentale non valido.');
             if ($detail) {
                 $q=$doc->get('contrattoId') ? $this->em->getEntityById('Quote',$doc->get('contrattoId')) : null;
-                if (!$q || $q->get('fornitorePartnerId')!==$i->get('fornitorePartnerId') || $key!==($sales?'venditaDocumentale:':($adjustment?'rettificaDocumentale:':'saldoDocumentale:')).$q->getId()) throw new BadRequest('Contratto documentale non valido.');
+                if (!$q || $q->get('fornitorePartnerId')!==$i->get('fornitorePartnerId') || ($key!==($sales?'venditaDocumentale:':($adjustment?'rettificaDocumentale:':'saldoDocumentale:')).$q->getId() && !($this->isManualCorrectionKey($key) && str_starts_with($key,'saldoDocumentale:'.$q->getId().':')))) throw new BadRequest('Contratto documentale non valido.');
                 if ($sales) {
                     if ($doc->get('tipo')!=='Provvigione vendita' || $doc->get('movimento')!=='Addebito' || !is_numeric($doc->get('importoBaseCalcolo')) || (float)$doc->get('importoBaseCalcolo')<0 || !is_numeric($doc->get('tassoProvvigioni')) || (float)$doc->get('tassoProvvigioni')<0 || (float)$doc->get('tassoProvvigioni')>100 || (float)$raw<0) throw new BadRequest('Provvigione vendita documentale non valida.');
                 } elseif ($adjustment) {

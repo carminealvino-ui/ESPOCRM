@@ -30,9 +30,16 @@ class Ledger implements \Espo\Core\Hook\Hook\BeforeSave, \Espo\Core\Hook\Hook\Af
 
     public function beforeSave(Entity $line, SaveOptions $options): void
     {
+        $key = (string) $line->get('voceAutomatica');
+        $existingCorrection = !$line->isNew() && $this->flow->isManualCorrectionKey((string) $line->getFetched('voceAutomatica'));
+        $newCorrection = $line->isNew() && !$key && !$line->get('provvigioneId') && $line->get('contrattoId');
+        if ($existingCorrection || $newCorrection) {
+            $this->saveManualCorrection($line);
+            return;
+        }
         if ($line->get('voceAutomatica') || (!$line->isNew() && $line->getFetched('voceAutomatica'))) throw new BadRequest('La voce mensile si aggiorna dal riepilogo dell invito e non Ã¨ modificabile manualmente.');
         if (!$line->isNew()) {
-            foreach (['invitoId','provvigioneId','movimento','rigaOrigineId'] as $field) {
+            foreach (['invitoId','provvigioneId','movimento','rigaOrigineId','contrattoId'] as $field) {
                 if ($line->isAttributeChanged($field)) throw new BadRequest('Per cambiare il movimento, rimuovere la riga dalla bozza e aggiungerla nuovamente.');
             }
         }
@@ -61,7 +68,15 @@ class Ledger implements \Espo\Core\Hook\Hook\BeforeSave, \Espo\Core\Hook\Hook\Af
         }
         $p=$line->get('provvigioneId') ? $this->flow->invoiceCommission($line->get('provvigioneId')) : null;
         if (!$p) throw new BadRequest('Selezionare una provvigione.');
-        if (!$this->acl->checkEntity($p,'read')) throw new Forbidden();
+        if (!$this->acl->checkEntity($p,'read')) throw new Forbidden();
+        $contractId = $p->get('contrattoId');
+        if (!$contractId || !$this->em->getEntityById('Quote', $contractId)) {
+            throw new BadRequest('La provvigione deve avere un contratto di origine.');
+        }
+        if ($line->isNew() && $line->get('contrattoId') && $line->get('contrattoId') !== $contractId) {
+            throw new BadRequest('Il contratto selezionato non corrisponde alla provvigione.');
+        }
+        $line->set('contrattoId', $contractId);
         $s=$this->em->getPDO()->prepare('SELECT id FROM provvigione WHERE id=? FOR UPDATE');$s->execute([$p->getId()]);
         if ($line->isNew() && $movement==='Addebito' && in_array($p->getId(),$this->flow->reservedCommissionIds((string)$i->get('fornitorePartnerId')),true)) throw new BadRequest('Provvigione gia inserita in un invito attivo. Sono disponibili solo i residui degli acconti.');
         if ($movement==='Addebito') $this->flow->validateMember($i,$p);
@@ -130,8 +145,62 @@ class Ledger implements \Espo\Core\Hook\Hook\BeforeSave, \Espo\Core\Hook\Hook\Af
         $this->flow->validateAllocation($line,$p);
     }
 
+    private function saveManualCorrection(Entity $line): void
+    {
+        if (!$line->isNew()) {
+            foreach (['invitoId','contrattoId','provvigioneId','movimento','rigaOrigineId','voceAutomatica'] as $field) {
+                if ($line->isAttributeChanged($field)) {
+                    throw new BadRequest('Per cambiare il contratto o il movimento, aggiungere una nuova riga.');
+                }
+            }
+        }
+        $invoice = $this->draft($line);
+        if (!$invoice->get('arielRegolamento') || $invoice->get('arielIncludiSaldoMensile')) {
+            throw new BadRequest('La correzione GDL richiede un invito senza saldo mensile automatico.');
+        }
+        if ($line->get('provvigioneId') || $line->get('rigaOrigineId') || $line->get('movimento') !== 'Addebito') {
+            throw new BadRequest('Per una correzione Plus/Minus selezionare il contratto e l operazione Provvigione.');
+        }
+        $contract = $this->em->getEntityById('Quote', $line->get('contrattoId'));
+        if (!$contract || !$this->acl->checkEntity($contract, 'read')) throw new Forbidden();
+        if ($contract->get('fornitorePartnerId') !== $invoice->get('fornitorePartnerId')) {
+            throw new BadRequest('Il contratto deve appartenere al fornitore dell invito.');
+        }
+        $rawAmount = $line->get('importoConsolidato');
+        if (!is_numeric($rawAmount) || !is_finite((float) $rawAmount) ||
+            abs((float) $rawAmount) > 100000000 || round((float) $rawAmount, 2) !== (float) $rawAmount ||
+            (float) $rawAmount === 0.0) {
+            throw new BadRequest('Inserire un importo diverso da zero con massimo due decimali.');
+        }
+        $amount = (float) $rawAmount;
+        $type = $amount > 0 ? 'Plus Provvigionale' : 'Minus Provvigionale';
+        $original = $line->isNew() ? $amount : (float) $line->getFetched('importoOriginaleInvito');
+        $line->set([
+            'name' => $this->flow->monthlyRowLabel($contract, $type, $amount),
+            'tipo' => $type,
+            'tipoLiquidazione' => 'Da verificare',
+            'baseCalcolo' => $amount > 0 ? 'Plusvalenza' : 'Minusvalenza',
+            'importoBaseCalcolo' => round($amount / 0.35, 2),
+            'importoBaseCalcoloCurrency' => 'EUR',
+            'tassoProvvigioni' => 35,
+            'importoConsolidatoCurrency' => 'EUR',
+            'importoOriginaleInvito' => $original,
+            'importoOriginaleInvitoCurrency' => 'EUR',
+            'importoPrevistoRiga' => $original,
+            'importoPrevistoRigaCurrency' => 'EUR',
+            'differenzaImporto' => round($amount - $original, 2),
+            'differenzaImportoCurrency' => 'EUR',
+            'differenzaFornitore' => round($amount - $original, 2),
+            'differenzaFornitoreCurrency' => 'EUR',
+        ]);
+        if ($line->isNew()) {
+            $line->set('voceAutomatica', 'saldoDocumentale:' . $contract->getId() . ':' . bin2hex(random_bytes(8)));
+            $line->set('assignedUserId', $invoice->get('assignedUserId'));
+        }
+    }
+
     public function afterSave(Entity $line, SaveOptions $options): void { $this->refresh($line); }
-    public function beforeRemove(Entity $line, RemoveOptions $options): void { if ($line->get('voceAutomatica')) throw new BadRequest('La voce mensile si gestisce dal riepilogo dell invito.'); $this->draft($line); }
+    public function beforeRemove(Entity $line, RemoveOptions $options): void { if ($line->get('voceAutomatica') && !$this->flow->isManualCorrectionKey((string) $line->get('voceAutomatica'))) throw new BadRequest('La voce mensile si gestisce dal riepilogo dell invito.'); $this->draft($line); }
     public function afterRemove(Entity $line, RemoveOptions $options): void { $this->refresh($line); }
     private function refresh(Entity $line): void
     {

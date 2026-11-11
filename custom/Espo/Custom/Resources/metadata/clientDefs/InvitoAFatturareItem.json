@@ -1,0 +1,48 @@
+{
+    "controller": "controllers/record",
+    "iconClass": "fas fa-file-invoice",
+    "dynamicLogic": {
+        "fields": {
+            "provvigione": {
+                "required": {
+                    "conditionGroup": [
+                        {
+                            "type": "isEmpty",
+                            "attribute": "rigaOrigineId"
+                        },
+                        {
+                            "type": "isEmpty",
+                            "attribute": "contrattoId"
+                        }
+                    ]
+                }
+            },
+            "rigaOrigine": {
+                "visible": {
+                    "conditionGroup": [
+                        {
+                            "type": "equals",
+                            "attribute": "movimento",
+                            "value": "Storno"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "relationshipPanels": {
+        "storni": {
+            "createDisabled": true,
+            "selectDisabled": true,
+            "unlinkDisabled": true,
+            "removeDisabled": true
+        }
+    },
+    "additionalLayouts": {
+        "listInviti": {
+            "type": "list"
+        }
+    },
+    "kanbanViewMode": false,
+    "color": null
+}

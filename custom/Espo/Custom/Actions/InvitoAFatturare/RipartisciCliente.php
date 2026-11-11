@@ -45,7 +45,7 @@ class RipartisciCliente
    'tipo'=>$cents<0?'Minus Provvigionale':'Plus Provvigionale','baseCalcolo'=>$cents<0?'Minusvalenza':'Plusvalenza',
    'importoBaseCalcolo'=>$gross,'importoBaseCalcoloCurrency'=>'EUR','tassoProvvigioni'=>35,
    'importoConsolidato'=>$cents/100,'importoConsolidatoCurrency'=>'EUR','tipoLiquidazione'=>'Da verificare',
-   'name'=>'Plus/Minus da invito - '.$q->get('name'),
+   'name'=>$this->workflow->monthlyRowLabel($q,$cents<0?'Minus Provvigionale':'Plus Provvigionale',$cents/100),
    'description'=>'[PLUSMINUS-MANUALE-INVITO] Importo netto riconosciuto dal fornitore, inserito dal riepilogo. '.($matched?'Lordo coerente con il contratto.':'Lordo equivalente ricavato dal netto al 35%; da confrontare con il prospetto GDL.')]);
   if($new)$line->set(['importoOriginaleInvito'=>0,'importoOriginaleInvitoCurrency'=>'EUR','importoPrevistoRiga'=>0,'importoPrevistoRigaCurrency'=>'EUR','assignedUserId'=>$i->get('assignedUserId')]);
   $this->em->saveEntity($line,['skipHooks'=>true,'skipFormula'=>true,'silent'=>true]);
