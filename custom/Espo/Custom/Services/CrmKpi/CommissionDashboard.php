@@ -58,18 +58,6 @@ class CommissionDashboard
         return $type===null?$rows:array_values(array_filter($rows,fn($p)=>$p->get('tipo')===$type));
     }
 
-    private function invoiceLineCount(string $id): int
-    {
-        if ($this->summaryCacheActive) {
-            if ($this->summaryLineCounts===null) {
-                $this->summaryLineCounts=[];
-                $sql="SELECT l.provvigione_id,COUNT(*) n FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id AND i.deleted=0 AND i.stato!='Annullato' WHERE l.deleted=0 GROUP BY l.provvigione_id";
-                foreach($this->em->getPDO()->query($sql)->fetchAll(\PDO::FETCH_ASSOC) as $row)$this->summaryLineCounts[$row['provvigione_id']]=(int)$row['n'];
-            }
-            return $this->summaryLineCounts[$id]??0;
-        }
-        $s=$this->em->getPDO()->prepare("SELECT COUNT(*) FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id AND i.deleted=0 AND i.stato!='Annullato' WHERE l.provvigione_id=? AND l.deleted=0");$s->execute([$id]);return (int)$s->fetchColumn();
-    }
 
     private function cents(mixed $amount): int { return (int) round(100 * (float) $amount); }
     public static function position(int $expected, int $paid, int $reserved, bool $closed): array
@@ -502,9 +490,6 @@ class CommissionDashboard
             if ($contractId && $qid!==$contractId) continue;
             if (!$this->readable($user,$q) || !$this->readable($user,$line) || !$this->readable($user,$i) || ($p && !$this->readable($user,$p))) throw new Forbidden('Accesso parziale al confronto degli inviti.');
             $expected=$line->get('importoPrevistoRiga');$source='Conteggio CRM conservato nella riga';
-            if ($p && $line->get('movimento')==='Addebito' && in_array($line->get('tipoLiquidazione'),['Saldo','Da verificare'],true) && $p->get('importo')!==null) {
-                if ($this->invoiceLineCount($p->getId())===1) {$expected=$p->get('importo');$source='Conteggio CRM attuale';}
-            }
             if ($expected===null) {
                 if ($p) $expected=$p->get('importo') ?? $p->get('importoConsolidato');
                 elseif ($line->get('contrattoId') && $line->get('tipo')) {

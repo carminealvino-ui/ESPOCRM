@@ -51,6 +51,7 @@ class Ledger implements \Espo\Core\Hook\Hook\BeforeSave, \Espo\Core\Hook\Hook\Af
         $movement=$line->get('movimento') ?: 'Addebito';
         if (!in_array($movement,['Addebito','Storno'],true)) throw new BadRequest('Operazione non valida.');
         $origin=null;
+        $availableToReverse=0;
         if ($movement==='Storno' && $line->get('rigaOrigineId')) {
             if (!$line->get('rigaOrigineId')) throw new BadRequest('Selezionare l addebito originario da stornare.');
             $s=$this->em->getPDO()->prepare('SELECT id FROM invito_a_fatturare_item WHERE id=? AND deleted=0 FOR UPDATE');
@@ -61,11 +62,10 @@ class Ledger implements \Espo\Core\Hook\Hook\BeforeSave, \Espo\Core\Hook\Hook\Af
             $originalInvoice=$this->em->getEntityById('InvitoAFatturare',$origin->get('invitoId'));
             if (!$originalInvoice || !$this->flow->isFinal($originalInvoice)) throw new BadRequest('L addebito da stornare deve appartenere a un invito Definitivo o Pagato.');
             if (!$this->acl->checkEntity($originalInvoice,'read')) throw new Forbidden();
-            $active=$this->em->getPDO()->prepare("SELECT l.id FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id AND i.deleted=0 WHERE l.riga_origine_id=? AND l.deleted=0 AND i.stato<>'Annullato' FOR UPDATE");
-            $active->execute([$origin->getId()]);
-            foreach ($active->fetchAll(\PDO::FETCH_COLUMN) as $otherId) {
-                if ($otherId!==$line->getId()) throw new BadRequest('Questo addebito ha gia uno storno in un altro invito attivo.');
-            }
+            $active=$this->em->getPDO()->prepare("SELECT l.importo_consolidato FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id AND i.deleted=0 WHERE l.riga_origine_id=? AND l.id<>? AND l.deleted=0 AND i.stato<>'Annullato' FOR UPDATE");
+            $active->execute([$origin->getId(),$line->getId() ?? '']);
+            $availableToReverse = -(int)round(100*(float)$origin->get('importoConsolidato'));
+            foreach ($active->fetchAll(\PDO::FETCH_COLUMN) as $prior) $availableToReverse -= (int)round(100*(float)$prior);
             $line->set('provvigioneId',$origin->get('provvigioneId'));
         } elseif ($line->get('rigaOrigineId')) {
             throw new BadRequest('L addebito originario va selezionato solo per uno storno.');
@@ -107,6 +107,13 @@ class Ledger implements \Espo\Core\Hook\Hook\BeforeSave, \Espo\Core\Hook\Hook\Af
             $source=$origin ?: $p;
             $amount=$source->get('importoConsolidato') ?? $source->get('importo');
             if ($movement==='Storno' && !$origin) $amount=$line->get('importoConsolidato')!==null ? -(float)$line->get('importoConsolidato') : abs((float)$amount);
+            if ($origin) {
+                $entered=$line->get('importoConsolidato') ?? $availableToReverse/100;
+                if (!is_numeric($entered) || !is_finite((float)$entered) || round((float)$entered,2)!==(float)$entered) {
+                    throw new BadRequest('Inserire un importo con massimo due decimali.');
+                }
+                $amount=-(float)$entered;
+            }
             if ($amount===null) throw new BadRequest('La provvigione non ha un importo.');
             if ($movement==='Addebito') {
                 $used=$this->em->getPDO()->prepare("SELECT COALESCE(SUM(l.importo_consolidato),0) FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id WHERE l.provvigione_id=? AND l.movimento='Addebito' AND l.deleted=0 AND i.deleted=0 AND i.stato<>'Annullato'");
@@ -142,7 +149,14 @@ class Ledger implements \Espo\Core\Hook\Hook\BeforeSave, \Espo\Core\Hook\Hook\Af
             return;
         }
         if ($movement==='Storno') {
-            if ((int)round(100*(float)$line->get('importoConsolidato')) !== -(int)round(100*(float)$origin->get('importoConsolidato'))) throw new BadRequest('Lo storno deve corrispondere alla riga originaria.');
+            $amount=$line->get('importoConsolidato');
+            $cents=(int)round(100*(float)$amount);
+            $originalCents=(int)round(100*(float)$origin->get('importoConsolidato'));
+            if (!is_numeric($amount) || !is_finite((float)$amount) || round((float)$amount,2)!==(float)$amount ||
+                !$cents || $cents*$originalCents>=0 || $cents*$availableToReverse<=0 || abs($cents)>abs($availableToReverse)) {
+                throw new BadRequest('La rettifica deve avere segno opposto alla riga originaria e rientrare nel residuo rettificabile.');
+            }
+            $line->set(['importoPrevistoRiga'=>$cents/100,'importoPrevistoRigaCurrency'=>'EUR']);
             $line->set('tipoLiquidazione',$origin->get('tipoLiquidazione') ?: 'Saldo');
             return;
         }

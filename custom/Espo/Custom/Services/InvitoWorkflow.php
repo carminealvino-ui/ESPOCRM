@@ -623,11 +623,11 @@ class InvitoWorkflow
 
             if ($row['movimento']==='Addebito' && !in_array(($row['tipo_liquidazione'] ?: 'Saldo'), ['Acconto','Da verificare'], true)) {
 
-                $rev=$this->em->getPDO()->prepare("SELECT COUNT(*) FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id WHERE l.riga_origine_id=? AND l.deleted=0 AND i.deleted=0 AND i.stato IN ('Definitivo','Pagato')");
+                $rev=$this->em->getPDO()->prepare("SELECT COALESCE(SUM(l.importo_consolidato),0) FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id WHERE l.riga_origine_id=? AND l.deleted=0 AND i.deleted=0 AND i.stato IN ('Definitivo','Pagato')");
 
                 $rev->execute([$row['id']]);
 
-                if (!(int)$rev->fetchColumn()) throw new BadRequest('Esiste giÃ  una riga di saldo o chiusura per questa provvigione.');
+                if ((int)round(100*((float)$rev->fetchColumn()+(float)$row['importo_consolidato']))!==0) throw new BadRequest('Esiste giÃ  una riga di saldo o chiusura per questa provvigione.');
 
             }
 
@@ -761,11 +761,11 @@ class InvitoWorkflow
 
                 if ($i['movimento'] === 'Addebito' && !in_array(($i['tipo_liquidazione'] ?: 'Saldo'), ['Acconto','Da verificare'], true)) {
 
-                    $reverse = $this->em->getPDO()->prepare("SELECT COUNT(*) FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id WHERE l.riga_origine_id=? AND l.deleted=0 AND i.deleted=0 AND i.stato='Pagato'");
+                    $reverse = $this->em->getPDO()->prepare("SELECT COALESCE(SUM(l.importo_consolidato),0) FROM invito_a_fatturare_item l JOIN invito_a_fatturare i ON i.id=l.invito_id WHERE l.riga_origine_id=? AND l.deleted=0 AND i.deleted=0 AND i.stato='Pagato'");
 
                     $reverse->execute([$i['line_id']]);
 
-                    if (!(int)$reverse->fetchColumn()) $closed = true;
+                    if ((int)round(100*((float)$reverse->fetchColumn()+(float)$i['importo_consolidato']))!==0) $closed = true;
 
                 }
 
