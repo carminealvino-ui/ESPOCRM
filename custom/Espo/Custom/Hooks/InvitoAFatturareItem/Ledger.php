@@ -36,7 +36,7 @@ class Ledger implements \Espo\Core\Hook\Hook\BeforeSave, \Espo\Core\Hook\Hook\Af
             return;
         }
         $existingCorrection = !$line->isNew() && $this->flow->isManualCorrectionKey((string) $line->getFetched('voceAutomatica'));
-        $newCorrection = $line->isNew() && !$key && !$line->get('provvigioneId') && $line->get('contrattoId');
+        $newCorrection = $line->isNew() && !$key && !$line->get('provvigioneId') && $line->get('contrattoId') && $line->get('movimento') === 'Addebito';
         if ($existingCorrection || $newCorrection) {
             $this->saveManualCorrection($line);
             return;
@@ -56,7 +56,7 @@ class Ledger implements \Espo\Core\Hook\Hook\BeforeSave, \Espo\Core\Hook\Hook\Af
             $s=$this->em->getPDO()->prepare('SELECT id FROM invito_a_fatturare_item WHERE id=? AND deleted=0 FOR UPDATE');
             $s->execute([$line->get('rigaOrigineId')]);
             $origin=$this->em->getEntityById('InvitoAFatturareItem',$line->get('rigaOrigineId'));
-            if (!$origin || $origin->get('voceAutomatica') || $origin->get('movimento')!=='Addebito') throw new BadRequest('Selezionare una riga provvigionale originaria, non uno storno.');
+            if (!$origin || !$origin->get('provvigioneId') || $origin->get('movimento')!=='Addebito') throw new BadRequest('Selezionare una riga provvigionale originaria, non uno storno.');
             if (!$this->acl->checkEntity($origin,'read')) throw new Forbidden();
             $originalInvoice=$this->em->getEntityById('InvitoAFatturare',$origin->get('invitoId'));
             if (!$originalInvoice || !$this->flow->isFinal($originalInvoice)) throw new BadRequest('L addebito da stornare deve appartenere a un invito Definitivo o Pagato.');
@@ -185,7 +185,7 @@ class Ledger implements \Espo\Core\Hook\Hook\BeforeSave, \Espo\Core\Hook\Hook\Af
         if (!$invoice->get('arielRegolamento') || $invoice->get('arielIncludiSaldoMensile')) {
             throw new BadRequest('La correzione GDL richiede un invito senza saldo mensile automatico.');
         }
-        if ($line->get('provvigioneId') || $line->get('rigaOrigineId') || $line->get('movimento') !== 'Addebito') {
+        if ($line->get('rigaOrigineId') || $line->get('movimento') !== 'Addebito') {
             throw new BadRequest('Per una correzione Plus/Minus selezionare il contratto e l operazione Provvigione.');
         }
         $contract = $this->em->getEntityById('Quote', $line->get('contrattoId'));
@@ -202,6 +202,20 @@ class Ledger implements \Espo\Core\Hook\Hook\BeforeSave, \Espo\Core\Hook\Hook\Af
         $amount = (float) $rawAmount;
         $type = $amount > 0 ? 'Plus Provvigionale' : 'Minus Provvigionale';
         $original = $line->isNew() ? $amount : (float) $line->getFetched('importoOriginaleInvito');
+        if ($line->isNew()) {
+            $matches = iterator_to_array($this->em->getRDBRepository('Provvigione')->where([
+                'contrattoId'=>$contract->getId(),'fornitorePartnerId'=>$invoice->get('fornitorePartnerId'),'tipo'=>$type,
+            ])->find(),false);
+            if (count($matches) === 1 && $this->acl->checkEntity($matches[0],'read')) {
+                $line->set('provvigioneId',$matches[0]->getId());
+            }
+        }
+        $source = $this->flow->invoiceCommission($line->get('provvigioneId'));
+        if ($source && $source->get('tipo') !== $type) {
+            throw new BadRequest('Per cambiare da Plus a Minus aggiungere una nuova riga.');
+        }
+        $expected = $line->isNew() ? ($source && !$source->get('invitoAFatturareId') ? (float)$source->get('importo') : 0.0)
+            : (float)($line->getFetched('importoPrevistoRiga') ?? 0);
         $line->set([
             'name' => $this->flow->monthlyRowLabel($contract, $type, $amount),
             'tipo' => $type,
@@ -213,9 +227,9 @@ class Ledger implements \Espo\Core\Hook\Hook\BeforeSave, \Espo\Core\Hook\Hook\Af
             'importoConsolidatoCurrency' => 'EUR',
             'importoOriginaleInvito' => $original,
             'importoOriginaleInvitoCurrency' => 'EUR',
-            'importoPrevistoRiga' => $original,
+            'importoPrevistoRiga' => $expected,
             'importoPrevistoRigaCurrency' => 'EUR',
-            'differenzaImporto' => round($amount - $original, 2),
+            'differenzaImporto' => round($amount - $expected, 2),
             'differenzaImportoCurrency' => 'EUR',
             'differenzaFornitore' => round($amount - $original, 2),
             'differenzaFornitoreCurrency' => 'EUR',
