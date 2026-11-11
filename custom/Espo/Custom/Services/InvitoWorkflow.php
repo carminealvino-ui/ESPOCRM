@@ -262,20 +262,44 @@ class InvitoWorkflow
                 if(!$quote || $quote->get('fornitorePartnerId')!==$i->get('fornitorePartnerId')) throw new BadRequest('Contratto del movimento mensile non trovato o fornitore non corrispondente.');
 
                 $positive=$e['grossCents']>0;
+                $type = $positive ? 'Plus Provvigionale' : 'Minus Provvigionale';
+                $old = $this->em->getRDBRepository('InvitoAFatturareItem')->where([
+                    'invitoId' => $i->getId(), 'voceAutomatica' => $key,
+                ])->findOne();
+                $expected = $e['amountCents']/100;
+                $amount = $old && (float)$old->get('differenzaFornitore') !== 0.0
+                    ? (float)$old->get('importoConsolidato') : $expected;
+                $commissionId = $old?->get('provvigioneId');
+                if (!$old && $e['kind'] === 'vendita') {
+                    $matches = iterator_to_array($this->em->getRDBRepository('Provvigione')->where([
+                        'contrattoId' => $e['quoteId'], 'tipo' => $type, 'regimeProvvigione' => 'ARIEL 2026',
+                    ])->find(), false);
+                    if (count($matches) === 1) {
+                        $commission = $matches[0];
+                        if (!$this->acl->checkEntity($commission, 'read')) throw new Forbidden();
+                        if ($commission->get('invitoAFatturareId') && $commission->get('invitoAFatturareId') !== $i->getId()) {
+                            throw new BadRequest('La provvigione è già collegata a un altro invito.');
+                        }
+                        $commissionId = $commission->getId();
+                    }
+                }
 
                 $components[$key]=[
 
                     'name'=>$this->monthlyRowLabel($quote, ($positive?'Plus Provvigionale':'Minus Provvigionale').($e['kind']==='rettifica'?' - Rettifica':''), $e['amountCents']/100),
 
-                    'contrattoId'=>$e['quoteId'],'tipo'=>$positive?'Plus Provvigionale':'Minus Provvigionale',
+                    'contrattoId'=>$e['quoteId'],'tipo'=>$type,'provvigioneId'=>$commissionId,
+                    'importoPrevistoRiga'=>$old?->get('importoPrevistoRiga') ?? $expected,'importoPrevistoRigaCurrency'=>'EUR',
+                    'importoOriginaleInvito'=>$old?->get('importoOriginaleInvito') ?? $expected,'importoOriginaleInvitoCurrency'=>'EUR',
+                    'tipoLiquidazione'=>$amount == $expected?'Saldo':'Da verificare',
 
                     'baseCalcolo'=>$positive?'Plusvalenza':'Minusvalenza','importoBaseCalcolo'=>$e['grossCents']/100,
 
                     'importoBaseCalcoloCurrency'=>'EUR','tassoProvvigioni'=>$e['rate'],
 
-                    'importoConsolidato'=>$e['amountCents']/100,
+                    'importoConsolidato'=>$amount,
 
-                    'description'=>'Quota del contratto nella compensazione mensile. '.($e['rate']===35?'Saldo positivo: aliquota 35% sulle componenti positive e negative.':'Saldo negativo: componenti positive e negative al 100% per determinare il minus residuo.').' Eventuali centesimi ripartiti per mantenere il totale esatto.'];
+                    'description'=>'Quota del contratto nella compensazione mensile. '.($e['rate']===35?'Aliquota 35% sulle componenti positive e negative.':'Saldo negativo: componenti positive e negative al 100% per determinare il minus residuo.').' Eventuali centesimi ripartiti per mantenere il totale esatto.'];
 
             }
 
@@ -320,7 +344,12 @@ class InvitoWorkflow
             $components[$key]=[];
             foreach (['name','tipo','movimento','tipoLiquidazione','contrattoId','baseCalcolo','importoBaseCalcolo','importoBaseCalcoloCurrency','tassoProvvigioni','description','importoConsolidato','importoOriginaleInvito','importoOriginaleInvitoCurrency','importoPrevistoRiga','importoPrevistoRigaCurrency'] as $field) $components[$key][$field]=$doc->get($field);
         }
-        foreach($existing as $key=>$line)if(!isset($components[$key]))$this->em->removeEntity($line,$skip);
+        foreach ($existing as $key => $line) {
+            if (isset($components[$key])) continue;
+            $linked = str_starts_with($key,'pm:vendita:') ? $this->invoiceCommission($line->get('provvigioneId')) : null;
+            $this->em->removeEntity($line,$skip);
+            if ($linked) $this->refreshCommission($linked);
+        }
 
         foreach($components as $key=>$values) {
 
@@ -648,6 +677,11 @@ class InvitoWorkflow
         foreach ($this->rows($i) as $line) {
 
             if ($line->get('voceAutomatica')) {
+                $linked = $this->invoiceCommission($line->get('provvigioneId'));
+                if ($linked) {
+                    $this->refreshCommission($linked);
+                    continue;
+                }
                 foreach ($this->em->getRDBRepository('Provvigione')->where(['contrattoId'=>$line->get('contrattoId'),'tipo'=>$line->get('tipo')])->find() as $monthlyCommission) {
                     CommissionConsolidation::apply($this->em,$monthlyCommission);
                     $this->em->saveEntity($monthlyCommission,['skipHooks'=>true,'skipFormula'=>true,'silent'=>true]);

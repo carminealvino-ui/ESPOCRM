@@ -616,7 +616,7 @@ class ProvvigioneManager
 
     /**
      * GDL / Ariel 2026: provvigione base + referenza personale (additiva) + plus + bonus weekend.
-     * Art. 3.4: minusvalenza nel contatore Quote.minusPlus, senza provvigione negativa.
+     * Il Minus del contratto è calcolato prima del saldo mensile.
      *
      * @param array<string, mixed> $context
      */
@@ -685,6 +685,13 @@ class ProvvigioneManager
         if ($context['plusvalenza'] !== null && $context['plusvalenza'] > 0) {
             $this->ensureArielPlusProvvigione($opportunity, $quote, $category, $context);
 
+        }
+
+        if ($minusPlus !== null && $minusPlus < 0 && round($minusPlus * 0.35, 2) !== 0.0) {
+            $this->saveConsolidataProvvigione(
+                $opportunity, $quote, $category, ['importo' => round($minusPlus * 0.35, 2)],
+                $context, 'Minus Provvigionale'
+            );
         }
 
         $this->ensureWeekendBonusProvvigione($opportunity, $quote, $category, $context, $imponibile);
@@ -1085,6 +1092,15 @@ class ProvvigioneManager
             'clienteId' => $clienteId,
             'clienteName' => $clienteName,
         ]);
+
+        if ($tipo === 'Minus Provvigionale' && ($context['regime'] ?? null) === 'ARIEL 2026' && !isset($result['regola'])) {
+            $provvigione->set([
+                'baseCalcolo' => 'Minusvalenza',
+                'importoBaseCalcolo' => round((float) $quote->get('minusPlus'), 2),
+                'tassoProvvigioni' => 35,
+                'dataCompetenza' => substr((string) $quote->get('dateQuoted'), 0, 7) . '-01',
+            ]);
+        }
 
         $importo = $provvigione->get('importoConsolidato') ?? $provvigione->get('importo');
 
