@@ -59,7 +59,8 @@ class QuoteInstallazioneVerificaTaskSync
         $task = $this->resolveTaskForQuote($quote);
         $isNew = $task->isNew();
 
-        if ($task->get('status') === 'Canceled') {
+        if ($task->get('status') === 'Canceled' ||
+            ($task->get('status') === 'Deferred' && $task->get('esitoVerificaInstallazione') === 'Rinviato' && $task->get('dateEnd') !== $dueStorage)) {
             $task->set('status', 'Not Started');
         }
 
@@ -98,7 +99,11 @@ class QuoteInstallazioneVerificaTaskSync
             'skipHooks' => true,
         ]);
 
-        $this->syncPopupReminder($task, $dueStorage, $assignedUserId ? (string) $assignedUserId : null);
+        if ($task->get('esitoVerificaInstallazione') === 'Rinviato') {
+            $this->clearPopupReminders((string) $task->getId());
+        } else {
+            $this->syncPopupReminder($task, $dueStorage, $assignedUserId ? (string) $assignedUserId : null);
+        }
 
         if ($allowQuoteLinkUpdate && $quote->get('verificaInstallazioneTaskId') !== $task->getId()) {
             $quote->set('verificaInstallazioneTaskId', $task->getId());
@@ -166,6 +171,7 @@ class QuoteInstallazioneVerificaTaskSync
                 'silent' => true,
                 'skipHooks' => true,
             ]);
+            $this->clearPopupReminders((string) $task->getId());
         }
     }
 
